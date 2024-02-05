@@ -1,12 +1,12 @@
 [package]
-name = "counter"
+name = "pricing"
 version = "0.1.0"
 description = "Created with Anchor"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "counter"
+name = "pricing"
 
 [features]
 no-entrypoint = []
@@ -17,3 +17,4 @@ default = []
 
 [dependencies]
 anchor-lang = { workspace = true }
+pyth-sdk-solana = { workspace = true }

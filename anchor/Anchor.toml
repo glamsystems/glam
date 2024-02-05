@@ -4,14 +4,28 @@
 seeds = false
 skip-lint = false
 
+[programs.devnet]
+counter = "6YExFUKSmNXcj7TANp2HsaVfENPGhiAcJC8kuAZ5vGZw"
+custody = "Gcu1vbed9bwpfwU9PCnJw8QanQfVHfETWxAK3EZczbgo"
+glam = "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc"
+policy = "Gpo1jXtEFepqyPQWTG7oDJrg8rye8JL3zcsczHzXKqLt"
+pricing = "Gpr1WZZXAty2L9eiMwZPC7ra69vMFojhdqDuiRHkQQQp"
+strategy = "Gst1YGe5vKURSWfCqM7GhZys1oML9E9t91WRyV2rt4yS"
+
 [programs.localnet]
 counter = "6YExFUKSmNXcj7TANp2HsaVfENPGhiAcJC8kuAZ5vGZw"
+custody = "Gcu1vbed9bwpfwU9PCnJw8QanQfVHfETWxAK3EZczbgo"
+glam = "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc"
+policy = "Gpo1jXtEFepqyPQWTG7oDJrg8rye8JL3zcsczHzXKqLt"
+pricing = "Gpr1WZZXAty2L9eiMwZPC7ra69vMFojhdqDuiRHkQQQp"
+strategy = "Gst1YGe5vKURSWfCqM7GhZys1oML9E9t91WRyV2rt4yS"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+#cluster = "Localnet"
+cluster = "devnet"
 wallet = "/Users/ec/.config/solana/id.json"
 
 [scripts]
