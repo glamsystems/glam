@@ -49,16 +49,11 @@ export type Pricing = {
   "errors": [
     {
       "code": 6000,
-      "name": "CustomError",
-      "msg": "Custom error message"
-    },
-    {
-      "code": 6001,
       "name": "PriceUnavailable",
       "msg": "Price is currently not available"
     },
     {
-      "code": 6002,
+      "code": 6001,
       "name": "InvalidPriceFeedId",
       "msg": "Invalid price feed id"
     }
@@ -116,16 +111,11 @@ export const IDL: Pricing = {
   "errors": [
     {
       "code": 6000,
-      "name": "CustomError",
-      "msg": "Custom error message"
-    },
-    {
-      "code": 6001,
       "name": "PriceUnavailable",
       "msg": "Price is currently not available"
     },
     {
-      "code": 6002,
+      "code": 6001,
       "name": "InvalidPriceFeedId",
       "msg": "Invalid price feed id"
     }

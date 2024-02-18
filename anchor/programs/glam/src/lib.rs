@@ -14,7 +14,10 @@ declare_id!("Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc");
 pub mod glam {
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        initialize::handler(ctx)
+    pub fn initialize(ctx: Context<InitializeFund>, name: String) -> Result<()> {
+        manager::initialize_fund_handler(ctx, name)
+    }
+    pub fn close(ctx: Context<CloseFund>) -> Result<()> {
+        manager::close_handler(ctx)
     }
 }

@@ -24,8 +24,8 @@ strategy = "Gst1YGe5vKURSWfCqM7GhZys1oML9E9t91WRyV2rt4yS"
 url = "https://api.apr.dev"
 
 [provider]
-#cluster = "Localnet"
-cluster = "devnet"
+cluster = "Localnet"
+#cluster = "devnet"
 wallet = "/Users/ec/.config/solana/id.json"
 
 [scripts]

@@ -5,7 +5,7 @@ use anchor_lang::solana_program::{
 use pyth_sdk_solana::load_price_feed_from_account_info;
 use std::str::FromStr;
 
-use crate::error::ErrorCode;
+use crate::error::PricingError;
 
 const SOL_USD_PRICEFEED_ID: &str = "J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix";
 
@@ -23,7 +23,7 @@ pub struct PayUsd<'info> {
 
 pub fn handler(ctx: Context<PayUsd>, amount: u64) -> Result<()> {
     if Pubkey::from_str(SOL_USD_PRICEFEED_ID) != Ok(ctx.accounts.sol_usd_price_account.key()) {
-        return Err(error!(ErrorCode::InvalidPriceFeedId));
+        return Err(error!(PricingError::InvalidPriceFeedId));
     };
     let sol_usd_price_feed =
         load_price_feed_from_account_info(&ctx.accounts.sol_usd_price_account).unwrap();
@@ -44,7 +44,7 @@ pub fn handler(ctx: Context<PayUsd>, amount: u64) -> Result<()> {
         );
         invoke(&transfer_instruction, &ctx.accounts.to_account_infos())?;
     } else {
-        return Err(error!(ErrorCode::PriceUnavailable));
+        return Err(error!(PricingError::PriceUnavailable));
     }
 
     Ok(())

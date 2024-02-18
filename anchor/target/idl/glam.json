@@ -11,15 +11,162 @@
   "instructions": [
     {
       "name": "initialize",
-      "accounts": [],
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "assetBase",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "share0",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "close",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
       "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Fund",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "manager",
+            "type": "publicKey"
+          },
+          {
+            "name": "treasury",
+            "type": "publicKey"
+          },
+          {
+            "name": "assetBase",
+            "type": "publicKey"
+          },
+          {
+            "name": "assetsLen",
+            "type": "u8"
+          },
+          {
+            "name": "assets",
+            "type": {
+              "array": [
+                "publicKey",
+                5
+              ]
+            }
+          },
+          {
+            "name": "shareClassesLen",
+            "type": "u8"
+          },
+          {
+            "name": "shareClasses",
+            "type": {
+              "array": [
+                "publicKey",
+                3
+              ]
+            }
+          },
+          {
+            "name": "timeCreated",
+            "type": "i64"
+          },
+          {
+            "name": "bumpFund",
+            "type": "u8"
+          },
+          {
+            "name": "bumpTreasury",
+            "type": "u8"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Treasury",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "manager",
+            "type": "publicKey"
+          },
+          {
+            "name": "fund",
+            "type": "publicKey"
+          }
+        ]
+      }
     }
   ],
   "errors": [
     {
       "code": 6000,
-      "name": "CustomError",
-      "msg": "Custom error message"
+      "name": "CloseNotEmptyError",
+      "msg": "Error closing account: not empty"
+    },
+    {
+      "code": 6001,
+      "name": "NotAuthorizedError",
+      "msg": "Error: not authorized"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidFundName",
+      "msg": "Invalid fund name: max 30 chars"
     }
   ],
   "metadata": {
