@@ -17,3 +17,6 @@ default = []
 
 [dependencies]
 anchor-lang = { workspace = true }
+anchor-spl = { workspace = true }
+spl-tlv-account-resolution = { workspace = true }
+spl-transfer-hook-interface = { workspace = true }

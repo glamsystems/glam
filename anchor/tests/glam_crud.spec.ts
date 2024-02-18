@@ -26,7 +26,6 @@ describe('glam', () => {
     Keypair.generate(), // ...
     Keypair.generate(),
   ];
-  let mints;
 
   const fundName = "My first fund";
   const [fundPDA, fundBump] = PublicKey.findProgramAddressSync([
@@ -72,6 +71,8 @@ describe('glam', () => {
           payerATA,
           payer.payer,
           1000,
+          [],
+          { commitment }, // await 'confirmed'
         );
       })
     );
