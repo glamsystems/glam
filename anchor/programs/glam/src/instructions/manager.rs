@@ -12,22 +12,24 @@ pub struct Fund {
     assets: [Pubkey; 5],
     share_classes_len: u8,
     share_classes: [Pubkey; 3],
+    pub share_classes_bumps: [u8; 3],
     time_created: i64,
     bump_fund: u8,
     bump_treasury: u8,
     name: String, // max 30 chars
 }
 impl Fund {
-    pub const INIT_SIZE: usize = 32 + 32 + 32 + 1 + 32 * 10 + 1 + 32 * 3 + 8 + 2 + 30;
+    pub const INIT_SIZE: usize = 32 + 32 + 32 + 1 + 32 * 10 + 1 + 32 * 3 + 3 + 8 + 2 + 30;
 }
 
 #[account]
 pub struct Treasury {
-    manager: Pubkey,
-    fund: Pubkey,
+    pub manager: Pubkey,
+    pub fund: Pubkey,
+    pub bump: u8,
 }
 impl Treasury {
-    pub const INIT_SIZE: usize = 32 + 32;
+    pub const INIT_SIZE: usize = 32 + 32 + 1;
 }
 
 #[derive(Accounts)]
@@ -42,7 +44,7 @@ pub struct InitializeFund<'info> {
     // this can be either token or token2022
     pub asset_base: InterfaceAccount<'info, Mint>,
 
-    #[account(init, seeds = [b"share-0".as_ref(), fund.key().as_ref()], bump, payer = manager, mint::decimals = 9, mint::authority = fund)]
+    #[account(init, seeds = [b"share-0".as_ref(), fund.key().as_ref()], bump, payer = manager, mint::decimals = 9, mint::authority = share_0)]
     pub share_0: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(mut)]
@@ -69,9 +71,11 @@ pub fn initialize_fund_handler(ctx: Context<InitializeFund>, name: String) -> Re
     fund.asset_base = ctx.accounts.asset_base.key();
     fund.share_classes_len = 1;
     fund.share_classes[0] = ctx.accounts.share_0.key();
+    fund.share_classes_bumps[0] = ctx.bumps.share_0;
 
     treasury.manager = ctx.accounts.manager.key();
     treasury.fund = fund.key();
+    treasury.bump = ctx.bumps.treasury;
 
     msg!("Fund created: {}", ctx.accounts.fund.key());
     Ok(())

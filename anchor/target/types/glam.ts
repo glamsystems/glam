@@ -70,6 +70,148 @@ export type Glam = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "subscribe",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "shareClass",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "shareAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signerAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "assetTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "shareTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "redeem",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "shareClass",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "shareAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signerAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "assetTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "shareTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -117,6 +259,15 @@ export type Glam = {
             }
           },
           {
+            "name": "shareClassesBumps",
+            "type": {
+              "array": [
+                "u8",
+                3
+              ]
+            }
+          },
+          {
             "name": "timeCreated",
             "type": "i64"
           },
@@ -147,6 +298,10 @@ export type Glam = {
           {
             "name": "fund",
             "type": "publicKey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
           }
         ]
       }
@@ -243,6 +398,148 @@ export const IDL: Glam = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "subscribe",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "shareClass",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "shareAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signerAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "assetTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "shareTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "redeem",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "shareClass",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "shareAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signerAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "assetTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "shareTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -290,6 +587,15 @@ export const IDL: Glam = {
             }
           },
           {
+            "name": "shareClassesBumps",
+            "type": {
+              "array": [
+                "u8",
+                3
+              ]
+            }
+          },
+          {
             "name": "timeCreated",
             "type": "i64"
           },
@@ -320,6 +626,10 @@ export const IDL: Glam = {
           {
             "name": "fund",
             "type": "publicKey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
           }
         ]
       }

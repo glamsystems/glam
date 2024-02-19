@@ -20,4 +20,11 @@ pub mod glam {
     pub fn close(ctx: Context<CloseFund>) -> Result<()> {
         manager::close_handler(ctx)
     }
+
+    pub fn subscribe(ctx: Context<SubscribeRedeem>, amount: u64) -> Result<()> {
+        investor::subscribe_handler(ctx, amount)
+    }
+    pub fn redeem(ctx: Context<SubscribeRedeem>, amount: u64) -> Result<()> {
+        investor::redeem_handler(ctx, amount)
+    }
 }

@@ -1,7 +1,5 @@
-pub mod initialize;
+pub mod investor;
 pub mod manager;
-// pub mod investor;
 
-pub use initialize::*;
+pub use investor::*;
 pub use manager::*;
-// pub use investor::*;

@@ -98,7 +98,8 @@ describe('glam', () => {
     const tx = await provider.connection.getParsedTransaction(txId, {commitment});
     console.log(tx?.transaction.message);
     } catch(e) {
-      console.error(e)
+      console.error(e);
+      throw e;
     }
 
     const fund = await program.account.fund.fetch(fundPDA);
