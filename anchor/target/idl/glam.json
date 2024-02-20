@@ -23,12 +23,7 @@
           "isSigner": false
         },
         {
-          "name": "assetBase",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "share0",
+          "name": "share",
           "isMut": true,
           "isSigner": false
         },
@@ -52,6 +47,16 @@
         {
           "name": "name",
           "type": "string"
+        },
+        {
+          "name": "assetWeights",
+          "type": {
+            "vec": "u32"
+          }
+        },
+        {
+          "name": "activate",
+          "type": "bool"
         }
       ]
     },
@@ -85,7 +90,7 @@
           "isSigner": false
         },
         {
-          "name": "shareAta",
+          "name": "signerShareAta",
           "isMut": true,
           "isSigner": false
         },
@@ -100,7 +105,7 @@
           "isSigner": false
         },
         {
-          "name": "signerAta",
+          "name": "signerAssetAta",
           "isMut": true,
           "isSigner": false
         },
@@ -110,27 +115,12 @@
           "isSigner": true
         },
         {
-          "name": "treasury",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
+          "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "assetTokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "associatedTokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "shareTokenProgram",
+          "name": "token2022Program",
           "isMut": false,
           "isSigner": false
         }
@@ -139,6 +129,10 @@
         {
           "name": "amount",
           "type": "u64"
+        },
+        {
+          "name": "skipState",
+          "type": "bool"
         }
       ]
     },
@@ -156,7 +150,7 @@
           "isSigner": false
         },
         {
-          "name": "shareAta",
+          "name": "signerShareAta",
           "isMut": true,
           "isSigner": false
         },
@@ -171,7 +165,7 @@
           "isSigner": false
         },
         {
-          "name": "signerAta",
+          "name": "signerAssetAta",
           "isMut": true,
           "isSigner": false
         },
@@ -182,26 +176,16 @@
         },
         {
           "name": "treasury",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "assetTokenProgram",
+          "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "associatedTokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "shareTokenProgram",
+          "name": "token2022Program",
           "isMut": false,
           "isSigner": false
         }
@@ -210,6 +194,14 @@
         {
           "name": "amount",
           "type": "u64"
+        },
+        {
+          "name": "inKind",
+          "type": "bool"
+        },
+        {
+          "name": "skipState",
+          "type": "bool"
         }
       ]
     }
@@ -229,10 +221,6 @@
             "type": "publicKey"
           },
           {
-            "name": "assetBase",
-            "type": "publicKey"
-          },
-          {
             "name": "assetsLen",
             "type": "u8"
           },
@@ -241,6 +229,15 @@
             "type": {
               "array": [
                 "publicKey",
+                5
+              ]
+            }
+          },
+          {
+            "name": "assetsWeights",
+            "type": {
+              "array": [
+                "u32",
                 5
               ]
             }
@@ -282,6 +279,10 @@
           {
             "name": "name",
             "type": "string"
+          },
+          {
+            "name": "isActive",
+            "type": "bool"
           }
         ]
       }
@@ -307,6 +308,22 @@
       }
     }
   ],
+  "types": [
+    {
+      "name": "InvestorError",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "InvalidAssetSubscribe"
+          },
+          {
+            "name": "InvalidAssetsRedeem"
+          }
+        ]
+      }
+    }
+  ],
   "errors": [
     {
       "code": 6000,
@@ -322,6 +339,16 @@
       "code": 6002,
       "name": "InvalidFundName",
       "msg": "Invalid fund name: max 30 chars"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidAssetsLen",
+      "msg": "Too many assets: max 10"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidAssetsWeights",
+      "msg": "Number of weights should match number of assets"
     }
   ],
   "metadata": {

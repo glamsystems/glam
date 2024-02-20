@@ -8,4 +8,16 @@ pub enum ManagerError {
     NotAuthorizedError,
     #[msg("Invalid fund name: max 30 chars")]
     InvalidFundName,
+    #[msg("Too many assets: max 10")]
+    InvalidAssetsLen,
+    #[msg("Number of weights should match number of assets")]
+    InvalidAssetsWeights,
+}
+
+#[error_code]
+pub enum InvestorError {
+    #[msg("Asset not allowed to subscribe")]
+    InvalidAssetSubscribe,
+    #[msg("Invalid assets in redeem")]
+    InvalidAssetsRedeem,
 }

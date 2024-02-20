@@ -27,7 +27,8 @@ cluster = "Localnet"
 wallet = "/Users/ec/.config/solana/id.json"
 
 [scripts]
-test = "../node_modules/.bin/nx run anchor:jest"
+test = "../node_modules/.bin/nx run anchor:jest --testNamePattern investor"
+#test = "../node_modules/.bin/nx run anchor:jest"
 
 [test]
 startup_wait = 5000

@@ -23,12 +23,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "assetBase",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "share0",
+          "name": "share",
           "isMut": true,
           "isSigner": false
         },
@@ -52,6 +47,16 @@ export type Glam = {
         {
           "name": "name",
           "type": "string"
+        },
+        {
+          "name": "assetWeights",
+          "type": {
+            "vec": "u32"
+          }
+        },
+        {
+          "name": "activate",
+          "type": "bool"
         }
       ]
     },
@@ -85,7 +90,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "shareAta",
+          "name": "signerShareAta",
           "isMut": true,
           "isSigner": false
         },
@@ -100,7 +105,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "signerAta",
+          "name": "signerAssetAta",
           "isMut": true,
           "isSigner": false
         },
@@ -110,27 +115,12 @@ export type Glam = {
           "isSigner": true
         },
         {
-          "name": "treasury",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
+          "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "assetTokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "associatedTokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "shareTokenProgram",
+          "name": "token2022Program",
           "isMut": false,
           "isSigner": false
         }
@@ -139,6 +129,10 @@ export type Glam = {
         {
           "name": "amount",
           "type": "u64"
+        },
+        {
+          "name": "skipState",
+          "type": "bool"
         }
       ]
     },
@@ -156,7 +150,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "shareAta",
+          "name": "signerShareAta",
           "isMut": true,
           "isSigner": false
         },
@@ -171,7 +165,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "signerAta",
+          "name": "signerAssetAta",
           "isMut": true,
           "isSigner": false
         },
@@ -182,26 +176,16 @@ export type Glam = {
         },
         {
           "name": "treasury",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "assetTokenProgram",
+          "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "associatedTokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "shareTokenProgram",
+          "name": "token2022Program",
           "isMut": false,
           "isSigner": false
         }
@@ -210,6 +194,14 @@ export type Glam = {
         {
           "name": "amount",
           "type": "u64"
+        },
+        {
+          "name": "inKind",
+          "type": "bool"
+        },
+        {
+          "name": "skipState",
+          "type": "bool"
         }
       ]
     }
@@ -229,10 +221,6 @@ export type Glam = {
             "type": "publicKey"
           },
           {
-            "name": "assetBase",
-            "type": "publicKey"
-          },
-          {
             "name": "assetsLen",
             "type": "u8"
           },
@@ -241,6 +229,15 @@ export type Glam = {
             "type": {
               "array": [
                 "publicKey",
+                5
+              ]
+            }
+          },
+          {
+            "name": "assetsWeights",
+            "type": {
+              "array": [
+                "u32",
                 5
               ]
             }
@@ -282,6 +279,10 @@ export type Glam = {
           {
             "name": "name",
             "type": "string"
+          },
+          {
+            "name": "isActive",
+            "type": "bool"
           }
         ]
       }
@@ -307,6 +308,22 @@ export type Glam = {
       }
     }
   ],
+  "types": [
+    {
+      "name": "InvestorError",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "InvalidAssetSubscribe"
+          },
+          {
+            "name": "InvalidAssetsRedeem"
+          }
+        ]
+      }
+    }
+  ],
   "errors": [
     {
       "code": 6000,
@@ -322,6 +339,16 @@ export type Glam = {
       "code": 6002,
       "name": "InvalidFundName",
       "msg": "Invalid fund name: max 30 chars"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidAssetsLen",
+      "msg": "Too many assets: max 10"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidAssetsWeights",
+      "msg": "Number of weights should match number of assets"
     }
   ]
 };
@@ -351,12 +378,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "assetBase",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "share0",
+          "name": "share",
           "isMut": true,
           "isSigner": false
         },
@@ -380,6 +402,16 @@ export const IDL: Glam = {
         {
           "name": "name",
           "type": "string"
+        },
+        {
+          "name": "assetWeights",
+          "type": {
+            "vec": "u32"
+          }
+        },
+        {
+          "name": "activate",
+          "type": "bool"
         }
       ]
     },
@@ -413,7 +445,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "shareAta",
+          "name": "signerShareAta",
           "isMut": true,
           "isSigner": false
         },
@@ -428,7 +460,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "signerAta",
+          "name": "signerAssetAta",
           "isMut": true,
           "isSigner": false
         },
@@ -438,27 +470,12 @@ export const IDL: Glam = {
           "isSigner": true
         },
         {
-          "name": "treasury",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
+          "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "assetTokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "associatedTokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "shareTokenProgram",
+          "name": "token2022Program",
           "isMut": false,
           "isSigner": false
         }
@@ -467,6 +484,10 @@ export const IDL: Glam = {
         {
           "name": "amount",
           "type": "u64"
+        },
+        {
+          "name": "skipState",
+          "type": "bool"
         }
       ]
     },
@@ -484,7 +505,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "shareAta",
+          "name": "signerShareAta",
           "isMut": true,
           "isSigner": false
         },
@@ -499,7 +520,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "signerAta",
+          "name": "signerAssetAta",
           "isMut": true,
           "isSigner": false
         },
@@ -510,26 +531,16 @@ export const IDL: Glam = {
         },
         {
           "name": "treasury",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "assetTokenProgram",
+          "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "associatedTokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "shareTokenProgram",
+          "name": "token2022Program",
           "isMut": false,
           "isSigner": false
         }
@@ -538,6 +549,14 @@ export const IDL: Glam = {
         {
           "name": "amount",
           "type": "u64"
+        },
+        {
+          "name": "inKind",
+          "type": "bool"
+        },
+        {
+          "name": "skipState",
+          "type": "bool"
         }
       ]
     }
@@ -557,10 +576,6 @@ export const IDL: Glam = {
             "type": "publicKey"
           },
           {
-            "name": "assetBase",
-            "type": "publicKey"
-          },
-          {
             "name": "assetsLen",
             "type": "u8"
           },
@@ -569,6 +584,15 @@ export const IDL: Glam = {
             "type": {
               "array": [
                 "publicKey",
+                5
+              ]
+            }
+          },
+          {
+            "name": "assetsWeights",
+            "type": {
+              "array": [
+                "u32",
                 5
               ]
             }
@@ -610,6 +634,10 @@ export const IDL: Glam = {
           {
             "name": "name",
             "type": "string"
+          },
+          {
+            "name": "isActive",
+            "type": "bool"
           }
         ]
       }
@@ -635,6 +663,22 @@ export const IDL: Glam = {
       }
     }
   ],
+  "types": [
+    {
+      "name": "InvestorError",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "InvalidAssetSubscribe"
+          },
+          {
+            "name": "InvalidAssetsRedeem"
+          }
+        ]
+      }
+    }
+  ],
   "errors": [
     {
       "code": 6000,
@@ -650,6 +694,16 @@ export const IDL: Glam = {
       "code": 6002,
       "name": "InvalidFundName",
       "msg": "Invalid fund name: max 30 chars"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidAssetsLen",
+      "msg": "Too many assets: max 10"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidAssetsWeights",
+      "msg": "Number of weights should match number of assets"
     }
   ]
 };
