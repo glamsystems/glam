@@ -26,7 +26,11 @@ pub mod glam {
         manager::close_handler(ctx)
     }
 
-    pub fn subscribe(ctx: Context<Subscribe>, amount: u64, skip_state: bool) -> Result<()> {
+    pub fn subscribe<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, Subscribe<'info>>,
+        amount: u64,
+        skip_state: bool,
+    ) -> Result<()> {
         investor::subscribe_handler(ctx, amount, skip_state)
     }
     pub fn redeem<'c: 'info, 'info>(

@@ -17,6 +17,7 @@ import {
   TOKEN_2022_PROGRAM_ID,
   getMint,
   getAccount,
+  createTransferCheckedInstruction,
 } from "@solana/spl-token";
 import { Glam } from '../target/types/glam';
 
@@ -88,6 +89,36 @@ describe('investor', () => {
   const pricingEth = treasuryEthAta;
   const pricingBtc = treasuryBtcAta;
 
+  let remainingAccountsSubscribe = [
+    // { pubkey: usdc.publicKey, isSigner: false, isWritable: false },
+    // { pubkey: managerUsdcAta, isSigner: false, isWritable: true },
+    { pubkey: treasuryUsdcAta, isSigner: false, isWritable: false },
+    { pubkey: pricingUsdc, isSigner: false, isWritable: false },
+    // { pubkey: btc.publicKey, isSigner: false, isWritable: false },
+    // { pubkey: managerBtcAta, isSigner: false, isWritable: true },
+    { pubkey: treasuryBtcAta, isSigner: false, isWritable: false },
+    { pubkey: pricingBtc, isSigner: false, isWritable: false },
+    // { pubkey: eth.publicKey, isSigner: false, isWritable: false },
+    // { pubkey: managerEthAta, isSigner: false, isWritable: true },
+    { pubkey: treasuryEthAta, isSigner: false, isWritable: false },
+    { pubkey: pricingEth, isSigner: false, isWritable: false },
+  ]
+
+  let remainingAccountsRedeem = [
+    { pubkey: usdc.publicKey, isSigner: false, isWritable: false },
+    { pubkey: managerUsdcAta, isSigner: false, isWritable: true },
+    { pubkey: treasuryUsdcAta, isSigner: false, isWritable: true },
+    { pubkey: pricingUsdc, isSigner: false, isWritable: false },
+    { pubkey: btc.publicKey, isSigner: false, isWritable: false },
+    { pubkey: managerBtcAta, isSigner: false, isWritable: true },
+    { pubkey: treasuryBtcAta, isSigner: false, isWritable: true },
+    { pubkey: pricingBtc, isSigner: false, isWritable: false },
+    { pubkey: eth.publicKey, isSigner: false, isWritable: false },
+    { pubkey: managerEthAta, isSigner: false, isWritable: true },
+    { pubkey: treasuryEthAta, isSigner: false, isWritable: true },
+    { pubkey: pricingEth, isSigner: false, isWritable: false },
+  ]
+
   beforeAll(async () => {
     try {
       await Promise.all( // exec in parallel, but await before ending the test
@@ -122,7 +153,7 @@ describe('investor', () => {
               token.publicKey,
               userATA,
               manager.payer,
-              idx == 2 ? 10_000_000_000 : 10_000_000,
+              idx == 2 ? 10_000_000_000 : 1000_000_000,
               [],
               {},
               idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID,
@@ -144,7 +175,7 @@ describe('investor', () => {
             token.publicKey,
             managerAta,
             manager.payer,
-            idx == 2 ? 100_000_000_000 : 100_000_000,
+            idx == 2 ? 1000_000_000_000 : 1000_000_000,
             [],
             { commitment }, // await 'confirmed'
             idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID,
@@ -275,11 +306,9 @@ describe('investor', () => {
     }
   });
 
-  it('Manager tests subscribe to fund', async () => {
-    // default price per share is $10
-    // manager pays 65 USDC, receives 6.5 shares (6 decimals)
-    const amount = new BN(65 * 10 ** 6); // USDC has 6 decimals
-    const expectedShares = "65000000";   // share has 6 decimals
+  it('Manager tests subscribe ETH to fund', async () => {
+    const amount = new BN(10 * 10 ** 6); // 10 ETH = $30k
+    const expectedShares = "3000";       // $10/share => 3k shares
     try {
       await program.methods
         .subscribe(amount, true)
@@ -287,13 +316,46 @@ describe('investor', () => {
           fund: fundPDA,
           shareClass: sharePDA,
           signerShareAta: managerSharesAta,
-          asset: usdc.publicKey,
-          treasuryAta: treasuryUsdcAta,
-          signerAssetAta: managerUsdcAta,
+          asset: eth.publicKey,
+          treasuryAta: treasuryEthAta,
+          signerAssetAta: managerEthAta,
           signer: manager.publicKey,
           tokenProgram: TOKEN_PROGRAM_ID,
           token2022Program: TOKEN_2022_PROGRAM_ID,
         })
+        .remainingAccounts(remainingAccountsSubscribe)
+        .rpc({commitment});
+    } catch(e) {
+      // subscribe
+      console.error(e);
+      throw e;
+    }
+
+    const shares = await getMint(connection, sharePDA, commitment, TOKEN_2022_PROGRAM_ID);
+    expect(shares.supply.toString()).toEqual(expectedShares); //TODO: compare BigInt?
+
+    const managerShares = await getAccount(connection, managerSharesAta, commitment, TOKEN_2022_PROGRAM_ID);
+    expect(managerShares.amount).toEqual(shares.supply);
+  });
+
+  it('Manager tests subscribe BTC to fund', async () => {
+    const amount = new BN(1 * 10 ** 9);  // 1 BTC = $51k
+    const expectedShares = "8100";       // 3,000 + 5,100
+    try {
+      await program.methods
+        .subscribe(amount, true)
+        .accounts({
+          fund: fundPDA,
+          shareClass: sharePDA,
+          signerShareAta: managerSharesAta,
+          asset: btc.publicKey,
+          treasuryAta: treasuryBtcAta,
+          signerAssetAta: managerBtcAta,
+          signer: manager.publicKey,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          token2022Program: TOKEN_2022_PROGRAM_ID,
+        })
+        .remainingAccounts(remainingAccountsSubscribe)
         .rpc({commitment});
     } catch(e) {
       // subscribe
@@ -319,27 +381,11 @@ describe('investor', () => {
           treasury: treasuryPDA,
           shareClass: sharePDA,
           signerShareAta: managerSharesAta,
-          asset: usdc.publicKey,
-          treasuryAta: treasuryUsdcAta,
-          signerAssetAta: managerUsdcAta,
           signer: manager.publicKey,
           tokenProgram: TOKEN_PROGRAM_ID,
           token2022Program: TOKEN_2022_PROGRAM_ID,
         })
-        .remainingAccounts([
-          { pubkey: usdc.publicKey, isSigner: false, isWritable: false },
-          { pubkey: treasuryUsdcAta, isSigner: false, isWritable: true }, //TODO: this can be false
-          { pubkey: managerUsdcAta, isSigner: false, isWritable: true },
-          { pubkey: pricingUsdc, isSigner: false, isWritable: false },
-          { pubkey: btc.publicKey, isSigner: false, isWritable: false },
-          { pubkey: treasuryBtcAta, isSigner: false, isWritable: true },
-          { pubkey: managerBtcAta, isSigner: false, isWritable: true },
-          { pubkey: pricingBtc, isSigner: false, isWritable: false },
-          { pubkey: eth.publicKey, isSigner: false, isWritable: false },
-          { pubkey: treasuryEthAta, isSigner: false, isWritable: true },
-          { pubkey: managerEthAta, isSigner: false, isWritable: true },
-          { pubkey: pricingEth, isSigner: false, isWritable: false },
-        ])
+        .remainingAccounts(remainingAccountsRedeem)
         .rpc({commitment});
     } catch(e) {
       // redeem
@@ -354,7 +400,64 @@ describe('investor', () => {
     expect(managerShares.amount).toEqual(shares.supply);
   });
 
-  it('Manager adds more tokens and redeems 100% of fund', async () => {
+  it('Manager adds more tokens and redeems USDC', async () => {
+    // transfer 250 USDC into the treasury (e.g. fees)
+    try {
+      const tx1 = new Transaction().add(
+        createTransferCheckedInstruction(
+          managerUsdcAta,
+          usdc.publicKey,
+          treasuryUsdcAta,
+          manager.publicKey,
+          250_000_000,
+          6,
+          [],
+          TOKEN_PROGRAM_ID,
+        ),
+      );
+      await sendAndConfirmTransaction(
+        connection,
+        tx1,
+        [manager.payer],
+        { skipPreflight: true, commitment }
+      );
+    } catch(e) {
+      // transfer usdc into treasury
+      console.error(e);
+      throw e;
+    }
+
+    let treasuryUsdc = await getAccount(connection, treasuryUsdcAta, commitment, TOKEN_PROGRAM_ID);
+    const oldAmount = treasuryUsdc.amount;
+
+    const amount = new BN(5);
+    try {
+      await program.methods
+        .redeem(amount, false, true)
+        .accounts({
+          fund: fundPDA,
+          treasury: treasuryPDA,
+          shareClass: sharePDA,
+          signerShareAta: managerSharesAta,
+          signer: manager.publicKey,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          token2022Program: TOKEN_2022_PROGRAM_ID,
+        })
+        .remainingAccounts(remainingAccountsRedeem)
+        .rpc({commitment});
+    } catch(e) {
+      // redeem
+      console.error(e);
+      throw e;
+    }
+
+    treasuryUsdc = await getAccount(connection, treasuryUsdcAta, commitment, TOKEN_PROGRAM_ID);
+    const newAmount = treasuryUsdc.amount;
+    console.log("newAmount", newAmount, "oldAmount", oldAmount);
+    expect(oldAmount).toBeGreaterThan(newAmount);
+  });
+
+  it('Manager redeems 100% of fund', async () => {
     let shares = await getMint(connection, sharePDA, commitment, TOKEN_2022_PROGRAM_ID);
     const amount = new BN(shares.supply);
     try {
@@ -365,27 +468,11 @@ describe('investor', () => {
           treasury: treasuryPDA,
           shareClass: sharePDA,
           signerShareAta: managerSharesAta,
-          asset: usdc.publicKey,
-          treasuryAta: treasuryUsdcAta,
-          signerAssetAta: managerUsdcAta,
           signer: manager.publicKey,
           tokenProgram: TOKEN_PROGRAM_ID,
           token2022Program: TOKEN_2022_PROGRAM_ID,
         })
-        .remainingAccounts([
-          { pubkey: usdc.publicKey, isSigner: false, isWritable: false },
-          { pubkey: treasuryUsdcAta, isSigner: false, isWritable: true }, //TODO: this can be false
-          { pubkey: managerUsdcAta, isSigner: false, isWritable: true },
-          { pubkey: pricingUsdc, isSigner: false, isWritable: false },
-          { pubkey: btc.publicKey, isSigner: false, isWritable: false },
-          { pubkey: treasuryBtcAta, isSigner: false, isWritable: true },
-          { pubkey: managerBtcAta, isSigner: false, isWritable: true },
-          { pubkey: pricingBtc, isSigner: false, isWritable: false },
-          { pubkey: eth.publicKey, isSigner: false, isWritable: false },
-          { pubkey: treasuryEthAta, isSigner: false, isWritable: true },
-          { pubkey: managerEthAta, isSigner: false, isWritable: true },
-          { pubkey: pricingEth, isSigner: false, isWritable: false },
-        ])
+        .remainingAccounts(remainingAccountsRedeem)
         .rpc({commitment});
     } catch(e) {
       // redeem
@@ -398,14 +485,25 @@ describe('investor', () => {
 
     const managerShares = await getAccount(connection, managerSharesAta, commitment, TOKEN_2022_PROGRAM_ID);
     expect(managerShares.amount).toEqual(shares.supply);
+
+    const treasuryUsdc = await getAccount(connection, treasuryUsdcAta, commitment, TOKEN_PROGRAM_ID);
+    expect(treasuryUsdc.amount).toEqual(shares.supply);
+
+    const treasuryEth = await getAccount(connection, treasuryEthAta, commitment, TOKEN_PROGRAM_ID);
+    expect(treasuryEth.amount).toEqual(shares.supply);
+
+    const treasuryBtc = await getAccount(connection, treasuryBtcAta, commitment, BTC_TOKEN_PROGRAM_ID);
+    expect(treasuryBtc.amount).toEqual(shares.supply);
   });
 
-  it('Alice subscribes to fund with .5 BTC', async () => {
+  it('Alice subscribes to fund with 250 USDC', async () => {
     const aliceBtcAta = getAssociatedTokenAddressSync(btc.publicKey, alice.publicKey, false, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
     const aliceEthAta = getAssociatedTokenAddressSync(eth.publicKey, alice.publicKey, false, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
+    const aliceUsdcAta = getAssociatedTokenAddressSync(usdc.publicKey, alice.publicKey, false, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
 
     // const amount = new BN(5 * 10 ** 8); // BTC has 9 decimals
-    const amount = new BN(5 * 10 ** 5); // ETH has 6 decimals
+    // const amount = new BN(5 * 10 ** 5); // ETH has 6 decimals
+    const amount = new BN(250 * 10 ** 6); // USDC has 6 decimals
     try {
       await program.methods
         .subscribe(amount, true)
@@ -413,13 +511,14 @@ describe('investor', () => {
           fund: fundPDA,
           shareClass: sharePDA,
           signerShareAta: aliceSharesAta,
-          asset: eth.publicKey,
-          treasuryAta: treasuryEthAta,
-          signerAssetAta: aliceEthAta,
+          asset: usdc.publicKey,
+          treasuryAta: treasuryUsdcAta,
+          signerAssetAta: aliceUsdcAta,
           signer: alice.publicKey,
           tokenProgram: TOKEN_PROGRAM_ID,
           token2022Program: TOKEN_2022_PROGRAM_ID,
         })
+        .remainingAccounts(remainingAccountsSubscribe)
         .signers([alice])
         .rpc({commitment});
     } catch(e) {
@@ -429,7 +528,7 @@ describe('investor', () => {
     }
 
     const shares = await getMint(connection, sharePDA, commitment, TOKEN_2022_PROGRAM_ID);
-    expect(shares.supply.toString()).toEqual("500000");
+    expect(shares.supply.toString()).toEqual("25");
 
     // const managerShares = await getAccount(connection, managerSharesAta, commitment, TOKEN_2022_PROGRAM_ID);
     // expect(managerShares.amount).toEqual(shares.supply);

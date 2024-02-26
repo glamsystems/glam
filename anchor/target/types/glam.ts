@@ -155,21 +155,6 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "asset",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "treasuryAta",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "signerAssetAta",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "signer",
           "isMut": true,
           "isSigner": true
@@ -207,6 +192,26 @@ export type Glam = {
     }
   ],
   "accounts": [
+    {
+      "name": "treasury",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "manager",
+            "type": "publicKey"
+          },
+          {
+            "name": "fund",
+            "type": "publicKey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
     {
       "name": "fund",
       "type": {
@@ -286,26 +291,6 @@ export type Glam = {
           }
         ]
       }
-    },
-    {
-      "name": "treasury",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "manager",
-            "type": "publicKey"
-          },
-          {
-            "name": "fund",
-            "type": "publicKey"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          }
-        ]
-      }
     }
   ],
   "types": [
@@ -315,10 +300,16 @@ export type Glam = {
         "kind": "enum",
         "variants": [
           {
+            "name": "FundNotActive"
+          },
+          {
             "name": "InvalidAssetSubscribe"
           },
           {
             "name": "InvalidAssetsRedeem"
+          },
+          {
+            "name": "InvalidTreasuryAccount"
           }
         ]
       }
@@ -510,21 +501,6 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "asset",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "treasuryAta",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "signerAssetAta",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "signer",
           "isMut": true,
           "isSigner": true
@@ -562,6 +538,26 @@ export const IDL: Glam = {
     }
   ],
   "accounts": [
+    {
+      "name": "treasury",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "manager",
+            "type": "publicKey"
+          },
+          {
+            "name": "fund",
+            "type": "publicKey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
     {
       "name": "fund",
       "type": {
@@ -641,26 +637,6 @@ export const IDL: Glam = {
           }
         ]
       }
-    },
-    {
-      "name": "treasury",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "manager",
-            "type": "publicKey"
-          },
-          {
-            "name": "fund",
-            "type": "publicKey"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          }
-        ]
-      }
     }
   ],
   "types": [
@@ -670,10 +646,16 @@ export const IDL: Glam = {
         "kind": "enum",
         "variants": [
           {
+            "name": "FundNotActive"
+          },
+          {
             "name": "InvalidAssetSubscribe"
           },
           {
             "name": "InvalidAssetsRedeem"
+          },
+          {
+            "name": "InvalidTreasuryAccount"
           }
         ]
       }

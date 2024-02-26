@@ -155,21 +155,6 @@
           "isSigner": false
         },
         {
-          "name": "asset",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "treasuryAta",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "signerAssetAta",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "signer",
           "isMut": true,
           "isSigner": true
@@ -207,6 +192,26 @@
     }
   ],
   "accounts": [
+    {
+      "name": "Treasury",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "manager",
+            "type": "publicKey"
+          },
+          {
+            "name": "fund",
+            "type": "publicKey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
     {
       "name": "Fund",
       "type": {
@@ -286,26 +291,6 @@
           }
         ]
       }
-    },
-    {
-      "name": "Treasury",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "manager",
-            "type": "publicKey"
-          },
-          {
-            "name": "fund",
-            "type": "publicKey"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          }
-        ]
-      }
     }
   ],
   "types": [
@@ -315,10 +300,16 @@
         "kind": "enum",
         "variants": [
           {
+            "name": "FundNotActive"
+          },
+          {
             "name": "InvalidAssetSubscribe"
           },
           {
             "name": "InvalidAssetsRedeem"
+          },
+          {
+            "name": "InvalidTreasuryAccount"
           }
         ]
       }

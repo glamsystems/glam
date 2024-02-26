@@ -16,8 +16,12 @@ pub enum ManagerError {
 
 #[error_code]
 pub enum InvestorError {
+    #[msg("Fund is not active")]
+    FundNotActive,
     #[msg("Asset not allowed to subscribe")]
     InvalidAssetSubscribe,
     #[msg("Invalid assets in redeem")]
     InvalidAssetsRedeem,
+    #[msg("Invalid treasury account")]
+    InvalidTreasuryAccount,
 }
