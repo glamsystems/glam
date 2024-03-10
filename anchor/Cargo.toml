@@ -16,7 +16,15 @@ codegen-units = 1
 [workspace.dependencies]
 anchor-lang = "0.29.0"
 anchor-spl = "0.29.0"
-pyth-sdk-solana = "0.10.0"
+
+solana-program = "=1.17.22"
+spl-associated-token-account = "=2.2.0"
+spl-token = "=4.0.0"
+spl-token-2022 = "=0.9.0"
+num_enum = "=0.7.0"
+
 spl-tlv-account-resolution = "0.5.2"
 spl-transfer-hook-interface = "0.5.1"
+pyth-sdk-solana = "0.10.0"
+
 #drift = { path = "./deps/drift-v2/programs/drift", features = ["cpi"] }

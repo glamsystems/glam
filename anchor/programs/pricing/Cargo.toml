@@ -17,4 +17,5 @@ default = []
 
 [dependencies]
 anchor-lang = { workspace = true }
+solana-program = { workspace = true }
 pyth-sdk-solana = { workspace = true }

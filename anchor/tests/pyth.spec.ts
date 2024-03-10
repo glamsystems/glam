@@ -19,7 +19,6 @@ describe('pyth', () => {
 
   // This test needs pyth and only works on devnet
   it("Send money", async () => {
-    await new Promise(r => setTimeout(r, 1000));
     try {
       const tx = await program.methods
         .payUsd(new BN(10))
@@ -28,7 +27,7 @@ describe('pyth', () => {
           to,
         }).rpc();
         console.log("Tx: ", tx);
-      } catch(e) {
+    } catch(e) {
       console.error(e);
     }
   });

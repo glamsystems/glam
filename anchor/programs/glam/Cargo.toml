@@ -18,5 +18,10 @@ default = []
 [dependencies]
 anchor-lang = { workspace = true }
 anchor-spl = { workspace = true }
+solana-program = { workspace = true }
+spl-associated-token-account = { workspace = true }
+spl-token = { workspace = true }
+spl-token-2022 = { workspace = true }
+num_enum = { workspace = true }
 pyth-sdk-solana = { workspace = true }
 #drift = { workspace = true }

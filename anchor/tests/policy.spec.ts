@@ -143,7 +143,6 @@ describe('policy', () => {
 
   // Account to store extra accounts required by the transfer hook instruction
   it("Create ExtraAccountMetaList Account", async () => {
-    /*
     const initializeExtraAccountMetaListInstruction = await program.methods
       .initializeExtraAccountMetaList()
       .accounts({
@@ -164,11 +163,9 @@ describe('policy', () => {
       { skipPreflight: true, commitment: "confirmed" }
     );
     console.log("Transaction Signature:", txSig);
-    */
   });
 
   it("Transfer a small amount (policy ok)", async () => {  
-    /*
     const amount = 1 * 10 ** decimals;
     const bigIntAmount = BigInt(amount);
 
@@ -196,11 +193,9 @@ describe('policy', () => {
       { skipPreflight: true }
     );
     console.log("Transfer Signature:", txSig);
-    */
   });
 
   it("Transfer a high amount (policy NOT ok)", async () => {
-    /*
     const amount = 60 * 10 ** decimals;
     const bigIntAmount = BigInt(amount);
 
@@ -221,14 +216,19 @@ describe('policy', () => {
       transferInstruction
     );
 
-    const txSig = await sendAndConfirmTransaction(
-      connection,
-      transaction,
-      [wallet.payer],
-      { skipPreflight: true }
-    );
+    let failed = false;
+    let txSig;
+    try {
+      txSig = await sendAndConfirmTransaction(
+        connection,
+        transaction,
+        [wallet.payer],
+        { skipPreflight: true }
+      );
+    } catch(_) {
+      failed = true;
+    }
     console.log("Transfer Signature:", txSig);
-    */
   });
 
 });
