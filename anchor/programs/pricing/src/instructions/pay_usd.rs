@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_lang::solana_program::{
     native_token::LAMPORTS_PER_SOL, program::invoke, system_instruction,
 };
-use pyth_sdk_solana::load_price_feed_from_account_info;
+use pyth_sdk_solana::state::SolanaPriceAccount;
 use std::str::FromStr;
 
 use crate::error::PricingError;
@@ -25,8 +25,7 @@ pub fn handler(ctx: Context<PayUsd>, amount: u64) -> Result<()> {
     if Pubkey::from_str(SOL_USD_PRICEFEED_ID) != Ok(ctx.accounts.sol_usd_price_account.key()) {
         return Err(error!(PricingError::InvalidPriceFeedId));
     };
-    let sol_usd_price_feed =
-        load_price_feed_from_account_info(&ctx.accounts.sol_usd_price_account).unwrap();
+    let sol_usd_price_feed = SolanaPriceAccount::account_info_to_feed(&ctx.accounts.sol_usd_price_account).unwrap();
 
     let timestamp = Clock::get()?.unix_timestamp;
 

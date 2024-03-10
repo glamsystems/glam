@@ -22,20 +22,37 @@ strategy = "Gst1YGe5vKURSWfCqM7GhZys1oML9E9t91WRyV2rt4yS"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "localnet"
 #cluster = "devnet"
 wallet = "/Users/ec/.config/solana/id.json"
 
 [scripts]
-test = "../node_modules/.bin/nx run anchor:jest --testNamePattern investor"
+test = "../node_modules/.bin/nx run anchor:jest --verbose --testNamePattern investor"
 #test = "../node_modules/.bin/nx run anchor:jest"
 
 [test]
-startup_wait = 5000
-shutdown_wait = 2000
-upgradeable = false
+startup_wait = 5000000
+#shutdown_wait = 2000
+upgradeable = true
 
 [test.validator]
 bind_address = "127.0.0.1"
 ledger = ".anchor/test-ledger"
 rpc_port = 8899
+url = "https://api.devnet.solana.com"
+
+[[test.validator.clone]]
+# Pyth SOL/USD
+address = "J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"
+[[test.validator.clone]]
+# Pyth USDC/USD
+address = "5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7"
+[[test.validator.clone]]
+# Pyth BTC/USD
+address = "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J"
+[[test.validator.clone]]
+# Pyth ETH/USD
+address = "EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw"
+[[test.validator.clone]]
+# Drift program
+address = "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"

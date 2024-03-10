@@ -19,3 +19,4 @@ default = []
 anchor-lang = { workspace = true }
 anchor-spl = { workspace = true }
 pyth-sdk-solana = { workspace = true }
+#drift = { workspace = true }
