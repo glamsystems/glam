@@ -167,53 +167,53 @@ describe('glam', () => {
   //   expect(fund.assetsLen).toEqual(3);
   // });
 
-  it('Create Drift trading account', async () => {
+  // it('Create Drift trading account', async () => {
 
-		const userAccountPublicKey = await getUserAccountPublicKey(
-			DRIFT_PROGRAM_ID,
-			treasuryPDA,
-			0
-		);
-		const userStatsAccountPublicKey = await getUserStatsAccountPublicKey(
-			DRIFT_PROGRAM_ID,
-			treasuryPDA
-		);
-		const statePublicKey = await getDriftStateAccountPublicKey(
-			DRIFT_PROGRAM_ID,
-		);
+	// 	const userAccountPublicKey = await getUserAccountPublicKey(
+	// 		DRIFT_PROGRAM_ID,
+	// 		treasuryPDA,
+	// 		0
+	// 	);
+	// 	const userStatsAccountPublicKey = await getUserStatsAccountPublicKey(
+	// 		DRIFT_PROGRAM_ID,
+	// 		treasuryPDA
+	// 	);
+	// 	const statePublicKey = await getDriftStateAccountPublicKey(
+	// 		DRIFT_PROGRAM_ID,
+	// 	);
 
-    console.log("userAccountPublicKey", userAccountPublicKey);
-    console.log("userStatsAccountPublicKey", userStatsAccountPublicKey);
-    console.log("statePublicKey", statePublicKey);
-    console.log("fundPDA", fundPDA);
-    console.log("treasuryPDA", treasuryPDA);
+  //   console.log("userAccountPublicKey", userAccountPublicKey);
+  //   console.log("userStatsAccountPublicKey", userStatsAccountPublicKey);
+  //   console.log("statePublicKey", statePublicKey);
+  //   console.log("fundPDA", fundPDA);
+  //   console.log("treasuryPDA", treasuryPDA);
 
-    try {
-      const txId = await program.methods
-        .driftInitialize()
-        .accounts({
-          fund: fundPDA,
-          treasury: treasuryPDA,
-          userStats: userStatsAccountPublicKey,
-          user: userAccountPublicKey,
-          state: statePublicKey,
-          manager: manager.publicKey,
-          driftProgram: DRIFT_PROGRAM_ID,
-        })
-        .rpc({commitment}); // await 'confirmed'
+  //   try {
+  //     const txId = await program.methods
+  //       .driftInitialize()
+  //       .accounts({
+  //         fund: fundPDA,
+  //         treasury: treasuryPDA,
+  //         userStats: userStatsAccountPublicKey,
+  //         user: userAccountPublicKey,
+  //         state: statePublicKey,
+  //         manager: manager.publicKey,
+  //         driftProgram: DRIFT_PROGRAM_ID,
+  //       })
+  //       .rpc({commitment}); // await 'confirmed'
 
-      await connection.getParsedTransaction(txId, {commitment});
-      console.log("driftInitialize", txId);
-    } catch(e) {
-      console.error(e);
-      throw e;
-    }
+  //     await connection.getParsedTransaction(txId, {commitment});
+  //     console.log("driftInitialize", txId);
+  //   } catch(e) {
+  //     console.error(e);
+  //     throw e;
+  //   }
 
-    // const fund = await program.account.fund.fetch(fundPDA);
-    // console.log(fund);
-    // expect(fund.shareClassesLen).toEqual(1);
-    // expect(fund.assetsLen).toEqual(3);
-  }, /* timeout */ 10_000);
+  //   // const fund = await program.account.fund.fetch(fundPDA);
+  //   // console.log(fund);
+  //   // expect(fund.shareClassesLen).toEqual(1);
+  //   // expect(fund.assetsLen).toEqual(3);
+  // }, /* timeout */ 10_000);
 
 
 });

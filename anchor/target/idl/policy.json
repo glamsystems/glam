@@ -88,5 +88,8 @@
       "name": "AmountTooBig",
       "msg": "Amount too big"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "Gpo1jXtEFepqyPQWTG7oDJrg8rye8JL3zcsczHzXKqLt"
+  }
 }

@@ -21,5 +21,8 @@
       "name": "CustomError",
       "msg": "Custom error message"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "Gst1YGe5vKURSWfCqM7GhZys1oML9E9t91WRyV2rt4yS"
+  }
 }

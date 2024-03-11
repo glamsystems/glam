@@ -57,5 +57,8 @@
       "name": "InvalidPriceFeedId",
       "msg": "Invalid price feed id"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "Gpr1WZZXAty2L9eiMwZPC7ra69vMFojhdqDuiRHkQQQp"
+  }
 }

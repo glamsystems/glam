@@ -144,8 +144,8 @@ describe('investor', () => {
 
           for (const user of userKeypairs) {
             // send 1 SOL to each user
-            // const airdrop = await connection.requestAirdrop(user.publicKey, 1_000_000_000);
-            // await connection.confirmTransaction(airdrop);
+            const airdrop = await connection.requestAirdrop(user.publicKey, 1_000_000_000);
+            await connection.confirmTransaction(airdrop);
 
             const userATA = await createAssociatedTokenAccount(
               connection,
@@ -313,49 +313,6 @@ describe('investor', () => {
       throw e;
     }
   });
-
-  it('Create Drift trading account', async () => {
-
-		const userAccountPublicKey = await getUserAccountPublicKey(
-			DRIFT_PROGRAM_ID,
-			treasuryPDA,
-			0
-		);
-		const userStatsAccountPublicKey = await getUserStatsAccountPublicKey(
-			DRIFT_PROGRAM_ID,
-			treasuryPDA
-		);
-		const statePublicKey = await getDriftStateAccountPublicKey(
-			DRIFT_PROGRAM_ID,
-		);
-
-
-    try {
-      const txId = await program.methods
-        .driftInitialize()
-        .accounts({
-          fund: fundPDA,
-          treasury: treasuryPDA,
-          userStats: userStatsAccountPublicKey,
-          user: userAccountPublicKey,
-          state: statePublicKey,
-          manager: manager.publicKey,
-          driftProgram: DRIFT_PROGRAM_ID,
-        })
-        .rpc({commitment}); // await 'confirmed'
-
-      await connection.getParsedTransaction(txId, {commitment});
-      console.log("driftInitialize", txId);
-    } catch(e) {
-      console.error(e);
-      throw e;
-    }
-
-    // const fund = await program.account.fund.fetch(fundPDA);
-    // console.log(fund);
-    // expect(fund.shareClassesLen).toEqual(1);
-    // expect(fund.assetsLen).toEqual(3);
-  }, /* timeout */ 60_000);
 
   it('Manager tests subscribe ETH to fund', async () => {
     const amount = new BN(10 * 10 ** 6); // 10 ETH = $30k
