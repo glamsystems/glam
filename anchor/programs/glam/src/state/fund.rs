@@ -23,3 +23,14 @@ impl Fund {
     pub const INIT_SIZE: usize =
         32 + 32 + 1 + (32 + 4) * MAX_ASSETS + 1 + (32 + 1) * MAX_SHARE_CLASSES + 8 + 2 + 30 + 1;
 }
+
+
+#[account]
+pub struct Treasury {
+    pub manager: Pubkey,
+    pub fund: Pubkey,
+    pub bump: u8,
+}
+impl Treasury {
+    pub const INIT_SIZE: usize = 32 + 32 + 1;
+}

@@ -4,16 +4,6 @@ use anchor_spl::token_interface::{Mint, Token2022};
 use crate::error::ManagerError;
 use crate::state::fund::*;
 
-#[account]
-pub struct Treasury {
-    pub manager: Pubkey,
-    pub fund: Pubkey,
-    pub bump: u8,
-}
-impl Treasury {
-    pub const INIT_SIZE: usize = 32 + 32 + 1;
-}
-
 #[derive(Accounts)]
 #[instruction(name: String)]
 pub struct InitializeFund<'info> {

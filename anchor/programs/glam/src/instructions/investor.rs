@@ -7,7 +7,6 @@ use anchor_spl::token_interface::{
 use pyth_sdk_solana::Price;
 
 use crate::error::InvestorError;
-use crate::manager::Treasury;
 use crate::state::fund::*;
 
 //TODO(security): check that treasury and share_class belong to the fund

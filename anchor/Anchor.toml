@@ -22,17 +22,17 @@ strategy = "Gst1YGe5vKURSWfCqM7GhZys1oML9E9t91WRyV2rt4yS"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
-#cluster = "devnet"
+#cluster = "localnet"
+cluster = "devnet"
 wallet = "/Users/ec/.config/solana/id.json"
 
 [scripts]
-#test = "../node_modules/.bin/nx run anchor:jest --verbose --testNamePattern investor"
+#test = "../node_modules/.bin/nx run anchor:jest --verbose --testNamePattern glam"
 test = "../node_modules/.bin/nx run anchor:jest"
 
 [test]
-startup_wait = 5000000
-#shutdown_wait = 2000
+startup_wait = 50000
+shutdown_wait = 2000
 upgradeable = true
 
 [test.validator]
@@ -54,5 +54,19 @@ address = "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J"
 # Pyth ETH/USD
 address = "EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw"
 [[test.validator.clone]]
+# Drift program data
+address = "7dLgmtcTavcguNoynVimF9ZNVb13FvhXVRfj2HyrDGaP"
+[[test.validator.clone]]
+# Drift USDC
+address = "8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2"
+[[test.validator.clone]]
+# Drift BTC
+address = "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv"
+[[test.validator.clone]]
+# WSOL
+address = "So11111111111111111111111111111111111111112"
+
+[[test.validator.account]]
 # Drift program
 address = "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+filename = "drift.json"
