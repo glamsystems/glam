@@ -189,6 +189,70 @@ export type Glam = {
           "type": "bool"
         }
       ]
+    },
+    {
+      "name": "driftInitialize",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "driftDeposit",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "driftWithdraw",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "driftClose",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -535,6 +599,70 @@ export const IDL: Glam = {
           "type": "bool"
         }
       ]
+    },
+    {
+      "name": "driftInitialize",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "driftDeposit",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "driftWithdraw",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "driftClose",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [

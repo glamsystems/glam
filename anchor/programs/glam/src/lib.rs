@@ -14,6 +14,8 @@ declare_id!("Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc");
 pub mod glam {
     use super::*;
 
+    // Manager
+
     pub fn initialize<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, InitializeFund<'info>>,
         name: String,
@@ -25,6 +27,8 @@ pub mod glam {
     pub fn close(ctx: Context<CloseFund>) -> Result<()> {
         manager::close_handler(ctx)
     }
+
+    // Investor
 
     pub fn subscribe<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, Subscribe<'info>>,
@@ -41,4 +45,23 @@ pub mod glam {
     ) -> Result<()> {
         investor::redeem_handler(ctx, amount, in_kind, skip_state)
     }
+
+    // Drift
+
+    pub fn drift_initialize(ctx: Context<DriftInitialize>) -> Result<()> {
+        drift::drift_initialize_handler(ctx)
+    }
+
+    pub fn drift_deposit(ctx: Context<DriftDeposit>) -> Result<()> {
+        drift::drift_deposit_handler(ctx)
+    }
+
+    pub fn drift_withdraw(ctx: Context<DriftWithdraw>) -> Result<()> {
+        drift::drift_withdraw_handler(ctx)
+    }
+
+    pub fn drift_close(ctx: Context<DriftClose>) -> Result<()> {
+        drift::drift_close_handler(ctx)
+    }
+
 }

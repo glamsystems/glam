@@ -24,4 +24,4 @@ spl-token = { workspace = true }
 spl-token-2022 = { workspace = true }
 num_enum = { workspace = true }
 pyth-sdk-solana = { workspace = true }
-#drift = { workspace = true }
+drift = { workspace = true }
