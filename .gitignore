@@ -36,6 +36,7 @@ testem.log
 Thumbs.db
 .nx/cache
 .anchor
+!anchor/target/deploy/.gitignore
 anchor/target/deploy
 anchor/target/debug
 anchor/target/release
