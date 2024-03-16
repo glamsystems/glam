@@ -3,12 +3,12 @@ import { useMemo } from 'react';
 import { ellipsify } from '../ui/ui-layout';
 import { ExplorerLink } from '../cluster/cluster-ui';
 import {
-  useCounterProgram,
-  useCounterProgramAccount,
-} from './counter-data-access';
+  useGlamProgram,
+  useGlamProgramAccount,
+} from './glam-data-access';
 
 export function CounterCreate() {
-  const { initialize } = useCounterProgram();
+  const { initialize } = useGlamProgram();
 
   return (
     <button
@@ -22,7 +22,7 @@ export function CounterCreate() {
 }
 
 export function CounterList() {
-  const { accounts, getProgramAccount } = useCounterProgram();
+  const { accounts, getProgramAccount } = useGlamProgram();
 
   if (getProgramAccount.isLoading) {
     return <span className="loading loading-spinner loading-lg"></span>;
@@ -44,29 +44,29 @@ export function CounterList() {
       ) : accounts.data?.length ? (
         <div className="grid md:grid-cols-2 gap-4">
           {accounts.data?.map((account) => (
-            <CounterCard
+            <GlamCard
               key={account.publicKey.toString()}
-              counter={account.publicKey}
+              glam={account.publicKey}
             />
           ))}
         </div>
       ) : (
         <div className="text-center">
-          <h2 className={'text-2xl'}>No Counters</h2>
-          No counters found. Create one above to get started.
+          <h2 className={'text-2xl'}>No Glams`</h2>
+          No glams found. Create one above to get started.
         </div>
       )}
     </div>
   );
 }
 
-function CounterCard({ counter }: { counter: PublicKey }) {
-  const { account, increment, set, decrement, close } =
-    useCounterProgramAccount({
-      counter,
+function GlamCard({ glam }: { glam: PublicKey }) {
+  const { account, close } =
+    useGlamProgramAccount({
+      glam,
     });
 
-  const count = useMemo(() => account.data?.count ?? 0, [account.data?.count]);
+  const count = useMemo(() => account.data?.assetsLen ?? 0, [account.data?.assetsLen]);
 
   return account.isLoading ? (
     <span className="loading loading-spinner loading-lg"></span>
@@ -83,8 +83,8 @@ function CounterCard({ counter }: { counter: PublicKey }) {
           <div className="card-actions justify-around">
             <button
               className="btn btn-xs lg:btn-md btn-outline"
-              onClick={() => increment.mutateAsync()}
-              disabled={increment.isPending}
+              // onClick={() => increment.mutateAsync()}
+              // disabled={increment.isPending}
             >
               Increment
             </button>
@@ -102,16 +102,16 @@ function CounterCard({ counter }: { counter: PublicKey }) {
                 ) {
                   return;
                 }
-                return set.mutateAsync(parseInt(value));
+                // return set.mutateAsync(parseInt(value));
               }}
-              disabled={set.isPending}
+              // disabled={set.isPending}
             >
               Set
             </button>
             <button
               className="btn btn-xs lg:btn-md btn-outline"
-              onClick={() => decrement.mutateAsync()}
-              disabled={decrement.isPending}
+              // onClick={() => decrement.mutateAsync()}
+              // disabled={decrement.isPending}
             >
               Decrement
             </button>
@@ -119,8 +119,8 @@ function CounterCard({ counter }: { counter: PublicKey }) {
           <div className="text-center space-y-4">
             <p>
               <ExplorerLink
-                path={`account/${counter}`}
-                label={ellipsify(counter.toString())}
+                path={`account/${glam}`}
+                label={ellipsify(glam.toString())}
               />
             </p>
             <button
@@ -133,7 +133,7 @@ function CounterCard({ counter }: { counter: PublicKey }) {
                 ) {
                   return;
                 }
-                return close.mutateAsync();
+                return close.mutateAsync(Keypair.generate());
               }}
               disabled={close.isPending}
             >

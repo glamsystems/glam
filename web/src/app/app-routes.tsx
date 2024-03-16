@@ -8,7 +8,7 @@ const AccountDetailFeature = lazy(
 );
 const ClusterFeature = lazy(() => import('./cluster/cluster-feature'));
 
-const CounterFeature = lazy(() => import('./counter/counter-feature'));
+const GlamFeature = lazy(() => import('./glam/glam-feature'));
 
 const DashboardFeature = lazy(() => import('./dashboard/dashboard-feature'));
 
@@ -19,7 +19,7 @@ export function AppRoutes() {
     { path: '/account/:address', element: <AccountDetailFeature /> },
     { path: '/clusters', element: <ClusterFeature /> },
 
-    { path: '/counter', element: <CounterFeature /> },
+    { path: '/glam', element: <GlamFeature /> },
 
     { path: '/dashboard', element: <DashboardFeature /> },
     { path: '*', element: <Navigate to={'/dashboard'} replace={true} /> },
