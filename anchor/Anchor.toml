@@ -24,7 +24,7 @@ url = "https://api.apr.dev"
 [provider]
 cluster = "localnet"
 #cluster = "devnet"
-wallet = "$HOME/.config/solana/id.json"
+wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "../node_modules/.bin/nx run anchor:jest --verbose --testNamePattern investor"
