@@ -1,59 +1,117 @@
-import { WalletButton } from '../solana/solana-provider';
 import * as React from 'react';
-import { ReactNode, Suspense, useEffect, useRef } from 'react';
 
-import { Link, useLocation } from 'react-router-dom';
-
-import { AccountChecker } from '../account/account-ui';
 import {
   ClusterChecker,
   ClusterUiSelect,
   ExplorerLink,
 } from '../cluster/cluster-ui';
+import {
+  Header,
+  HeaderContainer,
+  HeaderGlobalAction,
+  HeaderGlobalBar,
+  HeaderMenu,
+  HeaderMenuButton,
+  HeaderMenuItem,
+  HeaderName,
+  HeaderNavigation,
+  HeaderSideNavItems,
+  Search,
+  SideNav,
+  SideNavItems,
+  SkipToContent,
+} from '@carbon/react';
+import { Link, useLocation } from 'react-router-dom';
+import { ReactNode, Suspense, useEffect, useRef } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+
+import { AccountChecker } from '../account/account-ui';
+import { WalletButton } from '../solana/solana-provider';
 
 const pages: { label: string; path: string }[] = [
+  { label: 'Products', path: '/products' },
   { label: 'Account', path: '/account' },
-  { label: 'Clusters', path: '/clusters' },
-  { label: 'GLAM *.+', path: '/glam' },
+  { label: 'Manage', path: '/manage' },
 ];
 
 export function UiLayout({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
 
+  const { publicKey } = useWallet();
+
   return (
     <div className="h-full flex flex-col">
-      <div className="navbar bg-base-300 text-neutral-content flex-col md:flex-row space-y-2 md:space-y-0">
-        <div className="flex-1">
-          <Link className="btn btn-ghost normal-case text-xl" to="/">
-            <img
-              className="h-4 md:h-6"
-              alt="Solana Logo"
-              src="/assets/solana-logo.png"
+      <HeaderContainer
+        render={({ isSideNavExpanded, onClickSideNavExpand }) => (
+          <Header aria-label="GLAM *.+">
+            <SkipToContent />
+            <HeaderMenuButton
+              aria-label={isSideNavExpanded ? 'Close menu' : 'Open menu'}
+              onClick={onClickSideNavExpand}
+              isActive={isSideNavExpanded}
+              aria-expanded={isSideNavExpanded}
             />
-          </Link>
-          <ul className="menu menu-horizontal px-1 space-x-2">
-            {pages.map(({ label, path }) => (
-              <li key={path}>
-                <Link
-                  className={pathname.startsWith(path) ? 'active' : ''}
-                  to={path}
-                >
-                  {label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="flex-none space-x-2">
-          <WalletButton />
-          <ClusterUiSelect />
-        </div>
-      </div>
-      <ClusterChecker>
-        <AccountChecker />
-      </ClusterChecker>
-      <div className="flex-grow mx-4 lg:mx-auto">
+            <HeaderName
+              prefix="Glam *.+"
+              href="#"
+              title="Glam *.+"
+            ></HeaderName>
+            <HeaderNavigation aria-label="GLAM *.+">
+              <HeaderMenuItem
+                href="/products"
+                isActive={pathname === '/products'}
+              >
+                Products
+              </HeaderMenuItem>
+              <HeaderMenuItem
+                href="/account"
+                isActive={pathname === '/account'}
+              >
+                Account
+              </HeaderMenuItem>
+              <HeaderMenuItem href="/manage" isActive={pathname === '/manage'}>
+                Manage
+              </HeaderMenuItem>
+            </HeaderNavigation>
+            <HeaderGlobalBar>
+              <HeaderGlobalAction
+                aria-label={!publicKey ? 'Connect Wallet' : 'Account'}
+                tooltipAlignment="end"
+                onClick={
+                  // perform same action as clicking the wallet button
+                  () => {
+                    const walletButton = document.getElementsByClassName(
+                      'wallet-adapter-button-trigger'
+                    );
+
+                    if (walletButton.length > 0) {
+                      (walletButton[0] as HTMLButtonElement).click();
+                    }
+                  }
+                }
+              >
+                <WalletButton>x</WalletButton>
+              </HeaderGlobalAction>
+            </HeaderGlobalBar>
+            <SideNav
+              aria-label="Side navigation"
+              expanded={isSideNavExpanded}
+              isPersistent={false}
+              onSideNavBlur={onClickSideNavExpand}
+            >
+              <SideNavItems>
+                <HeaderSideNavItems>
+                  <HeaderMenuItem href="/products">Products</HeaderMenuItem>
+                  <HeaderMenuItem href="/account">Account</HeaderMenuItem>
+                  <HeaderMenuItem href="/manage">Manage</HeaderMenuItem>
+                </HeaderSideNavItems>
+              </SideNavItems>
+            </SideNav>
+          </Header>
+        )}
+      />
+      <div className="flex flex-grow mx-4 my-12 lg:mx-auto">
         <Suspense
           fallback={
             <div className="text-center my-32">
@@ -65,21 +123,6 @@ export function UiLayout({ children }: { children: ReactNode }) {
         </Suspense>
         <Toaster position="bottom-right" />
       </div>
-      <footer className="footer footer-center p-4 bg-base-300 text-base-content">
-        <aside>
-          <p>
-            Generated by{' '}
-            <a
-              className="link hover:text-white"
-              href="https://github.com/solana-developers/create-solana-dapp"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              create-solana-dapp
-            </a>
-          </p>
-        </aside>
-      </footer>
     </div>
   );
 }

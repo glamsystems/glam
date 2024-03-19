@@ -1,6 +1,6 @@
-import { lazy } from 'react';
-
 import { Navigate, useRoutes } from 'react-router-dom';
+
+import { lazy } from 'react';
 
 const AccountListFeature = lazy(() => import('./account/account-list-feature'));
 const AccountDetailFeature = lazy(
@@ -17,11 +17,11 @@ export function AppRoutes() {
     { index: true, element: <Navigate to={'/dashboard'} replace={true} /> },
     { path: '/account/', element: <AccountListFeature /> },
     { path: '/account/:address', element: <AccountDetailFeature /> },
-    { path: '/clusters', element: <ClusterFeature /> },
+    { path: '/manage', element: <ClusterFeature /> },
 
     { path: '/glam', element: <GlamFeature /> },
 
-    { path: '/dashboard', element: <DashboardFeature /> },
+    { path: '/products', element: <DashboardFeature /> },
     { path: '*', element: <Navigate to={'/dashboard'} replace={true} /> },
   ]);
 }

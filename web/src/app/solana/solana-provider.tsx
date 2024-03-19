@@ -1,22 +1,23 @@
-import { AnchorProvider } from '@coral-xyz/anchor';
-import { WalletError } from '@solana/wallet-adapter-base';
 import {
   AnchorWallet,
   ConnectionProvider,
+  WalletProvider,
   useConnection,
   useWallet,
-  WalletProvider,
 } from '@solana/wallet-adapter-react';
+import { ReactNode, useCallback, useMemo } from 'react';
 import {
   WalletModalProvider,
   WalletMultiButton,
 } from '@solana/wallet-adapter-react-ui';
-import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare';
-import { ReactNode, useCallback, useMemo } from 'react';
 import {
   toWalletAdapterNetwork,
   useCluster,
 } from '../cluster/cluster-data-access';
+
+import { AnchorProvider } from '@coral-xyz/anchor';
+import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare';
+import { WalletError } from '@solana/wallet-adapter-base';
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 

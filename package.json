@@ -12,6 +12,7 @@
   },
   "private": true,
   "dependencies": {
+    "@carbon/icons-react": "^11.38.0",
     "@carbon/react": "^1.53.0",
     "@coral-xyz/anchor": "^0.29.0",
     "@drift-labs/sdk": "2.71.0-beta.4",
@@ -35,7 +36,7 @@
     "react-dom": "18.2.0",
     "react-hot-toast": "^2.4.1",
     "react-router-dom": "^6.22.3",
-    "sass": "^1.72.0",
+    "sass": "^1.63.6",
     "tslib": "^2.6.2",
     "use-dark-mode": "^2.3.1"
   },
