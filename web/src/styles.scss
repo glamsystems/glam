@@ -1,0 +1,32 @@
+@use '@carbon/react';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+.wallet-adapter-button-trigger {
+  background: conic-gradient(
+    from 180deg at 50% 50%,
+    #141414 0deg,
+    rgba(20, 20, 20, 0) 360deg
+  ) !important;
+  border-radius: 0px !important;
+  padding-left: 0px !important;
+  padding-right: 0px !important;
+  color: transparent !important;
+  height: 20px !important;
+  width: 20px !important;
+}
+.wallet-adapter-dropdown-list,
+.wallet-adapter-button {
+  font-family: inherit !important;
+}

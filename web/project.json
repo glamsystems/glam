@@ -16,7 +16,7 @@
         "main": "web/src/main.tsx",
         "tsConfig": "web/tsconfig.app.json",
         "assets": ["web/src/favicon.ico", "web/src/assets"],
-        "styles": ["web/src/styles.css"],
+        "styles": ["web/src/styles.scss"],
         "scripts": [],
         "webpackConfig": "web/webpack.config.js",
         "postcssConfig": "web/postcss.config.js"
