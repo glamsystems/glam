@@ -29,12 +29,6 @@ import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { AccountChecker } from '../account/account-ui';
 import { WalletButton } from '../solana/solana-provider';
 
-const pages: { label: string; path: string }[] = [
-  { label: 'Products', path: '/products' },
-  { label: 'Account', path: '/account' },
-  { label: 'Manage', path: '/manage' },
-];
-
 export function UiLayout({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
 

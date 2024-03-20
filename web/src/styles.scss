@@ -1,4 +1,15 @@
 @use '@carbon/react';
+@use '@carbon/styles';
+@use '@carbon/type';
+
+// Include type reset
+@include type.reset();
+
+// Include default type styles, targets h1, h2, h3, etc
+@include type.default-type();
+
+// Include utility classes for type-related properties
+@include type.type-classes();
 
 @tailwind base;
 @tailwind components;
@@ -11,6 +22,30 @@ html,
 body,
 #root {
   height: 100%;
+}
+
+@media screen and (min-width: 320px) {
+  html {
+    font-size: 10px;
+  }
+}
+
+@media screen and (min-width: 640px) {
+  html {
+    font-size: 12px;
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+@media screen and (min-width: 1280px) {
+  html {
+    font-size: 16px;
+  }
 }
 
 .wallet-adapter-button-trigger {

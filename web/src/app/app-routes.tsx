@@ -9,8 +9,9 @@ const AccountDetailFeature = lazy(
 const ClusterFeature = lazy(() => import('./cluster/cluster-feature'));
 
 const GlamFeature = lazy(() => import('./glam/glam-feature'));
+const ProductPage = lazy(() => import('./products/product-page'));
 
-const DashboardFeature = lazy(() => import('./dashboard/dashboard-feature'));
+const ProductsOverview = lazy(() => import('./products/products-overview'));
 
 export function AppRoutes() {
   return useRoutes([
@@ -21,7 +22,8 @@ export function AppRoutes() {
 
     { path: '/glam', element: <GlamFeature /> },
 
-    { path: '/products', element: <DashboardFeature /> },
+    { path: '/products', element: <ProductsOverview /> },
+    { path: '/products/:id', element: <ProductPage /> },
     { path: '*', element: <Navigate to={'/dashboard'} replace={true} /> },
   ]);
 }
