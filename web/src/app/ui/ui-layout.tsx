@@ -105,7 +105,7 @@ export function UiLayout({ children }: { children: ReactNode }) {
           </Header>
         )}
       />
-      <div className="flex flex-grow mx-4 my-12 lg:mx-auto">
+      <div className="flex flex-grow justify-center my-[30px] h-full">
         <Suspense
           fallback={
             <div className="text-center my-32">

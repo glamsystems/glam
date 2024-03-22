@@ -1,11 +1,22 @@
 import '@carbon/charts-react/styles.css';
 
-import { Column, FlexGrid, Grid, Row, Tag, Tile } from '@carbon/react';
+import {
+  Column,
+  Grid,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  Tag,
+  Tile,
+} from '@carbon/react';
 import { IconArrowDownRight, IconArrowUpRight } from '@tabler/icons-react';
 import { LineChart, ScaleTypes } from '@carbon/charts-react';
 import { formatNumber, formatPercent } from '../utils/format-number';
+import { gray, gray70Hover } from '@carbon/colors';
 
-import { gray70Hover } from '@carbon/colors';
+import { SideActionBar } from './SideActionBar';
 
 export default function ProductPage() {
   const grayStyle = {
@@ -121,7 +132,7 @@ export default function ProductPage() {
         },
       },
       curve: 'curveMonotoneX',
-      height: '400px',
+      height: '350px',
       legend: {
         enabled: false,
       },
@@ -133,42 +144,59 @@ export default function ProductPage() {
 
   return (
     <div>
-      <div className="flex mt-[20px] ml-[40px] mb-[32px]">
-        <p>Products </p>
-        <p>{` / ${mockApiData.name}`}</p>
-      </div>
+      <div className="flex flex-col ml-[25px] max-w-[500px] w-full">
+        <div className="flex gap-[8px] mt-[48px] mb-[24px]">
+          <p
+            style={{
+              color: gray70Hover,
+            }}
+          >
+            Products{' '}
+          </p>
+          <p>{` / ${mockApiData.name}`}</p>
+        </div>
 
-      <div className="flex ml-[40px] items-center gap-[16px] mb-[32px]">
-        <div
-          style={{
-            width: '64px',
-            height: '64px',
-            background:
-              'conic-gradient(from 57.74deg at 50% 50%, #5B0F48 0deg, rgba(91, 15, 72, 0) 360deg)',
-          }}
-        ></div>
-        <h1
-          style={{
-            fontSize: '32px',
-            lineHeight: '40px',
-          }}
-        >
-          {mockApiData.name}
-        </h1>
-        <Tag type="warm-gray" className="rounded-none">
-          {mockApiData.id}
-        </Tag>
+        <div className="flex items-center gap-[16px] mb-[24px]">
+          <div
+            style={{
+              width: '64px',
+              height: '64px',
+              background:
+                'conic-gradient(from 57.74deg at 50% 50%, #5B0F48 0deg, rgba(91, 15, 72, 0) 360deg)',
+            }}
+          ></div>
+          <h1
+            style={{
+              fontSize: '32px',
+              lineHeight: '40px',
+            }}
+          >
+            {mockApiData.name}
+          </h1>
+          <Tag type="warm-gray" className="rounded-none">
+            {mockApiData.id}
+          </Tag>
+        </div>
+
+        <Tabs>
+          <TabList aria-label="List of tabs" className="mb-[24px]">
+            <Tab>Overview</Tab>
+            <Tab>Positions</Tab>
+            <Tab>Policies</Tab>
+            <Tab>Share Classes</Tab>
+          </TabList>
+        </Tabs>
       </div>
 
       <Grid narrow>
-        <Column lg={4} md={2} sm={1} className="max-h-[180px] h-full">
+        <Column lg={3} md={1} sm={3} className="max-h-[180px] h-full ">
           <Tile className="h-full">
             <p className="">Investment Objective</p>
             <br />
             <p>{mockApiData.investmentObjective}</p>
           </Tile>
         </Column>
-        <Column lg={4} md={2} sm={1} className="max-h-[180px] h-full">
+        <Column lg={3} md={1} sm={3} className="max-h-[180px] h-full">
           <Tile className="h-full">
             <div className="flex flex-col gap-[12px]">
               <p>NAV</p>
@@ -183,7 +211,7 @@ export default function ProductPage() {
                   {formatPercent(mockApiData['24HourNavChange'])})
                 </p>
                 {mockApiData['24HourNavChange'] > 0 ? (
-                  <IconArrowUpRight size={24} color="#4FC879" />
+                  <IconArrowUpRight size={24} color="#48BF84" />
                 ) : (
                   <IconArrowDownRight size={24} color="#FF5F5F" />
                 )}
@@ -191,7 +219,7 @@ export default function ProductPage() {
             </div>
           </Tile>
         </Column>
-        <Column lg={4} md={2} sm={1} className="max-h-[180px] h-full">
+        <Column lg={3} md={3} sm={3} className="max-h-[180px] h-full">
           <Tile className="h-full">
             <div className="flex flex-col gap-[12px]">
               <p>AUM</p>
@@ -216,7 +244,7 @@ export default function ProductPage() {
             </div>
           </Tile>
         </Column>
-        <Column lg={4} md={2} sm={1} className="max-h-[180px] h-full">
+        <Column lg={3} md={5} sm={3} className="max-h-[180px] h-full">
           <Tile className="h-full">
             <div className="flex flex-col gap-[32px]">
               <p>Fees</p>
@@ -243,12 +271,12 @@ export default function ProductPage() {
             </div>
           </Tile>
         </Column>
-        <Column lg={12} md={6} sm={4} className="mt-2">
-          <Tile>
+        <Column lg={9} md={4} sm={2} className="mt-2 max-h-[388px] h-full">
+          <Tile className="max-h-[388px] h-full">
             <LineChart data={chartData.data} options={chartData.options} />
           </Tile>
         </Column>
-        <Column lg={4} md={2} sm={1}>
+        <Column lg={3} md={1} sm={3}>
           <Tile className="mt-2">
             <div className="flex flex-col gap-[32px]">
               <p>Facts</p>
@@ -264,7 +292,7 @@ export default function ProductPage() {
               </div>
             </div>
           </Tile>
-          <Tile className="h-full max-h-[297px]">
+          <Tile className="h-full max-h-[250px] h-full">
             <div className="flex flex-col gap-[32px]">
               <p className="mt-4">Terms</p>
               <div className="flex flex-col gap-[14px]">
@@ -301,6 +329,39 @@ export default function ProductPage() {
           </Tile>
         </Column>
       </Grid>
+      <div
+        style={{
+          position: 'absolute',
+          right: '0px',
+          bottom: '50px',
+          height: '540px',
+          maxWidth: '265px',
+          width: '100%',
+        }}
+      >
+        <Tabs>
+          <TabList
+            aria-label="List of tabs"
+            contained
+            className="max-w-[300px] w-full"
+          >
+            <Tab className="w-[80px]">Manage</Tab>
+            <Tab className="w-[100px]">Subscribe</Tab>
+            <Tab className="w-[85px]">Redeem</Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel className="h-full">
+              <SideActionBar type="Manage" primayButtonFunction={() => {}} />
+            </TabPanel>
+            <TabPanel className="h-full">
+              <SideActionBar type="Subscribe" primayButtonFunction={() => {}} />
+            </TabPanel>
+            <TabPanel className="h-full">
+              <SideActionBar type="Redeem" primayButtonFunction={() => {}} />
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
+      </div>
     </div>
   );
 }

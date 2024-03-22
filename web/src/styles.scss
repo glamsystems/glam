@@ -2,15 +2,6 @@
 @use '@carbon/styles';
 @use '@carbon/type';
 
-// Include type reset
-@include type.reset();
-
-// Include default type styles, targets h1, h2, h3, etc
-@include type.default-type();
-
-// Include utility classes for type-related properties
-@include type.type-classes();
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -45,6 +36,21 @@ body,
 @media screen and (min-width: 1280px) {
   html {
     font-size: 16px;
+  }
+}
+
+.gray {
+  color: rgb(99, 99, 99);
+  font-size: 14px;
+  line-height: 18px;
+}
+
+// class that hides the scrollbar
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
   }
 }
 
