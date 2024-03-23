@@ -10,7 +10,7 @@ const AccountDetailFeature = lazy(
 const Manage = lazy(() => import('./manage/Manage'));
 const GlamFeature = lazy(() => import('./glam/glam-feature'));
 const ProductPage = lazy(() => import('./products/product-page'));
-
+const CreateProduct = lazy(() => import('./manage/CreateProduct'));
 const ProductsOverview = lazy(() => import('./products/products-overview'));
 
 export function AppRoutes() {
@@ -21,6 +21,7 @@ export function AppRoutes() {
     { path: '/manage', element: <Manage /> },
 
     { path: '/glam', element: <GlamFeature /> },
+    { path: '/create-product', element: <CreateProduct /> },
 
     { path: '/products', element: <ProductsOverview /> },
     { path: '/products/:id', element: <ProductPage /> },

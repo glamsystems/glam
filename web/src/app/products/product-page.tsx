@@ -145,7 +145,7 @@ export default function ProductPage() {
   return (
     <div>
       <div className="flex flex-col ml-[25px] max-w-[500px] w-full">
-        <div className="flex gap-[8px] mt-[48px] mb-[24px]">
+        <div className="flex gap-[8px] mt-[48px] mb-[32px]">
           <p
             style={{
               color: gray70Hover,
@@ -156,7 +156,7 @@ export default function ProductPage() {
           <p>{` / ${mockApiData.name}`}</p>
         </div>
 
-        <div className="flex items-center gap-[16px] mb-[24px]">
+        <div className="flex items-center gap-[16px] mb-[32px]">
           <div
             style={{
               width: '64px',
@@ -179,7 +179,7 @@ export default function ProductPage() {
         </div>
 
         <Tabs>
-          <TabList aria-label="List of tabs" className="mb-[24px]">
+          <TabList aria-label="List of tabs" className="mb-[32px]">
             <Tab>Overview</Tab>
             <Tab>Positions</Tab>
             <Tab>Policies</Tab>
@@ -334,7 +334,8 @@ export default function ProductPage() {
           position: 'absolute',
           right: '0px',
           bottom: '50px',
-          height: '540px',
+          height: '100%',
+          maxHeight: '590px',
           maxWidth: '265px',
           width: '100%',
         }}

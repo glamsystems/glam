@@ -48,7 +48,7 @@ export function UiLayout({ children }: { children: ReactNode }) {
             />
             <HeaderName
               prefix="Glam *.+"
-              href="#"
+              href="/products"
               title="Glam *.+"
             ></HeaderName>
             <HeaderNavigation aria-label="GLAM *.+">
