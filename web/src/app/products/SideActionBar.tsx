@@ -90,29 +90,31 @@ export const SideActionBar = ({
         step={1}
         helperText={<span>Number of Shares</span>}
       />
-      <NumberInput
-        label="Amount"
-        id="amount"
-        min={0}
-        max={100}
-        value={amount}
-        onChange={(event, { value, direction }) => {
-          if (value) {
-            setAmount(value as number);
-            return;
-          }
-          if (direction === 'up') {
-            setAmount(amount + 1);
-          } else {
-            if (amount === 0) {
+      {type !== 'Manage' && (
+        <NumberInput
+          label="Amount"
+          id="amount"
+          min={0}
+          max={100}
+          value={amount}
+          onChange={(event, { value, direction }) => {
+            if (value) {
+              setAmount(value as number);
               return;
             }
-            setAmount(amount - 1);
-          }
-        }}
-        step={1}
-        helperText={<span>Amount in USDC</span>}
-      />
+            if (direction === 'up') {
+              setAmount(amount + 1);
+            } else {
+              if (amount === 0) {
+                return;
+              }
+              setAmount(amount - 1);
+            }
+          }}
+          step={1}
+          helperText={<span>Amount in USDC</span>}
+        />
+      )}
       <Toggle
         labelText="Subscription Type"
         id="subscription-type"

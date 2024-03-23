@@ -46,27 +46,42 @@ export function UiLayout({ children }: { children: ReactNode }) {
               isActive={isSideNavExpanded}
               aria-expanded={isSideNavExpanded}
             />
-            <HeaderName
-              prefix="Glam *.+"
-              href="/products"
-              title="Glam *.+"
-            ></HeaderName>
+            <Link to="/products">
+              <HeaderName
+                prefix="Glam *.+"
+                className="h-full w-full"
+                title="Glam *.+"
+              ></HeaderName>
+            </Link>
             <HeaderNavigation aria-label="GLAM *.+">
-              <HeaderMenuItem
-                href="/products"
-                isActive={pathname === '/products'}
-              >
-                Products
-              </HeaderMenuItem>
-              <HeaderMenuItem
-                href="/account"
-                isActive={pathname === '/account'}
-              >
-                Account
-              </HeaderMenuItem>
-              <HeaderMenuItem href="/manage" isActive={pathname === '/manage'}>
-                Manage
-              </HeaderMenuItem>
+              <Link to="/products">
+                <HeaderMenuItem
+                  isActive={pathname.includes('/products')}
+                  className="h-full w-full"
+                >
+                  Products
+                </HeaderMenuItem>
+              </Link>
+              <Link to="/account">
+                <HeaderMenuItem
+                  href="/account"
+                  isActive={pathname === '/account'}
+                  className="h-full w-full"
+                >
+                  Account
+                </HeaderMenuItem>
+              </Link>
+              <Link to="/manage">
+                <HeaderMenuItem
+                  href="/manage"
+                  isActive={
+                    pathname === '/manage' || pathname === '/create-product'
+                  }
+                  className="h-full w-full"
+                >
+                  Manage
+                </HeaderMenuItem>
+              </Link>
             </HeaderNavigation>
             <HeaderGlobalBar>
               <HeaderGlobalAction

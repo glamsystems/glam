@@ -1,21 +1,16 @@
 import { Navigate, useRoutes } from 'react-router-dom';
 
-import { lazy } from 'react';
-
-const AccountListFeature = lazy(() => import('./account/account-list-feature'));
-const AccountDetailFeature = lazy(
-  () => import('./account/account-detail-feature')
-);
-
-const Manage = lazy(() => import('./manage/Manage'));
-const GlamFeature = lazy(() => import('./glam/glam-feature'));
-const ProductPage = lazy(() => import('./products/product-page'));
-const CreateProduct = lazy(() => import('./manage/CreateProduct'));
-const ProductsOverview = lazy(() => import('./products/products-overview'));
+import AccountDetailFeature from './account/account-detail-feature';
+import AccountListFeature from './account/account-list-feature';
+import CreateProduct from './manage/CreateProduct';
+import GlamFeature from './glam/glam-feature';
+import Manage from './manage/Manage';
+import ProductPage from './products/product-page';
+import ProductsOverview from './products/products-overview';
 
 export function AppRoutes() {
   return useRoutes([
-    { index: true, element: <Navigate to={'/dashboard'} replace={true} /> },
+    { index: true, element: <Navigate to={'/products'} replace={true} /> },
     { path: '/account/', element: <AccountListFeature /> },
     { path: '/account/:address', element: <AccountDetailFeature /> },
     { path: '/manage', element: <Manage /> },

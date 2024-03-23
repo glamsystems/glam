@@ -7,6 +7,7 @@ import {
 } from '@carbon/react';
 
 import { Add } from '@carbon/icons-react';
+import { Link } from 'react-router-dom';
 import { formatNumber } from '../utils/format-number';
 import { relative } from 'path';
 
@@ -141,36 +142,37 @@ export const Manage = () => {
             </Column>
           ))}
           <Column lg={4} md={4} sm={2} className="my-[6px]">
-            <ClickableTile
-              id="create-product"
-              href="/create-product"
-              className="cursor-pointer"
-              style={{}}
-            >
-              <div className="flex flex-col gap-[32px]">
-                <p className="gray">Create Product</p>
-                <div className="flex flex-col items-center">
-                  <Add
-                    height={100}
-                    width={100}
-                    color="#00000040"
-                    className="mt-6"
-                  />
+            <Link to="/create-product">
+              <ClickableTile
+                id="create-product"
+                className="cursor-pointer"
+                style={{}}
+              >
+                <div className="flex flex-col gap-[32px]">
+                  <p className="gray">Create Product</p>
+                  <div className="flex flex-col items-center">
+                    <Add
+                      height={100}
+                      width={100}
+                      color="#00000040"
+                      className="mt-6"
+                    />
+                  </div>
+                  <div
+                    className="w-[32px] h-[32px] md:w-[64px] md:h-[64px]"
+                    style={{
+                      alignSelf: 'end',
+                      display: 'flex',
+                      position: 'relative',
+                      top: '15px',
+                      left: '15px',
+                      background:
+                        'conic-gradient(from 90deg at 50% 50%, #141414 0deg, rgba(20, 20, 20, 0) 360deg)',
+                    }}
+                  ></div>
                 </div>
-                <div
-                  className="w-[32px] h-[32px] md:w-[64px] md:h-[64px]"
-                  style={{
-                    alignSelf: 'end',
-                    display: 'flex',
-                    position: 'relative',
-                    top: '15px',
-                    left: '15px',
-                    background:
-                      'conic-gradient(from 90deg at 50% 50%, #141414 0deg, rgba(20, 20, 20, 0) 360deg)',
-                  }}
-                ></div>
-              </div>
-            </ClickableTile>
+              </ClickableTile>
+            </Link>
           </Column>
         </Grid>
       </div>
