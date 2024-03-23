@@ -13,11 +13,13 @@ import {
   TableToolbarSearch,
 } from '@carbon/react';
 
-export default function DashboardFeature() {
+import { useNavigate } from 'react-router-dom';
+
+export default function ProductsOverview() {
   const rows = [
     {
-      id: 'a',
-      symbol: 'BTC',
+      id: 'iBTCShares',
+      symbol: 'iBTC Shares',
       nav: 100,
       aum: 100,
       '24': 100,
@@ -162,6 +164,8 @@ export default function DashboardFeature() {
     },
   ];
 
+  const navigate = useNavigate();
+
   return (
     <div style={{ width: '80vw', margin: 'auto' }}>
       <DataTable rows={rows} headers={headers}>
@@ -192,7 +196,13 @@ export default function DashboardFeature() {
               </TableHead>
               <TableBody>
                 {rows.map((row) => (
-                  <TableRow {...getRowProps({ row })}>
+                  <TableRow
+                    {...getRowProps({ row })}
+                    style={{
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => navigate(`/products/${row.id}`)}
+                  >
                     {row.cells.map((cell) => (
                       <TableCell key={cell.id}>{cell.value}</TableCell>
                     ))}
