@@ -95,19 +95,18 @@ export const Manage = () => {
     // },
   ];
 
+  // when clicking on a tile, navigate to the relevant product page
   return (
-    <div className="w-full flex flex-col mx-[180px]">
-      <div>
-        <h1 className="mt-[48px] ml-[25px] text-[42px]">Manage</h1>
-      </div>
+    <div className="w-full h-full flex flex-col">
+      <h1 className="mt-[100px] ml-[200px] text-[42px]">Manage</h1>
 
-      <div className="w-full h-full items-center flex ">
-        <Grid
-          narrow
-          className="w-full h-full max-h-[67vh] items-center overflow-y-auto hide-scrollbar"
-        >
-          {mockApiData.map((position) => (
-            <Column key={position.id} lg={4} md={4} sm={2} className="my-[6px]">
+      <Grid
+        narrow
+        className=" h-full mt-[100px] max-h-[67vh] items-center overflow-y-auto hide-scrollbar"
+      >
+        {mockApiData.map((position) => (
+          <Column key={position.id} lg={4} md={4} sm={2} className="my-[6px]">
+            <Link to={`/products/${position.id}`}>
               <ClickableTile
                 key={position.id}
                 id={position.id}
@@ -139,43 +138,43 @@ export const Manage = () => {
                   ></div>
                 </div>
               </ClickableTile>
-            </Column>
-          ))}
-          <Column lg={4} md={4} sm={2} className="my-[6px]">
-            <Link to="/create-product">
-              <ClickableTile
-                id="create-product"
-                className="cursor-pointer"
-                style={{}}
-              >
-                <div className="flex flex-col gap-[32px]">
-                  <p className="gray">Create Product</p>
-                  <div className="flex flex-col items-center">
-                    <Add
-                      height={100}
-                      width={100}
-                      color="#00000040"
-                      className="mt-6"
-                    />
-                  </div>
-                  <div
-                    className="w-[32px] h-[32px] md:w-[64px] md:h-[64px]"
-                    style={{
-                      alignSelf: 'end',
-                      display: 'flex',
-                      position: 'relative',
-                      top: '15px',
-                      left: '15px',
-                      background:
-                        'conic-gradient(from 90deg at 50% 50%, #141414 0deg, rgba(20, 20, 20, 0) 360deg)',
-                    }}
-                  ></div>
-                </div>
-              </ClickableTile>
             </Link>
           </Column>
-        </Grid>
-      </div>
+        ))}
+        <Column lg={4} md={4} sm={2} className="my-[6px]">
+          <Link to="/create-product">
+            <ClickableTile
+              id="create-product"
+              className="cursor-pointer"
+              style={{}}
+            >
+              <div className="flex flex-col gap-[32px]">
+                <p className="gray">Create Product</p>
+                <div className="flex flex-col items-center">
+                  <Add
+                    height={100}
+                    width={100}
+                    color="#00000040"
+                    className="mt-6"
+                  />
+                </div>
+                <div
+                  className="w-[32px] h-[32px] md:w-[64px] md:h-[64px]"
+                  style={{
+                    alignSelf: 'end',
+                    display: 'flex',
+                    position: 'relative',
+                    top: '15px',
+                    left: '15px',
+                    background:
+                      'conic-gradient(from 90deg at 50% 50%, #141414 0deg, rgba(20, 20, 20, 0) 360deg)',
+                  }}
+                ></div>
+              </div>
+            </ClickableTile>
+          </Link>
+        </Column>
+      </Grid>
     </div>
   );
 };

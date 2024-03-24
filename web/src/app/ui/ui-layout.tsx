@@ -35,7 +35,7 @@ export function UiLayout({ children }: { children: ReactNode }) {
   const { publicKey } = useWallet();
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-[100vh] w-full">
       <HeaderContainer
         render={({ isSideNavExpanded, onClickSideNavExpand }) => (
           <Header aria-label="GLAM *.+">
@@ -120,18 +120,7 @@ export function UiLayout({ children }: { children: ReactNode }) {
           </Header>
         )}
       />
-      <div className="flex flex-grow justify-center my-[30px] h-full">
-        <Suspense
-          fallback={
-            <div className="text-center my-32">
-              <span className="loading loading-spinner loading-lg"></span>
-            </div>
-          }
-        >
-          {children}
-        </Suspense>
-        <Toaster position="bottom-right" />
-      </div>
+      {children}
     </div>
   );
 }

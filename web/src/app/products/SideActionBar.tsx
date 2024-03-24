@@ -23,7 +23,7 @@ export const SideActionBar = ({
   const [quantity, setQuantity] = useState(0);
 
   return (
-    <div className="flex flex-col gap-[16px] h-full overflow-y-auto hide-scrollbar">
+    <div className="flex flex-col gap-[16px] h-[510px]">
       {type === 'Manage' && (
         <>
           <Select
@@ -35,9 +35,9 @@ export const SideActionBar = ({
             <option value="placeholder" disabled>
               Choose an option
             </option>
-            <option value="Subscribe">Option 1</option>
-            <option value="Redeem">Option 2</option>
-            <option value="Transfer">Option 3</option>
+            <option value="Subscribe">Wallet 1</option>
+            <option value="Redeem">Wallet 2</option>
+            <option value="Transfer">Wallet 3</option>
           </Select>
           <Select
             labelText="To"
@@ -48,22 +48,15 @@ export const SideActionBar = ({
             <option value="placeholder" disabled>
               Choose an option
             </option>
-            <option value="Subscribe">Option 1</option>
-            <option value="Redeem">Option 2</option>
-            <option value="Transfer">Option 3</option>
+            <option value="drift">Drift Account</option>
           </Select>
           <Select
             labelText="Asset"
             id="asset"
-            defaultValue="placeholder"
+            defaultValue="USDC"
             onChange={() => {}}
           >
-            <option value="placeholder" disabled>
-              Choose an option
-            </option>
-            <option value="Subscribe">Option 1</option>
-            <option value="Redeem">Option 2</option>
-            <option value="Transfer">Option 3</option>
+            <option value="USDC">USDC</option>
           </Select>
         </>
       )}
@@ -88,7 +81,6 @@ export const SideActionBar = ({
           }
         }}
         step={1}
-        helperText={<span>Number of Shares</span>}
       />
       {type !== 'Manage' && (
         <NumberInput
@@ -115,20 +107,13 @@ export const SideActionBar = ({
           helperText={<span>Amount in USDC</span>}
         />
       )}
-      <Toggle
+      {/* <Toggle
         labelText="Subscription Type"
         id="subscription-type"
         labelA="In Kind"
         labelB="In Cash"
         disabled
-      />
-      <div className="flex justify-between">
-        <h1 className="text-xl">Total</h1>
-        <h1 className="text-xl">397.20</h1>
-      </div>
-      <p style={{ ...grayStyle, fontStyle: 'italic' }}>
-        Not including network fees.
-      </p>
+      /> */}
       <div className="flex flex-col gap-[16px] h-full justify-end">
         <Button
           style={{
@@ -138,18 +123,25 @@ export const SideActionBar = ({
                 : type === 'Redeem'
                 ? '#BF4883'
                 : '#0F62FE',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingInlineEnd: '16px',
           }}
           className="w-full"
           kind="primary"
-          renderIcon={Add}
-          iconDescription={'Plus Icon'}
           onClick={primayButtonFunction}
         >
-          {type === 'Subscribe'
-            ? 'Subscribe'
-            : type === 'Redeem'
-            ? 'Redeem'
-            : 'Transfer'}
+          <>
+            <span>
+              {type === 'Subscribe'
+                ? 'Subscribe'
+                : type === 'Redeem'
+                ? 'Redeem'
+                : 'Transfer'}
+            </span>
+            <strong> {quantity} USDC </strong>
+          </>
         </Button>
         <Button
           className="bg-[#393939] w-full"

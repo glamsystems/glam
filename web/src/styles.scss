@@ -12,12 +12,15 @@
 html,
 body,
 #root {
-  height: 100%;
+  // height: 100%;
 }
 
 @media screen and (min-width: 320px) {
   html {
     font-size: 10px;
+  }
+  .product-grid {
+    grid-template-columns: (2, 1fr);
   }
 }
 
@@ -25,11 +28,18 @@ body,
   html {
     font-size: 12px;
   }
+
+  .product-grid {
+    grid-template-columns: (2, 1fr);
+  }
 }
 
 @media screen and (min-width: 1024px) {
   html {
     font-size: 14px;
+  }
+  .product-grid {
+    grid-template-columns: (2, 1fr);
   }
 }
 

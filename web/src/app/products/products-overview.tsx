@@ -18,7 +18,7 @@ import { useNavigate } from 'react-router-dom';
 export default function ProductsOverview() {
   const rows = [
     {
-      id: 'iBTCShares',
+      id: 'IBIT',
       symbol: 'iBTC Shares',
       nav: 100,
       aum: 100,
@@ -29,8 +29,8 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'b',
-      symbol: 'ETH',
+      id: 'IBIT',
+      symbol: 'iBTC Shares',
       nav: 100,
       aum: 100,
       '24': 100,
@@ -40,8 +40,8 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'c',
-      symbol: 'SOL',
+      id: 'IBIT',
+      symbol: 'iBTC Shares',
       nav: 100,
       aum: 100,
       '24': 100,
@@ -51,8 +51,8 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'd',
-      symbol: 'USDC',
+      id: 'IBIT',
+      symbol: 'iBTC Shares',
       nav: 100,
       aum: 100,
       '24': 100,
@@ -62,8 +62,8 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'e',
-      symbol: 'USDT',
+      id: 'IBIT',
+      symbol: 'iBTC Shares',
       nav: 100,
       aum: 100,
       '24': 100,
@@ -73,8 +73,8 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'f',
-      symbol: 'AVAX',
+      id: 'IBIT',
+      symbol: 'iBTC Shares',
       nav: 100,
       aum: 100,
       '24': 100,
@@ -84,8 +84,8 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'g',
-      symbol: 'AAVE',
+      id: 'IBIT',
+      symbol: 'iBTC Shares',
       nav: 100,
       aum: 100,
       '24': 100,
@@ -95,8 +95,8 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'h',
-      symbol: 'GMX',
+      id: 'IBIT',
+      symbol: 'iBTC Shares',
       nav: 100,
       aum: 100,
       '24': 100,
@@ -106,8 +106,8 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'i',
-      symbol: 'BONK',
+      id: 'IBIT',
+      symbol: 'iBTC Shares',
       nav: 100,
       aum: 100,
       '24': 100,
@@ -117,8 +117,8 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'j',
-      symbol: 'LINK',
+      id: 'IBIT',
+      symbol: 'iBTC Shares',
       nav: 100,
       aum: 100,
       '24': 100,
@@ -167,7 +167,7 @@ export default function ProductsOverview() {
   const navigate = useNavigate();
 
   return (
-    <div style={{ width: '80vw', margin: 'auto' }}>
+    <div className="flex justify-center h-full items-center">
       <DataTable rows={rows} headers={headers}>
         {({
           rows,
@@ -177,7 +177,7 @@ export default function ProductsOverview() {
           getRowProps,
           getToolbarProps,
         }) => (
-          <TableContainer>
+          <TableContainer className="w-[80vw]">
             <TableToolbar {...getToolbarProps()}>
               <TableToolbarContent>
                 <TableToolbarSearch onChange={() => console.log('change')} />
