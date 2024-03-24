@@ -17,6 +17,7 @@ pub struct Fund {
     pub bump_fund: u8,
     pub bump_treasury: u8,
     pub name: String, // max 30 chars
+    pub symbol: String, // max 10 chars
     pub is_active: bool,
 }
 impl Fund {

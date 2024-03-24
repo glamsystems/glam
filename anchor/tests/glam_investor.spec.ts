@@ -59,6 +59,7 @@ describe('investor', () => {
   const BTC_TOKEN_PROGRAM_ID = TOKEN_2022_PROGRAM_ID;
 
   const fundName = "Investment fund";
+  const fundSymbol = "IFD";
   const [fundPDA, fundBump] = PublicKey.findProgramAddressSync([
     anchor.utils.bytes.utf8.encode('fund'),
     manager.publicKey.toBuffer(),
@@ -79,7 +80,7 @@ describe('investor', () => {
   const treasuryUsdcAta = getAssociatedTokenAddressSync(usdc.publicKey, treasuryPDA, true, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
   const treasuryEthAta = getAssociatedTokenAddressSync(eth.publicKey, treasuryPDA, true, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
   const treasuryBtcAta = getAssociatedTokenAddressSync(btc.publicKey, treasuryPDA, true, BTC_TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
-  
+
   // manager
   const managerUsdcAta = getAssociatedTokenAddressSync(usdc.publicKey, manager.publicKey, false, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
   const managerEthAta = getAssociatedTokenAddressSync(eth.publicKey, manager.publicKey, false, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
@@ -200,7 +201,7 @@ describe('investor', () => {
   it('Initialize fund', async () => {
     try {
       const txId = await program.methods
-        .initialize(fundName, [0, 60, 40], true)
+        .initialize(fundName, fundSymbol, [0, 60, 40], true)
         .accounts({
           fund: fundPDA,
           treasury: treasuryPDA,
