@@ -79,7 +79,7 @@ describe('investor', () => {
   const treasuryUsdcAta = getAssociatedTokenAddressSync(usdc.publicKey, treasuryPDA, true, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
   const treasuryEthAta = getAssociatedTokenAddressSync(eth.publicKey, treasuryPDA, true, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
   const treasuryBtcAta = getAssociatedTokenAddressSync(btc.publicKey, treasuryPDA, true, BTC_TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
-  
+
   // manager
   const managerUsdcAta = getAssociatedTokenAddressSync(usdc.publicKey, manager.publicKey, false, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
   const managerEthAta = getAssociatedTokenAddressSync(eth.publicKey, manager.publicKey, false, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);

@@ -6,7 +6,7 @@ GLAM is a decentralized protocol for asset management on Solana.
 
 ## Dev
 
-This project is generated with the [create-solana-dapp](https://github.com/solana-developers/create-solana-dapp) generator.
+This project is generated with the [create-solana-dapp](https://github.com/solana-developers/create-solana-dapp) generator using React preset.
 
 ### Prerequisites
 
