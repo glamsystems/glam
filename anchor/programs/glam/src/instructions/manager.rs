@@ -75,6 +75,50 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
 }
 
 #[derive(Accounts)]
+pub struct UpdateFund<'info> {
+    #[account(mut, has_one = manager @ ManagerError::NotAuthorizedError)]
+    fund: Account<'info, Fund>,
+    #[account(mut)]
+    manager: Signer<'info>,
+}
+
+pub fn update_fund_handler<'c: 'info, 'info>(
+    ctx: Context<'_, '_, 'c, 'info, UpdateFund<'info>>,
+    name: Option<String>,
+    symbol: Option<String>,
+    asset_weights: Option<Vec<u32>>,
+    activate: Option<bool>,
+) -> Result<()> {
+    let fund = &mut ctx.accounts.fund;
+
+    if let Some(name) = name {
+        require!(name.as_bytes().len() <= 30, ManagerError::InvalidFundName);
+        fund.name = name;
+    }
+    if let Some(symbol) = symbol {
+        require!(symbol.as_bytes().len() <= 10, ManagerError::InvalidFundName);
+        fund.symbol = symbol;
+    }
+    if let Some(activate) = activate {
+        fund.is_active = activate;
+    }
+    if let Some(asset_weights) = asset_weights {
+        let assets_len = asset_weights.len();
+        require!(assets_len <= MAX_ASSETS, ManagerError::InvalidAssetsLen);
+        require!(
+            assets_len == fund.assets_len as usize,
+            ManagerError::InvalidAssetsLen
+        );
+        for (i, &w) in asset_weights.iter().enumerate() {
+            fund.assets_weights[i] = w;
+        }
+    }
+
+    msg!("Fund updated: {}", ctx.accounts.fund.key());
+    Ok(())
+}
+
+#[derive(Accounts)]
 pub struct CloseFund<'info> {
     #[account(mut, close = manager, has_one = manager @ ManagerError::NotAuthorizedError)]
     fund: Account<'info, Fund>,
