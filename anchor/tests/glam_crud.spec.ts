@@ -10,22 +10,16 @@ import {
   TOKEN_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
 } from "@solana/spl-token";
-import {
-	getDriftStateAccountPublicKey,
-	getUserAccountPublicKey,
-	getUserStatsAccountPublicKey,
-} from "@drift-labs/sdk";
 import { Glam } from '../target/types/glam';
 
-describe('glam', () => {
+describe('glam_crud', () => {
   // Configure the client to use the local cluster.
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
   const connection = provider.connection;
+
   const manager = provider.wallet as anchor.Wallet;
   console.log("Manager:", manager.publicKey);
-
-  const DRIFT_PROGRAM_ID = new PublicKey("dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH");
 
   const program = anchor.workspace.Glam as Program<Glam>;
   const commitment = 'confirmed';
@@ -36,6 +30,7 @@ describe('glam', () => {
   const BTC_TOKEN_PROGRAM_ID = TOKEN_2022_PROGRAM_ID;
 
   const fundName = "Investment fund";
+  const fundSymbol = "FFF";
   const [fundPDA, fundBump] = PublicKey.findProgramAddressSync([
     anchor.utils.bytes.utf8.encode('fund'),
     manager.publicKey.toBuffer(),
@@ -52,9 +47,58 @@ describe('glam', () => {
     fundPDA.toBuffer(),
   ], program.programId);
 
+  beforeAll(async () => {}, 15_000);
 
-  it("Does nothing", async () => {
-    expect(1).toEqual(1);
+  it('Initialize fund', async () => {
+    const txId = await program.methods
+      .initialize(fundName, fundSymbol, [0, 60, 40], true)
+      .accounts({
+        fund: fundPDA,
+        treasury: treasuryPDA,
+        share: sharePDA,
+        manager: manager.publicKey,
+        tokenProgram: TOKEN_2022_PROGRAM_ID,
+      })
+      .remainingAccounts([
+        { pubkey: usdc, isSigner: false, isWritable: false },
+        { pubkey: btc, isSigner: false, isWritable: false },
+        { pubkey: eth, isSigner: false, isWritable: false },
+      ])
+      .rpc({commitment}); // await 'confirmed'
+
+    const fund = await program.account.fund.fetch(fundPDA);
+    expect(fund.shareClassesLen).toEqual(1);
+    expect(fund.assetsLen).toEqual(3);
+    expect(fund.name).toEqual(fundName);
+    expect(fund.symbol).toEqual(fundSymbol);
+    expect(fund.isActive).toEqual(true);
+  });
+
+  it('Update fund', async () => {
+    const newFundName = 'Updated fund name';
+    await program.methods.update(newFundName, null, null, false)
+    .accounts({
+      fund: fundPDA,
+      manager: manager.publicKey,
+    })
+      .rpc({commitment});
+    const fund = await program.account.fund.fetch(fundPDA);
+    expect(fund.name).toEqual(newFundName);
+    expect(fund.isActive).toEqual(false);
+  });
+
+  it('Close fund', async () => {
+    await program.methods
+      .close()
+      .accounts({
+        fund: fundPDA,
+        manager: manager.publicKey,
+      })
+      .rpc();
+
+    // The account should no longer exist, returning null.
+    const closedAccount = await program.account.fund.fetchNullable(fundPDA);
+    expect(closedAccount).toBeNull();
   });
 
   /*
@@ -91,84 +135,9 @@ describe('glam', () => {
       })
     );
   });
-
-  it('Initialize fund', async () => {
-
-    // const treasuryATA = getAssociatedTokenAddressSync(mints[0], treasuryPDA, true, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
-
-    try {
-    const txId = await program.methods
-      .initialize(fundName)
-      .accounts({
-        fund: fundPDA,
-        treasury: treasuryPDA,
-        share0: sharePDA,
-        assetBase: tokenKeypairs[0].publicKey,
-        manager: payer.publicKey,
-        tokenProgram: TOKEN_2022_PROGRAM_ID,
-      })
-      .rpc({commitment});
-
-    const tx = await provider.connection.getParsedTransaction(txId, {commitment});
-    console.log(tx?.transaction.message);
-    } catch(e) {
-      console.error(e);
-      throw e;
-    }
-
-    const fund = await program.account.fund.fetch(fundPDA);
-    // console.log(fund);
-
-    expect(fund.assetsLen).toEqual(0);
-    expect(fund.shareClassesLen).toEqual(1);
-  });
-
-  it('Close fund', async () => {
-    await program.methods
-      .close()
-      .accounts({
-        fund: fundPDA,
-        manager: payer.publicKey,
-      })
-      .rpc();
-
-    // The account should no longer exist, returning null.
-    const closedAccount = await program.account.fund.fetchNullable(fundPDA);
-    expect(closedAccount).toBeNull();
-  });*/
-
-  // it('Initialize fund', async () => {
-  //   try {
-  //     const txId = await program.methods
-  //       .initialize(fundName, [0, 60, 40], true)
-  //       .accounts({
-  //         fund: fundPDA,
-  //         treasury: treasuryPDA,
-  //         share: sharePDA,
-  //         manager: manager.publicKey,
-  //         tokenProgram: TOKEN_2022_PROGRAM_ID,
-  //       })
-  //       .remainingAccounts([
-  //         { pubkey: usdc, isSigner: false, isWritable: false },
-  //         { pubkey: btc, isSigner: false, isWritable: false },
-  //         { pubkey: eth, isSigner: false, isWritable: false },
-  //       ])
-  //       .rpc({commitment}); // await 'confirmed'
-
-  //     // await connection.getParsedTransaction(txId, {commitment});
-  //   } catch(e) {
-  //     console.error(e);
-  //     throw e;
-  //   }
-
-  //   const fund = await program.account.fund.fetch(fundPDA);
-  //   console.log(fund);
-  //   expect(fund.shareClassesLen).toEqual(1);
-  //   expect(fund.assetsLen).toEqual(3);
-  // });
+  */
 
   // it('Create Drift trading account', async () => {
-
 	// 	const userAccountPublicKey = await getUserAccountPublicKey(
 	// 		DRIFT_PROGRAM_ID,
 	// 		treasuryPDA,
@@ -214,6 +183,4 @@ describe('glam', () => {
   //   // expect(fund.shareClassesLen).toEqual(1);
   //   // expect(fund.assetsLen).toEqual(3);
   // }, /* timeout */ 10_000);
-
-
 });

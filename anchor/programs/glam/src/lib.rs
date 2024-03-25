@@ -25,6 +25,15 @@ pub mod glam {
     ) -> Result<()> {
         manager::initialize_fund_handler(ctx, name, symbol, asset_weights, activate)
     }
+    pub fn update<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, UpdateFund<'info>>,
+        name: Option<String>,
+        symbol: Option<String>,
+        asset_weights: Option<Vec<u32>>,
+        activate: Option<bool>,
+    ) -> Result<()> {
+        manager::update_fund_handler(ctx, name, symbol, asset_weights, activate)
+    }
     pub fn close(ctx: Context<CloseFund>) -> Result<()> {
         manager::close_handler(ctx)
     }

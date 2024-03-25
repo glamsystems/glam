@@ -5,7 +5,7 @@ import {
   Transaction,
   sendAndConfirmTransaction,
   Keypair,
-} from "@solana/web3.js";
+} from '@solana/web3.js';
 import {
   createMint,
   createAssociatedTokenAccount,
@@ -18,15 +18,15 @@ import {
   getMint,
   getAccount,
   createTransferCheckedInstruction,
-} from "@solana/spl-token";
+} from '@solana/spl-token';
 import {
-	getDriftStateAccountPublicKey,
-	getUserAccountPublicKey,
-	getUserStatsAccountPublicKey,
-} from "@drift-labs/sdk";
+  getDriftStateAccountPublicKey,
+  getUserAccountPublicKey,
+  getUserStatsAccountPublicKey,
+} from '@drift-labs/sdk';
 import { Glam } from '../target/types/glam';
 
-describe('investor', () => {
+describe('glam_investor', () => {
   // Configure the client to use the local cluster.
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
@@ -35,9 +35,11 @@ describe('investor', () => {
   const commitment = 'confirmed';
 
   const manager = provider.wallet as anchor.Wallet;
-  console.log("Manager:", manager.publicKey);
+  console.log('Manager:', manager.publicKey);
 
-  const DRIFT_PROGRAM_ID = new PublicKey("dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH");
+  const DRIFT_PROGRAM_ID = new PublicKey(
+    'dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH'
+  );
 
   const userKeypairs = [
     Keypair.generate(), // mock user 0
@@ -54,43 +56,106 @@ describe('investor', () => {
     Keypair.generate(),
   ];
   const usdc = tokenKeypairs[0]; // 6 decimals
-  const eth = tokenKeypairs[1];  // 6 decimals
-  const btc = tokenKeypairs[2];  // 9 decimals, token2022
+  const eth = tokenKeypairs[1]; // 6 decimals
+  const btc = tokenKeypairs[2]; // 9 decimals, token2022
   const BTC_TOKEN_PROGRAM_ID = TOKEN_2022_PROGRAM_ID;
 
-  const fundName = "Investment fund";
-  const fundSymbol = "IFD";
-  const [fundPDA, fundBump] = PublicKey.findProgramAddressSync([
-    anchor.utils.bytes.utf8.encode('fund'),
-    manager.publicKey.toBuffer(),
-    anchor.utils.bytes.utf8.encode(fundName),
-  ], program.programId);
+  const fundName = 'Investment fund';
+  const fundSymbol = 'IFD';
+  const [fundPDA, fundBump] = PublicKey.findProgramAddressSync(
+    [
+      anchor.utils.bytes.utf8.encode('fund'),
+      manager.publicKey.toBuffer(),
+      anchor.utils.bytes.utf8.encode(fundName),
+    ],
+    program.programId
+  );
 
-  const [treasuryPDA, treasuryBump] = PublicKey.findProgramAddressSync([
-    anchor.utils.bytes.utf8.encode('treasury'),
-    fundPDA.toBuffer(),
-  ], program.programId);
+  const [treasuryPDA, treasuryBump] = PublicKey.findProgramAddressSync(
+    [anchor.utils.bytes.utf8.encode('treasury'), fundPDA.toBuffer()],
+    program.programId
+  );
 
-  const [sharePDA, shareBump] = PublicKey.findProgramAddressSync([
-    anchor.utils.bytes.utf8.encode('share-0'),
-    fundPDA.toBuffer(),
-  ], program.programId);
+  const [sharePDA, shareBump] = PublicKey.findProgramAddressSync(
+    [anchor.utils.bytes.utf8.encode('share-0'), fundPDA.toBuffer()],
+    program.programId
+  );
 
   // treasury
-  const treasuryUsdcAta = getAssociatedTokenAddressSync(usdc.publicKey, treasuryPDA, true, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
-  const treasuryEthAta = getAssociatedTokenAddressSync(eth.publicKey, treasuryPDA, true, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
-  const treasuryBtcAta = getAssociatedTokenAddressSync(btc.publicKey, treasuryPDA, true, BTC_TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
+  const treasuryUsdcAta = getAssociatedTokenAddressSync(
+    usdc.publicKey,
+    treasuryPDA,
+    true,
+    TOKEN_PROGRAM_ID,
+    ASSOCIATED_TOKEN_PROGRAM_ID
+  );
+  const treasuryEthAta = getAssociatedTokenAddressSync(
+    eth.publicKey,
+    treasuryPDA,
+    true,
+    TOKEN_PROGRAM_ID,
+    ASSOCIATED_TOKEN_PROGRAM_ID
+  );
+  const treasuryBtcAta = getAssociatedTokenAddressSync(
+    btc.publicKey,
+    treasuryPDA,
+    true,
+    BTC_TOKEN_PROGRAM_ID,
+    ASSOCIATED_TOKEN_PROGRAM_ID
+  );
 
   // manager
-  const managerUsdcAta = getAssociatedTokenAddressSync(usdc.publicKey, manager.publicKey, false, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
-  const managerEthAta = getAssociatedTokenAddressSync(eth.publicKey, manager.publicKey, false, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
-  const managerBtcAta = getAssociatedTokenAddressSync(btc.publicKey, manager.publicKey, false, BTC_TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
-  const managerSharesAta = getAssociatedTokenAddressSync(sharePDA, manager.publicKey, false, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
+  const managerUsdcAta = getAssociatedTokenAddressSync(
+    usdc.publicKey,
+    manager.publicKey,
+    false,
+    TOKEN_PROGRAM_ID,
+    ASSOCIATED_TOKEN_PROGRAM_ID
+  );
+  const managerEthAta = getAssociatedTokenAddressSync(
+    eth.publicKey,
+    manager.publicKey,
+    false,
+    TOKEN_PROGRAM_ID,
+    ASSOCIATED_TOKEN_PROGRAM_ID
+  );
+  const managerBtcAta = getAssociatedTokenAddressSync(
+    btc.publicKey,
+    manager.publicKey,
+    false,
+    BTC_TOKEN_PROGRAM_ID,
+    ASSOCIATED_TOKEN_PROGRAM_ID
+  );
+  const managerSharesAta = getAssociatedTokenAddressSync(
+    sharePDA,
+    manager.publicKey,
+    false,
+    TOKEN_2022_PROGRAM_ID,
+    ASSOCIATED_TOKEN_PROGRAM_ID
+  );
 
   // users' shares
-  const aliceSharesAta = getAssociatedTokenAddressSync(sharePDA, alice.publicKey, false, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
-  const bobSharesAta = getAssociatedTokenAddressSync(sharePDA, bob.publicKey, false, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
-  const eveSharesAta = getAssociatedTokenAddressSync(sharePDA, eve.publicKey, false, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
+  const aliceSharesAta = getAssociatedTokenAddressSync(
+    sharePDA,
+    alice.publicKey,
+    false,
+    TOKEN_2022_PROGRAM_ID,
+    ASSOCIATED_TOKEN_PROGRAM_ID
+  );
+  const bobSharesAta = getAssociatedTokenAddressSync(
+    sharePDA,
+    bob.publicKey,
+    false,
+    TOKEN_2022_PROGRAM_ID,
+    ASSOCIATED_TOKEN_PROGRAM_ID
+  );
+  const eveSharesAta = getAssociatedTokenAddressSync(
+    sharePDA,
+    eve.publicKey,
+    false,
+    TOKEN_2022_PROGRAM_ID,
+    ASSOCIATED_TOKEN_PROGRAM_ID
+  );
 
   // pricing
   //TODO
@@ -111,7 +176,7 @@ describe('investor', () => {
     // { pubkey: managerEthAta, isSigner: false, isWritable: true },
     { pubkey: treasuryEthAta, isSigner: false, isWritable: false },
     { pubkey: pricingEth, isSigner: false, isWritable: false },
-  ]
+  ];
 
   let remainingAccountsRedeem = [
     { pubkey: usdc.publicKey, isSigner: false, isWritable: false },
@@ -126,11 +191,12 @@ describe('investor', () => {
     { pubkey: managerEthAta, isSigner: false, isWritable: true },
     { pubkey: treasuryEthAta, isSigner: false, isWritable: true },
     { pubkey: pricingEth, isSigner: false, isWritable: false },
-  ]
+  ];
 
   beforeAll(async () => {
     try {
-      await Promise.all( // exec in parallel, but await before ending the test
+      await Promise.all(
+        // exec in parallel, but await before ending the test
         tokenKeypairs.map(async (token, idx) => {
           const mint = await createMint(
             connection,
@@ -140,12 +206,15 @@ describe('investor', () => {
             idx == 2 ? 9 : 6,
             token,
             { commitment }, // await 'confirmed'
-            idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID,
+            idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID
           );
 
           for (const user of userKeypairs) {
             // send 1 SOL to each user
-            const airdrop = await connection.requestAirdrop(user.publicKey, 1_000_000_000);
+            const airdrop = await connection.requestAirdrop(
+              user.publicKey,
+              1_000_000_000
+            );
             await connection.confirmTransaction(airdrop);
 
             const userATA = await createAssociatedTokenAccount(
@@ -154,7 +223,7 @@ describe('investor', () => {
               token.publicKey,
               user.publicKey,
               {},
-              idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID,
+              idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID
             );
             await mintTo(
               connection,
@@ -165,7 +234,7 @@ describe('investor', () => {
               idx == 2 ? 10_000_000_000 : 1000_000_000,
               [],
               {},
-              idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID,
+              idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID
             );
           }
 
@@ -175,7 +244,7 @@ describe('investor', () => {
             token.publicKey,
             manager.publicKey,
             {},
-            idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID,
+            idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID
           );
 
           await mintTo(
@@ -187,45 +256,52 @@ describe('investor', () => {
             idx == 2 ? 1000_000_000_000 : 1000_000_000,
             [],
             { commitment }, // await 'confirmed'
-            idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID,
+            idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID
           );
         })
       );
-    } catch(e) {
+    } catch (e) {
       // beforeAll
       console.error(e);
       throw e;
     }
-  }, /* timeout */ 15_000);
 
-  it('Initialize fund', async () => {
-    try {
-      const txId = await program.methods
-        .initialize(fundName, fundSymbol, [0, 60, 40], true)
-        .accounts({
-          fund: fundPDA,
-          treasury: treasuryPDA,
-          share: sharePDA,
-          manager: manager.publicKey,
-          tokenProgram: TOKEN_2022_PROGRAM_ID,
-        })
-        .remainingAccounts([
-          { pubkey: usdc.publicKey, isSigner: false, isWritable: false },
-          { pubkey: btc.publicKey, isSigner: false, isWritable: false },
-          { pubkey: eth.publicKey, isSigner: false, isWritable: false },
-        ])
-        .rpc({commitment}); // await 'confirmed'
-
-      await connection.getParsedTransaction(txId, {commitment});
-    } catch(e) {
-      console.error(e);
-      throw e;
-    }
+    const txId = await program.methods
+      .initialize(fundName, fundSymbol, [0, 60, 40], true)
+      .accounts({
+        fund: fundPDA,
+        treasury: treasuryPDA,
+        share: sharePDA,
+        manager: manager.publicKey,
+        tokenProgram: TOKEN_2022_PROGRAM_ID,
+      })
+      .remainingAccounts([
+        { pubkey: usdc.publicKey, isSigner: false, isWritable: false },
+        { pubkey: btc.publicKey, isSigner: false, isWritable: false },
+        { pubkey: eth.publicKey, isSigner: false, isWritable: false },
+      ])
+      .rpc({ commitment }); // await 'confirmed'
 
     const fund = await program.account.fund.fetch(fundPDA);
-    console.log(fund);
     expect(fund.shareClassesLen).toEqual(1);
     expect(fund.assetsLen).toEqual(3);
+    expect(fund.name).toEqual(fundName);
+    expect(fund.symbol).toEqual(fundSymbol);
+    expect(fund.isActive).toEqual(true);
+  }, /* timeout */ 15_000);
+
+  afterAll(async () => {
+    await program.methods
+      .close()
+      .accounts({
+        fund: fundPDA,
+        manager: manager.publicKey,
+      })
+      .rpc();
+
+    // The account should no longer exist, returning null.
+    const closedAccount = await program.account.fund.fetchNullable(fundPDA);
+    expect(closedAccount).toBeNull();
   });
 
   it('Create ATAs', async () => {
@@ -257,14 +333,12 @@ describe('investor', () => {
           btc.publicKey,
           BTC_TOKEN_PROGRAM_ID,
           ASSOCIATED_TOKEN_PROGRAM_ID
-        ),
+        )
       );
-      await sendAndConfirmTransaction(
-        connection,
-        tx1,
-        [manager.payer],
-        { skipPreflight: true, commitment }
-      );
+      await sendAndConfirmTransaction(connection, tx1, [manager.payer], {
+        skipPreflight: true,
+        commitment,
+      });
 
       const tx2 = new Transaction().add(
         // Shares
@@ -299,7 +373,7 @@ describe('investor', () => {
           sharePDA,
           TOKEN_2022_PROGRAM_ID,
           ASSOCIATED_TOKEN_PROGRAM_ID
-        ),
+        )
       );
 
       const txSig = await sendAndConfirmTransaction(
@@ -308,7 +382,7 @@ describe('investor', () => {
         [manager.payer],
         { skipPreflight: true, commitment }
       );
-    } catch(e) {
+    } catch (e) {
       // create ATAs
       console.error(e);
       throw e;
@@ -317,7 +391,7 @@ describe('investor', () => {
 
   it('Manager tests subscribe ETH to fund', async () => {
     const amount = new BN(10 * 10 ** 6); // 10 ETH = $30k
-    const expectedShares = "3000";       // $10/share => 3k shares
+    const expectedShares = '3000'; // $10/share => 3k shares
     try {
       await program.methods
         .subscribe(amount, true)
@@ -333,23 +407,33 @@ describe('investor', () => {
           token2022Program: TOKEN_2022_PROGRAM_ID,
         })
         .remainingAccounts(remainingAccountsSubscribe)
-        .rpc({commitment});
-    } catch(e) {
+        .rpc({ commitment });
+    } catch (e) {
       // subscribe
       console.error(e);
       throw e;
     }
 
-    const shares = await getMint(connection, sharePDA, commitment, TOKEN_2022_PROGRAM_ID);
+    const shares = await getMint(
+      connection,
+      sharePDA,
+      commitment,
+      TOKEN_2022_PROGRAM_ID
+    );
     expect(shares.supply.toString()).toEqual(expectedShares); //TODO: compare BigInt?
 
-    const managerShares = await getAccount(connection, managerSharesAta, commitment, TOKEN_2022_PROGRAM_ID);
+    const managerShares = await getAccount(
+      connection,
+      managerSharesAta,
+      commitment,
+      TOKEN_2022_PROGRAM_ID
+    );
     expect(managerShares.amount).toEqual(shares.supply);
   });
 
   it('Manager tests subscribe BTC to fund', async () => {
-    const amount = new BN(1 * 10 ** 9);  // 1 BTC = $51k
-    const expectedShares = "8100";       // 3,000 + 5,100
+    const amount = new BN(1 * 10 ** 9); // 1 BTC = $51k
+    const expectedShares = '8100'; // 3,000 + 5,100
     try {
       await program.methods
         .subscribe(amount, true)
@@ -365,22 +449,37 @@ describe('investor', () => {
           token2022Program: TOKEN_2022_PROGRAM_ID,
         })
         .remainingAccounts(remainingAccountsSubscribe)
-        .rpc({commitment});
-    } catch(e) {
+        .rpc({ commitment });
+    } catch (e) {
       // subscribe
       console.error(e);
       throw e;
     }
 
-    const shares = await getMint(connection, sharePDA, commitment, TOKEN_2022_PROGRAM_ID);
+    const shares = await getMint(
+      connection,
+      sharePDA,
+      commitment,
+      TOKEN_2022_PROGRAM_ID
+    );
     expect(shares.supply.toString()).toEqual(expectedShares); //TODO: compare BigInt?
 
-    const managerShares = await getAccount(connection, managerSharesAta, commitment, TOKEN_2022_PROGRAM_ID);
+    const managerShares = await getAccount(
+      connection,
+      managerSharesAta,
+      commitment,
+      TOKEN_2022_PROGRAM_ID
+    );
     expect(managerShares.amount).toEqual(shares.supply);
   });
 
   it('Manager redeems 50% of fund', async () => {
-    let shares = await getMint(connection, sharePDA, commitment, TOKEN_2022_PROGRAM_ID);
+    let shares = await getMint(
+      connection,
+      sharePDA,
+      commitment,
+      TOKEN_2022_PROGRAM_ID
+    );
     const amount = new BN(shares.supply / 2n);
     try {
       await program.methods
@@ -395,17 +494,27 @@ describe('investor', () => {
           token2022Program: TOKEN_2022_PROGRAM_ID,
         })
         .remainingAccounts(remainingAccountsRedeem)
-        .rpc({commitment});
-    } catch(e) {
+        .rpc({ commitment });
+    } catch (e) {
       // redeem
       console.error(e);
       throw e;
     }
 
-    shares = await getMint(connection, sharePDA, commitment, TOKEN_2022_PROGRAM_ID);
+    shares = await getMint(
+      connection,
+      sharePDA,
+      commitment,
+      TOKEN_2022_PROGRAM_ID
+    );
     expect(shares.supply.toString()).toEqual(amount.toString());
 
-    const managerShares = await getAccount(connection, managerSharesAta, commitment, TOKEN_2022_PROGRAM_ID);
+    const managerShares = await getAccount(
+      connection,
+      managerSharesAta,
+      commitment,
+      TOKEN_2022_PROGRAM_ID
+    );
     expect(managerShares.amount).toEqual(shares.supply);
   });
 
@@ -421,22 +530,25 @@ describe('investor', () => {
           250_000_000,
           6,
           [],
-          TOKEN_PROGRAM_ID,
-        ),
+          TOKEN_PROGRAM_ID
+        )
       );
-      await sendAndConfirmTransaction(
-        connection,
-        tx1,
-        [manager.payer],
-        { skipPreflight: true, commitment }
-      );
-    } catch(e) {
+      await sendAndConfirmTransaction(connection, tx1, [manager.payer], {
+        skipPreflight: true,
+        commitment,
+      });
+    } catch (e) {
       // transfer usdc into treasury
       console.error(e);
       throw e;
     }
 
-    let treasuryUsdc = await getAccount(connection, treasuryUsdcAta, commitment, TOKEN_PROGRAM_ID);
+    let treasuryUsdc = await getAccount(
+      connection,
+      treasuryUsdcAta,
+      commitment,
+      TOKEN_PROGRAM_ID
+    );
     const oldAmount = treasuryUsdc.amount;
 
     const amount = new BN(5);
@@ -453,21 +565,31 @@ describe('investor', () => {
           token2022Program: TOKEN_2022_PROGRAM_ID,
         })
         .remainingAccounts(remainingAccountsRedeem)
-        .rpc({commitment});
-    } catch(e) {
+        .rpc({ commitment });
+    } catch (e) {
       // redeem
       console.error(e);
       throw e;
     }
 
-    treasuryUsdc = await getAccount(connection, treasuryUsdcAta, commitment, TOKEN_PROGRAM_ID);
+    treasuryUsdc = await getAccount(
+      connection,
+      treasuryUsdcAta,
+      commitment,
+      TOKEN_PROGRAM_ID
+    );
     const newAmount = treasuryUsdc.amount;
-    console.log("newAmount", newAmount, "oldAmount", oldAmount);
+    console.log('newAmount', newAmount, 'oldAmount', oldAmount);
     expect(oldAmount).toBeGreaterThan(newAmount);
   });
 
   it('Manager redeems 100% of fund', async () => {
-    let shares = await getMint(connection, sharePDA, commitment, TOKEN_2022_PROGRAM_ID);
+    let shares = await getMint(
+      connection,
+      sharePDA,
+      commitment,
+      TOKEN_2022_PROGRAM_ID
+    );
     const amount = new BN(shares.supply);
     try {
       await program.methods
@@ -482,33 +604,76 @@ describe('investor', () => {
           token2022Program: TOKEN_2022_PROGRAM_ID,
         })
         .remainingAccounts(remainingAccountsRedeem)
-        .rpc({commitment});
-    } catch(e) {
+        .rpc({ commitment });
+    } catch (e) {
       // redeem
       console.error(e);
       throw e;
     }
 
-    shares = await getMint(connection, sharePDA, commitment, TOKEN_2022_PROGRAM_ID);
-    expect(shares.supply.toString()).toEqual("0");
+    shares = await getMint(
+      connection,
+      sharePDA,
+      commitment,
+      TOKEN_2022_PROGRAM_ID
+    );
+    expect(shares.supply.toString()).toEqual('0');
 
-    const managerShares = await getAccount(connection, managerSharesAta, commitment, TOKEN_2022_PROGRAM_ID);
+    const managerShares = await getAccount(
+      connection,
+      managerSharesAta,
+      commitment,
+      TOKEN_2022_PROGRAM_ID
+    );
     expect(managerShares.amount).toEqual(shares.supply);
 
-    const treasuryUsdc = await getAccount(connection, treasuryUsdcAta, commitment, TOKEN_PROGRAM_ID);
+    const treasuryUsdc = await getAccount(
+      connection,
+      treasuryUsdcAta,
+      commitment,
+      TOKEN_PROGRAM_ID
+    );
     expect(treasuryUsdc.amount).toEqual(shares.supply);
 
-    const treasuryEth = await getAccount(connection, treasuryEthAta, commitment, TOKEN_PROGRAM_ID);
+    const treasuryEth = await getAccount(
+      connection,
+      treasuryEthAta,
+      commitment,
+      TOKEN_PROGRAM_ID
+    );
     expect(treasuryEth.amount).toEqual(shares.supply);
 
-    const treasuryBtc = await getAccount(connection, treasuryBtcAta, commitment, BTC_TOKEN_PROGRAM_ID);
+    const treasuryBtc = await getAccount(
+      connection,
+      treasuryBtcAta,
+      commitment,
+      BTC_TOKEN_PROGRAM_ID
+    );
     expect(treasuryBtc.amount).toEqual(shares.supply);
   });
 
   it('Alice subscribes to fund with 250 USDC', async () => {
-    const aliceBtcAta = getAssociatedTokenAddressSync(btc.publicKey, alice.publicKey, false, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
-    const aliceEthAta = getAssociatedTokenAddressSync(eth.publicKey, alice.publicKey, false, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
-    const aliceUsdcAta = getAssociatedTokenAddressSync(usdc.publicKey, alice.publicKey, false, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
+    const aliceBtcAta = getAssociatedTokenAddressSync(
+      btc.publicKey,
+      alice.publicKey,
+      false,
+      TOKEN_2022_PROGRAM_ID,
+      ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+    const aliceEthAta = getAssociatedTokenAddressSync(
+      eth.publicKey,
+      alice.publicKey,
+      false,
+      TOKEN_PROGRAM_ID,
+      ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+    const aliceUsdcAta = getAssociatedTokenAddressSync(
+      usdc.publicKey,
+      alice.publicKey,
+      false,
+      TOKEN_PROGRAM_ID,
+      ASSOCIATED_TOKEN_PROGRAM_ID
+    );
 
     // const amount = new BN(5 * 10 ** 8); // BTC has 9 decimals
     // const amount = new BN(5 * 10 ** 5); // ETH has 6 decimals
@@ -529,18 +694,22 @@ describe('investor', () => {
         })
         .remainingAccounts(remainingAccountsSubscribe)
         .signers([alice])
-        .rpc({commitment});
-    } catch(e) {
+        .rpc({ commitment });
+    } catch (e) {
       // subscribe
       console.error(e);
       throw e;
     }
 
-    const shares = await getMint(connection, sharePDA, commitment, TOKEN_2022_PROGRAM_ID);
-    expect(shares.supply.toString()).toEqual("25");
+    const shares = await getMint(
+      connection,
+      sharePDA,
+      commitment,
+      TOKEN_2022_PROGRAM_ID
+    );
+    expect(shares.supply.toString()).toEqual('25');
 
     // const managerShares = await getAccount(connection, managerSharesAta, commitment, TOKEN_2022_PROGRAM_ID);
     // expect(managerShares.amount).toEqual(shares.supply);
   });
-
 });
