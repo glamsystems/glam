@@ -28,6 +28,7 @@ wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "../node_modules/.bin/nx run anchor:jest --verbose --testNamePattern glam_investor"
+#test = "../node_modules/.bin/nx run anchor:jest --verbose --testNamePattern glam_crud"
 
 [test]
 startup_wait = 50000

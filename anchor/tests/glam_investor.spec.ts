@@ -1,11 +1,11 @@
-import * as anchor from '@coral-xyz/anchor';
-import { BN, Program } from '@coral-xyz/anchor';
+import * as anchor from "@coral-xyz/anchor";
+import { BN, Program } from "@coral-xyz/anchor";
 import {
   PublicKey,
   Transaction,
   sendAndConfirmTransaction,
-  Keypair,
-} from '@solana/web3.js';
+  Keypair
+} from "@solana/web3.js";
 import {
   createMint,
   createAssociatedTokenAccount,
@@ -17,34 +17,34 @@ import {
   TOKEN_2022_PROGRAM_ID,
   getMint,
   getAccount,
-  createTransferCheckedInstruction,
-} from '@solana/spl-token';
+  createTransferCheckedInstruction
+} from "@solana/spl-token";
 import {
   getDriftStateAccountPublicKey,
   getUserAccountPublicKey,
-  getUserStatsAccountPublicKey,
-} from '@drift-labs/sdk';
-import { Glam } from '../target/types/glam';
+  getUserStatsAccountPublicKey
+} from "@drift-labs/sdk";
+import { Glam } from "../target/types/glam";
 
-describe('glam_investor', () => {
+describe("glam_investor", () => {
   // Configure the client to use the local cluster.
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
   const connection = provider.connection;
   const program = anchor.workspace.Glam as Program<Glam>;
-  const commitment = 'confirmed';
+  const commitment = "confirmed";
 
   const manager = provider.wallet as anchor.Wallet;
-  console.log('Manager:', manager.publicKey);
+  console.log("Manager:", manager.publicKey);
 
   const DRIFT_PROGRAM_ID = new PublicKey(
-    'dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH'
+    "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
   );
 
   const userKeypairs = [
     Keypair.generate(), // mock user 0
     Keypair.generate(), // ...
-    Keypair.generate(),
+    Keypair.generate()
   ];
   const alice = userKeypairs[0];
   const bob = userKeypairs[1];
@@ -53,31 +53,31 @@ describe('glam_investor', () => {
   const tokenKeypairs = [
     Keypair.generate(), // mock token 0
     Keypair.generate(), // ...
-    Keypair.generate(),
+    Keypair.generate()
   ];
   const usdc = tokenKeypairs[0]; // 6 decimals
   const eth = tokenKeypairs[1]; // 6 decimals
   const btc = tokenKeypairs[2]; // 9 decimals, token2022
   const BTC_TOKEN_PROGRAM_ID = TOKEN_2022_PROGRAM_ID;
 
-  const fundName = 'Investment fund';
-  const fundSymbol = 'IFD';
+  const fundName = "Investment fund";
+  const fundSymbol = "IFD";
   const [fundPDA, fundBump] = PublicKey.findProgramAddressSync(
     [
-      anchor.utils.bytes.utf8.encode('fund'),
+      anchor.utils.bytes.utf8.encode("fund"),
       manager.publicKey.toBuffer(),
-      anchor.utils.bytes.utf8.encode(fundName),
+      anchor.utils.bytes.utf8.encode(fundName)
     ],
     program.programId
   );
 
   const [treasuryPDA, treasuryBump] = PublicKey.findProgramAddressSync(
-    [anchor.utils.bytes.utf8.encode('treasury'), fundPDA.toBuffer()],
+    [anchor.utils.bytes.utf8.encode("treasury"), fundPDA.toBuffer()],
     program.programId
   );
 
   const [sharePDA, shareBump] = PublicKey.findProgramAddressSync(
-    [anchor.utils.bytes.utf8.encode('share-0'), fundPDA.toBuffer()],
+    [anchor.utils.bytes.utf8.encode("share-0"), fundPDA.toBuffer()],
     program.programId
   );
 
@@ -175,7 +175,7 @@ describe('glam_investor', () => {
     // { pubkey: eth.publicKey, isSigner: false, isWritable: false },
     // { pubkey: managerEthAta, isSigner: false, isWritable: true },
     { pubkey: treasuryEthAta, isSigner: false, isWritable: false },
-    { pubkey: pricingEth, isSigner: false, isWritable: false },
+    { pubkey: pricingEth, isSigner: false, isWritable: false }
   ];
 
   let remainingAccountsRedeem = [
@@ -190,7 +190,7 @@ describe('glam_investor', () => {
     { pubkey: eth.publicKey, isSigner: false, isWritable: false },
     { pubkey: managerEthAta, isSigner: false, isWritable: true },
     { pubkey: treasuryEthAta, isSigner: false, isWritable: true },
-    { pubkey: pricingEth, isSigner: false, isWritable: false },
+    { pubkey: pricingEth, isSigner: false, isWritable: false }
   ];
 
   beforeAll(async () => {
@@ -273,12 +273,12 @@ describe('glam_investor', () => {
         treasury: treasuryPDA,
         share: sharePDA,
         manager: manager.publicKey,
-        tokenProgram: TOKEN_2022_PROGRAM_ID,
+        tokenProgram: TOKEN_2022_PROGRAM_ID
       })
       .remainingAccounts([
         { pubkey: usdc.publicKey, isSigner: false, isWritable: false },
         { pubkey: btc.publicKey, isSigner: false, isWritable: false },
-        { pubkey: eth.publicKey, isSigner: false, isWritable: false },
+        { pubkey: eth.publicKey, isSigner: false, isWritable: false }
       ])
       .rpc({ commitment }); // await 'confirmed'
 
@@ -295,7 +295,7 @@ describe('glam_investor', () => {
       .close()
       .accounts({
         fund: fundPDA,
-        manager: manager.publicKey,
+        manager: manager.publicKey
       })
       .rpc();
 
@@ -304,7 +304,7 @@ describe('glam_investor', () => {
     expect(closedAccount).toBeNull();
   });
 
-  it('Create ATAs', async () => {
+  it("Create ATAs", async () => {
     //TODO: remove creation of ATA
     // currently we need to manually create the ATAs
     try {
@@ -337,7 +337,7 @@ describe('glam_investor', () => {
       );
       await sendAndConfirmTransaction(connection, tx1, [manager.payer], {
         skipPreflight: true,
-        commitment,
+        commitment
       });
 
       const tx2 = new Transaction().add(
@@ -389,9 +389,9 @@ describe('glam_investor', () => {
     }
   });
 
-  it('Manager tests subscribe ETH to fund', async () => {
+  it("Manager tests subscribe ETH to fund", async () => {
     const amount = new BN(10 * 10 ** 6); // 10 ETH = $30k
-    const expectedShares = '3000'; // $10/share => 3k shares
+    const expectedShares = "3000"; // $10/share => 3k shares
     try {
       await program.methods
         .subscribe(amount, true)
@@ -404,7 +404,7 @@ describe('glam_investor', () => {
           signerAssetAta: managerEthAta,
           signer: manager.publicKey,
           tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID,
+          token2022Program: TOKEN_2022_PROGRAM_ID
         })
         .remainingAccounts(remainingAccountsSubscribe)
         .rpc({ commitment });
@@ -431,9 +431,9 @@ describe('glam_investor', () => {
     expect(managerShares.amount).toEqual(shares.supply);
   });
 
-  it('Manager tests subscribe BTC to fund', async () => {
+  it("Manager tests subscribe BTC to fund", async () => {
     const amount = new BN(1 * 10 ** 9); // 1 BTC = $51k
-    const expectedShares = '8100'; // 3,000 + 5,100
+    const expectedShares = "8100"; // 3,000 + 5,100
     try {
       await program.methods
         .subscribe(amount, true)
@@ -446,7 +446,7 @@ describe('glam_investor', () => {
           signerAssetAta: managerBtcAta,
           signer: manager.publicKey,
           tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID,
+          token2022Program: TOKEN_2022_PROGRAM_ID
         })
         .remainingAccounts(remainingAccountsSubscribe)
         .rpc({ commitment });
@@ -473,7 +473,7 @@ describe('glam_investor', () => {
     expect(managerShares.amount).toEqual(shares.supply);
   });
 
-  it('Manager redeems 50% of fund', async () => {
+  it("Manager redeems 50% of fund", async () => {
     let shares = await getMint(
       connection,
       sharePDA,
@@ -491,7 +491,7 @@ describe('glam_investor', () => {
           signerShareAta: managerSharesAta,
           signer: manager.publicKey,
           tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID,
+          token2022Program: TOKEN_2022_PROGRAM_ID
         })
         .remainingAccounts(remainingAccountsRedeem)
         .rpc({ commitment });
@@ -518,7 +518,7 @@ describe('glam_investor', () => {
     expect(managerShares.amount).toEqual(shares.supply);
   });
 
-  it('Manager adds more tokens and redeems USDC', async () => {
+  it("Manager adds more tokens and redeems USDC", async () => {
     // transfer 250 USDC into the treasury (e.g. fees)
     try {
       const tx1 = new Transaction().add(
@@ -535,7 +535,7 @@ describe('glam_investor', () => {
       );
       await sendAndConfirmTransaction(connection, tx1, [manager.payer], {
         skipPreflight: true,
-        commitment,
+        commitment
       });
     } catch (e) {
       // transfer usdc into treasury
@@ -562,7 +562,7 @@ describe('glam_investor', () => {
           signerShareAta: managerSharesAta,
           signer: manager.publicKey,
           tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID,
+          token2022Program: TOKEN_2022_PROGRAM_ID
         })
         .remainingAccounts(remainingAccountsRedeem)
         .rpc({ commitment });
@@ -579,11 +579,11 @@ describe('glam_investor', () => {
       TOKEN_PROGRAM_ID
     );
     const newAmount = treasuryUsdc.amount;
-    console.log('newAmount', newAmount, 'oldAmount', oldAmount);
+    console.log("newAmount", newAmount, "oldAmount", oldAmount);
     expect(oldAmount).toBeGreaterThan(newAmount);
   });
 
-  it('Manager redeems 100% of fund', async () => {
+  it("Manager redeems 100% of fund", async () => {
     let shares = await getMint(
       connection,
       sharePDA,
@@ -601,7 +601,7 @@ describe('glam_investor', () => {
           signerShareAta: managerSharesAta,
           signer: manager.publicKey,
           tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID,
+          token2022Program: TOKEN_2022_PROGRAM_ID
         })
         .remainingAccounts(remainingAccountsRedeem)
         .rpc({ commitment });
@@ -617,7 +617,7 @@ describe('glam_investor', () => {
       commitment,
       TOKEN_2022_PROGRAM_ID
     );
-    expect(shares.supply.toString()).toEqual('0');
+    expect(shares.supply.toString()).toEqual("0");
 
     const managerShares = await getAccount(
       connection,
@@ -652,7 +652,7 @@ describe('glam_investor', () => {
     expect(treasuryBtc.amount).toEqual(shares.supply);
   });
 
-  it('Alice subscribes to fund with 250 USDC', async () => {
+  it("Alice subscribes to fund with 250 USDC", async () => {
     const aliceBtcAta = getAssociatedTokenAddressSync(
       btc.publicKey,
       alice.publicKey,
@@ -690,7 +690,7 @@ describe('glam_investor', () => {
           signerAssetAta: aliceUsdcAta,
           signer: alice.publicKey,
           tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID,
+          token2022Program: TOKEN_2022_PROGRAM_ID
         })
         .remainingAccounts(remainingAccountsSubscribe)
         .signers([alice])
@@ -707,7 +707,7 @@ describe('glam_investor', () => {
       commitment,
       TOKEN_2022_PROGRAM_ID
     );
-    expect(shares.supply.toString()).toEqual('25');
+    expect(shares.supply.toString()).toEqual("25");
 
     // const managerShares = await getAccount(connection, managerSharesAta, commitment, TOKEN_2022_PROGRAM_ID);
     // expect(managerShares.amount).toEqual(shares.supply);

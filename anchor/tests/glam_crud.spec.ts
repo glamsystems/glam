@@ -1,6 +1,6 @@
-import * as anchor from '@coral-xyz/anchor';
-import { Program, } from '@coral-xyz/anchor';
-import { Keypair, PublicKey } from '@solana/web3.js';
+import * as anchor from "@coral-xyz/anchor";
+import { Program } from "@coral-xyz/anchor";
+import { Keypair, PublicKey } from "@solana/web3.js";
 import {
   createMint,
   createAssociatedTokenAccount,
@@ -8,11 +8,11 @@ import {
   mintTo,
   ASSOCIATED_TOKEN_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
-  TOKEN_2022_PROGRAM_ID,
+  TOKEN_2022_PROGRAM_ID
 } from "@solana/spl-token";
-import { Glam } from '../target/types/glam';
+import { Glam } from "../target/types/glam";
 
-describe('glam_crud', () => {
+describe("glam_crud", () => {
   // Configure the client to use the local cluster.
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
@@ -22,34 +22,37 @@ describe('glam_crud', () => {
   console.log("Manager:", manager.publicKey);
 
   const program = anchor.workspace.Glam as Program<Glam>;
-  const commitment = 'confirmed';
+  const commitment = "confirmed";
 
   const usdc = new PublicKey("8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2"); // 6 decimals
-  const eth = new PublicKey("So11111111111111111111111111111111111111112");  // 6 decimals
-  const btc = new PublicKey("3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv");  // 9 decimals
+  const eth = new PublicKey("So11111111111111111111111111111111111111112"); // 6 decimals
+  const btc = new PublicKey("3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv"); // 9 decimals
   const BTC_TOKEN_PROGRAM_ID = TOKEN_2022_PROGRAM_ID;
 
   const fundName = "Investment fund";
   const fundSymbol = "FFF";
-  const [fundPDA, fundBump] = PublicKey.findProgramAddressSync([
-    anchor.utils.bytes.utf8.encode('fund'),
-    manager.publicKey.toBuffer(),
-    anchor.utils.bytes.utf8.encode(fundName),
-  ], program.programId);
+  const [fundPDA, fundBump] = PublicKey.findProgramAddressSync(
+    [
+      anchor.utils.bytes.utf8.encode("fund"),
+      manager.publicKey.toBuffer(),
+      anchor.utils.bytes.utf8.encode(fundName)
+    ],
+    program.programId
+  );
 
-  const [treasuryPDA, treasuryBump] = PublicKey.findProgramAddressSync([
-    anchor.utils.bytes.utf8.encode('treasury'),
-    fundPDA.toBuffer(),
-  ], program.programId);
+  const [treasuryPDA, treasuryBump] = PublicKey.findProgramAddressSync(
+    [anchor.utils.bytes.utf8.encode("treasury"), fundPDA.toBuffer()],
+    program.programId
+  );
 
-  const [sharePDA, shareBump] = PublicKey.findProgramAddressSync([
-    anchor.utils.bytes.utf8.encode('share-0'),
-    fundPDA.toBuffer(),
-  ], program.programId);
+  const [sharePDA, shareBump] = PublicKey.findProgramAddressSync(
+    [anchor.utils.bytes.utf8.encode("share-0"), fundPDA.toBuffer()],
+    program.programId
+  );
 
   beforeAll(async () => {}, 15_000);
 
-  it('Initialize fund', async () => {
+  it("Initialize fund", async () => {
     const txId = await program.methods
       .initialize(fundName, fundSymbol, [0, 60, 40], true)
       .accounts({
@@ -57,14 +60,14 @@ describe('glam_crud', () => {
         treasury: treasuryPDA,
         share: sharePDA,
         manager: manager.publicKey,
-        tokenProgram: TOKEN_2022_PROGRAM_ID,
+        tokenProgram: TOKEN_2022_PROGRAM_ID
       })
       .remainingAccounts([
         { pubkey: usdc, isSigner: false, isWritable: false },
         { pubkey: btc, isSigner: false, isWritable: false },
-        { pubkey: eth, isSigner: false, isWritable: false },
+        { pubkey: eth, isSigner: false, isWritable: false }
       ])
-      .rpc({commitment}); // await 'confirmed'
+      .rpc({ commitment }); // await 'confirmed'
 
     const fund = await program.account.fund.fetch(fundPDA);
     expect(fund.shareClassesLen).toEqual(1);
@@ -74,25 +77,26 @@ describe('glam_crud', () => {
     expect(fund.isActive).toEqual(true);
   });
 
-  it('Update fund', async () => {
-    const newFundName = 'Updated fund name';
-    await program.methods.update(newFundName, null, null, false)
-    .accounts({
-      fund: fundPDA,
-      manager: manager.publicKey,
-    })
-      .rpc({commitment});
+  it("Update fund", async () => {
+    const newFundName = "Updated fund name";
+    await program.methods
+      .update(newFundName, null, null, false)
+      .accounts({
+        fund: fundPDA,
+        manager: manager.publicKey
+      })
+      .rpc({ commitment });
     const fund = await program.account.fund.fetch(fundPDA);
     expect(fund.name).toEqual(newFundName);
     expect(fund.isActive).toEqual(false);
   });
 
-  it('Close fund', async () => {
+  it("Close fund", async () => {
     await program.methods
       .close()
       .accounts({
         fund: fundPDA,
-        manager: manager.publicKey,
+        manager: manager.publicKey
       })
       .rpc();
 
@@ -138,18 +142,18 @@ describe('glam_crud', () => {
   */
 
   // it('Create Drift trading account', async () => {
-	// 	const userAccountPublicKey = await getUserAccountPublicKey(
-	// 		DRIFT_PROGRAM_ID,
-	// 		treasuryPDA,
-	// 		0
-	// 	);
-	// 	const userStatsAccountPublicKey = await getUserStatsAccountPublicKey(
-	// 		DRIFT_PROGRAM_ID,
-	// 		treasuryPDA
-	// 	);
-	// 	const statePublicKey = await getDriftStateAccountPublicKey(
-	// 		DRIFT_PROGRAM_ID,
-	// 	);
+  // 	const userAccountPublicKey = await getUserAccountPublicKey(
+  // 		DRIFT_PROGRAM_ID,
+  // 		treasuryPDA,
+  // 		0
+  // 	);
+  // 	const userStatsAccountPublicKey = await getUserStatsAccountPublicKey(
+  // 		DRIFT_PROGRAM_ID,
+  // 		treasuryPDA
+  // 	);
+  // 	const statePublicKey = await getDriftStateAccountPublicKey(
+  // 		DRIFT_PROGRAM_ID,
+  // 	);
 
   //   console.log("userAccountPublicKey", userAccountPublicKey);
   //   console.log("userStatsAccountPublicKey", userStatsAccountPublicKey);
