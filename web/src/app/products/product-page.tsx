@@ -1,5 +1,6 @@
 import '@carbon/charts-react/styles.css';
 
+import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
 import { IconArrowDownRight, IconArrowUpRight } from '@tabler/icons-react';
 import { LineChart, ScaleTypes } from '@carbon/charts-react';
 import {
@@ -12,9 +13,12 @@ import {
   Tile,
 } from '@carbon/react';
 import { formatNumber, formatPercent } from '../utils/format-number';
+import { useLocation, useNavigate, useNavigation } from 'react-router-dom';
 
 import { SideActionBar } from './SideActionBar';
+import { getTokenMetadata } from '@solana/spl-token';
 import { gray70Hover } from '@carbon/colors';
+import { useQuery } from '@tanstack/react-query';
 
 export default function ProductPage() {
   const grayStyle = {
@@ -23,9 +27,25 @@ export default function ProductPage() {
     lineHeight: '18px',
   };
 
-  const mockApiData = {
-    id: 'IBIT',
-    name: 'iShares Bitcoin Trust',
+  // retrieve the publicKey from the URL
+  const location = useLocation();
+  const path = location.pathname.split('/'); // ['', 'products', 'id (publicKey)']
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['share-class', path],
+    queryFn: async () => {
+      const connection = new Connection(clusterApiUrl('devnet'));
+      const tokenMetadata = await getTokenMetadata(
+        connection,
+        new PublicKey(path[2])
+      );
+      return tokenMetadata;
+    },
+  });
+
+  const shareClass = {
+    id: data?.symbol,
+    name: data?.name,
     investmentObjective:
       'The iShares Bitcoin Trust seeks to reflect generally the performance of the price of bitcoin.',
     nav: 39.72,
@@ -35,14 +55,24 @@ export default function ProductPage() {
     aum: 15941890385,
     dailyNetInflows: 13987428,
     '24HourNetInflowChange': 0.0089,
+    // will optimize looping later once we have all the necessary data
     fees: {
-      management: 0.01,
-      performance: 0.1,
+      management: +(
+        data?.additionalMetadata?.find((x) => x[0] === 'fee_management')?.[1] ??
+        0
+      ),
+      performance: +(
+        data?.additionalMetadata?.find(
+          (x) => x[0] === 'fee_performance'
+        )?.[1] ?? 0
+      ),
       subscription: 0.0,
       redemption: 0.0,
     },
     facts: {
-      inceptionDate: '2021-10-15',
+      launchDate: data?.additionalMetadata?.find(
+        (x) => x[0] === 'launch_date'
+      )?.[1],
       shareClassAsset: 'USDC',
     },
     terms: {
@@ -151,7 +181,7 @@ export default function ProductPage() {
           >
             Products{' '}
           </p>
-          <p>{` / ${mockApiData.name}`}</p>
+          <p>{` / ${shareClass.name}`}</p>
         </div>
 
         <div className="flex items-center gap-[16px] mb-[32px]">
@@ -169,10 +199,10 @@ export default function ProductPage() {
               lineHeight: '40px',
             }}
           >
-            {mockApiData.name}
+            {shareClass.name}
           </h1>
           <Tag type="warm-gray" className="rounded-none">
-            {mockApiData.id}
+            {shareClass.id}
           </Tag>
         </div>
 
@@ -196,24 +226,24 @@ export default function ProductPage() {
                   <Tile className="h-full">
                     <p>Investment Objective</p>
                     <br />
-                    <p>{mockApiData.investmentObjective}</p>
+                    <p>{shareClass.investmentObjective}</p>
                   </Tile>
                 </div>
                 <div className="col-span-1">
                   <Tile className="h-full">
                     <div className="flex flex-col gap-[12px]">
                       <p>NAV</p>
-                      <p className="text-xl text-black">{mockApiData.nav}</p>
+                      <p className="text-xl text-black">{shareClass.nav}</p>
                     </div>
                     <br />
                     <div className="flex flex-col gap-[12px]">
                       <p>1 Day NAV Change</p>
                       <div className="flex items-center ">
                         <p className="text-xl text-black">
-                          {mockApiData.dailyNavChange} (
-                          {formatPercent(mockApiData['24HourNavChange'])})
+                          {shareClass.dailyNavChange} (
+                          {formatPercent(shareClass['24HourNavChange'])})
                         </p>
-                        {mockApiData['24HourNavChange'] > 0 ? (
+                        {shareClass['24HourNavChange'] > 0 ? (
                           <IconArrowUpRight size={24} color="#48BF84" />
                         ) : (
                           <IconArrowDownRight size={24} color="#FF5F5F" />
@@ -227,7 +257,7 @@ export default function ProductPage() {
                     <div className="flex flex-col gap-[12px]">
                       <p>AUM</p>
                       <p className="text-xl text-black">
-                        {formatNumber(mockApiData.aum)}
+                        {formatNumber(shareClass.aum)}
                       </p>
                     </div>
                     <br />
@@ -235,10 +265,10 @@ export default function ProductPage() {
                       <p>1 Day Net Flows</p>
                       <div className="flex items-center">
                         <p className="text-xl text-black">
-                          {formatNumber(mockApiData.dailyNetInflows)} (
-                          {formatPercent(mockApiData['24HourNetInflowChange'])})
+                          {formatNumber(shareClass.dailyNetInflows)} (
+                          {formatPercent(shareClass['24HourNetInflowChange'])})
                         </p>
-                        {mockApiData['24HourNetInflowChange'] > 0 ? (
+                        {shareClass['24HourNetInflowChange'] > 0 ? (
                           <IconArrowUpRight size={24} color="#4FC879" />
                         ) : (
                           <IconArrowDownRight size={24} color="#FF5F5F" />
@@ -255,25 +285,25 @@ export default function ProductPage() {
                         <div className="flex justify-between">
                           <p style={grayStyle}>Management Fee</p>
                           <strong>
-                            {formatPercent(mockApiData.fees.management)}
+                            {formatPercent(shareClass.fees.management)}
                           </strong>
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Performance Fee</p>
                           <strong>
-                            {formatPercent(mockApiData.fees.performance)}
+                            {formatPercent(shareClass.fees.performance)}
                           </strong>
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Subscription Fee</p>
                           <strong>
-                            {formatPercent(mockApiData.fees.subscription)}
+                            {formatPercent(shareClass.fees.subscription)}
                           </strong>
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Redemption Fee</p>
                           <strong>
-                            {formatPercent(mockApiData.fees.redemption)}
+                            {formatPercent(shareClass.fees.redemption)}
                           </strong>
                         </div>
                       </div>
@@ -330,11 +360,11 @@ export default function ProductPage() {
                       <div className="flex flex-col gap-[14px]">
                         <div className="flex justify-between">
                           <p style={grayStyle}>Share Class Asset</p>
-                          <strong>{mockApiData.facts.shareClassAsset}</strong>
+                          <strong>{shareClass.facts.shareClassAsset}</strong>
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Inception Date</p>
-                          <strong>{mockApiData.facts.inceptionDate}</strong>
+                          <strong>{shareClass.facts.launchDate}</strong>
                         </div>
                       </div>
                     </div>
@@ -346,37 +376,33 @@ export default function ProductPage() {
                         <div className="flex justify-between">
                           <p style={grayStyle}>High-Water Mark</p>
                           <strong>
-                            {mockApiData.terms.highWaterMark ? 'Yes' : 'No'}
+                            {shareClass.terms.highWaterMark ? 'Yes' : 'No'}
                           </strong>
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Hurdle Rate</p>
                           <strong>
-                            {mockApiData.terms.hurdleRate ? 'Yes' : 'No'}
+                            {shareClass.terms.hurdleRate ? 'Yes' : 'No'}
                           </strong>
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Lockup Period</p>
                           <strong>{`${
-                            +mockApiData.terms.lockupPeriod / 60
+                            +shareClass.terms.lockupPeriod / 60
                           } hour${
-                            +mockApiData.terms.lockupPeriod / 60 > 1 ? 's' : ''
+                            +shareClass.terms.lockupPeriod / 60 > 1 ? 's' : ''
                           }`}</strong>
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Minimum Subscription</p>
                           <strong>
-                            {formatNumber(
-                              mockApiData.terms.minimumSubscription
-                            )}
+                            {formatNumber(shareClass.terms.minimumSubscription)}
                           </strong>
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Maximum Subscription</p>
                           <strong>
-                            {formatNumber(
-                              mockApiData.terms.maximumSubscription
-                            )}
+                            {formatNumber(shareClass.terms.maximumSubscription)}
                           </strong>
                         </div>
                       </div>

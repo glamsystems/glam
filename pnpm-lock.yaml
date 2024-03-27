@@ -32,12 +32,18 @@ dependencies:
   '@ibm/plex':
     specifier: ^6.4.0
     version: 6.4.0
+  '@solana-developers/helpers':
+    specifier: ^2.2.0
+    version: 2.2.0
   '@solana-developers/preset-react':
     specifier: ^2.2.0
     version: 2.2.0(@swc-node/register@1.9.0)(@swc/core@1.4.8)(@types/node@18.19.24)(eslint@8.57.0)(nx@17.3.2)(ts-node@10.9.2)(typescript@5.4.2)(webpack@5.90.3)
   '@solana/spl-token':
     specifier: ^0.3.11
     version: 0.3.11(@solana/web3.js@1.91.1)(fastestsmallesttextencoderdecoder@1.0.22)
+  '@solana/spl-token-metadata':
+    specifier: ^0.1.2
+    version: 0.1.2(@solana/web3.js@1.91.1)(fastestsmallesttextencoderdecoder@1.0.22)
   '@solana/wallet-adapter-base':
     specifier: ^0.9.23
     version: 0.9.23(@solana/web3.js@1.91.1)
@@ -4282,6 +4288,18 @@ packages:
     resolution: {integrity: sha512-V4BG07kuYSUkTCSBHG8G8TNhM+F19jXFWnQtzj+we8DrkpSBCee9Z3Ms8yiGer/dlmhe35/Xdgyo3/0rQKg7YA==}
     dependencies:
       '@sinonjs/commons': 3.0.1
+
+  /@solana-developers/helpers@2.2.0:
+    resolution: {integrity: sha512-kat+bUoYx0QK6yjoTcU+v+yobwZviUEmBXCtmDwVDfIFPos+n8fQKOS2zxSmFMfMWF1NovzjA+EK5Cq2UoHU5w==}
+    dependencies:
+      '@solana/web3.js': 1.91.1
+      bs58: 5.0.0
+      dotenv: 16.3.2
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - utf-8-validate
+    dev: false
 
   /@solana-developers/preset-anchor@2.2.0(@swc-node/register@1.9.0)(@swc/core@1.4.8)(@types/node@18.19.24)(nx@17.3.2)(ts-node@10.9.2)(typescript@5.4.2):
     resolution: {integrity: sha512-gdBohG3sxqgWiL1sIosuwKP4IejPylq7Qm08+B3XL6qQXiLCXJu96MjbVP8aeC2tLv0/z7amfhWuHnXlniWUgg==}
