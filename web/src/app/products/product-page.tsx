@@ -1,8 +1,8 @@
 import '@carbon/charts-react/styles.css';
 
+import { IconArrowDownRight, IconArrowUpRight } from '@tabler/icons-react';
+import { LineChart, ScaleTypes } from '@carbon/charts-react';
 import {
-  Column,
-  Grid,
   Tab,
   TabList,
   TabPanel,
@@ -11,12 +11,10 @@ import {
   Tag,
   Tile,
 } from '@carbon/react';
-import { IconArrowDownRight, IconArrowUpRight } from '@tabler/icons-react';
-import { LineChart, ScaleTypes } from '@carbon/charts-react';
 import { formatNumber, formatPercent } from '../utils/format-number';
-import { gray, gray70Hover } from '@carbon/colors';
 
 import { SideActionBar } from './SideActionBar';
+import { gray70Hover } from '@carbon/colors';
 
 export default function ProductPage() {
   const grayStyle = {
@@ -35,7 +33,7 @@ export default function ProductPage() {
     '24HourNavChange': 0.0029,
     daily: 0.29,
     aum: 15941890385,
-    dailyNetInflows: 139874284,
+    dailyNetInflows: 13987428,
     '24HourNetInflowChange': 0.0089,
     fees: {
       management: 0.01,
@@ -132,7 +130,7 @@ export default function ProductPage() {
         },
       },
       curve: 'curveMonotoneX',
-      height: '350px',
+      height: '365px',
       legend: {
         enabled: false,
       },
@@ -144,8 +142,8 @@ export default function ProductPage() {
 
   return (
     <div>
-      <div className="flex flex-col ml-[25px] max-w-[500px] w-full">
-        <div className="flex gap-[8px] mt-[48px] mb-[24px]">
+      <div className="flex flex-col mx-[50px] md:mx-[80px] xl:mx-[180px]">
+        <div className="flex gap-[8px] mt-[80px] mb-[32px]">
           <p
             style={{
               color: gray70Hover,
@@ -156,7 +154,7 @@ export default function ProductPage() {
           <p>{` / ${mockApiData.name}`}</p>
         </div>
 
-        <div className="flex items-center gap-[16px] mb-[24px]">
+        <div className="flex items-center gap-[16px] mb-[32px]">
           <div
             style={{
               width: '64px',
@@ -179,185 +177,333 @@ export default function ProductPage() {
         </div>
 
         <Tabs>
-          <TabList aria-label="List of tabs" className="mb-[24px]">
+          <TabList aria-label="List of tabs" className="mb-[32px]">
             <Tab>Overview</Tab>
             <Tab>Positions</Tab>
             <Tab>Policies</Tab>
             <Tab>Share Classes</Tab>
           </TabList>
-        </Tabs>
-      </div>
-
-      <Grid narrow>
-        <Column lg={3} md={1} sm={3} className="max-h-[180px] h-full ">
-          <Tile className="h-full">
-            <p className="">Investment Objective</p>
-            <br />
-            <p>{mockApiData.investmentObjective}</p>
-          </Tile>
-        </Column>
-        <Column lg={3} md={1} sm={3} className="max-h-[180px] h-full">
-          <Tile className="h-full">
-            <div className="flex flex-col gap-[12px]">
-              <p>NAV</p>
-              <p className="text-xl text-black">{mockApiData.nav}</p>
-            </div>
-            <br />
-            <div className="flex flex-col gap-[12px]">
-              <p>1 Day NAV Change</p>
-              <div className="flex items-center ">
-                <p className="text-xl text-black">
-                  {mockApiData.dailyNavChange} (
-                  {formatPercent(mockApiData['24HourNavChange'])})
-                </p>
-                {mockApiData['24HourNavChange'] > 0 ? (
-                  <IconArrowUpRight size={24} color="#48BF84" />
-                ) : (
-                  <IconArrowDownRight size={24} color="#FF5F5F" />
-                )}
-              </div>
-            </div>
-          </Tile>
-        </Column>
-        <Column lg={3} md={3} sm={3} className="max-h-[180px] h-full">
-          <Tile className="h-full">
-            <div className="flex flex-col gap-[12px]">
-              <p>AUM</p>
-              <p className="text-xl text-black">
-                {formatNumber(mockApiData.aum)}
-              </p>
-            </div>
-            <br />
-            <div className="flex flex-col gap-[12px]">
-              <p>1 Day Net Flows</p>
-              <div className="flex items-center">
-                <p className="text-xl text-black">
-                  {formatNumber(mockApiData.dailyNetInflows)} (
-                  {formatPercent(mockApiData['24HourNetInflowChange'])})
-                </p>
-                {mockApiData['24HourNetInflowChange'] > 0 ? (
-                  <IconArrowUpRight size={24} color="#4FC879" />
-                ) : (
-                  <IconArrowDownRight size={24} color="#FF5F5F" />
-                )}
-              </div>
-            </div>
-          </Tile>
-        </Column>
-        <Column lg={3} md={5} sm={3} className="max-h-[180px] h-full">
-          <Tile className="h-full">
-            <div className="flex flex-col gap-[32px]">
-              <p>Fees</p>
-              <div className="flex flex-col gap-[8px]">
-                <div className="flex justify-between">
-                  <p style={grayStyle}>Management Fee</p>
-                  <strong>{formatPercent(mockApiData.fees.management)}</strong>
-                </div>
-                <div className="flex justify-between">
-                  <p style={grayStyle}>Performance Fee</p>
-                  <strong>{formatPercent(mockApiData.fees.performance)}</strong>
-                </div>
-                <div className="flex justify-between">
-                  <p style={grayStyle}>Subscription Fee</p>
-                  <strong>
-                    {formatPercent(mockApiData.fees.subscription)}
-                  </strong>
-                </div>
-                <div className="flex justify-between">
-                  <p style={grayStyle}>Redemption Fee</p>
-                  <strong>{formatPercent(mockApiData.fees.redemption)}</strong>
-                </div>
-              </div>
-            </div>
-          </Tile>
-        </Column>
-        <Column lg={9} md={4} sm={2} className="mt-2 max-h-[388px] h-full">
-          <Tile className="max-h-[388px] h-full">
-            <LineChart data={chartData.data} options={chartData.options} />
-          </Tile>
-        </Column>
-        <Column lg={3} md={1} sm={3}>
-          <Tile className="mt-2">
-            <div className="flex flex-col gap-[32px]">
-              <p>Facts</p>
-              <div className="flex flex-col gap-[14px]">
-                <div className="flex justify-between">
-                  <p style={grayStyle}>Share Class Asset</p>
-                  <strong>{mockApiData.facts.shareClassAsset}</strong>
-                </div>
-                <div className="flex justify-between">
-                  <p style={grayStyle}>Inception Date</p>
-                  <strong>{mockApiData.facts.inceptionDate}</strong>
-                </div>
-              </div>
-            </div>
-          </Tile>
-          <Tile className="h-full max-h-[250px] h-full">
-            <div className="flex flex-col gap-[32px]">
-              <p className="mt-4">Terms</p>
-              <div className="flex flex-col gap-[14px]">
-                <div className="flex justify-between">
-                  <p style={grayStyle}>High-Water Mark</p>
-                  <strong>
-                    {mockApiData.terms.highWaterMark ? 'Yes' : 'No'}
-                  </strong>
-                </div>
-                <div className="flex justify-between">
-                  <p style={grayStyle}>Hurdle Rate</p>
-                  <strong>{mockApiData.terms.hurdleRate ? 'Yes' : 'No'}</strong>
-                </div>
-                <div className="flex justify-between">
-                  <p style={grayStyle}>Lockup Period</p>
-                  <strong>{`${+mockApiData.terms.lockupPeriod / 60} hour${
-                    +mockApiData.terms.lockupPeriod / 60 > 1 ? 's' : ''
-                  }`}</strong>
-                </div>
-                <div className="flex justify-between">
-                  <p style={grayStyle}>Minimum Subscription</p>
-                  <strong>
-                    {formatNumber(mockApiData.terms.minimumSubscription)}
-                  </strong>
-                </div>
-                <div className="flex justify-between">
-                  <p style={grayStyle}>Maximum Subscription</p>
-                  <strong>
-                    {formatNumber(mockApiData.terms.maximumSubscription)}
-                  </strong>
-                </div>
-              </div>
-            </div>
-          </Tile>
-        </Column>
-      </Grid>
-      <div
-        style={{
-          position: 'absolute',
-          right: '0px',
-          bottom: '50px',
-          height: '540px',
-          maxWidth: '265px',
-          width: '100%',
-        }}
-      >
-        <Tabs>
-          <TabList
-            aria-label="List of tabs"
-            contained
-            className="max-w-[300px] w-full"
-          >
-            <Tab className="w-[80px]">Manage</Tab>
-            <Tab className="w-[100px]">Subscribe</Tab>
-            <Tab className="w-[85px]">Redeem</Tab>
-          </TabList>
           <TabPanels>
-            <TabPanel className="h-full">
-              <SideActionBar type="Manage" primayButtonFunction={() => {}} />
+            <TabPanel style={{ padding: '0px' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(5, 1fr)',
+                  gap: '8px',
+                }}
+              >
+                <div className="col-span-1">
+                  <Tile className="h-full">
+                    <p>Investment Objective</p>
+                    <br />
+                    <p>{mockApiData.investmentObjective}</p>
+                  </Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full">
+                    <div className="flex flex-col gap-[12px]">
+                      <p>NAV</p>
+                      <p className="text-xl text-black">{mockApiData.nav}</p>
+                    </div>
+                    <br />
+                    <div className="flex flex-col gap-[12px]">
+                      <p>1 Day NAV Change</p>
+                      <div className="flex items-center ">
+                        <p className="text-xl text-black">
+                          {mockApiData.dailyNavChange} (
+                          {formatPercent(mockApiData['24HourNavChange'])})
+                        </p>
+                        {mockApiData['24HourNavChange'] > 0 ? (
+                          <IconArrowUpRight size={24} color="#48BF84" />
+                        ) : (
+                          <IconArrowDownRight size={24} color="#FF5F5F" />
+                        )}
+                      </div>
+                    </div>
+                  </Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full">
+                    <div className="flex flex-col gap-[12px]">
+                      <p>AUM</p>
+                      <p className="text-xl text-black">
+                        {formatNumber(mockApiData.aum)}
+                      </p>
+                    </div>
+                    <br />
+                    <div className="flex flex-col gap-[12px]">
+                      <p>1 Day Net Flows</p>
+                      <div className="flex items-center">
+                        <p className="text-xl text-black">
+                          {formatNumber(mockApiData.dailyNetInflows)} (
+                          {formatPercent(mockApiData['24HourNetInflowChange'])})
+                        </p>
+                        {mockApiData['24HourNetInflowChange'] > 0 ? (
+                          <IconArrowUpRight size={24} color="#4FC879" />
+                        ) : (
+                          <IconArrowDownRight size={24} color="#FF5F5F" />
+                        )}
+                      </div>
+                    </div>
+                  </Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full">
+                    <div className="flex flex-col gap-[32px]">
+                      <p>Fees</p>
+                      <div className="flex flex-col gap-[8px]">
+                        <div className="flex justify-between">
+                          <p style={grayStyle}>Management Fee</p>
+                          <strong>
+                            {formatPercent(mockApiData.fees.management)}
+                          </strong>
+                        </div>
+                        <div className="flex justify-between">
+                          <p style={grayStyle}>Performance Fee</p>
+                          <strong>
+                            {formatPercent(mockApiData.fees.performance)}
+                          </strong>
+                        </div>
+                        <div className="flex justify-between">
+                          <p style={grayStyle}>Subscription Fee</p>
+                          <strong>
+                            {formatPercent(mockApiData.fees.subscription)}
+                          </strong>
+                        </div>
+                        <div className="flex justify-between">
+                          <p style={grayStyle}>Redemption Fee</p>
+                          <strong>
+                            {formatPercent(mockApiData.fees.redemption)}
+                          </strong>
+                        </div>
+                      </div>
+                    </div>
+                  </Tile>
+                </div>
+                <div className="row-span-2">
+                  <Tabs>
+                    <TabList
+                      aria-label="List of tabs"
+                      contained
+                      style={{
+                        width: '100%',
+                      }}
+                    >
+                      <Tab>Manage</Tab>
+                      <Tab>Subscribe</Tab>
+                      <Tab>Redeem</Tab>
+                    </TabList>
+                    <TabPanels>
+                      <TabPanel>
+                        <SideActionBar
+                          type="Manage"
+                          primayButtonFunction={() => {}}
+                        />
+                      </TabPanel>
+                      <TabPanel>
+                        <SideActionBar
+                          type="Subscribe"
+                          primayButtonFunction={() => {}}
+                        />
+                      </TabPanel>
+                      <TabPanel>
+                        <SideActionBar
+                          type="Redeem"
+                          primayButtonFunction={() => {}}
+                        />
+                      </TabPanel>
+                    </TabPanels>
+                  </Tabs>
+                </div>
+                <div className="col-span-2">
+                  <Tile className="">
+                    <LineChart
+                      data={chartData.data}
+                      options={chartData.options}
+                    />
+                  </Tile>
+                </div>
+                <div className="col-span-2">
+                  <Tile className="">
+                    <div className="flex flex-col gap-[32px]">
+                      <p>Facts</p>
+                      <div className="flex flex-col gap-[14px]">
+                        <div className="flex justify-between">
+                          <p style={grayStyle}>Share Class Asset</p>
+                          <strong>{mockApiData.facts.shareClassAsset}</strong>
+                        </div>
+                        <div className="flex justify-between">
+                          <p style={grayStyle}>Inception Date</p>
+                          <strong>{mockApiData.facts.inceptionDate}</strong>
+                        </div>
+                      </div>
+                    </div>
+                  </Tile>
+                  <Tile className="mt-[8px]">
+                    <div className="flex flex-col gap-[32px]">
+                      <p className="mt-4">Terms</p>
+                      <div className="flex flex-col gap-[14px]">
+                        <div className="flex justify-between">
+                          <p style={grayStyle}>High-Water Mark</p>
+                          <strong>
+                            {mockApiData.terms.highWaterMark ? 'Yes' : 'No'}
+                          </strong>
+                        </div>
+                        <div className="flex justify-between">
+                          <p style={grayStyle}>Hurdle Rate</p>
+                          <strong>
+                            {mockApiData.terms.hurdleRate ? 'Yes' : 'No'}
+                          </strong>
+                        </div>
+                        <div className="flex justify-between">
+                          <p style={grayStyle}>Lockup Period</p>
+                          <strong>{`${
+                            +mockApiData.terms.lockupPeriod / 60
+                          } hour${
+                            +mockApiData.terms.lockupPeriod / 60 > 1 ? 's' : ''
+                          }`}</strong>
+                        </div>
+                        <div className="flex justify-between">
+                          <p style={grayStyle}>Minimum Subscription</p>
+                          <strong>
+                            {formatNumber(
+                              mockApiData.terms.minimumSubscription
+                            )}
+                          </strong>
+                        </div>
+                        <div className="flex justify-between">
+                          <p style={grayStyle}>Maximum Subscription</p>
+                          <strong>
+                            {formatNumber(
+                              mockApiData.terms.maximumSubscription
+                            )}
+                          </strong>
+                        </div>
+                      </div>
+                    </div>
+                  </Tile>
+                </div>
+              </div>
             </TabPanel>
-            <TabPanel className="h-full">
-              <SideActionBar type="Subscribe" primayButtonFunction={() => {}} />
+            <TabPanel style={{ padding: '0px' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(5, 1fr)',
+                  gap: '8px',
+                }}
+              >
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+              </div>
             </TabPanel>
-            <TabPanel className="h-full">
-              <SideActionBar type="Redeem" primayButtonFunction={() => {}} />
+            <TabPanel style={{ padding: '0px' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(5, 1fr)',
+                  gap: '8px',
+                }}
+              >
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+              </div>
+            </TabPanel>
+            <TabPanel style={{ padding: '0px' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(5, 1fr)',
+                  gap: '8px',
+                }}
+              >
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+                <div className="col-span-1">
+                  <Tile className="h-full"></Tile>
+                </div>
+              </div>
             </TabPanel>
           </TabPanels>
         </Tabs>
