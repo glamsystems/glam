@@ -14,10 +14,10 @@ This project is generated with the [create-solana-dapp](https://github.com/solan
 - Pnpm v8.15.1 or higher
 - Rust v1.75.0 or higher
 - Anchor CLI 0.29.0 or higher
-- Solana CLI 1.17.0 or higher
+- Solana CLI 1.18.7
 
 Recommended:
-```sh -c "$(curl -sSfL https://release.solana.com/v1.17.22/install)"```
+```sh -c "$(curl -sSfL https://release.solana.com/v1.18.7/install)"```
 
 ### Installation
 
