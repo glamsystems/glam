@@ -1,3 +1,21 @@
+/*
+  TESTS to interact with devnet
+
+  Change Anchor.toml:
+  
+  1.
+  #cluster = "localnet"
+  cluster = "devnet"
+
+  2.
+  #test = ...
+  test = "../node_modules/.bin/nx run anchor:jest --verbose --testNamePattern devnet"
+
+  Then run tests with:
+  
+  anchor test --skip-deploy --skip-build
+
+*/
 import * as anchor from "@coral-xyz/anchor";
 import { BN, Program } from "@coral-xyz/anchor";
 import {
@@ -35,7 +53,7 @@ describe("glam_devnet", () => {
   const connection = provider.connection;
 
   const manager = provider.wallet as anchor.Wallet;
-  console.log("Manager:", manager.publicKey);
+  // console.log("Manager:", manager.publicKey);
 
   const program = anchor.workspace.Glam as Program<Glam>;
   const commitment = "confirmed";
@@ -160,108 +178,7 @@ describe("glam_devnet", () => {
   beforeAll(async () => {}, 15_000);
 
   /*
-  it("Initialize fund", async () => {
-    try {
-      const txId = await program.methods
-        .initialize(fundName, fundSymbol, [0, 60, 40], true)
-        .accounts({
-          fund: fundPDA,
-          treasury: treasuryPDA,
-          share: sharePDA,
-          manager: manager.publicKey,
-          tokenProgram: TOKEN_2022_PROGRAM_ID
-        })
-        .remainingAccounts([
-          { pubkey: usdc, isSigner: false, isWritable: false },
-          { pubkey: wsol, isSigner: false, isWritable: false },
-          { pubkey: wbtc, isSigner: false, isWritable: false }
-        ])
-        .rpc({ commitment }); // await 'confirmed'
-    } catch (e) {
-      // beforeAll
-      console.error(e);
-      throw e;
-    }
-
-    const fund = await program.account.fund.fetch(fundPDA);
-    expect(fund.shareClassesLen).toEqual(1);
-    expect(fund.assetsLen).toEqual(3);
-    expect(fund.name).toEqual(fundName);
-    expect(fund.symbol).toEqual(fundSymbol);
-    expect(fund.isActive).toEqual(true);
-  });
-  */
-
-  /*
-  it("Update fund", async () => {
-    const newFundSymbol = "FF0";
-    await program.methods
-      .update(null, newFundSymbol, null, true)
-      .accounts({
-        fund: fundPDA,
-        manager: manager.publicKey
-      })
-      .rpc({ commitment });
-    const fund = await program.account.fund.fetch(fundPDA);
-    expect(fund.symbol).toEqual(newFundSymbol);
-    expect(fund.isActive).toEqual(true);
-  });
-  */
-
-  /*
-  it("Create ATAs", async () => {
-    //TODO: remove creation of ATA
-    // currently we need to manually create the ATAs
-    try {
-      const tx1 = new Transaction().add(
-        // Treasury
-        createAssociatedTokenAccountInstruction(
-          manager.publicKey,
-          treasuryUsdcAta,
-          treasuryPDA,
-          usdc,
-          TOKEN_PROGRAM_ID,
-          ASSOCIATED_TOKEN_PROGRAM_ID
-        ),
-        createAssociatedTokenAccountInstruction(
-          manager.publicKey,
-          treasurySolAta,
-          treasuryPDA,
-          wsol,
-          TOKEN_PROGRAM_ID,
-          ASSOCIATED_TOKEN_PROGRAM_ID
-        ),
-        createAssociatedTokenAccountInstruction(
-          manager.publicKey,
-          treasuryBtcAta,
-          treasuryPDA,
-          wbtc,
-          BTC_TOKEN_PROGRAM_ID,
-          ASSOCIATED_TOKEN_PROGRAM_ID
-        ),
-        // Shares
-        createAssociatedTokenAccountInstruction(
-          manager.publicKey,
-          managerSharesAta,
-          manager.publicKey,
-          sharePDA,
-          TOKEN_2022_PROGRAM_ID,
-          ASSOCIATED_TOKEN_PROGRAM_ID
-        ),
-      );
-      await sendAndConfirmTransaction(connection, tx1, [manager.payer], {
-        skipPreflight: true,
-        commitment
-      });
-    } catch (e) {
-      // create ATAs
-      console.error(e);
-      throw e;
-    }
-  });
-  */
-
-  /*
+  // Subscribe to the fund
   it("Manager tests subscribe USDC to fund", async () => {
     console.log("managerUsdcAta", managerUsdcAta);
     const amount = new BN(200 * 10 ** 6); // 200 USDC
@@ -306,57 +223,14 @@ describe("glam_devnet", () => {
   });
   */
 
-  /*
-  it('Create Drift trading account', async () => {
-    const userAccountPublicKey = await getUserAccountPublicKey(
-      DRIFT_PROGRAM_ID,
-      treasuryPDA,
-      0
-    );
-    const userStatsAccountPublicKey = await getUserStatsAccountPublicKey(
-      DRIFT_PROGRAM_ID,
-      treasuryPDA
-    );
-    const statePublicKey = await getDriftStateAccountPublicKey(
-      DRIFT_PROGRAM_ID,
-    );
-    // console.log("userAccountPublicKey", userAccountPublicKey);
-    // console.log("userStatsAccountPublicKey", userStatsAccountPublicKey);
-    // console.log("statePublicKey", statePublicKey);
-    // console.log("fundPDA", fundPDA);
-    // console.log("treasuryPDA", treasuryPDA);
-
-    try {
-      const txId = await program.methods
-        .driftInitialize(null)
-        .accounts({
-          fund: fundPDA,
-          treasury: treasuryPDA,
-          userStats: userStatsAccountPublicKey,
-          user: userAccountPublicKey,
-          state: statePublicKey,
-          manager: manager.publicKey,
-          driftProgram: DRIFT_PROGRAM_ID,
-        })
-        .rpc({commitment}); // await 'confirmed'
-
-      await connection.getParsedTransaction(txId, {commitment});
-      console.log("driftInitialize", txId);
-    } catch(e) {
-      console.error(e);
-      throw e;
-    }
-  }, 10_000);
-  */
-
-  /*
   it("Update trader", async () => {
     const userAccountPublicKey = await getUserAccountPublicKey(
       DRIFT_PROGRAM_ID,
       treasuryPDA,
       0
     );
-    const trader = new PublicKey("aLice3kGNMajHriHX8R1e1LmqAzojuidxSiU9JT6hVo")
+    // const trader = new PublicKey("aLice3kGNMajHriHX8R1e1LmqAzojuidxSiU9JT6hVo")
+    const trader = manager.publicKey;
 
     try {
       const txId = await program.methods
@@ -377,7 +251,6 @@ describe("glam_devnet", () => {
       throw e;
     }
   }, 10_000);
-  */
 
   /*
   it('Deposit 100 USDC in Drift trading account', async () => {
@@ -455,6 +328,7 @@ describe("glam_devnet", () => {
   }, 30_000);
   */
 
+  /*
   it('Withdraw 50 USDC in Drift trading account', async () => {
     const userAccountPublicKey = await getUserAccountPublicKey(
       DRIFT_PROGRAM_ID,
@@ -519,6 +393,168 @@ describe("glam_devnet", () => {
       throw e;
     }
   }, 30_000);
+  */
+
+
+
+
+
+
+  /*
+      TESTS TO CREATE - do NOT rerun
+  */
+
+
+
+
+
+  /*
+  // This is the test used to initialize the 1st devnet fund, do NOT rerun
+  it("Initialize fund", async () => {
+    try {
+      const txId = await program.methods
+        .initialize(fundName, fundSymbol, [0, 60, 40], true)
+        .accounts({
+          fund: fundPDA,
+          treasury: treasuryPDA,
+          share: sharePDA,
+          manager: manager.publicKey,
+          tokenProgram: TOKEN_2022_PROGRAM_ID
+        })
+        .remainingAccounts([
+          { pubkey: usdc, isSigner: false, isWritable: false },
+          { pubkey: wsol, isSigner: false, isWritable: false },
+          { pubkey: wbtc, isSigner: false, isWritable: false }
+        ])
+        .rpc({ commitment }); // await 'confirmed'
+    } catch (e) {
+      // beforeAll
+      console.error(e);
+      throw e;
+    }
+
+    const fund = await program.account.fund.fetch(fundPDA);
+    expect(fund.shareClassesLen).toEqual(1);
+    expect(fund.assetsLen).toEqual(3);
+    expect(fund.name).toEqual(fundName);
+    expect(fund.symbol).toEqual(fundSymbol);
+    expect(fund.isActive).toEqual(true);
+  });
+  */
+
+  /*
+  it("Update fund", async () => {
+    const newFundSymbol = "FF0";
+    await program.methods
+      .update(null, newFundSymbol, null, true)
+      .accounts({
+        fund: fundPDA,
+        manager: manager.publicKey
+      })
+      .rpc({ commitment });
+    const fund = await program.account.fund.fetch(fundPDA);
+    expect(fund.symbol).toEqual(newFundSymbol);
+    expect(fund.isActive).toEqual(true);
+  });
+  */
+
+  /*
+  // This is the test used to create ATAs, do NOT rerun
+  it("Create ATAs", async () => {
+    //TODO: remove creation of ATA
+    // currently we need to manually create the ATAs
+    try {
+      const tx1 = new Transaction().add(
+        // Treasury
+        createAssociatedTokenAccountInstruction(
+          manager.publicKey,
+          treasuryUsdcAta,
+          treasuryPDA,
+          usdc,
+          TOKEN_PROGRAM_ID,
+          ASSOCIATED_TOKEN_PROGRAM_ID
+        ),
+        createAssociatedTokenAccountInstruction(
+          manager.publicKey,
+          treasurySolAta,
+          treasuryPDA,
+          wsol,
+          TOKEN_PROGRAM_ID,
+          ASSOCIATED_TOKEN_PROGRAM_ID
+        ),
+        createAssociatedTokenAccountInstruction(
+          manager.publicKey,
+          treasuryBtcAta,
+          treasuryPDA,
+          wbtc,
+          BTC_TOKEN_PROGRAM_ID,
+          ASSOCIATED_TOKEN_PROGRAM_ID
+        ),
+        // Shares
+        createAssociatedTokenAccountInstruction(
+          manager.publicKey,
+          managerSharesAta,
+          manager.publicKey,
+          sharePDA,
+          TOKEN_2022_PROGRAM_ID,
+          ASSOCIATED_TOKEN_PROGRAM_ID
+        ),
+      );
+      await sendAndConfirmTransaction(connection, tx1, [manager.payer], {
+        skipPreflight: true,
+        commitment
+      });
+    } catch (e) {
+      // create ATAs
+      console.error(e);
+      throw e;
+    }
+  });
+  */
+
+  /*
+  // This is the test used to create the Drift account, do NOT rerun
+  it('Create Drift trading account', async () => {
+    const userAccountPublicKey = await getUserAccountPublicKey(
+      DRIFT_PROGRAM_ID,
+      treasuryPDA,
+      0
+    );
+    const userStatsAccountPublicKey = await getUserStatsAccountPublicKey(
+      DRIFT_PROGRAM_ID,
+      treasuryPDA
+    );
+    const statePublicKey = await getDriftStateAccountPublicKey(
+      DRIFT_PROGRAM_ID,
+    );
+    // console.log("userAccountPublicKey", userAccountPublicKey);
+    // console.log("userStatsAccountPublicKey", userStatsAccountPublicKey);
+    // console.log("statePublicKey", statePublicKey);
+    // console.log("fundPDA", fundPDA);
+    // console.log("treasuryPDA", treasuryPDA);
+
+    try {
+      const txId = await program.methods
+        .driftInitialize(null)
+        .accounts({
+          fund: fundPDA,
+          treasury: treasuryPDA,
+          userStats: userStatsAccountPublicKey,
+          user: userAccountPublicKey,
+          state: statePublicKey,
+          manager: manager.publicKey,
+          driftProgram: DRIFT_PROGRAM_ID,
+        })
+        .rpc({commitment}); // await 'confirmed'
+
+      await connection.getParsedTransaction(txId, {commitment});
+      console.log("driftInitialize", txId);
+    } catch(e) {
+      console.error(e);
+      throw e;
+    }
+  }, 10_000);
+  */
 
   /*
   it('Close Drift trading account', async () => {
