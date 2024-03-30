@@ -871,13 +871,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "custody"
-version = "0.1.0"
-dependencies = [
- "anchor-lang",
-]
-
-[[package]]
 name = "darling"
 version = "0.14.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1552,20 +1545,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e3148f5046208a5d56bcfc03053e3ca6334e51da8dfb19b6cdc8b306fae3283e"
 
 [[package]]
-name = "policy"
-version = "0.1.0"
-dependencies = [
- "anchor-lang",
- "anchor-spl",
- "solana-program",
- "spl-associated-token-account 3.0.2",
- "spl-tlv-account-resolution 0.5.2",
- "spl-token",
- "spl-token-2022 3.0.2",
- "spl-transfer-hook-interface 0.5.1",
-]
-
-[[package]]
 name = "polyval"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1582,15 +1561,6 @@ name = "ppv-lite86"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
-
-[[package]]
-name = "pricing"
-version = "0.1.0"
-dependencies = [
- "anchor-lang",
- "pyth-sdk-solana",
- "solana-program",
-]
 
 [[package]]
 name = "proc-macro-crate"
@@ -2482,20 +2452,6 @@ dependencies = [
 
 [[package]]
 name = "spl-tlv-account-resolution"
-version = "0.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56f335787add7fa711819f9e7c573f8145a5358a709446fe2d24bf2a88117c90"
-dependencies = [
- "bytemuck",
- "solana-program",
- "spl-discriminator 0.1.1",
- "spl-pod 0.1.1",
- "spl-program-error 0.3.1",
- "spl-type-length-value 0.3.1",
-]
-
-[[package]]
-name = "spl-tlv-account-resolution"
 version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cace91ba08984a41556efe49cbf2edca4db2f577b649da7827d3621161784bf8"
@@ -2628,22 +2584,6 @@ dependencies = [
 
 [[package]]
 name = "spl-transfer-hook-interface"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f6dfe329fcff44cbe2eea994bd8f737f0b0a69faed39e56f9b6ee03badf7e14"
-dependencies = [
- "arrayref",
- "bytemuck",
- "solana-program",
- "spl-discriminator 0.1.1",
- "spl-pod 0.1.1",
- "spl-program-error 0.3.1",
- "spl-tlv-account-resolution 0.5.2",
- "spl-type-length-value 0.3.1",
-]
-
-[[package]]
-name = "spl-transfer-hook-interface"
 version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "66a98359769cd988f7b35c02558daa56d496a7e3bd8626e61f90a7c757eedb9b"
@@ -2682,13 +2622,6 @@ dependencies = [
  "spl-discriminator 0.2.2",
  "spl-pod 0.2.2",
  "spl-program-error 0.4.0",
-]
-
-[[package]]
-name = "strategy"
-version = "0.1.0"
-dependencies = [
- "anchor-lang",
 ]
 
 [[package]]

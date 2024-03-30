@@ -58,20 +58,32 @@ pub mod glam {
 
     // Drift
 
-    pub fn drift_initialize(ctx: Context<DriftInitialize>) -> Result<()> {
-        drift::drift_initialize_handler(ctx)
+    pub fn drift_initialize(ctx: Context<DriftInitialize>, trader: Option<Pubkey>) -> Result<()> {
+        drift::drift_initialize_handler(ctx, trader)
     }
 
-    pub fn drift_deposit(ctx: Context<DriftDeposit>) -> Result<()> {
-        drift::drift_deposit_handler(ctx)
+    pub fn drift_update_delegated_trader(
+        ctx: Context<DriftUpdate>,
+        trader: Option<Pubkey>,
+    ) -> Result<()> {
+        drift::drift_update_delegated_trader_handler(ctx, trader)
     }
 
-    pub fn drift_withdraw(ctx: Context<DriftWithdraw>) -> Result<()> {
-        drift::drift_withdraw_handler(ctx)
+    pub fn drift_deposit<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, DriftDeposit<'info>>,
+        amount: u64,
+    ) -> Result<()> {
+        drift::drift_deposit_handler(ctx, amount)
+    }
+
+    pub fn drift_withdraw<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, DriftWithdraw<'info>>,
+        amount: u64,
+    ) -> Result<()> {
+        drift::drift_withdraw_handler(ctx, amount)
     }
 
     pub fn drift_close(ctx: Context<DriftClose>) -> Result<()> {
         drift::drift_close_handler(ctx)
     }
-
 }

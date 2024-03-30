@@ -29,7 +29,7 @@ wallet = "~/.config/solana/id.json"
 [scripts]
 #test = "../node_modules/.bin/nx run anchor:jest --verbose --testNamePattern glam_investor"
 test = "../node_modules/.bin/nx run anchor:jest --verbose --testNamePattern glam_crud"
-#test = "../node_modules/.bin/nx run anchor:jest --verbose --testNamePattern pyth"
+#test = "../node_modules/.bin/nx run anchor:jest --verbose --testNamePattern devnet"
 
 [test]
 startup_wait = 50000
@@ -69,5 +69,6 @@ address = "So11111111111111111111111111111111111111112"
 
 [[test.validator.account]]
 # Drift program
+# solana account -u d --output json --output-file drift.json dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH
 address = "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
 filename = "drift.json"
