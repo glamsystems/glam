@@ -20,6 +20,7 @@
     "@carbon/type": "^11.26.0",
     "@coral-xyz/anchor": "^0.29.0",
     "@drift-labs/sdk": "2.71.0-beta.4",
+    "@hookform/resolvers": "^3.3.4",
     "@ibm/plex": "^6.4.0",
     "@solana-developers/helpers": "^2.2.0",
     "@solana-developers/preset-react": "^2.2.0",
@@ -43,11 +44,13 @@
     "jotai": "2.5.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-hook-form": "^7.51.2",
     "react-hot-toast": "^2.4.1",
     "react-router-dom": "^6.22.3",
     "sass": "^1.63.6",
     "tslib": "^2.6.2",
-    "use-dark-mode": "^2.3.1"
+    "use-dark-mode": "^2.3.1",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
