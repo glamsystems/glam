@@ -18,17 +18,17 @@ describe('pyth', () => {
   });
 
   // This test needs pyth and only works on devnet
-  it("Send money", async () => {
-    try {
-      const tx = await program.methods
-        .payUsd(new BN(10))
-        .accounts({
-          solUsdPriceAccount: new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"),
-          to,
-        }).rpc();
-        console.log("Tx: ", tx);
-    } catch(e) {
-      console.error(e);
-    }
-  });
+  // it("Send money", async () => {
+  //   try {
+  //     const tx = await program.methods
+  //       .payUsd(new BN(10))
+  //       .accounts({
+  //         solUsdPriceAccount: new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"),
+  //         to,
+  //       }).rpc();
+  //       console.log("Tx: ", tx);
+  //   } catch(e) {
+  //     console.error(e);
+  //   }
+  // });
 });
