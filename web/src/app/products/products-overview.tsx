@@ -18,8 +18,8 @@ import { useNavigate } from 'react-router-dom';
 export default function ProductsOverview() {
   const rows = [
     {
-      id: 'IBIT',
-      symbol: 'iBTC Shares',
+      id: 'GXwshLimDZur9PkBL5xhoraE2vMAQdWxMxEYvPqSvx1z',
+      symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
       '24': 100,
@@ -29,8 +29,8 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'IBIT',
-      symbol: 'iBTC Shares',
+      id: 'GXwshLimDZur9PkBL5xhoraE2vMAQdWxMxEYvPqSvx1z',
+      symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
       '24': 100,
@@ -40,8 +40,8 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'IBIT',
-      symbol: 'iBTC Shares',
+      id: 'GXwshLimDZur9PkBL5xhoraE2vMAQdWxMxEYvPqSvx1z',
+      symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
       '24': 100,
@@ -51,8 +51,8 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'IBIT',
-      symbol: 'iBTC Shares',
+      id: 'GXwshLimDZur9PkBL5xhoraE2vMAQdWxMxEYvPqSvx1z',
+      symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
       '24': 100,
@@ -62,8 +62,8 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'IBIT',
-      symbol: 'iBTC Shares',
+      id: 'GXwshLimDZur9PkBL5xhoraE2vMAQdWxMxEYvPqSvx1z',
+      symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
       '24': 100,
@@ -73,8 +73,8 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'IBIT',
-      symbol: 'iBTC Shares',
+      id: 'GXwshLimDZur9PkBL5xhoraE2vMAQdWxMxEYvPqSvx1z',
+      symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
       '24': 100,
@@ -84,8 +84,8 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'IBIT',
-      symbol: 'iBTC Shares',
+      id: 'GXwshLimDZur9PkBL5xhoraE2vMAQdWxMxEYvPqSvx1z',
+      symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
       '24': 100,
@@ -95,8 +95,8 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'IBIT',
-      symbol: 'iBTC Shares',
+      id: 'GXwshLimDZur9PkBL5xhoraE2vMAQdWxMxEYvPqSvx1z',
+      symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
       '24': 100,
@@ -106,8 +106,8 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'IBIT',
-      symbol: 'iBTC Shares',
+      id: 'GXwshLimDZur9PkBL5xhoraE2vMAQdWxMxEYvPqSvx1z',
+      symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
       '24': 100,
@@ -117,8 +117,8 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'IBIT',
-      symbol: 'iBTC Shares',
+      id: 'GXwshLimDZur9PkBL5xhoraE2vMAQdWxMxEYvPqSvx1z',
+      symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
       '24': 100,
