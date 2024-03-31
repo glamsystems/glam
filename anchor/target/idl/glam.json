@@ -50,11 +50,11 @@
       ],
       "args": [
         {
-          "name": "name",
+          "name": "fundName",
           "type": "string"
         },
         {
-          "name": "symbol",
+          "name": "fundUri",
           "type": "string"
         },
         {
@@ -66,6 +66,18 @@
         {
           "name": "activate",
           "type": "bool"
+        },
+        {
+          "name": "shareName",
+          "type": "string"
+        },
+        {
+          "name": "shareSymbol",
+          "type": "string"
+        },
+        {
+          "name": "shareUri",
+          "type": "string"
         }
       ]
     },
@@ -91,7 +103,7 @@
           }
         },
         {
-          "name": "symbol",
+          "name": "uri",
           "type": {
             "option": "string"
           }
@@ -587,7 +599,7 @@
             "type": "string"
           },
           {
-            "name": "symbol",
+            "name": "uri",
             "type": "string"
           },
           {
