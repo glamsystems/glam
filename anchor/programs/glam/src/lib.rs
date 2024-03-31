@@ -18,21 +18,33 @@ pub mod glam {
 
     pub fn initialize<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, InitializeFund<'info>>,
-        name: String,
-        symbol: String,
+        fund_name: String,
+        fund_uri: String,
         asset_weights: Vec<u32>,
         activate: bool,
+        share_name: String,
+        share_symbol: String,
+        share_uri: String,
     ) -> Result<()> {
-        manager::initialize_fund_handler(ctx, name, symbol, asset_weights, activate)
+        manager::initialize_fund_handler(
+            ctx,
+            fund_name,
+            fund_uri,
+            asset_weights,
+            activate,
+            share_name,
+            share_symbol,
+            share_uri,
+        )
     }
     pub fn update<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, UpdateFund<'info>>,
         name: Option<String>,
-        symbol: Option<String>,
+        uri: Option<String>,
         asset_weights: Option<Vec<u32>>,
         activate: Option<bool>,
     ) -> Result<()> {
-        manager::update_fund_handler(ctx, name, symbol, asset_weights, activate)
+        manager::update_fund_handler(ctx, name, uri, asset_weights, activate)
     }
     pub fn close(ctx: Context<CloseFund>) -> Result<()> {
         manager::close_handler(ctx)

@@ -30,7 +30,7 @@ describe("glam_crud", () => {
   const BTC_TOKEN_PROGRAM_ID = TOKEN_2022_PROGRAM_ID;
 
   const fundName = "Investment fund";
-  const fundSymbol = "FFF";
+  const fundUri = "https://glam.systems/fund/XYZ";
   const [fundPDA, fundBump] = PublicKey.findProgramAddressSync(
     [
       anchor.utils.bytes.utf8.encode("fund"),
@@ -55,7 +55,15 @@ describe("glam_crud", () => {
   it("Initialize fund", async () => {
     try {
       const txId = await program.methods
-        .initialize(fundName, fundSymbol, [0, 60, 40], true)
+        .initialize(
+          fundName,
+          fundUri,
+          [0, 60, 40],
+          true,
+          "Class A share",
+          "CLASS-A",
+          "https://glam.systems/fund/XYZ/share/A"
+        )
         .accounts({
           fund: fundPDA,
           treasury: treasuryPDA,
@@ -69,8 +77,8 @@ describe("glam_crud", () => {
           { pubkey: eth, isSigner: false, isWritable: false }
         ])
         .rpc({ commitment }); // await 'confirmed'
-      console.log("initialize fund", txId);
-    } catch(e) {
+      console.log(`Fund ${fundPDA} initialized, txId: ${txId}`);
+    } catch (e) {
       console.error(e);
       throw e;
     }
@@ -79,7 +87,7 @@ describe("glam_crud", () => {
     expect(fund.shareClassesLen).toEqual(1);
     expect(fund.assetsLen).toEqual(3);
     expect(fund.name).toEqual(fundName);
-    expect(fund.symbol).toEqual(fundSymbol);
+    expect(fund.uri).toEqual(fundUri);
     expect(fund.isActive).toEqual(true);
   });
 
