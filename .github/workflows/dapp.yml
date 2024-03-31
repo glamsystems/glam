@@ -1,6 +1,9 @@
 name: Deploy Dapp to GitHub Pages
 
 on:
+  pull_request:
+    branches: ["main"]
+
   # Runs on pushes targeting the default branch
   push:
     branches: ["main"]
