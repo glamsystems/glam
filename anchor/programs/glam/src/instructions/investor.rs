@@ -4,12 +4,20 @@ use anchor_spl::token::Token;
 use anchor_spl::token_interface::{
     burn, mint_to, transfer_checked, Burn, Mint, MintTo, Token2022, TokenAccount, TransferChecked,
 };
+use pyth_sdk_solana::state::SolanaPriceAccount;
 use pyth_sdk_solana::Price;
 
 use crate::error::InvestorError;
 use crate::state::fund::*;
 
 //TODO(security): check that treasury and share_class belong to the fund
+
+fn log_decimal(amount: u64, minus_decimals: i32) -> f64 {
+    amount as f64 * 10f64.powf(minus_decimals as f64)
+}
+fn log_price(price: Price) -> f64 {
+    price.price as f64 * 10f64.powf(price.expo as f64)
+}
 
 #[derive(Accounts)]
 pub struct Subscribe<'info> {
@@ -61,6 +69,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     // compute amount of shares
     let share_class = &ctx.accounts.share_class;
     let total_shares = share_class.supply;
+    let use_fixed_price = total_shares == 0;
 
     let share_expo = -(share_class.decimals as i32);
     let mut total_value = Price {
@@ -81,7 +90,8 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         InvestorError::InvalidAssetsRedeem
     );
 
-    let mut subscribe_asset_price = total_value.clone();
+    let timestamp = Clock::get()?.unix_timestamp;
+    let mut subscribe_asset_price = total_value;
     let mut subscribe_asset_expo = 0i32;
     for (i, accounts) in ctx.remaining_accounts.chunks(2).enumerate() {
         let treasury_ata = InterfaceAccount::<TokenAccount>::try_from(&accounts[0])
@@ -93,22 +103,24 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         // );
         //TODO check pricing account
 
-        //TODO fetch price
-        let mut asset_price = Price {
-            // i=0 => 1 USDC
-            // i=1 => 51000 BTC
-            // i=2 => 3000 ETH
-            price: if i == 0 {
-                1
-            } else if i == 1 {
-                51000
-            } else {
-                3000
-            },
-            conf: 0,
-            expo: 0,
-            publish_time: 0,
-        };
+        let price_feed: pyth_sdk_solana::PriceFeed =
+            SolanaPriceAccount::account_info_to_feed(pricing_account).unwrap();
+        let mut asset_price = price_feed.get_price_no_older_than(timestamp, 60).unwrap();
+        // let mut asset_price = Price {
+        //     // i=0 => 1 USDC
+        //     // i=1 => 51000 BTC
+        //     // i=2 => 3000 ETH
+        //     price: if i == 0 {
+        //         1
+        //     } else if i == 1 {
+        //         51000
+        //     } else {
+        //         3000
+        //     },
+        //     conf: 0,
+        //     expo: 0,
+        //     publish_time: 0,
+        // };
 
         let asset_decimals: u8 = if i == 1 { 9 } else { 6 };
         let asset_expo = -(asset_decimals as i32);
@@ -117,9 +129,16 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         let asset_value = asset_price
             .cmul(asset_amount.try_into().unwrap(), asset_expo)
             .unwrap();
+        msg!(
+            "- asset {}: amount={:.2} decimals={} price={:.2} value={:.2}",
+            i,
+            log_decimal(asset_amount, asset_expo),
+            asset_decimals,
+            log_price(asset_price),
+            log_price(asset_value),
+        );
 
         if i == asset_idx {
-            msg!("- asset {}: amount={} decimals={} price={}e{} value={}e{}", i, asset_amount, asset_decimals, asset_price.price, asset_price.expo, asset_value.price, asset_value.expo);
             subscribe_asset_price = asset_price;
             subscribe_asset_expo = asset_expo;
         }
@@ -129,29 +148,31 @@ pub fn subscribe_handler<'c: 'info, 'info>(
             .unwrap();
     }
 
-    // let value_to_redeem = Price {
-    //     price:        (total_value.price as u128 * amount as u128 / total_shares as u128) as i64,
-    //     conf:         0,
-    //     expo:         share_expo,
-    //     publish_time: 0,
-    // };
     let asset_value = subscribe_asset_price
         .cmul(amount.try_into().unwrap(), subscribe_asset_expo)
         .unwrap()
-        .scale_to_exponent(0)
+        .scale_to_exponent(share_expo)
         .unwrap()
         .price as u128;
-    // msg!("- asset_value={}", asset_value);
+    // msg!(
+    //     "- total_value={:.2} asset_value={}",
+    //     log_price(total_value),
+    //     log_price(asset_value),
+    // );
 
-    let amount_shares = if total_shares == 0 {
+    let amount_shares = if use_fixed_price {
         // fixed $10/share initial value
         //TODO: pick value from fund definition
-        (asset_value / 10) as u64
+        asset_value / 10
     } else {
         // msg!("- total_shares={} total_value={}e{}", total_shares, total_value.price, total_value.expo);
-        ((asset_value * total_shares as u128 * 10u128.pow((-total_value.expo) as u32)) / (total_value.price as u128)) as u64
-    };
-    msg!("Subscribe: {} for {} shares", amount, amount_shares);
+        (asset_value * total_shares as u128) / (total_value.price as u128)
+    } as u64;
+    msg!(
+        "Subscribe: {} for {} shares",
+        log_decimal(amount, subscribe_asset_expo),
+        log_decimal(amount_shares, share_expo)
+    );
 
     // transfer asset from user to treasury
     // note: we detect the token program to use from the asset
@@ -247,11 +268,18 @@ pub fn redeem_handler<'c: 'info, 'info>(
         panic!("not implemented")
     }
 
-    msg!("Redeem: {} shares", amount);
-
     let share_class = &ctx.accounts.share_class;
+    let share_expo = -(share_class.decimals as i32);
     let total_shares = share_class.supply;
     let should_transfer_everything = amount == total_shares;
+
+    msg!(
+        "Redeem: amount={:.2} total_shares={:.2} ({}e{})",
+        log_decimal(amount, share_expo),
+        log_decimal(total_shares, share_expo),
+        total_shares,
+        share_expo,
+    );
 
     if skip_state {
         let fund = &ctx.accounts.fund;
@@ -269,6 +297,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
             InvestorError::InvalidAssetsRedeem
         );
 
+        let timestamp = Clock::get()?.unix_timestamp;
         let mut assets_to_transfer: Vec<AssetToTransfer> = Vec::new();
         for (i, accounts) in ctx.remaining_accounts.chunks(4).enumerate() {
             let asset = InterfaceAccount::<Mint>::try_from(&accounts[0]).expect("invalid asset");
@@ -288,22 +317,24 @@ pub fn redeem_handler<'c: 'info, 'info>(
                 InvestorError::InvalidAssetsRedeem
             );
 
-            //TODO fetch price
-            let mut asset_price = Price {
-                // i=0 => 1 USDC
-                // i=1 => 51000 BTC
-                // i=2 => 3000 ETH
-                price: if i == 0 {
-                    1
-                } else if i == 1 {
-                    51000
-                } else {
-                    3000
-                },
-                conf: 0,
-                expo: 0,
-                publish_time: 0,
-            };
+            let price_feed: pyth_sdk_solana::PriceFeed =
+                SolanaPriceAccount::account_info_to_feed(pricing_account).unwrap();
+            let mut asset_price = price_feed.get_price_no_older_than(timestamp, 60).unwrap();
+            // let mut asset_price = Price {
+            //     // i=0 => 1 USDC
+            //     // i=1 => 51000 BTC
+            //     // i=2 => 3000 ETH
+            //     price: if i == 0 {
+            //         1
+            //     } else if i == 1 {
+            //         51000
+            //     } else {
+            //         3000
+            //     },
+            //     conf: 0,
+            //     expo: 0,
+            //     publish_time: 0,
+            // };
 
             let asset_decimals: u8 = if i == 1 { 9 } else { 6 };
             let asset_expo = -(asset_decimals as i32);
@@ -322,11 +353,21 @@ pub fn redeem_handler<'c: 'info, 'info>(
                 asset_amount,
                 asset_value,
             });
-            // msg!("- asset {}: amount={} decimals={} price={}e{} value={}e{}", i, asset_amount, asset_decimals, asset_price.price, asset_price.expo, asset_value.price, asset_value.expo);
+            // msg!(
+            //     "- asset {}: amount={:.2} decimals={} price={:.2} (={}e{}) value={:.2} ({}e{})",
+            //     i,
+            //     asset_amount as f64 / 10f64.powf(asset_decimals as f64),
+            //     asset_decimals,
+            //     log_price(asset_price),
+            //     asset_price.price,
+            //     asset_price.expo,
+            //     log_price(asset_value),
+            //     asset_value.price,
+            //     asset_value.expo
+            // );
         }
 
         //TODO: use Price::price_basket?
-        let share_expo = -(share_class.decimals as i32);
         let mut total_value = Price {
             price: 0,
             conf: 0,
@@ -338,15 +379,25 @@ pub fn redeem_handler<'c: 'info, 'info>(
                 .add(&att.asset_value.scale_to_exponent(share_expo).unwrap())
                 .unwrap();
         }
-        // msg!("= tot_value={}e{}", total_value.price, total_value.expo);
+        // msg!(
+        //     "= tot_value={:.2} ({}e{})",
+        //     log_price(total_value),
+        //     total_value.price,
+        //     total_value.expo
+        // );
 
         let value_to_redeem = Price {
-            price: (total_value.price as u128 * amount as u128 / total_shares as u128) as i64,
+            price: ((total_value.price as u128 * amount as u128) / total_shares as u128) as i64,
             conf: 0,
             expo: share_expo,
             publish_time: 0,
         };
-        // msg!("= value_red={}e{}", value_to_redeem.price, value_to_redeem.expo);
+        // msg!(
+        //     "= value_red={:.2} ({}e{})",
+        //     log_price(value_to_redeem),
+        //     value_to_redeem.price,
+        //     value_to_redeem.expo
+        // );
         let total_weight: u32 = fund.assets_weights.iter().sum();
 
         burn(
@@ -371,21 +422,22 @@ pub fn redeem_handler<'c: 'info, 'info>(
                 let value = value_to_redeem
                     .scale_to_exponent(att.asset_price.expo)
                     .unwrap();
-                (value.price as u128
-                    / (att.asset_price.price as u128 / 10u128.pow(att.asset_decimals as u32)))
-                    as u64
+                ((value.price as u128 * 10u128.pow(att.asset_decimals as u32))
+                    / att.asset_price.price as u128) as u64
             } else {
-                let weight = fund.assets_weights[i];
+                let weight: u32 = fund.assets_weights[i];
+                if weight == 0 {
+                    continue;
+                }
 
                 let value = value_to_redeem
                     .scale_to_exponent(att.asset_price.expo)
                     .unwrap();
-                (value.price as u128 * weight as u128
-                    / total_weight as u128
-                    / (att.asset_price.price as u128 / 10u128.pow(att.asset_decimals as u32)))
-                    as u64
+                ((((value.price as u128 * weight as u128) / total_weight as u128)
+                    * 10u128.pow(att.asset_decimals as u32))
+                    / att.asset_price.price as u128) as u64
             };
-            // msg!("- asset {}: amount={}", i, amount_asset);
+            msg!("- asset {}: amount={}", i, amount_asset);
 
             if amount_asset == 0 {
                 continue;
@@ -406,7 +458,12 @@ pub fn redeem_handler<'c: 'info, 'info>(
                 &[treasury.bump],
             ];
             let signer_seeds = &[&seeds[..]];
-            msg!("- {}e-{} {}", amount_asset, att.asset_decimals, asset_info.key());
+            // msg!(
+            //     "- {}e-{} {}",
+            //     amount_asset,
+            //     att.asset_decimals,
+            //     asset_info.key()
+            // );
             transfer_checked(
                 CpiContext::new_with_signer(
                     asset_program,

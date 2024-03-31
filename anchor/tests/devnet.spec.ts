@@ -182,7 +182,7 @@ describe("glam_devnet", () => {
   it("Manager tests subscribe USDC to fund", async () => {
     console.log("managerUsdcAta", managerUsdcAta);
     const amount = new BN(200 * 10 ** 6); // 200 USDC
-    const expectedShares = "20"; // $10/share => 20 shares
+    // const expectedShares = "20"; // $10/share => 20 shares
     try {
       await program.methods
         .subscribe(amount, true)
@@ -211,7 +211,7 @@ describe("glam_devnet", () => {
       commitment,
       TOKEN_2022_PROGRAM_ID
     );
-    expect(shares.supply.toString()).toEqual(expectedShares); //TODO: compare BigInt?
+    // expect(shares.supply.toString()).toEqual(expectedShares); //TODO: compare BigInt?
 
     const managerShares = await getAccount(
       connection,
@@ -219,7 +219,80 @@ describe("glam_devnet", () => {
       commitment,
       TOKEN_2022_PROGRAM_ID
     );
-    expect(managerShares.amount).toEqual(shares.supply);
+    // expect(managerShares.amount).toEqual(shares.supply);
+  });
+  */
+
+  /*
+  it("Manager redeems 100% of fund", async () => {
+    // note: this only works if the manager owns all the shares
+    let shares = await getMint(
+      connection,
+      sharePDA,
+      commitment,
+      TOKEN_2022_PROGRAM_ID
+    );
+    const amount = new BN(shares.supply);
+    // const amount = new BN(10_000_000_000); // 10 shares
+    try {
+      await program.methods
+        .redeem(amount, true, true)
+        .accounts({
+          fund: fundPDA,
+          treasury: treasuryPDA,
+          shareClass: sharePDA,
+          signerShareAta: managerSharesAta,
+          signer: manager.publicKey,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          token2022Program: TOKEN_2022_PROGRAM_ID
+        })
+        .remainingAccounts(remainingAccountsRedeem)
+        .rpc({ commitment });
+    } catch (e) {
+      // redeem
+      console.error(e);
+      throw e;
+    }
+
+    shares = await getMint(
+      connection,
+      sharePDA,
+      commitment,
+      TOKEN_2022_PROGRAM_ID
+    );
+    expect(shares.supply.toString()).toEqual("0");
+
+    const managerShares = await getAccount(
+      connection,
+      managerSharesAta,
+      commitment,
+      TOKEN_2022_PROGRAM_ID
+    );
+    expect(managerShares.amount).toEqual(shares.supply); // 0
+
+    const treasuryUsdc = await getAccount(
+      connection,
+      treasuryUsdcAta,
+      commitment,
+      TOKEN_PROGRAM_ID
+    );
+    expect(treasuryUsdc.amount).toEqual(shares.supply); // 0
+
+    const treasuryEth = await getAccount(
+      connection,
+      treasurySolAta,
+      commitment,
+      TOKEN_PROGRAM_ID
+    );
+    expect(treasuryEth.amount).toEqual(shares.supply); // 0
+
+    const treasuryBtc = await getAccount(
+      connection,
+      treasuryBtcAta,
+      commitment,
+      BTC_TOKEN_PROGRAM_ID
+    );
+    expect(treasuryBtc.amount).toEqual(shares.supply); // 0
   });
   */
 
