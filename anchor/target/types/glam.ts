@@ -50,11 +50,11 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "name",
+          "name": "fundName",
           "type": "string"
         },
         {
-          "name": "symbol",
+          "name": "fundUri",
           "type": "string"
         },
         {
@@ -66,6 +66,18 @@ export type Glam = {
         {
           "name": "activate",
           "type": "bool"
+        },
+        {
+          "name": "shareName",
+          "type": "string"
+        },
+        {
+          "name": "shareSymbol",
+          "type": "string"
+        },
+        {
+          "name": "shareUri",
+          "type": "string"
         }
       ]
     },
@@ -91,7 +103,7 @@ export type Glam = {
           }
         },
         {
-          "name": "symbol",
+          "name": "uri",
           "type": {
             "option": "string"
           }
@@ -587,7 +599,7 @@ export type Glam = {
             "type": "string"
           },
           {
-            "name": "symbol",
+            "name": "uri",
             "type": "string"
           },
           {
@@ -721,11 +733,11 @@ export const IDL: Glam = {
       ],
       "args": [
         {
-          "name": "name",
+          "name": "fundName",
           "type": "string"
         },
         {
-          "name": "symbol",
+          "name": "fundUri",
           "type": "string"
         },
         {
@@ -737,6 +749,18 @@ export const IDL: Glam = {
         {
           "name": "activate",
           "type": "bool"
+        },
+        {
+          "name": "shareName",
+          "type": "string"
+        },
+        {
+          "name": "shareSymbol",
+          "type": "string"
+        },
+        {
+          "name": "shareUri",
+          "type": "string"
         }
       ]
     },
@@ -762,7 +786,7 @@ export const IDL: Glam = {
           }
         },
         {
-          "name": "symbol",
+          "name": "uri",
           "type": {
             "option": "string"
           }
@@ -1258,7 +1282,7 @@ export const IDL: Glam = {
             "type": "string"
           },
           {
-            "name": "symbol",
+            "name": "uri",
             "type": "string"
           },
           {
