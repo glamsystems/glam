@@ -1,4 +1,12 @@
 import {
+  Add,
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  NextFilled,
+  NextOutline
+} from "@carbon/icons-react";
+import {
   Button,
   Checkbox,
   Dropdown,
@@ -11,7 +19,6 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useEffect, useState } from "react";
 
-import { Add } from "@carbon/icons-react";
 import { countryList } from "../data/countryList";
 import { tokenList } from "../data/tokenList";
 import { z } from "zod";
@@ -170,8 +177,10 @@ export const CreateProduct = () => {
           >
             <ProgressStep label="Basic Information" description="Label" />
             <ProgressStep label="Share Classes" description="Label" />
-            <ProgressStep label="Fees" description="Label" />
             <ProgressStep label="Policies" description="Label" />
+            <ProgressStep label="Assets" description="Label" />
+            <ProgressStep label="Strategy" description="Label" />
+            <ProgressStep label="Review" description="Label" />
           </ProgressIndicator>
           <form
             className="flex flex-col gap-[30px]  h-full w-full"
@@ -496,10 +505,14 @@ export const CreateProduct = () => {
                 </div>
               </>
             ) : currentIndex === 2 ? (
-              <p>Fees</p>
-            ) : currentIndex === 3 ? (
               <p>Policies</p>
-            ) : null}
+            ) : currentIndex === 3 ? (
+              <p>Assets</p>
+            ) : currentIndex === 4 ? (
+              <p>Strategy</p>
+            ) : (
+              <p>Review</p>
+            )}
 
             {errors.root && <p style={errorStyle}>{errors.root.message}</p>}
 
@@ -507,7 +520,8 @@ export const CreateProduct = () => {
               <Button
                 kind="secondary"
                 className="bg-[#393939]"
-                renderIcon={Add}
+                renderIcon={currentIndex !== 0 ? ArrowLeft : undefined}
+                disabled={currentIndex === 0 || isSubmitting}
                 iconDescription="Back Button"
                 onClick={() => {
                   if (currentIndex === 0) {
@@ -521,12 +535,12 @@ export const CreateProduct = () => {
               <Button
                 kind="primary"
                 className="bg-[#0F62FE]"
-                renderIcon={Add}
+                renderIcon={currentIndex !== 5 ? ArrowRight : ArrowDown}
                 disabled={isSubmitting}
                 iconDescription="Add Button"
                 onClick={() => setCurrentIndex(currentIndex + 1)}
               >
-                {currentIndex === 3 ? "Submit" : "Next"}
+                {currentIndex === 5 ? "Submit" : "Next"}
               </Button>
               {/* <button
                 type="button"

@@ -35,7 +35,6 @@ export function useGlamProgram() {
     mutationKey: ["glam", "initialize", { cluster }],
     mutationFn: (keypair: Keypair) =>
       program.methods
-        //@ts-expect-error remove this line before committing
         .initialize("test", [0, 60, 40], true)
         .accounts({
           // fund: fundPDA,
