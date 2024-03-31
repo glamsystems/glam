@@ -15,11 +15,7 @@ pub struct InitializeFund<'info> {
     #[account(init, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump, payer = manager, space = 8 + Treasury::INIT_SIZE)]
     pub treasury: Account<'info, Treasury>,
 
-    // this can be either token or token2022
-    // pub asset_base: InterfaceAccount<'info, Mint>,
-    // #[account(init, seeds = [b"share-0".as_ref(), fund.key().as_ref()], bump, payer = manager, mint::decimals = 9, mint::authority = share)]
-    // pub share: Box<InterfaceAccount<'info, Mint>>,
-    /// CHECK: test
+    /// CHECK: we'll create the account later on with metadata
     #[account(mut, seeds = [b"share-0".as_ref(), fund.key().as_ref()], bump)]
     pub share: AccountInfo<'info>,
 
@@ -33,13 +29,25 @@ pub struct InitializeFund<'info> {
 
 pub fn initialize_fund_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, InitializeFund<'info>>,
-    name: String,
-    symbol: String,
+    fund_name: String,
+    fund_uri: String,
     asset_weights: Vec<u32>,
     activate: bool,
+    share_name: String,
+    share_symbol: String,
+    share_uri: String,
 ) -> Result<()> {
-    require!(name.as_bytes().len() <= 30, ManagerError::InvalidFundName);
-    require!(symbol.as_bytes().len() <= 10, ManagerError::InvalidFundName);
+    //
+    // Validate the input
+    //
+    require!(
+        fund_name.as_bytes().len() <= 50,
+        ManagerError::InvalidFundName
+    );
+    require!(
+        fund_uri.as_bytes().len() <= 100,
+        ManagerError::InvalidFundName
+    );
 
     let assets_len = ctx.remaining_accounts.len();
     require!(assets_len <= MAX_ASSETS, ManagerError::InvalidAssetsLen);
@@ -48,13 +56,16 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
         ManagerError::InvalidAssetsLen
     );
 
+    //
+    // Initialize the fund
+    //
     let fund = &mut ctx.accounts.fund;
     let treasury = &mut ctx.accounts.treasury;
 
     fund.manager = ctx.accounts.manager.key();
     fund.treasury = treasury.key();
-    fund.name = name;
-    fund.symbol = symbol;
+    fund.name = fund_name;
+    fund.uri = fund_uri;
     fund.bump_fund = ctx.bumps.fund;
     fund.bump_treasury = ctx.bumps.treasury;
     fund.time_created = Clock::get()?.unix_timestamp;
@@ -76,26 +87,24 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     treasury.fund = fund.key();
     treasury.bump = ctx.bumps.treasury;
 
-    // share class
+    //
+    // Initialize share class mint and metadata
+    //
     let share_mint = ctx.accounts.share.to_account_info();
     let share_metadata = ctx.accounts.share.to_account_info();
     let share_mint_authority = ctx.accounts.share.to_account_info();
     let share_metadata_authority = ctx.accounts.share.to_account_info();
 
     let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        "share-0".as_bytes(),
-        fund_key.as_ref(),
-        &[ctx.accounts.fund.share_classes_bumps[0]],
-    ];
+    let seeds = &["share-0".as_bytes(), fund_key.as_ref(), &[ctx.bumps.share]];
     let signer_seeds = &[&seeds[..]];
 
     let space =
         ExtensionType::try_calculate_account_len::<StateMint>(&[ExtensionType::MetadataPointer])
             .unwrap();
-    let meta_data_space = 250;
+    let metadata_space = 250; // we may need more space for metadata in the future
 
-    let lamports_required = (Rent::get()?).minimum_balance(space + meta_data_space);
+    let lamports_required = (Rent::get()?).minimum_balance(space + metadata_space);
 
     msg!(
         "Create Mint and metadata account size and cost: {} lamports: {}",
@@ -118,7 +127,7 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     )?;
 
     // Initialize the metadata pointer (Need to do this before initializing the mint)
-    let init_meta_data_pointer_ix =
+    let init_metadata_pointer_ix =
         spl_token_2022::extension::metadata_pointer::instruction::initialize(
             &Token2022::id(),
             &share_mint.key(),
@@ -126,7 +135,7 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
             Some(share_metadata.key()),
         )?;
     solana_program::program::invoke(
-        &init_meta_data_pointer_ix,
+        &init_metadata_pointer_ix,
         &[share_mint.clone(), share_metadata_authority.clone()],
     )?;
 
@@ -140,18 +149,18 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     token_2022::initialize_mint2(mint_cpi_ix, 0, &share_mint_authority.key(), None).unwrap();
 
     // Init the metadata account
-    let init_token_meta_data_ix = spl_token_metadata_interface::instruction::initialize(
+    let init_token_metadata_ix = spl_token_metadata_interface::instruction::initialize(
         &spl_token_2022::id(),
         &share_metadata.key(),
         &share_metadata_authority.key(),
         &share_mint.key(),
         &share_mint_authority.key(),
-        "Beaver".to_string(),
-        "BVA".to_string(),
-        "https://arweave.net/MHK3Iopy0GgvDoM7LkkiAdg7pQqExuuWvedApCnzfj0".to_string(),
+        share_name,
+        share_symbol,
+        share_uri,
     );
     solana_program::program::invoke_signed(
-        &init_token_meta_data_ix,
+        &init_token_metadata_ix,
         &[
             share_metadata,
             share_metadata_authority,
@@ -176,19 +185,19 @@ pub struct UpdateFund<'info> {
 pub fn update_fund_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, UpdateFund<'info>>,
     name: Option<String>,
-    symbol: Option<String>,
+    uri: Option<String>,
     asset_weights: Option<Vec<u32>>,
     activate: Option<bool>,
 ) -> Result<()> {
     let fund = &mut ctx.accounts.fund;
 
     if let Some(name) = name {
-        require!(name.as_bytes().len() <= 30, ManagerError::InvalidFundName);
+        require!(name.as_bytes().len() <= 50, ManagerError::InvalidFundName);
         fund.name = name;
     }
-    if let Some(symbol) = symbol {
-        require!(symbol.as_bytes().len() <= 10, ManagerError::InvalidFundName);
-        fund.symbol = symbol;
+    if let Some(uri) = uri {
+        require!(uri.as_bytes().len() <= 100, ManagerError::InvalidFundName);
+        fund.uri = uri;
     }
     if let Some(activate) = activate {
         fund.is_active = activate;
