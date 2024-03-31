@@ -53,21 +53,27 @@ describe("glam_crud", () => {
   beforeAll(async () => {}, 15_000);
 
   it("Initialize fund", async () => {
-    const txId = await program.methods
-      .initialize(fundName, fundSymbol, [0, 60, 40], true)
-      .accounts({
-        fund: fundPDA,
-        treasury: treasuryPDA,
-        share: sharePDA,
-        manager: manager.publicKey,
-        tokenProgram: TOKEN_2022_PROGRAM_ID
-      })
-      .remainingAccounts([
-        { pubkey: usdc, isSigner: false, isWritable: false },
-        { pubkey: btc, isSigner: false, isWritable: false },
-        { pubkey: eth, isSigner: false, isWritable: false }
-      ])
-      .rpc({ commitment }); // await 'confirmed'
+    try {
+      const txId = await program.methods
+        .initialize(fundName, fundSymbol, [0, 60, 40], true)
+        .accounts({
+          fund: fundPDA,
+          treasury: treasuryPDA,
+          share: sharePDA,
+          manager: manager.publicKey,
+          tokenProgram: TOKEN_2022_PROGRAM_ID
+        })
+        .remainingAccounts([
+          { pubkey: usdc, isSigner: false, isWritable: false },
+          { pubkey: btc, isSigner: false, isWritable: false },
+          { pubkey: eth, isSigner: false, isWritable: false }
+        ])
+        .rpc({ commitment }); // await 'confirmed'
+      console.log("initialize fund", txId);
+    } catch(e) {
+      console.error(e);
+      throw e;
+    }
 
     const fund = await program.account.fund.fetch(fundPDA);
     expect(fund.shareClassesLen).toEqual(1);

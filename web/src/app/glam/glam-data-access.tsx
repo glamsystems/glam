@@ -35,7 +35,7 @@ export function useGlamProgram() {
     mutationKey: ["glam", "initialize", { cluster }],
     mutationFn: (keypair: Keypair) =>
       program.methods
-        .initialize("test", [0, 60, 40], true)
+        .initialize("test", "TST", [0, 60, 40], true)
         .accounts({
           // fund: fundPDA,
           // treasury: treasuryPDA,

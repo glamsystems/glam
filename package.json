@@ -96,5 +96,11 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.4.2",
     "url-loader": "^4.1.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "webpack-dev-middleware@<=5.3.3": ">=5.3.4",
+      "express@<4.19.2": ">=4.19.2"
+    }
   }
 }
