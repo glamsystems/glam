@@ -6,15 +6,13 @@ use crate::error::ManagerError;
 use crate::state::fund::*;
 
 use drift::cpi::accounts::{
-    DeleteUser, Deposit, DepositIntoSpotMarketRevenuePool, InitializeUser, InitializeUserStats,
-    UpdateUserDelegate, Withdraw,
+    DeleteUser, Deposit, InitializeUser, InitializeUserStats, UpdateUserDelegate, Withdraw,
 };
 use drift::cpi::{
-    delete_user, deposit, deposit_into_spot_market_revenue_pool, initialize_user,
-    initialize_user_stats, update_user_delegate, withdraw,
+    delete_user, deposit, initialize_user, initialize_user_stats, update_user_delegate, withdraw,
 };
 use drift::program::Drift;
-use drift::{State, User, UserStats};
+use drift::State;
 
 #[derive(Accounts)]
 pub struct DriftInitialize<'info> {
