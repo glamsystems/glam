@@ -20,6 +20,6 @@ export function AppRoutes() {
 
     { path: '/products', element: <ProductsOverview /> },
     { path: '/products/:id', element: <ProductPage /> },
-    { path: '*', element: <Navigate to={'/dashboard'} replace={true} /> },
+    { path: '*', element: <Navigate to={'/products'} replace={true} /> },
   ]);
 }
