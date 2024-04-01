@@ -72,16 +72,10 @@ export type Glam = {
           "type": "bool"
         },
         {
-          "name": "shareName",
-          "type": "string"
-        },
-        {
-          "name": "shareSymbol",
-          "type": "string"
-        },
-        {
-          "name": "shareUri",
-          "type": "string"
+          "name": "shareClassMetadata",
+          "type": {
+            "defined": "ShareClassMetadata"
+          }
         }
       ]
     },
@@ -639,6 +633,26 @@ export type Glam = {
     }
   ],
   "types": [
+    {
+      "name": "ShareClassMetadata",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          }
+        ]
+      }
+    },
     {
       "name": "InvestorError",
       "type": {
@@ -773,16 +787,10 @@ export const IDL: Glam = {
           "type": "bool"
         },
         {
-          "name": "shareName",
-          "type": "string"
-        },
-        {
-          "name": "shareSymbol",
-          "type": "string"
-        },
-        {
-          "name": "shareUri",
-          "type": "string"
+          "name": "shareClassMetadata",
+          "type": {
+            "defined": "ShareClassMetadata"
+          }
         }
       ]
     },
@@ -1340,6 +1348,26 @@ export const IDL: Glam = {
     }
   ],
   "types": [
+    {
+      "name": "ShareClassMetadata",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          }
+        ]
+      }
+    },
     {
       "name": "InvestorError",
       "type": {

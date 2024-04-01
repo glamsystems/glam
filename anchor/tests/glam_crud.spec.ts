@@ -46,6 +46,11 @@ describe("glam_crud", () => {
     program.programId
   );
 
+  const shareClass = {
+    name: "Class A share",
+    symbol: "CLASS-A",
+    uri: "https://glam.systems/fund/XYZ/share/A"
+  };
   const [sharePDA, shareBump] = PublicKey.findProgramAddressSync(
     [anchor.utils.bytes.utf8.encode("share-0"), fundPDA.toBuffer()],
     program.programId
@@ -62,9 +67,7 @@ describe("glam_crud", () => {
           fundUri,
           [0, 60, 40],
           true,
-          "Class A share",
-          "CLASS-A",
-          "https://glam.systems/fund/XYZ/share/A"
+          shareClass
         )
         .accounts({
           fund: fundPDA,
@@ -86,6 +89,7 @@ describe("glam_crud", () => {
     }
 
     const fund = await program.account.fund.fetch(fundPDA);
+    console.log(fund);
     expect(fund.shareClassesLen).toEqual(1);
     expect(fund.assetsLen).toEqual(3);
     expect(fund.name).toEqual(fundName);
