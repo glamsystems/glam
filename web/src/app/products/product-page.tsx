@@ -13,12 +13,14 @@ import {
   Tile,
 } from '@carbon/react';
 import { formatNumber, formatPercent } from '../utils/format-number';
-import { useLocation, useNavigate, useNavigation } from 'react-router-dom';
+import { useParams, useNavigate, useNavigation } from 'react-router-dom';
 
 import { SideActionBar } from './SideActionBar';
 import { getTokenMetadata } from '@solana/spl-token';
 import { gray70Hover } from '@carbon/colors';
 import { useQuery } from '@tanstack/react-query';
+
+import { useGlamProgramAccount } from '../glam/glam-data-access';
 
 export default function ProductPage() {
   const grayStyle = {
@@ -28,20 +30,18 @@ export default function ProductPage() {
   };
 
   // retrieve the publicKey from the URL
-  const location = useLocation();
-  const path = location.pathname.split('/'); // ['', 'products', 'id (publicKey)']
+  let { id } = useParams();
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['share-class', path],
-    queryFn: async () => {
-      const connection = new Connection(clusterApiUrl('devnet'));
-      const tokenMetadata = await getTokenMetadata(
-        connection,
-        new PublicKey(path[2])
-      );
-      return tokenMetadata;
-    },
-  });
+  // fetch the fund, for now we default to 2ex...
+  const defaultFund = "2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt";
+  let glam = new PublicKey(defaultFund);
+  try {
+    glam = new PublicKey(id || defaultFund);
+  } catch(_e) {
+    // pass
+  }
+  const { account } = useGlamProgramAccount({ glam });
+  const data = account.data;
 
   const shareClass = {
     id: data?.symbol,
@@ -58,21 +58,23 @@ export default function ProductPage() {
     // will optimize looping later once we have all the necessary data
     fees: {
       management: +(
-        data?.additionalMetadata?.find((x) => x[0] === 'fee_management')?.[1] ??
+        // data?.additionalMetadata?.find((x) => x[0] === 'fee_management')?.[1] ??
         0
       ),
       performance: +(
-        data?.additionalMetadata?.find(
-          (x) => x[0] === 'fee_performance'
-        )?.[1] ?? 0
+        // data?.additionalMetadata?.find(
+        //   (x) => x[0] === 'fee_performance'
+        // )?.[1] ?? 
+        0
       ),
       subscription: 0.0,
       redemption: 0.0,
     },
     facts: {
-      launchDate: data?.additionalMetadata?.find(
-        (x) => x[0] === 'launch_date'
-      )?.[1],
+      launchDate: "",
+      // launchDate: data?.additionalMetadata?.find(
+      //   (x) => x[0] === 'launch_date'
+      // )?.[1],
       shareClassAsset: 'USDC',
     },
     terms: {

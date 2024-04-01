@@ -18,7 +18,7 @@ import { useNavigate } from 'react-router-dom';
 export default function ProductsOverview() {
   const rows = [
     {
-      id: 'GXwshLimDZur9PkBL5xhoraE2vMAQdWxMxEYvPqSvx1z',
+      id: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
       symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
@@ -29,7 +29,7 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'GXwshLimDZur9PkBL5xhoraE2vMAQdWxMxEYvPqSvx1z',
+      id: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
       symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
@@ -40,7 +40,7 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'GXwshLimDZur9PkBL5xhoraE2vMAQdWxMxEYvPqSvx1z',
+      id: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
       symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
@@ -51,7 +51,7 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'GXwshLimDZur9PkBL5xhoraE2vMAQdWxMxEYvPqSvx1z',
+      id: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
       symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
@@ -62,7 +62,7 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'GXwshLimDZur9PkBL5xhoraE2vMAQdWxMxEYvPqSvx1z',
+      id: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
       symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
@@ -73,7 +73,7 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'GXwshLimDZur9PkBL5xhoraE2vMAQdWxMxEYvPqSvx1z',
+      id: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
       symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
@@ -84,7 +84,7 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'GXwshLimDZur9PkBL5xhoraE2vMAQdWxMxEYvPqSvx1z',
+      id: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
       symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
@@ -95,7 +95,7 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'GXwshLimDZur9PkBL5xhoraE2vMAQdWxMxEYvPqSvx1z',
+      id: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
       symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
@@ -106,7 +106,7 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'GXwshLimDZur9PkBL5xhoraE2vMAQdWxMxEYvPqSvx1z',
+      id: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
       symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
@@ -117,7 +117,7 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: 'GXwshLimDZur9PkBL5xhoraE2vMAQdWxMxEYvPqSvx1z',
+      id: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
       symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
