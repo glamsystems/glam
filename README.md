@@ -1,8 +1,29 @@
-# GLAM \*.+
+---
+Version: "0.0.1"
+Website: "https://glam.systems/"
+Support: "dev@glam.systems"
+---
 
-The BlackRock For Solana.
+<p align="center">
+ <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/glamsystems/brand_assets/main/github/github_banner_light.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/glamsystems/brand_assets/main/github/github_banner_dark.svg">
+    <img alt="GLAM *.+ The New Standard for Asset Management." src="https://raw.githubusercontent.com/glamsystems/brand_assets/main/github/github_banner_dark.svg">
+  </picture>
+<br>
+    <a href="https://glam.systems" target="_blank">Website</a> | 
+    <a href="mailto:dev@glam.systems" target="_blank">Contact</a>
+    <br>
+    <br>
+    <br>
+</p>
 
-GLAM is a decentralized protocol for asset management on Solana.
+---
+
+<br>
+<br>
+
+GLAM is a decentralized on-chain asset management protocol on Solana that enables efficient management and operations of investment products, empowering investors to have greater control and equity in their financial futures.
 
 ## Dev
 
