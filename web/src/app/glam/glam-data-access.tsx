@@ -75,25 +75,25 @@ export function useGlamProgramAccount({ glam }: { glam: PublicKey }) {
     queryFn: () => program.account.fund.fetch(glam)
   });
 
-  const close = useMutation({
-    mutationKey: ["glam", "close", { cluster, glam }],
-    mutationFn: (keypair: Keypair) =>
-      program.methods
-        .close()
-        .accounts({
-          fund: glam,
-          manager: keypair.publicKey
-        })
-        .signers([keypair])
-        .rpc(),
-    onSuccess: (tx) => {
-      transactionToast(tx);
-      return accounts.refetch();
-    }
-  });
+  // const close = useMutation({
+  //   mutationKey: ["glam", "close", { cluster, glam }],
+  //   mutationFn: (keypair: Keypair) =>
+  //     program.methods
+  //       .close()
+  //       .accounts({
+  //         fund: glam,
+  //         manager: keypair.publicKey
+  //       })
+  //       .signers([keypair])
+  //       .rpc(),
+  //   onSuccess: (tx) => {
+  //     transactionToast(tx);
+  //     return accounts.refetch();
+  //   }
+  // });
 
   return {
     account,
-    close
+    // close
   };
 }

@@ -1,5 +1,6 @@
 import { Keypair, PublicKey } from '@solana/web3.js';
 import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { ellipsify } from '../ui/ui-layout';
 import { ExplorerLink } from '../cluster/cluster-ui';
 import {
@@ -7,21 +8,21 @@ import {
   useGlamProgramAccount,
 } from './glam-data-access';
 
-export function CounterCreate() {
-  const { initialize } = useGlamProgram();
+// export function CounterCreate() {
+//   const { initialize } = useGlamProgram();
 
-  return (
-    <button
-      className="btn btn-xs lg:btn-md btn-primary"
-      onClick={() => initialize.mutateAsync(Keypair.generate())}
-      disabled={initialize.isPending}
-    >
-      Create {initialize.isPending && '...'}
-    </button>
-  );
-}
+//   return (
+//     <button
+//       className="btn btn-xs lg:btn-md btn-primary"
+//       onClick={() => initialize.mutateAsync(Keypair.generate())}
+//       disabled={initialize.isPending}
+//     >
+//       Create {initialize.isPending && '...'}
+//     </button>
+//   );
+// }
 
-export function CounterList() {
+export function GlamList() {
   const { accounts, getProgramAccount } = useGlamProgram();
 
   if (getProgramAccount.isLoading) {
@@ -61,84 +62,31 @@ export function CounterList() {
 }
 
 function GlamCard({ glam }: { glam: PublicKey }) {
-  const { account, close } =
+  const { account } =
     useGlamProgramAccount({
       glam,
     });
 
-  const count = useMemo(() => account.data?.assetsLen ?? 0, [account.data?.assetsLen]);
-
   return account.isLoading ? (
     <span className="loading loading-spinner loading-lg"></span>
   ) : (
-    <div className="card card-bordered border-base-300 border-4 text-neutral-content">
+    <div className="card card-bordered border-base-300 border-4">
       <div className="card-body items-center text-center">
         <div className="space-y-6">
           <h2
             className="card-title justify-center text-3xl cursor-pointer"
             onClick={() => account.refetch()}
           >
-            {count}
+            {account.data?.symbol}
           </h2>
-          <div className="card-actions justify-around">
-            <button
-              className="btn btn-xs lg:btn-md btn-outline"
-              // onClick={() => increment.mutateAsync()}
-              // disabled={increment.isPending}
-            >
-              Increment
-            </button>
-            <button
-              className="btn btn-xs lg:btn-md btn-outline"
-              onClick={() => {
-                const value = window.prompt(
-                  'Set value to:',
-                  count.toString() ?? '0'
-                );
-                if (
-                  !value ||
-                  parseInt(value) === count ||
-                  isNaN(parseInt(value))
-                ) {
-                  return;
-                }
-                // return set.mutateAsync(parseInt(value));
-              }}
-              // disabled={set.isPending}
-            >
-              Set
-            </button>
-            <button
-              className="btn btn-xs lg:btn-md btn-outline"
-              // onClick={() => decrement.mutateAsync()}
-              // disabled={decrement.isPending}
-            >
-              Decrement
-            </button>
-          </div>
           <div className="text-center space-y-4">
             <p>
+              <Link to={`/products/${glam}`}>{ellipsify(glam.toString())}</Link><br/><br/>
               <ExplorerLink
                 path={`account/${glam}`}
-                label={ellipsify(glam.toString())}
+                label={"explorer"}
               />
             </p>
-            <button
-              className="btn btn-xs btn-secondary btn-outline"
-              onClick={() => {
-                if (
-                  !window.confirm(
-                    'Are you sure you want to close this account?'
-                  )
-                ) {
-                  return;
-                }
-                return close.mutateAsync(Keypair.generate());
-              }}
-              disabled={close.isPending}
-            >
-              Close
-            </button>
           </div>
         </div>
       </div>
