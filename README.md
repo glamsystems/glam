@@ -1,4 +1,4 @@
-# GLAM *.+
+# GLAM \*.+
 
 The BlackRock For Solana.
 
@@ -17,7 +17,10 @@ This project is generated with the [create-solana-dapp](https://github.com/solan
 - Solana CLI 1.18.7
 
 Recommended:
-```sh -c "$(curl -sSfL https://release.solana.com/v1.18.7/install)"```
+
+```shell
+sh -c "$(curl -sSfL https://release.solana.com/v1.18.7/install)"
+```
 
 ### Installation
 
@@ -45,6 +48,7 @@ anchor test
 This should also work:
 
 ```shell
+pnpm run anchor-build
 pnpm run anchor-test
 ```
 
@@ -52,4 +56,10 @@ pnpm run anchor-test
 
 ```shell
 pnpm run dev
+```
+
+### Start the api server
+
+```shell
+cd api/ && npm start
 ```
