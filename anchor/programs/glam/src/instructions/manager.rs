@@ -30,6 +30,7 @@ pub struct InitializeFund<'info> {
 pub fn initialize_fund_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, InitializeFund<'info>>,
     fund_name: String,
+    fund_symbol: String,
     fund_uri: String,
     asset_weights: Vec<u32>,
     activate: bool,
@@ -41,12 +42,16 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     // Validate the input
     //
     require!(
-        fund_name.as_bytes().len() <= 50,
+        fund_name.as_bytes().len() <= MAX_FUND_NAME,
         ManagerError::InvalidFundName
     );
     require!(
-        fund_uri.as_bytes().len() <= 100,
-        ManagerError::InvalidFundName
+        fund_symbol.as_bytes().len() <= MAX_FUND_SYMBOL,
+        ManagerError::InvalidFundSymbol
+    );
+    require!(
+        fund_uri.as_bytes().len() <= MAX_FUND_URI,
+        ManagerError::InvalidFundUri
     );
 
     let assets_len = ctx.remaining_accounts.len();
@@ -65,6 +70,7 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     fund.manager = ctx.accounts.manager.key();
     fund.treasury = treasury.key();
     fund.name = fund_name;
+    fund.symbol = fund_symbol;
     fund.uri = fund_uri;
     fund.bump_fund = ctx.bumps.fund;
     fund.bump_treasury = ctx.bumps.treasury;

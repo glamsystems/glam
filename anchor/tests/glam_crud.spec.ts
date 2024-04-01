@@ -29,8 +29,9 @@ describe("glam_crud", () => {
   const btc = new PublicKey("3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv"); // 9 decimals
   const BTC_TOKEN_PROGRAM_ID = TOKEN_2022_PROGRAM_ID;
 
-  const fundName = "Investment fund";
-  const fundUri = "https://glam.systems/fund/XYZ";
+  const fundName = "Glam Investment Fund XYZ";
+  const fundSymbol = "XYZ";
+  const fundUri = "https://devnet.glam.systems/fund/XYZ";
   const [fundPDA, fundBump] = PublicKey.findProgramAddressSync(
     [
       anchor.utils.bytes.utf8.encode("fund"),
@@ -57,6 +58,7 @@ describe("glam_crud", () => {
       const txId = await program.methods
         .initialize(
           fundName,
+          fundSymbol,
           fundUri,
           [0, 60, 40],
           true,
@@ -87,6 +89,7 @@ describe("glam_crud", () => {
     expect(fund.shareClassesLen).toEqual(1);
     expect(fund.assetsLen).toEqual(3);
     expect(fund.name).toEqual(fundName);
+    expect(fund.symbol).toEqual(fundSymbol);
     expect(fund.uri).toEqual(fundUri);
     expect(fund.isActive).toEqual(true);
   });
