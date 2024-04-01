@@ -16,7 +16,7 @@
 
 <br>
 
-GLAM is a decentralized on-chain asset management protocol on Solana that enables efficient management and operations of investment products, empowering investors to have greater control and equity in their financial futures.
+GLAM is an on-chain asset management protocol on Solana that enables efficient management and operations of investment products, empowering investors to have greater control and equity in their financial futures.
 
 ## Dev
 
