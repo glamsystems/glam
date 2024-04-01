@@ -1,9 +1,3 @@
----
-Version: "0.0.1"
-Website: "https://glam.systems/"
-Support: "dev@glam.systems"
----
-
 <p align="center">
  <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/glamsystems/brand_assets/main/github/github_banner_light.svg">
@@ -20,7 +14,6 @@ Support: "dev@glam.systems"
 
 ---
 
-<br>
 <br>
 
 GLAM is a decentralized on-chain asset management protocol on Solana that enables efficient management and operations of investment products, empowering investors to have greater control and equity in their financial futures.
