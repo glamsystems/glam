@@ -7,8 +7,8 @@
 <br>
     <a href="https://glam.systems" target="_blank">Website</a> | 
     <a href="mailto:dev@glam.systems" target="_blank">Contact</a> | 
-    <a href="https://x.com/glamsystems" target="_blank">X</a> | 
-    <a href="https://warpcast.com/glamsystems" target="_blank">F</a>
+    <a href="https://x.com/glamsystems" target="_blank">X</a> <!--| 
+    <a href="https://warpcast.com/glamsystems" target="_blank">F</a>-->
     <br>
     <br>
     <br>
