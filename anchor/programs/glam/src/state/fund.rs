@@ -58,5 +58,8 @@ pub struct ShareClassMetadata {
 }
 impl ShareClassMetadata {
     // use the same max sizes as Fund
-    pub const INIT_SIZE: usize = MAX_FUND_NAME + MAX_FUND_SYMBOL + MAX_FUND_URI;
+    // more space needed for two reasons:
+    // 1. we need to support additional metadata
+    // 2. for each KV pair in metadata, keys ("name" etc) also take up space
+    pub const INIT_SIZE: usize = MAX_FUND_NAME + MAX_FUND_SYMBOL + MAX_FUND_URI + 100;
 }
