@@ -166,11 +166,23 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     solana_program::program::invoke_signed(
         &init_token_metadata_ix,
         &[
-            share_metadata,
-            share_metadata_authority,
-            share_mint,
-            share_mint_authority,
+            share_metadata.clone(),
+            share_metadata_authority.clone(),
+            share_mint.clone(),
+            share_mint_authority.clone(),
         ],
+        signer_seeds,
+    )?;
+    // Add additional metadata fields
+    solana_program::program::invoke_signed(
+        &spl_token_metadata_interface::instruction::update_field(
+            &spl_token_2022::id(),
+            &share_metadata.key(),
+            &share_metadata_authority.key(),
+            spl_token_metadata_interface::state::Field::Key("fund_id".to_string()),
+            fund_key.to_string(),
+        ),
+        &[share_mint.clone(), share_mint_authority.clone()],
         signer_seeds,
     )?;
 
