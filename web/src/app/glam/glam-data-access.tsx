@@ -37,6 +37,7 @@ export function useGlamProgram() {
       program.methods
         .initialize(
           "fund name",
+          "fund symbol",
           "fund uri",
           [0, 60, 40],
           true,
