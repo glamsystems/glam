@@ -5,6 +5,7 @@ pub mod state;
 
 use anchor_lang::prelude::*;
 
+use crate::state::fund::*;
 pub use constants::*;
 pub use instructions::*;
 
@@ -23,9 +24,7 @@ pub mod glam {
         fund_uri: String,
         asset_weights: Vec<u32>,
         activate: bool,
-        share_name: String,
-        share_symbol: String,
-        share_uri: String,
+        share_class_metadata: ShareClassMetadata,
     ) -> Result<()> {
         manager::initialize_fund_handler(
             ctx,
@@ -34,9 +33,7 @@ pub mod glam {
             fund_uri,
             asset_weights,
             activate,
-            share_name,
-            share_symbol,
-            share_uri,
+            share_class_metadata,
         )
     }
     pub fn update<'c: 'info, 'info>(

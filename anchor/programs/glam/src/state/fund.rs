@@ -49,3 +49,14 @@ pub struct Treasury {
 impl Treasury {
     pub const INIT_SIZE: usize = 32 + 32 + 1;
 }
+
+#[derive(AnchorSerialize, AnchorDeserialize)]
+pub struct ShareClassMetadata {
+    pub name: String,
+    pub symbol: String,
+    pub uri: String,
+}
+impl ShareClassMetadata {
+    // use the same max sizes as Fund
+    pub const INIT_SIZE: usize = MAX_FUND_NAME + MAX_FUND_SYMBOL + MAX_FUND_URI;
+}

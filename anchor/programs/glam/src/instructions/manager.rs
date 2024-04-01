@@ -34,9 +34,7 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     fund_uri: String,
     asset_weights: Vec<u32>,
     activate: bool,
-    share_name: String,
-    share_symbol: String,
-    share_uri: String,
+    share_class_metadata: ShareClassMetadata,
 ) -> Result<()> {
     //
     // Validate the input
@@ -108,7 +106,7 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     let space =
         ExtensionType::try_calculate_account_len::<StateMint>(&[ExtensionType::MetadataPointer])
             .unwrap();
-    let metadata_space = 250; // we may need more space for metadata in the future
+    let metadata_space = ShareClassMetadata::INIT_SIZE;
 
     let lamports_required = (Rent::get()?).minimum_balance(space + metadata_space);
 
@@ -161,9 +159,9 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
         &share_metadata_authority.key(),
         &share_mint.key(),
         &share_mint_authority.key(),
-        share_name,
-        share_symbol,
-        share_uri,
+        share_class_metadata.name.clone(),
+        share_class_metadata.symbol.clone(),
+        share_class_metadata.uri.clone(),
     );
     solana_program::program::invoke_signed(
         &init_token_metadata_ix,

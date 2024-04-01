@@ -72,16 +72,10 @@
           "type": "bool"
         },
         {
-          "name": "shareName",
-          "type": "string"
-        },
-        {
-          "name": "shareSymbol",
-          "type": "string"
-        },
-        {
-          "name": "shareUri",
-          "type": "string"
+          "name": "shareClassMetadata",
+          "type": {
+            "defined": "ShareClassMetadata"
+          }
         }
       ]
     },
@@ -639,6 +633,26 @@
     }
   ],
   "types": [
+    {
+      "name": "ShareClassMetadata",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          }
+        ]
+      }
+    },
     {
       "name": "InvestorError",
       "type": {
