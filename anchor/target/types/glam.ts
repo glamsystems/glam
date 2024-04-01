@@ -54,6 +54,10 @@ export type Glam = {
           "type": "string"
         },
         {
+          "name": "fundSymbol",
+          "type": "string"
+        },
+        {
           "name": "fundUri",
           "type": "string"
         },
@@ -599,6 +603,10 @@ export type Glam = {
             "type": "string"
           },
           {
+            "name": "symbol",
+            "type": "string"
+          },
+          {
             "name": "uri",
             "type": "string"
           },
@@ -670,11 +678,21 @@ export type Glam = {
     },
     {
       "code": 6003,
-      "name": "InvalidAssetsLen",
-      "msg": "Too many assets: max 10"
+      "name": "InvalidFundSymbol",
+      "msg": "Too many assets: max 50"
     },
     {
       "code": 6004,
+      "name": "InvalidFundUri",
+      "msg": "Too many assets: max 20"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidAssetsLen",
+      "msg": "Too many assets: max 100"
+    },
+    {
+      "code": 6006,
       "name": "InvalidAssetsWeights",
       "msg": "Number of weights should match number of assets"
     }
@@ -737,6 +755,10 @@ export const IDL: Glam = {
           "type": "string"
         },
         {
+          "name": "fundSymbol",
+          "type": "string"
+        },
+        {
           "name": "fundUri",
           "type": "string"
         },
@@ -1282,6 +1304,10 @@ export const IDL: Glam = {
             "type": "string"
           },
           {
+            "name": "symbol",
+            "type": "string"
+          },
+          {
             "name": "uri",
             "type": "string"
           },
@@ -1353,11 +1379,21 @@ export const IDL: Glam = {
     },
     {
       "code": 6003,
-      "name": "InvalidAssetsLen",
-      "msg": "Too many assets: max 10"
+      "name": "InvalidFundSymbol",
+      "msg": "Too many assets: max 50"
     },
     {
       "code": 6004,
+      "name": "InvalidFundUri",
+      "msg": "Too many assets: max 20"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidAssetsLen",
+      "msg": "Too many assets: max 100"
+    },
+    {
+      "code": 6006,
       "name": "InvalidAssetsWeights",
       "msg": "Number of weights should match number of assets"
     }

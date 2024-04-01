@@ -19,6 +19,7 @@ pub mod glam {
     pub fn initialize<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, InitializeFund<'info>>,
         fund_name: String,
+        fund_symbol: String,
         fund_uri: String,
         asset_weights: Vec<u32>,
         activate: bool,
@@ -29,6 +30,7 @@ pub mod glam {
         manager::initialize_fund_handler(
             ctx,
             fund_name,
+            fund_symbol,
             fund_uri,
             asset_weights,
             activate,

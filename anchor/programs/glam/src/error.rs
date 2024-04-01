@@ -8,7 +8,11 @@ pub enum ManagerError {
     NotAuthorizedError,
     #[msg("Invalid fund name: max 30 chars")]
     InvalidFundName,
-    #[msg("Too many assets: max 10")]
+    #[msg("Too many assets: max 50")]
+    InvalidFundSymbol,
+    #[msg("Too many assets: max 20")]
+    InvalidFundUri,
+    #[msg("Too many assets: max 100")]
     InvalidAssetsLen,
     #[msg("Number of weights should match number of assets")]
     InvalidAssetsWeights,

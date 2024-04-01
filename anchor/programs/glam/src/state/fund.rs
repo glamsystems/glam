@@ -2,6 +2,9 @@ use anchor_lang::prelude::*;
 
 pub const MAX_ASSETS: usize = 5;
 pub const MAX_SHARE_CLASSES: usize = 3;
+pub const MAX_FUND_NAME: usize = 50;
+pub const MAX_FUND_SYMBOL: usize = 20;
+pub const MAX_FUND_URI: usize = 100;
 
 #[account]
 pub struct Fund {
@@ -16,8 +19,9 @@ pub struct Fund {
     pub time_created: i64,                            // 8
     pub bump_fund: u8,                                // 1
     pub bump_treasury: u8,                            // 1
-    pub name: String,                                 // max 50 chars
-    pub uri: String,                                  // max 100 chars
+    pub name: String,                                 // max MAX_FUND_NAME chars
+    pub symbol: String,                               // max MAX_FUND_SYMBOL chars
+    pub uri: String,                                  // max MAX_FUND_URI chars
     pub is_active: bool,                              // 1
 }
 impl Fund {
@@ -30,8 +34,9 @@ impl Fund {
         + 8
         + 1
         + 1
-        + 50
-        + 100
+        + MAX_FUND_NAME
+        + MAX_FUND_SYMBOL
+        + MAX_FUND_URI
         + 1;
 }
 
