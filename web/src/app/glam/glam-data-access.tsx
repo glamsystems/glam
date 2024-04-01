@@ -35,7 +35,15 @@ export function useGlamProgram() {
     mutationKey: ["glam", "initialize", { cluster }],
     mutationFn: (keypair: Keypair) =>
       program.methods
-        .initialize("test", "TST", [0, 60, 40], true)
+        .initialize(
+          "fund name",
+          "fund uri",
+          [0, 60, 40],
+          true,
+          "Class A share",
+          "A",
+          "https://glam.systems/fund/XYZ/share/A"
+        )
         .accounts({
           // fund: fundPDA,
           // treasury: treasuryPDA,
