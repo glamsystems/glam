@@ -31,13 +31,13 @@ app.get("/image/:pubkey.png", async (req, res) => {
   }
 
   // fetch params from the key bytes
-  const angle = 6.28 * (key[0] / 256.0);    // between 0.0 and 2*pi
-  const alpha = (key[1] / 256.0) / 2 + 0.2; // between 0.2 and 0.7
-  const colorR = key[2];                    // between 0 and 255
+  const angle = 6.28 * (key[0] / 256.0);     // between 0.0 and 2*pi
+  const alpha = (key[1] / 256.0) / 4 + 0.75; // between 0.5 and 1.0
+  const colorR = key[2];                     // between 0 and 255
   const colorG = key[3];
   const colorB = key[4];
 
-  const fullSize = 1024;     // size of the input
+  const fullSize = 512;     // size of the input
   const size = fullSize / 2; // size of the output
   const offset = size / 2;   // offset for rotation/translation
 
@@ -54,6 +54,10 @@ app.get("/image/:pubkey.png", async (req, res) => {
   const canvas = createCanvas(size, size);
   const ctx = canvas.getContext("2d");
 
+  // base color
+  ctx.fillStyle = rgbToHex(colorR, colorG, colorB);
+  ctx.fillRect(0, 0, size, size);
+
   // rotation (relative to image center)
   ctx.translate(offset,offset);
   ctx.rotate(angle);
@@ -61,13 +65,9 @@ app.get("/image/:pubkey.png", async (req, res) => {
 
   // render the image full size, on half size canvas
   // so that we don't see broken corners
-  const image = await loadImage('./glam.png');
-  ctx.drawImage(image, -offset, -offset, fullSize, fullSize);
-  
-  ctx.resetTransform();
   ctx.globalAlpha = alpha;
-  ctx.fillStyle = rgbToHex(colorR, colorG, colorB);
-  ctx.fillRect(0, 0, size, size);
+  const image = await loadImage('./public/glam.png');
+  ctx.drawImage(image, -offset, -offset, fullSize, fullSize);  
 
   // return the image
   const buffer = canvas.toBuffer("image/png");
