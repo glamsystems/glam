@@ -9,6 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@scure/base": "^1.1.6",
+    "canvas": "^2.11.2",
     "express": "^4.19.2"
   }
 }
