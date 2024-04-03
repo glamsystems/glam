@@ -3,6 +3,8 @@ import {
   ArrowDown,
   ArrowLeft,
   ArrowRight,
+  Asleep,
+  IbmPowerVs,
   NextFilled,
   NextOutline
 } from "@carbon/icons-react";
@@ -10,26 +12,40 @@ import {
   Button,
   Checkbox,
   Dropdown,
+  NumberInput,
   ProgressIndicator,
   ProgressStep,
+  SelectableTile,
+  StructuredListBody,
+  StructuredListCell,
+  StructuredListHead,
+  StructuredListRow,
+  StructuredListWrapper,
+  Tag,
   TextArea,
   TextInput
 } from "@carbon/react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { MultiSelect } from "carbon-components-react";
+import backpackLogo from "../../assets/backpacklogo.png";
 import { countryList } from "../data/countryList";
+import driftLogo from "../../assets/driftlogo.png";
+import jupiterLogo from "../../assets/logo-bright.svg";
+import mndeLogo from "../../assets/MNDE.png";
 import { tokenList } from "../data/tokenList";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const FormSchema = z.object({
+  // ------ Fund ------
   fundName: z.string(),
   fundSymbol: z.string(),
   website: z.string(),
   managerID: z.string().min(32).max(44),
-  openEndedStructure: z.enum(["open-ended fund", "closed-ended fund"]),
+  openEndedStructure: z.enum(["Open Ended Fund", "Closed Ended Fund"]),
   investmentObjective: z.string(),
   fundAsset: z.string(),
   fundAssetID: z.string().min(32).max(44),
@@ -45,12 +61,13 @@ const FormSchema = z.object({
     }),
   isFoF: z.boolean(),
   isPassiveFund: z.boolean(),
+  // ------ Share Class ------
   fullShareClassName: z.string(),
   shareClassSymbol: z.string(),
   shareClassAsset: z.string(),
   shareClassAssetID: z.string(),
   ISIN: z.string(),
-  investmentStatus: z.enum(["open"]),
+  investmentStatus: z.enum(["Open"]),
   managementFee: z.string(),
   performanceFee: z.string(),
   policyDistribution: z.enum([
@@ -65,7 +82,28 @@ const FormSchema = z.object({
     "To Be Launched",
     "Offering Period",
     "Active"
-  ])
+  ]),
+  // ------ Policies ------
+  lockupPeriod: z.number(), // (Transfer Hook)
+  lockupPeriodUnits: z.enum([
+    "seconds",
+    "minutes",
+    "hours",
+    "days",
+    "weeks",
+    "months",
+    "quarters",
+    "years"
+  ]),
+  nonTransferable: z.boolean(),
+  transferFees: z.string(),
+  permanentDelegate: z.string(),
+  // ------ Assets ------
+  assets: z.array(z.string()),
+  // ------ Strategy ------
+  enableTrading: z.boolean(),
+  counterParties: z.array(z.string()),
+  traderIdDrift: z.optional(z.string().min(32).max(44))
 });
 
 type FormFields = z.infer<typeof FormSchema>;
@@ -102,6 +140,8 @@ type FormFields = z.infer<typeof FormSchema>;
 export const CreateProduct = () => {
   const { publicKey } = useWallet();
 
+  const [disabeld, setDisabled] = useState(true);
+
   useEffect(() => {
     if (publicKey)
       setValue("managerID", publicKey.toBase58(), { shouldValidate: true });
@@ -118,6 +158,7 @@ export const CreateProduct = () => {
     register,
     handleSubmit,
     setError,
+    watch,
     getValues,
     setValue,
     formState: { errors, isSubmitting }
@@ -127,7 +168,7 @@ export const CreateProduct = () => {
       fundSymbol: "",
       website: "",
       managerID: "",
-      openEndedStructure: "open-ended fund",
+      openEndedStructure: "Open Ended Fund",
       investmentObjective: "",
       fundAsset: "",
       fundAssetID: "",
@@ -143,16 +184,18 @@ export const CreateProduct = () => {
       shareClassAsset: "",
       shareClassAssetID: "",
       ISIN: "",
-      investmentStatus: "open",
+      investmentStatus: "Open",
       managementFee: "0",
       performanceFee: "0",
       policyDistribution: "Accumulating",
-      extension: "A",
+      extension: "1",
       shareClassLaunchDate: new Date().toISOString().split("T")[0],
       shareClassLifecycle: "Active"
     },
     resolver: zodResolver(FormSchema)
   });
+
+  const assets = watch("assets");
 
   const onSubmit: SubmitHandler<FormFields> = async (data) => {
     try {
@@ -164,6 +207,8 @@ export const CreateProduct = () => {
       });
     }
   };
+
+  console.log("Get Values Lockup Period", getValues("lockupPeriod"));
 
   return (
     <div className="w-full  h-full flex flex-col">
@@ -195,7 +240,7 @@ export const CreateProduct = () => {
                     id="fund-name"
                     labelText="Fund Name"
                     placeholder="Global Asset Management Layer Fund"
-                    helperText="Legal name of the collective investment scheme as mentioned in official documents (i.e. prospectus). If the fund belongs to an umbrella, the name of the umbrella must be included, too."
+                    helperText="Legal name of the collective investment scheme."
                   />
                   {errors.fundName && (
                     <p style={errorStyle}>{errors.fundName.message}</p>
@@ -206,7 +251,7 @@ export const CreateProduct = () => {
                     id="fund-symbol"
                     labelText="Fund Symbol"
                     placeholder="GLAM"
-                    helperText="Unique alphanumeric code representing the fund in transactions and listings."
+                    helperText="Unique alphanumeric code representing the fund."
                   />
                   {errors.fundSymbol && (
                     <p style={errorStyle}>{errors.fundSymbol.message}</p>
@@ -223,110 +268,86 @@ export const CreateProduct = () => {
                     <p style={errorStyle}>{errors.website.message}</p>
                   )}
                 </div>
-                <div className="flex justify-between gap-[125px] items-center">
-                  <TextInput
-                    {...register("managerID")}
-                    className="max-w-[400px] w-full mb-2"
-                    id="manager-id"
-                    labelText="Manager ID"
-                    helperText="Public key of the manager account."
-                  />
-                  {errors.managerID && (
-                    <p style={errorStyle}>{errors.managerID.message}</p>
-                  )}
-                  <Dropdown
-                    {...register("fundAsset")}
-                    className="max-w-[200px] w-full"
-                    id="fund-asset"
-                    label=""
-                    onChange={(e) => {
-                      setValue("fundAsset", e.selectedItem?.symbol ?? "");
-                      setValue("fundAssetID", e.selectedItem?.tokenMint ?? "");
-                    }}
-                    items={tokenList}
-                    itemToString={(item) => (item ? item.symbol : "")}
-                    titleText="Fund Asset"
-                    helperText="The asset in which the fund is denominated."
-                  />
-                  {errors.fundAsset && (
-                    <p style={errorStyle}>{errors.fundAsset.message}</p>
-                  )}
-                  <Dropdown
-                    {...register("countryAlpha2")}
-                    className="w-full mb-auto"
-                    id="country"
-                    label=""
-                    items={countryList}
-                    onChange={(e) => {
-                      setValue(
-                        "countryAlpha2",
-                        e.selectedItem?.code_alpha_2 ?? ""
-                      );
-                      setValue(
-                        "countryAlpha3",
-                        e.selectedItem?.code_alpha_3 ?? ""
-                      );
-                    }}
-                    itemToString={(item) => item?.name ?? ""}
-                    titleText="Country"
-                    helperText="Domicile of the fund."
-                  />
-                </div>
-                <div className="flex justify-between gap-[125px]">
-                  <TextInput
-                    {...register("launchDate")}
-                    className="max-w-[400px] w-full"
-                    id="launch-date"
-                    labelText="Launch Date"
-                    type="date"
-                    helperText="dd/mm/yyyy"
-                  />
-                  {errors.launchDate && (
-                    <p style={errorStyle}>{errors.launchDate.message}</p>
-                  )}
-                  <TextInput
-                    {...register("fiscalYearEnd")}
-                    className="max-w-[200px] w-full"
-                    id="fiscal-year-end"
-                    labelText="Fiscal Year End"
-                    placeholder="12/31"
-                    helperText="MM/DD"
-                  />
-                  {errors.fiscalYearEnd && (
-                    <p style={errorStyle}>{errors.fiscalYearEnd.message}</p>
-                  )}
-                  <Dropdown
-                    {...register("openEndedStructure")}
-                    className="w-full"
-                    id="fund-structure"
-                    label=""
-                    onChange={(e) => {
-                      if (e.selectedItem?.id === "open-ended fund") {
-                        setValue("openEndedStructure", "open-ended fund");
-                      } else {
-                        setValue("openEndedStructure", "closed-ended fund");
-                      }
-                    }}
-                    items={[
-                      { id: "open-ended fund", name: "Open-Ended Fund" },
-                      { id: "closed-ended fund", name: "Closed-Ended Fund" }
-                    ]}
-                    itemToString={(item) => item?.name ?? ""}
-                    titleText="Fund Structure"
-                  />
-                </div>
                 <div className="flex justify-between gap-[125px]">
                   <TextArea
+                    {...register("investmentObjective")}
                     enableCounter
-                    helperText="Helper Text"
+                    className="max-w-[400px] w-full mt-2"
                     id="investment-objective"
                     invalidText="Text too long."
                     labelText="Investment Objective"
                     maxCount={100}
                     placeholder="The investment objective of the Fund is to seek to provide investment results that correspond generally to the price and yield performance, before fees and expenses, of the Nasdaq Blockchain Economy Index."
-                    rows={4}
+                    rows={8}
                     required
                   />
+                  <div className="flex flex-col max-w-[200px] w-full gap-[32px]">
+                    <Dropdown
+                      {...register("fundAsset")}
+                      className="w-full"
+                      id="fund-asset"
+                      label={getValues("fundAsset")}
+                      onChange={(e) => {
+                        setValue("fundAsset", e.selectedItem?.symbol ?? "");
+                        setValue(
+                          "fundAssetID",
+                          e.selectedItem?.tokenMint ?? ""
+                        );
+                      }}
+                      items={tokenList}
+                      itemToString={(item) => (item ? item.symbol : "")}
+                      titleText="Fund Asset"
+                      helperText="The asset in which the fund is denominated."
+                    />
+                    {errors.fundAsset && (
+                      <p style={errorStyle}>{errors.fundAsset.message}</p>
+                    )}
+                    <TextInput
+                      {...register("fiscalYearEnd")}
+                      className="w-full"
+                      id="fiscal-year-end"
+                      labelText="Fiscal Year End"
+                      placeholder="12/31"
+                      helperText="MM/DD"
+                    />
+                    {errors.fiscalYearEnd && (
+                      <p style={errorStyle}>{errors.fiscalYearEnd.message}</p>
+                    )}
+                  </div>
+                  <div className="flex flex-col w-full h-full justify-between gap-[50px]">
+                    <Dropdown
+                      {...register("countryAlpha2")}
+                      className="w-full"
+                      id="country"
+                      label={getValues("countryAlpha2")}
+                      selectedItem={countryList.find(
+                        (item) =>
+                          item.code_alpha_2 === getValues("countryAlpha2")
+                      )}
+                      items={countryList}
+                      onChange={(e) => {
+                        setValue(
+                          "countryAlpha2",
+                          e.selectedItem?.code_alpha_2 ?? ""
+                        );
+                        setValue(
+                          "countryAlpha3",
+                          e.selectedItem?.code_alpha_3 ?? ""
+                        );
+                      }}
+                      itemToString={(item) => item?.name ?? ""}
+                      titleText="Country"
+                      helperText="Domicile of the fund."
+                    />
+                    <TextInput
+                      {...register("openEndedStructure")}
+                      className="w-full"
+                      id="fund-structure"
+                      labelText="Fund Structure"
+                      value={getValues("openEndedStructure")}
+                      readOnly
+                    />
+                  </div>
                 </div>
               </>
             ) : currentIndex === 1 ? (
@@ -341,7 +362,7 @@ export const CreateProduct = () => {
                       "extension"
                     )} ${getValues("fundAsset")}`}
                     helperText="The full name of the share class, including the fund name, extension, and asset."
-                    disabled
+                    readOnly
                   />
                   <TextInput
                     {...register("shareClassSymbol")}
@@ -352,13 +373,13 @@ export const CreateProduct = () => {
                       "extension"
                     )}-${getValues("fundAsset")}`}
                     helperText="Unique alphanumeric code representing the share class."
-                    disabled
+                    readOnly
                   />
                   <Dropdown
                     {...register("extension")}
                     className="max-w-[400px] w-full"
                     id="extension"
-                    label="A"
+                    label={getValues("extension")}
                     onChange={(e) => {
                       setValue("extension", e.selectedItem?.id ?? ("A" as any));
                       setValue(
@@ -391,19 +412,11 @@ export const CreateProduct = () => {
                   />
                 </div>
                 <div className="flex justify-between gap-[125px]">
-                  <TextInput
-                    {...register("ISIN")}
-                    className="max-w-[400px] w-full"
-                    id="isin"
-                    labelText="ISIN"
-                    placeholder="XS1082172823"
-                    helperText="International Securities Identification Number."
-                  />
                   <Dropdown
                     {...register("shareClassAsset")}
-                    className=" w-full"
+                    className="max-w-[400px] w-full"
                     id="share-class-asset"
-                    label=""
+                    label={getValues("shareClassAsset")}
                     onChange={(e) => {
                       setValue("shareClassAsset", e.selectedItem?.symbol ?? "");
                       setValue(
@@ -416,13 +429,50 @@ export const CreateProduct = () => {
                     titleText="Share Class Asset"
                     helperText="The asset in which the share class is denominated."
                   />
+                  <Dropdown
+                    {...register("investmentStatus")}
+                    className="max-w-[200px] w-full"
+                    id="investment-status"
+                    label={getValues("investmentStatus")}
+                    onChange={(e) => {
+                      setValue(
+                        "investmentStatus",
+                        e.selectedItem?.id ?? ("" as any)
+                      );
+                    }}
+                    items={[{ id: "open", name: "open" }]}
+                    itemToString={(item) => item?.name ?? ""}
+                    titleText="Investment Status"
+                    disabled
+                  />
+                  <Dropdown
+                    {...register("shareClassLifecycle")}
+                    className="w-full"
+                    id="share-class-lifecycle"
+                    label={getValues("shareClassLifecycle")}
+                    onChange={(e) => {
+                      setValue(
+                        "shareClassLifecycle",
+                        e.selectedItem?.id ?? ("Projected" as any)
+                      );
+                    }}
+                    items={[
+                      { id: "Projected", name: "Projected" },
+                      { id: "To Be Launched", name: "To Be Launched" },
+                      { id: "Offering Period", name: "Offering Period" },
+                      { id: "Active", name: "Active" }
+                    ]}
+                    itemToString={(item) => item?.name ?? ""}
+                    titleText="Share Class Lifecycle"
+                    disabled
+                  />
                 </div>
                 <div className="flex justify-between gap-[125px]">
                   <Dropdown
                     {...register("policyDistribution")}
                     className="max-w-[400px] w-full"
                     id="policy-distribution"
-                    label=""
+                    label={getValues("policyDistribution")}
                     onChange={(e) => {
                       setValue(
                         "policyDistribution",
@@ -439,6 +489,7 @@ export const CreateProduct = () => {
                     ]}
                     itemToString={(item) => item?.name ?? ""}
                     titleText="Policy Distribution"
+                    disabled
                   />
                   <TextInput
                     {...register("managementFee")}
@@ -448,6 +499,7 @@ export const CreateProduct = () => {
                     labelText="Management Fee (%)"
                     placeholder="0"
                     helperText="Annual fee charged by the fund manager for managing the fund."
+                    readOnly
                   />
                   <TextInput
                     {...register("performanceFee")}
@@ -456,62 +508,433 @@ export const CreateProduct = () => {
                     labelText="Performance Fee (%)"
                     placeholder="0"
                     helperText="Fee charged by the fund manager based on the fund's performance."
-                  />
-                </div>
-                <div className="flex justify-between gap-[125px]">
-                  <Dropdown
-                    {...register("investmentStatus")}
-                    className="max-w-[400px] w-full"
-                    id="investment-status"
-                    label=""
-                    onChange={(e) => {
-                      setValue(
-                        "investmentStatus",
-                        e.selectedItem?.id ?? ("" as any)
-                      );
-                    }}
-                    items={[{ id: "open", name: "open" }]}
-                    itemToString={(item) => item?.name ?? ""}
-                    titleText="Investment Status"
-                  />
-                  <TextInput
-                    {...register("shareClassLaunchDate")}
-                    className="max-w-[200px] w-full"
-                    id="share-class-launch-date"
-                    labelText="Share Class Launch Date"
-                    type="date"
-                    helperText="dd/mm/yyyy"
-                  />
-                  <Dropdown
-                    {...register("shareClassLifecycle")}
-                    className="w-full"
-                    id="share-class-lifecycle"
-                    label=""
-                    onChange={(e) => {
-                      setValue(
-                        "shareClassLifecycle",
-                        e.selectedItem?.id ?? ("Projected" as any)
-                      );
-                    }}
-                    items={[
-                      { id: "Projected", name: "Projected" },
-                      { id: "To Be Launched", name: "To Be Launched" },
-                      { id: "Offering Period", name: "Offering Period" },
-                      { id: "Active", name: "Active" }
-                    ]}
-                    itemToString={(item) => item?.name ?? ""}
-                    titleText="Share Class Lifecycle"
+                    readOnly
                   />
                 </div>
               </>
             ) : currentIndex === 2 ? (
-              <p>Policies</p>
+              <div className="flex flex-col gap-[30px]">
+                <div className="flex gap-8">
+                  <NumberInput
+                    {...register("lockupPeriod")}
+                    className="w-full mt-[6px]"
+                    id="lockup-period"
+                    label="Lockup Period"
+                    onChange={(event, { value, direction }) => {
+                      console.log("Value", value);
+                      if (value) {
+                        setValue("lockupPeriod", +value);
+                        if (+value === 0) {
+                          setDisabled(true);
+                          return;
+                        }
+                        setDisabled(false);
+                        return;
+                      }
+                      if (direction === "up") {
+                        setValue("lockupPeriod", getValues("lockupPeriod") + 1);
+                      } else {
+                        if (value === 0) {
+                          setValue("lockupPeriod", 0);
+                          setDisabled(true);
+                          return;
+                        }
+                        setValue("lockupPeriod", getValues("lockupPeriod") - 1);
+                      }
+                      setDisabled(false);
+                    }}
+                    min={0}
+                    max={undefined}
+                    step={1}
+                    helperText="The period of time during which an investor cannot redeem shares."
+                  />
+                  <Dropdown
+                    {...register("lockupPeriodUnits")}
+                    className="w-full"
+                    id="lockup-period-units"
+                    label={getValues("lockupPeriodUnits")}
+                    onChange={(e) => {
+                      setValue(
+                        "lockupPeriodUnits",
+                        e.selectedItem?.id ?? ("days" as any)
+                      );
+                    }}
+                    items={[
+                      { id: "seconds", name: "seconds" },
+                      { id: "minutes", name: "minutes" },
+                      { id: "hours", name: "hours" },
+                      { id: "days", name: "days" },
+                      { id: "weeks", name: "weeks" },
+                      { id: "months", name: "months" },
+                      { id: "quarters", name: "quarters" },
+                      { id: "years", name: "years" }
+                    ]}
+                    itemToString={(item) => item?.name ?? "days"}
+                    titleText="Lockup Time Units"
+                    disabled={disabeld}
+                  />
+                </div>
+
+                <NumberInput
+                  {...register("transferFees")}
+                  className="w-full"
+                  id="transfer-fees"
+                  label="Transfer Fees (%)"
+                  min={0}
+                  max={100}
+                  step={1}
+                  helperText="The fee charged for transferring shares."
+                />
+                <TextInput
+                  {...register("permanentDelegate")}
+                  className="w-full"
+                  id="permanent-delegate"
+                  labelText="Permanent Delegate"
+                  placeholder="Public Key"
+                  helperText="Public key of the permanent delegate."
+                />
+                <Checkbox
+                  {...register("nonTransferable")}
+                  id="non-transferable"
+                  labelText="Non-Transferable"
+                />
+              </div>
             ) : currentIndex === 3 ? (
-              <p>Assets</p>
+              <>
+                <MultiSelect
+                  {...register("assets")}
+                  id="assets"
+                  titleText="Assets"
+                  items={tokenList}
+                  selectedItems={
+                    assets ? assets.map((asset) => ({ symbol: asset })) : []
+                  }
+                  itemToString={(item) => (item ? item.symbol : "")}
+                  onChange={(e) => {
+                    setValue(
+                      "assets",
+                      e.selectedItems.map((item) => item.symbol)
+                    );
+                  }}
+                  helperText="Assets that the fund can hold."
+                />
+                {/* display all selected assets */}
+
+                <div className="flex flex-wrap gap-2 justify-center ">
+                  {assets &&
+                    assets?.map((asset) => (
+                      <Tag
+                        className="w-full max-w-[180px] max-h-[10px] sm:max-h-[30px] lg:max-h-[60px] h-full rounded-none m-0"
+                        key={asset}
+                        renderIcon={() => (
+                          <img
+                            src={
+                              tokenList.find((item) => item.symbol === asset)
+                                ?.imgURL
+                            }
+                            alt={asset}
+                            className="border-2 border-white rounded-full"
+                          />
+                        )}
+                      >
+                        {asset}
+                      </Tag>
+                    ))}
+                </div>
+              </>
             ) : currentIndex === 4 ? (
-              <p>Strategy</p>
+              <div className="flex flex-col h-full gap-[30px]">
+                <div className="flex h-full items-center gap-8 flex-wrap">
+                  <SelectableTile
+                    className="w-full max-w-[500px] h-full max-h-[200px]"
+                    id="counter-party-drift"
+                    onClick={() => {
+                      setValue("counterParties", ["Drift"]);
+                    }}
+                    value="Drift"
+                  >
+                    <div className="flex items-center gap-[16px]">
+                      <img
+                        src={driftLogo}
+                        className="h-[50px] w-[50px]"
+                        alt="Drift Logo"
+                      />
+                      <p className="text-[28px] font-bold">Drift</p>
+                    </div>
+                    <TextInput
+                      {...register("traderIdDrift")}
+                      className="w-full mt-8"
+                      id="trader-id-drift"
+                      labelText="(Optional) Trader ID"
+                      placeholder="Public Key"
+                      helperText="Public key of the trader."
+                    />
+                  </SelectableTile>
+
+                  <SelectableTile
+                    className="w-full h-full max-h-[200px] max-w-[500px]"
+                    id="counter-party-marinade"
+                    disabled
+                    value={"Marinade"}
+                    onClick={() => {
+                      setValue("counterParties", ["Marinade"]);
+                    }}
+                  >
+                    <div className="flex items-center gap-[16px]">
+                      <img
+                        src={mndeLogo}
+                        className="h-[50px] w-[40px]"
+                        alt="Marinade Logo"
+                      />
+                      <p className="text-[28px] font-bold">Marinade</p>
+                    </div>
+                    <p className="flex text-[16px] h-[90%] justify-center items-center">
+                      Coming Soon...
+                    </p>
+                  </SelectableTile>
+                  <SelectableTile
+                    className="w-full h-full max-h-[200px] max-w-[500px]"
+                    id="counter-party-backpack  "
+                    disabled
+                    value={"Backpack"}
+                    onClick={() => {
+                      setValue("counterParties", ["Backpack"]);
+                    }}
+                  >
+                    <div className="flex items-center gap-[16px]">
+                      <img
+                        src={backpackLogo}
+                        className="h-[50px] w-[40px]"
+                        alt="Backpack Logo"
+                      />
+                      <p className="text-[28px] font-bold">Backpack</p>
+                    </div>
+                    <p className="flex text-[16px] h-[90%] justify-center items-center">
+                      Coming Soon...
+                    </p>
+                  </SelectableTile>
+                  <SelectableTile
+                    className="w-full h-full max-h-[200px] max-w-[500px]"
+                    id="counter-party-jupyter"
+                    disabled
+                    value={"Jupyter"}
+                    onClick={() => {
+                      setValue("counterParties", ["Jupyter"]);
+                    }}
+                  >
+                    <div className="flex items-center gap-[16px]">
+                      <img
+                        src={jupiterLogo}
+                        className="h-[50px] w-[40px]"
+                        alt="Jupyter Logo"
+                      />
+                      <p className="text-[28px] font-bold">Jupyter</p>
+                    </div>
+                    <p className="flex text-[16px] h-[90%] justify-center items-center">
+                      Coming Soon...
+                    </p>
+                  </SelectableTile>
+                </div>
+              </div>
             ) : (
-              <p>Review</p>
+              <div className="h-full max-h-[50vh] overflow-y-auto">
+                <StructuredListWrapper>
+                  <StructuredListHead>
+                    <StructuredListRow head>
+                      <StructuredListCell head>
+                        Basic Information
+                      </StructuredListCell>
+                    </StructuredListRow>
+                  </StructuredListHead>
+                  <StructuredListBody>
+                    <StructuredListRow>
+                      <StructuredListCell>Fund Name</StructuredListCell>
+                      <StructuredListCell>
+                        {getValues("fundName")}
+                      </StructuredListCell>
+                    </StructuredListRow>
+                    <StructuredListRow>
+                      <StructuredListCell>Fund Symbol</StructuredListCell>
+                      <StructuredListCell>
+                        {getValues("fundSymbol")}
+                      </StructuredListCell>
+                    </StructuredListRow>
+                    <StructuredListRow>
+                      <StructuredListCell>Website</StructuredListCell>
+                      <StructuredListCell>
+                        {getValues("website")}
+                      </StructuredListCell>
+                    </StructuredListRow>
+                    <StructuredListRow>
+                      <StructuredListCell>
+                        Investment Objective
+                      </StructuredListCell>
+                      <StructuredListCell>
+                        {getValues("investmentObjective")}
+                      </StructuredListCell>
+                    </StructuredListRow>
+                    <StructuredListRow>
+                      <StructuredListCell>Fund Asset</StructuredListCell>
+                      <StructuredListCell>
+                        {getValues("fundAsset")}
+                      </StructuredListCell>
+                    </StructuredListRow>
+                    <StructuredListRow>
+                      <StructuredListCell>Country</StructuredListCell>
+                      <StructuredListCell>
+                        {getValues("countryAlpha2")}
+                      </StructuredListCell>
+                    </StructuredListRow>
+                    <StructuredListRow>
+                      <StructuredListCell>Fiscal Year End</StructuredListCell>
+                      <StructuredListCell>
+                        {getValues("fiscalYearEnd")}
+                      </StructuredListCell>
+                    </StructuredListRow>
+                    <StructuredListRow>
+                      <StructuredListCell>Fund Structure</StructuredListCell>
+                      <StructuredListCell>
+                        {getValues("openEndedStructure")}
+                      </StructuredListCell>
+                    </StructuredListRow>
+                    {/* divider for share class */}
+                    <StructuredListRow head>
+                      <StructuredListCell head>
+                        Share Classes
+                      </StructuredListCell>
+                    </StructuredListRow>
+                    <StructuredListRow>
+                      <StructuredListCell>
+                        Full Share Class Name
+                      </StructuredListCell>
+                      <StructuredListCell>
+                        {getValues("fullShareClassName")}
+                      </StructuredListCell>
+                    </StructuredListRow>
+                    <StructuredListRow>
+                      <StructuredListCell>
+                        Share Class Symbol
+                      </StructuredListCell>
+                      <StructuredListCell>
+                        {getValues("shareClassSymbol")}
+                      </StructuredListCell>
+                    </StructuredListRow>
+                    <StructuredListRow>
+                      <StructuredListCell>Share Class Asset</StructuredListCell>
+                      <StructuredListCell>
+                        {getValues("shareClassAsset")}
+                      </StructuredListCell>
+                    </StructuredListRow>
+                    <StructuredListRow>
+                      <StructuredListCell>Investment Status</StructuredListCell>
+                      <StructuredListCell>
+                        {getValues("investmentStatus")}
+                      </StructuredListCell>
+                    </StructuredListRow>
+                    <StructuredListRow>
+                      <StructuredListCell>Management Fee</StructuredListCell>
+                      <StructuredListCell>
+                        {getValues("managementFee")}
+                      </StructuredListCell>
+                    </StructuredListRow>
+                    <StructuredListRow>
+                      <StructuredListCell>Performance Fee</StructuredListCell>
+                      <StructuredListCell>
+                        {getValues("performanceFee")}
+                      </StructuredListCell>
+                    </StructuredListRow>
+                    <StructuredListRow>
+                      <StructuredListCell>
+                        Policy Distribution
+                      </StructuredListCell>
+                      <StructuredListCell>
+                        {getValues("policyDistribution")}
+                      </StructuredListCell>
+                    </StructuredListRow>
+                    <StructuredListRow>
+                      <StructuredListCell>Extension</StructuredListCell>
+                      <StructuredListCell>
+                        {getValues("extension")}
+                      </StructuredListCell>
+                    </StructuredListRow>
+                    <StructuredListRow>
+                      <StructuredListCell>
+                        Share Class Lifecycle
+                      </StructuredListCell>
+                      <StructuredListCell>
+                        {getValues("shareClassLifecycle")}
+                      </StructuredListCell>
+                    </StructuredListRow>
+                    {/* divider for policies */}
+                    <StructuredListRow head>
+                      <StructuredListCell head>Policies</StructuredListCell>
+                    </StructuredListRow>
+                    {getValues("lockupPeriod") && (
+                      <StructuredListRow>
+                        <StructuredListCell>Lockup Period</StructuredListCell>
+                        <StructuredListCell>
+                          {getValues("lockupPeriod")}{" "}
+                          {getValues("lockupPeriodUnits")}
+                        </StructuredListCell>
+                      </StructuredListRow>
+                    )}
+                    <StructuredListRow>
+                      <StructuredListCell>Transfer Fees</StructuredListCell>
+                      <StructuredListCell>
+                        {getValues("transferFees")}%
+                      </StructuredListCell>
+                    </StructuredListRow>
+                    {getValues("permanentDelegate") && (
+                      <StructuredListRow>
+                        <StructuredListCell>
+                          Permanent Delegate
+                        </StructuredListCell>
+                        <StructuredListCell>
+                          {getValues("permanentDelegate")}
+                        </StructuredListCell>
+                      </StructuredListRow>
+                    )}
+                    <StructuredListRow>
+                      <StructuredListCell>Non-Transferable</StructuredListCell>
+                      <StructuredListCell>
+                        {getValues("nonTransferable") ? "Yes" : "No"}
+                      </StructuredListCell>
+                    </StructuredListRow>
+                    {/* divider for assets */}
+                    <StructuredListRow head>
+                      <StructuredListCell head>Assets</StructuredListCell>
+                    </StructuredListRow>
+                    {assets && (
+                      <StructuredListRow>
+                        <StructuredListCell>Assets</StructuredListCell>
+                        <StructuredListCell>
+                          {assets.join(", ")}
+                        </StructuredListCell>
+                      </StructuredListRow>
+                    )}
+                    {/* divider for strategy */}
+                    <StructuredListRow head>
+                      <StructuredListCell head>Strategy</StructuredListCell>
+                    </StructuredListRow>
+                    {getValues("counterParties") && (
+                      <StructuredListRow>
+                        <StructuredListCell>Counter Parties</StructuredListCell>
+                        <StructuredListCell>
+                          {getValues("counterParties").join(", ")}
+                        </StructuredListCell>
+                      </StructuredListRow>
+                    )}
+                    {getValues("traderIdDrift") && (
+                      <StructuredListRow>
+                        <StructuredListCell>Trader ID</StructuredListCell>
+                        <StructuredListCell>
+                          {getValues("traderIdDrift")}
+                        </StructuredListCell>
+                      </StructuredListRow>
+                    )}
+                  </StructuredListBody>
+                </StructuredListWrapper>
+              </div>
             )}
 
             {errors.root && <p style={errorStyle}>{errors.root.message}</p>}

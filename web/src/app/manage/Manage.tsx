@@ -1,50 +1,44 @@
-import {
-  ClickableTile,
-  Column,
-  Grid,
-  SelectableTile,
-  Tile,
-} from '@carbon/react';
+import { ClickableTile, Column, Grid } from "@carbon/react";
 
-import { Add } from '@carbon/icons-react';
-import { Link } from 'react-router-dom';
-import { formatNumber } from '../utils/format-number';
-import { relative } from 'path';
+import { Add } from "@carbon/icons-react";
+import { Link } from "react-router-dom";
+import { formatNumber } from "../utils/format-number";
+import { relative } from "path";
 
 export const Manage = () => {
   const mockApiData = [
     {
-      id: 'IBIT',
-      name: 'iShares Bitcoin Trust',
+      id: "IBIT",
+      name: "iShares Bitcoin Trust",
       aum: 15941890385,
       nav: 39.72,
       background:
-        'conic-gradient(from 57.74deg at 50% 50%, #5B0F48 0deg, rgba(91, 15, 72, 0) 360deg)',
+        "conic-gradient(from 57.74deg at 50% 50%, #5B0F48 0deg, rgba(91, 15, 72, 0) 360deg)"
     },
     {
-      id: 'IETH',
-      name: 'iShares Ethereum Trust',
+      id: "IETH",
+      name: "iShares Ethereum Trust",
       aum: 15941890385,
       nav: 39.72,
       background:
-        'conic-gradient(from 57.74deg at 50% 50%, #1D3F93 0deg, rgba(21, 55, 23, 0) 360deg)',
+        "conic-gradient(from 57.74deg at 50% 50%, #1D3F93 0deg, rgba(21, 55, 23, 0) 360deg)"
     },
     {
-      id: 'ISOL',
-      name: 'iShares Solana Trust',
+      id: "ISOL",
+      name: "iShares Solana Trust",
       aum: 15941890385,
       nav: 39.72,
       background:
-        'conic-gradient(from 57.74deg at 50% 50%, #A1D3F1 0deg, rgba(91, 55, 11, 0) 360deg)',
+        "conic-gradient(from 57.74deg at 50% 50%, #A1D3F1 0deg, rgba(91, 55, 11, 0) 360deg)"
     },
     {
-      id: 'IBNK',
-      name: 'iShares Bonk Trust',
+      id: "IBNK",
+      name: "iShares Bonk Trust",
       aum: 15941890385,
       nav: 39.72,
       background:
-        'conic-gradient(from 57.74deg at 50% 50%, #BBDD33 0deg, rgba(91, 55, 11, 0) 360deg)',
-    },
+        "conic-gradient(from 57.74deg at 50% 50%, #BBDD33 0deg, rgba(91, 55, 11, 0) 360deg)"
+    }
     // {
     //   id: 'IETH',
     //   name: 'iShares Ethereum Trust',
@@ -128,12 +122,12 @@ export const Manage = () => {
                   <div
                     className="w-[32px] h-[32px] md:w-[64px] md:h-[64px]"
                     style={{
-                      alignSelf: 'end',
-                      display: 'flex',
+                      alignSelf: "end",
+                      display: "flex",
                       background: position.background,
-                      position: 'relative',
-                      top: '15px',
-                      left: '15px',
+                      position: "relative",
+                      top: "15px",
+                      left: "15px"
                     }}
                   ></div>
                 </div>
@@ -161,13 +155,13 @@ export const Manage = () => {
                 <div
                   className="w-[32px] h-[32px] md:w-[64px] md:h-[64px]"
                   style={{
-                    alignSelf: 'end',
-                    display: 'flex',
-                    position: 'relative',
-                    top: '15px',
-                    left: '15px',
+                    alignSelf: "end",
+                    display: "flex",
+                    position: "relative",
+                    top: "15px",
+                    left: "15px",
                     background:
-                      'conic-gradient(from 90deg at 50% 50%, #141414 0deg, rgba(20, 20, 20, 0) 360deg)',
+                      "conic-gradient(from 90deg at 50% 50%, #141414 0deg, rgba(20, 20, 20, 0) 360deg)"
                   }}
                 ></div>
               </div>
