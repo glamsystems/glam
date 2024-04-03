@@ -1,6 +1,7 @@
 const express = require("express");
 const { createCanvas, loadImage } = require("canvas");
 const { validatePubkey } = require("./validation");
+const { priceHistory, fundPerformance } = require("./prices");
 
 BASE_URL = "https://api.glam.systems";
 
@@ -8,11 +9,37 @@ const app = express();
 app.use(express.static("public"));
 
 app.get("/", (req, res) => {
-  res.send("Hello from App Engine!");
+  res.send(`Hello from ${BASE_URL}!`);
 });
 
 app.get("/_/health", (req, res) => {
   res.send("ok");
+});
+
+app.get("/fund/:pubkey/perf", async (req, res) => {
+  // TODO: validate input
+  // TODO: Should we fetch weights from blockchain, or let client side pass them in?
+  // Client side should have all fund info including assets and weights
+  const [btcWeight, ethWeight] = [0.7, 0.3];
+  console.log(`ethWeight: ${ethWeight}, btcWeight: ${btcWeight}`);
+  const { timestamps, closingPrices: ethClosingPrices } = await priceHistory(
+    "Crypto.ETH/USD"
+  );
+  const { closingPrices: btcClosingPrices } = await priceHistory(
+    "Crypto.BTC/USD"
+  );
+
+  // console.log(
+  //   `Last30dPrices (USD): ETH ${ethClosingPrices}, BTC ${btcClosingPrices}`
+  // );
+
+  const performance = fundPerformance(
+    btcWeight,
+    btcClosingPrices,
+    ethWeight,
+    ethClosingPrices
+  );
+  res.send(JSON.stringify({ timestamps, performance }));
 });
 
 app.get("/metadata/:pubkey", async (req, res) => {
@@ -90,6 +117,7 @@ app.get("/image/:pubkey.png", async (req, res) => {
 
 // Listen to the App Engine-specified port, or 8080 otherwise
 const PORT = process.env.PORT || 8080;
+const host = process.env.NODE_ENV ? "" : "http://localhost";
 app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}...`);
+  console.log(`Server listening on port ${host}:${PORT}...`);
 });
