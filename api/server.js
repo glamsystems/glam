@@ -118,6 +118,8 @@ app.get("/image/:pubkey.png", async (req, res) => {
 // Listen to the App Engine-specified port, or 8080 otherwise
 const PORT = process.env.PORT || 8080;
 const host = process.env.NODE_ENV ? "" : "http://localhost";
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server listening on port ${host}:${PORT}...`);
 });
+
+module.exports = server;
