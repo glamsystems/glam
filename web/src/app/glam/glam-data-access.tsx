@@ -66,31 +66,30 @@ export function useGlamProgram() {
 }
 
 export function useGlamProgramAccount({ glam }: { glam: PublicKey }) {
-  const { cluster } = useCluster();
   const transactionToast = useTransactionToast();
   const { program, accounts } = useGlamProgram();
 
   const account = useQuery({
-    queryKey: ["glam", "fetch", { cluster, glam }],
+    queryKey: ["glam", "fetch", { glam }],
     queryFn: () => program.account.fund.fetch(glam)
   });
 
-  // const close = useMutation({
-  //   mutationKey: ["glam", "close", { cluster, glam }],
-  //   mutationFn: (keypair: Keypair) =>
-  //     program.methods
-  //       .close()
-  //       .accounts({
-  //         fund: glam,
-  //         manager: keypair.publicKey
-  //       })
-  //       .signers([keypair])
-  //       .rpc(),
-  //   onSuccess: (tx) => {
-  //     transactionToast(tx);
-  //     return accounts.refetch();
-  //   }
-  // });
+  const subscribe = useMutation({
+    mutationKey: ["glam", "subscribe", { glam }],
+    mutationFn: (keypair: Keypair) =>
+      program.methods
+        .close()
+        .accounts({
+          fund: glam,
+          manager: keypair.publicKey
+        })
+        .signers([keypair])
+        .rpc(),
+    onSuccess: (tx) => {
+      transactionToast(tx);
+      return accounts.refetch();
+    }
+  });
 
   return {
     account,
