@@ -52,14 +52,25 @@ impl Treasury {
 
 #[derive(AnchorSerialize, AnchorDeserialize)]
 pub struct ShareClassMetadata {
-    pub name: String,
-    pub symbol: String,
-    pub uri: String,
+    pub name: String,                 // MAX_FUND_NAME
+    pub symbol: String,               // MAX_FUND_SYMBOL
+    pub uri: String,                  // MAX_FUND_URI
+    pub share_class_asset: String,    // 20
+    pub share_class_asset_id: Pubkey, // 32
+    pub isin: String,                 // 20
+    pub status: String,               // 20
+    pub fee_management: i32,          // 4, 1_000_000 == 1%
+    pub fee_performance: i32,         // 4, 1_000_000 == 1%
+    pub policy_distribution: String,  // 20
+    pub extension: String,            // 20
+    pub launch_date: String,          // 20
+    pub lifecycle: String,            // 20
+    pub image_uri: String,            // 100
 }
 impl ShareClassMetadata {
     // use the same max sizes as Fund
     // more space needed for two reasons:
     // 1. we need to support additional metadata
     // 2. for each KV pair in metadata, keys ("name" etc) also take up space
-    pub const INIT_SIZE: usize = MAX_FUND_NAME + MAX_FUND_SYMBOL + MAX_FUND_URI + 100;
+    pub const INIT_SIZE: usize = MAX_FUND_NAME + MAX_FUND_SYMBOL + MAX_FUND_URI + 500;
 }

@@ -150,7 +150,7 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
             mint: share_mint.clone(),
         },
     );
-    token_2022::initialize_mint2(mint_cpi_ix, 0, &share_mint_authority.key(), None).unwrap();
+    token_2022::initialize_mint2(mint_cpi_ix, 9, &share_mint_authority.key(), None).unwrap();
 
     // Init the metadata account
     let init_token_metadata_ix = spl_token_metadata_interface::instruction::initialize(
@@ -173,7 +173,10 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
         ],
         signer_seeds,
     )?;
+
+    //
     // Add additional metadata fields
+    //
     solana_program::program::invoke_signed(
         &spl_token_metadata_interface::instruction::update_field(
             &spl_token_2022::id(),
@@ -181,6 +184,127 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
             &share_metadata_authority.key(),
             spl_token_metadata_interface::state::Field::Key("fund_id".to_string()),
             fund_key.to_string(),
+        ),
+        &[share_mint.clone(), share_mint_authority.clone()],
+        signer_seeds,
+    )?;
+    solana_program::program::invoke_signed(
+        &spl_token_metadata_interface::instruction::update_field(
+            &spl_token_2022::id(),
+            &share_metadata.key(),
+            &share_metadata_authority.key(),
+            spl_token_metadata_interface::state::Field::Key("share_class_asset".to_string()),
+            share_class_metadata.share_class_asset,
+        ),
+        &[share_mint.clone(), share_mint_authority.clone()],
+        signer_seeds,
+    )?;
+    solana_program::program::invoke_signed(
+        &spl_token_metadata_interface::instruction::update_field(
+            &spl_token_2022::id(),
+            &share_metadata.key(),
+            &share_metadata_authority.key(),
+            spl_token_metadata_interface::state::Field::Key("share_class_asset_id".to_string()),
+            share_class_metadata.share_class_asset_id.to_string(),
+        ),
+        &[share_mint.clone(), share_mint_authority.clone()],
+        signer_seeds,
+    )?;
+    solana_program::program::invoke_signed(
+        &spl_token_metadata_interface::instruction::update_field(
+            &spl_token_2022::id(),
+            &share_metadata.key(),
+            &share_metadata_authority.key(),
+            spl_token_metadata_interface::state::Field::Key("isin".to_string()),
+            share_class_metadata.isin,
+        ),
+        &[share_mint.clone(), share_mint_authority.clone()],
+        signer_seeds,
+    )?;
+    solana_program::program::invoke_signed(
+        &spl_token_metadata_interface::instruction::update_field(
+            &spl_token_2022::id(),
+            &share_metadata.key(),
+            &share_metadata_authority.key(),
+            spl_token_metadata_interface::state::Field::Key("status".to_string()),
+            share_class_metadata.status,
+        ),
+        &[share_mint.clone(), share_mint_authority.clone()],
+        signer_seeds,
+    )?;
+    solana_program::program::invoke_signed(
+        &spl_token_metadata_interface::instruction::update_field(
+            &spl_token_2022::id(),
+            &share_metadata.key(),
+            &share_metadata_authority.key(),
+            spl_token_metadata_interface::state::Field::Key("fee_management".to_string()),
+            share_class_metadata.fee_management.to_string(),
+        ),
+        &[share_mint.clone(), share_mint_authority.clone()],
+        signer_seeds,
+    )?;
+    solana_program::program::invoke_signed(
+        &spl_token_metadata_interface::instruction::update_field(
+            &spl_token_2022::id(),
+            &share_metadata.key(),
+            &share_metadata_authority.key(),
+            spl_token_metadata_interface::state::Field::Key("fee_performance".to_string()),
+            share_class_metadata.fee_performance.to_string(),
+        ),
+        &[share_mint.clone(), share_mint_authority.clone()],
+        signer_seeds,
+    )?;
+    solana_program::program::invoke_signed(
+        &spl_token_metadata_interface::instruction::update_field(
+            &spl_token_2022::id(),
+            &share_metadata.key(),
+            &share_metadata_authority.key(),
+            spl_token_metadata_interface::state::Field::Key("policy_distribution".to_string()),
+            share_class_metadata.policy_distribution,
+        ),
+        &[share_mint.clone(), share_mint_authority.clone()],
+        signer_seeds,
+    )?;
+    solana_program::program::invoke_signed(
+        &spl_token_metadata_interface::instruction::update_field(
+            &spl_token_2022::id(),
+            &share_metadata.key(),
+            &share_metadata_authority.key(),
+            spl_token_metadata_interface::state::Field::Key("extension".to_string()),
+            share_class_metadata.extension,
+        ),
+        &[share_mint.clone(), share_mint_authority.clone()],
+        signer_seeds,
+    )?;
+    solana_program::program::invoke_signed(
+        &spl_token_metadata_interface::instruction::update_field(
+            &spl_token_2022::id(),
+            &share_metadata.key(),
+            &share_metadata_authority.key(),
+            spl_token_metadata_interface::state::Field::Key("launch_date".to_string()),
+            share_class_metadata.launch_date,
+        ),
+        &[share_mint.clone(), share_mint_authority.clone()],
+        signer_seeds,
+    )?;
+    solana_program::program::invoke_signed(
+        &spl_token_metadata_interface::instruction::update_field(
+            &spl_token_2022::id(),
+            &share_metadata.key(),
+            &share_metadata_authority.key(),
+            spl_token_metadata_interface::state::Field::Key("lifecycle".to_string()),
+            share_class_metadata.lifecycle,
+        ),
+        &[share_mint.clone(), share_mint_authority.clone()],
+        signer_seeds,
+    )?;
+    solana_program::program::invoke_signed(
+        &spl_token_metadata_interface::instruction::update_field(
+            &spl_token_2022::id(),
+            &share_metadata.key(),
+            &share_metadata_authority.key(),
+            spl_token_metadata_interface::state::Field::Key("image_uri".to_string()),
+            share_class_metadata.image_uri,
         ),
         &[share_mint.clone(), share_mint_authority.clone()],
         signer_seeds,
