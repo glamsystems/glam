@@ -2,8 +2,9 @@ const express = require("express");
 const { createCanvas, loadImage } = require("canvas");
 const { validatePubkey } = require("./validation");
 
-const app = express();
+BASE_URL = "https://api.glam.systems";
 
+const app = express();
 app.use(express.static("public"));
 
 app.get("/", (req, res) => {
@@ -20,15 +21,17 @@ app.get("/metadata/:pubkey", async (req, res) => {
     return res.sendStatus(404);
   }
 
-  // TODO: implement metadata fetching
+  // TODO: Fetch name and symbol from blockchain
 
+  const imageUri = `${BASE_URL}/image/${req.params.pubkey}.png`;
   res.set("content-type", "application/json");
   res.send(
     JSON.stringify({
-      name: "name",
-      symbol: "symbol",
-      description: "description",
-      image: "image url"
+      name: "name_placeholder",
+      symbol: "symbol_placeholder",
+      description: "",
+      external_url: "https://glam.systems",
+      image: imageUri
     })
   );
 });
