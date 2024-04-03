@@ -1,6 +1,11 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
-import { Keypair, PublicKey } from "@solana/web3.js";
+import {
+  Keypair,
+  PublicKey,
+  ComputeBudgetProgram,
+  ComputeBudgetInstruction
+} from "@solana/web3.js";
 import {
   createMint,
   createAssociatedTokenAccount,
@@ -46,15 +51,26 @@ describe("glam_crud", () => {
     program.programId
   );
 
-  const shareClass = {
-    name: "Class A share",
-    symbol: "CLASS-A",
-    uri: "https://glam.systems/fund/XYZ/share/A"
-  };
   const [sharePDA, shareBump] = PublicKey.findProgramAddressSync(
     [anchor.utils.bytes.utf8.encode("share-0"), fundPDA.toBuffer()],
     program.programId
   );
+  const shareClassMetadata = {
+    name: "Class A share",
+    symbol: "CLASS-A",
+    uri: `https://api.glam.systems/metadata/${sharePDA.toBase58()}`,
+    shareClassAsset: "USDC",
+    shareClassAssetId: usdc,
+    isin: "XS1082172823",
+    status: "open",
+    feeManagement: 15000, // 1_000_000 * 0.015,
+    feePerformance: 100000, // 1_000_000 * 0.1,
+    policyDistribution: "accumulating",
+    extension: "",
+    launchDate: "2024-04-01",
+    lifecycle: "active",
+    imageUri: `https://api.glam.systems/image/${sharePDA.toBase58()}.png`
+  };
 
   beforeAll(async () => {}, 15_000);
 
@@ -67,7 +83,7 @@ describe("glam_crud", () => {
           fundUri,
           [0, 60, 40],
           true,
-          shareClass
+          shareClassMetadata
         )
         .accounts({
           fund: fundPDA,
@@ -80,6 +96,9 @@ describe("glam_crud", () => {
           { pubkey: usdc, isSigner: false, isWritable: false },
           { pubkey: btc, isSigner: false, isWritable: false },
           { pubkey: eth, isSigner: false, isWritable: false }
+        ])
+        .preInstructions([
+          ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
         ])
         .rpc({ commitment }); // await 'confirmed'
       console.log(`Fund ${fundPDA} initialized, txId: ${txId}`);

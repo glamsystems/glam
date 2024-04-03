@@ -649,6 +649,50 @@
           {
             "name": "uri",
             "type": "string"
+          },
+          {
+            "name": "shareClassAsset",
+            "type": "string"
+          },
+          {
+            "name": "shareClassAssetId",
+            "type": "publicKey"
+          },
+          {
+            "name": "isin",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "type": "string"
+          },
+          {
+            "name": "feeManagement",
+            "type": "i32"
+          },
+          {
+            "name": "feePerformance",
+            "type": "i32"
+          },
+          {
+            "name": "policyDistribution",
+            "type": "string"
+          },
+          {
+            "name": "extension",
+            "type": "string"
+          },
+          {
+            "name": "launchDate",
+            "type": "string"
+          },
+          {
+            "name": "lifecycle",
+            "type": "string"
+          },
+          {
+            "name": "imageUri",
+            "type": "string"
           }
         ]
       }

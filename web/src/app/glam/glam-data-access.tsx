@@ -31,15 +31,37 @@ export function useGlamProgram() {
     queryFn: () => connection.getParsedAccountInfo(programId)
   });
 
+  const shareClassMetadata = {
+    name: "GLAM Fund X Class A Share",
+    symbol: "CLASS-A",
+    uri: "https://api.glam.systems/metadata/xyz",
+    shareClassAsset: "USDC",
+    shareClassAssetId: new PublicKey(
+      "8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2"
+    ),
+    isin: "XS1082172823",
+    status: "open",
+    feeManagement: 15000, // 1_000_000 * 0.015,
+    feePerformance: 100000, // 1_000_000 * 0.1,
+    policyDistribution: "accumulating",
+    extension: "",
+    launchDate: "2024-04-01",
+    lifecycle: "active",
+    imageUri: "https://api.glam.systems/image/xyz.png"
+  };
+
   const initialize = useMutation({
     mutationKey: ["glam", "initialize", { cluster }],
     mutationFn: (keypair: Keypair) =>
       program.methods
-        .initialize("fund name", "fund symbol", "fund uri", [0, 60, 40], true, {
-          name: "Class A share",
-          symbol: "A",
-          uri: "https://glam.systems/fund/XYZ/share/A"
-        })
+        .initialize(
+          "GLAM Fund X",
+          "GLAMX",
+          "https://glam.systems/fund/xyz",
+          [0, 60, 40],
+          true,
+          shareClassMetadata
+        )
         .accounts({
           // fund: fundPDA,
           // treasury: treasuryPDA,
@@ -93,7 +115,7 @@ export function useGlamProgramAccount({ glam }: { glam: PublicKey }) {
   // });
 
   return {
-    account,
+    account
     // close
   };
 }
