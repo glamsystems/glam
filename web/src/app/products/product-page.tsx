@@ -1,6 +1,6 @@
 import '@carbon/charts-react/styles.css';
 
-import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 import { IconArrowDownRight, IconArrowUpRight } from '@tabler/icons-react';
 import { LineChart, ScaleTypes } from '@carbon/charts-react';
 import {
@@ -14,6 +14,7 @@ import {
 } from '@carbon/react';
 import { formatNumber, formatPercent } from '../utils/format-number';
 import { useParams, useNavigate, useNavigation } from 'react-router-dom';
+import { useWallet } from '@solana/wallet-adapter-react';
 
 import { SideActionBar } from './SideActionBar';
 import { getTokenMetadata } from '@solana/spl-token';
@@ -40,11 +41,21 @@ export default function ProductPage() {
   } catch(_e) {
     // pass
   }
+
+
   const { account } = useGlamProgramAccount({ glam });
+  if (account.isLoading) {
+    return ""; //spinner
+  }
+
   const data = account.data;
 
-  const shareClass = {
-    id: data?.symbol,
+  const { publicKey } = useWallet();
+  const isManager = publicKey?.toString() == data?.manager?.toString();
+
+  const fund = {
+    id: glam.toString(),
+    symbol: data?.symbol,
     name: data?.name,
     investmentObjective:
       'The iShares Bitcoin Trust seeks to reflect generally the performance of the price of bitcoin.',
@@ -75,7 +86,7 @@ export default function ProductPage() {
       // launchDate: data?.additionalMetadata?.find(
       //   (x) => x[0] === 'launch_date'
       // )?.[1],
-      shareClassAsset: 'USDC',
+      fundAsset: 'USDC',
     },
     terms: {
       highWaterMark: false,
@@ -183,28 +194,26 @@ export default function ProductPage() {
           >
             Products{' '}
           </p>
-          <p>{` / ${shareClass.name}`}</p>
+          <p>{` / ${fund.name}`}</p>
         </div>
 
         <div className="flex items-center gap-[16px] mb-[32px]">
-          <div
+          <img src={`https://api.glam.systems/image/${fund.id}.png`}
             style={{
               width: '64px',
               height: '64px',
-              background:
-                'conic-gradient(from 57.74deg at 50% 50%, #5B0F48 0deg, rgba(91, 15, 72, 0) 360deg)',
             }}
-          ></div>
+          />
           <h1
             style={{
               fontSize: '32px',
               lineHeight: '40px',
             }}
           >
-            {shareClass.name}
+            {fund.name}
           </h1>
           <Tag type="warm-gray" className="rounded-none">
-            {shareClass.id}
+            {fund.symbol}
           </Tag>
         </div>
 
@@ -228,24 +237,24 @@ export default function ProductPage() {
                   <Tile className="h-full">
                     <p>Investment Objective</p>
                     <br />
-                    <p>{shareClass.investmentObjective}</p>
+                    <p>{fund.investmentObjective}</p>
                   </Tile>
                 </div>
                 <div className="col-span-1">
                   <Tile className="h-full">
                     <div className="flex flex-col gap-[12px]">
                       <p>NAV</p>
-                      <p className="text-xl text-black">{shareClass.nav}</p>
+                      <p className="text-xl text-black">{fund.nav}</p>
                     </div>
                     <br />
                     <div className="flex flex-col gap-[12px]">
                       <p>1 Day NAV Change</p>
                       <div className="flex items-center ">
                         <p className="text-xl text-black">
-                          {shareClass.dailyNavChange} (
-                          {formatPercent(shareClass['24HourNavChange'])})
+                          {fund.dailyNavChange} (
+                          {formatPercent(fund['24HourNavChange'])})
                         </p>
-                        {shareClass['24HourNavChange'] > 0 ? (
+                        {fund['24HourNavChange'] > 0 ? (
                           <IconArrowUpRight size={24} color="#48BF84" />
                         ) : (
                           <IconArrowDownRight size={24} color="#FF5F5F" />
@@ -259,7 +268,7 @@ export default function ProductPage() {
                     <div className="flex flex-col gap-[12px]">
                       <p>AUM</p>
                       <p className="text-xl text-black">
-                        {formatNumber(shareClass.aum)}
+                        {formatNumber(fund.aum)}
                       </p>
                     </div>
                     <br />
@@ -267,10 +276,10 @@ export default function ProductPage() {
                       <p>1 Day Net Flows</p>
                       <div className="flex items-center">
                         <p className="text-xl text-black">
-                          {formatNumber(shareClass.dailyNetInflows)} (
-                          {formatPercent(shareClass['24HourNetInflowChange'])})
+                          {formatNumber(fund.dailyNetInflows)} (
+                          {formatPercent(fund['24HourNetInflowChange'])})
                         </p>
-                        {shareClass['24HourNetInflowChange'] > 0 ? (
+                        {fund['24HourNetInflowChange'] > 0 ? (
                           <IconArrowUpRight size={24} color="#4FC879" />
                         ) : (
                           <IconArrowDownRight size={24} color="#FF5F5F" />
@@ -287,25 +296,25 @@ export default function ProductPage() {
                         <div className="flex justify-between">
                           <p style={grayStyle}>Management Fee</p>
                           <strong>
-                            {formatPercent(shareClass.fees.management)}
+                            {formatPercent(fund.fees.management)}
                           </strong>
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Performance Fee</p>
                           <strong>
-                            {formatPercent(shareClass.fees.performance)}
+                            {formatPercent(fund.fees.performance)}
                           </strong>
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Subscription Fee</p>
                           <strong>
-                            {formatPercent(shareClass.fees.subscription)}
+                            {formatPercent(fund.fees.subscription)}
                           </strong>
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Redemption Fee</p>
                           <strong>
-                            {formatPercent(shareClass.fees.redemption)}
+                            {formatPercent(fund.fees.redemption)}
                           </strong>
                         </div>
                       </div>
@@ -321,7 +330,7 @@ export default function ProductPage() {
                         width: '100%',
                       }}
                     >
-                      <Tab>Manage</Tab>
+                      <Tab disabled={!isManager}>Manage</Tab>
                       <Tab>Subscribe</Tab>
                       <Tab>Redeem</Tab>
                     </TabList>
@@ -362,11 +371,11 @@ export default function ProductPage() {
                       <div className="flex flex-col gap-[14px]">
                         <div className="flex justify-between">
                           <p style={grayStyle}>Share Class Asset</p>
-                          <strong>{shareClass.facts.shareClassAsset}</strong>
+                          <strong>{fund.facts.fundAsset}</strong>
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Inception Date</p>
-                          <strong>{shareClass.facts.launchDate}</strong>
+                          <strong>{fund.facts.launchDate}</strong>
                         </div>
                       </div>
                     </div>
@@ -378,33 +387,33 @@ export default function ProductPage() {
                         <div className="flex justify-between">
                           <p style={grayStyle}>High-Water Mark</p>
                           <strong>
-                            {shareClass.terms.highWaterMark ? 'Yes' : 'No'}
+                            {fund.terms.highWaterMark ? 'Yes' : 'No'}
                           </strong>
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Hurdle Rate</p>
                           <strong>
-                            {shareClass.terms.hurdleRate ? 'Yes' : 'No'}
+                            {fund.terms.hurdleRate ? 'Yes' : 'No'}
                           </strong>
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Lockup Period</p>
                           <strong>{`${
-                            +shareClass.terms.lockupPeriod / 60
+                            +fund.terms.lockupPeriod / 60
                           } hour${
-                            +shareClass.terms.lockupPeriod / 60 > 1 ? 's' : ''
+                            +fund.terms.lockupPeriod / 60 > 1 ? 's' : ''
                           }`}</strong>
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Minimum Subscription</p>
                           <strong>
-                            {formatNumber(shareClass.terms.minimumSubscription)}
+                            {formatNumber(fund.terms.minimumSubscription)}
                           </strong>
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Maximum Subscription</p>
                           <strong>
-                            {formatNumber(shareClass.terms.maximumSubscription)}
+                            {formatNumber(fund.terms.maximumSubscription)}
                           </strong>
                         </div>
                       </div>
