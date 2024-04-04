@@ -51,7 +51,7 @@ export function UiLayout({ children }: { children: ReactNode }) {
                 prefix="Glam *.+"
                 className="h-full w-full"
                 title="Glam *.+"
-              ></HeaderName>
+              >&nbsp;</HeaderName>
             </Link>
             <HeaderNavigation aria-label="GLAM *.+">
               <Link to="/products">

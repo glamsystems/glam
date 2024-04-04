@@ -16,7 +16,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 export default function ProductsOverview() {
-  const defaultFund = 'Cprd9VcMpAuGAonDEsHpxiuzLG6dzt5xR6mpyeq2EiN1';
+  const defaultFund = 'AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2';
   const rows = [
     {
       id: defaultFund,
