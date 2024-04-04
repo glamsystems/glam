@@ -1,8 +1,8 @@
-import '@carbon/charts-react/styles.css';
+import "@carbon/charts-react/styles.css";
 
-import { PublicKey } from '@solana/web3.js';
-import { IconArrowDownRight, IconArrowUpRight } from '@tabler/icons-react';
-import { LineChart, ScaleTypes } from '@carbon/charts-react';
+import { PublicKey } from "@solana/web3.js";
+import { IconArrowDownRight, IconArrowUpRight } from "@tabler/icons-react";
+import { LineChart, ScaleTypes } from "@carbon/charts-react";
 import {
   Tab,
   TabList,
@@ -10,24 +10,28 @@ import {
   TabPanels,
   Tabs,
   Tag,
-  Tile,
-} from '@carbon/react';
-import { formatNumber, formatPercent } from '../utils/format-number';
-import { useParams, useNavigate, useNavigation } from 'react-router-dom';
-import { useWallet } from '@solana/wallet-adapter-react';
+  Tile
+} from "@carbon/react";
+import { formatNumber, formatPercent } from "../utils/format-number";
+import { useParams, useNavigate, useNavigation } from "react-router-dom";
+import { useWallet } from "@solana/wallet-adapter-react";
 
-import { SideActionBar } from './SideActionBar';
-import { getTokenMetadata } from '@solana/spl-token';
-import { gray70Hover } from '@carbon/colors';
-import { useQuery } from '@tanstack/react-query';
+import { SideActionBar } from "./SideActionBar";
+import { getTokenMetadata } from "@solana/spl-token";
+import { gray70Hover } from "@carbon/colors";
+import { useQuery } from "@tanstack/react-query";
 
-import { useGlamProgramAccount } from '../glam/glam-data-access';
+import {
+  useGlamProgramAccount,
+  useFundPerfChartData
+} from "../glam/glam-data-access";
+import { useMemo } from "react";
 
 export default function ProductPage() {
   const grayStyle = {
     color: gray70Hover,
-    fontSize: '14px',
-    lineHeight: '18px',
+    fontSize: "14px",
+    lineHeight: "18px"
   };
 
   // retrieve the publicKey from the URL
@@ -38,10 +42,11 @@ export default function ProductPage() {
   let glam = new PublicKey(defaultFund);
   try {
     glam = new PublicKey(id || defaultFund);
-  } catch(_e) {
+  } catch (_e) {
     // pass
   }
 
+  const fundPerfChartData = useFundPerfChartData(id || defaultFund);
 
   const { account } = useGlamProgramAccount({ glam });
   if (account.isLoading) {
@@ -58,14 +63,14 @@ export default function ProductPage() {
     symbol: data?.symbol,
     name: data?.name,
     investmentObjective:
-      'The iShares Bitcoin Trust seeks to reflect generally the performance of the price of bitcoin.',
+      "The iShares Bitcoin Trust seeks to reflect generally the performance of the price of bitcoin.",
     nav: 39.72,
     dailyNavChange: 0.12,
-    '24HourNavChange': 0.0029,
+    "24HourNavChange": 0.0029,
     daily: 0.29,
     aum: 15941890385,
     dailyNetInflows: 13987428,
-    '24HourNetInflowChange': 0.0089,
+    "24HourNetInflowChange": 0.0089,
     // will optimize looping later once we have all the necessary data
     fees: {
       management: +(
@@ -75,112 +80,54 @@ export default function ProductPage() {
       performance: +(
         // data?.additionalMetadata?.find(
         //   (x) => x[0] === 'fee_performance'
-        // )?.[1] ?? 
+        // )?.[1] ??
         0
       ),
       subscription: 0.0,
-      redemption: 0.0,
+      redemption: 0.0
     },
     facts: {
       launchDate: "",
       // launchDate: data?.additionalMetadata?.find(
       //   (x) => x[0] === 'launch_date'
       // )?.[1],
-      fundAsset: 'USDC',
+      fundAsset: "USDC"
     },
     terms: {
       highWaterMark: false,
       hurdleRate: false,
-      lockupPeriod: '60', // denominated in minutes
+      lockupPeriod: "60", // denominated in minutes
       minimumSubscription: 1,
-      maximumSubscription: 10000,
-    },
+      maximumSubscription: 10000
+    }
   };
 
   const chartData = {
-    data: [
-      {
-        group: 'Dataset 2',
-        date: '2019-01-01T23:00:00.000Z',
-        value: 0,
-        surplus: 17255.932138665936,
-      },
-      {
-        group: 'Dataset 2',
-        date: '2019-01-05T23:00:00.000Z',
-        value: 57312,
-        surplus: 291763818.4413581,
-      },
-      {
-        group: 'Dataset 2',
-        date: '2019-01-07T23:00:00.000Z',
-        value: 27432,
-        surplus: 457548830.72550297,
-      },
-      {
-        group: 'Dataset 2',
-        date: '2019-01-14T23:00:00.000Z',
-        value: 70323,
-        surplus: 280347099.3874301,
-      },
-      {
-        group: 'Dataset 2',
-        date: '2019-01-18T23:00:00.000Z',
-        value: 21300,
-        surplus: 278114597.9106252,
-      },
-      {
-        group: 'Dataset 4',
-        date: '2019-01-01T23:00:00.000Z',
-        value: 20000,
-        surplus: 126288547.22020511,
-      },
-      {
-        group: 'Dataset 4',
-        date: '2019-01-05T23:00:00.000Z',
-        value: 37312,
-        surplus: 860489943.1729329,
-      },
-      {
-        group: 'Dataset 4',
-        date: '2019-01-07T23:00:00.000Z',
-        value: 51432,
-        surplus: 42770848.79525397,
-      },
-      {
-        group: 'Dataset 4',
-        date: '2019-01-14T23:00:00.000Z',
-        value: 25332,
-        surplus: 463373976.2648476,
-      },
-      {
-        group: 'Dataset 4',
-        date: '2019-01-18T23:00:00.000Z',
-        value: null,
-        surplus: 24611.575340218762,
-      },
-    ],
+    data: fundPerfChartData || [],
     options: {
-      title: 'Performance',
+      title: "Performance",
       axes: {
         bottom: {
-          mapsTo: 'date',
-          scaleType: ScaleTypes.TIME,
+          mapsTo: "date",
+          scaleType: ScaleTypes.TIME
         },
         left: {
-          mapsTo: 'value',
-          scaleType: ScaleTypes.LINEAR,
-        },
+          mapsTo: "value",
+          scaleType: ScaleTypes.LINEAR
+        }
       },
-      curve: 'curveMonotoneX',
-      height: '365px',
+      curve: "curveMonotoneX",
+      height: "365px",
       legend: {
-        enabled: false,
+        enabled: true
       },
       toolbar: {
-        enabled: false,
+        enabled: false
       },
-    },
+      tooltip: {
+        showTotal: false
+      }
+    }
   };
 
   return (
@@ -189,25 +136,26 @@ export default function ProductPage() {
         <div className="flex gap-[8px] mt-[80px] mb-[32px]">
           <p
             style={{
-              color: gray70Hover,
+              color: gray70Hover
             }}
           >
-            Products{' '}
+            Products{" "}
           </p>
           <p>{` / ${fund.name}`}</p>
         </div>
 
         <div className="flex items-center gap-[16px] mb-[32px]">
-          <img src={`https://api.glam.systems/image/${fund.id}.png`}
+          <img
+            src={`https://api.glam.systems/image/${fund.id}.png`}
             style={{
-              width: '64px',
-              height: '64px',
+              width: "64px",
+              height: "64px"
             }}
           />
           <h1
             style={{
-              fontSize: '32px',
-              lineHeight: '40px',
+              fontSize: "32px",
+              lineHeight: "40px"
             }}
           >
             {fund.name}
@@ -225,12 +173,12 @@ export default function ProductPage() {
             <Tab>Share Classes</Tab>
           </TabList>
           <TabPanels>
-            <TabPanel style={{ padding: '0px' }}>
+            <TabPanel style={{ padding: "0px" }}>
               <div
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(5, 1fr)',
-                  gap: '8px',
+                  display: "grid",
+                  gridTemplateColumns: "repeat(5, 1fr)",
+                  gap: "8px"
                 }}
               >
                 <div className="col-span-1">
@@ -252,9 +200,9 @@ export default function ProductPage() {
                       <div className="flex items-center ">
                         <p className="text-xl text-black">
                           {fund.dailyNavChange} (
-                          {formatPercent(fund['24HourNavChange'])})
+                          {formatPercent(fund["24HourNavChange"])})
                         </p>
-                        {fund['24HourNavChange'] > 0 ? (
+                        {fund["24HourNavChange"] > 0 ? (
                           <IconArrowUpRight size={24} color="#48BF84" />
                         ) : (
                           <IconArrowDownRight size={24} color="#FF5F5F" />
@@ -277,9 +225,9 @@ export default function ProductPage() {
                       <div className="flex items-center">
                         <p className="text-xl text-black">
                           {formatNumber(fund.dailyNetInflows)} (
-                          {formatPercent(fund['24HourNetInflowChange'])})
+                          {formatPercent(fund["24HourNetInflowChange"])})
                         </p>
-                        {fund['24HourNetInflowChange'] > 0 ? (
+                        {fund["24HourNetInflowChange"] > 0 ? (
                           <IconArrowUpRight size={24} color="#4FC879" />
                         ) : (
                           <IconArrowDownRight size={24} color="#FF5F5F" />
@@ -295,9 +243,7 @@ export default function ProductPage() {
                       <div className="flex flex-col gap-[8px]">
                         <div className="flex justify-between">
                           <p style={grayStyle}>Management Fee</p>
-                          <strong>
-                            {formatPercent(fund.fees.management)}
-                          </strong>
+                          <strong>{formatPercent(fund.fees.management)}</strong>
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Performance Fee</p>
@@ -313,9 +259,7 @@ export default function ProductPage() {
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Redemption Fee</p>
-                          <strong>
-                            {formatPercent(fund.fees.redemption)}
-                          </strong>
+                          <strong>{formatPercent(fund.fees.redemption)}</strong>
                         </div>
                       </div>
                     </div>
@@ -327,7 +271,7 @@ export default function ProductPage() {
                       aria-label="List of tabs"
                       contained
                       style={{
-                        width: '100%',
+                        width: "100%"
                       }}
                     >
                       <Tab disabled={!isManager}>Manage</Tab>
@@ -387,21 +331,19 @@ export default function ProductPage() {
                         <div className="flex justify-between">
                           <p style={grayStyle}>High-Water Mark</p>
                           <strong>
-                            {fund.terms.highWaterMark ? 'Yes' : 'No'}
+                            {fund.terms.highWaterMark ? "Yes" : "No"}
                           </strong>
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Hurdle Rate</p>
                           <strong>
-                            {fund.terms.hurdleRate ? 'Yes' : 'No'}
+                            {fund.terms.hurdleRate ? "Yes" : "No"}
                           </strong>
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Lockup Period</p>
-                          <strong>{`${
-                            +fund.terms.lockupPeriod / 60
-                          } hour${
-                            +fund.terms.lockupPeriod / 60 > 1 ? 's' : ''
+                          <strong>{`${+fund.terms.lockupPeriod / 60} hour${
+                            +fund.terms.lockupPeriod / 60 > 1 ? "s" : ""
                           }`}</strong>
                         </div>
                         <div className="flex justify-between">
@@ -422,12 +364,12 @@ export default function ProductPage() {
                 </div>
               </div>
             </TabPanel>
-            <TabPanel style={{ padding: '0px' }}>
+            <TabPanel style={{ padding: "0px" }}>
               <div
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(5, 1fr)',
-                  gap: '8px',
+                  display: "grid",
+                  gridTemplateColumns: "repeat(5, 1fr)",
+                  gap: "8px"
                 }}
               >
                 <div className="col-span-1">
@@ -462,12 +404,12 @@ export default function ProductPage() {
                 </div>
               </div>
             </TabPanel>
-            <TabPanel style={{ padding: '0px' }}>
+            <TabPanel style={{ padding: "0px" }}>
               <div
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(5, 1fr)',
-                  gap: '8px',
+                  display: "grid",
+                  gridTemplateColumns: "repeat(5, 1fr)",
+                  gap: "8px"
                 }}
               >
                 <div className="col-span-1">
@@ -502,12 +444,12 @@ export default function ProductPage() {
                 </div>
               </div>
             </TabPanel>
-            <TabPanel style={{ padding: '0px' }}>
+            <TabPanel style={{ padding: "0px" }}>
               <div
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(5, 1fr)',
-                  gap: '8px',
+                  display: "grid",
+                  gridTemplateColumns: "repeat(5, 1fr)",
+                  gap: "8px"
                 }}
               >
                 <div className="col-span-1">

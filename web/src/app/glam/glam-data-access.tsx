@@ -118,3 +118,45 @@ export function useGlamProgramAccount({ glam }: { glam: PublicKey }) {
     // close
   };
 }
+
+export function useFundPerfChartData(fund: string) {
+  const { data } = useQuery({
+    queryKey: ["fund_performance", fund],
+    queryFn: async () => {
+      const response = await fetch(
+        `https://api.glam.systems/fund/${fund}/perf`
+      );
+      const { fundPerformance, btcPerformance, ethPerformance, timestamps } =
+        await response.json();
+      const chartData = timestamps
+        .map((ts: any, i: number) => {
+          const fundValue = fundPerformance[i] * 100;
+          const btcValue = btcPerformance[i] * 100;
+          const ethValue = ethPerformance[i] * 100;
+
+          return [
+            {
+              group: "This fund",
+              date: new Date(ts * 1000),
+              value: fundValue
+            },
+            {
+              group: "BTC",
+              date: new Date(ts * 1000),
+              value: btcValue
+            },
+            {
+              group: "ETH",
+              date: new Date(ts * 1000),
+              value: ethValue
+            }
+          ];
+        })
+        .flat();
+
+      return chartData;
+    }
+  });
+
+  return data;
+}
