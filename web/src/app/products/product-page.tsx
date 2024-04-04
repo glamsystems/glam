@@ -133,6 +133,9 @@ export default function ProductPage() {
       },
       toolbar: {
         enabled: false
+      },
+      tooltip: {
+        showTotal: false
       }
     }
   };
