@@ -572,6 +572,17 @@ export type Glam = {
             }
           },
           {
+            "name": "shareClassesMetadata",
+            "type": {
+              "array": [
+                {
+                  "defined": "ShareClassMetadata"
+                },
+                3
+              ]
+            }
+          },
+          {
             "name": "shareClassesBumps",
             "type": {
               "array": [
@@ -1326,6 +1337,17 @@ export const IDL: Glam = {
             "type": {
               "array": [
                 "publicKey",
+                3
+              ]
+            }
+          },
+          {
+            "name": "shareClassesMetadata",
+            "type": {
+              "array": [
+                {
+                  "defined": "ShareClassMetadata"
+                },
                 3
               ]
             }

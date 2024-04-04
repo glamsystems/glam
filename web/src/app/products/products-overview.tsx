@@ -16,9 +16,10 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 export default function ProductsOverview() {
+  const defaultFund = 'Cprd9VcMpAuGAonDEsHpxiuzLG6dzt5xR6mpyeq2EiN1';
   const rows = [
     {
-      id: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
+      id: defaultFund,
       symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
@@ -29,7 +30,7 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
+      id: defaultFund,
       symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
@@ -40,7 +41,7 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
+      id: defaultFund,
       symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
@@ -51,7 +52,7 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
+      id: defaultFund,
       symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
@@ -62,7 +63,7 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
+      id: defaultFund,
       symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
@@ -73,7 +74,7 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
+      id: defaultFund,
       symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
@@ -84,7 +85,7 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
+      id: defaultFund,
       symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
@@ -95,7 +96,7 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
+      id: defaultFund,
       symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
@@ -106,7 +107,7 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
+      id: defaultFund,
       symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
@@ -117,7 +118,7 @@ export default function ProductsOverview() {
       status: 'Disabled',
     },
     {
-      id: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
+      id: defaultFund,
       symbol: 'GLAM-A-USDC',
       nav: 100,
       aum: 100,
