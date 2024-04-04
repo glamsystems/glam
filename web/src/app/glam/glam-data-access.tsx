@@ -23,12 +23,12 @@ export function useGlamProgram() {
 
   const accounts = useQuery({
     queryKey: ["glam", "all", { cluster }],
-    queryFn: () => program.account.fund.all()
+    queryFn: () => program.account.fund.all(),
   });
 
   const getProgramAccount = useQuery({
     queryKey: ["get-program-account", { cluster }],
-    queryFn: () => connection.getParsedAccountInfo(programId)
+    queryFn: () => connection.getParsedAccountInfo(programId),
   });
 
   const shareClassMetadata = {
@@ -47,7 +47,7 @@ export function useGlamProgram() {
     extension: "",
     launchDate: "2024-04-01",
     lifecycle: "active",
-    imageUri: "https://api.glam.systems/image/xyz.png"
+    imageUri: "https://api.glam.systems/image/xyz.png",
   };
 
   const initialize = useMutation({
@@ -75,7 +75,7 @@ export function useGlamProgram() {
       transactionToast(signature);
       return accounts.refetch();
     },
-    onError: () => toast.error("Failed to initialize fund")
+    onError: () => toast.error("Failed to initialize fund"),
   });
 
   return {
@@ -83,7 +83,7 @@ export function useGlamProgram() {
     programId,
     accounts,
     getProgramAccount,
-    initialize
+    initialize,
   };
 }
 
@@ -93,7 +93,7 @@ export function useGlamProgramAccount({ glam }: { glam: PublicKey }) {
 
   const account = useQuery({
     queryKey: ["glam", "fetch", { glam }],
-    queryFn: () => program.account.fund.fetch(glam)
+    queryFn: () => program.account.fund.fetch(glam),
   });
 
   const subscribe = useMutation({
@@ -103,18 +103,61 @@ export function useGlamProgramAccount({ glam }: { glam: PublicKey }) {
         .close()
         .accounts({
           fund: glam,
-          manager: keypair.publicKey
+          manager: keypair.publicKey,
         })
         .signers([keypair])
         .rpc(),
     onSuccess: (tx) => {
       transactionToast(tx);
       return accounts.refetch();
-    }
+    },
   });
 
   return {
-    account
+    account,
     // close
   };
+}
+
+export function useFundPerfChartData(fund: string) {
+  const { data } = useQuery({
+    queryKey: ["fund_performance", fund],
+    queryFn: async () => {
+      const response = await fetch(
+        `https://api.glam.systems/fund/${fund}/perf`
+      );
+      console.log(response);
+      const { fundPerformance, btcPerformance, ethPerformance, timestamps } =
+        await response.json();
+      const chartDataFund = fundPerformance.map((p: any, i: number) => {
+        const ts = timestamps[i];
+        return {
+          group: "This fund",
+          date: new Date(ts * 1000),
+          value: p * 100,
+        };
+      });
+      const chartDataBtc = btcPerformance.map((p: any, i: number) => {
+        const ts = timestamps[i];
+        return {
+          group: "BTC",
+          date: new Date(ts * 1000),
+          value: p * 100,
+        };
+      });
+
+      const chartDataEth = ethPerformance.map((p: any, i: number) => {
+        const ts = timestamps[i];
+        return {
+          group: "ETH",
+          date: new Date(ts * 1000),
+          value: p * 100,
+        };
+      });
+
+      return [...chartDataFund, ...chartDataBtc, ...chartDataEth];
+    },
+  });
+
+  return data;
 }
