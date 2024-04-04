@@ -21,5 +21,11 @@ describe("Test /fund/:pubkey/perf", () => {
   it("", async () => {
     const res = await requestWithSupertest.get("/fund/xyz/perf");
     expect(res.status).toEqual(200);
+    expect(res.body).toEqual({
+      timestamps: expect.any(Array),
+      fundPerformance: expect.any(Array),
+      btcPerformance: expect.any(Array),
+      ethPerformance: expect.any(Array)
+    });
   });
 });
