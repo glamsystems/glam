@@ -572,6 +572,17 @@
             }
           },
           {
+            "name": "shareClassesMetadata",
+            "type": {
+              "array": [
+                {
+                  "defined": "ShareClassMetadata"
+                },
+                3
+              ]
+            }
+          },
+          {
             "name": "shareClassesBumps",
             "type": {
               "array": [

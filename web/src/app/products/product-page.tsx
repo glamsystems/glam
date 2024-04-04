@@ -34,7 +34,7 @@ export default function ProductPage() {
   let { id } = useParams();
 
   // fetch the fund, for now we default to 2ex...
-  const defaultFund = "2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt";
+  const defaultFund = "Cprd9VcMpAuGAonDEsHpxiuzLG6dzt5xR6mpyeq2EiN1";
   let glam = new PublicKey(defaultFund);
   try {
     glam = new PublicKey(id || defaultFund);
@@ -49,6 +49,7 @@ export default function ProductPage() {
   }
 
   const data = account.data;
+  console.log(data);
 
   const { publicKey } = useWallet();
   const isManager = publicKey?.toString() == data?.manager?.toString();

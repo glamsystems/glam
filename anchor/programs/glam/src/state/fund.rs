@@ -15,6 +15,7 @@ pub struct Fund {
     pub assets_weights: [u32; MAX_ASSETS], // (32 + 4) * MAX_ASSETS
     pub share_classes_len: u8,             // 1
     pub share_classes: [Pubkey; MAX_SHARE_CLASSES],
+    pub share_classes_metadata: [ShareClassMetadata; MAX_SHARE_CLASSES],
     pub share_classes_bumps: [u8; MAX_SHARE_CLASSES], // (32 + 1) * MAX_SHARE_CLASSES
     pub time_created: i64,                            // 8
     pub bump_fund: u8,                                // 1
@@ -50,7 +51,7 @@ impl Treasury {
     pub const INIT_SIZE: usize = 32 + 32 + 1;
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct ShareClassMetadata {
     pub name: String,                 // MAX_FUND_NAME
     pub symbol: String,               // MAX_FUND_SYMBOL

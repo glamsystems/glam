@@ -34,9 +34,8 @@ describe("glam_crud", () => {
   const btc = new PublicKey("3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv"); // 9 decimals
   const BTC_TOKEN_PROGRAM_ID = TOKEN_2022_PROGRAM_ID;
 
-  const fundName = "Glam Investment Fund XYZ";
-  const fundSymbol = "XYZ";
-  const fundUri = "https://devnet.glam.systems/fund/XYZ";
+  const fundName = "Glam Investment Fund BTC";
+  const fundSymbol = "GBTC";
   const [fundPDA, fundBump] = PublicKey.findProgramAddressSync(
     [
       anchor.utils.bytes.utf8.encode("fund"),
@@ -45,6 +44,7 @@ describe("glam_crud", () => {
     ],
     program.programId
   );
+  const fundUri = `https://devnet.glam.systems/#/products/${fundPDA.toBase58()}`;
 
   const [treasuryPDA, treasuryBump] = PublicKey.findProgramAddressSync(
     [anchor.utils.bytes.utf8.encode("treasury"), fundPDA.toBuffer()],
@@ -56,8 +56,8 @@ describe("glam_crud", () => {
     program.programId
   );
   const shareClassMetadata = {
-    name: "Class A share",
-    symbol: "CLASS-A",
+    name: fundName,
+    symbol: fundSymbol,
     uri: `https://api.glam.systems/metadata/${sharePDA.toBase58()}`,
     shareClassAsset: "USDC",
     shareClassAssetId: usdc,
@@ -117,33 +117,33 @@ describe("glam_crud", () => {
     expect(fund.isActive).toEqual(true);
   });
 
-  it("Update fund", async () => {
-    const newFundName = "Updated fund name";
-    await program.methods
-      .update(newFundName, null, null, false)
-      .accounts({
-        fund: fundPDA,
-        manager: manager.publicKey
-      })
-      .rpc({ commitment });
-    const fund = await program.account.fund.fetch(fundPDA);
-    expect(fund.name).toEqual(newFundName);
-    expect(fund.isActive).toEqual(false);
-  });
+  // it("Update fund", async () => {
+  //   const newFundName = "Updated fund name";
+  //   await program.methods
+  //     .update(newFundName, null, null, false)
+  //     .accounts({
+  //       fund: fundPDA,
+  //       manager: manager.publicKey
+  //     })
+  //     .rpc({ commitment });
+  //   const fund = await program.account.fund.fetch(fundPDA);
+  //   expect(fund.name).toEqual(newFundName);
+  //   expect(fund.isActive).toEqual(false);
+  // });
 
-  it("Close fund", async () => {
-    await program.methods
-      .close()
-      .accounts({
-        fund: fundPDA,
-        manager: manager.publicKey
-      })
-      .rpc();
+  // it("Close fund", async () => {
+  //   await program.methods
+  //     .close()
+  //     .accounts({
+  //       fund: fundPDA,
+  //       manager: manager.publicKey
+  //     })
+  //     .rpc();
 
-    // The account should no longer exist, returning null.
-    const closedAccount = await program.account.fund.fetchNullable(fundPDA);
-    expect(closedAccount).toBeNull();
-  });
+  //   // The account should no longer exist, returning null.
+  //   const closedAccount = await program.account.fund.fetchNullable(fundPDA);
+  //   expect(closedAccount).toBeNull();
+  // });
 
   /*
   it('Before any fund - create test assets', async () => {

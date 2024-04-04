@@ -19,10 +19,10 @@
 import * as anchor from "@coral-xyz/anchor";
 import { BN, Program } from "@coral-xyz/anchor";
 import {
+  ComputeBudgetProgram,
   PublicKey,
-  Transaction,
   sendAndConfirmTransaction,
-  Keypair
+  Transaction,
 } from "@solana/web3.js";
 import {
   createMint,
@@ -67,8 +67,8 @@ describe("glam_devnet", () => {
     "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
   );
 
-  const fundName = "Investment fund E0";
-  const fundSymbol = "FFF";
+  const fundName = "Glam Investment Fund BTC-SOL";
+  const fundSymbol = "GBS";
   const [fundPDA, fundBump] = PublicKey.findProgramAddressSync(
     [
       anchor.utils.bytes.utf8.encode("fund"),
@@ -77,6 +77,7 @@ describe("glam_devnet", () => {
     ],
     program.programId
   );
+  const fundUri = `https://devnet.glam.systems/#/products/${fundPDA.toBase58()}`;
 
   const [treasuryPDA, treasuryBump] = PublicKey.findProgramAddressSync(
     [anchor.utils.bytes.utf8.encode("treasury"), fundPDA.toBuffer()],
@@ -87,6 +88,22 @@ describe("glam_devnet", () => {
     [anchor.utils.bytes.utf8.encode("share-0"), fundPDA.toBuffer()],
     program.programId
   );
+  const shareClassMetadata = {
+    name: fundName,
+    symbol: fundSymbol,
+    uri: `https://api.glam.systems/metadata/${sharePDA.toBase58()}`,
+    shareClassAsset: "USDC",
+    shareClassAssetId: usdc,
+    isin: "XS1082172823",
+    status: "open",
+    feeManagement: 15000, // 1_000_000 * 0.015,
+    feePerformance: 100000, // 1_000_000 * 0.1,
+    policyDistribution: "accumulating",
+    extension: "",
+    launchDate: "2024-04-01",
+    lifecycle: "active",
+    imageUri: `https://api.glam.systems/image/${sharePDA.toBase58()}.png`
+  };
 
   // treasury
   const treasuryUsdcAta = getAssociatedTokenAddressSync(
@@ -177,11 +194,11 @@ describe("glam_devnet", () => {
 
   beforeAll(async () => {}, 15_000);
 
-  /*
   // Subscribe to the fund
   it("Manager tests subscribe USDC to fund", async () => {
     console.log("managerUsdcAta", managerUsdcAta);
-    const amount = new BN(200 * 10 ** 6); // 200 USDC
+    // const amount = new BN(200 * 10 ** 6); // 200 USDC
+    const amount = new BN(1 * 10 ** 5); // 0.1 BTC
     // const expectedShares = "20"; // $10/share => 20 shares
     try {
       await program.methods
@@ -190,9 +207,9 @@ describe("glam_devnet", () => {
           fund: fundPDA,
           shareClass: sharePDA,
           signerShareAta: managerSharesAta,
-          asset: usdc,
-          treasuryAta: treasuryUsdcAta,
-          signerAssetAta: managerUsdcAta,
+          asset: wbtc,
+          treasuryAta: treasuryBtcAta,
+          signerAssetAta: managerBtcAta,
           signer: manager.publicKey,
           tokenProgram: TOKEN_PROGRAM_ID,
           token2022Program: TOKEN_2022_PROGRAM_ID
@@ -221,7 +238,6 @@ describe("glam_devnet", () => {
     );
     // expect(managerShares.amount).toEqual(shares.supply);
   });
-  */
 
   /*
   it("Manager redeems 100% of fund", async () => {
@@ -296,6 +312,7 @@ describe("glam_devnet", () => {
   });
   */
 
+  /*
   it("Update trader", async () => {
     const userAccountPublicKey = await getUserAccountPublicKey(
       DRIFT_PROGRAM_ID,
@@ -324,6 +341,7 @@ describe("glam_devnet", () => {
       throw e;
     }
   }, 10_000);
+  */
 
   /*
   it('Deposit 100 USDC in Drift trading account', async () => {
@@ -478,15 +496,19 @@ describe("glam_devnet", () => {
   */
 
 
-
-
-
-  /*
+/*
   // This is the test used to initialize the 1st devnet fund, do NOT rerun
   it("Initialize fund", async () => {
     try {
       const txId = await program.methods
-        .initialize(fundName, fundSymbol, [0, 60, 40], true)
+        .initialize(
+          fundName,
+          fundSymbol,
+          fundUri,
+          [0, 60, 40],
+          true,
+          shareClassMetadata
+        )
         .accounts({
           fund: fundPDA,
           treasury: treasuryPDA,
@@ -498,6 +520,9 @@ describe("glam_devnet", () => {
           { pubkey: usdc, isSigner: false, isWritable: false },
           { pubkey: wsol, isSigner: false, isWritable: false },
           { pubkey: wbtc, isSigner: false, isWritable: false }
+        ])
+        .preInstructions([
+          ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
         ])
         .rpc({ commitment }); // await 'confirmed'
     } catch (e) {
@@ -513,7 +538,7 @@ describe("glam_devnet", () => {
     expect(fund.symbol).toEqual(fundSymbol);
     expect(fund.isActive).toEqual(true);
   });
-  */
+*/
 
   /*
   it("Update fund", async () => {
@@ -530,7 +555,6 @@ describe("glam_devnet", () => {
     expect(fund.isActive).toEqual(true);
   });
   */
-
   /*
   // This is the test used to create ATAs, do NOT rerun
   it("Create ATAs", async () => {
@@ -664,5 +688,21 @@ describe("glam_devnet", () => {
       throw e;
     }
   }, 10_000);
+  */
+
+  /*
+  it("Close fund", async () => {
+    await program.methods
+      .close()
+      .accounts({
+        fund: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
+        manager: manager.publicKey
+      })
+      .rpc();
+
+    // The account should no longer exist, returning null.
+    const closedAccount = await program.account.fund.fetchNullable(fundPDA);
+    expect(closedAccount).toBeNull();
+  });
   */
 });

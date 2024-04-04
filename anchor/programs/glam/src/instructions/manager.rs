@@ -9,8 +9,8 @@ use crate::state::fund::*;
 #[derive(Accounts)]
 #[instruction(name: String)]
 pub struct InitializeFund<'info> {
-    #[account(init, seeds = [b"fund".as_ref(), manager.key().as_ref(), name.as_ref()], bump, payer = manager, space = 8 + Fund::INIT_SIZE)]
-    pub fund: Account<'info, Fund>,
+    #[account(init, seeds = [b"fund".as_ref(), manager.key().as_ref(), name.as_ref()], bump, payer = manager, space = 8 + Fund::INIT_SIZE + ShareClassMetadata::INIT_SIZE)]
+    pub fund: Box<Account<'info, Fund>>,
 
     #[account(init, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump, payer = manager, space = 8 + Treasury::INIT_SIZE)]
     pub treasury: Account<'info, Treasury>,
@@ -75,6 +75,7 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     fund.time_created = Clock::get()?.unix_timestamp;
     fund.share_classes_len = 1;
     fund.share_classes[0] = ctx.accounts.share.key();
+    fund.share_classes_metadata[0] = share_class_metadata.clone();
     fund.share_classes_bumps[0] = ctx.bumps.share;
 
     fund.assets_len = assets_len as u8;
