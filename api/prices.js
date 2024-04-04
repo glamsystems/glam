@@ -52,7 +52,7 @@ const fundPerformance = (btcWeight, btcPrices, ethWeight, ethPrices) => {
     return btcWeight * btcChange + ethWeight * ethChange;
   });
 
-  return weightedChanges;
+  return { weightedChanges, btcChanges, ethChanges };
 };
 
 module.exports = { priceHistory, fundPerformance };
