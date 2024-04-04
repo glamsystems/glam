@@ -46,16 +46,6 @@ export default function ProductPage() {
     // pass
   }
 
-  /*
-  const { data: fundPerfData } = useQuery({
-    queryKey: ["performance"],
-    queryFn: () =>
-      fetch(`http://localhost:8080/fund/${id || defaultFund}/perf`).then(
-        (res) => res.json()
-      )
-  });
-  console.log(fundPerfData);
-  */
   const fundPerfChartData = useFundPerfChartData(id || defaultFund);
 
   const { account } = useGlamProgramAccount({ glam });
