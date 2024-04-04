@@ -13,6 +13,7 @@
   "dependencies": {
     "@scure/base": "^1.1.6",
     "canvas": "^2.11.2",
+    "cors": "^2.8.5",
     "express": "^4.19.2"
   },
   "devDependencies": {

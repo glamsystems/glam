@@ -2,11 +2,18 @@ const express = require("express");
 const { createCanvas, loadImage } = require("canvas");
 const { validatePubkey } = require("./validation");
 const { priceHistory, fundPerformance } = require("./prices");
+const cors = require("cors");
 
 BASE_URL = "https://api.glam.systems";
 
 const app = express();
 app.use(express.static("public"));
+app.use(
+  cors({
+    origin: "*",
+    methods: "GET"
+  })
+);
 
 app.get("/", (req, res) => {
   res.send(`Hello from ${BASE_URL}!`);
@@ -17,11 +24,11 @@ app.get("/_/health", (req, res) => {
 });
 
 app.get("/fund/:pubkey/perf", async (req, res) => {
+  const { w1 = 0.7, w2 = 0.3 } = req.query;
   // TODO: validate input
   // TODO: Should we fetch weights from blockchain, or let client side pass them in?
   // Client side should have all fund info including assets and weights
-  const [btcWeight, ethWeight] = [0.7, 0.3];
-  console.log(`ethWeight: ${ethWeight}, btcWeight: ${btcWeight}`);
+  console.log(`btcWeight: ${w1}, ethWeight: ${w2}`);
   const { timestamps, closingPrices: ethClosingPrices } = await priceHistory(
     "Crypto.ETH/USD"
   );
@@ -33,13 +40,21 @@ app.get("/fund/:pubkey/perf", async (req, res) => {
   //   `Last30dPrices (USD): ETH ${ethClosingPrices}, BTC ${btcClosingPrices}`
   // );
 
-  const performance = fundPerformance(
-    btcWeight,
+  const { weightedChanges, btcChanges, ethChanges } = fundPerformance(
+    w1,
     btcClosingPrices,
-    ethWeight,
+    w2,
     ethClosingPrices
   );
-  res.send(JSON.stringify({ timestamps, performance }));
+  res.set("content-type", "application/json");
+  res.send(
+    JSON.stringify({
+      timestamps,
+      fundPerformance: weightedChanges,
+      btcPerformance: btcChanges,
+      ethPerformance: ethChanges
+    })
+  );
 });
 
 app.get("/metadata/:pubkey", async (req, res) => {
