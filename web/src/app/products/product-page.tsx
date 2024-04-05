@@ -74,7 +74,7 @@ export default function ProductPage() {
   }
   const fundId = fundKey.toString();
 
-  const fundPerfChartData = useFundPerfChartData(fundId);
+  const fundPerfChartData = useFundPerfChartData(fundId) || [{value: 0}, {value: 0}];
 
   const { account } = useGlamProgramAccount({ fundKey });
   if (account.isLoading) {
@@ -101,6 +101,7 @@ export default function ProductPage() {
     investmentObjective:
       "The Glam Investment Fund seeks to reflect generally the performance of the price of Bitcoin and Solana.",
     nav: aum/totalShares,
+    // dailyNavChange: 2,
     dailyNavChange: fundPerfChartData[fundPerfChartData.length-2].value,
     // daily: 0.29,
     aum,

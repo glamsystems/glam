@@ -349,7 +349,7 @@ export function useFundPerfChartData(fund: string) {
         .map((ts: any, i: number) => {
           const fundValue = fundPerformance[i] * 100;
           const btcValue = btcPerformance[i] * 100;
-          const solValue = solPerformance[i] * 100;
+          // const solValue = solPerformance[i] * 100;
           // const ethValue = ethPerformance[i] * 100;
 
           return [
@@ -363,11 +363,11 @@ export function useFundPerfChartData(fund: string) {
               date: new Date(ts * 1000),
               value: btcValue
             },
-            {
-              group: "SOL",
-              date: new Date(ts * 1000),
-              value: solValue
-            }
+            // {
+            //   group: "SOL",
+            //   date: new Date(ts * 1000),
+            //   value: solValue
+            // }
             // {
             //   group: "ETH",
             //   date: new Date(ts * 1000),
