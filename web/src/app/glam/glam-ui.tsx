@@ -47,7 +47,7 @@ export function GlamList() {
           {accounts.data?.map((account) => (
             <GlamCard
               key={account.publicKey.toString()}
-              glam={account.publicKey}
+              fundKey={account.publicKey}
             />
           ))}
         </div>
@@ -61,10 +61,10 @@ export function GlamList() {
   );
 }
 
-function GlamCard({ glam }: { glam: PublicKey }) {
+function GlamCard({ fundKey }: { fundKey: PublicKey }) {
   const { account } =
     useGlamProgramAccount({
-      glam,
+      fundKey,
     });
 
   return account.isLoading ? (
@@ -81,9 +81,9 @@ function GlamCard({ glam }: { glam: PublicKey }) {
           </h2>
           <div className="text-center space-y-4">
             <p>
-              <Link to={`/products/${glam}`}>{ellipsify(glam.toString())}</Link><br/><br/>
+              <Link to={`/products/${fundKey}`}>{ellipsify(fundKey.toString())}</Link><br/><br/>
               <ExplorerLink
-                path={`account/${glam}`}
+                path={`account/${fundKey}`}
                 label={"explorer"}
               />
             </p>

@@ -27,6 +27,31 @@ import {
 } from "../glam/glam-data-access";
 import { useMemo } from "react";
 
+
+class FundModel {
+  key: PublicKey;
+  data: any;
+ 
+  constructor(key: PublicKey, data: any) {
+    this.key = key;
+    this.data = data || {};
+  }
+
+  getImageUrl() {
+    const pubkey = this.data?.shareClasses[0].toBase58() || '1111111111111111111111111111111111';
+    return `https://api.glam.systems/image/${pubkey}.png`;
+  }
+
+  getManagementFee() {
+    return this.data?.shareClassesMetadata[0].feeManagement / 1_000_000.0;
+  }
+  getPerformanceFee() {
+    return this.data?.shareClassesMetadata[0].feePerformance / 1_000_000.0;
+  }
+
+}
+
+
 export default function ProductPage() {
   const grayStyle = {
     color: gray70Hover,
@@ -39,31 +64,33 @@ export default function ProductPage() {
 
   // fetch the fund, for now we default to 2ex...
   const defaultFund = "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2";
-  let glam = new PublicKey(defaultFund);
+  let fundKey = new PublicKey(defaultFund);
   try {
-    glam = new PublicKey(id || defaultFund);
+    fundKey = new PublicKey(id || defaultFund);
   } catch (_e) {
     // pass
   }
+  const fundId = fundKey.toString();
 
-  const fundPerfChartData = useFundPerfChartData(id || defaultFund);
+  const fundPerfChartData = useFundPerfChartData(fundId);
 
-  const { account } = useGlamProgramAccount({ glam });
+  const { account } = useGlamProgramAccount({ fundKey });
   if (account.isLoading) {
     return ""; //spinner
   }
 
   const data = account.data;
+  const fundModel = new FundModel(fundKey, account.data);
 
   const { publicKey } = useWallet();
   const isManager = publicKey?.toString() == data?.manager?.toString();
 
   const fund = {
-    id: glam.toString(),
+    id: fundId,
     symbol: data?.symbol,
     name: data?.name,
     investmentObjective:
-      "The iShares Bitcoin Trust seeks to reflect generally the performance of the price of bitcoin.",
+      "The Glam Investment Fund seeks to reflect generally the performance of the price of Bitcoin and Solana.",
     nav: 39.72,
     dailyNavChange: 0.12,
     "24HourNavChange": 0.0029,
@@ -73,31 +100,20 @@ export default function ProductPage() {
     "24HourNetInflowChange": 0.0089,
     // will optimize looping later once we have all the necessary data
     fees: {
-      management: +(
-        // data?.additionalMetadata?.find((x) => x[0] === 'fee_management')?.[1] ??
-        0
-      ),
-      performance: +(
-        // data?.additionalMetadata?.find(
-        //   (x) => x[0] === 'fee_performance'
-        // )?.[1] ??
-        0
-      ),
+      management: fundModel.getManagementFee(),
+      performance: fundModel.getPerformanceFee(),
       subscription: 0.0,
       redemption: 0.0
     },
     facts: {
-      launchDate: "",
-      // launchDate: data?.additionalMetadata?.find(
-      //   (x) => x[0] === 'launch_date'
-      // )?.[1],
-      fundAsset: "USDC"
+      launchDate: data?.shareClassesMetadata[0].launchDate,
+      fundAsset: data?.shareClassesMetadata[0].shareClassAsset,
     },
     terms: {
       highWaterMark: false,
       hurdleRate: false,
       lockupPeriod: "60", // denominated in minutes
-      minimumSubscription: 1,
+      minimumSubscription: 0,
       maximumSubscription: 10000
     }
   };
@@ -145,8 +161,7 @@ export default function ProductPage() {
         </div>
 
         <div className="flex items-center gap-[16px] mb-[32px]">
-          <img
-            src={`https://api.glam.systems/image/${fund.id}.png`}
+          <img src={fundModel.getImageUrl()}
             style={{
               width: "64px",
               height: "64px"
@@ -192,7 +207,7 @@ export default function ProductPage() {
                   <Tile className="h-full">
                     <div className="flex flex-col gap-[12px]">
                       <p>NAV</p>
-                      <p className="text-xl text-black">{fund.nav}</p>
+                      <p className="text-xl text-black">{formatNumber(fund.nav)}</p>
                     </div>
                     <br />
                     <div className="flex flex-col gap-[12px]">
@@ -282,18 +297,21 @@ export default function ProductPage() {
                       <TabPanel>
                         <SideActionBar
                           type="Manage"
+                          fund={fundModel}
                           primayButtonFunction={() => {}}
                         />
                       </TabPanel>
                       <TabPanel>
                         <SideActionBar
                           type="Subscribe"
+                          fund={fundModel}
                           primayButtonFunction={() => {}}
                         />
                       </TabPanel>
                       <TabPanel>
                         <SideActionBar
                           type="Redeem"
+                          fund={fundModel}
                           primayButtonFunction={() => {}}
                         />
                       </TabPanel>
