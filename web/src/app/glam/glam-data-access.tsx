@@ -7,7 +7,7 @@ import {
   getAssociatedTokenAddressSync
 } from "@solana/spl-token";
 import { BN, Program } from "@coral-xyz/anchor";
-import { Cluster, Keypair, PublicKey } from "@solana/web3.js";
+import { ComputeBudgetProgram, Cluster, AccountMeta, PublicKey } from "@solana/web3.js";
 import { GlamIDL, getGlamProgramId } from "@glam/anchor";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -65,70 +65,75 @@ export function useGlamProgram() {
     mutationFn: ({
       fundName,
       fundSymbol,
-      fundUri,
       manager,
-      feeStructure,
+      assets,
+      assetsStructure,
       shareClassMetadata
     }: {
       fundName: string;
       fundSymbol: string;
-      fundUri: string;
       manager: PublicKey;
-      feeStructure: number[];
+      assets: string[],
+      assetsStructure: number[];
       shareClassMetadata: ShareClassMetadata;
-    }) =>
-      program.methods
+    }) => {
+      const [fundPDA, fundBump] = PublicKey.findProgramAddressSync(
+        [
+          anchor.utils.bytes.utf8.encode("fund"),
+          manager.toBuffer(),
+          anchor.utils.bytes.utf8.encode(fundName)
+        ],
+        program.programId
+      );
+      const fundUri = `https://devnet.glam.systems/#/products/${fundPDA.toBase58()}`;
+
+      const [treasuryPDA, treasuryBump] = PublicKey.findProgramAddressSync(
+        [anchor.utils.bytes.utf8.encode("treasury"), fundPDA.toBuffer()],
+        program.programId
+      );
+
+      const [sharePDA, shareBump] = PublicKey.findProgramAddressSync(
+        [anchor.utils.bytes.utf8.encode("share-0"), fundPDA.toBuffer()],
+        program.programId
+      );
+
+      shareClassMetadata.uri = `https://api.glam.systems/metadata/${sharePDA.toBase58()}`;
+      shareClassMetadata.imageUri = `https://api.glam.systems/image/${sharePDA.toBase58()}.png`;
+
+      const remainingAccounts: Array<AccountMeta> = assets.map(a => (
+        { pubkey: new PublicKey(a), isSigner: false, isWritable: false }
+      ));
+      return program.methods
         .initialize(
           fundName,
           fundSymbol,
           fundUri,
-          feeStructure,
+          assetsStructure,
           true,
           shareClassMetadata
         )
         .accounts({
-          fund: PublicKey.findProgramAddressSync(
-            [
-              anchor.utils.bytes.utf8.encode("fund"),
-              manager.toBuffer(),
-              anchor.utils.bytes.utf8.encode("fundName")
-            ],
-            program.programId
-          )[0],
-          treasury: PublicKey.findProgramAddressSync(
-            [
-              anchor.utils.bytes.utf8.encode("treasury"),
-              // fundPDA.toBuffer(),
-              PublicKey.findProgramAddressSync(
-                [
-                  anchor.utils.bytes.utf8.encode("fund"),
-                  manager.toBuffer(),
-                  anchor.utils.bytes.utf8.encode("fundName")
-                ],
-                program.programId
-              )[0].toBuffer()
-            ],
-            program.programId
-          )[0],
-          share: PublicKey.findProgramAddressSync(
-            [
-              anchor.utils.bytes.utf8.encode("share"),
-              // fundPDA.toBuffer(),
-              PublicKey.findProgramAddressSync(
-                [
-                  anchor.utils.bytes.utf8.encode("fund"),
-                  manager.toBuffer(),
-                  anchor.utils.bytes.utf8.encode("fundName")
-                ],
-                program.programId
-              )[0].toBuffer()
-            ],
-            program.programId
-          )[0],
+          fund: fundPDA,
+          treasury: treasuryPDA,
+          share: sharePDA,
           manager: manager,
           tokenProgram: TOKEN_2022_PROGRAM_ID
         })
+        .remainingAccounts(remainingAccounts)
+        .preInstructions([
+          ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
+        ])
         .rpc()
+    },
+    onSuccess: (tx) => {
+      console.log(tx);
+      transactionToast(tx);
+      return accounts.refetch();
+    },
+    onError: (e) => {
+      console.error("Failed to initialize: ", e);
+      return toast.error("Failed to create product");
+    }
   });
 
   return {

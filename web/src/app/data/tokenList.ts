@@ -2,12 +2,15 @@ export const tokenList = [
   {
     id: 0,
     symbol: "USDC",
-    name: "USD Coin",
-    tokenMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    // name: "USD Coin",
+    name: "USD Coin (Drift Devnet)",
+    // tokenMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    tokenMint: "8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2",
     decimals: 6,
     coingeckoId: "usd-coin",
     oracle: "Pyth",
-    oracleAccount: "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD",
+    // oracleAccount: "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD",
+    oracleAccount: "5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7",
     imgURL:
       "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png"
   },
@@ -19,19 +22,23 @@ export const tokenList = [
     decimals: 9,
     coingeckoId: "solana",
     oracle: "Pyth",
-    oracleAccount: "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG",
+    // oracleAccount: "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG",
+    oracleAccount: "J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix",
     imgURL:
       "https://assets.coingecko.com/coins/images/4128/standard/solana.png?1696504756"
   },
   {
     id: 2,
     symbol: "WBTC",
-    name: "Wrapped BTC (Portal)",
-    tokenMint: "3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh",
+    // name: "Wrapped BTC (Portal)",
+    name: "Wrapped BTC (Drift Devnet)",
+    // tokenMint: "3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh",
+    tokenMint: "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv",
     decimals: 8,
     coingeckoId: "bitcoin",
     oracle: "Pyth",
-    oracleAccount: "GVXRSBjFk6e6J3NbVPXohDJetcTjaeeuykUpbQF8UoMU",
+    // oracleAccount: "GVXRSBjFk6e6J3NbVPXohDJetcTjaeeuykUpbQF8UoMU",
+    oracleAccount: "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J",
     imgURL:
       "https://assets.coingecko.com/coins/images/1/standard/bitcoin.png?1696501400"
   },
