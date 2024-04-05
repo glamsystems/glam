@@ -223,21 +223,19 @@ export const CreateProduct = () => {
         alert("Please connect your wallet.");
         return;
       }
+      const assetsLen = assets.length;
+      const assetsPercentage = 10_000 / assetsLen;
+      let assetsStructure = assets.map( (a, i) => (i==0 ? 0 : assetsPercentage) );
       initialize.mutate(
         {
           fundName: data.fundName,
           fundSymbol: data.fundSymbol,
-          fundUri: "https://glam.systems/",
-          feeStructure: [
-            +(data.managementFee ?? 0),
-            0,
-            +(data.performanceFee ?? 0)
-          ],
+          assets,
+          assetsStructure,
           manager: wallet.publicKey,
           shareClassMetadata: {
-            name: `${data.fundName} ${data.extension} ${data.shareClassAsset}`,
-            symbol: data.shareClassSymbol ?? "--",
-            uri: "https://api.glam.systems/metadata/xyz",
+            name: data.fundName, //FIXME
+            symbol: data.fundSymbol, //FIXME
             shareClassAsset: data.shareClassAsset,
             shareClassAssetId: new PublicKey(data.shareClassAssetID),
             isin: "XS1082172823",
@@ -248,7 +246,9 @@ export const CreateProduct = () => {
             extension: data.extension,
             launchDate: new Date().toISOString().split("T")[0],
             lifecycle: data.shareClassLifecycle.toLowerCase(),
-            imageUri: "https://api.glam.systems/image/xyz.png"
+            // these will be updated by initialize
+            uri: "",
+            imageUri: "",
           }
         },
         {
