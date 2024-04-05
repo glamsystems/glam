@@ -175,27 +175,20 @@ export default function ProductPage() {
               height: "64px"
             }}
           />
-          <div>
-            <div className="flex items-center gap-[16px]">
-              <h1
-                style={{
-                  fontSize: "32px",
-                  lineHeight: "40px"
-                }}
-              >
-                {fund.name}
-              </h1>
-              <Tag type="warm-gray" className="rounded-none">
-                {fund.symbol}
-              </Tag>
-            </div>
-            <p>
-              <ExplorerLink
-                path={`account/${fund.id}`}
-                label={ellipsify(fund.id)}
-              />
-            </p>
-          </div>
+          <h1
+            style={{
+              fontSize: "32px",
+              lineHeight: "40px"
+            }}
+          >
+            {fund.name}
+          </h1>
+          <Tag type="warm-gray" className="rounded-none">
+            <ExplorerLink
+              path={`account/${fund.shareClass0}`}
+              label={fund.symbol}
+            />
+          </Tag>
         </div>
         <Tabs>
           <TabList aria-label="List of tabs" className="mb-[32px]">
@@ -353,21 +346,21 @@ export default function ProductPage() {
                       <p>Facts</p>
                       <div className="flex flex-col gap-[14px]">
                         <div className="flex justify-between">
-                          <p style={grayStyle}>Share Class Token</p>
-                          <strong>
-                            <ExplorerLink
-                              path={`account/${fund.shareClass0}`}
-                              label={fund.symbol}
-                            />
-                          </strong>
-                        </div>
-                        <div className="flex justify-between">
                           <p style={grayStyle}>Share Class Asset</p>
                           <strong>{fund.facts.fundAsset}</strong>
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Inception Date</p>
                           <strong>{fund.facts.launchDate}</strong>
+                        </div>
+                        <div className="flex justify-between">
+                          <p style={grayStyle}>Fund Account</p>
+                          <strong>
+                            <ExplorerLink
+                              path={`account/${fund.id}`}
+                              label={ellipsify(fund.id)}
+                            />
+                          </strong>
                         </div>
                         <div className="flex justify-between">
                           <p style={grayStyle}>Manager</p>
