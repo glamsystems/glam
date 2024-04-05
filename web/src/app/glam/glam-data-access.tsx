@@ -12,7 +12,7 @@ import {
   getAssociatedTokenAddressSync,
   ASSOCIATED_TOKEN_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
-  TOKEN_2022_PROGRAM_ID,
+  TOKEN_2022_PROGRAM_ID
 } from "@solana/spl-token";
 
 export function useGlamProgram() {
@@ -98,12 +98,18 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
   const wallet = useWallet();
 
   const usdc = new PublicKey("8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2"); // 6 decimals
-  const wsol = new PublicKey("So11111111111111111111111111111111111111112");  // 9 decimals
+  const wsol = new PublicKey("So11111111111111111111111111111111111111112"); // 9 decimals
   const wbtc = new PublicKey("3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv"); // 6 decimals
 
-  const pricingUsdc = new PublicKey("5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7");
-  const pricingSol =  new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix");
-  const pricingBtc =  new PublicKey("HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J");
+  const pricingUsdc = new PublicKey(
+    "5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7"
+  );
+  const pricingSol = new PublicKey(
+    "J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"
+  );
+  const pricingBtc = new PublicKey(
+    "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J"
+  );
 
   const account = useQuery({
     queryKey: ["glam", "fetch", { fundKey }],
@@ -115,7 +121,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
     mutationFn: (mutationData: any) => {
       const { fund, asset, amount } = mutationData;
       const signer = wallet.publicKey;
-      if( !signer ) {
+      if (!signer) {
         throw Error("Wallet not connected");
       }
 
@@ -180,7 +186,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
         // { pubkey: wbtc, isSigner: false, isWritable: false },
         // { pubkey: managerBtcAta, isSigner: false, isWritable: true },
         { pubkey: treasuryBtcAta, isSigner: false, isWritable: true },
-        { pubkey: pricingBtc, isSigner: false, isWritable: false },
+        { pubkey: pricingBtc, isSigner: false, isWritable: false }
       ];
 
       return program.methods
@@ -207,7 +213,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
     onError: (e) => {
       console.error("Failed to subscribe: ", e);
       return toast.error("Failed to subscribe");
-    },
+    }
   });
 
   const redeem = useMutation({
@@ -215,7 +221,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
     mutationFn: (mutationData: any) => {
       const { fund, amount, inKind } = mutationData;
       const signer = wallet.publicKey;
-      if( !signer ) {
+      if (!signer) {
         throw Error("Wallet not connected");
       }
 
@@ -295,7 +301,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
         { pubkey: wbtc, isSigner: false, isWritable: false },
         { pubkey: signerBtcAta, isSigner: false, isWritable: true },
         { pubkey: treasuryBtcAta, isSigner: false, isWritable: true },
-        { pubkey: pricingBtc, isSigner: false, isWritable: false },
+        { pubkey: pricingBtc, isSigner: false, isWritable: false }
       ];
 
       return program.methods
@@ -320,13 +326,13 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
     onError: (e) => {
       console.error("Failed to redeem: ", e);
       return toast.error("Failed to redeem");
-    },
+    }
   });
 
   return {
     account,
     subscribe,
-    redeem,
+    redeem
   };
 }
 
@@ -337,12 +343,13 @@ export function useFundPerfChartData(fund: string) {
       const response = await fetch(
         `https://api.glam.systems/fund/${fund}/perf`
       );
-      const { fundPerformance, btcPerformance, ethPerformance, timestamps } =
+      const { fundPerformance, btcPerformance, solPerformance, timestamps } =
         await response.json();
       const chartData = timestamps
         .map((ts: any, i: number) => {
           const fundValue = fundPerformance[i] * 100;
           const btcValue = btcPerformance[i] * 100;
+          const solValue = solPerformance[i] * 100;
           // const ethValue = ethPerformance[i] * 100;
 
           return [
@@ -356,6 +363,11 @@ export function useFundPerfChartData(fund: string) {
               date: new Date(ts * 1000),
               value: btcValue
             },
+            {
+              group: "SOL",
+              date: new Date(ts * 1000),
+              value: solValue
+            }
             // {
             //   group: "ETH",
             //   date: new Date(ts * 1000),

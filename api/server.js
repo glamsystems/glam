@@ -24,35 +24,42 @@ app.get("/_/health", (req, res) => {
 });
 
 app.get("/fund/:pubkey/perf", async (req, res) => {
-  const { w1 = 0.7, w2 = 0.3 } = req.query;
+  const { w_btc = 0.4, w_eth = 0, w_sol = 0.6 } = req.query;
   // TODO: validate input
   // TODO: Should we fetch weights from blockchain, or let client side pass them in?
   // Client side should have all fund info including assets and weights
-  console.log(`btcWeight: ${w1}, ethWeight: ${w2}`);
+  console.log(`btcWeight: ${w_btc}, ethWeight: ${w_eth}, solWeight: ${w_sol}`);
   const { timestamps, closingPrices: ethClosingPrices } = await priceHistory(
     "Crypto.ETH/USD"
   );
   const { closingPrices: btcClosingPrices } = await priceHistory(
     "Crypto.BTC/USD"
   );
-
-  // console.log(
-  //   `Last30dPrices (USD): ETH ${ethClosingPrices}, BTC ${btcClosingPrices}`
-  // );
-
-  const { weightedChanges, btcChanges, ethChanges } = fundPerformance(
-    w1,
-    btcClosingPrices,
-    w2,
-    ethClosingPrices
+  const { closingPrices: solClosingPrices } = await priceHistory(
+    "Crypto.SOL/USD"
   );
+  const { closingPrices: usdcClosingPrices } = await priceHistory(
+    "Crypto.USDC/USD"
+  );
+
+  const { weightedChanges, btcChanges, ethChanges, solChanges } =
+    fundPerformance(
+      w_btc,
+      btcClosingPrices,
+      w_eth,
+      ethClosingPrices,
+      w_sol,
+      solClosingPrices
+    );
   res.set("content-type", "application/json");
   res.send(
     JSON.stringify({
       timestamps,
+      usdcClosingPrices,
       fundPerformance: weightedChanges,
       btcPerformance: btcChanges,
-      ethPerformance: ethChanges
+      ethPerformance: ethChanges,
+      solPerformance: solChanges
     })
   );
 });

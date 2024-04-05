@@ -24,8 +24,10 @@ describe("Test /fund/:pubkey/perf", () => {
     expect(res.body).toEqual({
       timestamps: expect.any(Array),
       fundPerformance: expect.any(Array),
+      usdcClosingPrices: expect.any(Array),
       btcPerformance: expect.any(Array),
-      ethPerformance: expect.any(Array)
+      ethPerformance: expect.any(Array),
+      solPerformance: expect.any(Array)
     });
   });
 });
