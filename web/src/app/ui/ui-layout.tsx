@@ -1,10 +1,10 @@
-import * as React from 'react';
+import * as React from "react";
 
 import {
   ClusterChecker,
   ClusterUiSelect,
-  ExplorerLink,
-} from '../cluster/cluster-ui';
+  ExplorerLink
+} from "../cluster/cluster-ui";
 import {
   Header,
   HeaderContainer,
@@ -19,15 +19,15 @@ import {
   Search,
   SideNav,
   SideNavItems,
-  SkipToContent,
-} from '@carbon/react';
-import { Link, useLocation } from 'react-router-dom';
-import { ReactNode, Suspense, useEffect, useRef } from 'react';
-import toast, { Toaster } from 'react-hot-toast';
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+  SkipToContent
+} from "@carbon/react";
+import { Link, useLocation } from "react-router-dom";
+import { ReactNode, Suspense, useEffect, useRef } from "react";
+import toast, { Toaster } from "react-hot-toast";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 
-import { AccountChecker } from '../account/account-ui';
-import { WalletButton } from '../solana/solana-provider';
+import { AccountChecker } from "../account/account-ui";
+import { WalletButton } from "../solana/solana-provider";
 
 export function UiLayout({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
@@ -41,22 +41,24 @@ export function UiLayout({ children }: { children: ReactNode }) {
           <Header aria-label="GLAM *.+">
             <SkipToContent />
             <HeaderMenuButton
-              aria-label={isSideNavExpanded ? 'Close menu' : 'Open menu'}
+              aria-label={isSideNavExpanded ? "Close menu" : "Open menu"}
               onClick={onClickSideNavExpand}
               isActive={isSideNavExpanded}
               aria-expanded={isSideNavExpanded}
             />
             <Link to="/products">
               <HeaderName
-                prefix="Glam *.+"
+                prefix="GLAM *.+"
                 className="h-full w-full"
-                title="Glam *.+"
-              >&nbsp;</HeaderName>
+                title="GLAM *.+"
+              >
+                &nbsp;
+              </HeaderName>
             </Link>
             <HeaderNavigation aria-label="GLAM *.+">
               <Link to="/products">
                 <HeaderMenuItem
-                  isActive={pathname.includes('/products')}
+                  isActive={pathname.includes("/products")}
                   className="h-full w-full"
                 >
                   Products
@@ -65,7 +67,7 @@ export function UiLayout({ children }: { children: ReactNode }) {
               <Link to="/account">
                 <HeaderMenuItem
                   href="/account"
-                  isActive={pathname === '/account'}
+                  isActive={pathname === "/account"}
                   className="h-full w-full"
                 >
                   Account
@@ -75,7 +77,7 @@ export function UiLayout({ children }: { children: ReactNode }) {
                 <HeaderMenuItem
                   href="/manage"
                   isActive={
-                    pathname === '/manage' || pathname === '/create-product'
+                    pathname === "/manage" || pathname === "/create-product"
                   }
                   className="h-full w-full"
                 >
@@ -85,13 +87,13 @@ export function UiLayout({ children }: { children: ReactNode }) {
             </HeaderNavigation>
             <HeaderGlobalBar>
               <HeaderGlobalAction
-                aria-label={!publicKey ? 'Connect Wallet' : 'Account'}
+                aria-label={!publicKey ? "Connect Wallet" : "Account"}
                 tooltipAlignment="end"
                 onClick={
                   // perform same action as clicking the wallet button
                   () => {
                     const walletButton = document.getElementsByClassName(
-                      'wallet-adapter-button-trigger'
+                      "wallet-adapter-button-trigger"
                     );
 
                     if (walletButton.length > 0) {
@@ -133,7 +135,7 @@ export function AppModal({
   show,
   submit,
   submitDisabled,
-  submitLabel,
+  submitLabel
 }: {
   children: ReactNode;
   title: string;
@@ -167,7 +169,7 @@ export function AppModal({
                 onClick={submit}
                 disabled={submitDisabled}
               >
-                {submitLabel || 'Save'}
+                {submitLabel || "Save"}
               </button>
             ) : null}
             <button onClick={hide} className="btn">
@@ -183,7 +185,7 @@ export function AppModal({
 export function AppHero({
   children,
   title,
-  subtitle,
+  subtitle
 }: {
   children?: ReactNode;
   title: ReactNode;
@@ -193,12 +195,12 @@ export function AppHero({
     <div className="hero py-[64px]">
       <div className="hero-content text-center">
         <div className="max-w-2xl">
-          {typeof title === 'string' ? (
+          {typeof title === "string" ? (
             <h1 className="text-5xl font-bold">{title}</h1>
           ) : (
             title
           )}
-          {typeof subtitle === 'string' ? (
+          {typeof subtitle === "string" ? (
             <p className="py-6">{subtitle}</p>
           ) : (
             subtitle
@@ -210,10 +212,10 @@ export function AppHero({
   );
 }
 
-export function ellipsify(str = '', len = 4) {
+export function ellipsify(str = "", len = 4) {
   if (str.length > 30) {
     return (
-      str.substring(0, len) + '..' + str.substring(str.length - len, str.length)
+      str.substring(0, len) + ".." + str.substring(str.length - len, str.length)
     );
   }
   return str;
@@ -222,11 +224,11 @@ export function ellipsify(str = '', len = 4) {
 export function useTransactionToast() {
   return (signature: string) => {
     toast.success(
-      <div className={'text-center'}>
+      <div className={"text-center"}>
         <div className="text-lg">Transaction sent</div>
         <ExplorerLink
           path={`tx/${signature}`}
-          label={'View Transaction'}
+          label={"View Transaction"}
           className="btn btn-xs btn-primary"
         />
       </div>
