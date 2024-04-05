@@ -17,6 +17,7 @@ type ShareClassProps = {
   register: UseFormRegister<FormFields>;
   errors: FieldErrors<FormFields>;
   errorStyle: React.CSSProperties;
+  assets: string[] | undefined;
 };
 
 export const ShareClasses = ({
@@ -25,7 +26,8 @@ export const ShareClasses = ({
   getValues,
   register,
   errors,
-  errorStyle
+  errorStyle,
+  assets
 }: ShareClassProps) => {
   return (
     <>
@@ -35,7 +37,7 @@ export const ShareClasses = ({
           id="full-share-class-name"
           labelText="Full Share Class Name"
           value={`${watch("fundName")} ${watch("extension")} ${watch(
-            "fundAsset"
+            "shareClassAsset"
           )}`}
           helperText="The full name of the share class, including the fund name, extension, and asset."
           readOnly
@@ -50,13 +52,13 @@ export const ShareClasses = ({
             setValue(
               "fullShareClassName",
               `${getValues("fundName")} ${e.selectedItem?.id} ${getValues(
-                "fundAsset"
+                "shareClassAsset"
               )}`
             );
             setValue(
               "shareClassSymbol",
               `${getValues("fundSymbol")}-${e.selectedItem?.id}-${getValues(
-                "fundAsset"
+                "shareClassAsset"
               )}`
             );
           }}
@@ -86,6 +88,10 @@ export const ShareClasses = ({
             onChange={(e) => {
               setValue("shareClassAsset", e.selectedItem?.symbol ?? "");
               setValue("shareClassAssetID", e.selectedItem?.tokenMint ?? "");
+              setValue(
+                "assets",
+                (assets ?? []).concat(e.selectedItem?.tokenMint ?? "")
+              );
             }}
             items={tokenList}
             itemToString={(item) => (item ? item.symbol : "")}

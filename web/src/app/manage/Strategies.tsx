@@ -37,6 +37,7 @@ export const Strategies = ({
       <div className="flex flex-col gap-2 w-full max-w-[200px]">
         {strategies.map((strategy) => (
           <SelectableTile
+            className="h-full "
             id={strategy.id}
             key={strategy.id}
             value={strategy.id}
@@ -57,21 +58,37 @@ export const Strategies = ({
             }}
           >
             {strategy.id === "Drift" ? (
-              <img src={driftLogo} alt="Drift Logo" />
+              <img
+                src={driftLogo}
+                alt="Drift Logo"
+                className="h-[50px] w-full"
+              />
             ) : strategy.id === "Backpack" ? (
               <>
-                <img src={backpackLogo} alt="Backpack Logo" />
-                <p>Coming Soon...</p>
+                <img
+                  src={backpackLogo}
+                  alt="Backpack Logo"
+                  className="h-[50px] w-full"
+                />
+                {/* <p>Coming Soon...</p> */}
               </>
             ) : strategy.id === "Jupiter" ? (
               <>
-                <img src={jupiterLogo} alt="Jupiter Logo" />
-                <p>Coming Soon...</p>
+                <img
+                  src={jupiterLogo}
+                  alt="Jupiter Logo"
+                  className="h-[50px] w-full"
+                />
+                {/* <p>Coming Soon...</p> */}
               </>
             ) : (
               <>
-                <img src={orcaLogo} alt="Orca Logo" />
-                <p>Coming Soon...</p>
+                <img
+                  src={orcaLogo}
+                  alt="Orca Logo"
+                  className="h-[50px] w-full"
+                />
+                {/* <p>Coming Soon...</p> */}
               </>
             )}
           </SelectableTile>
