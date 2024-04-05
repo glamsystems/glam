@@ -4,7 +4,6 @@ import { Cluster, Keypair, PublicKey } from "@solana/web3.js";
 import { GlamIDL, getGlamProgramId } from "@glam/anchor";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
-import { Program } from "@coral-xyz/anchor";
 import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import toast from "react-hot-toast";
 import { useAnchorProvider } from "../solana/solana-provider";
@@ -22,7 +21,7 @@ export function useGlamProgram() {
     () => getGlamProgramId(cluster.network as Cluster),
     [cluster]
   );
-  const program = new Program(GlamIDL, programId, provider);
+  const program = new anchor.Program(GlamIDL, programId, provider);
 
   const accounts = useQuery({
     queryKey: ["glam", "all", { cluster }],
