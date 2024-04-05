@@ -121,6 +121,7 @@ export function UiLayout({ children }: { children: ReactNode }) {
         )}
       />
       {children}
+      <Toaster position="bottom-right" />
     </div>
   );
 }

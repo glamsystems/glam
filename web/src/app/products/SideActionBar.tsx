@@ -1,17 +1,30 @@
 import { Button, NumberInput, Select, RadioButton, RadioButtonGroup } from '@carbon/react';
-
+import { PublicKey } from "@solana/web3.js";
+import { BN } from "@coral-xyz/anchor";
 import { Add } from '@carbon/icons-react';
 import { gray70Hover } from '@carbon/colors';
 import { useState } from 'react';
+import { useGlamProgramAccount } from "../glam/glam-data-access";
 
 type SideActionBarProps = {
   type: 'Subscribe' | 'Redeem' | 'Manage';
+  fund: any,
   primayButtonFunction: () => void;
 };
 
+const ASSETS_MAP: { [key: string]: string } = {
+  "USDC": "8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2",
+  "WSOL": "So11111111111111111111111111111111111111112",
+  "BTC": "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv",
+}
+
 
 const SubscribeActionBar = ({
-
+  fund,
+  subscribe,
+} : {
+  fund: any,
+  subscribe: any,
 }) => {
 
   const [asset, setAsset] = useState("USDC");
@@ -26,8 +39,8 @@ const SubscribeActionBar = ({
       onChange={(e) => { setAsset(e.target?.value || ""); }}
     >
       <option value="USDC">USDC</option>
+      <option value="WSOL">WSOL</option>
       <option value="BTC">BTC</option>
-      <option value="SOL">SOL</option>
     </Select>
     <NumberInput
       label="Amount"
@@ -61,7 +74,23 @@ const SubscribeActionBar = ({
           }}
           className="w-full"
           kind="primary"
-          onClick={() => {}}
+          onClick={async () => {
+            if(amount <= 0) {
+              return;
+            }
+            const amountBn = (asset == "WSOL") ? new BN(amount * 1_000_000_000) : new BN(amount * 1_000_000);
+            const subscribeData = {
+              fund: fund.data,
+              asset: new PublicKey(ASSETS_MAP[asset]),
+              amount: amountBn,
+            };
+            try {
+              await subscribe.mutateAsync(subscribeData);
+            } catch(_e) {
+              subscribe.reset();
+            }
+          }}
+          disabled={subscribe.isPending}
         >
           <>
             <span>Subscribe</span>
@@ -83,11 +112,15 @@ const SubscribeActionBar = ({
 };
 
 const RedeemActionBar = ({
-
+  fund,
+  redeem,
+} : {
+  fund: any,
+  redeem: any,
 }) => {
 
-  const [asset, setAsset] = useState("");
   const [amount, setAmount] = useState(0);
+  const [inKind, setInKind] = useState(1);
 
   return (<>
   
@@ -112,9 +145,15 @@ const RedeemActionBar = ({
       }}
       step={1}
     />
-    <RadioButtonGroup legendText="Redemption" name="radio-button-group" defaultSelected="radio-1" orientation="vertical">
-      <RadioButton labelText="In kind (cheaper)" value="radio-1" id="radio-1" />
-      <RadioButton labelText="USDC" value="radio-2" id="radio-2" />
+    <RadioButtonGroup
+      legendText="Redemption"
+      name="radio-button-group"
+      defaultSelected={inKind}
+      onChange={(val) => { setInKind(val as number); } }
+      orientation="vertical"
+    >
+      <RadioButton labelText="In kind" value={1} id="radio-1" />
+      <RadioButton labelText="USDC" value={0} id="radio-2" />
     </RadioButtonGroup>
     <div className="flex flex-col gap-[16px] h-full justify-end">
         <Button
@@ -127,7 +166,23 @@ const RedeemActionBar = ({
           }}
           className="w-full"
           kind="primary"
-          onClick={() => {}}
+          onClick={async () => {
+            if(amount <= 0) {
+              return;
+            }
+            const amountBn = new BN(amount * 1_000_000_000);
+            const redeemData = {
+              fund: fund.data,
+              amount: amountBn,
+              inKind: (inKind == 1),
+            };
+            try {
+              await redeem.mutateAsync(redeemData);
+            } catch(_e) {
+              redeem.reset();
+            }
+          }}
+          disabled={redeem.isPending}
         >
           <>
             <span>Redeem</span>
@@ -149,7 +204,9 @@ const RedeemActionBar = ({
 };
 
 const ManageActionBar = ({
-
+  fund,
+} : {
+  fund: any,
 }) => {
 
   const [app, setApp] = useState("Drift");
@@ -242,6 +299,7 @@ const ManageActionBar = ({
 
 export const SideActionBar = ({
   type,
+  fund,
   primayButtonFunction,
 }: SideActionBarProps) => {
   const grayStyle = {
@@ -250,14 +308,13 @@ export const SideActionBar = ({
     lineHeight: '18px',
   };
 
-  const [amount, setAmount] = useState(0);
-  const [quantity, setQuantity] = useState(0);
+  const { subscribe, redeem } = useGlamProgramAccount({ fundKey: fund.key });
 
   return (
     <div className="flex flex-col gap-[16px] h-[510px]">
-      {type === 'Subscribe' && <SubscribeActionBar/>}
-      {type === 'Redeem' && <RedeemActionBar/>}
-      {type === 'Manage' && <ManageActionBar/>}
+      {type === 'Subscribe' && <SubscribeActionBar fund={fund} subscribe={subscribe} />}
+      {type === 'Redeem' && <RedeemActionBar fund={fund} redeem={redeem} />}
+      {type === 'Manage' && <ManageActionBar fund={fund} />}
     </div>
   );
 };
