@@ -1,24 +1,22 @@
 import * as anchor from "@coral-xyz/anchor";
 
-import { Cluster, Keypair, PublicKey } from "@solana/web3.js";
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  TOKEN_2022_PROGRAM_ID,
+  TOKEN_PROGRAM_ID,
+  getAssociatedTokenAddressSync
+} from "@solana/spl-token";
 import { BN, Program } from "@coral-xyz/anchor";
+import { Cluster, Keypair, PublicKey } from "@solana/web3.js";
 import { GlamIDL, getGlamProgramId } from "@glam/anchor";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-
-import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 
 import toast from "react-hot-toast";
 import { useAnchorProvider } from "../solana/solana-provider";
 import { useCluster } from "../cluster/cluster-data-access";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useMemo } from "react";
 import { useTransactionToast } from "../ui/ui-layout";
-import {
-  getAssociatedTokenAddressSync,
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  TOKEN_PROGRAM_ID,
-  TOKEN_2022_PROGRAM_ID
-} from "@solana/spl-token";
 
 export function useGlamProgram() {
   const { connection } = useConnection();
@@ -412,7 +410,7 @@ export function useFundPerfChartData(fund: string) {
               group: "BTC",
               date: new Date(ts * 1000),
               value: btcValue
-            },
+            }
             // {
             //   group: "SOL",
             //   date: new Date(ts * 1000),
