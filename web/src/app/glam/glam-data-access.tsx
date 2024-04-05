@@ -1,8 +1,11 @@
+import * as anchor from "@coral-xyz/anchor";
+
 import { Cluster, Keypair, PublicKey } from "@solana/web3.js";
 import { GlamIDL, getGlamProgramId } from "@glam/anchor";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { Program } from "@coral-xyz/anchor";
+import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import toast from "react-hot-toast";
 import { useAnchorProvider } from "../solana/solana-provider";
 import { useCluster } from "../cluster/cluster-data-access";
@@ -50,32 +53,77 @@ export function useGlamProgram() {
     imageUri: "https://api.glam.systems/image/xyz.png"
   };
 
+  type ShareClassMetadata = typeof shareClassMetadata;
+
   const initialize = useMutation({
     mutationKey: ["glam", "initialize", { cluster }],
-    mutationFn: (keypair: Keypair) =>
+    mutationFn: ({
+      fundName,
+      fundSymbol,
+      fundUri,
+      manager,
+      feeStructure,
+      shareClassMetadata
+    }: {
+      fundName: string;
+      fundSymbol: string;
+      fundUri: string;
+      manager: PublicKey;
+      feeStructure: number[];
+      shareClassMetadata: ShareClassMetadata;
+    }) =>
       program.methods
         .initialize(
-          "GLAM Fund X",
-          "GLAMX",
-          "https://glam.systems/fund/xyz",
-          [0, 60, 40],
+          fundName,
+          fundSymbol,
+          fundUri,
+          feeStructure,
           true,
           shareClassMetadata
         )
         .accounts({
-          // fund: fundPDA,
-          // treasury: treasuryPDA,
-          // share: sharePDA,
-          // manager: manager.publicKey,
-          // tokenProgram: TOKEN_2022_PROGRAM_ID,
+          fund: PublicKey.findProgramAddressSync(
+            [
+              anchor.utils.bytes.utf8.encode("fund"),
+              manager.toBuffer(),
+              anchor.utils.bytes.utf8.encode("fundName")
+            ],
+            program.programId
+          )[0],
+          treasury: PublicKey.findProgramAddressSync(
+            [
+              anchor.utils.bytes.utf8.encode("treasury"),
+              // fundPDA.toBuffer(),
+              PublicKey.findProgramAddressSync(
+                [
+                  anchor.utils.bytes.utf8.encode("fund"),
+                  manager.toBuffer(),
+                  anchor.utils.bytes.utf8.encode("fundName")
+                ],
+                program.programId
+              )[0].toBuffer()
+            ],
+            program.programId
+          )[0],
+          share: PublicKey.findProgramAddressSync(
+            [
+              anchor.utils.bytes.utf8.encode("share"),
+              // fundPDA.toBuffer(),
+              PublicKey.findProgramAddressSync(
+                [
+                  anchor.utils.bytes.utf8.encode("fund"),
+                  manager.toBuffer(),
+                  anchor.utils.bytes.utf8.encode("fundName")
+                ],
+                program.programId
+              )[0].toBuffer()
+            ],
+            program.programId
+          )[0],
+          manager: manager,
+          tokenProgram: TOKEN_2022_PROGRAM_ID
         })
-        .signers([keypair])
-        .rpc(),
-    onSuccess: (signature) => {
-      transactionToast(signature);
-      return accounts.refetch();
-    },
-    onError: () => toast.error("Failed to initialize fund")
+        .rpc()
   });
 
   return {
