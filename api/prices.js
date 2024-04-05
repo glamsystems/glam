@@ -3,7 +3,14 @@
  * Rate limit: https://docs.pyth.network/benchmarks/rate-limits
  */
 const priceHistory = async (symbol) => {
-  if (!["Crypto.ETH/USD", "Crypto.BTC/USD"].includes(symbol)) {
+  if (
+    ![
+      "Crypto.ETH/USD",
+      "Crypto.BTC/USD",
+      "Crypto.SOL/USD",
+      "Crypto.USDC/USD"
+    ].includes(symbol)
+  ) {
     console.error("Invalid symbol", symbol);
     return [];
   }
@@ -36,23 +43,41 @@ const priceHistory = async (symbol) => {
 /**
  * Percent change in the last X days
  */
-const fundPerformance = (btcWeight, btcPrices, ethWeight, ethPrices) => {
-  if (btcPrices.length === 0 || ethPrices.length === 0) {
+const fundPerformance = (
+  btcWeight,
+  btcPrices,
+  ethWeight,
+  ethPrices,
+  solWeight,
+  solPrices
+) => {
+  if (
+    btcPrices.length === 0 ||
+    ethPrices.length === 0 ||
+    solPrices.length === 0
+  ) {
     throw new Error("No price data");
   }
-  if (btcPrices.length !== ethPrices.length) {
+  if (
+    btcPrices.length !== ethPrices.length ||
+    btcPrices.length !== solPrices.length
+  ) {
     throw new Error("Price data mismatch");
   }
 
   const btcChanges = btcPrices.map((p) => p / btcPrices[0] - 1);
   const ethChanges = ethPrices.map((p) => p / ethPrices[0] - 1);
+  const solChanges = solPrices.map((p) => p / solPrices[0] - 1);
 
   const weightedChanges = btcChanges.map((btcChange, i) => {
-    const ethChange = ethChanges[i];
-    return btcWeight * btcChange + ethWeight * ethChange;
+    return (
+      btcWeight * btcChange +
+      ethWeight * ethChanges[i] +
+      solWeight * solChanges[i]
+    );
   });
 
-  return { weightedChanges, btcChanges, ethChanges };
+  return { weightedChanges, btcChanges, ethChanges, solChanges };
 };
 
 module.exports = { priceHistory, fundPerformance };
