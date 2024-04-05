@@ -117,33 +117,33 @@ describe("glam_crud", () => {
     expect(fund.isActive).toEqual(true);
   });
 
-  // it("Update fund", async () => {
-  //   const newFundName = "Updated fund name";
-  //   await program.methods
-  //     .update(newFundName, null, null, false)
-  //     .accounts({
-  //       fund: fundPDA,
-  //       manager: manager.publicKey
-  //     })
-  //     .rpc({ commitment });
-  //   const fund = await program.account.fund.fetch(fundPDA);
-  //   expect(fund.name).toEqual(newFundName);
-  //   expect(fund.isActive).toEqual(false);
-  // });
+  it("Update fund", async () => {
+    const newFundName = "Updated fund name";
+    await program.methods
+      .update(newFundName, null, null, false)
+      .accounts({
+        fund: fundPDA,
+        manager: manager.publicKey
+      })
+      .rpc({ commitment });
+    const fund = await program.account.fund.fetch(fundPDA);
+    expect(fund.name).toEqual(newFundName);
+    expect(fund.isActive).toEqual(false);
+  });
 
-  // it("Close fund", async () => {
-  //   await program.methods
-  //     .close()
-  //     .accounts({
-  //       fund: fundPDA,
-  //       manager: manager.publicKey
-  //     })
-  //     .rpc();
+  it("Close fund", async () => {
+    await program.methods
+      .close()
+      .accounts({
+        fund: fundPDA,
+        manager: manager.publicKey
+      })
+      .rpc();
 
-  //   // The account should no longer exist, returning null.
-  //   const closedAccount = await program.account.fund.fetchNullable(fundPDA);
-  //   expect(closedAccount).toBeNull();
-  // });
+    // The account should no longer exist, returning null.
+    const closedAccount = await program.account.fund.fetchNullable(fundPDA);
+    expect(closedAccount).toBeNull();
+  });
 
   /*
   it('Before any fund - create test assets', async () => {

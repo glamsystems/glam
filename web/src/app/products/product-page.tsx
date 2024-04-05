@@ -26,6 +26,33 @@ import {
   useFundPerfChartData
 } from "../glam/glam-data-access";
 import { useMemo } from "react";
+import { ExplorerLink } from "../cluster/cluster-ui";
+import { ellipsify } from "../ui/ui-layout";
+
+
+class FundModel {
+  key: PublicKey;
+  data: any;
+ 
+  constructor(key: PublicKey, data: any) {
+    this.key = key;
+    this.data = data || {};
+  }
+
+  getImageUrl() {
+    const pubkey = this.data?.shareClasses[0].toBase58() || '1111111111111111111111111111111111';
+    return `https://api.glam.systems/image/${pubkey}.png`;
+  }
+
+  getManagementFee() {
+    return this.data?.shareClassesMetadata[0].feeManagement / 1_000_000.0;
+  }
+  getPerformanceFee() {
+    return this.data?.shareClassesMetadata[0].feePerformance / 1_000_000.0;
+  }
+
+}
+
 
 export default function ProductPage() {
   const grayStyle = {
@@ -39,65 +66,63 @@ export default function ProductPage() {
 
   // fetch the fund, for now we default to 2ex...
   const defaultFund = "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2";
-  let glam = new PublicKey(defaultFund);
+  let fundKey = new PublicKey(defaultFund);
   try {
-    glam = new PublicKey(id || defaultFund);
+    fundKey = new PublicKey(id || defaultFund);
   } catch (_e) {
     // pass
   }
+  const fundId = fundKey.toString();
 
-  const fundPerfChartData = useFundPerfChartData(id || defaultFund);
+  const fundPerfChartData = useFundPerfChartData(fundId) || [{value: 0}, {value: 0}];
 
-  const { account } = useGlamProgramAccount({ glam });
+  const { account } = useGlamProgramAccount({ fundKey });
   if (account.isLoading) {
     return ""; //spinner
   }
 
   const data = account.data;
+  const fundModel = new FundModel(fundKey, account.data);
 
   const { publicKey } = useWallet();
   const isManager = publicKey?.toString() == data?.manager?.toString();
 
+  const aum = 417.758475 + 0.2*66_891.80;
+  const totalShares = 1_366.124012344;
+
   const fund = {
-    id: glam.toString(),
-    symbol: data?.symbol,
+    id: fundId,
+    symbol: data?.symbol || "",
     name: data?.name,
+    manager: data?.manager,
+    treasury: data?.treasury,
+    managerName: "ema1.sol",
+    shareClass0: data?.shareClasses[0],
     investmentObjective:
-      "The iShares Bitcoin Trust seeks to reflect generally the performance of the price of bitcoin.",
-    nav: 39.72,
-    dailyNavChange: 0.12,
-    "24HourNavChange": 0.0029,
-    daily: 0.29,
-    aum: 15941890385,
-    dailyNetInflows: 13987428,
-    "24HourNetInflowChange": 0.0089,
+      "The Glam Investment Fund seeks to reflect generally the performance of the price of Bitcoin and Solana.",
+    nav: aum/totalShares,
+    // dailyNavChange: 2,
+    dailyNavChange: fundPerfChartData[fundPerfChartData.length-2].value,
+    // daily: 0.29,
+    aum,
+    // dailyNetInflows: 13987428,
+    // "24HourNetInflowChange": 0.0089,
     // will optimize looping later once we have all the necessary data
     fees: {
-      management: +(
-        // data?.additionalMetadata?.find((x) => x[0] === 'fee_management')?.[1] ??
-        0
-      ),
-      performance: +(
-        // data?.additionalMetadata?.find(
-        //   (x) => x[0] === 'fee_performance'
-        // )?.[1] ??
-        0
-      ),
+      management: fundModel.getManagementFee(),
+      performance: fundModel.getPerformanceFee(),
       subscription: 0.0,
       redemption: 0.0
     },
     facts: {
-      launchDate: "",
-      // launchDate: data?.additionalMetadata?.find(
-      //   (x) => x[0] === 'launch_date'
-      // )?.[1],
-      fundAsset: "USDC"
+      launchDate: data?.shareClassesMetadata[0].launchDate,
+      fundAsset: data?.shareClassesMetadata[0].shareClassAsset,
     },
     terms: {
       highWaterMark: false,
       hurdleRate: false,
       lockupPeriod: "60", // denominated in minutes
-      minimumSubscription: 1,
+      minimumSubscription: 0,
       maximumSubscription: 10000
     }
   };
@@ -145,8 +170,7 @@ export default function ProductPage() {
         </div>
 
         <div className="flex items-center gap-[16px] mb-[32px]">
-          <img
-            src={`https://api.glam.systems/image/${fund.id}.png`}
+          <img src={fundModel.getImageUrl()}
             style={{
               width: "64px",
               height: "64px"
@@ -161,10 +185,12 @@ export default function ProductPage() {
             {fund.name}
           </h1>
           <Tag type="warm-gray" className="rounded-none">
-            {fund.symbol}
+            <ExplorerLink
+              path={`account/${fund.shareClass0}`}
+              label={fund.symbol}
+            />
           </Tag>
         </div>
-
         <Tabs>
           <TabList aria-label="List of tabs" className="mb-[32px]">
             <Tab>Overview</Tab>
@@ -192,17 +218,16 @@ export default function ProductPage() {
                   <Tile className="h-full">
                     <div className="flex flex-col gap-[12px]">
                       <p>NAV</p>
-                      <p className="text-xl text-black">{fund.nav}</p>
+                      <p className="text-xl text-black">{formatNumber(fund.nav)}</p>
                     </div>
                     <br />
                     <div className="flex flex-col gap-[12px]">
-                      <p>1 Day NAV Change</p>
+                      <p>15 Days NAV Change</p>
                       <div className="flex items-center ">
                         <p className="text-xl text-black">
-                          {fund.dailyNavChange} (
-                          {formatPercent(fund["24HourNavChange"])})
+                          {formatPercent(fund.dailyNavChange)}
                         </p>
-                        {fund["24HourNavChange"] > 0 ? (
+                        {fund.dailyNavChange > 0 ? (
                           <IconArrowUpRight size={24} color="#48BF84" />
                         ) : (
                           <IconArrowDownRight size={24} color="#FF5F5F" />
@@ -218,8 +243,12 @@ export default function ProductPage() {
                       <p className="text-xl text-black">
                         {formatNumber(fund.aum)}
                       </p>
+                      <ExplorerLink
+                        path={`account/${fund.treasury}/tokens`}
+                        label={"Treasury"}
+                      />
                     </div>
-                    <br />
+                    {/*
                     <div className="flex flex-col gap-[12px]">
                       <p>1 Day Net Flows</p>
                       <div className="flex items-center">
@@ -234,6 +263,7 @@ export default function ProductPage() {
                         )}
                       </div>
                     </div>
+                    */}
                   </Tile>
                 </div>
                 <div className="col-span-1">
@@ -282,18 +312,21 @@ export default function ProductPage() {
                       <TabPanel>
                         <SideActionBar
                           type="Manage"
+                          fund={fundModel}
                           primayButtonFunction={() => {}}
                         />
                       </TabPanel>
                       <TabPanel>
                         <SideActionBar
                           type="Subscribe"
+                          fund={fundModel}
                           primayButtonFunction={() => {}}
                         />
                       </TabPanel>
                       <TabPanel>
                         <SideActionBar
                           type="Redeem"
+                          fund={fundModel}
                           primayButtonFunction={() => {}}
                         />
                       </TabPanel>
@@ -320,6 +353,24 @@ export default function ProductPage() {
                         <div className="flex justify-between">
                           <p style={grayStyle}>Inception Date</p>
                           <strong>{fund.facts.launchDate}</strong>
+                        </div>
+                        <div className="flex justify-between">
+                          <p style={grayStyle}>Fund Account</p>
+                          <strong>
+                            <ExplorerLink
+                              path={`account/${fund.id}`}
+                              label={ellipsify(fund.id)}
+                            />
+                          </strong>
+                        </div>
+                        <div className="flex justify-between">
+                          <p style={grayStyle}>Manager</p>
+                          <strong>
+                            <ExplorerLink
+                              path={`account/${fund.manager}`}
+                              label={fund.managerName}
+                            />
+                          </strong>
                         </div>
                       </div>
                     </div>
