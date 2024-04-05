@@ -38,12 +38,9 @@ app.get("/fund/:pubkey/perf", async (req, res) => {
   const { closingPrices: solClosingPrices } = await priceHistory(
     "Crypto.SOL/USD"
   );
-
-  console.log(solClosingPrices);
-
-  // console.log(
-  //   `Last30dPrices (USD): ETH ${ethClosingPrices}, BTC ${btcClosingPrices}`
-  // );
+  const { closingPrices: usdcClosingPrices } = await priceHistory(
+    "Crypto.USDC/USD"
+  );
 
   const { weightedChanges, btcChanges, ethChanges, solChanges } =
     fundPerformance(
@@ -58,6 +55,7 @@ app.get("/fund/:pubkey/perf", async (req, res) => {
   res.send(
     JSON.stringify({
       timestamps,
+      usdcClosingPrices,
       fundPerformance: weightedChanges,
       btcPerformance: btcChanges,
       ethPerformance: ethChanges,

@@ -4,7 +4,12 @@
  */
 const priceHistory = async (symbol) => {
   if (
-    !["Crypto.ETH/USD", "Crypto.BTC/USD", "Crypto.SOL/USD"].includes(symbol)
+    ![
+      "Crypto.ETH/USD",
+      "Crypto.BTC/USD",
+      "Crypto.SOL/USD",
+      "Crypto.USDC/USD"
+    ].includes(symbol)
   ) {
     console.error("Invalid symbol", symbol);
     return [];
