@@ -4,6 +4,7 @@ import {
   PublicKey,
   Transaction,
   sendAndConfirmTransaction,
+  ComputeBudgetProgram,
   Keypair
 } from "@solana/web3.js";
 import {
@@ -70,18 +71,36 @@ describe("glam_investor", () => {
     ],
     program.programId
   );
+  const fundUri = `https://devnet.glam.systems/#/products/${fundPDA.toBase58()}`;
 
+  // share class
+  const [sharePDA, shareBump] = PublicKey.findProgramAddressSync(
+    [anchor.utils.bytes.utf8.encode("share-0"), fundPDA.toBuffer()],
+    program.programId
+  );
+  const shareClassMetadata = {
+    name: fundName,
+    symbol: fundSymbol,
+    uri: `https://api.glam.systems/metadata/${sharePDA.toBase58()}`,
+    shareClassAsset: "USDC",
+    shareClassAssetId: usdc.publicKey,
+    isin: "XS1082172823",
+    status: "open",
+    feeManagement: 15000, // 1_000_000 * 0.015,
+    feePerformance: 100000, // 1_000_000 * 0.1,
+    policyDistribution: "accumulating",
+    extension: "",
+    launchDate: "2024-04-01",
+    lifecycle: "active",
+    imageUri: `https://api.glam.systems/image/${sharePDA.toBase58()}.png`
+  };
+
+  // treasury
   const [treasuryPDA, treasuryBump] = PublicKey.findProgramAddressSync(
     [anchor.utils.bytes.utf8.encode("treasury"), fundPDA.toBuffer()],
     program.programId
   );
 
-  const [sharePDA, shareBump] = PublicKey.findProgramAddressSync(
-    [anchor.utils.bytes.utf8.encode("share-0"), fundPDA.toBuffer()],
-    program.programId
-  );
-
-  // treasury
   const treasuryUsdcAta = getAssociatedTokenAddressSync(
     usdc.publicKey,
     treasuryPDA,
@@ -158,10 +177,18 @@ describe("glam_investor", () => {
   );
 
   // pricing
-  const pricingUsdc = new PublicKey("5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7");
-  const pricingSol =  new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix");
-  const pricingBtc =  new PublicKey("HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J");
-  const pricingEth =  new PublicKey("EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw");
+  const pricingUsdc = new PublicKey(
+    "5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7"
+  );
+  const pricingSol = new PublicKey(
+    "J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"
+  );
+  const pricingBtc = new PublicKey(
+    "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J"
+  );
+  const pricingEth = new PublicKey(
+    "EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw"
+  );
 
   let remainingAccountsSubscribe = [
     // { pubkey: usdc.publicKey, isSigner: false, isWritable: false },
@@ -260,34 +287,39 @@ describe("glam_investor", () => {
           );
         })
       );
+
+      //
+      // create fund
+      //
+      const txId = await program.methods
+        .initialize(
+          fundName,
+          fundSymbol,
+          fundUri,
+          [0, 60, 40],
+          true,
+          shareClassMetadata
+        )
+        .accounts({
+          fund: fundPDA,
+          treasury: treasuryPDA,
+          share: sharePDA,
+          manager: manager.publicKey,
+          tokenProgram: TOKEN_2022_PROGRAM_ID
+        })
+        .remainingAccounts([
+          { pubkey: usdc.publicKey, isSigner: false, isWritable: false },
+          { pubkey: btc.publicKey, isSigner: false, isWritable: false },
+          { pubkey: eth.publicKey, isSigner: false, isWritable: false }
+        ])
+        .preInstructions([
+          ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
+        ])
+        .rpc({ commitment });
     } catch (e) {
-      // beforeAll
       console.error(e);
       throw e;
     }
-
-    const txId = await program.methods
-      .initialize(fundName, fundSymbol, [0, 60, 40], true)
-      .accounts({
-        fund: fundPDA,
-        treasury: treasuryPDA,
-        share: sharePDA,
-        manager: manager.publicKey,
-        tokenProgram: TOKEN_2022_PROGRAM_ID
-      })
-      .remainingAccounts([
-        { pubkey: usdc.publicKey, isSigner: false, isWritable: false },
-        { pubkey: btc.publicKey, isSigner: false, isWritable: false },
-        { pubkey: eth.publicKey, isSigner: false, isWritable: false }
-      ])
-      .rpc({ commitment }); // await 'confirmed'
-
-    const fund = await program.account.fund.fetch(fundPDA);
-    expect(fund.shareClassesLen).toEqual(1);
-    expect(fund.assetsLen).toEqual(3);
-    expect(fund.name).toEqual(fundName);
-    expect(fund.symbol).toEqual(fundSymbol);
-    expect(fund.isActive).toEqual(true);
   }, /* timeout */ 15_000);
 
   afterAll(async () => {
@@ -302,6 +334,15 @@ describe("glam_investor", () => {
     // The account should no longer exist, returning null.
     const closedAccount = await program.account.fund.fetchNullable(fundPDA);
     expect(closedAccount).toBeNull();
+  });
+
+  it("Fund created", async () => {
+    const fund = await program.account.fund.fetch(fundPDA);
+    expect(fund.shareClassesLen).toEqual(1);
+    expect(fund.assetsLen).toEqual(3);
+    expect(fund.name).toEqual(fundName);
+    expect(fund.symbol).toEqual(fundSymbol);
+    expect(fund.isActive).toEqual(true);
   });
 
   it("Create ATAs", async () => {
