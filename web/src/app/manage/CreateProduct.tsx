@@ -317,6 +317,7 @@ export const CreateProduct = () => {
                 register={register}
                 errors={errors}
                 errorStyle={errorStyle}
+                assets={assets}
               />
             ) : currentIndex === 2 ? (
               <Policies
