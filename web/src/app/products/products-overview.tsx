@@ -10,162 +10,139 @@ import {
   TableRow,
   TableToolbar,
   TableToolbarContent,
-  TableToolbarSearch,
-} from '@carbon/react';
+  TableToolbarSearch
+} from "@carbon/react";
 
-import { useNavigate } from 'react-router-dom';
+import { PublicKey } from "@solana/web3.js";
+
+import { useNavigate } from "react-router-dom";
+
+import {
+  useGlamProgramAccount,
+  useFundPerfChartData
+} from "../glam/glam-data-access";
+import { TextAlignCenter } from "@carbon/icons-react";
 
 export default function ProductsOverview() {
-  const defaultFund = 'AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2';
+  const defaultFund = "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2";
   const rows = [
     {
       id: defaultFund,
-      symbol: 'GLAM-A-USDC',
-      nav: 100,
-      aum: 100,
-      '24': 100,
-      sharpe: 100,
-      volatility: 100,
-      track: 100,
-      status: 'Disabled',
-    },
-    {
-      id: defaultFund,
-      symbol: 'GLAM-A-USDC',
-      nav: 100,
-      aum: 100,
-      '24': 100,
-      sharpe: 100,
-      volatility: 100,
-      track: 100,
-      status: 'Disabled',
-    },
-    {
-      id: defaultFund,
-      symbol: 'GLAM-A-USDC',
-      nav: 100,
-      aum: 100,
-      '24': 100,
-      sharpe: 100,
-      volatility: 100,
-      track: 100,
-      status: 'Disabled',
-    },
-    {
-      id: defaultFund,
-      symbol: 'GLAM-A-USDC',
-      nav: 100,
-      aum: 100,
-      '24': 100,
-      sharpe: 100,
-      volatility: 100,
-      track: 100,
-      status: 'Disabled',
-    },
-    {
-      id: defaultFund,
-      symbol: 'GLAM-A-USDC',
-      nav: 100,
-      aum: 100,
-      '24': 100,
-      sharpe: 100,
-      volatility: 100,
-      track: 100,
-      status: 'Disabled',
-    },
-    {
-      id: defaultFund,
-      symbol: 'GLAM-A-USDC',
-      nav: 100,
-      aum: 100,
-      '24': 100,
-      sharpe: 100,
-      volatility: 100,
-      track: 100,
-      status: 'Disabled',
-    },
-    {
-      id: defaultFund,
-      symbol: 'GLAM-A-USDC',
-      nav: 100,
-      aum: 100,
-      '24': 100,
-      sharpe: 100,
-      volatility: 100,
-      track: 100,
-      status: 'Disabled',
-    },
-    {
-      id: defaultFund,
-      symbol: 'GLAM-A-USDC',
-      nav: 100,
-      aum: 100,
-      '24': 100,
-      sharpe: 100,
-      volatility: 100,
-      track: 100,
-      status: 'Disabled',
-    },
-    {
-      id: defaultFund,
-      symbol: 'GLAM-A-USDC',
-      nav: 100,
-      aum: 100,
-      '24': 100,
-      sharpe: 100,
-      volatility: 100,
-      track: 100,
-      status: 'Disabled',
-    },
-    {
-      id: defaultFund,
-      symbol: 'GLAM-A-USDC',
-      nav: 100,
-      aum: 100,
-      '24': 100,
-      sharpe: 100,
-      volatility: 100,
-      track: 100,
-      status: 'Disabled',
-    },
+      name: "Glam Investment Fund",
+      symbol: "GBS",
+      /*nav: 100.1,
+      aum: 13796.12,*/
+      share_classes_len: 1,
+      assets_len: 3,
+      fees_management: 1.5,
+      fees_performance: 10,
+      inception: 1712189348,
+      status: "Active"
+    }
   ];
 
   const headers = [
     {
-      key: 'symbol',
-      header: 'Symbol',
+      key: "",
+      header: ""
     },
     {
-      key: 'nav',
-      header: 'NAV',
+      key: "name",
+      header: "Name"
     },
     {
-      key: 'aum',
-      header: 'AUM',
+      key: "symbol",
+      header: "Symbol"
+    },
+    /*{
+      key: "nav",
+      header: "NAV"
     },
     {
-      key: '24',
-      header: '24',
+      key: "aum",
+      header: "AUM"
+    },*/
+    {
+      key: "share_classes_len",
+      header: "Share Classes"
     },
     {
-      key: 'sharpe',
-      header: 'Sharpe',
+      key: "assets_len",
+      header: "Assets"
     },
     {
-      key: 'volatility',
-      header: 'Volatility',
+      key: "fees_management",
+      header: "MGMT (%)"
     },
     {
-      key: 'track',
-      header: 'Track',
+      key: "fees_performance",
+      header: "PERF (%)"
     },
     {
-      key: 'status',
-      header: 'Status',
+      key: "inception",
+      header: "Inception"
     },
+    {
+      key: "status",
+      header: "Status"
+    }
   ];
 
   const navigate = useNavigate();
+
+  class FundModel {
+    key: PublicKey;
+    data: any;
+
+    constructor(key: PublicKey, data: any) {
+      this.key = key;
+      this.data = data || {};
+    }
+
+    getImageUrl() {
+      const pubkey =
+        this.data?.shareClasses[0].toBase58() ||
+        "1111111111111111111111111111111111";
+      return `https://api.glam.systems/image/${pubkey}.png`;
+    }
+
+    getManagementFee() {
+      return this.data?.shareClassesMetadata[0].feeManagement / 1_000_000.0;
+    }
+    getPerformanceFee() {
+      return this.data?.shareClassesMetadata[0].feePerformance / 1_000_000.0;
+    }
+  }
+
+  let id = "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2";
+
+  let fundKey = new PublicKey(defaultFund);
+  try {
+    fundKey = new PublicKey(id || defaultFund);
+  } catch (_e) {
+    // pass
+  }
+  const fundId = fundKey.toString();
+
+  const { account } = useGlamProgramAccount({ fundKey });
+  if (account.isLoading) {
+    return ""; //spinner
+  }
+
+  const fundModel = new FundModel(fundKey, account.data);
+
+  function formatNumber(value: number): string {
+    return new Intl.NumberFormat("en-US").format(value);
+  }
+
+  function formatDateFromTimestamp(timestampStr: string): string {
+    const date = new Date(Number(timestampStr) * 1000);
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    }).format(date);
+  }
 
   return (
     <div className="flex justify-center h-full items-center">
@@ -176,12 +153,12 @@ export default function ProductsOverview() {
           getTableProps,
           getHeaderProps,
           getRowProps,
-          getToolbarProps,
+          getToolbarProps
         }) => (
           <TableContainer className="w-[80vw]">
             <TableToolbar {...getToolbarProps()}>
               <TableToolbarContent>
-                <TableToolbarSearch onChange={() => console.log('change')} />
+                <TableToolbarSearch onChange={() => console.log("change")} />
               </TableToolbarContent>
             </TableToolbar>
             <Table {...getTableProps()}>
@@ -200,13 +177,42 @@ export default function ProductsOverview() {
                   <TableRow
                     {...getRowProps({ row })}
                     style={{
-                      cursor: 'pointer',
+                      cursor: "pointer"
                     }}
                     onClick={() => navigate(`/products/${row.id}`)}
                   >
-                    {row.cells.map((cell) => (
-                      <TableCell key={cell.id}>{cell.value}</TableCell>
-                    ))}
+                    {row.cells.map((cell) => {
+                      if (cell.info.header === "inception") {
+                        return (
+                          <TableCell key={cell.id}>
+                            {formatDateFromTimestamp(cell.value)}
+                          </TableCell>
+                        );
+                      } else if (cell.info.header === "aum") {
+                        return (
+                          <TableCell key={cell.id}>
+                            {formatNumber(cell.value)}
+                          </TableCell>
+                        );
+                      } else if (cell.info.header === "") {
+                        return (
+                          <TableCell key={cell.id}>
+                            <img
+                              src={fundModel.getImageUrl()}
+                              alt="Fund"
+                              style={{
+                                marginBottom: "2px",
+                                height: "36px"
+                              }}
+                            />
+                          </TableCell>
+                        );
+                      } else {
+                        return (
+                          <TableCell key={cell.id}>{cell.value}</TableCell>
+                        );
+                      }
+                    })}
                   </TableRow>
                 ))}
               </TableBody>
@@ -216,7 +222,7 @@ export default function ProductsOverview() {
               pageSize={10}
               pageSizes={[10, 20, 30, 40, 50]}
               totalItems={rows.length}
-              onChange={() => console.log('change')}
+              onChange={() => console.log("change")}
               itemsPerPageText={null}
             />
           </TableContainer>
