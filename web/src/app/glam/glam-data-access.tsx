@@ -1,19 +1,22 @@
-import { Cluster, Keypair, PublicKey } from "@solana/web3.js";
+import * as anchor from "@coral-xyz/anchor";
+
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  TOKEN_2022_PROGRAM_ID,
+  TOKEN_PROGRAM_ID,
+  getAssociatedTokenAddressSync
+} from "@solana/spl-token";
 import { BN, Program } from "@coral-xyz/anchor";
+import { Cluster, Keypair, PublicKey } from "@solana/web3.js";
 import { GlamIDL, getGlamProgramId } from "@glam/anchor";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
+
 import toast from "react-hot-toast";
 import { useAnchorProvider } from "../solana/solana-provider";
 import { useCluster } from "../cluster/cluster-data-access";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useMemo } from "react";
 import { useTransactionToast } from "../ui/ui-layout";
-import {
-  getAssociatedTokenAddressSync,
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  TOKEN_PROGRAM_ID,
-  TOKEN_2022_PROGRAM_ID
-} from "@solana/spl-token";
 
 export function useGlamProgram() {
   const { connection } = useConnection();
@@ -24,7 +27,7 @@ export function useGlamProgram() {
     () => getGlamProgramId(cluster.network as Cluster),
     [cluster]
   );
-  const program = new Program(GlamIDL, programId, provider);
+  const program = new anchor.Program(GlamIDL, programId, provider);
 
   const accounts = useQuery({
     queryKey: ["glam", "all", { cluster }],
@@ -55,32 +58,77 @@ export function useGlamProgram() {
     imageUri: "https://api.glam.systems/image/xyz.png"
   };
 
+  type ShareClassMetadata = typeof shareClassMetadata;
+
   const initialize = useMutation({
     mutationKey: ["glam", "initialize", { cluster }],
-    mutationFn: (keypair: Keypair) =>
+    mutationFn: ({
+      fundName,
+      fundSymbol,
+      fundUri,
+      manager,
+      feeStructure,
+      shareClassMetadata
+    }: {
+      fundName: string;
+      fundSymbol: string;
+      fundUri: string;
+      manager: PublicKey;
+      feeStructure: number[];
+      shareClassMetadata: ShareClassMetadata;
+    }) =>
       program.methods
         .initialize(
-          "GLAM Fund X",
-          "GLAMX",
-          "https://glam.systems/fund/xyz",
-          [0, 60, 40],
+          fundName,
+          fundSymbol,
+          fundUri,
+          feeStructure,
           true,
           shareClassMetadata
         )
         .accounts({
-          // fund: fundPDA,
-          // treasury: treasuryPDA,
-          // share: sharePDA,
-          // manager: manager.publicKey,
-          // tokenProgram: TOKEN_2022_PROGRAM_ID,
+          fund: PublicKey.findProgramAddressSync(
+            [
+              anchor.utils.bytes.utf8.encode("fund"),
+              manager.toBuffer(),
+              anchor.utils.bytes.utf8.encode("fundName")
+            ],
+            program.programId
+          )[0],
+          treasury: PublicKey.findProgramAddressSync(
+            [
+              anchor.utils.bytes.utf8.encode("treasury"),
+              // fundPDA.toBuffer(),
+              PublicKey.findProgramAddressSync(
+                [
+                  anchor.utils.bytes.utf8.encode("fund"),
+                  manager.toBuffer(),
+                  anchor.utils.bytes.utf8.encode("fundName")
+                ],
+                program.programId
+              )[0].toBuffer()
+            ],
+            program.programId
+          )[0],
+          share: PublicKey.findProgramAddressSync(
+            [
+              anchor.utils.bytes.utf8.encode("share"),
+              // fundPDA.toBuffer(),
+              PublicKey.findProgramAddressSync(
+                [
+                  anchor.utils.bytes.utf8.encode("fund"),
+                  manager.toBuffer(),
+                  anchor.utils.bytes.utf8.encode("fundName")
+                ],
+                program.programId
+              )[0].toBuffer()
+            ],
+            program.programId
+          )[0],
+          manager: manager,
+          tokenProgram: TOKEN_2022_PROGRAM_ID
         })
-        .signers([keypair])
-        .rpc(),
-    onSuccess: (signature) => {
-      transactionToast(signature);
-      return accounts.refetch();
-    },
-    onError: () => toast.error("Failed to initialize fund")
+        .rpc()
   });
 
   return {
@@ -362,7 +410,7 @@ export function useFundPerfChartData(fund: string) {
               group: "BTC",
               date: new Date(ts * 1000),
               value: btcValue
-            },
+            }
             // {
             //   group: "SOL",
             //   date: new Date(ts * 1000),
