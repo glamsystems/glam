@@ -19,8 +19,7 @@ fAbioarvxMkYAsBAwg5Tmd5cipU8ZHxdmK47jqZWtpv
 export const Manage = () => {
   const mockApiData = [
     {
-      id: "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2",
-      symbol: "iBTC",
+      id: "IBIT",
       name: "iShares Bitcoin Trust",
       aum: 15941890385,
       nav: 39.72,
@@ -28,8 +27,7 @@ export const Manage = () => {
         'url("https://api.glam.systems/image/EMAbk6kYhQbvtpqWyfvDPVJBvD5isMZvQT5aM4TyCAeG.png")'
     },
     {
-      id: "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2",
-      symbol: "iETH",
+      id: "IETH",
       name: "iShares Ethereum Trust",
       aum: 15941890385,
       nav: 39.72,
@@ -37,8 +35,7 @@ export const Manage = () => {
         'url("https://api.glam.systems/image/yurUzfjdrUH2ujsWwQkFsv8eQJiJwgbHQFUZtf5yqoV.png")'
     },
     {
-      id: "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2",
-      symbol: "iSOL",
+      id: "ISOL",
       name: "iShares Solana Trust",
       aum: 15941890385,
       nav: 39.72,
@@ -46,8 +43,7 @@ export const Manage = () => {
         'url("https://api.glam.systems/image/fAbioarvxMkYAsBAwg5Tmd5cipU8ZHxdmK47jqZWtpv.png")'
     },
     {
-      id: "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2",
-      symbol: "iBONK",
+      id: "IBNK",
       name: "iShares Bonk Trust",
       aum: 15941890385,
       nav: 39.72,
@@ -75,7 +71,7 @@ export const Manage = () => {
               >
                 <div className="flex flex-col gap-[32px]">
                   <div className="flex flex-col">
-                    <p className="gray">{position.symbol}</p>
+                    <p className="gray">{position.id}</p>
                     <strong>{position.name}</strong>
                   </div>
                   <div className="flex flex-col">

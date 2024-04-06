@@ -13,42 +13,37 @@ import {
   TableToolbarSearch
 } from "@carbon/react";
 
-import { formatDateFromTimestamp } from "../utils/format-number";
-import { useGlamProgram } from "../glam/glam-data-access";
+import { PublicKey } from "@solana/web3.js";
+
 import { useNavigate } from "react-router-dom";
 
-export default function ProductsOverview() {
-  const { accounts } = useGlamProgram();
-  const navigate = useNavigate();
+import {
+  useGlamProgramAccount,
+  useFundPerfChartData
+} from "../glam/glam-data-access";
+import { TextAlignCenter } from "@carbon/icons-react";
 
-  let rows: any[] = [];
-  if (accounts.data) {
-    rows = accounts.data.map((account) => {
-      const fund = account.account;
-      const imageKey =
-        fund.shareClasses[0].toBase58() || "1111111111111111111111111111111111";
-      return {
-        imageURL: `https://api.glam.systems/image/${imageKey}.png`,
-        id: account.publicKey.toBase58(),
-        name: fund.name,
-        symbol: fund.symbol,
-        share_classes_len: fund.shareClassesLen,
-        assets_len: fund.assetsLen,
-        fees_management:
-          fund.shareClassesMetadata[0].feeManagement / 1_000_000.0,
-        fees_performance:
-          fund.shareClassesMetadata[0].feePerformance / 1_000_000.0,
-        inception: Math.floor(
-          new Date(fund.shareClassesMetadata[0].launchDate).getTime() / 1000
-        ),
-        status: fund.shareClassesMetadata[0].lifecycle.toUpperCase()
-      };
-    });
-  }
+export default function ProductsOverview() {
+  const defaultFund = "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2";
+  const rows = [
+    {
+      id: defaultFund,
+      name: "Glam Investment Fund",
+      symbol: "GBS",
+      /*nav: 100.1,
+      aum: 13796.12,*/
+      share_classes_len: 1,
+      assets_len: 3,
+      fees_management: 1.5,
+      fees_performance: 10,
+      inception: 1712189348,
+      status: "Active"
+    }
+  ];
 
   const headers = [
     {
-      key: "imageURL",
+      key: "",
       header: ""
     },
     {
@@ -93,6 +88,62 @@ export default function ProductsOverview() {
     }
   ];
 
+  const navigate = useNavigate();
+
+  class FundModel {
+    key: PublicKey;
+    data: any;
+
+    constructor(key: PublicKey, data: any) {
+      this.key = key;
+      this.data = data || {};
+    }
+
+    getImageUrl() {
+      const pubkey =
+        this.data?.shareClasses[0].toBase58() ||
+        "1111111111111111111111111111111111";
+      return `https://api.glam.systems/image/${pubkey}.png`;
+    }
+
+    getManagementFee() {
+      return this.data?.shareClassesMetadata[0].feeManagement / 1_000_000.0;
+    }
+    getPerformanceFee() {
+      return this.data?.shareClassesMetadata[0].feePerformance / 1_000_000.0;
+    }
+  }
+
+  let id = "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2";
+
+  let fundKey = new PublicKey(defaultFund);
+  try {
+    fundKey = new PublicKey(id || defaultFund);
+  } catch (_e) {
+    // pass
+  }
+  const fundId = fundKey.toString();
+
+  const { account } = useGlamProgramAccount({ fundKey });
+  if (account.isLoading) {
+    return ""; //spinner
+  }
+
+  const fundModel = new FundModel(fundKey, account.data);
+
+  function formatNumber(value: number): string {
+    return new Intl.NumberFormat("en-US").format(value);
+  }
+
+  function formatDateFromTimestamp(timestampStr: string): string {
+    const date = new Date(Number(timestampStr) * 1000);
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    }).format(date);
+  }
+
   return (
     <div className="flex justify-center h-full items-center">
       <DataTable rows={rows} headers={headers}>
@@ -114,7 +165,7 @@ export default function ProductsOverview() {
               <TableHead>
                 <TableRow>
                   {headers.map((header) => (
-                    // @ts-expect-error FIXME: No overload matches this call.
+                    // @ts-ignore
                     <TableHeader {...getHeaderProps({ header })}>
                       {header.header}
                     </TableHeader>
@@ -139,13 +190,15 @@ export default function ProductsOverview() {
                         );
                       } else if (cell.info.header === "aum") {
                         return (
-                          <TableCell key={cell.id}>{cell.value}</TableCell>
+                          <TableCell key={cell.id}>
+                            {formatNumber(cell.value)}
+                          </TableCell>
                         );
-                      } else if (cell.info.header === "imageURL") {
+                      } else if (cell.info.header === "") {
                         return (
                           <TableCell key={cell.id}>
                             <img
-                              src={cell.value}
+                              src={fundModel.getImageUrl()}
                               alt="Fund"
                               style={{
                                 marginBottom: "2px",

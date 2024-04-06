@@ -1,5 +1,6 @@
 import "@carbon/charts-react/styles.css";
 
+import { PublicKey } from "@solana/web3.js";
 import { IconArrowDownRight, IconArrowUpRight } from "@tabler/icons-react";
 import { LineChart, ScaleTypes } from "@carbon/charts-react";
 import {
@@ -12,45 +13,46 @@ import {
   Tile
 } from "@carbon/react";
 import { formatNumber, formatPercent } from "../utils/format-number";
-import {
-  getAum,
-  getTotalShares,
-  useFundPerfChartData,
-  useGlamProgramAccount
-} from "../glam/glam-data-access";
-
-import { ExplorerLink } from "../cluster/cluster-ui";
-import { PublicKey } from "@solana/web3.js";
-import { SideActionBar } from "./SideActionBar";
-import { ellipsify } from "../ui/ui-layout";
-import { gray70Hover } from "@carbon/colors";
 import { useParams } from "react-router-dom";
 import { useWallet } from "@solana/wallet-adapter-react";
 
-export default function ProductPage() {
-  class FundModel {
-    key: PublicKey;
-    data: any;
+import { SideActionBar } from "./SideActionBar";
+import { gray70Hover } from "@carbon/colors";
 
-    constructor(key: PublicKey, data: any) {
-      this.key = key;
-      this.data = data || {};
-    }
+import {
+  useGlamProgramAccount,
+  useFundPerfChartData,
+  getAum,
+  getTotalShares
+} from "../glam/glam-data-access";
+import { ExplorerLink } from "../cluster/cluster-ui";
+import { ellipsify } from "../ui/ui-layout";
 
-    getImageUrl() {
-      const pubkey =
-        this.data?.shareClasses[0].toBase58() ||
-        "1111111111111111111111111111111111";
-      return `https://api.glam.systems/image/${pubkey}.png`;
-    }
+class FundModel {
+  key: PublicKey;
+  data: any;
 
-    getManagementFee() {
-      return this.data?.shareClassesMetadata[0].feeManagement / 1_000_000.0;
-    }
-    getPerformanceFee() {
-      return this.data?.shareClassesMetadata[0].feePerformance / 1_000_000.0;
-    }
+  constructor(key: PublicKey, data: any) {
+    this.key = key;
+    this.data = data || {};
   }
+
+  getImageUrl() {
+    const pubkey =
+      this.data?.shareClasses[0].toBase58() ||
+      "1111111111111111111111111111111111";
+    return `https://api.glam.systems/image/${pubkey}.png`;
+  }
+
+  getManagementFee() {
+    return this.data?.shareClassesMetadata[0].feeManagement / 1_000_000.0;
+  }
+  getPerformanceFee() {
+    return this.data?.shareClassesMetadata[0].feePerformance / 1_000_000.0;
+  }
+}
+
+export default function ProductPage() {
   const grayStyle = {
     color: gray70Hover,
     fontSize: "14px",
@@ -58,12 +60,16 @@ export default function ProductPage() {
   };
 
   // retrieve the publicKey from the URL
-  const { id } = useParams();
-  const { publicKey } = useWallet();
+  let { id } = useParams();
 
   // fetch the fund, for now we default to 2ex...
   const defaultFund = "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2";
-  const fundKey = new PublicKey(id ?? defaultFund);
+  let fundKey = new PublicKey(defaultFund);
+  try {
+    fundKey = new PublicKey(id || defaultFund);
+  } catch (_e) {
+    // pass
+  }
   const fundId = fundKey.toString();
 
   const fundPerfChartData = useFundPerfChartData(fundId) || [
@@ -72,14 +78,18 @@ export default function ProductPage() {
   ];
 
   const { account } = useGlamProgramAccount({ fundKey });
+  if (account.isLoading) {
+    return ""; //spinner
+  }
 
   const data = account.data;
-  const fundModel = new FundModel(fundKey, data);
+  const fundModel = new FundModel(fundKey, account.data);
 
-  const isManager = publicKey?.toString() === data?.manager?.toString();
+  const { publicKey } = useWallet();
+  const isManager = publicKey?.toString() == data?.manager?.toString();
 
-  const aum = getAum(data?.treasury?.toString() || "");
-  const totalShares = getTotalShares(data?.shareClasses[0] || fundKey);
+  const aum = getAum(data!.treasury!.toString());
+  const totalShares = getTotalShares(data!.shareClasses[0]);
 
   const fund = {
     id: fundId,
@@ -100,12 +110,8 @@ export default function ProductPage() {
     // "24HourNetInflowChange": 0.0089,
     // will optimize looping later once we have all the necessary data
     fees: {
-      management:
-        ((data?.shareClassesMetadata || [])[0].feeManagement || 0) /
-        1_000_000.0,
-      performance:
-        ((data?.shareClassesMetadata || [])[0].feePerformance || 0) /
-        1_000_000.0,
+      management: fundModel.getManagementFee(),
+      performance: fundModel.getPerformanceFee(),
       subscription: 0.0,
       redemption: 0.0
     },
@@ -153,7 +159,7 @@ export default function ProductPage() {
   return (
     <div>
       <div className="flex flex-col mx-[50px] md:mx-[80px] xl:mx-[180px]">
-        <div className="flex gap-[8px] mt-[80px] mb-[10px]">
+        <div className="flex gap-[8px] mt-[80px] mb-[32px]">
           <p
             style={{
               color: gray70Hover
@@ -164,14 +170,13 @@ export default function ProductPage() {
           <p>{` / ${fund.name}`}</p>
         </div>
 
-        <div className="flex items-center gap-[16px] mb-[10px]">
+        <div className="flex items-center gap-[16px] mb-[32px]">
           <img
             src={fundModel.getImageUrl()}
             style={{
               width: "64px",
               height: "64px"
             }}
-            alt="fund logo"
           />
           <h1
             style={{
@@ -189,11 +194,11 @@ export default function ProductPage() {
           </Tag>
         </div>
         <Tabs>
-          <TabList aria-label="List of tabs" className="">
+          <TabList aria-label="List of tabs" className="mb-[32px]">
             <Tab>Overview</Tab>
-            {/* <Tab>Positions</Tab>
+            <Tab>Positions</Tab>
             <Tab>Policies</Tab>
-            <Tab>Share Classes</Tab> */}
+            <Tab>Share Classes</Tab>
           </TabList>
           <TabPanels>
             <TabPanel style={{ padding: "0px" }}>
@@ -270,23 +275,23 @@ export default function ProductPage() {
                     <div className="flex flex-col gap-[32px]">
                       <p>Fees</p>
                       <div className="flex flex-col gap-[8px]">
-                        <div className="flex flex-col lg:flex-row justify-between">
+                        <div className="flex justify-between">
                           <p style={grayStyle}>Management Fee</p>
                           <strong>{formatPercent(fund.fees.management)}</strong>
                         </div>
-                        <div className="flex flex-col lg:flex-row justify-between">
+                        <div className="flex justify-between">
                           <p style={grayStyle}>Performance Fee</p>
                           <strong>
                             {formatPercent(fund.fees.performance)}
                           </strong>
                         </div>
-                        <div className="flex flex-col lg:flex-row justify-between">
+                        <div className="flex justify-between">
                           <p style={grayStyle}>Subscription Fee</p>
                           <strong>
                             {formatPercent(fund.fees.subscription)}
                           </strong>
                         </div>
-                        <div className="flex flex-col lg:flex-row justify-between">
+                        <div className="flex justify-between">
                           <p style={grayStyle}>Redemption Fee</p>
                           <strong>{formatPercent(fund.fees.redemption)}</strong>
                         </div>
@@ -294,7 +299,7 @@ export default function ProductPage() {
                     </div>
                   </Tile>
                 </div>
-                <div className="row-span-2 bg-[#f4f4f4]">
+                <div className="row-span-2">
                   <Tabs>
                     <TabList
                       aria-label="List of tabs"
@@ -308,21 +313,21 @@ export default function ProductPage() {
                       <Tab>Redeem</Tab>
                     </TabList>
                     <TabPanels>
-                      <TabPanel className="h-[92%]">
+                      <TabPanel>
                         <SideActionBar
                           type="Manage"
                           fund={fundModel}
                           primayButtonFunction={() => {}}
                         />
                       </TabPanel>
-                      <TabPanel className="h-[92%]">
+                      <TabPanel>
                         <SideActionBar
                           type="Subscribe"
                           fund={fundModel}
                           primayButtonFunction={() => {}}
                         />
                       </TabPanel>
-                      <TabPanel className="h-[92%]">
+                      <TabPanel>
                         <SideActionBar
                           type="Redeem"
                           fund={fundModel}
@@ -341,10 +346,10 @@ export default function ProductPage() {
                   </Tile>
                 </div>
                 <div className="col-span-2">
-                  <Tile className="h-full flex justify-between gap-10 flex-col">
-                    <div className="flex flex-col gap-[10px]">
+                  <Tile className="">
+                    <div className="flex flex-col gap-[32px]">
                       <p>Facts</p>
-                      <div className="flex flex-col gap-[12px]">
+                      <div className="flex flex-col gap-[14px]">
                         <div className="flex justify-between">
                           <p style={grayStyle}>Share Class Asset</p>
                           <strong>{fund.facts.fundAsset}</strong>
@@ -373,9 +378,11 @@ export default function ProductPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-[10px]">
-                      <p>Terms</p>
-                      <div className="flex flex-col gap-[12px]">
+                  </Tile>
+                  <Tile className="mt-[8px]">
+                    <div className="flex flex-col gap-[32px]">
+                      <p className="mt-4">Terms</p>
+                      <div className="flex flex-col gap-[14px]">
                         <div className="flex justify-between">
                           <p style={grayStyle}>High-Water Mark</p>
                           <strong>
