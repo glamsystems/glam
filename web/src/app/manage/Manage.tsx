@@ -9,7 +9,9 @@ import { relative } from "path";
 GLAMsYF1Uo1LG855FVGHS853FyJ4aYkWf6B4E1sVzprc
 GLaMc99QpnP1VKNwwFjNgUk4vhrGKu2JanCKzYRmKAgY
 GLam9tx5LoYZHWEb2kKz3GqJW8TJJ4Vd2Q5vp1T2vo1c
+GLAM7aqKnLbo65cRvyBk7WGuh9WTzWAxJZ7sUXdaf8rx
 
+fAbioarvxMkYAsBAwg5Tmd5cipU8ZHxdmK47jqZWtpv
 
 2X24TzxetDQcKob24wTEBq7gk7Q2KsfWQCvSyf1EfbhD
 */
@@ -38,7 +40,7 @@ export const Manage = () => {
       aum: 15941890385,
       nav: 39.72,
       backgroundImage:
-        'url("https://api.glam.systems/image/GLaMc99QpnP1VKNwwFjNgUk4vhrGKu2JanCKzYRmKAgY.png")'
+        'url("https://api.glam.systems/image/fAbioarvxMkYAsBAwg5Tmd5cipU8ZHxdmK47jqZWtpv.png")'
     },
     {
       id: "IBNK",
