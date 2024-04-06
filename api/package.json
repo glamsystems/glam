@@ -11,7 +11,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@pythnetwork/pyth-evm-js": "^1.38.0",
     "@scure/base": "^1.1.6",
+    "bn.js": "^5.2.1",
     "canvas": "^2.11.2",
     "cors": "^2.8.5",
     "express": "^4.19.2"

@@ -3,6 +3,7 @@ const { createCanvas, loadImage } = require("canvas");
 const { validatePubkey } = require("./validation");
 const { priceHistory, fundPerformance } = require("./prices");
 const cors = require("cors");
+const pyth = require("@pythnetwork/pyth-evm-js");
 
 BASE_URL = "https://api.glam.systems";
 
@@ -23,6 +24,29 @@ app.get("/_/health", (req, res) => {
   res.send("ok");
 });
 
+app.get("/prices", async (req, res) => {
+  const connection = new pyth.EvmPriceServiceConnection(
+    "https://hermes.pyth.network"
+  );
+  // You can find the ids of prices at https://pyth.network/developers/price-feed-ids#pyth-evm-stable
+  const priceIds = [
+    "0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43", // BTC/USD price id
+    "0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace", // ETH/USD price id
+    "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d", // SOL/USD price id
+    "0xeaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a" // USDC/USD price id
+  ];
+  const priceFeeds = await connection.getLatestPriceFeeds(priceIds);
+  res.set("content-type", "application/json");
+  res.send(
+    JSON.stringify({
+      btc: parseFloat(priceFeeds[0].price.price) / 1e8,
+      eth: parseFloat(priceFeeds[1].price.price) / 1e8,
+      usdc: parseFloat(priceFeeds[2].price.price) / 1e8,
+      sol: parseFloat(priceFeeds[3].price.price) / 1e8
+    })
+  );
+});
+
 app.get("/fund/:pubkey/perf", async (req, res) => {
   const { w_btc = 0.4, w_eth = 0, w_sol = 0.6 } = req.query;
   // TODO: validate input
@@ -38,9 +62,9 @@ app.get("/fund/:pubkey/perf", async (req, res) => {
   const { closingPrices: solClosingPrices } = await priceHistory(
     "Crypto.SOL/USD"
   );
-  const { closingPrices: usdcClosingPrices } = await priceHistory(
-    "Crypto.USDC/USD"
-  );
+  // const { closingPrices: usdcClosingPrices } = await priceHistory(
+  //   "Crypto.USDC/USD"
+  // );
 
   const { weightedChanges, btcChanges, ethChanges, solChanges } =
     fundPerformance(
@@ -55,7 +79,7 @@ app.get("/fund/:pubkey/perf", async (req, res) => {
   res.send(
     JSON.stringify({
       timestamps,
-      usdcClosingPrices,
+      // usdcClosingPrices,
       fundPerformance: weightedChanges,
       btcPerformance: btcChanges,
       ethPerformance: ethChanges,
