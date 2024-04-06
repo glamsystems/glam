@@ -128,19 +128,21 @@ export const Manage = () => {
               className="cursor-pointer"
               style={{}}
             >
-              <div className="flex flex-col gap-[32px]">
-                <p className="gray">Create Product</p>
+              <div className="flex flex-col" style={{ height: 132 }}>
+                <strong>Create Product</strong>
                 <div className="flex flex-col items-center">
                   <Add
                     height={100}
                     width={100}
                     color="#00000040"
-                    className="mt-6"
+                    // className="mt-6"
+                    style={{ margin: "0 auto", position: "static" }}
                   />
                 </div>
                 <div
                   className="w-[32px] h-[32px] md:w-[64px] md:h-[64px]"
                   style={{
+                    marginTop: -50,
                     alignSelf: "end",
                     display: "flex",
                     position: "relative",
