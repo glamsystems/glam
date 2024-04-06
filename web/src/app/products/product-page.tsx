@@ -83,7 +83,6 @@ export default function ProductPage() {
     { value: 0 },
     { value: 0 }
   ];
-
   const { account } = useGlamProgramAccount({ fundKey });
   const data = account.data;
   const { aum, totalShares } = getAum(
@@ -119,10 +118,8 @@ export default function ProductPage() {
     // dailyNetInflows: 13987428,
     // "24HourNetInflowChange": 0.0089,
     fees: {
-      management:
-        (data?.shareClassesMetadata[0].feeManagement ?? 10_000.0) / 10_000.0,
-      performance:
-        (data?.shareClassesMetadata[0].feePerformance ?? 10_000.0) / 10_000.0,
+      management: fundModel.getManagementFee(),
+      performance: fundModel.getPerformanceFee(),
       subscription: 0.0,
       redemption: 0.0
     },
