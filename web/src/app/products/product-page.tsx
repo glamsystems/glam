@@ -27,6 +27,19 @@ import { gray70Hover } from "@carbon/colors";
 import { useParams } from "react-router-dom";
 import { useWallet } from "@solana/wallet-adapter-react";
 
+const OBJECTIVE_MAP: { [key: string]: string } = {
+  "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2": "The Glam Investment Fund seeks to reflect generally the performance of the price of Bitcoin and Solana.",
+  "Dt4uayF35AKhhgaPNxdVRh4khNaGAih8L9SMSs9Wr6CP": "LFG aims to generate superior returns through trading in futures markets.",
+}
+
+const LOCKUP_MAP: { [key: string]: number } = {
+  "Dt4uayF35AKhhgaPNxdVRh4khNaGAih8L9SMSs9Wr6CP": 72*60,
+}
+
+const DISABLE_PERF: { [key: string]: boolean } = {
+  "Dt4uayF35AKhhgaPNxdVRh4khNaGAih8L9SMSs9Wr6CP": true,
+}
+
 export default function ProductPage() {
   class FundModel {
     key: PublicKey;
@@ -87,6 +100,8 @@ export default function ProductPage() {
     data?.shareClasses[0].toBase58() || "1111111111111111111111111111111111";
   const isManager = publicKey?.toString() === data?.manager?.toString();
 
+  const disablePerf = DISABLE_PERF[fundId] || false;
+
   const fund = {
     id: fundId,
     symbol: data?.symbol || "",
@@ -95,8 +110,7 @@ export default function ProductPage() {
     manager: data?.manager,
     treasury: data?.treasury,
     shareClass0: data?.shareClasses[0],
-    investmentObjective:
-      "The Glam Investment Fund seeks to reflect generally the performance of the price of Bitcoin and Solana.",
+    investmentObjective: OBJECTIVE_MAP[fundId] || "Not provided.",
     nav: totalShares ? aum / totalShares : 100,
     // dailyNavChange: 2,
     dailyNavChange: fundPerfChartData[fundPerfChartData.length - 2].value,
@@ -119,7 +133,7 @@ export default function ProductPage() {
     terms: {
       highWaterMark: false,
       hurdleRate: false,
-      lockupPeriod: "60", // denominated in minutes
+      lockupPeriod: LOCKUP_MAP[fundId] || 60, // denominated in minutes
       minimumSubscription: 0,
       maximumSubscription: 10000
     }
@@ -224,6 +238,7 @@ export default function ProductPage() {
                       </p>
                     </div>
                     <br />
+                    { !disablePerf && (
                     <div className="flex flex-col gap-[12px]">
                       <p>15 Days NAV Change</p>
                       <div className="flex items-center ">
@@ -238,6 +253,7 @@ export default function ProductPage() {
                           ))}
                       </div>
                     </div>
+                    )}
                   </Tile>
                 </div>
                 <div className="col-span-1">
@@ -339,10 +355,17 @@ export default function ProductPage() {
                 </div>
                 <div className="col-span-2">
                   <Tile className="">
+                  {!disablePerf && (
                     <LineChart
                       data={chartData.data}
                       options={chartData.options}
                     />
+                  ) || (
+                    <div className="cds--cc--title" style={{ height: 355 }}>
+                      <p className="title">Performance</p>
+                      <p>Not yet available.</p>
+                    </div>
+                  )}
                   </Tile>
                 </div>
                 <div className="col-span-2">
