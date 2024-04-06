@@ -41,8 +41,8 @@ app.get("/prices", async (req, res) => {
     JSON.stringify({
       btc: parseFloat(priceFeeds[0].price.price) / 1e8,
       eth: parseFloat(priceFeeds[1].price.price) / 1e8,
-      usdc: parseFloat(priceFeeds[2].price.price) / 1e8,
-      sol: parseFloat(priceFeeds[3].price.price) / 1e8
+      sol: parseFloat(priceFeeds[2].price.price) / 1e8,
+      usdc: parseFloat(priceFeeds[3].price.price) / 1e8
     })
   );
 });
