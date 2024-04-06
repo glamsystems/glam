@@ -17,24 +17,23 @@ import { formatDateFromTimestamp } from "../utils/format-number";
 import { useGlamProgram } from "../glam/glam-data-access";
 import { useNavigate } from "react-router-dom";
 
-const capitalize = (s: string) => (
-  s.charAt(0).toUpperCase() + s.slice(1)
-);
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /* Sort funds by inception data (last created first)
    and by symbol if funds have the same inception date */
 const sortFunds = (a: any, b: any) => {
   if (a.inception == b.inception) {
-    return (a.symbol <= b.symbol) ? -1 : 1;
+    return a.symbol <= b.symbol ? -1 : 1;
   }
-  return (a.inception < b.inception) ? 1 : -1;
-}
+  return a.inception < b.inception ? 1 : -1;
+};
 
 export default function ProductsOverview() {
   const { accounts } = useGlamProgram();
   const navigate = useNavigate();
 
-  let rows = (accounts.data || []).map((account) => {
+  let rows = (accounts.data || [])
+    .map((account) => {
       const fund = account.account;
       const imageKey =
         fund.shareClasses[0].toBase58() || "1111111111111111111111111111111111";
@@ -48,14 +47,17 @@ export default function ProductsOverview() {
         fees_management: fund.shareClassesMetadata[0].feeManagement / 10_000.0,
         fees_performance:
           fund.shareClassesMetadata[0].feePerformance / 10_000.0,
-        inception: new Date(Date.parse(
-          fund.shareClassesMetadata[0].launchDate
-        )),
+        inception: new Date(
+          Date.parse(fund.shareClassesMetadata[0].launchDate)
+        ),
         status: capitalize(fund.shareClassesMetadata[0].lifecycle),
         shareClassAsset: fund.shareClassesMetadata[0].shareClassAsset,
-        policyDistribution: capitalize(fund.shareClassesMetadata[0].policyDistribution),
+        policyDistribution: capitalize(
+          fund.shareClassesMetadata[0].policyDistribution
+        )
       };
-  }).sort(sortFunds);
+    })
+    .sort(sortFunds);
 
   const headers = [
     {
@@ -124,11 +126,11 @@ export default function ProductsOverview() {
           getToolbarProps
         }) => (
           <TableContainer className="w-[80vw]">
-            <TableToolbar {...getToolbarProps()}>
+            {/* <TableToolbar {...getToolbarProps()}>
               <TableToolbarContent>
                 <TableToolbarSearch onChange={() => console.log("change")} />
               </TableToolbarContent>
-            </TableToolbar>
+            </TableToolbar>*/}
             <Table {...getTableProps()}>
               <TableHead>
                 <TableRow>

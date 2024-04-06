@@ -73,12 +73,15 @@ export default function ProductPage() {
 
   const { account } = useGlamProgramAccount({ fundKey });
   const data = account.data;
-  const { aum, totalShares } = getAum(data?.treasury?.toString() || "", data?.shareClasses[0] || fundKey) || { aum: 0, totalShares: 0 };
+  const { aum, totalShares } = getAum(
+    data?.treasury?.toString() || "",
+    data?.shareClasses[0] || fundKey
+  ) || { aum: 0, totalShares: 0 };
   // const totalShares = getTotalShares(data?.shareClasses[0] || fundKey) || 0;
   if (account.isLoading) {
     return ""; //spinner
   }
-  
+
   const fundModel = new FundModel(fundKey, data);
   const imageURL =
     data?.shareClasses[0].toBase58() || "1111111111111111111111111111111111";
@@ -152,7 +155,7 @@ export default function ProductPage() {
 
   return (
     <div>
-      <div className="flex flex-col mx-[50px] md:mx-[80px] xl:mx-[180px]">
+      <div className="flex flex-col mx-[50px] md:mx-[80px] min-[1330px]:mx-[42px] min-[1350px]:mx-[180px]">
         <div className="flex gap-[8px] mt-[80px] mb-[10px]">
           <p
             style={{
@@ -227,11 +230,12 @@ export default function ProductPage() {
                         <p className="text-xl text-black">
                           {formatPercent(fund.dailyNavChange)}
                         </p>
-                        {fund.dailyNavChange && (fund.dailyNavChange > 0 ? (
-                          <IconArrowUpRight size={24} color="#48BF84" />
-                        ) : (
-                          <IconArrowDownRight size={24} color="#FF5F5F" />
-                        ))}
+                        {fund.dailyNavChange &&
+                          (fund.dailyNavChange > 0 ? (
+                            <IconArrowUpRight size={24} color="#48BF84" />
+                          ) : (
+                            <IconArrowDownRight size={24} color="#FF5F5F" />
+                          ))}
                       </div>
                     </div>
                   </Tile>
