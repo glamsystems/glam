@@ -213,7 +213,15 @@ const RedeemActionBar = ({ fund, redeem }: { fund: any; redeem: any }) => {
   );
 };
 
-const ManageActionBar = ({ fund }: { fund: any }) => {
+const ManageActionBar = ({
+  fund,
+  driftDeposit,
+  driftWithdraw,
+ }: {
+  fund: any,
+  driftDeposit: any,
+  driftWithdraw: any,
+}) => {
   const [app, setApp] = useState("Drift");
   const [asset, setAsset] = useState("USDC");
   const [amount, setAmount] = useState(0);
@@ -276,8 +284,26 @@ const ManageActionBar = ({ fund }: { fund: any }) => {
           }}
           className="w-full"
           kind="primary"
-          onClick={() => {}}
-        >
+          onClick={async () => {
+            if (amount <= 0) {
+              return;
+            }
+            const amountBn =
+              asset === "WSOL"
+                ? new BN(amount * 1_000_000_000)
+                : new BN(amount * 1_000_000);
+            const driftDepositData = {
+              fund: fund.data,
+              asset: new PublicKey(ASSETS_MAP[asset]),
+              amount: amountBn
+            };
+            try {
+              await driftDeposit.mutateAsync(driftDepositData);
+            } catch (_e) {
+              driftDeposit.reset();
+            }
+          }}
+          disabled={driftDeposit.isPending}        >
           <>
             <span>Deposit</span>
             <strong>
@@ -295,7 +321,26 @@ const ManageActionBar = ({ fund }: { fund: any }) => {
           }}
           className="bg-[#393939] w-full"
           kind="secondary"
-          onClick={() => {}}
+          onClick={async () => {
+            if (amount <= 0) {
+              return;
+            }
+            const amountBn =
+              asset === "WSOL"
+                ? new BN(amount * 1_000_000_000)
+                : new BN(amount * 1_000_000);
+            const driftWithdrawData = {
+              fund: fund.data,
+              asset: new PublicKey(ASSETS_MAP[asset]),
+              amount: amountBn
+            };
+            try {
+              await driftWithdraw.mutateAsync(driftWithdrawData);
+            } catch (_e) {
+              driftWithdraw.reset();
+            }
+          }}
+          disabled={driftWithdraw.isPending}
           iconDescription="Clear Order"
         >
           <>
@@ -322,7 +367,7 @@ export const SideActionBar = ({
     lineHeight: "18px"
   };
 
-  const { subscribe, redeem } = useGlamProgramAccount({ fundKey: fund.key });
+  const { subscribe, redeem, driftDeposit, driftWithdraw } = useGlamProgramAccount({ fundKey: fund.key });
 
   return (
     <div className="flex flex-col gap-[16px] h-full">
@@ -330,7 +375,7 @@ export const SideActionBar = ({
         <SubscribeActionBar fund={fund} subscribe={subscribe} />
       )}
       {type === "Redeem" && <RedeemActionBar fund={fund} redeem={redeem} />}
-      {type === "Manage" && <ManageActionBar fund={fund} />}
+      {type === "Manage" && <ManageActionBar fund={fund} driftDeposit={driftDeposit} driftWithdraw={driftWithdraw} />}
     </div>
   );
 };

@@ -16,6 +16,12 @@ import {
   AccountMeta,
   PublicKey
 } from "@solana/web3.js";
+import {
+  getDriftStateAccountPublicKey,
+  getUserAccountPublicKey,
+  getUserStatsAccountPublicKey,
+  getDriftSignerPublicKey,
+} from "@drift-labs/sdk";
 import { GlamIDL, getGlamProgramId } from "@glam/anchor";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -173,6 +179,13 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
   const pricingBtc = new PublicKey(
     "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J"
   );
+
+  const DRIFT_PROGRAM_ID = new PublicKey(
+    "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+  );
+  const spotMarketAccountUsdc = new PublicKey("GXWqPpjQpdz7KZw9p7f5PX2eGxHAhvpNXiviFkAB8zXg");
+  const driftSpotSol =  new PublicKey("3x85u7SWkmmr7YQGYhtjARgxwegTLJgkSLRprfXod6rh");
+  const driftSpotUsdc = new PublicKey("6gMq3mRCKf8aP3ttTyYhuijVZ2LGi14oDsBbkgubfLB3");
 
   const account = useQuery({
     queryKey: ["glam", "fetch", { fundKey }],
@@ -392,18 +405,167 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
     }
   });
 
+  /* Drift */
+
+  const driftDeposit = useMutation({
+    mutationKey: ["glam", "driftDeposit", { fundKey }],
+    mutationFn: async (mutationData: any) => {
+      const { fund, asset, amount } = mutationData;
+      const signer = wallet.publicKey;
+      if (!signer) {
+        throw Error("Wallet not connected");
+      }
+
+      const treasuryPDA = fund.treasury;
+      const treasuryUsdcAta = getAssociatedTokenAddressSync(
+        usdc,
+        treasuryPDA,
+        true,
+        TOKEN_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID
+      );
+
+      const userAccountPublicKey = await getUserAccountPublicKey(
+        DRIFT_PROGRAM_ID,
+        treasuryPDA,
+        0
+      );
+      const userStatsAccountPublicKey = await getUserStatsAccountPublicKey(
+        DRIFT_PROGRAM_ID,
+        treasuryPDA
+      );
+      const statePublicKey = await getDriftStateAccountPublicKey(
+        DRIFT_PROGRAM_ID,
+      );
+
+      let remainingAccountsDeposit = [
+        { pubkey: pricingSol, isSigner: false, isWritable: false },
+        { pubkey: pricingUsdc, isSigner: false, isWritable: false },
+        { pubkey: driftSpotSol, isSigner: false, isWritable: true },
+        { pubkey: driftSpotUsdc, isSigner: false, isWritable: true },
+      ];
+
+      return program.methods
+        .driftDeposit(amount)
+        .accounts({
+          fund: fundKey,
+          treasury: treasuryPDA,
+          treasuryAta: treasuryUsdcAta,
+          driftAta: spotMarketAccountUsdc,
+          userStats: userStatsAccountPublicKey,
+          user: userAccountPublicKey,
+          state: statePublicKey,
+          manager: signer,
+          driftProgram: DRIFT_PROGRAM_ID,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .remainingAccounts(remainingAccountsDeposit)
+        .rpc();
+    },
+    onSuccess: (tx) => {
+      console.log(tx);
+      transactionToast(tx);
+      return accounts.refetch();
+    },
+    onError: (e) => {
+      console.error("Failed to deposit: ", e);
+      return toast.error("Failed to deposit");
+    }
+  });
+
+  const driftWithdraw = useMutation({
+    mutationKey: ["glam", "driftWithdraw", { fundKey }],
+    mutationFn: async (mutationData: any) => {
+      const { fund, asset, amount } = mutationData;
+      const signer = wallet.publicKey;
+      if (!signer) {
+        throw Error("Wallet not connected");
+      }
+
+      const treasuryPDA = fund.treasury;
+      const treasuryAta = getAssociatedTokenAddressSync(
+        asset,
+        treasuryPDA,
+        true,
+        TOKEN_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID
+      );
+
+      // treasury
+      const treasuryUsdcAta = getAssociatedTokenAddressSync(
+        usdc,
+        treasuryPDA,
+        true,
+        TOKEN_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID
+      );
+
+      const userAccountPublicKey = await getUserAccountPublicKey(
+        DRIFT_PROGRAM_ID,
+        treasuryPDA,
+        0
+      );
+      const userStatsAccountPublicKey = await getUserStatsAccountPublicKey(
+        DRIFT_PROGRAM_ID,
+        treasuryPDA
+      );
+      const statePublicKey = await getDriftStateAccountPublicKey(
+        DRIFT_PROGRAM_ID,
+      );
+      const signerPublicKey = await getDriftSignerPublicKey(
+        DRIFT_PROGRAM_ID,
+      );
+    
+      let remainingAccountsWithdraw = [
+        { pubkey: pricingUsdc, isSigner: false, isWritable: false },
+        { pubkey: pricingSol, isSigner: false, isWritable: false },
+        { pubkey: driftSpotUsdc, isSigner: false, isWritable: true },
+        { pubkey: driftSpotSol, isSigner: false, isWritable: true },
+      ];
+
+      return program.methods
+        .driftWithdraw(amount)
+        .accounts({
+          fund: fundKey,
+          treasury: treasuryPDA,
+          treasuryAta: treasuryUsdcAta,
+          driftAta: spotMarketAccountUsdc,
+          userStats: userStatsAccountPublicKey,
+          user: userAccountPublicKey,
+          state: statePublicKey,
+          manager: signer,
+          driftSigner: signerPublicKey,
+          driftProgram: DRIFT_PROGRAM_ID,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .remainingAccounts(remainingAccountsWithdraw)
+        .rpc();
+    },
+    onSuccess: (tx) => {
+      console.log(tx);
+      transactionToast(tx);
+      return accounts.refetch();
+    },
+    onError: (e) => {
+      console.error("Failed to withdraw: ", e);
+      return toast.error("Failed to withdraw");
+    }
+  });
+
   return {
     account,
     subscribe,
-    redeem
+    redeem,
+    driftDeposit,
+    driftWithdraw,
   };
 }
 
 export function getTotalShares(shareClassAddress: PublicKey) {
+  const { connection } = useConnection();
   const { data } = useQuery({
     queryKey: ["get-total-shares", shareClassAddress],
     queryFn: async () => {
-      const connection = new Connection(clusterApiUrl("devnet"));
       try {
         const mintInfo = await getMint(
           connection,
@@ -415,18 +577,18 @@ export function getTotalShares(shareClassAddress: PublicKey) {
       } catch (e) {
         console.error(e);
       }
-      return 1.0;
+      return 0.0;
     }
   });
 
   return data;
 }
 
-export function getAum(treasuryAddress: string) {
+export function getAum(treasuryAddress: string, shareClassAddress: PublicKey) {
+  const { connection } = useConnection();
   const { data } = useQuery({
     queryKey: ["get-aum-in-treasury", treasuryAddress],
     queryFn: async () => {
-      const connection = new Connection(clusterApiUrl("devnet"));
       try {
         const filters: GetProgramAccountsFilter[] = [
           {
@@ -446,6 +608,20 @@ export function getAum(treasuryAddress: string) {
         console.log(
           `Found ${accounts.length} token account(s) in treasury ${treasuryAddress}`
         );
+
+        let totalShares = 0.0;
+        try {
+          const mintInfo = await getMint(
+            connection,
+            shareClassAddress,
+            "confirmed",
+            TOKEN_2022_PROGRAM_ID
+          );
+          totalShares = Number(mintInfo.supply) / 1e9;
+        } catch (e) {
+          console.error(e);
+        }
+
         let aum = 0.0;
         const response = await fetch("https://api.glam.systems/prices");
         const { btc, usdc, sol } = await response.json();
@@ -474,7 +650,7 @@ export function getAum(treasuryAddress: string) {
               console.log(`Unknown mint address: ${mintAddress}`);
           }
         });
-        return aum;
+        return { aum, totalShares };
       } catch (e) {
         console.error(e);
       }
