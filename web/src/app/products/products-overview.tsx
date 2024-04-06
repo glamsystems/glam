@@ -37,8 +37,8 @@ export default function ProductsOverview() {
         fees_management: fund.shareClassesMetadata[0].feeManagement / 10_000.0,
         fees_performance:
           fund.shareClassesMetadata[0].feePerformance / 10_000.0,
-        inception: Math.floor(
-          new Date(fund.shareClassesMetadata[0].launchDate).getTime() / 1000
+        inception: (
+          fund.shareClassesMetadata[0].launchDate
         ),
         status: fund.shareClassesMetadata[0].lifecycle.toUpperCase()
       };
@@ -133,7 +133,7 @@ export default function ProductsOverview() {
                       if (cell.info.header === "inception") {
                         return (
                           <TableCell key={cell.id}>
-                            {formatDateFromTimestamp(cell.value)}
+                            {(cell.value)}
                           </TableCell>
                         );
                       } else if (cell.info.header === "aum") {

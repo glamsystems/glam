@@ -69,6 +69,21 @@ describe("glam_devnet", () => {
 
   const fundName = "Glam Investment Fund BTC-SOL";
   const fundSymbol = "GBS";
+  let shareClassMetadata = {
+    name: fundName,
+    symbol: fundSymbol,
+    shareClassAsset: "USDC",
+    shareClassAssetId: usdc,
+    isin: "XS1082172823",
+    status: "open",
+    feeManagement: 15000, // 10_000 * 0.015,
+    feePerformance: 100000, // 10_000 * 0.1,
+    policyDistribution: "accumulating",
+    extension: "",
+    launchDate: "2024-04-01",
+    lifecycle: "active",
+  };
+
   const [fundPDA, fundBump] = PublicKey.findProgramAddressSync(
     [
       anchor.utils.bytes.utf8.encode("fund"),
@@ -88,22 +103,8 @@ describe("glam_devnet", () => {
     [anchor.utils.bytes.utf8.encode("share-0"), fundPDA.toBuffer()],
     program.programId
   );
-  const shareClassMetadata = {
-    name: fundName,
-    symbol: fundSymbol,
-    uri: `https://api.glam.systems/metadata/${sharePDA.toBase58()}`,
-    shareClassAsset: "USDC",
-    shareClassAssetId: usdc,
-    isin: "XS1082172823",
-    status: "open",
-    feeManagement: 15000, // 1_000_000 * 0.015,
-    feePerformance: 100000, // 1_000_000 * 0.1,
-    policyDistribution: "accumulating",
-    extension: "",
-    launchDate: "2024-04-01",
-    lifecycle: "active",
-    imageUri: `https://api.glam.systems/image/${sharePDA.toBase58()}.png`
-  };
+  shareClassMetadata.uri = `https://api.glam.systems/metadata/${sharePDA.toBase58()}`;
+  shareClassMetadata.imageUri = `https://api.glam.systems/image/${sharePDA.toBase58()}.png`;
 
   // treasury
   const treasuryUsdcAta = getAssociatedTokenAddressSync(

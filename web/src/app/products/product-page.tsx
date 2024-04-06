@@ -1,5 +1,5 @@
 import "@carbon/charts-react/styles.css";
-
+import { useMemo } from "react";
 import { IconArrowDownRight, IconArrowUpRight } from "@tabler/icons-react";
 import { LineChart, ScaleTypes } from "@carbon/charts-react";
 import {
@@ -61,7 +61,7 @@ export default function ProductPage() {
   const { id } = useParams();
   const { publicKey } = useWallet();
 
-  // fetch the fund, for now we default to 2ex...
+  // fetch the fund, for now we default to AdX...
   const defaultFund = "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2";
   const fundKey = new PublicKey(id ?? defaultFund);
   const fundId = fundKey.toString();
@@ -70,18 +70,19 @@ export default function ProductPage() {
     { value: 0 },
     { value: 0 }
   ];
+
   const { account } = useGlamProgramAccount({ fundKey });
   const data = account.data;
-
+  const { aum, totalShares } = getAum(data?.treasury?.toString() || "", data?.shareClasses[0] || fundKey) || { aum: 0, totalShares: 0 };
+  // const totalShares = getTotalShares(data?.shareClasses[0] || fundKey) || 0;
+  if (account.isLoading) {
+    return ""; //spinner
+  }
+  
+  const fundModel = new FundModel(fundKey, data);
   const imageURL =
     data?.shareClasses[0].toBase58() || "1111111111111111111111111111111111";
-
-  const fundModel = new FundModel(fundKey, data);
-
   const isManager = publicKey?.toString() === data?.manager?.toString();
-
-  const aum = getAum(data?.treasury?.toString() || "");
-  const totalShares = getTotalShares(data?.shareClasses[0] || fundKey);
 
   const fund = {
     id: fundId,
@@ -90,11 +91,11 @@ export default function ProductPage() {
     imgURL: `https://api.glam.systems/image/${imageURL}.png`,
     manager: data?.manager,
     treasury: data?.treasury,
-    managerName: "ema1.sol",
+    // managerName: "ema1.sol",
     shareClass0: data?.shareClasses[0],
     investmentObjective:
       "The Glam Investment Fund seeks to reflect generally the performance of the price of Bitcoin and Solana.",
-    nav: aum ? aum / (totalShares || 1.0) : 0,
+    nav: totalShares ? aum / totalShares : 10,
     // dailyNavChange: 2,
     dailyNavChange: fundPerfChartData[fundPerfChartData.length - 2].value,
     // daily: 0.29,
@@ -183,8 +184,9 @@ export default function ProductPage() {
           </h1>
           <Tag type="warm-gray" className="rounded-none">
             <ExplorerLink
-              path={`account/${fund.shareClass0}`}
+              path={`account/${fund.shareClass0}/metadata`}
               label={fund.symbol}
+              explorer="solana.fm"
             />
           </Tag>
         </div>
@@ -226,11 +228,11 @@ export default function ProductPage() {
                         <p className="text-xl text-black">
                           {formatPercent(fund.dailyNavChange)}
                         </p>
-                        {fund.dailyNavChange > 0 ? (
+                        {fund.dailyNavChange && (fund.dailyNavChange > 0 ? (
                           <IconArrowUpRight size={24} color="#48BF84" />
                         ) : (
                           <IconArrowDownRight size={24} color="#FF5F5F" />
-                        )}
+                        ))}
                       </div>
                     </div>
                   </Tile>
@@ -367,7 +369,7 @@ export default function ProductPage() {
                           <strong>
                             <ExplorerLink
                               path={`account/${fund.manager}`}
-                              label={fund.managerName}
+                              label={ellipsify(fund.manager?.toString())}
                             />
                           </strong>
                         </div>

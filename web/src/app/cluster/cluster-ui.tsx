@@ -9,15 +9,23 @@ export function ExplorerLink({
   path,
   label,
   className,
+  explorer,
 }: {
   path: string;
   label: string;
   className?: string;
+  explorer?: string;
 }) {
   const { getExplorerUrl } = useCluster();
+  let href = getExplorerUrl(path);
+  if (explorer == "solana.fm") {
+    href = href
+      .replace("explorer.solana.com", "solana.fm")
+      .replace("cluster=devnet", "cluster=devnet-alpha");
+  }
   return (
     <a
-      href={getExplorerUrl(path)}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
       className={className ? className : `link font-mono`}
