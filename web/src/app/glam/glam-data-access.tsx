@@ -237,10 +237,6 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
         ASSOCIATED_TOKEN_PROGRAM_ID
       );
 
-      console.log("treasuryUsdcAta", treasuryUsdcAta.toBase58());
-      console.log("treasurySolAta", treasurySolAta.toBase58());
-      console.log("treasuryBtcAta", treasuryBtcAta.toBase58());
-
       let remainingAccountsSubscribe = [
         // { pubkey: usdc, isSigner: false, isWritable: false },
         // { pubkey: managerUsdcAta, isSigner: false, isWritable: true },
