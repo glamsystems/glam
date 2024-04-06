@@ -5,6 +5,15 @@ import { Link } from "react-router-dom";
 import { formatNumber } from "../utils/format-number";
 import { relative } from "path";
 
+/*
+GLAMsYF1Uo1LG855FVGHS853FyJ4aYkWf6B4E1sVzprc
+GLaMc99QpnP1VKNwwFjNgUk4vhrGKu2JanCKzYRmKAgY
+GLam9tx5LoYZHWEb2kKz3GqJW8TJJ4Vd2Q5vp1T2vo1c
+
+
+2X24TzxetDQcKob24wTEBq7gk7Q2KsfWQCvSyf1EfbhD
+*/
+
 export const Manage = () => {
   const mockApiData = [
     {
@@ -12,81 +21,33 @@ export const Manage = () => {
       name: "iShares Bitcoin Trust",
       aum: 15941890385,
       nav: 39.72,
-      background:
-        "conic-gradient(from 57.74deg at 50% 50%, #5B0F48 0deg, rgba(91, 15, 72, 0) 360deg)"
+      backgroundImage:
+        'url("https://api.glam.systems/image/EMAbk6kYhQbvtpqWyfvDPVJBvD5isMZvQT5aM4TyCAeG.png")'
     },
     {
       id: "IETH",
       name: "iShares Ethereum Trust",
       aum: 15941890385,
       nav: 39.72,
-      background:
-        "conic-gradient(from 57.74deg at 50% 50%, #1D3F93 0deg, rgba(21, 55, 23, 0) 360deg)"
+      backgroundImage:
+        'url("https://api.glam.systems/image/yurUzfjdrUH2ujsWwQkFsv8eQJiJwgbHQFUZtf5yqoV.png")'
     },
     {
       id: "ISOL",
       name: "iShares Solana Trust",
       aum: 15941890385,
       nav: 39.72,
-      background:
-        "conic-gradient(from 57.74deg at 50% 50%, #A1D3F1 0deg, rgba(91, 55, 11, 0) 360deg)"
+      backgroundImage:
+        'url("https://api.glam.systems/image/GLaMc99QpnP1VKNwwFjNgUk4vhrGKu2JanCKzYRmKAgY.png")'
     },
     {
       id: "IBNK",
       name: "iShares Bonk Trust",
       aum: 15941890385,
       nav: 39.72,
-      background:
-        "conic-gradient(from 57.74deg at 50% 50%, #BBDD33 0deg, rgba(91, 55, 11, 0) 360deg)"
+      backgroundImage:
+        'url("https://api.glam.systems/image/GLam9tx5LoYZHWEb2kKz3GqJW8TJJ4Vd2Q5vp1T2vo1c.png")'
     }
-    // {
-    //   id: 'IETH',
-    //   name: 'iShares Ethereum Trust',
-    //   aum: 15941890385,
-    //   nav: 39.72,
-    //   background:
-    //     'conic-gradient(from 57.74deg at 50% 50%, #1D3F93 0deg, rgba(21, 55, 23, 0) 360deg)',
-    // },
-    // {
-    //   id: 'ISOL',
-    //   name: 'iShares Solana Trust',
-    //   aum: 15941890385,
-    //   nav: 39.72,
-    //   background:
-    //     'conic-gradient(from 57.74deg at 50% 50%, #A1D3F1 0deg, rgba(91, 55, 11, 0) 360deg)',
-    // },
-    // {
-    //   id: 'IBNK',
-    //   name: 'iShares Bonk Trust',
-    //   aum: 15941890385,
-    //   nav: 39.72,
-    //   background:
-    //     'conic-gradient(from 57.74deg at 50% 50%, #BBDD33 0deg, rgba(91, 55, 11, 0) 360deg)',
-    // },
-    // {
-    //   id: 'IETH',
-    //   name: 'iShares Ethereum Trust',
-    //   aum: 15941890385,
-    //   nav: 39.72,
-    //   background:
-    //     'conic-gradient(from 57.74deg at 50% 50%, #1D3F93 0deg, rgba(21, 55, 23, 0) 360deg)',
-    // },
-    // {
-    //   id: 'ISOL',
-    //   name: 'iShares Solana Trust',
-    //   aum: 15941890385,
-    //   nav: 39.72,
-    //   background:
-    //     'conic-gradient(from 57.74deg at 50% 50%, #A1D3F1 0deg, rgba(91, 55, 11, 0) 360deg)',
-    // },
-    // {
-    //   id: 'IBNK',
-    //   name: 'iShares Bonk Trust',
-    //   aum: 15941890385,
-    //   nav: 39.72,
-    //   background:
-    //     'conic-gradient(from 57.74deg at 50% 50%, #BBDD33 0deg, rgba(91, 55, 11, 0) 360deg)',
-    // },
   ];
 
   // when clicking on a tile, navigate to the relevant product page
@@ -96,7 +57,7 @@ export const Manage = () => {
 
       <Grid
         narrow
-        className=" h-full mt-[100px] max-h-[67vh] items-center overflow-y-auto hide-scrollbar"
+        className="w-[80vw] h-full mt-[100px] max-h-[67vh] items-center overflow-y-auto hide-scrollbar"
       >
         {mockApiData.map((position) => (
           <Column key={position.id} lg={4} md={4} sm={2} className="my-[6px]">
@@ -124,7 +85,10 @@ export const Manage = () => {
                     style={{
                       alignSelf: "end",
                       display: "flex",
-                      background: position.background,
+                      backgroundImage: position.backgroundImage,
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                      backgroundSize: "cover",
                       position: "relative",
                       top: "15px",
                       left: "15px"
@@ -160,8 +124,11 @@ export const Manage = () => {
                     position: "relative",
                     top: "15px",
                     left: "15px",
-                    background:
-                      "conic-gradient(from 90deg at 50% 50%, #141414 0deg, rgba(20, 20, 20, 0) 360deg)"
+                    backgroundImage:
+                      'url("https://api.glam.systems/image/11111111111111111111111111111111.png")',
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                    backgroundSize: "cover"
                   }}
                 ></div>
               </div>

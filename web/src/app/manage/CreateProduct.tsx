@@ -280,7 +280,7 @@ export const CreateProduct = () => {
 
   return (
     <div className="w-full  h-full flex flex-col">
-      <div className="flex flex-col w-full max-w-[1500px]  self-center h-full mt-[100px]">
+      <div className="flex flex-col w-[80vw] max-w-[1500px]  self-center h-full mt-[100px]">
         <h1 className="text-[42px]">Create Product</h1>
         <div className="flex justify-between mt-[50px] gap-[100px] h-full max-h-[70vh]">
           <ProgressIndicator

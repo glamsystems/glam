@@ -78,7 +78,7 @@ export const BasicInformation = ({
             invalidText="Text too long."
             labelText="Investment Objective"
             maxCount={100}
-            placeholder="The investment objective of the Fund is to seek to provide investment results that correspond generally to the price and yield performance, before fees and expenses, of the Nasdaq Blockchain Economy Index."
+            placeholder="The Fund seeks to reflect generally the performance of the price of bitcoin."
             rows={4}
             required
           />
