@@ -21,10 +21,6 @@ body,
   outline: none !important;
 }
 
-*:focus {
-  border-color: red !important;
-}
-
 @media screen and (min-width: 320px) {
   html {
     font-size: 10px;
