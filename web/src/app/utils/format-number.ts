@@ -1,5 +1,5 @@
 export const formatPercent = (value: number) => {
-  return value != 0 ? `${value.toFixed(3)}%` : "0";
+  return +value !== 0 ? `${value.toFixed(3)}%` : "0";
 };
 
 export const formatNumber = (value: number) => {

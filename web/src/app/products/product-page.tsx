@@ -45,10 +45,10 @@ export default function ProductPage() {
     }
 
     getManagementFee() {
-      return this.data?.shareClassesMetadata[0].feeManagement / 1_000_000.0;
+      return this.data?.shareClassesMetadata[0].feeManagement / 10_000.0;
     }
     getPerformanceFee() {
-      return this.data?.shareClassesMetadata[0].feePerformance / 1_000_000.0;
+      return this.data?.shareClassesMetadata[0].feePerformance / 10_000.0;
     }
   }
   const grayStyle = {
@@ -70,10 +70,12 @@ export default function ProductPage() {
     { value: 0 },
     { value: 0 }
   ];
-
   const { account } = useGlamProgramAccount({ fundKey });
-
   const data = account.data;
+
+  const imageURL =
+    data?.shareClasses[0].toBase58() || "1111111111111111111111111111111111";
+
   const fundModel = new FundModel(fundKey, data);
 
   const isManager = publicKey?.toString() === data?.manager?.toString();
@@ -85,6 +87,7 @@ export default function ProductPage() {
     id: fundId,
     symbol: data?.symbol || "",
     name: data?.name,
+    imgURL: `https://api.glam.systems/image/${imageURL}.png`,
     manager: data?.manager,
     treasury: data?.treasury,
     managerName: "ema1.sol",
@@ -98,14 +101,9 @@ export default function ProductPage() {
     aum: aum || 0,
     // dailyNetInflows: 13987428,
     // "24HourNetInflowChange": 0.0089,
-    // will optimize looping later once we have all the necessary data
     fees: {
-      management:
-        ((data?.shareClassesMetadata || [])[0].feeManagement || 0) /
-        1_000_000.0,
-      performance:
-        ((data?.shareClassesMetadata || [])[0].feePerformance || 0) /
-        1_000_000.0,
+      management: fundModel.getManagementFee(),
+      performance: fundModel.getPerformanceFee(),
       subscription: 0.0,
       redemption: 0.0
     },
@@ -166,7 +164,7 @@ export default function ProductPage() {
 
         <div className="flex items-center gap-[16px] mb-[10px]">
           <img
-            src={fundModel.getImageUrl()}
+            src={fund.imgURL}
             style={{
               width: "64px",
               height: "64px"

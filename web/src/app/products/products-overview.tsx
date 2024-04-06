@@ -34,10 +34,9 @@ export default function ProductsOverview() {
         symbol: fund.symbol,
         share_classes_len: fund.shareClassesLen,
         assets_len: fund.assetsLen,
-        fees_management:
-          fund.shareClassesMetadata[0].feeManagement / 1_000_000.0,
+        fees_management: fund.shareClassesMetadata[0].feeManagement / 10_000.0,
         fees_performance:
-          fund.shareClassesMetadata[0].feePerformance / 1_000_000.0,
+          fund.shareClassesMetadata[0].feePerformance / 10_000.0,
         inception: Math.floor(
           new Date(fund.shareClassesMetadata[0].launchDate).getTime() / 1000
         ),
