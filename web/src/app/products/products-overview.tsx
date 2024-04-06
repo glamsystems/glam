@@ -94,7 +94,7 @@ export default function ProductsOverview() {
     },
     {
       key: "policyDistribution",
-      header: "Policy Distribution"
+      header: "Distribution Policy"
     },
     {
       key: "fees_management",
