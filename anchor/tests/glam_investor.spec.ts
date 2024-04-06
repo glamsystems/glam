@@ -236,6 +236,7 @@ describe("glam_investor", () => {
             idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID
           );
 
+          // create ATAs for each user
           for (const user of userKeypairs) {
             // send 1 SOL to each user
             const airdrop = await connection.requestAirdrop(
@@ -596,8 +597,8 @@ describe("glam_investor", () => {
       commitment,
       TOKEN_PROGRAM_ID
     );
-    const oldAmount = treasuryUsdc.amount;
-    expect(oldAmount.toString()).toEqual(amountExt.toString());
+    const oldAmountUsdc = treasuryUsdc.amount;
+    expect(oldAmountUsdc.toString()).toEqual(amountExt.toString());
 
     let treasuryBtc = await getAccount(
       connection,
@@ -607,7 +608,7 @@ describe("glam_investor", () => {
     );
     const oldAmountBtc = treasuryBtc.amount;
 
-    const amount = new BN(5_000_000_000);
+    const amount = new BN(500_000_000);
     try {
       const txId = await program.methods
         .redeem(amount, false, true)
@@ -635,7 +636,7 @@ describe("glam_investor", () => {
       commitment,
       TOKEN_PROGRAM_ID
     );
-    const newAmount = treasuryUsdc.amount;
+    const newAmountUsdc = treasuryUsdc.amount;
 
     treasuryBtc = await getAccount(
       connection,
@@ -644,8 +645,10 @@ describe("glam_investor", () => {
       BTC_TOKEN_PROGRAM_ID
     );
     const newAmountBtc = treasuryBtc.amount;
-    console.log("newAmount", newAmountBtc, "oldAmount", oldAmountBtc);
-    expect(oldAmount).toBeGreaterThan(newAmount);
+
+    // new usdc amount should be less than old amount
+    expect(oldAmountUsdc).toBeGreaterThan(newAmountUsdc);
+    // no change in btc amount
     expect(oldAmountBtc).toEqual(newAmountBtc);
   });
 
@@ -774,9 +777,8 @@ describe("glam_investor", () => {
       commitment,
       TOKEN_2022_PROGRAM_ID
     );
-    expect((shares.supply / 1_000_000_000n).toString()).toEqual("24");
-
-    // const managerShares = await getAccount(connection, managerSharesAta, commitment, TOKEN_2022_PROGRAM_ID);
-    // expect(managerShares.amount).toEqual(shares.supply);
+    // $250 for $100 per share => 2.5 shares
+    // in reality it will be less due to fees but toFixed(2) rounds it up
+    expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("2.50");
   });
 });
