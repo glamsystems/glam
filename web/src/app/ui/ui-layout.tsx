@@ -64,7 +64,7 @@ export function UiLayout({ children }: { children: ReactNode }) {
                   Products
                 </HeaderMenuItem>
               </Link>
-              {/* <Link to="/account">
+              <Link to="/account">
                 <HeaderMenuItem
                   href="/account"
                   isActive={pathname === "/account"}
@@ -72,7 +72,7 @@ export function UiLayout({ children }: { children: ReactNode }) {
                 >
                   Account
                 </HeaderMenuItem>
-              </Link> */}
+              </Link>
               <Link to="/manage">
                 <HeaderMenuItem
                   href="/manage"
