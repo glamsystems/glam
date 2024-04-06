@@ -102,8 +102,10 @@ export default function ProductPage() {
     // dailyNetInflows: 13987428,
     // "24HourNetInflowChange": 0.0089,
     fees: {
-      management: fundModel.getManagementFee(),
-      performance: fundModel.getPerformanceFee(),
+      management:
+        (data?.shareClassesMetadata[0].feeManagement ?? 10_000.0) / 10_000.0,
+      performance:
+        (data?.shareClassesMetadata[0].feePerformance ?? 10_000.0) / 10_000.0,
       subscription: 0.0,
       redemption: 0.0
     },
