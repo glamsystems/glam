@@ -18,16 +18,33 @@ describe("Test /fund/:pubkey/perf", () => {
     server.close();
   });
 
-  it("", async () => {
+  it("Expected response", async () => {
     const res = await requestWithSupertest.get("/fund/xyz/perf");
     expect(res.status).toEqual(200);
     expect(res.body).toEqual({
       timestamps: expect.any(Array),
       fundPerformance: expect.any(Array),
-      usdcClosingPrices: expect.any(Array),
+      // usdcClosingPrices: expect.any(Array),
       btcPerformance: expect.any(Array),
       ethPerformance: expect.any(Array),
       solPerformance: expect.any(Array)
+    });
+  });
+});
+
+describe("Test /prices", () => {
+  afterAll(() => {
+    server.close();
+  });
+
+  it("Expected response", async () => {
+    const res = await requestWithSupertest.get("/prices");
+    expect(res.status).toEqual(200);
+    expect(res.body).toEqual({
+      btc: expect.any(Number),
+      eth: expect.any(Number),
+      sol: expect.any(Number),
+      usdc: expect.any(Number)
     });
   });
 });
