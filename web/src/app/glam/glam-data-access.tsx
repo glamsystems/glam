@@ -451,8 +451,8 @@ export function getAum(treasuryAddress: string) {
           `Found ${accounts.length} token account(s) in treasury ${treasuryAddress}`
         );
         let aum = 0.0;
-        const response = await fetch("http://localhost:8080/prices");
-        const { btc, eth, usdc, sol } = await response.json();
+        const response = await fetch("https://api.glam.systems/prices");
+        const { btc, usdc, sol } = await response.json();
 
         accounts.forEach((account) => {
           const parsedAccountInfo: any = account.account.data;
@@ -463,15 +463,15 @@ export function getAum(treasuryAddress: string) {
 
           switch (mintAddress) {
             case "So11111111111111111111111111111111111111112": // sol
-              console.log("sol balance", tokenBalance, tokenBalance * 170.0);
+              console.log("sol balance", tokenBalance, tokenBalance * sol);
               aum += tokenBalance * sol;
               break;
             case "8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2": // usdc
-              console.log("usdc balance", tokenBalance, tokenBalance * 1.0);
+              console.log("usdc balance", tokenBalance, tokenBalance * usdc);
               aum += tokenBalance * usdc;
               break;
             case "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv": // btc
-              console.log("btc balance", tokenBalance, tokenBalance * 60000.0);
+              console.log("btc balance", tokenBalance, tokenBalance * btc);
               aum += tokenBalance * btc;
               break;
             default:
@@ -485,7 +485,6 @@ export function getAum(treasuryAddress: string) {
       return 0;
     }
   });
-  console.log("AUM", data);
   return data;
 }
 
