@@ -86,7 +86,7 @@ export function UiLayout({ children }: { children: ReactNode }) {
               </Link>
             </HeaderNavigation>
             <HeaderGlobalBar>
-              <span style={{ fontSize: "0.875rem", }}>{ellipsify(publicKey?.toString() || "")}</span>
+              <span style={{ fontSize: "0.875rem", margin: "auto 0" }}>{ellipsify(publicKey?.toString() || "")}</span>
               <HeaderGlobalAction
                 aria-label={!publicKey ? "Connect Wallet" : "Account"}
                 tooltipAlignment="end"
