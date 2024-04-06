@@ -111,7 +111,7 @@ export default function ProductPage() {
     treasury: data?.treasury,
     shareClass0: data?.shareClasses[0],
     investmentObjective: OBJECTIVE_MAP[fundId] || "Not provided.",
-    nav: totalShares ? aum / totalShares : 100,
+    nav: totalShares ? aum / totalShares : 10,
     // dailyNavChange: 2,
     dailyNavChange: fundPerfChartData[fundPerfChartData.length - 2].value,
     // daily: 0.29,

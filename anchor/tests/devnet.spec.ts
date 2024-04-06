@@ -95,6 +95,7 @@ describe("glam_devnet", () => {
     program.programId
   );
   const fundUri = `https://devnet.glam.systems/#/products/${fundPDA.toBase58()}`;
+  console.log("fundUri", fundUri);
 
   const [treasuryPDA, treasuryBump] = PublicKey.findProgramAddressSync(
     [anchor.utils.bytes.utf8.encode("treasury"), fundPDA.toBuffer()],
@@ -317,14 +318,13 @@ describe("glam_devnet", () => {
   });
   */
 
-  /*
   it("Update trader", async () => {
     const userAccountPublicKey = await getUserAccountPublicKey(
       DRIFT_PROGRAM_ID,
       treasuryPDA,
       0
     );
-    // const trader = new PublicKey("aLice3kGNMajHriHX8R1e1LmqAzojuidxSiU9JT6hVo")
+    // const trader = new PublicKey("TrADEx6Bm9db8RH74zZVEmRiQvfUvRLDHCgL72BA6xN")
     const trader = manager.publicKey;
 
     try {
@@ -340,13 +340,12 @@ describe("glam_devnet", () => {
         .rpc({commitment}); // await 'confirmed'
 
       await connection.getParsedTransaction(txId, {commitment});
-      console.log("driftInitialize", txId);
+      console.log("driftUpdateDelegatedTrader", txId);
     } catch(e) {
       console.error(e);
       throw e;
     }
   }, 10_000);
-  */
 
   /*
   it('Deposit 100 USDC in Drift trading account', async () => {
@@ -516,6 +515,7 @@ describe("glam_devnet", () => {
   });
   */
 
+  /*
   // This is the test used to initialize the 1st devnet fund, do NOT rerun
   it("Initialize fund", async () => {
     try {
@@ -557,6 +557,7 @@ describe("glam_devnet", () => {
     expect(fund.symbol).toEqual(fundSymbol);
     expect(fund.isActive).toEqual(true);
   });
+  */
 
   /*
   it("Update fund", async () => {
@@ -573,6 +574,7 @@ describe("glam_devnet", () => {
     expect(fund.isActive).toEqual(true);
   });
   */
+
   /*
   // This is the test used to create ATAs, do NOT rerun
   it("Create ATAs", async () => {
