@@ -13,34 +13,34 @@ import {
   Tile
 } from "@carbon/react";
 import { formatNumber, formatPercent } from "../utils/format-number";
-import { useParams, useNavigate, useNavigation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useWallet } from "@solana/wallet-adapter-react";
 
 import { SideActionBar } from "./SideActionBar";
-import { getTokenMetadata } from "@solana/spl-token";
 import { gray70Hover } from "@carbon/colors";
-import { useQuery } from "@tanstack/react-query";
 
 import {
   useGlamProgramAccount,
-  useFundPerfChartData
+  useFundPerfChartData,
+  getAum,
+  getTotalShares
 } from "../glam/glam-data-access";
-import { useMemo } from "react";
 import { ExplorerLink } from "../cluster/cluster-ui";
 import { ellipsify } from "../ui/ui-layout";
-
 
 class FundModel {
   key: PublicKey;
   data: any;
- 
+
   constructor(key: PublicKey, data: any) {
     this.key = key;
     this.data = data || {};
   }
 
   getImageUrl() {
-    const pubkey = this.data?.shareClasses[0].toBase58() || '1111111111111111111111111111111111';
+    const pubkey =
+      this.data?.shareClasses[0].toBase58() ||
+      "1111111111111111111111111111111111";
     return `https://api.glam.systems/image/${pubkey}.png`;
   }
 
@@ -50,9 +50,7 @@ class FundModel {
   getPerformanceFee() {
     return this.data?.shareClassesMetadata[0].feePerformance / 1_000_000.0;
   }
-
 }
-
 
 export default function ProductPage() {
   const grayStyle = {
@@ -74,7 +72,10 @@ export default function ProductPage() {
   }
   const fundId = fundKey.toString();
 
-  const fundPerfChartData = useFundPerfChartData(fundId) || [{value: 0}, {value: 0}];
+  const fundPerfChartData = useFundPerfChartData(fundId) || [
+    { value: 0 },
+    { value: 0 }
+  ];
 
   const { account } = useGlamProgramAccount({ fundKey });
   if (account.isLoading) {
@@ -87,8 +88,8 @@ export default function ProductPage() {
   const { publicKey } = useWallet();
   const isManager = publicKey?.toString() == data?.manager?.toString();
 
-  const aum = 417.758475 + 0.2*66_891.80;
-  const totalShares = 1_366.124012344;
+  const aum = getAum(data!.treasury!.toString());
+  const totalShares = getTotalShares(data!.shareClasses[0]);
 
   const fund = {
     id: fundId,
@@ -100,11 +101,11 @@ export default function ProductPage() {
     shareClass0: data?.shareClasses[0],
     investmentObjective:
       "The Glam Investment Fund seeks to reflect generally the performance of the price of Bitcoin and Solana.",
-    nav: aum/totalShares,
+    nav: aum ? aum / (totalShares || 1.0) : 0,
     // dailyNavChange: 2,
-    dailyNavChange: fundPerfChartData[fundPerfChartData.length-2].value,
+    dailyNavChange: fundPerfChartData[fundPerfChartData.length - 2].value,
     // daily: 0.29,
-    aum,
+    aum: aum || 0,
     // dailyNetInflows: 13987428,
     // "24HourNetInflowChange": 0.0089,
     // will optimize looping later once we have all the necessary data
@@ -116,7 +117,7 @@ export default function ProductPage() {
     },
     facts: {
       launchDate: data?.shareClassesMetadata[0].launchDate,
-      fundAsset: data?.shareClassesMetadata[0].shareClassAsset,
+      fundAsset: data?.shareClassesMetadata[0].shareClassAsset
     },
     terms: {
       highWaterMark: false,
@@ -170,7 +171,8 @@ export default function ProductPage() {
         </div>
 
         <div className="flex items-center gap-[16px] mb-[32px]">
-          <img src={fundModel.getImageUrl()}
+          <img
+            src={fundModel.getImageUrl()}
             style={{
               width: "64px",
               height: "64px"
@@ -218,7 +220,9 @@ export default function ProductPage() {
                   <Tile className="h-full">
                     <div className="flex flex-col gap-[12px]">
                       <p>NAV</p>
-                      <p className="text-xl text-black">{formatNumber(fund.nav)}</p>
+                      <p className="text-xl text-black">
+                        {formatNumber(fund.nav)}
+                      </p>
                     </div>
                     <br />
                     <div className="flex flex-col gap-[12px]">

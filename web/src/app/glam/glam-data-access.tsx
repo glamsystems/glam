@@ -1,13 +1,21 @@
 import * as anchor from "@coral-xyz/anchor";
 
 import {
+  getMint,
   ASSOCIATED_TOKEN_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
   getAssociatedTokenAddressSync
 } from "@solana/spl-token";
-import { BN, Program } from "@coral-xyz/anchor";
-import { ComputeBudgetProgram, Cluster, AccountMeta, PublicKey } from "@solana/web3.js";
+import {
+  GetProgramAccountsFilter,
+  Connection,
+  clusterApiUrl,
+  ComputeBudgetProgram,
+  Cluster,
+  AccountMeta,
+  PublicKey
+} from "@solana/web3.js";
 import { GlamIDL, getGlamProgramId } from "@glam/anchor";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -73,7 +81,7 @@ export function useGlamProgram() {
       fundName: string;
       fundSymbol: string;
       manager: PublicKey;
-      assets: string[],
+      assets: string[];
       assetsStructure: number[];
       shareClassMetadata: ShareClassMetadata;
     }) => {
@@ -100,9 +108,11 @@ export function useGlamProgram() {
       shareClassMetadata.uri = `https://api.glam.systems/metadata/${sharePDA.toBase58()}`;
       shareClassMetadata.imageUri = `https://api.glam.systems/image/${sharePDA.toBase58()}.png`;
 
-      const remainingAccounts: Array<AccountMeta> = assets.map(a => (
-        { pubkey: new PublicKey(a), isSigner: false, isWritable: false }
-      ));
+      const remainingAccounts: Array<AccountMeta> = assets.map((a) => ({
+        pubkey: new PublicKey(a),
+        isSigner: false,
+        isWritable: false
+      }));
       return program.methods
         .initialize(
           fundName,
@@ -123,7 +133,7 @@ export function useGlamProgram() {
         .preInstructions([
           ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
         ])
-        .rpc()
+        .rpc();
     },
     onSuccess: (tx) => {
       console.log(tx);
@@ -226,6 +236,10 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
         TOKEN_PROGRAM_ID,
         ASSOCIATED_TOKEN_PROGRAM_ID
       );
+
+      console.log("treasuryUsdcAta", treasuryUsdcAta.toBase58());
+      console.log("treasurySolAta", treasurySolAta.toBase58());
+      console.log("treasuryBtcAta", treasuryBtcAta.toBase58());
 
       let remainingAccountsSubscribe = [
         // { pubkey: usdc, isSigner: false, isWritable: false },
@@ -389,6 +403,92 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
   };
 }
 
+export function getTotalShares(shareClassAddress: PublicKey) {
+  const { data } = useQuery({
+    queryKey: ["get-total-shares", shareClassAddress],
+    queryFn: async () => {
+      const connection = new Connection(clusterApiUrl("devnet"));
+      try {
+        const mintInfo = await getMint(
+          connection,
+          shareClassAddress,
+          "confirmed",
+          TOKEN_2022_PROGRAM_ID
+        );
+        return Number(mintInfo.supply) / 1e9;
+      } catch (e) {
+        console.error(e);
+      }
+      return 1.0;
+    }
+  });
+
+  return data;
+}
+
+export function getAum(treasuryAddress: string) {
+  const { data } = useQuery({
+    queryKey: ["get-aum-in-treasury", treasuryAddress],
+    queryFn: async () => {
+      const connection = new Connection(clusterApiUrl("devnet"));
+      try {
+        const filters: GetProgramAccountsFilter[] = [
+          {
+            dataSize: 165 //size of account (bytes)
+          },
+          {
+            memcmp: {
+              offset: 32,
+              bytes: treasuryAddress
+            }
+          }
+        ];
+        const accounts = await connection.getParsedProgramAccounts(
+          TOKEN_PROGRAM_ID,
+          { filters: filters }
+        );
+        console.log(
+          `Found ${accounts.length} token account(s) in treasury ${treasuryAddress}`
+        );
+        let aum = 0.0;
+        const response = await fetch("http://localhost:8080/prices");
+        const { btc, eth, usdc, sol } = await response.json();
+
+        accounts.forEach((account) => {
+          const parsedAccountInfo: any = account.account.data;
+          const mintAddress: string =
+            parsedAccountInfo["parsed"]["info"]["mint"];
+          const tokenBalance: number =
+            parsedAccountInfo["parsed"]["info"]["tokenAmount"]["uiAmount"];
+
+          switch (mintAddress) {
+            case "So11111111111111111111111111111111111111112": // sol
+              console.log("sol balance", tokenBalance, tokenBalance * 170.0);
+              aum += tokenBalance * sol;
+              break;
+            case "8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2": // usdc
+              console.log("usdc balance", tokenBalance, tokenBalance * 1.0);
+              aum += tokenBalance * usdc;
+              break;
+            case "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv": // btc
+              console.log("btc balance", tokenBalance, tokenBalance * 60000.0);
+              aum += tokenBalance * btc;
+              break;
+            default:
+              console.log(`Unknown mint address: ${mintAddress}`);
+          }
+        });
+        return aum;
+      } catch (e) {
+        console.error(e);
+      }
+      return 0;
+    }
+  });
+  console.log("AUM", data);
+  return data;
+}
+
 export function useFundPerfChartData(fund: string) {
   const { data } = useQuery({
     queryKey: ["fund_performance", fund],
@@ -400,7 +500,7 @@ export function useFundPerfChartData(fund: string) {
         await response.json();
       const chartData = timestamps
         .map((ts: any, i: number) => {
-          const fundValue = fundPerformance[i] * 100;
+          const fundValue = Number(fundPerformance[i]) * 100;
           const btcValue = btcPerformance[i] * 100;
           // const solValue = solPerformance[i] * 100;
           // const ethValue = ethPerformance[i] * 100;
