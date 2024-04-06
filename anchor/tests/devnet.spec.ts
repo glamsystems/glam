@@ -82,6 +82,8 @@ describe("glam_devnet", () => {
     extension: "",
     launchDate: "2024-04-01",
     lifecycle: "active",
+    uri: "",
+    imageUri: "",
   };
 
   const [fundPDA, fundBump] = PublicKey.findProgramAddressSync(
@@ -195,6 +197,7 @@ describe("glam_devnet", () => {
 
   beforeAll(async () => {}, 15_000);
 
+  /*
   // Subscribe to the fund
   it("Manager tests subscribe USDC to fund", async () => {
     console.log("managerUsdcAta", managerUsdcAta);
@@ -239,6 +242,7 @@ describe("glam_devnet", () => {
     );
     // expect(managerShares.amount).toEqual(shares.supply);
   });
+  */
 
   /*
   it("Manager redeems 100% of fund", async () => {
@@ -496,8 +500,22 @@ describe("glam_devnet", () => {
       TESTS TO CREATE - do NOT rerun
   */
 
+  /*
+  it("Close fund", async () => {
+    await program.methods
+      .close()
+      .accounts({
+        fund: 'CrtYP7DWrUGzLfNBWEvnYoBVuGni2pPpiAzYa2ZesJnm',
+        manager: manager.publicKey
+      })
+      .rpc();
 
-/*
+    // The account should no longer exist, returning null.
+    const closedAccount = await program.account.fund.fetchNullable(fundPDA);
+    expect(closedAccount).toBeNull();
+  });
+  */
+
   // This is the test used to initialize the 1st devnet fund, do NOT rerun
   it("Initialize fund", async () => {
     try {
@@ -539,7 +557,6 @@ describe("glam_devnet", () => {
     expect(fund.symbol).toEqual(fundSymbol);
     expect(fund.isActive).toEqual(true);
   });
-*/
 
   /*
   it("Update fund", async () => {
@@ -691,19 +708,4 @@ describe("glam_devnet", () => {
   }, 10_000);
   */
 
-  /*
-  it("Close fund", async () => {
-    await program.methods
-      .close()
-      .accounts({
-        fund: '2exrMpmVboCb57t94KHZWKEv7nrcoa5rQSawE19atsrt',
-        manager: manager.publicKey
-      })
-      .rpc();
-
-    // The account should no longer exist, returning null.
-    const closedAccount = await program.account.fund.fetchNullable(fundPDA);
-    expect(closedAccount).toBeNull();
-  });
-  */
 });

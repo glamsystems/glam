@@ -91,11 +91,10 @@ export default function ProductPage() {
     imgURL: `https://api.glam.systems/image/${imageURL}.png`,
     manager: data?.manager,
     treasury: data?.treasury,
-    // managerName: "ema1.sol",
     shareClass0: data?.shareClasses[0],
     investmentObjective:
       "The Glam Investment Fund seeks to reflect generally the performance of the price of Bitcoin and Solana.",
-    nav: totalShares ? aum / totalShares : 10,
+    nav: totalShares ? aum / totalShares : 100,
     // dailyNavChange: 2,
     dailyNavChange: fundPerfChartData[fundPerfChartData.length - 2].value,
     // daily: 0.29,

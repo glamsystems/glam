@@ -4,57 +4,69 @@ import { Add } from "@carbon/icons-react";
 import { Link } from "react-router-dom";
 import { formatNumber } from "../utils/format-number";
 import { relative } from "path";
-
-/*
-GLAMsYF1Uo1LG855FVGHS853FyJ4aYkWf6B4E1sVzprc
-GLaMc99QpnP1VKNwwFjNgUk4vhrGKu2JanCKzYRmKAgY
-GLam9tx5LoYZHWEb2kKz3GqJW8TJJ4Vd2Q5vp1T2vo1c
-GLAM7aqKnLbo65cRvyBk7WGuh9WTzWAxJZ7sUXdaf8rx
-
-fAbioarvxMkYAsBAwg5Tmd5cipU8ZHxdmK47jqZWtpv
-
-2X24TzxetDQcKob24wTEBq7gk7Q2KsfWQCvSyf1EfbhD
-*/
+import { useGlamProgram } from "../glam/glam-data-access";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 export const Manage = () => {
-  const mockApiData = [
-    {
-      id: "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2",
-      symbol: "iBTC",
-      name: "iShares Bitcoin Trust",
-      aum: 15941890385,
-      nav: 39.72,
-      backgroundImage:
-        'url("https://api.glam.systems/image/EMAbk6kYhQbvtpqWyfvDPVJBvD5isMZvQT5aM4TyCAeG.png")'
-    },
-    {
-      id: "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2",
-      symbol: "iETH",
-      name: "iShares Ethereum Trust",
-      aum: 15941890385,
-      nav: 39.72,
-      backgroundImage:
-        'url("https://api.glam.systems/image/yurUzfjdrUH2ujsWwQkFsv8eQJiJwgbHQFUZtf5yqoV.png")'
-    },
-    {
-      id: "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2",
-      symbol: "iSOL",
-      name: "iShares Solana Trust",
-      aum: 15941890385,
-      nav: 39.72,
-      backgroundImage:
-        'url("https://api.glam.systems/image/fAbioarvxMkYAsBAwg5Tmd5cipU8ZHxdmK47jqZWtpv.png")'
-    },
-    {
-      id: "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2",
-      symbol: "iBONK",
-      name: "iShares Bonk Trust",
-      aum: 15941890385,
-      nav: 39.72,
-      backgroundImage:
-        'url("https://api.glam.systems/image/GLam9tx5LoYZHWEb2kKz3GqJW8TJJ4Vd2Q5vp1T2vo1c.png")'
-    }
-  ];
+  // const mockApiData = [
+  //   {
+  //     id: "CWb949XA3vrdiEp2BFtjr9MbUonHke8CVdTb8Cr7Hctd",
+  //     symbol: "RHW",
+  //     name: "Renaissance Hackathon Winners",
+  //     aum: 75_000,
+  //     nav: 175.75,
+  //     backgroundImage:
+  //       'url("https://api.glam.systems/image/4hDzLKRYr8zAnmXLLsmmazkp3Hg8AvHFSiqUTHFktNoF.png")'
+  //   },
+  //   {
+  //     id: "6ZBb3LRddLtBq6DeNtSaUrMipieaFJgTETgTBoiAGBCC",
+  //     symbol: "CAF",
+  //     name: "Colosseum Accelerator Fund",
+  //     aum: 600_000_000,
+  //     nav: 600.00,
+  //     backgroundImage:
+  //       'url("https://api.glam.systems/image/5NsVEVGdYqNSneWBhogA7yLDB9dYTAEyERnSj6wK68V3.png")'
+  //   },
+  //   {
+  //     id: "6a2Jb6fQoH8TZF1qTawrriMoEiqQf2w6KMyj4pPFA3ju",
+  //     symbol: "OMMG",
+  //     name: "Orca Market Making Group",
+  //     aum: 15_941_890,
+  //     nav: 139.72,
+  //     backgroundImage:
+  //       'url("https://api.glam.systems/image/3qs8hDSDKDAPuQfJrXnv9DDdGm4Ki3E1kTETAQRJR4dJ.png")'
+  //   },
+  //   {
+  //     id: "Asytc9KxdgWVQJAp4KrYzu1B21R7AdQfhXx6bBHHnSm4",
+  //     symbol: "PDA",
+  //     name: "Pyth DAO Treasury",
+  //     aum: 101_118_482,
+  //     nav: 182.3,
+  //     backgroundImage:
+  //       'url("https://api.glam.systems/image/3hTZD8KfhTKY18C64tYAbjvTYQXHtggEXGNrFFTmDbgA.png")'
+  //   }
+  // ];
+
+  const { accounts } = useGlamProgram();
+  const { publicKey } = useWallet();
+  let data = (accounts.data || [])
+    .filter((d) => (d.account.manager.toString() == (publicKey || "").toString()))
+    .map((d) => {
+      const fund = d.account;
+      const id = d.publicKey.toString();
+      return {
+        id,
+        symbol: fund.symbol,
+        name: fund.name,
+        aum: 0,
+        nav: 0,
+        backgroundImage:
+          `url("https://api.glam.systems/image/${fund.shareClasses[0]}.png")`
+      };
+    });
+  // if (!data.length) {
+  //   data = mockApiData;
+  // }
 
   // when clicking on a tile, navigate to the relevant product page
   return (
@@ -65,7 +77,7 @@ export const Manage = () => {
         narrow
         className="w-[80vw] h-full mt-[100px] max-h-[67vh] items-center overflow-y-auto hide-scrollbar"
       >
-        {mockApiData.map((position) => (
+        {data.map((position) => (
           <Column key={position.id} lg={4} md={4} sm={2} className="my-[6px]">
             <Link to={`/products/${position.id}`}>
               <ClickableTile
@@ -78,14 +90,18 @@ export const Manage = () => {
                     <p className="gray">{position.symbol}</p>
                     <strong>{position.name}</strong>
                   </div>
+                  { position.aum && (
                   <div className="flex flex-col">
                     <p className="gray">AUM</p>
                     <strong>{formatNumber(position.aum)}</strong>
                   </div>
-                  <div className="flex flex-col">
-                    <p className="gray">NAV</p>
-                    <strong>{formatNumber(position.nav)}</strong>
-                  </div>
+                  ) || ""}
+                  { position.nav && (
+                    <div className="flex flex-col">
+                      <p className="gray">NAV</p>
+                      <strong>{formatNumber(position.nav)}</strong>
+                    </div>
+                  ) || ""}
                   <div
                     className="w-[32px] h-[32px] md:w-[64px] md:h-[64px]"
                     style={{
