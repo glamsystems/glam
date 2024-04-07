@@ -26,6 +26,8 @@ pub enum InvestorError {
     InvalidShareClass,
     #[msg("Asset not allowed to subscribe")]
     InvalidAssetSubscribe,
+    #[msg("Invalid oracle for asset price")]
+    InvalidPricingOracle,
     #[msg("Invalid assets in redeem")]
     InvalidAssetsRedeem,
     #[msg("Invalid treasury account")]

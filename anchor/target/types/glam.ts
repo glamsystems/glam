@@ -733,6 +733,9 @@ export type Glam = {
             "name": "InvalidAssetSubscribe"
           },
           {
+            "name": "InvalidPricingOracle"
+          },
+          {
             "name": "InvalidAssetsRedeem"
           },
           {
@@ -1531,6 +1534,9 @@ export const IDL: Glam = {
           },
           {
             "name": "InvalidAssetSubscribe"
+          },
+          {
+            "name": "InvalidPricingOracle"
           },
           {
             "name": "InvalidAssetsRedeem"
