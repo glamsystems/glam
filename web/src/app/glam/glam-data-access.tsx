@@ -566,6 +566,29 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
   };
 }
 
+export function getTotalShares(shareClassAddress: PublicKey) {
+  const { connection } = useConnection();
+  const { data } = useQuery({
+    queryKey: ["get-total-shares", shareClassAddress],
+    queryFn: async () => {
+      try {
+        const mintInfo = await getMint(
+          connection,
+          shareClassAddress,
+          "confirmed",
+          TOKEN_2022_PROGRAM_ID
+        );
+        return Number(mintInfo.supply) / 1e9;
+      } catch (e) {
+        console.error(e);
+      }
+      return 0.0;
+    }
+  });
+
+  return data;
+}
+
 export function getAum(treasuryAddress: string, shareClassAddress: PublicKey) {
   const { connection } = useConnection();
   const { data } = useQuery({
