@@ -161,9 +161,8 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     // );
 
     let amount_shares = if use_fixed_price {
-        // fixed $10/share initial value
-        //TODO: pick value from fund definition
-        asset_value / 10
+        // fixed $100/share initial value
+        asset_value / 100
     } else {
         // msg!("- total_shares={} total_value={}e{}", total_shares, total_value.price, total_value.expo);
         (asset_value * total_shares as u128) / (total_value.price as u128)
