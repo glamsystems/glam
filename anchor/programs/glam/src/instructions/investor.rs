@@ -19,6 +19,54 @@ fn log_decimal(amount: u64, minus_decimals: i32) -> f64 {
 fn log_price(price: Price) -> f64 {
     price.price as f64 * 10f64.powf(price.expo as f64)
 }
+#[cfg(feature = "mainnet")]
+fn check_pricing_account(asset: &str, pricing_account: &str) -> bool {
+    match asset {
+        // usdc
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" => {
+            pricing_account == "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD"
+        }
+        // sol
+        "So11111111111111111111111111111111111111112" => {
+            pricing_account == "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG"
+        }
+        // btc
+        "3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh" => {
+            pricing_account == "GVXRSBjFk6e6J3NbVPXohDJetcTjaeeuykUpbQF8UoMU"
+        }
+        // eth mainnet
+        "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs" => {
+            pricing_account == "JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB"
+        }
+        _ => false,
+    }
+}
+#[cfg(feature = "devnet")]
+fn check_pricing_account(asset: &str, pricing_account: &str) -> bool {
+    match asset {
+        // usdc devnet
+        "8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2" => {
+            pricing_account == "5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7"
+        }
+        // sol
+        "So11111111111111111111111111111111111111112" => {
+            pricing_account == "J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"
+        }
+        // btc devnet
+        "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv" => {
+            pricing_account == "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J"
+        }
+        // TODO: eth devnet mint?
+        "eth_devnet_token_mint" => {
+            pricing_account == "EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw"
+        }
+        _ => false,
+    }
+}
+#[cfg(not(any(feature = "mainnet", feature = "devnet")))]
+fn check_pricing_account(_asset: &str, _pricing_account: &str) -> bool {
+    true
+}
 
 #[derive(Accounts)]
 pub struct Subscribe<'info> {
@@ -116,8 +164,6 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         //     InvestorError::InvalidTreasuryAccount
         // );
 
-        //TODO(security) check pricing account and incoming asset match
-
         let price_feed: pyth_sdk_solana::PriceFeed =
             SolanaPriceAccount::account_info_to_feed(pricing_account).unwrap();
         let mut asset_price = price_feed.get_price_no_older_than(timestamp, 60).unwrap();
@@ -144,6 +190,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         let asset_value = asset_price
             .cmul(asset_amount.try_into().unwrap(), asset_expo)
             .unwrap();
+        /*
         msg!(
             "- asset {}: amount={:.2} decimals={} price={:.2} value={:.2}",
             i,
@@ -152,8 +199,16 @@ pub fn subscribe_handler<'c: 'info, 'info>(
             log_price(asset_price),
             log_price(asset_value),
         );
+        */
 
         if i == asset_idx {
+            require!(
+                check_pricing_account(
+                    &ctx.accounts.asset.key().to_string(),
+                    &pricing_account.to_account_info().key().to_string(),
+                ),
+                InvestorError::InvalidAssetSubscribe
+            );
             subscribe_asset_price = asset_price;
             subscribe_asset_expo = asset_expo;
         }
