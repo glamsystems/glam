@@ -16,6 +16,7 @@ import {
   HeaderName,
   HeaderNavigation,
   HeaderSideNavItems,
+  InlineNotification,
   Search,
   SideNav,
   SideNavItems,
@@ -33,9 +34,37 @@ export function UiLayout({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
 
   const { publicKey } = useWallet();
+  const [showWarning, setShowWarning] = React.useState(true);
 
   return (
-    <div className="h-[100vh] w-full">
+    <div className="h-[100vh] w-full pt-[60px]">
+      {showWarning && (
+        <div
+          className="flex text-white bg-[#FF383C] w-full items-center"
+          style={{
+            position: "absolute",
+            bottom: 0
+          }}
+        >
+          <p className="ml-auto mr-auto">
+            GLAM Devnet Alpha - Expect Bugs. Use at your own risk.{" "}
+            <a
+              href="https://twitter.com/glamsystems"
+              className="underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Provide feedback & get updates.
+            </a>
+          </p>
+          <button
+            className="pointer text-black mr-4"
+            onClick={() => setShowWarning(false)}
+          >
+            x
+          </button>
+        </div>
+      )}
       <HeaderContainer
         render={({ isSideNavExpanded, onClickSideNavExpand }) => (
           <Header aria-label="GLAM *.+">
@@ -64,7 +93,7 @@ export function UiLayout({ children }: { children: ReactNode }) {
                   Products
                 </HeaderMenuItem>
               </Link>
-              <Link to="/account">
+              {/* <Link to="/account">
                 <HeaderMenuItem
                   href="/account"
                   isActive={pathname === "/account"}
@@ -72,7 +101,7 @@ export function UiLayout({ children }: { children: ReactNode }) {
                 >
                   Account
                 </HeaderMenuItem>
-              </Link>
+              </Link> */}
               <Link to="/manage">
                 <HeaderMenuItem
                   href="/manage"
@@ -86,7 +115,9 @@ export function UiLayout({ children }: { children: ReactNode }) {
               </Link>
             </HeaderNavigation>
             <HeaderGlobalBar>
-              <span style={{ fontSize: "0.875rem", margin: "auto 0" }}>{ellipsify(publicKey?.toString() || "")}</span>
+              <span style={{ fontSize: "0.875rem", margin: "auto 0" }}>
+                {ellipsify(publicKey?.toString() || "")}
+              </span>
               <HeaderGlobalAction
                 aria-label={!publicKey ? "Connect Wallet" : "Account"}
                 tooltipAlignment="end"

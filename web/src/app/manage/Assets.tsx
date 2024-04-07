@@ -10,6 +10,13 @@ type AssetProps = {
   assets: string[] | undefined;
 };
 
+const availableAssets = tokenList.filter(
+  (t) =>
+    t.symbol.includes("USDC") ||
+    t.symbol.includes("WSOL") ||
+    t.symbol.includes("WBTC")
+);
+
 export const Assets = ({ setValue, watch, assets }: AssetProps) => {
   return (
     <>
@@ -31,7 +38,10 @@ export const Assets = ({ setValue, watch, assets }: AssetProps) => {
             id={token.symbol}
             key={token.tokenMint}
             value={token.symbol}
-            disabled={token.symbol === watch("shareClassAsset")}
+            disabled={
+              token.symbol === watch("shareClassAsset") ||
+              !availableAssets.includes(token)
+            }
             selected={
               token.symbol === watch("shareClassAsset") ||
               assets?.includes(token.tokenMint)
