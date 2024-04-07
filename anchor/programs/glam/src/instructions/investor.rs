@@ -34,7 +34,7 @@ fn check_pricing_account(asset: &str, pricing_account: &str) -> bool {
         "3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh" => {
             pricing_account == "GVXRSBjFk6e6J3NbVPXohDJetcTjaeeuykUpbQF8UoMU"
         }
-        // eth mainnet
+        // eth
         "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs" => {
             pricing_account == "JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB"
         }
@@ -44,7 +44,7 @@ fn check_pricing_account(asset: &str, pricing_account: &str) -> bool {
 #[cfg(feature = "devnet")]
 fn check_pricing_account(asset: &str, pricing_account: &str) -> bool {
     match asset {
-        // usdc devnet
+        // usdc
         "8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2" => {
             pricing_account == "5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7"
         }
@@ -52,12 +52,11 @@ fn check_pricing_account(asset: &str, pricing_account: &str) -> bool {
         "So11111111111111111111111111111111111111112" => {
             pricing_account == "J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"
         }
-        // btc devnet
+        // btc
         "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv" => {
             pricing_account == "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J"
         }
-        // TODO: eth devnet mint?
-        "eth_devnet_token_mint" => {
+        "Ff5JqsAYUD4vAfQUtfRprT4nXu9e28tTBZTDFMnJNdvd" => {
             pricing_account == "EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw"
         }
         _ => false,
@@ -207,7 +206,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
                     &ctx.accounts.asset.key().to_string(),
                     &pricing_account.to_account_info().key().to_string(),
                 ),
-                InvestorError::InvalidAssetSubscribe
+                InvestorError::InvalidPricingOracle
             );
             subscribe_asset_price = asset_price;
             subscribe_asset_expo = asset_expo;

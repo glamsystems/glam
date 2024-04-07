@@ -733,6 +733,9 @@
             "name": "InvalidAssetSubscribe"
           },
           {
+            "name": "InvalidPricingOracle"
+          },
+          {
             "name": "InvalidAssetsRedeem"
           },
           {
