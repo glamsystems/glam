@@ -105,7 +105,7 @@ pub fn drift_initialize_handler(
 
 #[derive(Accounts)]
 pub struct DriftUpdate<'info> {
-    // #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
+    #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
     pub fund: Account<'info, Fund>,
     pub treasury: Account<'info, Treasury>,
 
@@ -151,7 +151,7 @@ pub fn drift_update_delegated_trader_handler(
 
 #[derive(Accounts)]
 pub struct DriftDeposit<'info> {
-    // #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
+    #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
     pub fund: Account<'info, Fund>,
     pub treasury: Account<'info, Treasury>,
 
@@ -215,7 +215,7 @@ pub fn drift_deposit_handler<'c: 'info, 'info>(
 
 #[derive(Accounts)]
 pub struct DriftWithdraw<'info> {
-    // #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
+    #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
     pub fund: Account<'info, Fund>,
     pub treasury: Account<'info, Treasury>,
 
