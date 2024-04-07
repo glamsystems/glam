@@ -63,7 +63,7 @@ export default function ProductsOverview() {
 
   // State for managing current page and page size
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(30);
 
   // Calculate the rows to display based on the current page and rows per page
   const indexOfLastRow = useMemo(
@@ -76,19 +76,8 @@ export default function ProductsOverview() {
   );
   const currentRows = allRows.slice(indexOfFirstRow, indexOfLastRow);
 
-  // Handle change in pagination
-  const handlePaginationChange = (page: number, pageSize: number) => {
-    setCurrentPage(page);
-    if (window.innerHeight < 650) {
-      setRowsPerPage(2);
-    } else {
-      setRowsPerPage(10);
-    }
-  };
-
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const [windowHeight, setWindowHeight] = useState(window.innerHeight);
-
+  
   // Dynamically adjust the headers based on the window width
   const headers = [
     ...(windowWidth >= 1000 ? [{ key: "imageURL", header: "" }] : []),
@@ -102,30 +91,8 @@ export default function ProductsOverview() {
     { key: "status", header: "Status" }
   ];
 
-  console.log("Current Page:", currentPage);
-  console.log("Rows per page:", rowsPerPage);
-
-  // Effect for handling window resize
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-      setWindowHeight(window.innerHeight);
-      const newRowsPerPage = window.innerHeight < 650 ? 2 : 10;
-      if (newRowsPerPage !== rowsPerPage) {
-        setRowsPerPage(newRowsPerPage);
-        setCurrentPage(1); // Reset to the first page if rows per page changes
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [rowsPerPage]);
-
   return (
-    <div className="flex flex-col h-full items-center justify-center">
+    <div className="flex flex-col h-full items-center">
       <DataTable rows={currentRows} headers={headers}>
         {({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
           <TableContainer className="w-full max-w-[1500px] p-8 ">

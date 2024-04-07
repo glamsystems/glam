@@ -12,9 +12,9 @@ type AssetProps = {
 
 const availableAssets = tokenList.filter(
   (t) =>
-    t.symbol.includes("USDC") ||
-    t.symbol.includes("WSOL") ||
-    t.symbol.includes("WBTC")
+    t.symbol === "USDC" ||
+    t.symbol === "SOL" ||
+    t.symbol === "WBTC"
 );
 
 export const Assets = ({ setValue, watch, assets }: AssetProps) => {

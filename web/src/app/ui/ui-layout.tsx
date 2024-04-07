@@ -37,34 +37,8 @@ export function UiLayout({ children }: { children: ReactNode }) {
   const [showWarning, setShowWarning] = React.useState(true);
 
   return (
-    <div className="h-[100vh] w-full pt-[60px]">
-      {showWarning && (
-        <div
-          className="flex text-white bg-[#FF383C] w-full items-center"
-          style={{
-            position: "absolute",
-            bottom: 0
-          }}
-        >
-          <p className="ml-auto mr-auto">
-            GLAM Devnet Alpha - Expect Bugs. Use at your own risk.{" "}
-            <a
-              href="https://twitter.com/glamsystems"
-              className="underline"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Provide feedback & get updates.
-            </a>
-          </p>
-          <button
-            className="pointer text-black mr-4"
-            onClick={() => setShowWarning(false)}
-          >
-            x
-          </button>
-        </div>
-      )}
+    <>
+    <div className="h-[100vh] w-full pt-[60px]" style={{ overflowY: "scroll" }}>
       <HeaderContainer
         render={({ isSideNavExpanded, onClickSideNavExpand }) => (
           <Header aria-label="GLAM *.+">
@@ -157,6 +131,45 @@ export function UiLayout({ children }: { children: ReactNode }) {
       {children}
       <Toaster position="bottom-right" />
     </div>
+      {showWarning && (
+        <div
+          className="flex text-white bg-[#FF383C] w-full items-center"
+          style={{
+            position: "absolute",
+            bottom: 0,
+            padding: 4,
+            zIndex: 2,
+          }}
+        >
+          <p className="ml-auto mr-auto">
+            GLAM Devnet Alpha -
+            Check out <Link className="underline" to="/products/AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2">GBS</Link>,
+            or create your own (works with{" "} 
+              <a href="https://beta.drift.trade"
+                className="underline"
+                target="_blank"
+                rel="noreferrer"
+              >beta.drift.trade</a>
+            ).
+            Provide feedback & get updates{" "}
+            <a
+              href="https://x.com/glamsystems"
+              className="underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              on X
+            </a>.
+          </p>
+          <button
+            className="pointer text-black mr-4"
+            onClick={() => setShowWarning(false)}
+          >
+            x
+          </button>
+        </div>
+      )}
+    </>
   );
 }
 
