@@ -737,6 +737,23 @@ export type Glam = {
           }
         ]
       }
+    },
+    {
+      "name": "PolicyError",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "TransfersDisabled"
+          },
+          {
+            "name": "AmountTooBig"
+          },
+          {
+            "name": "LockOut"
+          }
+        ]
+      }
     }
   ],
   "errors": [
@@ -1514,6 +1531,23 @@ export const IDL: Glam = {
           },
           {
             "name": "InvalidTreasuryAccount"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PolicyError",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "TransfersDisabled"
+          },
+          {
+            "name": "AmountTooBig"
+          },
+          {
+            "name": "LockOut"
           }
         ]
       }

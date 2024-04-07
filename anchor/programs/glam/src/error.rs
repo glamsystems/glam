@@ -29,3 +29,13 @@ pub enum InvestorError {
     #[msg("Invalid treasury account")]
     InvalidTreasuryAccount,
 }
+
+#[error_code]
+pub enum PolicyError {
+    #[msg("Policy violation: transfers disabled")]
+    TransfersDisabled,
+    #[msg("Policy violation: amount too big")]
+    AmountTooBig,
+    #[msg("Policy violation: lock out period")]
+    LockOut,
+}
