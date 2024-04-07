@@ -5,10 +5,9 @@
     <img alt="GLAM *.+ The New Standard for Asset Management." src="https://raw.githubusercontent.com/glamsystems/brand_assets/main/github/github_banner_dark.svg">
   </picture>
 <br>
-    <a href="https://glam.systems" target="_blank">Website</a> | 
-    <a href="mailto:dev@glam.systems" target="_blank">Contact</a> | 
-    <a href="https://x.com/glamsystems" target="_blank">X</a> <!--| 
-    <a href="https://warpcast.com/glamsystems" target="_blank">F</a>-->
+    <a href="https://glam.systems" target="_blank">Website</a> |
+    <a href="mailto:dev@glam.systems" target="_blank">Contact</a> |
+    <a href="https://x.com/glamsystems" target="_blank">X</a>
     <br>
     <br>
     <br>
@@ -20,62 +19,39 @@
 
 GLAM is a decentralized on-chain asset management protocol on Solana that enables efficient management & operations of investment products, empowering investors to have greater control & equity in their financial futures.
 
-## Dev
+## Demo
 
-This project is generated with the [create-solana-dapp](https://github.com/solana-developers/create-solana-dapp) generator using React preset.
+Check out the live demo: [https://beta.glam.systems](https://beta.glam.systems)
 
-### Prerequisites
+Or watch our 3 min video:
 
-- Node v20.11.0 or higher
-- Pnpm v8.15.1 or higher
-- Rust v1.75.0 or higher
-- Anchor CLI 0.29.0 or higher
-- Solana CLI 1.18.7
+[![GLAM demo](https://img.youtube.com/vi/K6H1TRbiaR4/0.jpg)](https://www.youtube.com/watch?v=K6H1TRbiaR4)
 
-Recommended:
+## Features
 
-```shell
-sh -c "$(curl -sSfL https://release.solana.com/v1.18.7/install)"
-```
+Fund:
 
-### Installation
+- [x] On chain [Openfunds](https://openfunds.org)
+- [x] Segregated treasury account
+- [x] Share classes (Token 2022)
+  - [x] On chain Openfunds Share Class (Metadata Extension)
+  - [x] Lockup period (Transfer Hook, in progress)
+  - [ ] Non-Transferable
+  - [ ] Permanent Delegate
+- [x] Investors subscribe & redeem
+- [ ] Fees
+- [ ] Subscription limits
+- [ ] External/off chain assets
 
-```shell
-git clone ...
-cd glam
+Integrations:
 
-pnpm install
-```
+- [x] User wallets (Phantom, Backpack)
+- [x] Pricing (Pyth)
+- [x] Trading (Drift delegate account, deposit, withdraw)
+- [ ] Swap, rebalance (Orca?, Jupiter?)
+- [ ] Alternative strategy engine (Symmetry?)
+- [ ] Alternative custody (Squad?)
 
-Get `keypairs.zip` and unpack it into `./anchor/target/deploy`.
+## Contribute
 
-### Run the tests
-
-```shell
-cd anchor
-anchor build
-# ^ this will create target/deploy
-cd target/deploy
-unzip /path/to/keypairs.zip
-cd -
-anchor test
-```
-
-This should also work:
-
-```shell
-pnpm run anchor-build
-pnpm run anchor-test
-```
-
-### Start the web app
-
-```shell
-pnpm run dev
-```
-
-### Start the api server
-
-```shell
-cd api/ && npm start
-```
+We love any type of contribution, bug fixes, new integrations and better docs. See [DEVELOPER.md](./DEVELOPER.md) to get started.
