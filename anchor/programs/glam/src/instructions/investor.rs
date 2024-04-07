@@ -11,7 +11,7 @@ use pyth_sdk_solana::Price;
 use crate::error::InvestorError;
 use crate::state::fund::*;
 
-//TODO(security): check that treasury and share_class belong to the fund
+//TODO(security): check that treasury belongs to the fund
 
 fn log_decimal(amount: u64, minus_decimals: i32) -> f64 {
     amount as f64 * 10f64.powf(minus_decimals as f64)
@@ -67,6 +67,10 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         // we need to define how to split the total amount into share classes
         panic!("not implemented")
     }
+    require!(
+        fund.share_classes[0] == ctx.accounts.share_class.key(),
+        InvestorError::InvalidShareClass
+    );
 
     let asset_info = ctx.accounts.asset.to_account_info();
     let asset_key = asset_info.key();
@@ -97,7 +101,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     // and in the correct order.
     require!(
         ctx.remaining_accounts.len() == 2 * fund.assets_len as usize,
-        InvestorError::InvalidAssetsRedeem
+        InvestorError::InvalidAssetSubscribe
     );
 
     let timestamp = Clock::get()?.unix_timestamp;
@@ -111,7 +115,8 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         //     treasury_ata.mint == fund.assets[i],
         //     InvestorError::InvalidTreasuryAccount
         // );
-        //TODO check pricing account
+
+        //TODO(security) check pricing account and incoming asset match
 
         let price_feed: pyth_sdk_solana::PriceFeed =
             SolanaPriceAccount::account_info_to_feed(pricing_account).unwrap();

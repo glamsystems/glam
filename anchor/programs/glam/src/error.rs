@@ -22,6 +22,8 @@ pub enum ManagerError {
 pub enum InvestorError {
     #[msg("Fund is not active")]
     FundNotActive,
+    #[msg("Share class not allowed to subscribe")]
+    InvalidShareClass,
     #[msg("Asset not allowed to subscribe")]
     InvalidAssetSubscribe,
     #[msg("Invalid assets in redeem")]
