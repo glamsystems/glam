@@ -3,13 +3,15 @@ import {
   NumberInput,
   RadioButton,
   RadioButtonGroup,
-  Select
+  Select,
+  TextInput
 } from "@carbon/react";
 
 import { Add } from "@carbon/icons-react";
 import { BN } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
 import { gray70Hover } from "@carbon/colors";
+import toast from "react-hot-toast";
 import { useGlamProgramAccount } from "../glam/glam-data-access";
 import { useState } from "react";
 
@@ -37,6 +39,19 @@ const SubscribeActionBar = ({
 
   return (
     <>
+      <TextInput
+        id="amount"
+        labelText="Amount"
+        value={amount}
+        placeholder="0"
+        onChange={(e) => {
+          if (isNaN(parseFloat(e.target.value)) && e.target.value !== "") {
+            return;
+          }
+          setAmount(parseFloat(e.target.value));
+        }}
+        type="number"
+      />
       <Select
         labelText="Asset"
         id="asset"
@@ -49,27 +64,6 @@ const SubscribeActionBar = ({
         <option value="WSOL">WSOL</option>
         <option value="BTC">BTC</option>
       </Select>
-      <NumberInput
-        label="Amount"
-        id="amount"
-        min={0}
-        value={amount}
-        onChange={(event, { value, direction }) => {
-          if (value) {
-            setAmount(value as number);
-            return;
-          }
-          if (direction === "up") {
-            setAmount(amount + 1);
-          } else {
-            if (amount === 0) {
-              return;
-            }
-            setAmount(amount - 1);
-          }
-        }}
-        step={1}
-      />
       <div className="flex flex-col gap-[16px] h-full justify-end">
         <Button
           style={{
@@ -82,7 +76,8 @@ const SubscribeActionBar = ({
           className="w-full"
           kind="primary"
           onClick={async () => {
-            if (amount <= 0) {
+            if (amount <= 0 || isNaN(amount)) {
+              toast.error("Subscribe amount must be greater than 0");
               return;
             }
             const amountBn =
@@ -105,8 +100,7 @@ const SubscribeActionBar = ({
           <>
             <span>Subscribe</span>
             <strong>
-              {" "}
-              {amount} {asset}{" "}
+              {isNaN(amount) ? "0" : amount} {asset}
             </strong>
           </>
         </Button>
@@ -129,28 +123,22 @@ const RedeemActionBar = ({ fund, redeem }: { fund: any; redeem: any }) => {
   const [amount, setAmount] = useState(0);
   const [inKind, setInKind] = useState(1);
 
+  console.log("Amount: ", amount);
+
   return (
     <>
-      <NumberInput
-        label="Shares"
+      <TextInput
         id="amount"
-        min={0}
+        labelText="Amount"
         value={amount}
-        onChange={(event, { value, direction }) => {
-          if (value) {
-            setAmount(value as number);
+        placeholder="0"
+        onChange={(e) => {
+          if (isNaN(parseFloat(e.target.value)) && e.target.value !== "") {
             return;
           }
-          if (direction === "up") {
-            setAmount(amount + 1);
-          } else {
-            if (amount === 0) {
-              return;
-            }
-            setAmount(amount - 1);
-          }
+          setAmount(parseFloat(e.target.value));
         }}
-        step={1}
+        type="number"
       />
       <RadioButtonGroup
         legendText="Redemption"
@@ -176,7 +164,8 @@ const RedeemActionBar = ({ fund, redeem }: { fund: any; redeem: any }) => {
           className="w-full"
           kind="primary"
           onClick={async () => {
-            if (amount <= 0) {
+            if (amount <= 0 || isNaN(amount)) {
+              toast.error("Redeem amount must be greater than 0");
               return;
             }
             const amountBn = new BN(amount * 1_000_000_000);
@@ -195,7 +184,7 @@ const RedeemActionBar = ({ fund, redeem }: { fund: any; redeem: any }) => {
         >
           <>
             <span>Redeem</span>
-            <strong> {amount} shares </strong>
+            <strong> {isNaN(amount) ? "0" : amount} shares </strong>
           </>
         </Button>
         <Button
@@ -216,11 +205,11 @@ const RedeemActionBar = ({ fund, redeem }: { fund: any; redeem: any }) => {
 const ManageActionBar = ({
   fund,
   driftDeposit,
-  driftWithdraw,
- }: {
-  fund: any,
-  driftDeposit: any,
-  driftWithdraw: any,
+  driftWithdraw
+}: {
+  fund: any;
+  driftDeposit: any;
+  driftWithdraw: any;
 }) => {
   const [app, setApp] = useState("Drift");
   const [asset, setAsset] = useState("USDC");
@@ -303,7 +292,8 @@ const ManageActionBar = ({
               driftDeposit.reset();
             }
           }}
-          disabled={driftDeposit.isPending}        >
+          disabled={driftDeposit.isPending}
+        >
           <>
             <span>Deposit</span>
             <strong>
@@ -367,7 +357,8 @@ export const SideActionBar = ({
     lineHeight: "18px"
   };
 
-  const { subscribe, redeem, driftDeposit, driftWithdraw } = useGlamProgramAccount({ fundKey: fund.key });
+  const { subscribe, redeem, driftDeposit, driftWithdraw } =
+    useGlamProgramAccount({ fundKey: fund.key });
 
   return (
     <div className="flex flex-col gap-[16px] h-full">
@@ -375,7 +366,13 @@ export const SideActionBar = ({
         <SubscribeActionBar fund={fund} subscribe={subscribe} />
       )}
       {type === "Redeem" && <RedeemActionBar fund={fund} redeem={redeem} />}
-      {type === "Manage" && <ManageActionBar fund={fund} driftDeposit={driftDeposit} driftWithdraw={driftWithdraw} />}
+      {type === "Manage" && (
+        <ManageActionBar
+          fund={fund}
+          driftDeposit={driftDeposit}
+          driftWithdraw={driftWithdraw}
+        />
+      )}
     </div>
   );
 };

@@ -225,7 +225,9 @@ export const CreateProduct = () => {
       }
       const assetsLen = assets.length;
       const assetsPercentage = 10_000 / assetsLen;
-      let assetsStructure = assets.map( (a, i) => (i==0 ? 0 : assetsPercentage) );
+      let assetsStructure = assets.map((a, i) =>
+        i == 0 ? 0 : assetsPercentage
+      );
       initialize.mutate(
         {
           fundName: data.fundName,
@@ -248,7 +250,7 @@ export const CreateProduct = () => {
             lifecycle: data.shareClassLifecycle.toLowerCase(),
             // these will be updated by initialize
             uri: "",
-            imageUri: "",
+            imageUri: ""
           }
         },
         {
@@ -279,8 +281,8 @@ export const CreateProduct = () => {
   }, [wallet]);
 
   return (
-    <div className="w-full  h-full flex flex-col">
-      <div className="flex flex-col w-[80vw] max-w-[1500px]  self-center h-full mt-[100px]">
+    <div className="w-full h-full flex flex-col">
+      <div className="flex flex-col w-[80vw] max-w-[1500px] self-center h-full">
         <h1 className="text-[42px]">Create Product</h1>
         <div className="flex justify-between mt-[50px] gap-[100px] h-full max-h-[70vh]">
           <ProgressIndicator

@@ -1,5 +1,5 @@
 import "@carbon/charts-react/styles.css";
-import { useMemo } from "react";
+
 import { IconArrowDownRight, IconArrowUpRight } from "@tabler/icons-react";
 import { LineChart, ScaleTypes } from "@carbon/charts-react";
 import {
@@ -24,21 +24,24 @@ import { PublicKey } from "@solana/web3.js";
 import { SideActionBar } from "./SideActionBar";
 import { ellipsify } from "../ui/ui-layout";
 import { gray70Hover } from "@carbon/colors";
+import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useWallet } from "@solana/wallet-adapter-react";
 
 const OBJECTIVE_MAP: { [key: string]: string } = {
-  "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2": "The Glam Investment Fund seeks to reflect generally the performance of the price of Bitcoin and Solana.",
-  "Dt4uayF35AKhhgaPNxdVRh4khNaGAih8L9SMSs9Wr6CP": "LFG aims to generate superior returns through trading in futures markets.",
-}
+  AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2:
+    "The Glam Investment Fund seeks to reflect generally the performance of the price of Bitcoin and Solana.",
+  Dt4uayF35AKhhgaPNxdVRh4khNaGAih8L9SMSs9Wr6CP:
+    "LFG aims to generate superior returns through trading in futures markets."
+};
 
 const LOCKUP_MAP: { [key: string]: number } = {
-  "Dt4uayF35AKhhgaPNxdVRh4khNaGAih8L9SMSs9Wr6CP": 72*60,
-}
+  Dt4uayF35AKhhgaPNxdVRh4khNaGAih8L9SMSs9Wr6CP: 72 * 60
+};
 
 const DISABLE_PERF: { [key: string]: boolean } = {
-  "Dt4uayF35AKhhgaPNxdVRh4khNaGAih8L9SMSs9Wr6CP": true,
-}
+  Dt4uayF35AKhhgaPNxdVRh4khNaGAih8L9SMSs9Wr6CP: true
+};
 
 export default function ProductPage() {
   class FundModel {
@@ -66,7 +69,7 @@ export default function ProductPage() {
   }
   const grayStyle = {
     color: gray70Hover,
-    fontSize: "14px",
+    // fontSize: "14px",
     lineHeight: "18px"
   };
 
@@ -167,7 +170,7 @@ export default function ProductPage() {
   return (
     <div>
       <div className="flex flex-col mx-[50px] md:mx-[80px] min-[1330px]:mx-[42px] min-[1350px]:mx-[180px]">
-        <div className="flex gap-[8px] mt-[80px] mb-[10px]">
+        <div className="flex gap-[8px] mb-[10px]">
           <p
             style={{
               color: gray70Hover
@@ -235,21 +238,21 @@ export default function ProductPage() {
                       </p>
                     </div>
                     <br />
-                    { !disablePerf && (
-                    <div className="flex flex-col gap-[12px]">
-                      <p>15 Days NAV Change</p>
-                      <div className="flex items-center ">
-                        <p className="text-xl text-black">
-                          {formatPercent(fund.dailyNavChange)}
-                        </p>
-                        {fund.dailyNavChange &&
-                          (fund.dailyNavChange > 0 ? (
-                            <IconArrowUpRight size={24} color="#48BF84" />
-                          ) : (
-                            <IconArrowDownRight size={24} color="#FF5F5F" />
-                          ))}
+                    {!disablePerf && (
+                      <div className="flex flex-col gap-[12px]">
+                        <p>15 Days NAV Change</p>
+                        <div className="flex items-center ">
+                          <p className="text-xl text-black">
+                            {formatPercent(fund.dailyNavChange)}
+                          </p>
+                          {fund.dailyNavChange &&
+                            (fund.dailyNavChange > 0 ? (
+                              <IconArrowUpRight size={24} color="#48BF84" />
+                            ) : (
+                              <IconArrowDownRight size={24} color="#FF5F5F" />
+                            ))}
+                        </div>
                       </div>
-                    </div>
                     )}
                   </Tile>
                 </div>
@@ -285,7 +288,7 @@ export default function ProductPage() {
                 </div>
                 <div className="col-span-1">
                   <Tile className="h-full">
-                    <div className="flex flex-col gap-[32px]">
+                    <div className="flex flex-col gap-[12px]">
                       <p>Fees</p>
                       <div className="flex flex-col gap-[8px]">
                         <div className="flex flex-col lg:flex-row justify-between">
@@ -352,17 +355,17 @@ export default function ProductPage() {
                 </div>
                 <div className="col-span-2">
                   <Tile className="">
-                  {!disablePerf && (
-                    <LineChart
-                      data={chartData.data}
-                      options={chartData.options}
-                    />
-                  ) || (
-                    <div className="cds--cc--title" style={{ height: 355 }}>
-                      <p className="title">Performance</p>
-                      <p>Not yet available.</p>
-                    </div>
-                  )}
+                    {(!disablePerf && (
+                      <LineChart
+                        data={chartData.data}
+                        options={chartData.options}
+                      />
+                    )) || (
+                      <div className="cds--cc--title" style={{ height: 355 }}>
+                        <p className="title">Performance</p>
+                        <p>Not yet available.</p>
+                      </div>
+                    )}
                   </Tile>
                 </div>
                 <div className="col-span-2">

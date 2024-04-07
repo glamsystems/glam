@@ -23,7 +23,7 @@ export const Manage = () => {
   //     symbol: "CAF",
   //     name: "Colosseum Accelerator Fund",
   //     aum: 600_000_000,
-  //     nav: 600.00,
+  //     nav: 600.0,
   //     backgroundImage:
   //       'url("https://api.glam.systems/image/5NsVEVGdYqNSneWBhogA7yLDB9dYTAEyERnSj6wK68V3.png")'
   //   },
@@ -50,7 +50,7 @@ export const Manage = () => {
   const { accounts } = useGlamProgram();
   const { publicKey } = useWallet();
   let data = (accounts.data || [])
-    .filter((d) => (d.account.manager.toString() == (publicKey || "").toString()))
+    .filter((d) => d.account.manager.toString() == (publicKey || "").toString())
     .map((d) => {
       const fund = d.account;
       const id = d.publicKey.toString();
@@ -60,8 +60,7 @@ export const Manage = () => {
         name: fund.name,
         aum: 0,
         nav: 0,
-        backgroundImage:
-          `url("https://api.glam.systems/image/${fund.shareClasses[0]}.png")`
+        backgroundImage: `url("https://api.glam.systems/image/${fund.shareClasses[0]}.png")`
       };
     });
   // if (!data.length) {
@@ -71,7 +70,7 @@ export const Manage = () => {
   // when clicking on a tile, navigate to the relevant product page
   return (
     <div className="w-full h-full flex flex-col">
-      <h1 className="mt-[100px] ml-[200px] text-[42px]">Manage</h1>
+      <h1 className="ml-[200px] text-[42px]">Manage</h1>
 
       <Grid
         narrow
@@ -90,18 +89,20 @@ export const Manage = () => {
                     <p className="gray">{position.symbol}</p>
                     <strong>{position.name}</strong>
                   </div>
-                  { position.aum && (
-                  <div className="flex flex-col">
-                    <p className="gray">AUM</p>
-                    <strong>{formatNumber(position.aum)}</strong>
-                  </div>
-                  ) || ""}
-                  { position.nav && (
+                  {(position.aum && (
+                    <div className="flex flex-col">
+                      <p className="gray">AUM</p>
+                      <strong>{formatNumber(position.aum)}</strong>
+                    </div>
+                  )) ||
+                    ""}
+                  {(position.nav && (
                     <div className="flex flex-col">
                       <p className="gray">NAV</p>
                       <strong>{formatNumber(position.nav)}</strong>
                     </div>
-                  ) || ""}
+                  )) ||
+                    ""}
                   <div
                     className="w-[32px] h-[32px] md:w-[64px] md:h-[64px]"
                     style={{
