@@ -727,6 +727,9 @@
             "name": "FundNotActive"
           },
           {
+            "name": "InvalidShareClass"
+          },
+          {
             "name": "InvalidAssetSubscribe"
           },
           {

@@ -432,6 +432,48 @@ describe("glam_investor", () => {
     expect(managerShares.amount).toEqual(shares.supply);
   });
 
+  it("Invalid share class disallowed", async () => {
+    try {
+      const keypair = Keypair.generate();
+      const invalidShareClass = await createMint(
+        connection,
+        manager.payer,
+        keypair.publicKey,
+        null,
+        6,
+        keypair,
+        { commitment },
+        TOKEN_2022_PROGRAM_ID
+      );
+      const shareAta = getAssociatedTokenAddressSync(
+        invalidShareClass,
+        manager.publicKey,
+        false,
+        TOKEN_2022_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID
+      );
+      const txId = await program.methods
+        .subscribe(new BN(1 * 10 ** 9), true)
+        .accounts({
+          fund: fundPDA,
+          shareClass: invalidShareClass,
+          signerShareAta: shareAta,
+          asset: btc.publicKey,
+          treasuryAta: treasuryBtcAta,
+          signerAssetAta: managerBtcAta,
+          signer: manager.publicKey,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          token2022Program: TOKEN_2022_PROGRAM_ID
+        })
+        .remainingAccounts(remainingAccountsSubscribe)
+        .rpc({ commitment });
+    } catch (e) {
+      console.error(e);
+      expect(e.message).toContain("Share class not allowed to subscribe");
+      expect(e.message).toContain("Error Code: InvalidShareClass");
+    }
+  });
+
   it("Manager tests subscribe BTC to fund", async () => {
     const amount = new BN(1 * 10 ** 9); // 1 BTC = $51k
     const expectedShares = "8100"; // 3,000 + 5,100

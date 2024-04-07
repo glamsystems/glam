@@ -727,6 +727,9 @@ export type Glam = {
             "name": "FundNotActive"
           },
           {
+            "name": "InvalidShareClass"
+          },
+          {
             "name": "InvalidAssetSubscribe"
           },
           {
@@ -1522,6 +1525,9 @@ export const IDL: Glam = {
         "variants": [
           {
             "name": "FundNotActive"
+          },
+          {
+            "name": "InvalidShareClass"
           },
           {
             "name": "InvalidAssetSubscribe"
