@@ -346,12 +346,10 @@ describe("glam_investor", () => {
     expect(fund.isActive).toEqual(true);
   });
 
-  it("Create ATAs", async () => {
-    //TODO: remove creation of ATA
-    // currently we need to manually create the ATAs
+  it("Create treasury ATAs", async () => {
+    // TODO: can we automatically create treasury ATAs?
     try {
-      const tx1 = new Transaction().add(
-        // Treasury
+      const tx = new Transaction().add(
         createAssociatedTokenAccountInstruction(
           manager.publicKey,
           treasuryUsdcAta,
@@ -377,55 +375,11 @@ describe("glam_investor", () => {
           ASSOCIATED_TOKEN_PROGRAM_ID
         )
       );
-      await sendAndConfirmTransaction(connection, tx1, [manager.payer], {
+      await sendAndConfirmTransaction(connection, tx, [manager.payer], {
         skipPreflight: true,
         commitment
       });
-
-      const tx2 = new Transaction().add(
-        // Shares
-        createAssociatedTokenAccountInstruction(
-          manager.publicKey,
-          managerSharesAta,
-          manager.publicKey,
-          sharePDA,
-          TOKEN_2022_PROGRAM_ID,
-          ASSOCIATED_TOKEN_PROGRAM_ID
-        ),
-        createAssociatedTokenAccountInstruction(
-          manager.publicKey,
-          aliceSharesAta,
-          alice.publicKey,
-          sharePDA,
-          TOKEN_2022_PROGRAM_ID,
-          ASSOCIATED_TOKEN_PROGRAM_ID
-        ),
-        createAssociatedTokenAccountInstruction(
-          manager.publicKey,
-          bobSharesAta,
-          bob.publicKey,
-          sharePDA,
-          TOKEN_2022_PROGRAM_ID,
-          ASSOCIATED_TOKEN_PROGRAM_ID
-        ),
-        createAssociatedTokenAccountInstruction(
-          manager.publicKey,
-          eveSharesAta,
-          eve.publicKey,
-          sharePDA,
-          TOKEN_2022_PROGRAM_ID,
-          ASSOCIATED_TOKEN_PROGRAM_ID
-        )
-      );
-
-      const txSig = await sendAndConfirmTransaction(
-        connection,
-        tx2,
-        [manager.payer],
-        { skipPreflight: true, commitment }
-      );
     } catch (e) {
-      // create ATAs
       console.error(e);
       throw e;
     }
@@ -449,6 +403,9 @@ describe("glam_investor", () => {
           token2022Program: TOKEN_2022_PROGRAM_ID
         })
         .remainingAccounts(remainingAccountsSubscribe)
+        .preInstructions([
+          ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
+        ])
         .rpc({ commitment });
       console.log("subscribe eth:", txId);
     } catch (e) {
@@ -762,6 +719,9 @@ describe("glam_investor", () => {
           token2022Program: TOKEN_2022_PROGRAM_ID
         })
         .remainingAccounts(remainingAccountsSubscribe)
+        .preInstructions([
+          ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
+        ])
         .signers([alice])
         .rpc({ commitment });
       console.log("tx:", txId);

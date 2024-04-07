@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 
+use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::Token;
 use anchor_spl::token_interface::{
     burn, mint_to, transfer_checked, Burn, Mint, MintTo, Token2022, TokenAccount, TransferChecked,
@@ -21,12 +22,18 @@ fn log_price(price: Price) -> f64 {
 
 #[derive(Accounts)]
 pub struct Subscribe<'info> {
-    pub fund: Account<'info, Fund>,
+    pub fund: Box<Account<'info, Fund>>,
 
     // the shares to mint
     #[account(mut, mint::authority = share_class, mint::token_program = token_2022_program)]
     pub share_class: Box<InterfaceAccount<'info, Mint>>, // mint
-    #[account(mut)]
+    #[account(
+      init_if_needed,
+      payer = signer,
+      associated_token::mint = share_class,
+      associated_token::authority = signer,
+      associated_token::token_program = token_2022_program
+    )]
     pub signer_share_ata: Box<InterfaceAccount<'info, TokenAccount>>, // user account
 
     // the asset to transfer
@@ -42,6 +49,8 @@ pub struct Subscribe<'info> {
     pub signer: Signer<'info>,
 
     // programs
+    pub system_program: Program<'info, System>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Program<'info, Token>,
     pub token_2022_program: Program<'info, Token2022>,
 }
@@ -62,6 +71,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     let asset_info = ctx.accounts.asset.to_account_info();
     let asset_key = asset_info.key();
     let asset_idx = fund.assets.iter().position(|&asset| asset == asset_key);
+
     require!(asset_idx.is_some(), InvestorError::InvalidAssetSubscribe);
     let asset_idx = asset_idx.unwrap();
     //TODO check if in_kind is allowed, or idx must be 0

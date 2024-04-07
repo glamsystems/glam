@@ -1,27 +1,13 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
-import {
-  Keypair,
-  PublicKey,
-  ComputeBudgetProgram,
-  ComputeBudgetInstruction
-} from "@solana/web3.js";
-import {
-  createMint,
-  createAssociatedTokenAccount,
-  getAssociatedTokenAddressSync,
-  mintTo,
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  TOKEN_PROGRAM_ID,
-  TOKEN_2022_PROGRAM_ID
-} from "@solana/spl-token";
+import { PublicKey, ComputeBudgetProgram } from "@solana/web3.js";
+import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { Glam } from "../target/types/glam";
 
 describe("glam_crud", () => {
   // Configure the client to use the local cluster.
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
-  const connection = provider.connection;
 
   const manager = provider.wallet as anchor.Wallet;
   console.log("Manager:", manager.publicKey);
@@ -117,114 +103,31 @@ describe("glam_crud", () => {
     expect(fund.isActive).toEqual(true);
   });
 
-  // it("Update fund", async () => {
-  //   const newFundName = "Updated fund name";
-  //   await program.methods
-  //     .update(newFundName, null, null, false)
-  //     .accounts({
-  //       fund: fundPDA,
-  //       manager: manager.publicKey
-  //     })
-  //     .rpc({ commitment });
-  //   const fund = await program.account.fund.fetch(fundPDA);
-  //   expect(fund.name).toEqual(newFundName);
-  //   expect(fund.isActive).toEqual(false);
-  // });
-
-  // it("Close fund", async () => {
-  //   await program.methods
-  //     .close()
-  //     .accounts({
-  //       fund: fundPDA,
-  //       manager: manager.publicKey
-  //     })
-  //     .rpc();
-
-  //   // The account should no longer exist, returning null.
-  //   const closedAccount = await program.account.fund.fetchNullable(fundPDA);
-  //   expect(closedAccount).toBeNull();
-  // });
-
-  /*
-  it('Before any fund - create test assets', async () => {
-    await Promise.all( // exec in parallel, but await before ending the test
-      tokenKeypairs.map(async (token) => {
-        const mint = await createMint(
-          provider.connection,
-          payer.payer,
-          payer.publicKey,
-          null,
-          6,
-          token,
-          { commitment }, // await 'confirmed'
-        );
-
-        const payerATA = await createAssociatedTokenAccount(
-          provider.connection,
-          payer.payer,
-          token.publicKey,
-          payer.publicKey,
-        );
-
-        await mintTo(
-          provider.connection,
-          payer.payer,
-          token.publicKey,
-          payerATA,
-          payer.payer,
-          1000,
-          [],
-          { commitment }, // await 'confirmed'
-        );
+  it("Update fund", async () => {
+    const newFundName = "Updated fund name";
+    await program.methods
+      .update(newFundName, null, null, false)
+      .accounts({
+        fund: fundPDA,
+        manager: manager.publicKey
       })
-    );
+      .rpc({ commitment });
+    const fund = await program.account.fund.fetch(fundPDA);
+    expect(fund.name).toEqual(newFundName);
+    expect(fund.isActive).toEqual(false);
   });
-  */
 
-  // it('Create Drift trading account', async () => {
-  // 	const userAccountPublicKey = await getUserAccountPublicKey(
-  // 		DRIFT_PROGRAM_ID,
-  // 		treasuryPDA,
-  // 		0
-  // 	);
-  // 	const userStatsAccountPublicKey = await getUserStatsAccountPublicKey(
-  // 		DRIFT_PROGRAM_ID,
-  // 		treasuryPDA
-  // 	);
-  // 	const statePublicKey = await getDriftStateAccountPublicKey(
-  // 		DRIFT_PROGRAM_ID,
-  // 	);
+  it("Close fund", async () => {
+    await program.methods
+      .close()
+      .accounts({
+        fund: fundPDA,
+        manager: manager.publicKey
+      })
+      .rpc();
 
-  //   console.log("userAccountPublicKey", userAccountPublicKey);
-  //   console.log("userStatsAccountPublicKey", userStatsAccountPublicKey);
-  //   console.log("statePublicKey", statePublicKey);
-  //   console.log("fundPDA", fundPDA);
-  //   console.log("treasuryPDA", treasuryPDA);
-
-  //   try {
-  //     const txId = await program.methods
-  //       .driftInitialize()
-  //       .accounts({
-  //         fund: fundPDA,
-  //         treasury: treasuryPDA,
-  //         userStats: userStatsAccountPublicKey,
-  //         user: userAccountPublicKey,
-  //         state: statePublicKey,
-  //         manager: manager.publicKey,
-  //         driftProgram: DRIFT_PROGRAM_ID,
-  //       })
-  //       .rpc({commitment}); // await 'confirmed'
-
-  //     await connection.getParsedTransaction(txId, {commitment});
-  //     console.log("driftInitialize", txId);
-  //   } catch(e) {
-  //     console.error(e);
-  //     throw e;
-  //   }
-
-  //   // const fund = await program.account.fund.fetch(fundPDA);
-  //   // console.log(fund);
-  //   // expect(fund.shareClassesLen).toEqual(1);
-  //   // expect(fund.assetsLen).toEqual(3);
-  // }, /* timeout */ 10_000);
+    // The account should no longer exist, returning null.
+    const closedAccount = await program.account.fund.fetchNullable(fundPDA);
+    expect(closedAccount).toBeNull();
+  });
 });

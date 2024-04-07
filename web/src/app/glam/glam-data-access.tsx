@@ -9,8 +9,6 @@ import {
 } from "@solana/spl-token";
 import {
   GetProgramAccountsFilter,
-  Connection,
-  clusterApiUrl,
   ComputeBudgetProgram,
   Cluster,
   AccountMeta,
@@ -20,7 +18,7 @@ import {
   getDriftStateAccountPublicKey,
   getUserAccountPublicKey,
   getUserStatsAccountPublicKey,
-  getDriftSignerPublicKey,
+  getDriftSignerPublicKey
 } from "@drift-labs/sdk";
 import { GlamIDL, getGlamProgramId } from "@glam/anchor";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
@@ -183,9 +181,15 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
   const DRIFT_PROGRAM_ID = new PublicKey(
     "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
   );
-  const spotMarketAccountUsdc = new PublicKey("GXWqPpjQpdz7KZw9p7f5PX2eGxHAhvpNXiviFkAB8zXg");
-  const driftSpotSol =  new PublicKey("3x85u7SWkmmr7YQGYhtjARgxwegTLJgkSLRprfXod6rh");
-  const driftSpotUsdc = new PublicKey("6gMq3mRCKf8aP3ttTyYhuijVZ2LGi14oDsBbkgubfLB3");
+  const spotMarketAccountUsdc = new PublicKey(
+    "GXWqPpjQpdz7KZw9p7f5PX2eGxHAhvpNXiviFkAB8zXg"
+  );
+  const driftSpotSol = new PublicKey(
+    "3x85u7SWkmmr7YQGYhtjARgxwegTLJgkSLRprfXod6rh"
+  );
+  const driftSpotUsdc = new PublicKey(
+    "6gMq3mRCKf8aP3ttTyYhuijVZ2LGi14oDsBbkgubfLB3"
+  );
 
   const account = useQuery({
     queryKey: ["glam", "fetch", { fundKey }],
@@ -279,6 +283,9 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
           token2022Program: TOKEN_2022_PROGRAM_ID
         })
         .remainingAccounts(remainingAccountsSubscribe)
+        .preInstructions([
+          ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
+        ])
         .rpc();
     },
     onSuccess: (tx) => {
@@ -435,14 +442,14 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
         treasuryPDA
       );
       const statePublicKey = await getDriftStateAccountPublicKey(
-        DRIFT_PROGRAM_ID,
+        DRIFT_PROGRAM_ID
       );
 
       let remainingAccountsDeposit = [
         { pubkey: pricingSol, isSigner: false, isWritable: false },
         { pubkey: pricingUsdc, isSigner: false, isWritable: false },
         { pubkey: driftSpotSol, isSigner: false, isWritable: true },
-        { pubkey: driftSpotUsdc, isSigner: false, isWritable: true },
+        { pubkey: driftSpotUsdc, isSigner: false, isWritable: true }
       ];
 
       return program.methods
@@ -457,7 +464,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
           state: statePublicKey,
           manager: signer,
           driftProgram: DRIFT_PROGRAM_ID,
-          tokenProgram: TOKEN_PROGRAM_ID,
+          tokenProgram: TOKEN_PROGRAM_ID
         })
         .remainingAccounts(remainingAccountsDeposit)
         .rpc();
@@ -510,17 +517,15 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
         treasuryPDA
       );
       const statePublicKey = await getDriftStateAccountPublicKey(
-        DRIFT_PROGRAM_ID,
+        DRIFT_PROGRAM_ID
       );
-      const signerPublicKey = await getDriftSignerPublicKey(
-        DRIFT_PROGRAM_ID,
-      );
-    
+      const signerPublicKey = await getDriftSignerPublicKey(DRIFT_PROGRAM_ID);
+
       let remainingAccountsWithdraw = [
         { pubkey: pricingUsdc, isSigner: false, isWritable: false },
         { pubkey: pricingSol, isSigner: false, isWritable: false },
         { pubkey: driftSpotUsdc, isSigner: false, isWritable: true },
-        { pubkey: driftSpotSol, isSigner: false, isWritable: true },
+        { pubkey: driftSpotSol, isSigner: false, isWritable: true }
       ];
 
       return program.methods
@@ -536,7 +541,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
           manager: signer,
           driftSigner: signerPublicKey,
           driftProgram: DRIFT_PROGRAM_ID,
-          tokenProgram: TOKEN_PROGRAM_ID,
+          tokenProgram: TOKEN_PROGRAM_ID
         })
         .remainingAccounts(remainingAccountsWithdraw)
         .rpc();
@@ -557,7 +562,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
     subscribe,
     redeem,
     driftDeposit,
-    driftWithdraw,
+    driftWithdraw
   };
 }
 
