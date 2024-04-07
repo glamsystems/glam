@@ -21,11 +21,11 @@ GLAM is a decentralized on-chain asset management protocol on Solana that enable
 
 ## Demo
 
-Check out the live demo: [https://beta.glam.systems](https://beta.glam.systems)
+Check out the live demo: [https://devnet.glam.systems](https://devnet.glam.systems)
 
 Or watch our 3 min video:
 
-[![GLAM demo](https://img.youtube.com/vi/K6H1TRbiaR4/0.jpg)](https://www.youtube.com/watch?v=K6H1TRbiaR4)
+[![GLAM demo](https://img.youtube.com/vi/1I23sQGWvv8/0.jpg)](https://www.youtube.com/watch?v=1I23sQGWvv8)
 
 ## Features
 
@@ -38,7 +38,8 @@ Fund:
   - [x] Lockup period (Transfer Hook, in progress)
   - [ ] Non-Transferable
   - [ ] Permanent Delegate
-- [x] Investors subscribe & redeem
+- [x] Investor subscribe & redeem
+- [ ] Investor account page
 - [ ] Fees
 - [ ] Subscription limits
 - [ ] External/off chain assets
