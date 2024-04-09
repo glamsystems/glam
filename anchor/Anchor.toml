@@ -67,6 +67,38 @@ address = "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv"
 # WSOL
 address = "So11111111111111111111111111111111111111112"
 
+# Fund GBS AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2
+# fund + share class + treasury + treasury ATAs
+[[test.validator.clone]]
+address = "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2"
+[[test.validator.clone]]
+address = "Cprd9VcMpAuGAonDEsHpxiuzLG6dzt5xR6mpyeq2EiN1"
+[[test.validator.clone]]
+address = "7Eo2DEFc9bbFxH3s7Vu3JbnawgGRcHuJ5qfCJEmfMJrP"
+[[test.validator.clone]]
+address = "3pDeR4NEiD2dNmY1ty7W526Z5qVnBUPVA62i5RjFDcCU"
+[[test.validator.clone]]
+address = "3gkfwhdYFymrTD1YotVHHsWAXArSwRkcaTPNyuSQk6zf"
+[[test.validator.clone]]
+address = "BwFBtjotUxPqDUa49tkGmsURduAAhToA46TY9heEm8LF"
+
+# Fund LFG Dt4uayF35AKhhgaPNxdVRh4khNaGAih8L9SMSs9Wr6CP
+# (only fund + share class)
+[[test.validator.clone]]
+address = "Dt4uayF35AKhhgaPNxdVRh4khNaGAih8L9SMSs9Wr6CP"
+[[test.validator.clone]]
+address = "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2"
+
+# Fund CAF 6ZBb3LRddLtBq6DeNtSaUrMipieaFJgTETgTBoiAGBCC
+# (only fund)
+[[test.validator.clone]]
+address = "6ZBb3LRddLtBq6DeNtSaUrMipieaFJgTETgTBoiAGBCC"
+
+# Fund RHW CWb949XA3vrdiEp2BFtjr9MbUonHke8CVdTb8Cr7Hctd
+# (only fund)
+[[test.validator.clone]]
+address = "CWb949XA3vrdiEp2BFtjr9MbUonHke8CVdTb8Cr7Hctd"
+
 [[test.validator.account]]
 # Drift program
 # solana account -u d --output json --output-file drift.json dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH
