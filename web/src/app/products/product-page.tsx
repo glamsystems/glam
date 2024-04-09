@@ -56,7 +56,7 @@ export default function ProductPage() {
     getImageUrl() {
       const pubkey =
         this.data?.shareClasses[0].toBase58() ||
-        "1111111111111111111111111111111111";
+        "11111111111111111111111111111111";
       return `https://api.glam.systems/image/${pubkey}.png`;
     }
 
@@ -99,7 +99,7 @@ export default function ProductPage() {
 
   const fundModel = new FundModel(fundKey, data);
   const imageURL =
-    data?.shareClasses[0].toBase58() || "1111111111111111111111111111111111";
+    data?.shareClasses[0].toBase58() || "11111111111111111111111111111111";
   const isManager = publicKey?.toString() === data?.manager?.toString();
 
   const disablePerf = DISABLE_PERF[fundId] || false;
