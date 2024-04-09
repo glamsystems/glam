@@ -22,6 +22,7 @@ import {
 } from "@drift-labs/sdk";
 import { GlamIDL, getGlamProgramId } from "@glam/anchor";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 import toast from "react-hot-toast";
@@ -163,6 +164,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
   const transactionToast = useTransactionToast();
   const { program, accounts } = useGlamProgram();
   const wallet = useWallet();
+  const { setVisible: setWalletModalVisible } = useWalletModal();
 
   const usdc = new PublicKey("8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2"); // 6 decimals
   const wsol = new PublicKey("So11111111111111111111111111111111111111112"); // 9 decimals
@@ -202,6 +204,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
       const { fund, asset, amount } = mutationData;
       const signer = wallet.publicKey;
       if (!signer) {
+        setWalletModalVisible(true);
         throw Error("Wallet not connected");
       }
 
@@ -295,7 +298,9 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
     },
     onError: (e) => {
       console.error("Failed to subscribe: ", e);
-      return toast.error("Failed to subscribe");
+      return toast.error(
+        "Failed to subscribe, please connect your wallet first."
+      );
     }
   });
 
@@ -305,6 +310,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
       const { fund, amount, inKind } = mutationData;
       const signer = wallet.publicKey;
       if (!signer) {
+        setWalletModalVisible(true);
         throw Error("Wallet not connected");
       }
 
@@ -408,7 +414,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
     },
     onError: (e) => {
       console.error("Failed to redeem: ", e);
-      return toast.error("Failed to redeem");
+      return toast.error("Failed to redeem, please connect your wallet first.");
     }
   });
 
