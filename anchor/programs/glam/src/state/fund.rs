@@ -8,6 +8,7 @@ pub const MAX_FUND_URI: usize = 100;
 
 #[account]
 pub struct Fund {
+    pub creator: Pubkey,  // 32
     pub manager: Pubkey,  // 32
     pub treasury: Pubkey, // 32
     pub assets_len: u8,   // 1
@@ -27,6 +28,7 @@ pub struct Fund {
 }
 impl Fund {
     pub const INIT_SIZE: usize = 32
+        + 32
         + 32
         + 1
         + (32 + 4) * MAX_ASSETS

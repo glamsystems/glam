@@ -101,6 +101,12 @@ export type Glam = {
           }
         },
         {
+          "name": "manager",
+          "type": {
+            "option": "publicKey"
+          }
+        },
+        {
           "name": "uri",
           "type": {
             "option": "string"
@@ -538,6 +544,10 @@ export type Glam = {
       "type": {
         "kind": "struct",
         "fields": [
+          {
+            "name": "creator",
+            "type": "publicKey"
+          },
           {
             "name": "manager",
             "type": "publicKey"
@@ -904,6 +914,12 @@ export const IDL: Glam = {
           }
         },
         {
+          "name": "manager",
+          "type": {
+            "option": "publicKey"
+          }
+        },
+        {
           "name": "uri",
           "type": {
             "option": "string"
@@ -1341,6 +1357,10 @@ export const IDL: Glam = {
       "type": {
         "kind": "struct",
         "fields": [
+          {
+            "name": "creator",
+            "type": "publicKey"
+          },
           {
             "name": "manager",
             "type": "publicKey"

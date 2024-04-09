@@ -783,4 +783,44 @@ describe("glam_investor", () => {
     // in reality it will be less due to fees but toFixed(2) rounds it up
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("2.50");
   });
+
+  it("Update fund", async () => {
+    const newFundName = "Updated fund name";
+    const newManager = Keypair.generate();
+    await program.methods
+      .update(newFundName, newManager.publicKey, null, null, true)
+      .accounts({
+        fund: fundPDA,
+        manager: manager.publicKey
+      })
+      .rpc({ commitment });
+    let fund = await program.account.fund.fetch(fundPDA);
+    expect(fund.name).toEqual(newFundName);
+    expect(fund.manager).toEqual(newManager.publicKey);
+
+    try {
+      await program.methods
+        .update(newFundName, manager.publicKey, null, null, true)
+        .accounts({
+          fund: fundPDA,
+          manager: manager.publicKey
+        })
+        .rpc({ commitment });
+    } catch(e) {
+      expect(e.message).toContain("Error: not authorized");
+    }
+
+    await program.methods
+      .update(newFundName, manager.publicKey, null, null, true)
+      .accounts({
+        fund: fundPDA,
+        manager: newManager.publicKey
+      })
+      .signers([newManager])
+      .rpc({ commitment });
+    fund = await program.account.fund.fetch(fundPDA);
+    expect(fund.name).toEqual(newFundName);
+    expect(fund.manager).toEqual(manager.publicKey);
+  });
+
 });

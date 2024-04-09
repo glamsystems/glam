@@ -7,9 +7,9 @@ use crate::error::ManagerError;
 use crate::state::fund::*;
 
 #[derive(Accounts)]
-#[instruction(name: String)]
+#[instruction(symbol: String)]
 pub struct InitializeFund<'info> {
-    #[account(init, seeds = [b"fund".as_ref(), manager.key().as_ref(), name.as_ref()], bump, payer = manager, space = 8 + Fund::INIT_SIZE + ShareClassMetadata::INIT_SIZE)]
+    #[account(init, seeds = [b"fund".as_ref(), manager.key().as_ref(), symbol.as_ref()], bump, payer = manager, space = 8 + Fund::INIT_SIZE + ShareClassMetadata::INIT_SIZE)]
     pub fund: Box<Account<'info, Fund>>,
 
     #[account(init, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump, payer = manager, space = 8 + Treasury::INIT_SIZE)]
@@ -66,6 +66,7 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     let treasury = &mut ctx.accounts.treasury;
 
     fund.manager = ctx.accounts.manager.key();
+    fund.creator = fund.manager;
     fund.treasury = treasury.key();
     fund.name = fund_name;
     fund.symbol = fund_symbol;
@@ -326,6 +327,7 @@ pub struct UpdateFund<'info> {
 pub fn update_fund_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, UpdateFund<'info>>,
     name: Option<String>,
+    manager: Option<Pubkey>,
     uri: Option<String>,
     asset_weights: Option<Vec<u32>>,
     activate: Option<bool>,
@@ -335,6 +337,9 @@ pub fn update_fund_handler<'c: 'info, 'info>(
     if let Some(name) = name {
         require!(name.as_bytes().len() <= 50, ManagerError::InvalidFundName);
         fund.name = name;
+    }
+    if let Some(manager) = manager {
+        fund.manager = manager;
     }
     if let Some(uri) = uri {
         require!(uri.as_bytes().len() <= 100, ManagerError::InvalidFundName);
