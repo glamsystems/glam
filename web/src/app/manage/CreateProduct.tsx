@@ -16,6 +16,8 @@ import { useGlamProgram } from "../glam/glam-data-access";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
+import toast from "react-hot-toast";
 
 const FormSchema = z.object({
   // ------ Fund ------
@@ -103,6 +105,7 @@ export const CreateProduct = () => {
 
   const [disabeld, setDisabled] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const { setVisible: setWalletModalVisible } = useWalletModal();
 
   const { initialize } = useGlamProgram();
 
@@ -219,8 +222,8 @@ export const CreateProduct = () => {
     try {
       console.log("Form Data Received: ", data);
       if (!wallet.publicKey) {
-        // user needs to connect wallet
-        alert("Please connect your wallet.");
+        setWalletModalVisible(true);
+        toast.error("Please connect your wallet to continue.");
         return;
       }
       const assetsLen = assets.length;
@@ -389,6 +392,11 @@ export const CreateProduct = () => {
                   if (currentIndex === 5) {
                     console.log("Submitting...");
                     console.log("Errors ? ", errors);
+                    if (!wallet.publicKey) {
+                      setWalletModalVisible(true);
+                      toast.error("Please connect your wallet to continue.");
+                      return;
+                    }
                     await handleSubmit(onSubmit)();
                     return;
                   }

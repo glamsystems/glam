@@ -38,7 +38,7 @@ export default function ProductsOverview() {
     .map((account) => {
       const fund = account.account;
       const imageKey =
-        fund.shareClasses[0].toBase58() || "1111111111111111111111111111111111";
+        fund.shareClasses[0].toBase58() || "11111111111111111111111111111111";
       return {
         imageURL: `https://api.glam.systems/image/${imageKey}.png`,
         id: account.publicKey.toBase58(),
@@ -77,7 +77,7 @@ export default function ProductsOverview() {
   const currentRows = allRows.slice(indexOfFirstRow, indexOfLastRow);
 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  
+
   // Dynamically adjust the headers based on the window width
   const headers = [
     ...(windowWidth >= 1000 ? [{ key: "imageURL", header: "" }] : []),
