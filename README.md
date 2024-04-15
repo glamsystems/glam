@@ -6,7 +6,7 @@
   </picture>
 <br>
     <a href="https://glam.systems" target="_blank">Website</a> |
-    <a href="mailto:dev@glam.systems" target="_blank">Contact</a> |
+    <a href="mailto:hello@glam.systems" target="_blank">Contact</a> |
     <a href="https://x.com/glamsystems" target="_blank">X</a>
     <br>
     <br>
