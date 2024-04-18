@@ -1,0 +1,8 @@
+namespace Glam;
+
+table Weapon {
+  name:string;
+  damage:short;
+}
+
+root_type Weapon;

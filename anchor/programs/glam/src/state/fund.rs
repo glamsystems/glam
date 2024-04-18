@@ -1,4 +1,9 @@
+use anchor_attribute_account::account_no_serde;
+#[cfg(feature = "idl-build")]
+use anchor_lang::idl::types::*;
 use anchor_lang::prelude::*;
+
+use crate::state::glam_generated::glam::{root_as_weapon, WeaponT};
 
 pub const MAX_ASSETS: usize = 5;
 pub const MAX_SHARE_CLASSES: usize = 3;
@@ -6,7 +11,65 @@ pub const MAX_FUND_NAME: usize = 50;
 pub const MAX_FUND_SYMBOL: usize = 20;
 pub const MAX_FUND_URI: usize = 100;
 
-#[account]
+impl AnchorDeserialize for WeaponT {
+    fn deserialize_reader<R>(reader: &mut R) -> std::result::Result<Self, std::io::Error>
+    where
+        R: std::io::Read,
+    {
+        let mut buf = Vec::new();
+        reader.read_to_end(&mut buf)?;
+
+        root_as_weapon(&buf)
+            .map(|weapon| weapon.unpack())
+            .map_err(|err| {
+                std::io::Error::new(
+                    std::io::ErrorKind::InvalidInput,
+                    format!("Error deserializing: {}", err),
+                )
+            })
+    }
+}
+impl AnchorSerialize for WeaponT {
+    fn serialize<W>(&self, writer: &mut W) -> std::result::Result<(), std::io::Error>
+    where
+        W: std::io::Write,
+    {
+        let mut builder = flatbuffers::FlatBufferBuilder::new();
+        let weapon = self.pack(&mut builder);
+        builder.finish(weapon, None);
+        let buf = builder.finished_data();
+        writer.write_all(buf)
+    }
+}
+#[cfg(feature = "idl-build")]
+impl IdlBuild for WeaponT {
+    fn create_type() -> Option<IdlTypeDef> {
+        Some(IdlTypeDef {
+            name: "WeaponT".into(),
+            ty: IdlTypeDefTy::Struct {
+                fields: Some(IdlDefinedFields::Named(vec![
+                    IdlField {
+                        name: "name".into(),
+                        ty: IdlType::Option(Box::new(IdlType::String)),
+                        docs: Default::default(),
+                    },
+                    IdlField {
+                        name: "damange".into(),
+                        ty: IdlType::Option(Box::new(IdlType::I16)),
+                        docs: Default::default(),
+                    },
+                ])),
+            },
+            docs: Default::default(),
+            generics: Default::default(),
+            serialization: Default::default(),
+            repr: Default::default(),
+        })
+    }
+}
+
+#[account_no_serde]
+#[derive(AnchorDeserialize, AnchorSerialize)]
 pub struct Fund {
     pub manager: Pubkey,  // 32
     pub treasury: Pubkey, // 32
@@ -24,21 +87,10 @@ pub struct Fund {
     pub symbol: String,                               // max MAX_FUND_SYMBOL chars
     pub uri: String,                                  // max MAX_FUND_URI chars
     pub is_active: bool,                              // 1
+                                                      // pub weapon: WeaponT,
 }
 impl Fund {
-    pub const INIT_SIZE: usize = 32
-        + 32
-        + 1
-        + (32 + 4) * MAX_ASSETS
-        + 1
-        + (32 + 1) * MAX_SHARE_CLASSES
-        + 8
-        + 1
-        + 1
-        + MAX_FUND_NAME
-        + MAX_FUND_SYMBOL
-        + MAX_FUND_URI
-        + 1;
+    pub const INIT_SIZE: usize = 1024;
 }
 
 #[account]
