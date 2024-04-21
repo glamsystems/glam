@@ -133,12 +133,23 @@
           ]
         },
         {
+          "name": "token_mint"
+        },
+        {
           "name": "drift_program",
           "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
         },
         {
           "name": "token_program",
           "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         }
       ],
       "args": [
@@ -683,33 +694,38 @@
   "errors": [
     {
       "code": 6000,
-      "name": "FundNotActive",
-      "msg": "Fund is not active"
+      "name": "CloseNotEmptyError",
+      "msg": "Error closing account: not empty"
     },
     {
       "code": 6001,
-      "name": "InvalidShareClass",
-      "msg": "Share class not allowed to subscribe"
+      "name": "NotAuthorizedError",
+      "msg": "Error: not authorized"
     },
     {
       "code": 6002,
-      "name": "InvalidAssetSubscribe",
-      "msg": "Asset not allowed to subscribe"
+      "name": "InvalidFundName",
+      "msg": "Invalid fund name: max 30 chars"
     },
     {
       "code": 6003,
-      "name": "InvalidPricingOracle",
-      "msg": "Invalid oracle for asset price"
+      "name": "InvalidFundSymbol",
+      "msg": "Too many assets: max 50"
     },
     {
       "code": 6004,
-      "name": "InvalidAssetsRedeem",
-      "msg": "Invalid assets in redeem"
+      "name": "InvalidFundUri",
+      "msg": "Too many assets: max 20"
     },
     {
       "code": 6005,
-      "name": "InvalidTreasuryAccount",
-      "msg": "Invalid treasury account"
+      "name": "InvalidAssetsLen",
+      "msg": "Too many assets: max 100"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidAssetsWeights",
+      "msg": "Number of weights should match number of assets"
     }
   ],
   "types": [

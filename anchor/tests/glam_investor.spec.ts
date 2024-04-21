@@ -20,11 +20,7 @@ import {
   getAccount,
   createTransferCheckedInstruction
 } from "@solana/spl-token";
-import {
-  getDriftStateAccountPublicKey,
-  getUserAccountPublicKey,
-  getUserStatsAccountPublicKey
-} from "@drift-labs/sdk";
+
 import { Glam } from "../target/types/glam";
 
 describe("glam_investor", () => {
@@ -37,10 +33,6 @@ describe("glam_investor", () => {
 
   const manager = provider.wallet as anchor.Wallet;
   console.log("Manager:", manager.publicKey);
-
-  const DRIFT_PROGRAM_ID = new PublicKey(
-    "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
-  );
 
   const userKeypairs = [
     Keypair.generate(), // mock user 0
