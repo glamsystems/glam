@@ -26,19 +26,7 @@ pub struct Fund {
     pub is_active: bool,                              // 1
 }
 impl Fund {
-    pub const INIT_SIZE: usize = 32
-        + 32
-        + 1
-        + (32 + 4) * MAX_ASSETS
-        + 1
-        + (32 + 1) * MAX_SHARE_CLASSES
-        + 8
-        + 1
-        + 1
-        + MAX_FUND_NAME
-        + MAX_FUND_SYMBOL
-        + MAX_FUND_URI
-        + 1;
+    pub const INIT_SIZE: usize = 1024;
 }
 
 #[account]
