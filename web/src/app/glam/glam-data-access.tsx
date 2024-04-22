@@ -40,7 +40,7 @@ export function useGlamProgram() {
     () => getGlamProgramId(cluster.network as Cluster),
     [cluster]
   );
-  const program = new anchor.Program(GlamIDL, programId, provider);
+  const program = new anchor.Program(GlamIDL, provider);
 
   const accounts = useQuery({
     queryKey: ["glam", "all", { cluster }],
@@ -128,11 +128,11 @@ export function useGlamProgram() {
           shareClassMetadata
         )
         .accounts({
-          fund: fundPDA,
-          treasury: treasuryPDA,
-          share: sharePDA,
+          // fund: fundPDA,
+          // treasury: treasuryPDA,
+          // share: sharePDA,
           manager: manager,
-          tokenProgram: TOKEN_2022_PROGRAM_ID
+          // tokenProgram: TOKEN_2022_PROGRAM_ID
         })
         .remainingAccounts(remainingAccounts)
         .preInstructions([
@@ -282,8 +282,8 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
           treasuryAta,
           signerAssetAta,
           signer,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID
+          // tokenProgram: TOKEN_PROGRAM_ID,
+          // token2022Program: TOKEN_2022_PROGRAM_ID
         })
         .remainingAccounts(remainingAccountsSubscribe)
         .preInstructions([
@@ -401,8 +401,8 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
           shareClass,
           signerShareAta,
           signer,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID
+          // tokenProgram: TOKEN_PROGRAM_ID,
+          // token2022Program: TOKEN_2022_PROGRAM_ID
         })
         .remainingAccounts(remainingAccountsRedeem)
         .rpc();
@@ -468,9 +468,9 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
           userStats: userStatsAccountPublicKey,
           user: userAccountPublicKey,
           state: statePublicKey,
-          manager: signer,
-          driftProgram: DRIFT_PROGRAM_ID,
-          tokenProgram: TOKEN_PROGRAM_ID
+          // manager: signer,
+          // driftProgram: DRIFT_PROGRAM_ID,
+          // tokenProgram: TOKEN_PROGRAM_ID
         })
         .remainingAccounts(remainingAccountsDeposit)
         .rpc();
@@ -544,10 +544,10 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
           userStats: userStatsAccountPublicKey,
           user: userAccountPublicKey,
           state: statePublicKey,
-          manager: signer,
+          // manager: signer,
           driftSigner: signerPublicKey,
-          driftProgram: DRIFT_PROGRAM_ID,
-          tokenProgram: TOKEN_PROGRAM_ID
+          // driftProgram: DRIFT_PROGRAM_ID,
+          // tokenProgram: TOKEN_PROGRAM_ID
         })
         .remainingAccounts(remainingAccountsWithdraw)
         .rpc();
