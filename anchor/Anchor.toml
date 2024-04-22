@@ -99,8 +99,17 @@ address = "6ZBb3LRddLtBq6DeNtSaUrMipieaFJgTETgTBoiAGBCC"
 [[test.validator.clone]]
 address = "CWb949XA3vrdiEp2BFtjr9MbUonHke8CVdTb8Cr7Hctd"
 
-[[test.validator.account]]
 # Drift program
-# solana account -u d --output json --output-file drift.json dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH
+[[test.genesis]]
 address = "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
-filename = "drift.json"
+program = "fixtures/drift.so"
+
+# Drift state account
+[[test.validator.clone]]
+address = "5zpq7DvB6UdFFvpmBPspGPNfUGoBRRCE2HHg5u3gxcsN"
+[[test.validator.clone]]
+address = "GXWqPpjQpdz7KZw9p7f5PX2eGxHAhvpNXiviFkAB8zXg"
+[[test.validator.clone]]
+address = "3x85u7SWkmmr7YQGYhtjARgxwegTLJgkSLRprfXod6rh"
+[[test.validator.clone]]
+address = "6gMq3mRCKf8aP3ttTyYhuijVZ2LGi14oDsBbkgubfLB3"

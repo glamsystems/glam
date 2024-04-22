@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::Token;
+use anchor_spl::associated_token::AssociatedToken;
+use anchor_spl::token::{Mint, Token};
 use anchor_spl::token_interface::TokenAccount;
 
 use crate::error::ManagerError;

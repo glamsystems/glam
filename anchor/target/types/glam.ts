@@ -689,33 +689,38 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "fundNotActive",
-      "msg": "Fund is not active"
+      "name": "closeNotEmptyError",
+      "msg": "Error closing account: not empty"
     },
     {
       "code": 6001,
-      "name": "invalidShareClass",
-      "msg": "Share class not allowed to subscribe"
+      "name": "notAuthorizedError",
+      "msg": "Error: not authorized"
     },
     {
       "code": 6002,
-      "name": "invalidAssetSubscribe",
-      "msg": "Asset not allowed to subscribe"
+      "name": "invalidFundName",
+      "msg": "Invalid fund name: max 30 chars"
     },
     {
       "code": 6003,
-      "name": "invalidPricingOracle",
-      "msg": "Invalid oracle for asset price"
+      "name": "invalidFundSymbol",
+      "msg": "Too many assets: max 50"
     },
     {
       "code": 6004,
-      "name": "invalidAssetsRedeem",
-      "msg": "Invalid assets in redeem"
+      "name": "invalidFundUri",
+      "msg": "Too many assets: max 20"
     },
     {
       "code": 6005,
-      "name": "invalidTreasuryAccount",
-      "msg": "Invalid treasury account"
+      "name": "invalidAssetsLen",
+      "msg": "Too many assets: max 100"
+    },
+    {
+      "code": 6006,
+      "name": "invalidAssetsWeights",
+      "msg": "Number of weights should match number of assets"
     }
   ],
   "types": [
