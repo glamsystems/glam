@@ -153,8 +153,8 @@ pub fn drift_update_delegated_trader_handler(
 #[derive(Accounts)]
 pub struct DriftDeposit<'info> {
     #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
-    pub fund: Box<Account<'info, Fund>>,
-    pub treasury: Box<Account<'info, Treasury>>,
+    pub fund: Account<'info, Fund>,
+    pub treasury: Account<'info, Treasury>,
 
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
@@ -165,26 +165,16 @@ pub struct DriftDeposit<'info> {
     #[account(mut)]
     pub state: Box<Account<'info, State>>,
 
-    #[account(
-      init_if_needed,
-      payer = manager,
-      associated_token::mint = token_mint,
-      associated_token::authority = treasury,
-      associated_token::token_program = token_program
-    )]
+    #[account(mut)]
     pub treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(mut)]
     pub drift_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(mut)]
-    pub manager: Signer<'info>,
-
-    pub token_mint: Box<Account<'info, Mint>>,
+    manager: Signer<'info>,
 
     pub drift_program: Program<'info, Drift>,
     pub token_program: Program<'info, Token>,
-    pub system_program: Program<'info, System>,
-    pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
 pub fn drift_deposit_handler<'c: 'info, 'info>(
