@@ -40,7 +40,7 @@ export function useGlamProgram() {
     () => getGlamProgramId(cluster.network as Cluster),
     [cluster]
   );
-  const program = new anchor.Program(GlamIDL, provider);
+  const program = new anchor.Program(GlamIDL, programId, provider);
 
   const accounts = useQuery({
     queryKey: ["glam", "all", { cluster }],

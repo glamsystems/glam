@@ -30,8 +30,8 @@ importers:
         specifier: ^11.26.0
         version: 11.26.0
       '@coral-xyz/anchor':
-        specifier: ^0.30.0
-        version: 0.30.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+        specifier: ^0.29.0
+        version: 0.29.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@drift-labs/sdk':
         specifier: 2.71.0-beta.4
         version: 2.71.0-beta.4(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)
@@ -1116,8 +1116,8 @@ packages:
     resolution: {integrity: sha512-xreUcOFF8+IQKWOBUrDKJbIw2ftpRVybFlEPVrbSlOBCbreCWrQ5754Gt9cHIcuBDAzearCDiBqzsGQdNgPJiw==}
     engines: {node: '>=11'}
 
-  '@coral-xyz/anchor@0.30.0':
-    resolution: {integrity: sha512-qreDh5ztiRHVnCbJ+RS70NJ6aSTPBYDAgFeQ7Z5QvaT5DcDIhNyt4onOciVz2ieIE1XWePOJDDu9SbNvPGBkvQ==}
+  '@coral-xyz/anchor@0.29.0':
+    resolution: {integrity: sha512-eny6QNG0WOwqV0zQ7cs/b1tIuzZGmP7U7EcH+ogt4Gdbl8HDmIYVMh/9aTmYZPaFWjtUaI8qSn73uYEXWfATdA==}
     engines: {node: '>=11'}
 
   '@coral-xyz/borsh@0.28.0':
@@ -1126,8 +1126,8 @@ packages:
     peerDependencies:
       '@solana/web3.js': '>=1.73.5'
 
-  '@coral-xyz/borsh@0.30.0':
-    resolution: {integrity: sha512-OrcV+7N10cChhgDRUxM4iEIuwxUHHs52XD85R8cFCUqE0vbLYrcoPPPs+VF6kZ9DhdJGVW2I6DHJOp5TykyZog==}
+  '@coral-xyz/borsh@0.29.0':
+    resolution: {integrity: sha512-s7VFVa3a0oqpkuRloWVPdCK7hMbAMY270geZOGfCnaqexrP5dTIpbEHL33req6IYPPJ0hYa71cdvJ1h6V55/oQ==}
     engines: {node: '>=10'}
     peerDependencies:
       '@solana/web3.js': '>=1.73.5'
@@ -8935,9 +8935,9 @@ snapshots:
       - encoding
       - utf-8-validate
 
-  '@coral-xyz/anchor@0.30.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)':
+  '@coral-xyz/anchor@0.29.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)':
     dependencies:
-      '@coral-xyz/borsh': 0.30.0(@solana/web3.js@1.91.7(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      '@coral-xyz/borsh': 0.29.0(@solana/web3.js@1.91.7(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       '@noble/hashes': 1.4.0
       '@solana/web3.js': 1.91.7(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       bn.js: 5.2.1
@@ -8962,7 +8962,7 @@ snapshots:
       bn.js: 5.2.1
       buffer-layout: 1.2.2
 
-  '@coral-xyz/borsh@0.30.0(@solana/web3.js@1.91.7(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
+  '@coral-xyz/borsh@0.29.0(@solana/web3.js@1.91.7(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
     dependencies:
       '@solana/web3.js': 1.91.7(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       bn.js: 5.2.1

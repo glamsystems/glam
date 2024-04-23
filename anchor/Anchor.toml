@@ -1,4 +1,5 @@
 [toolchain]
+anchor_version = "0.29.0"
 
 [features]
 seeds = false
@@ -27,8 +28,8 @@ cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-test = "../node_modules/.bin/nx run anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_investor"
-# test = "../node_modules/.bin/nx run anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_crud"
+#test = "../node_modules/.bin/nx run anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_investor"
+test = "../node_modules/.bin/nx run anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_crud"
 #test = "../node_modules/.bin/nx run anchor:jest --verbose --testPathPattern tests/ --testNamePattern devnet"
 
 [test]

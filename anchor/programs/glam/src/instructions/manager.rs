@@ -7,9 +7,9 @@ use crate::error::ManagerError;
 use crate::state::fund::*;
 
 #[derive(Accounts)]
-#[instruction(name: String)]
+#[instruction(fund_name: String)]
 pub struct InitializeFund<'info> {
-    #[account(init, seeds = [b"fund".as_ref(), manager.key().as_ref(), name.as_ref()], bump, payer = manager, space = 8 + Fund::INIT_SIZE + ShareClassMetadata::INIT_SIZE)]
+    #[account(init, seeds = [b"fund".as_ref(), manager.key().as_ref(), fund_name.as_ref()], bump, payer = manager, space = 8 + Fund::INIT_SIZE + ShareClassMetadata::INIT_SIZE)]
     pub fund: Box<Account<'info, Fund>>,
 
     #[account(init, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump, payer = manager, space = 8 + Treasury::INIT_SIZE)]

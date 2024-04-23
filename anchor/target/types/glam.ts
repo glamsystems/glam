@@ -1,434 +1,97 @@
-/**
- * Program IDL in camelCase format in order to be used in JS/TS.
- *
- * Note that this is only a type helper and is not the actual IDL. The original
- * IDL can be found at `target/idl/glam.json`.
- */
 export type Glam = {
-  "address": "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc",
-  "metadata": {
-    "name": "glam",
-    "version": "0.2.0",
-    "spec": "0.1.0",
-    "description": "Glam Protocol"
-  },
+  "version": "0.2.0",
+  "name": "glam",
   "instructions": [
     {
-      "name": "close",
-      "discriminator": [
-        98,
-        165,
-        201,
-        177,
-        108,
-        65,
-        206,
-        96
-      ],
+      "name": "initializeV2",
       "accounts": [
         {
           "name": "fund",
-          "writable": true
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "openfund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "share",
+          "isMut": true,
+          "isSigner": false
         },
         {
           "name": "manager",
-          "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "driftClose",
-      "discriminator": [
-        23,
-        133,
-        219,
-        157,
-        137,
-        34,
-        93,
-        58
-      ],
-      "accounts": [
-        {
-          "name": "fund"
-        },
-        {
-          "name": "treasury"
-        },
-        {
-          "name": "userStats",
-          "writable": true
-        },
-        {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "state",
-          "writable": true
-        },
-        {
-          "name": "manager",
-          "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
-        },
-        {
-          "name": "driftProgram",
-          "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+          "isMut": true,
+          "isSigner": true
         },
         {
           "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "driftDeposit",
-      "discriminator": [
-        252,
-        63,
-        250,
-        201,
-        98,
-        55,
-        130,
-        12
-      ],
-      "accounts": [
-        {
-          "name": "fund"
-        },
-        {
-          "name": "treasury"
-        },
-        {
-          "name": "userStats",
-          "writable": true
-        },
-        {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "state",
-          "writable": true
-        },
-        {
-          "name": "treasuryAta",
-          "writable": true
-        },
-        {
-          "name": "driftAta",
-          "writable": true
-        },
-        {
-          "name": "manager",
-          "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
-        },
-        {
-          "name": "driftProgram",
-          "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "tokenProgram",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        }
-      ],
-      "args": [
-        {
-          "name": "amount",
-          "type": "u64"
-        }
-      ]
-    },
-    {
-      "name": "driftInitialize",
-      "discriminator": [
-        21,
-        21,
-        69,
-        55,
-        41,
-        129,
-        44,
-        198
-      ],
-      "accounts": [
-        {
-          "name": "fund"
-        },
-        {
-          "name": "treasury"
-        },
-        {
-          "name": "userStats",
-          "writable": true
-        },
-        {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "state",
-          "writable": true
-        },
-        {
-          "name": "manager",
-          "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
-        },
-        {
-          "name": "driftProgram",
-          "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
         {
-          "name": "trader",
+          "name": "fund",
           "type": {
-            "option": "pubkey"
+            "defined": "FundModel"
           }
-        }
-      ]
-    },
-    {
-      "name": "driftUpdateDelegatedTrader",
-      "discriminator": [
-        98,
-        66,
-        206,
-        146,
-        109,
-        215,
-        206,
-        57
-      ],
-      "accounts": [
-        {
-          "name": "fund"
-        },
-        {
-          "name": "treasury"
-        },
-        {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "manager",
-          "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
-        },
-        {
-          "name": "driftProgram",
-          "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
-        }
-      ],
-      "args": [
-        {
-          "name": "trader",
-          "type": {
-            "option": "pubkey"
-          }
-        }
-      ]
-    },
-    {
-      "name": "driftWithdraw",
-      "discriminator": [
-        86,
-        59,
-        186,
-        123,
-        183,
-        181,
-        234,
-        137
-      ],
-      "accounts": [
-        {
-          "name": "fund"
-        },
-        {
-          "name": "treasury"
-        },
-        {
-          "name": "userStats",
-          "writable": true
-        },
-        {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "state",
-          "writable": true
-        },
-        {
-          "name": "driftSigner"
-        },
-        {
-          "name": "treasuryAta",
-          "writable": true
-        },
-        {
-          "name": "driftAta",
-          "writable": true
-        },
-        {
-          "name": "manager",
-          "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
-        },
-        {
-          "name": "driftProgram",
-          "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
-        },
-        {
-          "name": "tokenProgram",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        }
-      ],
-      "args": [
-        {
-          "name": "amount",
-          "type": "u64"
         }
       ]
     },
     {
       "name": "initialize",
-      "discriminator": [
-        175,
-        175,
-        109,
-        31,
-        13,
-        152,
-        155,
-        237
-      ],
       "accounts": [
         {
           "name": "fund",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  102,
-                  117,
-                  110,
-                  100
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "manager"
-              },
-              {
-                "kind": "arg",
-                "path": "name"
-              }
-            ]
-          }
+          "isMut": true,
+          "isSigner": false
         },
         {
           "name": "treasury",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  116,
-                  114,
-                  101,
-                  97,
-                  115,
-                  117,
-                  114,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "fund"
-              }
-            ]
-          }
+          "isMut": true,
+          "isSigner": false
         },
         {
           "name": "share",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  104,
-                  97,
-                  114,
-                  101,
-                  45,
-                  48
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "fund"
-              }
-            ]
-          }
+          "isMut": true,
+          "isSigner": false
         },
         {
           "name": "manager",
-          "writable": true,
-          "signer": true
+          "isMut": true,
+          "isSigner": true
         },
         {
           "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "tokenProgram",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -457,162 +120,23 @@ export type Glam = {
         {
           "name": "shareClassMetadata",
           "type": {
-            "defined": {
-              "name": "shareClassMetadata"
-            }
+            "defined": "ShareClassMetadata"
           }
         }
       ]
     },
     {
-      "name": "redeem",
-      "discriminator": [
-        184,
-        12,
-        86,
-        149,
-        70,
-        196,
-        97,
-        225
-      ],
-      "accounts": [
-        {
-          "name": "fund"
-        },
-        {
-          "name": "shareClass",
-          "writable": true
-        },
-        {
-          "name": "signerShareAta",
-          "writable": true
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "treasury"
-        },
-        {
-          "name": "tokenProgram",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "token2022Program",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-        }
-      ],
-      "args": [
-        {
-          "name": "amount",
-          "type": "u64"
-        },
-        {
-          "name": "inKind",
-          "type": "bool"
-        },
-        {
-          "name": "skipState",
-          "type": "bool"
-        }
-      ]
-    },
-    {
-      "name": "subscribe",
-      "discriminator": [
-        254,
-        28,
-        191,
-        138,
-        156,
-        179,
-        183,
-        53
-      ],
-      "accounts": [
-        {
-          "name": "fund"
-        },
-        {
-          "name": "shareClass",
-          "writable": true
-        },
-        {
-          "name": "signerShareAta",
-          "writable": true
-        },
-        {
-          "name": "asset",
-          "writable": true
-        },
-        {
-          "name": "treasuryAta",
-          "writable": true
-        },
-        {
-          "name": "signerAssetAta",
-          "writable": true
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        },
-        {
-          "name": "associatedTokenProgram",
-          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
-        },
-        {
-          "name": "tokenProgram",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "token2022Program",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-        }
-      ],
-      "args": [
-        {
-          "name": "amount",
-          "type": "u64"
-        },
-        {
-          "name": "skipState",
-          "type": "bool"
-        }
-      ]
-    },
-    {
       "name": "update",
-      "discriminator": [
-        219,
-        200,
-        88,
-        176,
-        158,
-        63,
-        253,
-        127
-      ],
       "accounts": [
         {
           "name": "fund",
-          "writable": true
+          "isMut": true,
+          "isSigner": false
         },
         {
           "name": "manager",
-          "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "isMut": true,
+          "isSigner": true
         }
       ],
       "args": [
@@ -643,389 +167,418 @@ export type Glam = {
           }
         }
       ]
+    },
+    {
+      "name": "close",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "subscribe",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "shareClass",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signerShareAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signerAssetAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "token2022Program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "skipState",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "redeem",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "shareClass",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signerShareAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "treasury",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "token2022Program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "inKind",
+          "type": "bool"
+        },
+        {
+          "name": "skipState",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "driftInitialize",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userStats",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "driftProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "trader",
+          "type": {
+            "option": "publicKey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "driftUpdateDelegatedTrader",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "driftProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "trader",
+          "type": {
+            "option": "publicKey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "driftDeposit",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userStats",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "driftAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "driftProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "driftWithdraw",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userStats",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "driftSigner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "driftAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "driftProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "driftClose",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userStats",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "driftProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
-    {
-      "name": "fund",
-      "discriminator": [
-        62,
-        128,
-        183,
-        208,
-        91,
-        31,
-        212,
-        209
-      ]
-    },
-    {
-      "name": "state",
-      "discriminator": [
-        216,
-        146,
-        107,
-        94,
-        104,
-        75,
-        182,
-        177
-      ]
-    },
-    {
-      "name": "treasury",
-      "discriminator": [
-        238,
-        239,
-        123,
-        238,
-        89,
-        1,
-        168,
-        253
-      ]
-    }
-  ],
-  "errors": [
-    {
-      "code": 6000,
-      "name": "closeNotEmptyError",
-      "msg": "Error closing account: not empty"
-    },
-    {
-      "code": 6001,
-      "name": "notAuthorizedError",
-      "msg": "Error: not authorized"
-    },
-    {
-      "code": 6002,
-      "name": "invalidFundName",
-      "msg": "Invalid fund name: max 30 chars"
-    },
-    {
-      "code": 6003,
-      "name": "invalidFundSymbol",
-      "msg": "Too many assets: max 50"
-    },
-    {
-      "code": 6004,
-      "name": "invalidFundUri",
-      "msg": "Too many assets: max 20"
-    },
-    {
-      "code": 6005,
-      "name": "invalidAssetsLen",
-      "msg": "Too many assets: max 100"
-    },
-    {
-      "code": 6006,
-      "name": "invalidAssetsWeights",
-      "msg": "Number of weights should match number of assets"
-    }
-  ],
-  "types": [
-    {
-      "name": "feeStructure",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "feeTiers",
-            "type": {
-              "array": [
-                {
-                  "defined": {
-                    "name": "feeTier"
-                  }
-                },
-                10
-              ]
-            }
-          },
-          {
-            "name": "fillerRewardStructure",
-            "type": {
-              "defined": {
-                "name": "orderFillerRewardStructure"
-              }
-            }
-          },
-          {
-            "name": "referrerRewardEpochUpperBound",
-            "type": "u64"
-          },
-          {
-            "name": "flatFillerFee",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "feeTier",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "feeNumerator",
-            "type": "u32"
-          },
-          {
-            "name": "feeDenominator",
-            "type": "u32"
-          },
-          {
-            "name": "makerRebateNumerator",
-            "type": "u32"
-          },
-          {
-            "name": "makerRebateDenominator",
-            "type": "u32"
-          },
-          {
-            "name": "referrerRewardNumerator",
-            "type": "u32"
-          },
-          {
-            "name": "referrerRewardDenominator",
-            "type": "u32"
-          },
-          {
-            "name": "refereeFeeNumerator",
-            "type": "u32"
-          },
-          {
-            "name": "refereeFeeDenominator",
-            "type": "u32"
-          }
-        ]
-      }
-    },
-    {
-      "name": "fund",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "manager",
-            "type": "pubkey"
-          },
-          {
-            "name": "treasury",
-            "type": "pubkey"
-          },
-          {
-            "name": "assetsLen",
-            "type": "u8"
-          },
-          {
-            "name": "assets",
-            "type": {
-              "array": [
-                "pubkey",
-                5
-              ]
-            }
-          },
-          {
-            "name": "assetsWeights",
-            "type": {
-              "array": [
-                "u32",
-                5
-              ]
-            }
-          },
-          {
-            "name": "shareClassesLen",
-            "type": "u8"
-          },
-          {
-            "name": "shareClasses",
-            "type": {
-              "array": [
-                "pubkey",
-                3
-              ]
-            }
-          },
-          {
-            "name": "shareClassesMetadata",
-            "type": {
-              "array": [
-                {
-                  "defined": {
-                    "name": "shareClassMetadata"
-                  }
-                },
-                3
-              ]
-            }
-          },
-          {
-            "name": "shareClassesBumps",
-            "type": {
-              "array": [
-                "u8",
-                3
-              ]
-            }
-          },
-          {
-            "name": "timeCreated",
-            "type": "i64"
-          },
-          {
-            "name": "bumpFund",
-            "type": "u8"
-          },
-          {
-            "name": "bumpTreasury",
-            "type": "u8"
-          },
-          {
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "name": "symbol",
-            "type": "string"
-          },
-          {
-            "name": "uri",
-            "type": "string"
-          },
-          {
-            "name": "isActive",
-            "type": "bool"
-          }
-        ]
-      }
-    },
-    {
-      "name": "oracleGuardRails",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "priceDivergence",
-            "type": {
-              "defined": {
-                "name": "priceDivergenceGuardRails"
-              }
-            }
-          },
-          {
-            "name": "validity",
-            "type": {
-              "defined": {
-                "name": "validityGuardRails"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "orderFillerRewardStructure",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "rewardNumerator",
-            "type": "u32"
-          },
-          {
-            "name": "rewardDenominator",
-            "type": "u32"
-          },
-          {
-            "name": "timeBasedRewardLowerBound",
-            "type": "u128"
-          }
-        ]
-      }
-    },
-    {
-      "name": "priceDivergenceGuardRails",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "markOraclePercentDivergence",
-            "type": "u64"
-          },
-          {
-            "name": "oracleTwap5minPercentDivergence",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "shareClassMetadata",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "name": "symbol",
-            "type": "string"
-          },
-          {
-            "name": "uri",
-            "type": "string"
-          },
-          {
-            "name": "shareClassAsset",
-            "type": "string"
-          },
-          {
-            "name": "shareClassAssetId",
-            "type": "pubkey"
-          },
-          {
-            "name": "isin",
-            "type": "string"
-          },
-          {
-            "name": "status",
-            "type": "string"
-          },
-          {
-            "name": "feeManagement",
-            "type": "i32"
-          },
-          {
-            "name": "feePerformance",
-            "type": "i32"
-          },
-          {
-            "name": "policyDistribution",
-            "type": "string"
-          },
-          {
-            "name": "extension",
-            "type": "string"
-          },
-          {
-            "name": "launchDate",
-            "type": "string"
-          },
-          {
-            "name": "lifecycle",
-            "type": "string"
-          },
-          {
-            "name": "imageUri",
-            "type": "string"
-          }
-        ]
-      }
-    },
     {
       "name": "state",
       "docs": [
@@ -1036,46 +589,40 @@ export type Glam = {
         "fields": [
           {
             "name": "admin",
-            "type": "pubkey"
+            "type": "publicKey"
           },
           {
             "name": "whitelistMint",
-            "type": "pubkey"
+            "type": "publicKey"
           },
           {
             "name": "discountMint",
-            "type": "pubkey"
+            "type": "publicKey"
           },
           {
             "name": "signer",
-            "type": "pubkey"
+            "type": "publicKey"
           },
           {
             "name": "srmVault",
-            "type": "pubkey"
+            "type": "publicKey"
           },
           {
             "name": "perpFeeStructure",
             "type": {
-              "defined": {
-                "name": "feeStructure"
-              }
+              "defined": "FeeStructure"
             }
           },
           {
             "name": "spotFeeStructure",
             "type": {
-              "defined": {
-                "name": "feeStructure"
-              }
+              "defined": "FeeStructure"
             }
           },
           {
             "name": "oracleGuardRails",
             "type": {
-              "defined": {
-                "name": "oracleGuardRails"
-              }
+              "defined": "OracleGuardRails"
             }
           },
           {
@@ -1155,17 +702,216 @@ export type Glam = {
       }
     },
     {
+      "name": "fund",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "manager",
+            "type": "publicKey"
+          },
+          {
+            "name": "treasury",
+            "type": "publicKey"
+          },
+          {
+            "name": "assetsLen",
+            "type": "u8"
+          },
+          {
+            "name": "assets",
+            "type": {
+              "array": [
+                "publicKey",
+                5
+              ]
+            }
+          },
+          {
+            "name": "assetsWeights",
+            "type": {
+              "array": [
+                "u32",
+                5
+              ]
+            }
+          },
+          {
+            "name": "shareClassesLen",
+            "type": "u8"
+          },
+          {
+            "name": "shareClasses",
+            "type": {
+              "array": [
+                "publicKey",
+                3
+              ]
+            }
+          },
+          {
+            "name": "shareClassesMetadata",
+            "type": {
+              "array": [
+                {
+                  "defined": "ShareClassMetadata"
+                },
+                3
+              ]
+            }
+          },
+          {
+            "name": "shareClassesBumps",
+            "type": {
+              "array": [
+                "u8",
+                3
+              ]
+            }
+          },
+          {
+            "name": "timeCreated",
+            "type": "i64"
+          },
+          {
+            "name": "bumpFund",
+            "type": "u8"
+          },
+          {
+            "name": "bumpTreasury",
+            "type": "u8"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "isActive",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "fundAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "treasury",
+            "type": "publicKey"
+          },
+          {
+            "name": "shareClass",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "openfund",
+            "type": "publicKey"
+          },
+          {
+            "name": "openfundUri",
+            "type": "string"
+          },
+          {
+            "name": "manager",
+            "type": "publicKey"
+          },
+          {
+            "name": "engine",
+            "type": "publicKey"
+          },
+          {
+            "name": "params",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": "GlamParam"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "fundMetadataAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "fundPubkey",
+            "type": "publicKey"
+          },
+          {
+            "name": "company",
+            "type": {
+              "vec": {
+                "defined": "CompanyField"
+              }
+            }
+          },
+          {
+            "name": "fund",
+            "type": {
+              "vec": {
+                "defined": "FundField"
+              }
+            }
+          },
+          {
+            "name": "shareClass",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": "ShareClassField"
+                }
+              }
+            }
+          },
+          {
+            "name": "fundManager",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": "FundManagerField"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "treasury",
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "manager",
-            "type": "pubkey"
+            "type": "publicKey"
           },
           {
             "name": "fund",
-            "type": "pubkey"
+            "type": "publicKey"
           },
           {
             "name": "bump",
@@ -1173,9 +919,140 @@ export type Glam = {
           }
         ]
       }
+    }
+  ],
+  "types": [
+    {
+      "name": "FeeStructure",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "feeTiers",
+            "type": {
+              "array": [
+                {
+                  "defined": "FeeTier"
+                },
+                10
+              ]
+            }
+          },
+          {
+            "name": "fillerRewardStructure",
+            "type": {
+              "defined": "OrderFillerRewardStructure"
+            }
+          },
+          {
+            "name": "referrerRewardEpochUpperBound",
+            "type": "u64"
+          },
+          {
+            "name": "flatFillerFee",
+            "type": "u64"
+          }
+        ]
+      }
     },
     {
-      "name": "validityGuardRails",
+      "name": "FeeTier",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "feeNumerator",
+            "type": "u32"
+          },
+          {
+            "name": "feeDenominator",
+            "type": "u32"
+          },
+          {
+            "name": "makerRebateNumerator",
+            "type": "u32"
+          },
+          {
+            "name": "makerRebateDenominator",
+            "type": "u32"
+          },
+          {
+            "name": "referrerRewardNumerator",
+            "type": "u32"
+          },
+          {
+            "name": "referrerRewardDenominator",
+            "type": "u32"
+          },
+          {
+            "name": "refereeFeeNumerator",
+            "type": "u32"
+          },
+          {
+            "name": "refereeFeeDenominator",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OracleGuardRails",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "priceDivergence",
+            "type": {
+              "defined": "PriceDivergenceGuardRails"
+            }
+          },
+          {
+            "name": "validity",
+            "type": {
+              "defined": "ValidityGuardRails"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "OrderFillerRewardStructure",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "rewardNumerator",
+            "type": "u32"
+          },
+          {
+            "name": "rewardDenominator",
+            "type": "u32"
+          },
+          {
+            "name": "timeBasedRewardLowerBound",
+            "type": "u128"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PriceDivergenceGuardRails",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "markOraclePercentDivergence",
+            "type": "u64"
+          },
+          {
+            "name": "oracleTwap5minPercentDivergence",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ValidityGuardRails",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1197,13 +1074,3556 @@ export type Glam = {
           }
         ]
       }
+    },
+    {
+      "name": "CompanyModel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreatedModel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "manager",
+            "type": {
+              "option": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "FundModel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "symbol",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "uri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "uriOpenfund",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "isActive",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "assets",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "assetsWeights",
+            "type": {
+              "vec": "u32"
+            }
+          },
+          {
+            "name": "shareClass",
+            "type": {
+              "vec": {
+                "defined": "ShareClassModel"
+              }
+            }
+          },
+          {
+            "name": "company",
+            "type": {
+              "option": {
+                "defined": "CompanyModel"
+              }
+            }
+          },
+          {
+            "name": "manager",
+            "type": {
+              "option": {
+                "defined": "ManagerModel"
+              }
+            }
+          },
+          {
+            "name": "created",
+            "type": {
+              "option": {
+                "defined": "CreatedModel"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "GlamParam",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "OFKey"
+            }
+          },
+          {
+            "name": "val",
+            "type": {
+              "defined": "OFValue"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ManagerKind",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Wallet"
+          },
+          {
+            "name": "Squads"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ManagerModel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pubkey",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "type": {
+              "option": {
+                "defined": "ManagerKind"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "OFKey",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Symbol"
+          },
+          {
+            "name": "TimeCreated"
+          },
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Hello"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OFValue",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Boolean",
+            "fields": [
+              {
+                "name": "val",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "Date",
+            "fields": [
+              {
+                "name": "val",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "Double",
+            "fields": [
+              {
+                "name": "val",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "Integer",
+            "fields": [
+              {
+                "name": "val",
+                "type": "i32"
+              }
+            ]
+          },
+          {
+            "name": "String",
+            "fields": [
+              {
+                "name": "val",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "Time",
+            "fields": [
+              {
+                "name": "val",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "U8",
+            "fields": [
+              {
+                "name": "val",
+                "type": "u8"
+              }
+            ]
+          },
+          {
+            "name": "U64",
+            "fields": [
+              {
+                "name": "val",
+                "type": "u64"
+              }
+            ]
+          },
+          {
+            "name": "Pubkey",
+            "fields": [
+              {
+                "name": "val",
+                "type": "publicKey"
+              }
+            ]
+          },
+          {
+            "name": "Percentage",
+            "fields": [
+              {
+                "name": "val",
+                "type": "u32"
+              }
+            ]
+          },
+          {
+            "name": "URI",
+            "fields": [
+              {
+                "name": "val",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "Timestamp",
+            "fields": [
+              {
+                "name": "val",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "VecPubkey",
+            "fields": [
+              {
+                "name": "val",
+                "type": {
+                  "vec": "publicKey"
+                }
+              }
+            ]
+          },
+          {
+            "name": "VecU32",
+            "fields": [
+              {
+                "name": "val",
+                "type": {
+                  "vec": "u32"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "ShareClassMetadata",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "shareClassAsset",
+            "type": "string"
+          },
+          {
+            "name": "shareClassAssetId",
+            "type": "publicKey"
+          },
+          {
+            "name": "isin",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "type": "string"
+          },
+          {
+            "name": "feeManagement",
+            "type": "i32"
+          },
+          {
+            "name": "feePerformance",
+            "type": "i32"
+          },
+          {
+            "name": "policyDistribution",
+            "type": "string"
+          },
+          {
+            "name": "extension",
+            "type": "string"
+          },
+          {
+            "name": "launchDate",
+            "type": "string"
+          },
+          {
+            "name": "lifecycle",
+            "type": "string"
+          },
+          {
+            "name": "imageUri",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ShareClassModel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "symbol",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "uri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "asset",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "assetPubkey",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "isin",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "status",
+            "type": {
+              "option": {
+                "defined": "ShareClassStatus"
+              }
+            }
+          },
+          {
+            "name": "policyDistribution",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "extension",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "launchDate",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "lifecycle",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "imageUri",
+            "type": {
+              "option": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ShareClassStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Open"
+          },
+          {
+            "name": "SoftClosed"
+          },
+          {
+            "name": "HardClosed"
+          },
+          {
+            "name": "ClosedForRedemption"
+          },
+          {
+            "name": "ClosedForSubscriptionAndRedemption"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CompanyField",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "defined": "CompanyFieldName"
+            }
+          },
+          {
+            "name": "value",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CompanyFieldName",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "FundGroupName"
+          },
+          {
+            "name": "DomicileOfManCo"
+          },
+          {
+            "name": "ManCo"
+          },
+          {
+            "name": "BICOfCustodian"
+          },
+          {
+            "name": "CollateralManagerName"
+          },
+          {
+            "name": "CustodianBankName"
+          },
+          {
+            "name": "DomicileOfCustodianBank"
+          },
+          {
+            "name": "FundAdministratorName"
+          },
+          {
+            "name": "FundAdvisorName"
+          },
+          {
+            "name": "FundPromoterName"
+          },
+          {
+            "name": "IsSelfManagedInvestmentCompany"
+          },
+          {
+            "name": "LEIOfCustodianBank"
+          },
+          {
+            "name": "LEIOfManCo"
+          },
+          {
+            "name": "PortfolioManagingCompanyName"
+          },
+          {
+            "name": "SecuritiesLendingCounterpartyName"
+          },
+          {
+            "name": "SwapCounterpartyName"
+          },
+          {
+            "name": "AddressofManCo"
+          },
+          {
+            "name": "AuditorName"
+          },
+          {
+            "name": "CityofManCo"
+          },
+          {
+            "name": "EmailAddressOfManCo"
+          },
+          {
+            "name": "FundWebsiteofManCo"
+          },
+          {
+            "name": "IsUNPRISignatory"
+          },
+          {
+            "name": "PhoneCountryCodeofManCo"
+          },
+          {
+            "name": "PhoneNumberofManCo"
+          },
+          {
+            "name": "SubInvestmentAdvisorName"
+          },
+          {
+            "name": "ZIPCodeofManCo"
+          },
+          {
+            "name": "DomicileOfUmbrella"
+          },
+          {
+            "name": "HasUmbrella"
+          },
+          {
+            "name": "LEIOfUmbrella"
+          },
+          {
+            "name": "Umbrella"
+          },
+          {
+            "name": "GlobalIntermediaryIdentificationNumberOfUmbrella"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FundField",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "defined": "FundFieldName"
+            }
+          },
+          {
+            "name": "value",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FundFieldName",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "FundDomicileAlpha2"
+          },
+          {
+            "name": "FundDomicileAlpha3"
+          },
+          {
+            "name": "LegalFundNameIncludingUmbrella"
+          },
+          {
+            "name": "FiscalYearEnd"
+          },
+          {
+            "name": "FundCurrency"
+          },
+          {
+            "name": "FundLaunchDate"
+          },
+          {
+            "name": "InvestmentObjective"
+          },
+          {
+            "name": "IsETC"
+          },
+          {
+            "name": "IsEUDirectiveRelevant"
+          },
+          {
+            "name": "IsFundOfFunds"
+          },
+          {
+            "name": "IsPassiveFund"
+          },
+          {
+            "name": "IsREIT"
+          },
+          {
+            "name": "LegalForm"
+          },
+          {
+            "name": "LegalFundNameOnly"
+          },
+          {
+            "name": "OpenEndedOrClosedEndedFundStructure"
+          },
+          {
+            "name": "TypeOfEUDirective"
+          },
+          {
+            "name": "UCITSVersion"
+          },
+          {
+            "name": "CurrencyHedgePortfolio"
+          },
+          {
+            "name": "DepositoryName"
+          },
+          {
+            "name": "FundValuationPoint"
+          },
+          {
+            "name": "FundValuationPointTimeZone"
+          },
+          {
+            "name": "FundValuationPointTimeZoneUsingTZDatabase"
+          },
+          {
+            "name": "HasCollateralManager"
+          },
+          {
+            "name": "HasEmbeddedDerivatives"
+          },
+          {
+            "name": "HasSecuritiesLending"
+          },
+          {
+            "name": "HasSwap"
+          },
+          {
+            "name": "IsLeveraged"
+          },
+          {
+            "name": "IsShariaCompliant"
+          },
+          {
+            "name": "IsShort"
+          },
+          {
+            "name": "LEIofDepositoryBank"
+          },
+          {
+            "name": "LEIOfFund"
+          },
+          {
+            "name": "LocationOfBearerShare"
+          },
+          {
+            "name": "LocationOfShareRegister"
+          },
+          {
+            "name": "MaximumLeverageInFund"
+          },
+          {
+            "name": "MiFIDSecuritiesClassification"
+          },
+          {
+            "name": "MoneyMarketTypeOfFund"
+          },
+          {
+            "name": "TrusteeName"
+          },
+          {
+            "name": "AuMFund"
+          },
+          {
+            "name": "AuMFundDate"
+          },
+          {
+            "name": "NoSFund"
+          },
+          {
+            "name": "NoSFundDate"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FundManagerField",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "defined": "FundManagerFieldName"
+            }
+          },
+          {
+            "name": "value",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FundManagerFieldName",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "PortfolioManagerForename"
+          },
+          {
+            "name": "PortfolioManagerName"
+          },
+          {
+            "name": "PortfolioManagerYearOfBirth"
+          },
+          {
+            "name": "PortfolioManagerYearOfExperienceStart"
+          },
+          {
+            "name": "PortfolioManagerBriefBiography"
+          },
+          {
+            "name": "PortfolioManagerType"
+          },
+          {
+            "name": "PortfolioManagerRoleStartingDate"
+          },
+          {
+            "name": "PortfolioManagerRoleEndDate"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ShareClassField",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "defined": "ShareClassFieldName"
+            }
+          },
+          {
+            "name": "value",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ShareClassFieldName",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "ISIN"
+          },
+          {
+            "name": "ShareClassCurrency"
+          },
+          {
+            "name": "AllInFeeApplied"
+          },
+          {
+            "name": "AllInFeeDate"
+          },
+          {
+            "name": "AllInFeeIncludesTransactionCosts"
+          },
+          {
+            "name": "AllInFeeMaximum"
+          },
+          {
+            "name": "AppliedSubscriptionFeeInFavourOfDistributor"
+          },
+          {
+            "name": "AppliedSubscriptionFeeInFavourOfDistributorReferenceDate"
+          },
+          {
+            "name": "Benchmark"
+          },
+          {
+            "name": "CountryLegalRegistration"
+          },
+          {
+            "name": "CountryMarketingDistribution"
+          },
+          {
+            "name": "CurrencyHedgeShareClass"
+          },
+          {
+            "name": "CurrencyofMinimalSubscription"
+          },
+          {
+            "name": "DistributionDeclarationFrequency"
+          },
+          {
+            "name": "FullShareClassName"
+          },
+          {
+            "name": "HasAllInFee"
+          },
+          {
+            "name": "HasOngoingCharges"
+          },
+          {
+            "name": "HasPerformanceFee"
+          },
+          {
+            "name": "HasSubscriptionFeeInFavourOfDistributor"
+          },
+          {
+            "name": "InvestmentStatus"
+          },
+          {
+            "name": "IsETF"
+          },
+          {
+            "name": "IsRDRCompliant"
+          },
+          {
+            "name": "IsTrailerFeeClean"
+          },
+          {
+            "name": "ManagementFeeApplied"
+          },
+          {
+            "name": "ManagementFeeAppliedReferenceDate"
+          },
+          {
+            "name": "ManagementFeeMaximum"
+          },
+          {
+            "name": "MaximumSubscriptionFeeInFavourOfDistributor"
+          },
+          {
+            "name": "MinimalInitialSubscriptionCategory"
+          },
+          {
+            "name": "MinimalInitialSubscriptionInAmount"
+          },
+          {
+            "name": "MinimalInitialSubscriptionInShares"
+          },
+          {
+            "name": "MinimalSubsequentSubscriptionCategory"
+          },
+          {
+            "name": "MinimalSubsequentSubscriptionInAmount"
+          },
+          {
+            "name": "MinimalSubsequentSubscriptionInShares"
+          },
+          {
+            "name": "MinimumSubscriptionFeeInFavourOfDistributor"
+          },
+          {
+            "name": "OngoingCharges"
+          },
+          {
+            "name": "OngoingChargesDate"
+          },
+          {
+            "name": "PerformanceFeeApplied"
+          },
+          {
+            "name": "PerformanceFeeAppliedReferenceDate"
+          },
+          {
+            "name": "PerformanceFeeInProspectus"
+          },
+          {
+            "name": "PerformanceFeeInProspectusReferenceDate"
+          },
+          {
+            "name": "RecordDateForSRRI"
+          },
+          {
+            "name": "ShareClassDistributionPolicy"
+          },
+          {
+            "name": "ShareClassExtension"
+          },
+          {
+            "name": "ShareClassLaunchDate"
+          },
+          {
+            "name": "ShareClassLifecycle"
+          },
+          {
+            "name": "SRRI"
+          },
+          {
+            "name": "TERExcludingPerformanceFee"
+          },
+          {
+            "name": "TERExcludingPerformanceFeeDate"
+          },
+          {
+            "name": "TERIncludingPerformanceFee"
+          },
+          {
+            "name": "TERIncludingPerformanceFeeDate"
+          },
+          {
+            "name": "AbbreviatedShareClassName"
+          },
+          {
+            "name": "BICOfTransferAgent"
+          },
+          {
+            "name": "BloombergCode"
+          },
+          {
+            "name": "CurrencyOfMinimumRemainingAmount"
+          },
+          {
+            "name": "DistributionFeeMaximum"
+          },
+          {
+            "name": "DomicileofTransferAgent"
+          },
+          {
+            "name": "EFAMAActiveEFCClassification"
+          },
+          {
+            "name": "EFAMAEFCClassificationType"
+          },
+          {
+            "name": "EFAMAEFCInvestmentTheme"
+          },
+          {
+            "name": "EFAMAMainEFCCategory"
+          },
+          {
+            "name": "FIGICode"
+          },
+          {
+            "name": "FormOfShare"
+          },
+          {
+            "name": "HasDurationHedge"
+          },
+          {
+            "name": "IASector"
+          },
+          {
+            "name": "InvestmentStatusDate"
+          },
+          {
+            "name": "IsShareClassEligibleForUCITS"
+          },
+          {
+            "name": "LaunchPrice"
+          },
+          {
+            "name": "LaunchPriceCurrency"
+          },
+          {
+            "name": "LaunchPriceDate"
+          },
+          {
+            "name": "NAVPublicationTime"
+          },
+          {
+            "name": "PricingMethodology"
+          },
+          {
+            "name": "SinglePricingType"
+          },
+          {
+            "name": "StandardMinimumRemainingAmount"
+          },
+          {
+            "name": "StandardMinimumRemainingCategory"
+          },
+          {
+            "name": "StandardMinimumRemainingShares"
+          },
+          {
+            "name": "SwingFactor"
+          },
+          {
+            "name": "TransferAgentName"
+          },
+          {
+            "name": "ValuationFrequency"
+          },
+          {
+            "name": "AskNAV"
+          },
+          {
+            "name": "AskNAVDate"
+          },
+          {
+            "name": "AuMShareClass"
+          },
+          {
+            "name": "AuMShareClassDate"
+          },
+          {
+            "name": "BidNAV"
+          },
+          {
+            "name": "BidNAVDate"
+          },
+          {
+            "name": "DividendAnnouncementDate"
+          },
+          {
+            "name": "DividendCurrency"
+          },
+          {
+            "name": "DividendExDate"
+          },
+          {
+            "name": "DividendGross"
+          },
+          {
+            "name": "DividendNet"
+          },
+          {
+            "name": "DividendPaymentDate"
+          },
+          {
+            "name": "DividendRecordDate"
+          },
+          {
+            "name": "DynamicCurrency"
+          },
+          {
+            "name": "DynamicDataType"
+          },
+          {
+            "name": "DynamicValue"
+          },
+          {
+            "name": "EqualisationRate"
+          },
+          {
+            "name": "GeneralReferenceDate"
+          },
+          {
+            "name": "IsDividendFinal"
+          },
+          {
+            "name": "NoSShareClass"
+          },
+          {
+            "name": "NoSShareClassDate"
+          },
+          {
+            "name": "SplitRatio"
+          },
+          {
+            "name": "SplitReferenceDate"
+          },
+          {
+            "name": "TaxDeductedReinvestedAmount"
+          },
+          {
+            "name": "TaxDeductedReinvestedAmountReferenceDate"
+          },
+          {
+            "name": "TaxableIncomeperDividend"
+          },
+          {
+            "name": "TaxableIncomeperShareEU"
+          },
+          {
+            "name": "TransactionNAV"
+          },
+          {
+            "name": "TransactionNAVDate"
+          },
+          {
+            "name": "ValuationNAV"
+          },
+          {
+            "name": "ValuationNAVDate"
+          },
+          {
+            "name": "YieldOneDayGross"
+          },
+          {
+            "name": "YieldOneDayNet"
+          },
+          {
+            "name": "YieldSevenDayGross"
+          },
+          {
+            "name": "YieldSevenDayNet"
+          },
+          {
+            "name": "YieldThirtyDayGross"
+          },
+          {
+            "name": "YieldThirtyDayNet"
+          }
+        ]
+      }
     }
   ],
-  "constants": [
+  "errors": [
     {
-      "name": "seed",
-      "type": "string",
-      "value": "\"anchor\""
+      "code": 6000,
+      "name": "FundNotActive",
+      "msg": "Fund is not active"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidShareClass",
+      "msg": "Share class not allowed to subscribe"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidAssetSubscribe",
+      "msg": "Asset not allowed to subscribe"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidPricingOracle",
+      "msg": "Invalid oracle for asset price"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidAssetsRedeem",
+      "msg": "Invalid assets in redeem"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidTreasuryAccount",
+      "msg": "Invalid treasury account"
+    }
+  ]
+};
+
+export const IDL: Glam = {
+  "version": "0.2.0",
+  "name": "glam",
+  "instructions": [
+    {
+      "name": "initializeV2",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "openfund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "share",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "fund",
+          "type": {
+            "defined": "FundModel"
+          }
+        }
+      ]
+    },
+    {
+      "name": "initialize",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "share",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "fundName",
+          "type": "string"
+        },
+        {
+          "name": "fundSymbol",
+          "type": "string"
+        },
+        {
+          "name": "fundUri",
+          "type": "string"
+        },
+        {
+          "name": "assetWeights",
+          "type": {
+            "vec": "u32"
+          }
+        },
+        {
+          "name": "activate",
+          "type": "bool"
+        },
+        {
+          "name": "shareClassMetadata",
+          "type": {
+            "defined": "ShareClassMetadata"
+          }
+        }
+      ]
+    },
+    {
+      "name": "update",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "uri",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "assetWeights",
+          "type": {
+            "option": {
+              "vec": "u32"
+            }
+          }
+        },
+        {
+          "name": "activate",
+          "type": {
+            "option": "bool"
+          }
+        }
+      ]
+    },
+    {
+      "name": "close",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "subscribe",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "shareClass",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signerShareAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signerAssetAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "token2022Program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "skipState",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "redeem",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "shareClass",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signerShareAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "treasury",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "token2022Program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "inKind",
+          "type": "bool"
+        },
+        {
+          "name": "skipState",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "driftInitialize",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userStats",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "driftProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "trader",
+          "type": {
+            "option": "publicKey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "driftUpdateDelegatedTrader",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "driftProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "trader",
+          "type": {
+            "option": "publicKey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "driftDeposit",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userStats",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "driftAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "driftProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "driftWithdraw",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userStats",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "driftSigner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "driftAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "driftProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "driftClose",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userStats",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "driftProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "state",
+      "docs": [
+        "Account: State"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "publicKey"
+          },
+          {
+            "name": "whitelistMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "discountMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "signer",
+            "type": "publicKey"
+          },
+          {
+            "name": "srmVault",
+            "type": "publicKey"
+          },
+          {
+            "name": "perpFeeStructure",
+            "type": {
+              "defined": "FeeStructure"
+            }
+          },
+          {
+            "name": "spotFeeStructure",
+            "type": {
+              "defined": "FeeStructure"
+            }
+          },
+          {
+            "name": "oracleGuardRails",
+            "type": {
+              "defined": "OracleGuardRails"
+            }
+          },
+          {
+            "name": "numberOfAuthorities",
+            "type": "u64"
+          },
+          {
+            "name": "numberOfSubAccounts",
+            "type": "u64"
+          },
+          {
+            "name": "lpCooldownTime",
+            "type": "u64"
+          },
+          {
+            "name": "liquidationMarginBufferRatio",
+            "type": "u32"
+          },
+          {
+            "name": "settlementDuration",
+            "type": "u16"
+          },
+          {
+            "name": "numberOfMarkets",
+            "type": "u16"
+          },
+          {
+            "name": "numberOfSpotMarkets",
+            "type": "u16"
+          },
+          {
+            "name": "signerNonce",
+            "type": "u8"
+          },
+          {
+            "name": "minPerpAuctionDuration",
+            "type": "u8"
+          },
+          {
+            "name": "defaultMarketOrderTimeInForce",
+            "type": "u8"
+          },
+          {
+            "name": "defaultSpotAuctionDuration",
+            "type": "u8"
+          },
+          {
+            "name": "exchangeStatus",
+            "type": "u8"
+          },
+          {
+            "name": "liquidationDuration",
+            "type": "u8"
+          },
+          {
+            "name": "initialPctToLiquidate",
+            "type": "u16"
+          },
+          {
+            "name": "maxNumberOfSubAccounts",
+            "type": "u16"
+          },
+          {
+            "name": "maxInitializeUserFee",
+            "type": "u16"
+          },
+          {
+            "name": "padding",
+            "type": {
+              "array": [
+                "u8",
+                10
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "fund",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "manager",
+            "type": "publicKey"
+          },
+          {
+            "name": "treasury",
+            "type": "publicKey"
+          },
+          {
+            "name": "assetsLen",
+            "type": "u8"
+          },
+          {
+            "name": "assets",
+            "type": {
+              "array": [
+                "publicKey",
+                5
+              ]
+            }
+          },
+          {
+            "name": "assetsWeights",
+            "type": {
+              "array": [
+                "u32",
+                5
+              ]
+            }
+          },
+          {
+            "name": "shareClassesLen",
+            "type": "u8"
+          },
+          {
+            "name": "shareClasses",
+            "type": {
+              "array": [
+                "publicKey",
+                3
+              ]
+            }
+          },
+          {
+            "name": "shareClassesMetadata",
+            "type": {
+              "array": [
+                {
+                  "defined": "ShareClassMetadata"
+                },
+                3
+              ]
+            }
+          },
+          {
+            "name": "shareClassesBumps",
+            "type": {
+              "array": [
+                "u8",
+                3
+              ]
+            }
+          },
+          {
+            "name": "timeCreated",
+            "type": "i64"
+          },
+          {
+            "name": "bumpFund",
+            "type": "u8"
+          },
+          {
+            "name": "bumpTreasury",
+            "type": "u8"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "isActive",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "fundAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "treasury",
+            "type": "publicKey"
+          },
+          {
+            "name": "shareClass",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "openfund",
+            "type": "publicKey"
+          },
+          {
+            "name": "openfundUri",
+            "type": "string"
+          },
+          {
+            "name": "manager",
+            "type": "publicKey"
+          },
+          {
+            "name": "engine",
+            "type": "publicKey"
+          },
+          {
+            "name": "params",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": "GlamParam"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "fundMetadataAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "fundPubkey",
+            "type": "publicKey"
+          },
+          {
+            "name": "company",
+            "type": {
+              "vec": {
+                "defined": "CompanyField"
+              }
+            }
+          },
+          {
+            "name": "fund",
+            "type": {
+              "vec": {
+                "defined": "FundField"
+              }
+            }
+          },
+          {
+            "name": "shareClass",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": "ShareClassField"
+                }
+              }
+            }
+          },
+          {
+            "name": "fundManager",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": "FundManagerField"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "treasury",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "manager",
+            "type": "publicKey"
+          },
+          {
+            "name": "fund",
+            "type": "publicKey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "FeeStructure",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "feeTiers",
+            "type": {
+              "array": [
+                {
+                  "defined": "FeeTier"
+                },
+                10
+              ]
+            }
+          },
+          {
+            "name": "fillerRewardStructure",
+            "type": {
+              "defined": "OrderFillerRewardStructure"
+            }
+          },
+          {
+            "name": "referrerRewardEpochUpperBound",
+            "type": "u64"
+          },
+          {
+            "name": "flatFillerFee",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FeeTier",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "feeNumerator",
+            "type": "u32"
+          },
+          {
+            "name": "feeDenominator",
+            "type": "u32"
+          },
+          {
+            "name": "makerRebateNumerator",
+            "type": "u32"
+          },
+          {
+            "name": "makerRebateDenominator",
+            "type": "u32"
+          },
+          {
+            "name": "referrerRewardNumerator",
+            "type": "u32"
+          },
+          {
+            "name": "referrerRewardDenominator",
+            "type": "u32"
+          },
+          {
+            "name": "refereeFeeNumerator",
+            "type": "u32"
+          },
+          {
+            "name": "refereeFeeDenominator",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OracleGuardRails",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "priceDivergence",
+            "type": {
+              "defined": "PriceDivergenceGuardRails"
+            }
+          },
+          {
+            "name": "validity",
+            "type": {
+              "defined": "ValidityGuardRails"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "OrderFillerRewardStructure",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "rewardNumerator",
+            "type": "u32"
+          },
+          {
+            "name": "rewardDenominator",
+            "type": "u32"
+          },
+          {
+            "name": "timeBasedRewardLowerBound",
+            "type": "u128"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PriceDivergenceGuardRails",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "markOraclePercentDivergence",
+            "type": "u64"
+          },
+          {
+            "name": "oracleTwap5minPercentDivergence",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ValidityGuardRails",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "slotsBeforeStaleForAmm",
+            "type": "i64"
+          },
+          {
+            "name": "slotsBeforeStaleForMargin",
+            "type": "i64"
+          },
+          {
+            "name": "confidenceIntervalMaxSize",
+            "type": "u64"
+          },
+          {
+            "name": "tooVolatileRatio",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CompanyModel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreatedModel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "manager",
+            "type": {
+              "option": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "FundModel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "symbol",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "uri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "uriOpenfund",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "isActive",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "assets",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "assetsWeights",
+            "type": {
+              "vec": "u32"
+            }
+          },
+          {
+            "name": "shareClass",
+            "type": {
+              "vec": {
+                "defined": "ShareClassModel"
+              }
+            }
+          },
+          {
+            "name": "company",
+            "type": {
+              "option": {
+                "defined": "CompanyModel"
+              }
+            }
+          },
+          {
+            "name": "manager",
+            "type": {
+              "option": {
+                "defined": "ManagerModel"
+              }
+            }
+          },
+          {
+            "name": "created",
+            "type": {
+              "option": {
+                "defined": "CreatedModel"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "GlamParam",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "OFKey"
+            }
+          },
+          {
+            "name": "val",
+            "type": {
+              "defined": "OFValue"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ManagerKind",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Wallet"
+          },
+          {
+            "name": "Squads"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ManagerModel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pubkey",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "type": {
+              "option": {
+                "defined": "ManagerKind"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "OFKey",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Symbol"
+          },
+          {
+            "name": "TimeCreated"
+          },
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Hello"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OFValue",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Boolean",
+            "fields": [
+              {
+                "name": "val",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "Date",
+            "fields": [
+              {
+                "name": "val",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "Double",
+            "fields": [
+              {
+                "name": "val",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "Integer",
+            "fields": [
+              {
+                "name": "val",
+                "type": "i32"
+              }
+            ]
+          },
+          {
+            "name": "String",
+            "fields": [
+              {
+                "name": "val",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "Time",
+            "fields": [
+              {
+                "name": "val",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "U8",
+            "fields": [
+              {
+                "name": "val",
+                "type": "u8"
+              }
+            ]
+          },
+          {
+            "name": "U64",
+            "fields": [
+              {
+                "name": "val",
+                "type": "u64"
+              }
+            ]
+          },
+          {
+            "name": "Pubkey",
+            "fields": [
+              {
+                "name": "val",
+                "type": "publicKey"
+              }
+            ]
+          },
+          {
+            "name": "Percentage",
+            "fields": [
+              {
+                "name": "val",
+                "type": "u32"
+              }
+            ]
+          },
+          {
+            "name": "URI",
+            "fields": [
+              {
+                "name": "val",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "Timestamp",
+            "fields": [
+              {
+                "name": "val",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "VecPubkey",
+            "fields": [
+              {
+                "name": "val",
+                "type": {
+                  "vec": "publicKey"
+                }
+              }
+            ]
+          },
+          {
+            "name": "VecU32",
+            "fields": [
+              {
+                "name": "val",
+                "type": {
+                  "vec": "u32"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "ShareClassMetadata",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "shareClassAsset",
+            "type": "string"
+          },
+          {
+            "name": "shareClassAssetId",
+            "type": "publicKey"
+          },
+          {
+            "name": "isin",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "type": "string"
+          },
+          {
+            "name": "feeManagement",
+            "type": "i32"
+          },
+          {
+            "name": "feePerformance",
+            "type": "i32"
+          },
+          {
+            "name": "policyDistribution",
+            "type": "string"
+          },
+          {
+            "name": "extension",
+            "type": "string"
+          },
+          {
+            "name": "launchDate",
+            "type": "string"
+          },
+          {
+            "name": "lifecycle",
+            "type": "string"
+          },
+          {
+            "name": "imageUri",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ShareClassModel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "symbol",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "uri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "asset",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "assetPubkey",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "isin",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "status",
+            "type": {
+              "option": {
+                "defined": "ShareClassStatus"
+              }
+            }
+          },
+          {
+            "name": "policyDistribution",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "extension",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "launchDate",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "lifecycle",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "imageUri",
+            "type": {
+              "option": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ShareClassStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Open"
+          },
+          {
+            "name": "SoftClosed"
+          },
+          {
+            "name": "HardClosed"
+          },
+          {
+            "name": "ClosedForRedemption"
+          },
+          {
+            "name": "ClosedForSubscriptionAndRedemption"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CompanyField",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "defined": "CompanyFieldName"
+            }
+          },
+          {
+            "name": "value",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CompanyFieldName",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "FundGroupName"
+          },
+          {
+            "name": "DomicileOfManCo"
+          },
+          {
+            "name": "ManCo"
+          },
+          {
+            "name": "BICOfCustodian"
+          },
+          {
+            "name": "CollateralManagerName"
+          },
+          {
+            "name": "CustodianBankName"
+          },
+          {
+            "name": "DomicileOfCustodianBank"
+          },
+          {
+            "name": "FundAdministratorName"
+          },
+          {
+            "name": "FundAdvisorName"
+          },
+          {
+            "name": "FundPromoterName"
+          },
+          {
+            "name": "IsSelfManagedInvestmentCompany"
+          },
+          {
+            "name": "LEIOfCustodianBank"
+          },
+          {
+            "name": "LEIOfManCo"
+          },
+          {
+            "name": "PortfolioManagingCompanyName"
+          },
+          {
+            "name": "SecuritiesLendingCounterpartyName"
+          },
+          {
+            "name": "SwapCounterpartyName"
+          },
+          {
+            "name": "AddressofManCo"
+          },
+          {
+            "name": "AuditorName"
+          },
+          {
+            "name": "CityofManCo"
+          },
+          {
+            "name": "EmailAddressOfManCo"
+          },
+          {
+            "name": "FundWebsiteofManCo"
+          },
+          {
+            "name": "IsUNPRISignatory"
+          },
+          {
+            "name": "PhoneCountryCodeofManCo"
+          },
+          {
+            "name": "PhoneNumberofManCo"
+          },
+          {
+            "name": "SubInvestmentAdvisorName"
+          },
+          {
+            "name": "ZIPCodeofManCo"
+          },
+          {
+            "name": "DomicileOfUmbrella"
+          },
+          {
+            "name": "HasUmbrella"
+          },
+          {
+            "name": "LEIOfUmbrella"
+          },
+          {
+            "name": "Umbrella"
+          },
+          {
+            "name": "GlobalIntermediaryIdentificationNumberOfUmbrella"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FundField",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "defined": "FundFieldName"
+            }
+          },
+          {
+            "name": "value",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FundFieldName",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "FundDomicileAlpha2"
+          },
+          {
+            "name": "FundDomicileAlpha3"
+          },
+          {
+            "name": "LegalFundNameIncludingUmbrella"
+          },
+          {
+            "name": "FiscalYearEnd"
+          },
+          {
+            "name": "FundCurrency"
+          },
+          {
+            "name": "FundLaunchDate"
+          },
+          {
+            "name": "InvestmentObjective"
+          },
+          {
+            "name": "IsETC"
+          },
+          {
+            "name": "IsEUDirectiveRelevant"
+          },
+          {
+            "name": "IsFundOfFunds"
+          },
+          {
+            "name": "IsPassiveFund"
+          },
+          {
+            "name": "IsREIT"
+          },
+          {
+            "name": "LegalForm"
+          },
+          {
+            "name": "LegalFundNameOnly"
+          },
+          {
+            "name": "OpenEndedOrClosedEndedFundStructure"
+          },
+          {
+            "name": "TypeOfEUDirective"
+          },
+          {
+            "name": "UCITSVersion"
+          },
+          {
+            "name": "CurrencyHedgePortfolio"
+          },
+          {
+            "name": "DepositoryName"
+          },
+          {
+            "name": "FundValuationPoint"
+          },
+          {
+            "name": "FundValuationPointTimeZone"
+          },
+          {
+            "name": "FundValuationPointTimeZoneUsingTZDatabase"
+          },
+          {
+            "name": "HasCollateralManager"
+          },
+          {
+            "name": "HasEmbeddedDerivatives"
+          },
+          {
+            "name": "HasSecuritiesLending"
+          },
+          {
+            "name": "HasSwap"
+          },
+          {
+            "name": "IsLeveraged"
+          },
+          {
+            "name": "IsShariaCompliant"
+          },
+          {
+            "name": "IsShort"
+          },
+          {
+            "name": "LEIofDepositoryBank"
+          },
+          {
+            "name": "LEIOfFund"
+          },
+          {
+            "name": "LocationOfBearerShare"
+          },
+          {
+            "name": "LocationOfShareRegister"
+          },
+          {
+            "name": "MaximumLeverageInFund"
+          },
+          {
+            "name": "MiFIDSecuritiesClassification"
+          },
+          {
+            "name": "MoneyMarketTypeOfFund"
+          },
+          {
+            "name": "TrusteeName"
+          },
+          {
+            "name": "AuMFund"
+          },
+          {
+            "name": "AuMFundDate"
+          },
+          {
+            "name": "NoSFund"
+          },
+          {
+            "name": "NoSFundDate"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FundManagerField",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "defined": "FundManagerFieldName"
+            }
+          },
+          {
+            "name": "value",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FundManagerFieldName",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "PortfolioManagerForename"
+          },
+          {
+            "name": "PortfolioManagerName"
+          },
+          {
+            "name": "PortfolioManagerYearOfBirth"
+          },
+          {
+            "name": "PortfolioManagerYearOfExperienceStart"
+          },
+          {
+            "name": "PortfolioManagerBriefBiography"
+          },
+          {
+            "name": "PortfolioManagerType"
+          },
+          {
+            "name": "PortfolioManagerRoleStartingDate"
+          },
+          {
+            "name": "PortfolioManagerRoleEndDate"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ShareClassField",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "defined": "ShareClassFieldName"
+            }
+          },
+          {
+            "name": "value",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ShareClassFieldName",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "ISIN"
+          },
+          {
+            "name": "ShareClassCurrency"
+          },
+          {
+            "name": "AllInFeeApplied"
+          },
+          {
+            "name": "AllInFeeDate"
+          },
+          {
+            "name": "AllInFeeIncludesTransactionCosts"
+          },
+          {
+            "name": "AllInFeeMaximum"
+          },
+          {
+            "name": "AppliedSubscriptionFeeInFavourOfDistributor"
+          },
+          {
+            "name": "AppliedSubscriptionFeeInFavourOfDistributorReferenceDate"
+          },
+          {
+            "name": "Benchmark"
+          },
+          {
+            "name": "CountryLegalRegistration"
+          },
+          {
+            "name": "CountryMarketingDistribution"
+          },
+          {
+            "name": "CurrencyHedgeShareClass"
+          },
+          {
+            "name": "CurrencyofMinimalSubscription"
+          },
+          {
+            "name": "DistributionDeclarationFrequency"
+          },
+          {
+            "name": "FullShareClassName"
+          },
+          {
+            "name": "HasAllInFee"
+          },
+          {
+            "name": "HasOngoingCharges"
+          },
+          {
+            "name": "HasPerformanceFee"
+          },
+          {
+            "name": "HasSubscriptionFeeInFavourOfDistributor"
+          },
+          {
+            "name": "InvestmentStatus"
+          },
+          {
+            "name": "IsETF"
+          },
+          {
+            "name": "IsRDRCompliant"
+          },
+          {
+            "name": "IsTrailerFeeClean"
+          },
+          {
+            "name": "ManagementFeeApplied"
+          },
+          {
+            "name": "ManagementFeeAppliedReferenceDate"
+          },
+          {
+            "name": "ManagementFeeMaximum"
+          },
+          {
+            "name": "MaximumSubscriptionFeeInFavourOfDistributor"
+          },
+          {
+            "name": "MinimalInitialSubscriptionCategory"
+          },
+          {
+            "name": "MinimalInitialSubscriptionInAmount"
+          },
+          {
+            "name": "MinimalInitialSubscriptionInShares"
+          },
+          {
+            "name": "MinimalSubsequentSubscriptionCategory"
+          },
+          {
+            "name": "MinimalSubsequentSubscriptionInAmount"
+          },
+          {
+            "name": "MinimalSubsequentSubscriptionInShares"
+          },
+          {
+            "name": "MinimumSubscriptionFeeInFavourOfDistributor"
+          },
+          {
+            "name": "OngoingCharges"
+          },
+          {
+            "name": "OngoingChargesDate"
+          },
+          {
+            "name": "PerformanceFeeApplied"
+          },
+          {
+            "name": "PerformanceFeeAppliedReferenceDate"
+          },
+          {
+            "name": "PerformanceFeeInProspectus"
+          },
+          {
+            "name": "PerformanceFeeInProspectusReferenceDate"
+          },
+          {
+            "name": "RecordDateForSRRI"
+          },
+          {
+            "name": "ShareClassDistributionPolicy"
+          },
+          {
+            "name": "ShareClassExtension"
+          },
+          {
+            "name": "ShareClassLaunchDate"
+          },
+          {
+            "name": "ShareClassLifecycle"
+          },
+          {
+            "name": "SRRI"
+          },
+          {
+            "name": "TERExcludingPerformanceFee"
+          },
+          {
+            "name": "TERExcludingPerformanceFeeDate"
+          },
+          {
+            "name": "TERIncludingPerformanceFee"
+          },
+          {
+            "name": "TERIncludingPerformanceFeeDate"
+          },
+          {
+            "name": "AbbreviatedShareClassName"
+          },
+          {
+            "name": "BICOfTransferAgent"
+          },
+          {
+            "name": "BloombergCode"
+          },
+          {
+            "name": "CurrencyOfMinimumRemainingAmount"
+          },
+          {
+            "name": "DistributionFeeMaximum"
+          },
+          {
+            "name": "DomicileofTransferAgent"
+          },
+          {
+            "name": "EFAMAActiveEFCClassification"
+          },
+          {
+            "name": "EFAMAEFCClassificationType"
+          },
+          {
+            "name": "EFAMAEFCInvestmentTheme"
+          },
+          {
+            "name": "EFAMAMainEFCCategory"
+          },
+          {
+            "name": "FIGICode"
+          },
+          {
+            "name": "FormOfShare"
+          },
+          {
+            "name": "HasDurationHedge"
+          },
+          {
+            "name": "IASector"
+          },
+          {
+            "name": "InvestmentStatusDate"
+          },
+          {
+            "name": "IsShareClassEligibleForUCITS"
+          },
+          {
+            "name": "LaunchPrice"
+          },
+          {
+            "name": "LaunchPriceCurrency"
+          },
+          {
+            "name": "LaunchPriceDate"
+          },
+          {
+            "name": "NAVPublicationTime"
+          },
+          {
+            "name": "PricingMethodology"
+          },
+          {
+            "name": "SinglePricingType"
+          },
+          {
+            "name": "StandardMinimumRemainingAmount"
+          },
+          {
+            "name": "StandardMinimumRemainingCategory"
+          },
+          {
+            "name": "StandardMinimumRemainingShares"
+          },
+          {
+            "name": "SwingFactor"
+          },
+          {
+            "name": "TransferAgentName"
+          },
+          {
+            "name": "ValuationFrequency"
+          },
+          {
+            "name": "AskNAV"
+          },
+          {
+            "name": "AskNAVDate"
+          },
+          {
+            "name": "AuMShareClass"
+          },
+          {
+            "name": "AuMShareClassDate"
+          },
+          {
+            "name": "BidNAV"
+          },
+          {
+            "name": "BidNAVDate"
+          },
+          {
+            "name": "DividendAnnouncementDate"
+          },
+          {
+            "name": "DividendCurrency"
+          },
+          {
+            "name": "DividendExDate"
+          },
+          {
+            "name": "DividendGross"
+          },
+          {
+            "name": "DividendNet"
+          },
+          {
+            "name": "DividendPaymentDate"
+          },
+          {
+            "name": "DividendRecordDate"
+          },
+          {
+            "name": "DynamicCurrency"
+          },
+          {
+            "name": "DynamicDataType"
+          },
+          {
+            "name": "DynamicValue"
+          },
+          {
+            "name": "EqualisationRate"
+          },
+          {
+            "name": "GeneralReferenceDate"
+          },
+          {
+            "name": "IsDividendFinal"
+          },
+          {
+            "name": "NoSShareClass"
+          },
+          {
+            "name": "NoSShareClassDate"
+          },
+          {
+            "name": "SplitRatio"
+          },
+          {
+            "name": "SplitReferenceDate"
+          },
+          {
+            "name": "TaxDeductedReinvestedAmount"
+          },
+          {
+            "name": "TaxDeductedReinvestedAmountReferenceDate"
+          },
+          {
+            "name": "TaxableIncomeperDividend"
+          },
+          {
+            "name": "TaxableIncomeperShareEU"
+          },
+          {
+            "name": "TransactionNAV"
+          },
+          {
+            "name": "TransactionNAVDate"
+          },
+          {
+            "name": "ValuationNAV"
+          },
+          {
+            "name": "ValuationNAVDate"
+          },
+          {
+            "name": "YieldOneDayGross"
+          },
+          {
+            "name": "YieldOneDayNet"
+          },
+          {
+            "name": "YieldSevenDayGross"
+          },
+          {
+            "name": "YieldSevenDayNet"
+          },
+          {
+            "name": "YieldThirtyDayGross"
+          },
+          {
+            "name": "YieldThirtyDayNet"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "FundNotActive",
+      "msg": "Fund is not active"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidShareClass",
+      "msg": "Share class not allowed to subscribe"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidAssetSubscribe",
+      "msg": "Asset not allowed to subscribe"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidPricingOracle",
+      "msg": "Invalid oracle for asset price"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidAssetsRedeem",
+      "msg": "Invalid assets in redeem"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidTreasuryAccount",
+      "msg": "Invalid treasury account"
     }
   ]
 };

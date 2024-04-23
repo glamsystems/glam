@@ -5,7 +5,8 @@ const { priceHistory, fundPerformance } = require("./prices");
 const cors = require("cors");
 const pyth = require("@pythnetwork/pyth-evm-js");
 
-BASE_URL = "https://api.glam.systems";
+const BASE_URL = "https://api.glam.systems";
+const SOLANA_RPC = process.env.SOLANA_RPC || "http://localhost:8899";
 
 const app = express();
 app.use(express.static("public"));

@@ -1,1 +1,4 @@
 runtime: nodejs20
+
+env_variables:
+  SOLANA_RPC: "https://api.devnet.solana.com"

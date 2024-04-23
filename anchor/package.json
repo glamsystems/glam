@@ -1,6 +1,6 @@
 {
-  "name": "@glam/anchor",
-  "version": "0.0.1",
+  "name": "@glam/protocol",
+  "version": "0.2.0",
   "dependencies": {},
   "type": "commonjs",
   "main": "./index.cjs",

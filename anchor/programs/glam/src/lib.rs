@@ -15,6 +15,14 @@ declare_id!("Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc");
 pub mod glam {
     use super::*;
 
+    // V2
+    pub fn initialize_v2<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, InitializeFundV2<'info>>,
+        fund: FundModel,
+    ) -> Result<()> {
+        manager_v2::initialize_fund_v2_handler(ctx, fund)
+    }
+
     // Manager
 
     pub fn initialize<'c: 'info, 'info>(
