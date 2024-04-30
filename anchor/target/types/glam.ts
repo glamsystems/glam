@@ -1142,7 +1142,7 @@ export type Glam = {
             }
           },
           {
-            "name": "uriOpenfund",
+            "name": "openfundUri",
             "type": {
               "option": "string"
             }
@@ -2282,33 +2282,38 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "FundNotActive",
-      "msg": "Fund is not active"
+      "name": "CloseNotEmptyError",
+      "msg": "Error closing account: not empty"
     },
     {
       "code": 6001,
-      "name": "InvalidShareClass",
-      "msg": "Share class not allowed to subscribe"
+      "name": "NotAuthorizedError",
+      "msg": "Error: not authorized"
     },
     {
       "code": 6002,
-      "name": "InvalidAssetSubscribe",
-      "msg": "Asset not allowed to subscribe"
+      "name": "InvalidFundName",
+      "msg": "Invalid fund name: max 30 chars"
     },
     {
       "code": 6003,
-      "name": "InvalidPricingOracle",
-      "msg": "Invalid oracle for asset price"
+      "name": "InvalidFundSymbol",
+      "msg": "Too many assets: max 50"
     },
     {
       "code": 6004,
-      "name": "InvalidAssetsRedeem",
-      "msg": "Invalid assets in redeem"
+      "name": "InvalidFundUri",
+      "msg": "Too many assets: max 20"
     },
     {
       "code": 6005,
-      "name": "InvalidTreasuryAccount",
-      "msg": "Invalid treasury account"
+      "name": "InvalidAssetsLen",
+      "msg": "Too many assets: max 100"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidAssetsWeights",
+      "msg": "Number of weights should match number of assets"
     }
   ]
 };
@@ -3457,7 +3462,7 @@ export const IDL: Glam = {
             }
           },
           {
-            "name": "uriOpenfund",
+            "name": "openfundUri",
             "type": {
               "option": "string"
             }
@@ -4597,33 +4602,38 @@ export const IDL: Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "FundNotActive",
-      "msg": "Fund is not active"
+      "name": "CloseNotEmptyError",
+      "msg": "Error closing account: not empty"
     },
     {
       "code": 6001,
-      "name": "InvalidShareClass",
-      "msg": "Share class not allowed to subscribe"
+      "name": "NotAuthorizedError",
+      "msg": "Error: not authorized"
     },
     {
       "code": 6002,
-      "name": "InvalidAssetSubscribe",
-      "msg": "Asset not allowed to subscribe"
+      "name": "InvalidFundName",
+      "msg": "Invalid fund name: max 30 chars"
     },
     {
       "code": 6003,
-      "name": "InvalidPricingOracle",
-      "msg": "Invalid oracle for asset price"
+      "name": "InvalidFundSymbol",
+      "msg": "Too many assets: max 50"
     },
     {
       "code": 6004,
-      "name": "InvalidAssetsRedeem",
-      "msg": "Invalid assets in redeem"
+      "name": "InvalidFundUri",
+      "msg": "Too many assets: max 20"
     },
     {
       "code": 6005,
-      "name": "InvalidTreasuryAccount",
-      "msg": "Invalid treasury account"
+      "name": "InvalidAssetsLen",
+      "msg": "Too many assets: max 100"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidAssetsWeights",
+      "msg": "Number of weights should match number of assets"
     }
   ]
 };

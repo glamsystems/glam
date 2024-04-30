@@ -162,7 +162,7 @@ pub struct FundModel {
     pub symbol: Option<String>,
     pub name: Option<String>,
     pub uri: Option<String>,
-    pub uri_openfund: Option<String>,
+    pub openfund_uri: Option<String>,
     pub is_active: Option<bool>,
 
     // assets

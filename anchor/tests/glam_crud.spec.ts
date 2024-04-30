@@ -1,15 +1,14 @@
 import * as anchor from "@coral-xyz/anchor";
 import { BN, Program, IdlTypes } from "@coral-xyz/anchor";
 import { PublicKey, Keypair, ComputeBudgetProgram } from "@solana/web3.js";
+import { GlamClient, Glam } from "../src";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
   getAssociatedTokenAddressSync
 } from "@solana/spl-token";
-import { Glam, IDL as GlamIDL } from "../target/types/glam";
 import { DRIFT_PROGRAM_ID } from "@drift-labs/sdk";
-type FundModel = IdlTypes<Glam>["FundModel"];
 
 import {
   DriftClient,
@@ -21,6 +20,8 @@ import {
 import { getKeypairFromEnvironment } from "@solana-developers/helpers";
 
 describe("glam_crud", () => {
+  const client = new GlamClient();
+
   // Configure the client to use the local cluster.
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
@@ -43,11 +44,11 @@ describe("glam_crud", () => {
     [
       anchor.utils.bytes.utf8.encode("fund"),
       manager.publicKey.toBuffer(),
-      Uint8Array.from([1,2,3,4,5,6,7,8]),
+      Uint8Array.from([1, 2, 3, 4, 5, 6, 7, 8])
     ],
     program.programId
   );
-  const fundUri = `https://devnet.glam.systems/#/products/${fundPDA.toBase58()}`;
+  const fundUri = `https://devnet.glam.systems/products/${fundPDA.toBase58()}`;
   const openfundUri = `https://api.glam.systems/openfund/${fundPDA.toBase58()}`;
 
   const [treasuryPDA, treasuryBump] = PublicKey.findProgramAddressSync(
@@ -61,7 +62,11 @@ describe("glam_crud", () => {
   );
 
   const [sharePDA, shareBump] = PublicKey.findProgramAddressSync(
-    [anchor.utils.bytes.utf8.encode("share"), Uint8Array.from([0]), fundPDA.toBuffer()],
+    [
+      anchor.utils.bytes.utf8.encode("share"),
+      Uint8Array.from([0]),
+      fundPDA.toBuffer()
+    ],
     program.programId
   );
   const shareClassMetadata = {
@@ -85,52 +90,60 @@ describe("glam_crud", () => {
 
   it("Initialize fund", async () => {
     try {
-      const defaultFundModel = <FundModel>{
-        id: null,
-        name: null,
-        symbol: null,
-        uri: null,
-        uriOpenfund: null,
-        isActive: null,
-        assets: [],
-        assetsWeights: [],
-        shareClass: [],
-        company: null,
-        manager: null,
-        created: null,
-      };
-      const fundModel = {
-        ...defaultFundModel,
-        created: { key: [1,2,3,4,5,6,7,8], manager: null },
+      // const defaultFundModel = <FundModel>{
+      //   id: null,
+      //   name: null,
+      //   symbol: null,
+      //   uri: null,
+      //   uriOpenfund: null,
+      //   isActive: null,
+      //   assets: [],
+      //   assetsWeights: [],
+      //   shareClass: [],
+      //   company: null,
+      //   manager: null,
+      //   created: null
+      // };
+      // const fundModel = {
+      //   ...defaultFundModel,
+      //   created: { key: [1, 2, 3, 4, 5, 6, 7, 8], manager: null },
+      //   name: fundName
+      // };
+      // const txId = await program.methods
+      //   .initializeV2(fundModel)
+      //   .accounts({
+      //     fund: fundPDA,
+      //     treasury: treasuryPDA,
+      //     openfund: openfundPDA,
+      //     share: sharePDA,
+      //     manager: manager.publicKey,
+      //     tokenProgram: TOKEN_2022_PROGRAM_ID
+      //   })
+      //   .remainingAccounts([
+      //     { pubkey: usdc, isSigner: false, isWritable: false },
+      //     { pubkey: btc, isSigner: false, isWritable: false },
+      //     { pubkey: eth, isSigner: false, isWritable: false }
+      //   ])
+      //   .preInstructions([
+      //     ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
+      //   ])
+      //   .rpc({ commitment });
+      const [txId, fundPDA] = await client.createFund({
         name: fundName,
-      };
-      const txId = await program.methods
-        .initializeV2(fundModel)
-        .accounts({
-          fund: fundPDA,
-          treasury: treasuryPDA,
-          openfund: openfundPDA,
-          share: sharePDA,
-          manager: manager.publicKey,
-          tokenProgram: TOKEN_2022_PROGRAM_ID
-        })
-        .remainingAccounts([
-          { pubkey: usdc, isSigner: false, isWritable: false },
-          { pubkey: btc, isSigner: false, isWritable: false },
-          { pubkey: eth, isSigner: false, isWritable: false }
-        ])
-        .preInstructions([
-          ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
-        ])
-        .rpc({ commitment });
-      console.log(`Fund ${fundPDA} initialized, txId: ${txId}`);
+        symbol: fundSymbol,
+        uri: fundUri,
+        openfundUri
+      });
+      console.log(`Fund initialized: ${txId}`);
+
+      // const fund = await program.account.fundAccount.fetch(fundPDA);
+      const fund = await client.fetchFund(fundPDA);
+      console.log(fund);
     } catch (e) {
       console.error(e);
       throw e;
     }
 
-    const fund = await program.account.fundAccount.fetch(fundPDA);
-    console.log(fund);
     // expect(fund.shareClassesLen).toEqual(1);
     // expect(fund.assetsLen).toEqual(3);
     // expect(fund.name).toEqual(fundName);
@@ -138,7 +151,7 @@ describe("glam_crud", () => {
     // expect(fund.uri).toEqual(fundUri);
     // expect(fund.isActive).toEqual(true);
   });
-/*
+  /*
   it("Update fund", async () => {
     const newFundName = "Updated fund name";
     await program.methods

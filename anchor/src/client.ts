@@ -1,7 +1,8 @@
 import * as anchor from "@coral-xyz/anchor";
-import { BN, Program, IdlTypes } from "@coral-xyz/anchor";
+import { BN, Program, IdlAccounts, IdlTypes } from "@coral-xyz/anchor";
 import {
   ComputeBudgetProgram,
+  Connection,
   PublicKey,
   TransactionSignature
 } from "@solana/web3.js";
@@ -16,6 +17,8 @@ import {
 import { Glam, GlamIDL, GlamProgram, getGlamProgramId } from "./glamExports";
 import { GlamClientConfig } from "./clientConfig";
 
+type FundAccount = IdlAccounts<Glam>["fundAccount"];
+type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
 type FundModel = IdlTypes<Glam>["FundModel"];
 
 export class GlamClient {
@@ -24,7 +27,7 @@ export class GlamClient {
   programId: PublicKey;
 
   public constructor(config?: GlamClientConfig) {
-    this.programId = getGlamProgramId(config.cluster || "devnet");
+    this.programId = getGlamProgramId(config?.cluster || "devnet");
     if (config?.provider) {
       this.provider = config.provider;
       this.program = new Program(
@@ -33,14 +36,25 @@ export class GlamClient {
         this.provider
       ) as GlamProgram;
     } else {
-      this.provider = anchor.AnchorProvider.env();
+      const defaultProvider = anchor.AnchorProvider.env();
+      const url = defaultProvider.connection.rpcEndpoint;
+      const connection = new Connection(url, "confirmed");
+      this.provider = new anchor.AnchorProvider(
+        connection,
+        defaultProvider.wallet,
+        {
+          ...defaultProvider.opts,
+          commitment: "confirmed",
+          preflightCommitment: "confirmed"
+        }
+      );
       anchor.setProvider(this.provider);
       this.program = anchor.workspace.Glam as GlamProgram;
     }
   }
 
   getManager(): PublicKey {
-    return this.provider.publicKey;
+    return this.provider?.publicKey || new PublicKey(0);
   }
 
   getFundModel(fund: any): FundModel {
@@ -49,7 +63,7 @@ export class GlamClient {
       name: null,
       symbol: null,
       uri: null,
-      uriOpenfund: null,
+      openfundUri: null,
       isActive: null,
       assets: [],
       assetsWeights: [],
@@ -70,7 +84,7 @@ export class GlamClient {
       [
         anchor.utils.bytes.utf8.encode("fund"),
         manager.toBuffer(),
-        Uint8Array.from(fundModel.created.key)
+        Uint8Array.from(fundModel?.created?.key || [])
       ],
       this.programId
     );
@@ -107,11 +121,9 @@ export class GlamClient {
     }
 
     // createdKey = hash fund name and get first 8 bytes
-    const createdKey = anchor.utils.sha256
-      .hash(fundModel.name)
-      .substring(0, 8)
-      .split("")
-      .map((c) => c.charCodeAt(0));
+    const createdKey = [
+      ...Buffer.from(anchor.utils.sha256.hash(fundModel.name || "")).slice(0, 8)
+    ];
 
     return {
       ...fundModel,
@@ -124,7 +136,9 @@ export class GlamClient {
     };
   }
 
-  public async createFund(fund: any): Promise<TransactionSignature> {
+  public async createFund(
+    fund: any
+  ): Promise<[TransactionSignature, PublicKey]> {
     const fundModel = this.enrichFundModelInitialize(this.getFundModel(fund));
     const fundPDA = this.getFundPDA(fundModel);
     const treasury = this.getTreasuryPDA(fundPDA);
@@ -132,13 +146,13 @@ export class GlamClient {
     const manager = this.getManager();
 
     //TODO: add instructions to "addShareClass" in the same tx
-    return this.program.methods
+    const txSig = await this.program.methods
       .initializeV2(fundModel)
       .accounts({
         fund: fundPDA,
         treasury,
         openfund,
-        // share: sharePDA,
+        share: treasury,
         manager,
         tokenProgram: TOKEN_2022_PROGRAM_ID
       })
@@ -146,5 +160,24 @@ export class GlamClient {
         ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
       ])
       .rpc();
+    return [txSig, fundPDA];
+  }
+
+  public async fetchFundAccount(fundPDA: PublicKey): Promise<FundAccount> {
+    return this.program.account.fundAccount.fetch(fundPDA);
+  }
+
+  public async fetchFundMetadataAccount(
+    fundPDA: PublicKey
+  ): Promise<FundMetadataAccount> {
+    const openfund = this.getOpenfundPDA(fundPDA);
+    return this.program.account.fundMetadataAccount.fetch(openfund);
+  }
+
+  public async fetchFund(fundPDA: PublicKey): Promise<FundModel> {
+    const fundAccount = await this.fetchFundAccount(fundPDA);
+    const openfundAccount = await this.fetchFundMetadataAccount(fundPDA);
+    //TODO rebuild model from accounts
+    return this.getFundModel(fundAccount);
   }
 }

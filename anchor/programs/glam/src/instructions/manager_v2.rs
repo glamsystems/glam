@@ -68,12 +68,28 @@ pub fn initialize_fund_v2_handler<'c: 'info, 'info>(
     let share = &mut ctx.accounts.share;
     let openfund = &mut ctx.accounts.openfund;
 
-    // fund.name = fund_name;
-    // fund.uri = fund_uri;
+    if let Some(fund_name) = fund_model.name {
+        require!(
+            fund_name.len() < MAX_FUND_NAME,
+            ManagerError::InvalidFundName
+        );
+        fund.name = fund_name;
+    }
+    if let Some(fund_uri) = fund_model.uri {
+        require!(fund_uri.len() < MAX_FUND_URI, ManagerError::InvalidFundUri);
+        fund.uri = fund_uri;
+    }
+    if let Some(openfund_uri) = fund_model.openfund_uri {
+        require!(
+            openfund_uri.len() < MAX_FUND_URI,
+            ManagerError::InvalidFundUri
+        );
+        fund.openfund_uri = openfund_uri;
+    }
+
     fund.treasury = treasury.key();
     fund.share_class = vec![share.key()];
     fund.openfund = openfund.key();
-    // fund.openfund_uri = openfund_uri;
     fund.manager = ctx.accounts.manager.key();
 
     fund.params = vec![vec![
