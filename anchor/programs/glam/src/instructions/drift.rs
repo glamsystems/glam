@@ -1,6 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::associated_token::AssociatedToken;
-use anchor_spl::token::{Mint, Token};
+use anchor_spl::token::Token;
 use anchor_spl::token_interface::TokenAccount;
 
 use crate::error::ManagerError;
@@ -19,7 +18,9 @@ use drift::State;
 pub struct DriftInitialize<'info> {
     #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
     pub fund: Account<'info, Fund>,
-    pub treasury: Account<'info, Treasury>,
+
+    /// CHECK: treasury account is the same as fund treasury
+    pub treasury: AccountInfo<'info>,
 
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
@@ -42,11 +43,16 @@ pub fn drift_initialize_handler(
     ctx: Context<DriftInitialize>,
     trader: Option<Pubkey>,
 ) -> Result<()> {
-    let treasury = &ctx.accounts.treasury;
+    require!(
+        ctx.accounts.treasury.key() == ctx.accounts.fund.treasury,
+        ManagerError::NotAuthorizedError
+    );
+
+    let fund_key = ctx.accounts.fund.key();
     let seeds = &[
         "treasury".as_bytes(),
-        treasury.fund.as_ref(),
-        &[treasury.bump],
+        fund_key.as_ref(),
+        &[ctx.accounts.fund.bump_treasury],
     ];
     let signer_seeds = &[&seeds[..]];
 
@@ -108,7 +114,9 @@ pub fn drift_initialize_handler(
 pub struct DriftUpdate<'info> {
     #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
     pub fund: Account<'info, Fund>,
-    pub treasury: Account<'info, Treasury>,
+
+    /// CHECK: treasury account is the same as fund treasury
+    pub treasury: AccountInfo<'info>,
 
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
@@ -124,11 +132,16 @@ pub fn drift_update_delegated_trader_handler(
     ctx: Context<DriftUpdate>,
     trader: Option<Pubkey>,
 ) -> Result<()> {
-    let treasury = &ctx.accounts.treasury;
+    require!(
+        ctx.accounts.treasury.key() == ctx.accounts.fund.treasury,
+        ManagerError::NotAuthorizedError
+    );
+
+    let fund_key = ctx.accounts.fund.key();
     let seeds = &[
         "treasury".as_bytes(),
-        treasury.fund.as_ref(),
-        &[treasury.bump],
+        fund_key.as_ref(),
+        &[ctx.accounts.fund.bump_treasury],
     ];
     let signer_seeds = &[&seeds[..]];
 
@@ -181,11 +194,16 @@ pub fn drift_deposit_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftDeposit<'info>>,
     amount: u64,
 ) -> Result<()> {
-    let treasury = &ctx.accounts.treasury;
+    require!(
+        ctx.accounts.treasury.key() == ctx.accounts.fund.treasury,
+        ManagerError::NotAuthorizedError
+    );
+
+    let fund_key = ctx.accounts.fund.key();
     let seeds = &[
         "treasury".as_bytes(),
-        treasury.fund.as_ref(),
-        &[treasury.bump],
+        fund_key.as_ref(),
+        &[ctx.accounts.fund.bump_treasury],
     ];
     let signer_seeds = &[&seeds[..]];
 
@@ -247,11 +265,16 @@ pub fn drift_withdraw_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftWithdraw<'info>>,
     amount: u64,
 ) -> Result<()> {
-    let treasury = &ctx.accounts.treasury;
+    require!(
+        ctx.accounts.treasury.key() == ctx.accounts.fund.treasury,
+        ManagerError::NotAuthorizedError
+    );
+
+    let fund_key = ctx.accounts.fund.key();
     let seeds = &[
         "treasury".as_bytes(),
-        treasury.fund.as_ref(),
-        &[treasury.bump],
+        fund_key.as_ref(),
+        &[ctx.accounts.fund.bump_treasury],
     ];
     let signer_seeds = &[&seeds[..]];
 
@@ -304,11 +327,16 @@ pub struct DriftClose<'info> {
 }
 
 pub fn drift_close_handler(ctx: Context<DriftClose>) -> Result<()> {
-    let treasury = &ctx.accounts.treasury;
+    require!(
+        ctx.accounts.treasury.key() == ctx.accounts.fund.treasury,
+        ManagerError::NotAuthorizedError
+    );
+
+    let fund_key = ctx.accounts.fund.key();
     let seeds = &[
         "treasury".as_bytes(),
-        treasury.fund.as_ref(),
-        &[treasury.bump],
+        fund_key.as_ref(),
+        &[ctx.accounts.fund.bump_treasury],
     ];
     let signer_seeds = &[&seeds[..]];
 

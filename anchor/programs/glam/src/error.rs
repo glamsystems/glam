@@ -35,6 +35,12 @@ pub enum InvestorError {
 }
 
 #[error_code]
+pub enum FundError {
+    #[msg("No share class found")]
+    NoShareClassInFund,
+}
+
+#[error_code]
 pub enum PolicyError {
     #[msg("Policy violation: transfers disabled")]
     TransfersDisabled,

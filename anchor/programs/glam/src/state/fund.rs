@@ -10,33 +10,61 @@ pub const MAX_FUND_URI: usize = 100;
 pub struct Fund {
     pub manager: Pubkey,  // 32
     pub treasury: Pubkey, // 32
-    pub assets_len: u8,   // 1
-    pub assets: [Pubkey; MAX_ASSETS],
-    pub assets_weights: [u32; MAX_ASSETS], // (32 + 4) * MAX_ASSETS
-    pub share_classes_len: u8,             // 1
-    pub share_classes: [Pubkey; MAX_SHARE_CLASSES],
-    pub share_classes_metadata: [ShareClassMetadata; MAX_SHARE_CLASSES],
-    pub share_classes_bumps: [u8; MAX_SHARE_CLASSES], // (32 + 1) * MAX_SHARE_CLASSES
-    pub time_created: i64,                            // 8
-    pub bump_fund: u8,                                // 1
-    pub bump_treasury: u8,                            // 1
-    pub name: String,                                 // max MAX_FUND_NAME chars
-    pub symbol: String,                               // max MAX_FUND_SYMBOL chars
-    pub uri: String,                                  // max MAX_FUND_URI chars
-    pub is_active: bool,                              // 1
+    pub assets: Vec<Pubkey>,
+    pub assets_weights: Vec<u32>,
+    pub share_classes: Vec<Pubkey>,
+    // pub share_classes_metadata: [ShareClassMetadata; MAX_SHARE_CLASSES],
+    pub share_classes_bumps: Vec<u8>,
+    pub time_created: i64, // 8
+    pub bump_fund: u8,     // 1
+    pub bump_treasury: u8, // 1
+    pub name: String,      // max MAX_FUND_NAME chars
+    pub symbol: String,    // max MAX_FUND_SYMBOL chars
+    pub uri: String,       // max MAX_FUND_URI chars
+    pub is_active: bool,   // 1
 }
 impl Fund {
     pub const INIT_SIZE: usize = 1024;
+
+    pub fn init(
+        &mut self,
+        name: String,
+        symbol: String,
+        uri: String,
+        manager: Pubkey,
+        treasury: Pubkey,
+        asset_mints: Vec<Pubkey>,
+        asset_weights: Vec<u32>,
+        bump_fund: u8,
+        bump_treasury: u8,
+        time_created: i64,
+        activate: bool,
+    ) {
+        self.name = name;
+        self.symbol = symbol;
+        self.uri = uri;
+        self.manager = manager;
+        self.treasury = treasury;
+        self.assets = asset_mints;
+        self.assets_weights = asset_weights;
+        self.bump_fund = bump_fund;
+        self.bump_treasury = bump_treasury;
+        self.time_created = time_created;
+        self.is_active = activate;
+    }
 }
 
 #[account]
 pub struct Treasury {
-    pub manager: Pubkey,
-    pub fund: Pubkey,
-    pub bump: u8,
-}
-impl Treasury {
-    pub const INIT_SIZE: usize = 32 + 32 + 1;
+    //
+    //  we cannot carry any data with this treasury account, otherwise marinade staking will fail
+    //
+    //     pub manager: Pubkey,
+    //     pub fund: Pubkey,
+    //     pub bump: u8,
+    // }
+    // impl Treasury {
+    //     pub const INIT_SIZE: usize = 32 + 32 + 1;
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]

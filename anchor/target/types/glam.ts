@@ -14,6 +14,77 @@ export type Glam = {
   },
   "instructions": [
     {
+      "name": "addShareClass",
+      "discriminator": [
+        34,
+        49,
+        47,
+        6,
+        204,
+        166,
+        51,
+        204
+      ],
+      "accounts": [
+        {
+          "name": "shareClassMint",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  104,
+                  97,
+                  114,
+                  101
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "share_class_metadata.symbol"
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          }
+        },
+        {
+          "name": "fund",
+          "writable": true
+        },
+        {
+          "name": "manager",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "fund"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        }
+      ],
+      "args": [
+        {
+          "name": "shareClassMetadata",
+          "type": {
+            "defined": {
+              "name": "shareClassMetadata"
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "close",
       "discriminator": [
         98,
@@ -390,30 +461,6 @@ export type Glam = {
           }
         },
         {
-          "name": "share",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  104,
-                  97,
-                  114,
-                  101,
-                  45,
-                  48
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "fund"
-              }
-            ]
-          }
-        },
-        {
           "name": "manager",
           "writable": true,
           "signer": true
@@ -421,14 +468,6 @@ export type Glam = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
-        },
-        {
-          "name": "tokenProgram",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-        },
-        {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
         }
       ],
       "args": [
@@ -453,14 +492,6 @@ export type Glam = {
         {
           "name": "activate",
           "type": "bool"
-        },
-        {
-          "name": "shareClassMetadata",
-          "type": {
-            "defined": {
-              "name": "shareClassMetadata"
-            }
-          }
         }
       ]
     },
@@ -815,61 +846,26 @@ export type Glam = {
             "type": "pubkey"
           },
           {
-            "name": "assetsLen",
-            "type": "u8"
-          },
-          {
             "name": "assets",
             "type": {
-              "array": [
-                "pubkey",
-                5
-              ]
+              "vec": "pubkey"
             }
           },
           {
             "name": "assetsWeights",
             "type": {
-              "array": [
-                "u32",
-                5
-              ]
+              "vec": "u32"
             }
-          },
-          {
-            "name": "shareClassesLen",
-            "type": "u8"
           },
           {
             "name": "shareClasses",
             "type": {
-              "array": [
-                "pubkey",
-                3
-              ]
-            }
-          },
-          {
-            "name": "shareClassesMetadata",
-            "type": {
-              "array": [
-                {
-                  "defined": {
-                    "name": "shareClassMetadata"
-                  }
-                },
-                3
-              ]
+              "vec": "pubkey"
             }
           },
           {
             "name": "shareClassesBumps",
-            "type": {
-              "array": [
-                "u8",
-                3
-              ]
-            }
+            "type": "bytes"
           },
           {
             "name": "timeCreated",
@@ -1158,20 +1154,7 @@ export type Glam = {
       "name": "treasury",
       "type": {
         "kind": "struct",
-        "fields": [
-          {
-            "name": "manager",
-            "type": "pubkey"
-          },
-          {
-            "name": "fund",
-            "type": "pubkey"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          }
-        ]
+        "fields": []
       }
     },
     {
