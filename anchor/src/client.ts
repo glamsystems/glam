@@ -175,6 +175,7 @@ export class GlamClient {
   }
 
   public async fetchFund(fundPDA: PublicKey): Promise<FundModel> {
+    console.log(fundPDA);
     const fundAccount = await this.fetchFundAccount(fundPDA);
     const openfundAccount = await this.fetchFundMetadataAccount(fundPDA);
     //TODO rebuild model from accounts

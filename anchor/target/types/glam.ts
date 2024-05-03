@@ -2282,38 +2282,18 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "CloseNotEmptyError",
-      "msg": "Error closing account: not empty"
+      "name": "TransfersDisabled",
+      "msg": "Policy violation: transfers disabled"
     },
     {
       "code": 6001,
-      "name": "NotAuthorizedError",
-      "msg": "Error: not authorized"
+      "name": "AmountTooBig",
+      "msg": "Policy violation: amount too big"
     },
     {
       "code": 6002,
-      "name": "InvalidFundName",
-      "msg": "Invalid fund name: max 30 chars"
-    },
-    {
-      "code": 6003,
-      "name": "InvalidFundSymbol",
-      "msg": "Too many assets: max 50"
-    },
-    {
-      "code": 6004,
-      "name": "InvalidFundUri",
-      "msg": "Too many assets: max 20"
-    },
-    {
-      "code": 6005,
-      "name": "InvalidAssetsLen",
-      "msg": "Too many assets: max 100"
-    },
-    {
-      "code": 6006,
-      "name": "InvalidAssetsWeights",
-      "msg": "Number of weights should match number of assets"
+      "name": "LockOut",
+      "msg": "Policy violation: lock out period"
     }
   ]
 };
@@ -4602,38 +4582,18 @@ export const IDL: Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "CloseNotEmptyError",
-      "msg": "Error closing account: not empty"
+      "name": "TransfersDisabled",
+      "msg": "Policy violation: transfers disabled"
     },
     {
       "code": 6001,
-      "name": "NotAuthorizedError",
-      "msg": "Error: not authorized"
+      "name": "AmountTooBig",
+      "msg": "Policy violation: amount too big"
     },
     {
       "code": 6002,
-      "name": "InvalidFundName",
-      "msg": "Invalid fund name: max 30 chars"
-    },
-    {
-      "code": 6003,
-      "name": "InvalidFundSymbol",
-      "msg": "Too many assets: max 50"
-    },
-    {
-      "code": 6004,
-      "name": "InvalidFundUri",
-      "msg": "Too many assets: max 20"
-    },
-    {
-      "code": 6005,
-      "name": "InvalidAssetsLen",
-      "msg": "Too many assets: max 100"
-    },
-    {
-      "code": 6006,
-      "name": "InvalidAssetsWeights",
-      "msg": "Number of weights should match number of assets"
+      "name": "LockOut",
+      "msg": "Policy violation: lock out period"
     }
   ]
 };
