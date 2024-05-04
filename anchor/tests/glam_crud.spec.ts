@@ -1,8 +1,10 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Glam } from "../target/types/glam";
+import { getTokenMetadata } from "@solana/spl-token";
 
 import { createFundForTest } from "./setup";
+import { getImageUri, getMetadataUri } from "../src/offchain";
 
 describe("glam_crud", () => {
   const provider = anchor.AnchorProvider.env();
@@ -25,11 +27,16 @@ describe("glam_crud", () => {
     shareBump = fundData.shareBump;
 
     const fund = await program.account.fund.fetch(fundPDA);
-    console.log(fund);
     expect(fund.shareClasses.length).toEqual(1);
     expect(fund.assets.length).toEqual(3);
     expect(fund.symbol).toEqual("GBTC");
     expect(fund.isActive).toEqual(true);
+
+    const metadata = await getTokenMetadata(provider.connection, sharePDA);
+    const { image_uri } = Object.fromEntries(metadata!.additionalMetadata);
+    expect(metadata?.symbol).toEqual("GBTC.A");
+    expect(metadata?.uri).toEqual(getMetadataUri(sharePDA));
+    expect(image_uri).toEqual(getImageUri(sharePDA));
   });
 
   it("Update fund", async () => {
@@ -46,7 +53,6 @@ describe("glam_crud", () => {
     expect(fund.isActive).toEqual(false);
   });
 
-  /*
   it("Close fund", async () => {
     const fund = await program.account.fund.fetchNullable(fundPDA);
     expect(fund).not.toBeNull();
@@ -63,5 +69,4 @@ describe("glam_crud", () => {
     const closedAccount = await program.account.fund.fetchNullable(fundPDA);
     expect(closedAccount).toBeNull();
   });
-  */
 });

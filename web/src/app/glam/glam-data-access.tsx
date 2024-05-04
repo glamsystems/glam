@@ -2,6 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 
 import {
   getMint,
+  getTokenMetadata,
   ASSOCIATED_TOKEN_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
@@ -20,7 +21,13 @@ import {
   getUserStatsAccountPublicKey,
   getDriftSignerPublicKey
 } from "@drift-labs/sdk";
-import { GlamIDL, getGlamProgramId } from "@glam/anchor";
+import {
+  GlamIDL,
+  getFundUri,
+  getGlamProgramId,
+  getImageUri,
+  getMetadataUri
+} from "@glam/anchor";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -40,7 +47,7 @@ export function useGlamProgram() {
     () => getGlamProgramId(cluster.network as Cluster),
     [cluster]
   );
-  const program = new anchor.Program(GlamIDL, provider);
+  const program = new anchor.Program(GlamIDL, programId, provider);
 
   const accounts = useQuery({
     queryKey: ["glam", "all", { cluster }],
@@ -55,7 +62,7 @@ export function useGlamProgram() {
   const shareClassMetadata = {
     name: "GLAM Fund X Class A Share",
     symbol: "CLASS-A",
-    uri: "https://api.glam.systems/metadata/xyz",
+    uri: "",
     shareClassAsset: "USDC",
     shareClassAssetId: new PublicKey(
       "8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2"
@@ -68,14 +75,14 @@ export function useGlamProgram() {
     extension: "",
     launchDate: "2024-04-01",
     lifecycle: "active",
-    imageUri: "https://api.glam.systems/image/xyz.png"
+    imageUri: ""
   };
 
   type ShareClassMetadata = typeof shareClassMetadata;
 
   const initialize = useMutation({
     mutationKey: ["glam", "initialize", { cluster }],
-    mutationFn: ({
+    mutationFn: async ({
       fundName,
       fundSymbol,
       manager,
@@ -91,54 +98,56 @@ export function useGlamProgram() {
       shareClassMetadata: ShareClassMetadata;
     }) => {
       const [fundPDA, fundBump] = PublicKey.findProgramAddressSync(
-        [
-          anchor.utils.bytes.utf8.encode("fund"),
-          manager.toBuffer(),
-          anchor.utils.bytes.utf8.encode(fundName)
-        ],
+        [Buffer.from("fund"), manager.toBuffer(), Buffer.from(fundName)],
         program.programId
       );
-      const fundUri = `https://devnet.glam.systems/#/products/${fundPDA.toBase58()}`;
+      const fundUri = getFundUri(fundPDA);
 
       const [treasuryPDA, treasuryBump] = PublicKey.findProgramAddressSync(
-        [anchor.utils.bytes.utf8.encode("treasury"), fundPDA.toBuffer()],
+        [Buffer.from("treasury"), fundPDA.toBuffer()],
         program.programId
       );
 
       const [sharePDA, shareBump] = PublicKey.findProgramAddressSync(
-        [anchor.utils.bytes.utf8.encode("share-0"), fundPDA.toBuffer()],
+        [
+          Buffer.from("share"),
+          Buffer.from(shareClassMetadata.symbol),
+          fundPDA.toBuffer()
+        ],
         program.programId
       );
 
-      shareClassMetadata.uri = `https://api.glam.systems/metadata/${sharePDA.toBase58()}`;
-      shareClassMetadata.imageUri = `https://api.glam.systems/image/${sharePDA.toBase58()}.png`;
+      shareClassMetadata.uri = getMetadataUri(sharePDA);
+      shareClassMetadata.imageUri = getImageUri(sharePDA);
 
       const remainingAccounts: Array<AccountMeta> = assets.map((a) => ({
         pubkey: new PublicKey(a),
         isSigner: false,
         isWritable: false
       }));
-      return program.methods
-        .initialize(
-          fundName,
-          fundSymbol,
-          fundUri,
-          assetsStructure,
-          true,
-          shareClassMetadata
-        )
+
+      await program.methods
+        .initialize(fundName, fundSymbol, fundUri, assetsStructure, true)
         .accounts({
-          // fund: fundPDA,
-          // treasury: treasuryPDA,
-          // share: sharePDA,
-          manager: manager,
-          // tokenProgram: TOKEN_2022_PROGRAM_ID
+          fund: fundPDA,
+          treasury: treasuryPDA,
+          manager: manager
         })
         .remainingAccounts(remainingAccounts)
+        .rpc({ commitment: "confirmed" });
+
+      return program.methods
+        .addShareClass(shareClassMetadata)
+        .accounts({
+          fund: fundPDA,
+          shareClassMint: sharePDA,
+          manager: manager,
+          tokenProgram: TOKEN_2022_PROGRAM_ID
+        })
         .preInstructions([
           ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
         ])
-        .rpc();
+        .rpc({ commitment: "confirmed" });
     },
     onSuccess: (tx) => {
       console.log(tx);
@@ -164,6 +173,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
   const transactionToast = useTransactionToast();
   const { program, accounts } = useGlamProgram();
   const wallet = useWallet();
+  const { connection } = useConnection();
   const { setVisible: setWalletModalVisible } = useWalletModal();
 
   const usdc = new PublicKey("8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2"); // 6 decimals
@@ -194,13 +204,22 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
   );
 
   const account = useQuery({
-    queryKey: ["glam", "fetch", { fundKey }],
+    queryKey: ["glam", "fetch-fund", { fundKey }],
     queryFn: () => program.account.fund.fetch(fundKey)
+  });
+
+  const shareClassMetadata = useQuery({
+    queryKey: ["glam", "fetch-share-class-metadata", { fundKey }],
+    queryFn: async () => {
+      const fund = await program.account.fund.fetch(fundKey);
+      const shareClass = fund.shareClasses[0];
+      return getTokenMetadata(connection, shareClass);
+    }
   });
 
   const subscribe = useMutation({
     mutationKey: ["glam", "subscribe", { fundKey }],
-    mutationFn: (mutationData: any) => {
+    mutationFn: async (mutationData: any) => {
       const { fund, asset, amount } = mutationData;
       const signer = wallet.publicKey;
       if (!signer) {
@@ -272,8 +291,10 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
         { pubkey: pricingBtc, isSigner: false, isWritable: false }
       ];
 
+      const shareClassMetadata = await getTokenMetadata(connection, shareClass);
+
       return program.methods
-        .subscribe(amount, true)
+        .subscribe(amount, shareClassMetadata!.symbol, true)
         .accounts({
           fund: fundKey,
           shareClass,
@@ -282,8 +303,8 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
           treasuryAta,
           signerAssetAta,
           signer,
-          // tokenProgram: TOKEN_PROGRAM_ID,
-          // token2022Program: TOKEN_2022_PROGRAM_ID
+          tokenProgram: TOKEN_PROGRAM_ID,
+          token2022Program: TOKEN_2022_PROGRAM_ID
         })
         .remainingAccounts(remainingAccountsSubscribe)
         .preInstructions([
@@ -401,8 +422,8 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
           shareClass,
           signerShareAta,
           signer,
-          // tokenProgram: TOKEN_PROGRAM_ID,
-          // token2022Program: TOKEN_2022_PROGRAM_ID
+          tokenProgram: TOKEN_PROGRAM_ID,
+          token2022Program: TOKEN_2022_PROGRAM_ID
         })
         .remainingAccounts(remainingAccountsRedeem)
         .rpc();
@@ -468,9 +489,9 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
           userStats: userStatsAccountPublicKey,
           user: userAccountPublicKey,
           state: statePublicKey,
-          // manager: signer,
-          // driftProgram: DRIFT_PROGRAM_ID,
-          // tokenProgram: TOKEN_PROGRAM_ID
+          manager: signer,
+          driftProgram: DRIFT_PROGRAM_ID,
+          tokenProgram: TOKEN_PROGRAM_ID
         })
         .remainingAccounts(remainingAccountsDeposit)
         .rpc();
@@ -544,10 +565,10 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
           userStats: userStatsAccountPublicKey,
           user: userAccountPublicKey,
           state: statePublicKey,
-          // manager: signer,
+          manager: signer,
           driftSigner: signerPublicKey,
-          // driftProgram: DRIFT_PROGRAM_ID,
-          // tokenProgram: TOKEN_PROGRAM_ID
+          driftProgram: DRIFT_PROGRAM_ID,
+          tokenProgram: TOKEN_PROGRAM_ID
         })
         .remainingAccounts(remainingAccountsWithdraw)
         .rpc();
@@ -565,6 +586,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
 
   return {
     account,
+    shareClassMetadata,
     subscribe,
     redeem,
     driftDeposit,
