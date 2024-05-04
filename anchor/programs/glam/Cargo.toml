@@ -13,7 +13,6 @@ no-entrypoint = []
 no-idl = []
 no-log-ix-name = []
 cpi = ["no-entrypoint"]
-idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
 default = []
 mainnet = []
 devnet = []
@@ -22,7 +21,8 @@ devnet = []
 anchor-lang = { workspace = true }
 anchor-spl = { workspace = true }
 solana-program = { workspace = true }
-
+spl-token = { workspace = true }
+spl-associated-token-account = { workspace = true }
 spl-token-2022 = { workspace = true }
 spl-token-metadata-interface = { workspace = true }
 pyth-sdk-solana = { workspace = true }

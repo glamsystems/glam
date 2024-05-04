@@ -8,7 +8,7 @@ use anchor_spl::token_interface::{
 use pyth_sdk_solana::state::SolanaPriceAccount;
 use pyth_sdk_solana::Price;
 
-use crate::error::InvestorError;
+use crate::error::{FundError, InvestorError};
 use crate::state::fund::*;
 
 //TODO(security): check that treasury belongs to the fund
@@ -105,15 +105,21 @@ pub struct Subscribe<'info> {
 pub fn subscribe_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, Subscribe<'info>>,
     amount: u64,
+    share_class_symbol: String,
     skip_state: bool,
 ) -> Result<()> {
     let fund = &ctx.accounts.fund;
     require!(fund.is_active, InvestorError::FundNotActive);
 
-    if fund.share_classes_len > 1 {
+    if fund.share_classes.len() > 1 {
         // we need to define how to split the total amount into share classes
         panic!("not implemented")
     }
+    require!(fund.share_classes.len() > 0, FundError::NoShareClassInFund);
+
+    msg!("fund.share_class[0]: {}", fund.share_classes[0]);
+    msg!("expected share class: {}", ctx.accounts.share_class.key());
+
     require!(
         fund.share_classes[0] == ctx.accounts.share_class.key(),
         InvestorError::InvalidShareClass
@@ -147,7 +153,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     // the assets should be the fund.assets, including the base asset,
     // and in the correct order.
     require!(
-        ctx.remaining_accounts.len() == 2 * fund.assets_len as usize,
+        ctx.remaining_accounts.len() == 2 * fund.assets.len(),
         InvestorError::InvalidAssetSubscribe
     );
 
@@ -265,10 +271,12 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     )?;
 
     if skip_state {
+        // TODO: we should read share class symbol from metadata so that we don't need to pass it as an argument
         // mint shares to signer
         let fund_key = ctx.accounts.fund.key();
         let seeds = &[
-            "share-0".as_bytes(),
+            "share".as_bytes(),
+            share_class_symbol.as_bytes(),
             fund_key.as_ref(),
             &[ctx.accounts.fund.share_classes_bumps[0]],
         ];
@@ -306,7 +314,9 @@ pub struct Redeem<'info> {
     // signers
     #[account(mut)]
     pub signer: Signer<'info>,
-    pub treasury: Account<'info, Treasury>,
+
+    /// CHECK: skip
+    pub treasury: AccountInfo<'info>,
 
     // programs
     pub token_program: Program<'info, Token>,
@@ -331,7 +341,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
     in_kind: bool,
     skip_state: bool,
 ) -> Result<()> {
-    if ctx.accounts.fund.share_classes_len > 1 {
+    if ctx.accounts.fund.share_classes.len() > 1 {
         // we need to define how to split the total amount into share classes
         panic!("not implemented")
     }
@@ -361,7 +371,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
         // the assets should be the fund.assets, including the base asset,
         // and in the correct order.
         require!(
-            ctx.remaining_accounts.len() == 4 * fund.assets_len as usize,
+            ctx.remaining_accounts.len() == 4 * fund.assets.len(),
             InvestorError::InvalidAssetsRedeem
         );
 
@@ -520,10 +530,11 @@ pub fn redeem_handler<'c: 'info, 'info>(
                 ctx.accounts.token_program.to_account_info()
             };
 
+            let fund_key = ctx.accounts.fund.key();
             let seeds = &[
                 "treasury".as_bytes(),
-                treasury.fund.as_ref(),
-                &[treasury.bump],
+                fund_key.as_ref(),
+                &[ctx.accounts.fund.bump_treasury],
             ];
             let signer_seeds = &[&seeds[..]];
             // msg!(

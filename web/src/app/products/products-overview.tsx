@@ -18,6 +18,7 @@ import { CustomPagination } from "../ui/Pagination";
 import { formatDateFromTimestamp } from "../utils/format-number";
 import { useGlamProgram } from "../glam/glam-data-access";
 import { useNavigate } from "react-router-dom";
+import { getImageUri } from "@glam/anchor";
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -37,26 +38,20 @@ export default function ProductsOverview() {
   const allRows = (accounts.data || [])
     .map((account) => {
       const fund = account.account;
-      const imageKey =
-        fund.shareClasses[0].toBase58() || "11111111111111111111111111111111";
       return {
-        imageURL: `https://api.glam.systems/image/${imageKey}.png`,
+        imageURL: getImageUri(fund.shareClasses[0]),
         id: account.publicKey.toBase58(),
         name: fund.name,
         symbol: fund.symbol,
-        share_classes_len: fund.shareClassesLen,
-        assets_len: fund.assetsLen,
-        fees_management: fund.shareClassesMetadata[0].feeManagement / 10_000.0,
-        fees_performance:
-          fund.shareClassesMetadata[0].feePerformance / 10_000.0,
-        inception: new Date(
-          Date.parse(fund.shareClassesMetadata[0].launchDate)
-        ),
-        status: capitalize(fund.shareClassesMetadata[0].lifecycle),
-        shareClassAsset: fund.shareClassesMetadata[0].shareClassAsset,
-        policyDistribution: capitalize(
-          fund.shareClassesMetadata[0].policyDistribution
-        )
+        share_classes_len: fund.shareClasses.length,
+        assets_len: fund.assets.length,
+        // FIXME
+        fees_management: "", // fund.shareClassesMetadata[0].feeManagement / 10_000.0,
+        fees_performance: "", // fund.shareClassesMetadata[0].feePerformance / 10_000.0,
+        inception: "", // new Date(Date.parse(fund.shareClassesMetadata[0].launchDate)),
+        status: "", // capitalize(fund.shareClassesMetadata[0].lifecycle),
+        shareClassAsset: "", // fund.shareClassesMetadata[0].shareClassAsset,
+        policyDistribution: "" // capitalize(fund.shareClassesMetadata[0].policyDistribution)
       };
     })
     .sort(sortFunds);

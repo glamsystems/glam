@@ -27,6 +27,7 @@ import { gray70Hover } from "@carbon/colors";
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { getImageUri } from "@glam/anchor";
 
 const OBJECTIVE_MAP: { [key: string]: string } = {
   AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2:
@@ -57,7 +58,7 @@ export default function ProductPage() {
       const pubkey =
         this.data?.shareClasses[0].toBase58() ||
         "11111111111111111111111111111111";
-      return `https://api.glam.systems/image/${pubkey}.png`;
+      return getImageUri(pubkey);
     }
 
     getManagementFee() {
@@ -86,7 +87,11 @@ export default function ProductPage() {
     { value: 0 },
     { value: 0 }
   ];
-  const { account } = useGlamProgramAccount({ fundKey });
+  const { account, shareClassMetadata } = useGlamProgramAccount({ fundKey });
+  // Snake case keys for on-chain metadata
+  const { image_uri, launch_date, share_class_asset } = Object.fromEntries(
+    shareClassMetadata.data!.additionalMetadata
+  );
   const data = account.data;
   const { aum, totalShares } = getAum(
     data?.treasury?.toString() || "",
@@ -98,8 +103,6 @@ export default function ProductPage() {
   }
 
   const fundModel = new FundModel(fundKey, data);
-  const imageURL =
-    data?.shareClasses[0].toBase58() || "11111111111111111111111111111111";
   const isManager = publicKey?.toString() === data?.manager?.toString();
 
   const disablePerf = DISABLE_PERF[fundId] || false;
@@ -108,7 +111,7 @@ export default function ProductPage() {
     id: fundId,
     symbol: data?.symbol || "",
     name: data?.name,
-    imgURL: `https://api.glam.systems/image/${imageURL}.png`,
+    imgURL: image_uri,
     manager: data?.manager,
     treasury: data?.treasury,
     shareClass0: data?.shareClasses[0],
@@ -127,8 +130,8 @@ export default function ProductPage() {
       redemption: 0.0
     },
     facts: {
-      launchDate: data?.shareClassesMetadata[0].launchDate,
-      fundAsset: data?.shareClassesMetadata[0].shareClassAsset
+      launchDate: launch_date,
+      fundAsset: share_class_asset
     },
     terms: {
       highWaterMark: false,

@@ -1,6 +1,5 @@
 use anchor_lang::{prelude::*, system_program};
-use anchor_spl::token_2022;
-use anchor_spl::token_interface::{Mint, Token2022};
+use anchor_spl::{token_2022, token_interface::Token2022};
 use spl_token_2022::{extension::ExtensionType, state::Mint as StateMint};
 
 use crate::error::ManagerError;
@@ -12,19 +11,14 @@ pub struct InitializeFund<'info> {
     #[account(init, seeds = [b"fund".as_ref(), manager.key().as_ref(), name.as_ref()], bump, payer = manager, space = 8 + Fund::INIT_SIZE + ShareClassMetadata::INIT_SIZE)]
     pub fund: Box<Account<'info, Fund>>,
 
-    #[account(init, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump, payer = manager, space = 8 + Treasury::INIT_SIZE)]
-    pub treasury: Account<'info, Treasury>,
-
-    /// CHECK: we'll create the account later on with metadata
-    #[account(mut, seeds = [b"share-0".as_ref(), fund.key().as_ref()], bump)]
-    pub share: AccountInfo<'info>,
+    /// CHECK: we'll create the account
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: AccountInfo<'info>,
 
     #[account(mut)]
     pub manager: Signer<'info>,
 
     pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token2022>,
-    pub rent: Sysvar<'info, Rent>,
 }
 
 pub fn initialize_fund_handler<'c: 'info, 'info>(
@@ -34,7 +28,6 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     fund_uri: String,
     asset_weights: Vec<u32>,
     activate: bool,
-    share_class_metadata: ShareClassMetadata,
 ) -> Result<()> {
     //
     // Validate the input
@@ -60,55 +53,114 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     );
 
     //
+    // Create the treasury account
+    //
+    let rent = Rent::get()?;
+    let lamports = rent.minimum_balance(std::mem::size_of::<Treasury>() + 8);
+    let fund_key = ctx.accounts.fund.key();
+
+    let seeds = &[
+        "treasury".as_bytes(),
+        fund_key.as_ref(),
+        &[ctx.bumps.treasury],
+    ];
+    let signer_seeds = &[&seeds[..]];
+
+    system_program::create_account(
+        CpiContext::new_with_signer(
+            ctx.accounts.system_program.to_account_info(),
+            system_program::CreateAccount {
+                from: ctx.accounts.manager.to_account_info(),
+                to: ctx.accounts.treasury.to_account_info(),
+            },
+            signer_seeds,
+        ),
+        lamports,
+        0, // we cannot carry any data with this treasury account, otherwise marinade staking will fail
+        &ctx.accounts.system_program.key(),
+    )?;
+
+    //
     // Initialize the fund
     //
     let fund = &mut ctx.accounts.fund;
-    let treasury = &mut ctx.accounts.treasury;
+    let asset_mints: Vec<Pubkey> = ctx
+        .remaining_accounts
+        .into_iter()
+        .map(|a| a.key())
+        .collect();
 
-    fund.manager = ctx.accounts.manager.key();
-    fund.treasury = treasury.key();
-    fund.name = fund_name;
-    fund.symbol = fund_symbol;
-    fund.uri = fund_uri;
-    fund.bump_fund = ctx.bumps.fund;
-    fund.bump_treasury = ctx.bumps.treasury;
-    fund.time_created = Clock::get()?.unix_timestamp;
-    fund.share_classes_len = 1;
-    fund.share_classes[0] = ctx.accounts.share.key();
-    fund.share_classes_metadata[0] = share_class_metadata.clone();
-    fund.share_classes_bumps[0] = ctx.bumps.share;
+    fund.init(
+        fund_name,
+        fund_symbol,
+        fund_uri,
+        ctx.accounts.manager.key(),
+        ctx.accounts.treasury.key(),
+        asset_mints,
+        asset_weights,
+        ctx.bumps.fund,
+        ctx.bumps.treasury,
+        Clock::get()?.unix_timestamp,
+        activate,
+    );
 
-    fund.assets_len = assets_len as u8;
-    for (i, account) in ctx.remaining_accounts.iter().enumerate() {
-        let asset = InterfaceAccount::<Mint>::try_from(account).expect("invalid asset");
-        fund.assets[i] = asset.key();
-    }
-    for (i, &w) in asset_weights.iter().enumerate() {
-        fund.assets_weights[i] = w;
-    }
-    fund.is_active = activate;
+    msg!("Fund created: {}", ctx.accounts.fund.key());
+    Ok(())
+}
 
-    treasury.manager = ctx.accounts.manager.key();
-    treasury.fund = fund.key();
-    treasury.bump = ctx.bumps.treasury;
+#[derive(Accounts)]
+#[instruction(share_class_metadata: ShareClassMetadata)]
+pub struct AddShareClass<'info> {
+    /// CHECK: we'll create the account later on with metadata
+    #[account(
+      mut,
+      seeds = [
+        b"share".as_ref(),
+        share_class_metadata.symbol.as_ref(),
+        fund.key().as_ref()
+      ],
+      bump
+    )]
+    pub share_class_mint: AccountInfo<'info>,
 
+    #[account(mut, has_one = manager @ ManagerError::NotAuthorizedError)]
+    pub fund: Account<'info, Fund>,
+
+    #[account(mut)]
+    pub manager: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token2022>,
+}
+
+pub fn add_share_class_handler<'c: 'info, 'info>(
+    ctx: Context<'_, '_, 'c, 'info, AddShareClass<'info>>,
+    share_class_metadata: ShareClassMetadata,
+) -> Result<()> {
+    let fund = &mut ctx.accounts.fund;
+    fund.share_classes.push(ctx.accounts.share_class_mint.key());
+    fund.share_classes_bumps.push(ctx.bumps.share_class_mint);
     //
     // Initialize share class mint and metadata
     //
-    let share_mint = ctx.accounts.share.to_account_info();
-    let share_metadata = ctx.accounts.share.to_account_info();
-    let share_mint_authority = ctx.accounts.share.to_account_info();
-    let share_metadata_authority = ctx.accounts.share.to_account_info();
+    let share_mint = ctx.accounts.share_class_mint.to_account_info();
+    let share_metadata = ctx.accounts.share_class_mint.to_account_info();
+    let share_mint_authority = ctx.accounts.share_class_mint.to_account_info();
+    let share_metadata_authority = ctx.accounts.share_class_mint.to_account_info();
 
     let fund_key = ctx.accounts.fund.key();
-    let seeds = &["share-0".as_bytes(), fund_key.as_ref(), &[ctx.bumps.share]];
+    let seeds = &[
+        "share".as_bytes(),
+        share_class_metadata.symbol.as_ref(),
+        fund_key.as_ref(),
+        &[ctx.bumps.share_class_mint],
+    ];
     let signer_seeds = &[&seeds[..]];
 
     let space =
         ExtensionType::try_calculate_account_len::<StateMint>(&[ExtensionType::MetadataPointer])
             .unwrap();
     let metadata_space = ShareClassMetadata::INIT_SIZE;
-
     let lamports_required = (Rent::get()?).minimum_balance(space + metadata_space);
 
     msg!(
@@ -310,8 +362,6 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
         &[share_mint.clone(), share_mint_authority.clone()],
         signer_seeds,
     )?;
-
-    msg!("Fund created: {}", ctx.accounts.fund.key());
     Ok(())
 }
 
@@ -344,10 +394,8 @@ pub fn update_fund_handler<'c: 'info, 'info>(
         fund.is_active = activate;
     }
     if let Some(asset_weights) = asset_weights {
-        let assets_len = asset_weights.len();
-        require!(assets_len <= MAX_ASSETS, ManagerError::InvalidAssetsLen);
         require!(
-            assets_len == fund.assets_len as usize,
+            asset_weights.len() == fund.assets_weights.len(),
             ManagerError::InvalidAssetsLen
         );
         for (i, &w) in asset_weights.iter().enumerate() {
