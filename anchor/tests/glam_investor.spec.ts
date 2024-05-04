@@ -22,6 +22,7 @@ import {
 } from "@solana/spl-token";
 
 import { Glam } from "../target/types/glam";
+import { getFundUri, getImageUri, getMetadataUri } from "../src/offchain";
 
 describe("glam_investor", () => {
   // Configure the client to use the local cluster.
@@ -56,24 +57,21 @@ describe("glam_investor", () => {
   const fundName = "Investment fund";
   const fundSymbol = "IFD";
   const [fundPDA, fundBump] = PublicKey.findProgramAddressSync(
-    [
-      anchor.utils.bytes.utf8.encode("fund"),
-      manager.publicKey.toBuffer(),
-      anchor.utils.bytes.utf8.encode(fundName)
-    ],
+    [Buffer.from("fund"), manager.publicKey.toBuffer(), Buffer.from(fundName)],
     program.programId
   );
-  const fundUri = `https://devnet.glam.systems/#/products/${fundPDA.toBase58()}`;
+  const fundUri = getFundUri(fundPDA);
 
   // share class
+  const shareClassSymbol = `${fundSymbol}.A`;
   const [sharePDA, shareBump] = PublicKey.findProgramAddressSync(
-    [anchor.utils.bytes.utf8.encode("share-0"), fundPDA.toBuffer()],
+    [Buffer.from("share"), Buffer.from(shareClassSymbol), fundPDA.toBuffer()],
     program.programId
   );
   const shareClassMetadata = {
     name: fundName,
-    symbol: fundSymbol,
-    uri: `https://api.glam.systems/metadata/${sharePDA.toBase58()}`,
+    symbol: shareClassSymbol,
+    uri: getMetadataUri(sharePDA),
     shareClassAsset: "USDC",
     shareClassAssetId: usdc.publicKey,
     isin: "XS1082172823",
@@ -84,12 +82,12 @@ describe("glam_investor", () => {
     extension: "",
     launchDate: "2024-04-01",
     lifecycle: "active",
-    imageUri: `https://api.glam.systems/image/${sharePDA.toBase58()}.png`
+    imageUri: getImageUri(sharePDA)
   };
 
   // treasury
   const [treasuryPDA, treasuryBump] = PublicKey.findProgramAddressSync(
-    [anchor.utils.bytes.utf8.encode("treasury"), fundPDA.toBuffer()],
+    [Buffer.from("treasury"), fundPDA.toBuffer()],
     program.programId
   );
 
@@ -284,21 +282,12 @@ describe("glam_investor", () => {
       //
       // create fund
       //
-      const txId = await program.methods
-        .initialize(
-          fundName,
-          fundSymbol,
-          fundUri,
-          [0, 60, 40],
-          true,
-          shareClassMetadata
-        )
+      let txId = await program.methods
+        .initialize(fundName, fundSymbol, fundUri, [0, 60, 40], true)
         .accounts({
           fund: fundPDA,
           treasury: treasuryPDA,
-          share: sharePDA,
-          manager: manager.publicKey,
-          tokenProgram: TOKEN_2022_PROGRAM_ID
+          manager: manager.publicKey
         })
         .remainingAccounts([
           { pubkey: usdc.publicKey, isSigner: false, isWritable: false },
@@ -309,6 +298,19 @@ describe("glam_investor", () => {
           ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
         ])
         .rpc({ commitment });
+
+      txId = await program.methods
+        .addShareClass(shareClassMetadata)
+        .accounts({
+          fund: fundPDA,
+          shareClassMint: sharePDA,
+          manager: manager.publicKey,
+          tokenProgram: TOKEN_2022_PROGRAM_ID
+        })
+        .preInstructions([
+          ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
+        ])
+        .rpc({ commitment: "confirmed" });
     } catch (e) {
       console.error(e);
       throw e;
@@ -332,12 +334,11 @@ describe("glam_investor", () => {
   it("Fund created", async () => {
     try {
       const fund = await program.account.fund.fetch(fundPDA);
-      expect(fund.shareClassesLen).toEqual(1);
-      expect(fund.assetsLen).toEqual(3);
+      expect(fund.shareClasses[0]).toEqual(sharePDA);
       expect(fund.name).toEqual(fundName);
       expect(fund.symbol).toEqual(fundSymbol);
       expect(fund.isActive).toEqual(true);
-    } catch(e) {
+    } catch (e) {
       console.error(e);
     }
   });
@@ -386,7 +387,7 @@ describe("glam_investor", () => {
     const expectedShares = "3000"; // $10/share => 3k shares
     try {
       const txId = await program.methods
-        .subscribe(amount, true)
+        .subscribe(amount, shareClassSymbol, true)
         .accounts({
           fund: fundPDA,
           shareClass: sharePDA,
@@ -405,7 +406,6 @@ describe("glam_investor", () => {
         .rpc({ commitment });
       console.log("subscribe eth:", txId);
     } catch (e) {
-      // subscribe
       console.error(e);
       throw e;
     }
@@ -449,7 +449,7 @@ describe("glam_investor", () => {
         ASSOCIATED_TOKEN_PROGRAM_ID
       );
       const txId = await program.methods
-        .subscribe(new BN(1 * 10 ** 9), true)
+        .subscribe(new BN(1 * 10 ** 9), shareClassSymbol, true)
         .accounts({
           fund: fundPDA,
           shareClass: invalidShareClass,
@@ -475,7 +475,7 @@ describe("glam_investor", () => {
     const expectedShares = "8100"; // 3,000 + 5,100
     try {
       const txId = await program.methods
-        .subscribe(amount, true)
+        .subscribe(amount, shareClassSymbol, true)
         .accounts({
           fund: fundPDA,
           shareClass: sharePDA,
@@ -491,7 +491,6 @@ describe("glam_investor", () => {
         .rpc({ commitment });
       console.log("subscribe btc:", txId);
     } catch (e) {
-      // subscribe
       console.error(e);
       throw e;
     }
@@ -744,7 +743,7 @@ describe("glam_investor", () => {
     const amount = new BN(250 * 10 ** 6); // USDC has 6 decimals
     try {
       const txId = await program.methods
-        .subscribe(amount, true)
+        .subscribe(amount, shareClassSymbol, true)
         .accounts({
           fund: fundPDA,
           shareClass: sharePDA,
@@ -764,7 +763,6 @@ describe("glam_investor", () => {
         .rpc({ commitment });
       console.log("tx:", txId);
     } catch (e) {
-      // subscribe
       console.error(e);
       throw e;
     }

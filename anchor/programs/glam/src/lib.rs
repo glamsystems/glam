@@ -61,9 +61,10 @@ pub mod glam {
     pub fn subscribe<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, Subscribe<'info>>,
         amount: u64,
+        share_class_symbol: String,
         skip_state: bool,
     ) -> Result<()> {
-        investor::subscribe_handler(ctx, amount, skip_state)
+        investor::subscribe_handler(ctx, amount, share_class_symbol, skip_state)
     }
     pub fn redeem<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, Redeem<'info>>,

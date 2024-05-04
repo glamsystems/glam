@@ -1,6 +1,5 @@
 use anchor_lang::{prelude::*, system_program};
-use anchor_spl::token_2022;
-use anchor_spl::token_interface::{Mint, Token2022};
+use anchor_spl::{token_2022, token_interface::Token2022};
 use spl_token_2022::{extension::ExtensionType, state::Mint as StateMint};
 
 use crate::error::ManagerError;

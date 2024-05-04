@@ -1,11 +1,10 @@
 // Here we export some useful types and functions for interacting with the Anchor program.
 import { Cluster, PublicKey } from '@solana/web3.js';
 import { Program } from '@coral-xyz/anchor';
-import GlamIDLUntyped from '../target/idl/glam.json';
 import type { Glam } from '../target/types/glam';
+import { IDL as GlamIDL } from '../target/types/glam';
 
 // Re-export the generated IDL and type
-const GlamIDL = GlamIDLUntyped as Glam;
 export { Glam, GlamIDL };
 export type GlamProgram = Program<Glam>;
 
