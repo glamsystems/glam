@@ -818,7 +818,7 @@
             "type": "publicKey"
           },
           {
-            "name": "shareClass",
+            "name": "shareClasses",
             "type": {
               "vec": "publicKey"
             }
@@ -878,7 +878,7 @@
             }
           },
           {
-            "name": "shareClass",
+            "name": "shareClasses",
             "type": {
               "vec": {
                 "vec": {
@@ -888,7 +888,7 @@
             }
           },
           {
-            "name": "fundManager",
+            "name": "fundManagers",
             "type": {
               "vec": {
                 "vec": {
@@ -1076,131 +1076,6 @@
       }
     },
     {
-      "name": "CompanyModel",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "name",
-            "type": {
-              "option": "string"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "CreatedModel",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "key",
-            "type": {
-              "array": [
-                "u8",
-                8
-              ]
-            }
-          },
-          {
-            "name": "manager",
-            "type": {
-              "option": "publicKey"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "FundModel",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "id",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "symbol",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "name",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "uri",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "openfundUri",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "isActive",
-            "type": {
-              "option": "bool"
-            }
-          },
-          {
-            "name": "assets",
-            "type": {
-              "vec": "publicKey"
-            }
-          },
-          {
-            "name": "assetsWeights",
-            "type": {
-              "vec": "u32"
-            }
-          },
-          {
-            "name": "shareClass",
-            "type": {
-              "vec": {
-                "defined": "ShareClassModel"
-              }
-            }
-          },
-          {
-            "name": "company",
-            "type": {
-              "option": {
-                "defined": "CompanyModel"
-              }
-            }
-          },
-          {
-            "name": "manager",
-            "type": {
-              "option": {
-                "defined": "ManagerModel"
-              }
-            }
-          },
-          {
-            "name": "created",
-            "type": {
-              "option": {
-                "defined": "CreatedModel"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "GlamParam",
       "type": {
         "kind": "struct",
@@ -1215,48 +1090,6 @@
             "name": "val",
             "type": {
               "defined": "OFValue"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "ManagerKind",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Wallet"
-          },
-          {
-            "name": "Squads"
-          }
-        ]
-      }
-    },
-    {
-      "name": "ManagerModel",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "pubkey",
-            "type": {
-              "option": "publicKey"
-            }
-          },
-          {
-            "name": "name",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "kind",
-            "type": {
-              "option": {
-                "defined": "ManagerKind"
-              }
             }
           }
         ]
@@ -1485,6 +1318,309 @@
       }
     },
     {
+      "name": "CompanyModel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "fundGroupName",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "manCo",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "domicileOfManCo",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "emailAddressOfManCo",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "fundWebsiteOfManCo",
+            "type": {
+              "option": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreatedModel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "manager",
+            "type": {
+              "option": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "FundModel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "uri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "openfundUri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "isEnabled",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "assets",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "assetsWeights",
+            "type": {
+              "vec": "u32"
+            }
+          },
+          {
+            "name": "shareClasses",
+            "type": {
+              "vec": {
+                "defined": "ShareClassModel"
+              }
+            }
+          },
+          {
+            "name": "company",
+            "type": {
+              "option": {
+                "defined": "CompanyModel"
+              }
+            }
+          },
+          {
+            "name": "manager",
+            "type": {
+              "option": {
+                "defined": "ManagerModel"
+              }
+            }
+          },
+          {
+            "name": "created",
+            "type": {
+              "option": {
+                "defined": "CreatedModel"
+              }
+            }
+          },
+          {
+            "name": "isRawOpenfund",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "rawOpenfund",
+            "type": {
+              "option": {
+                "defined": "FundOpenfundModel"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "FundOpenfundModel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "fundDomicileAlpha2",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "legalFundNameIncludingUmbrella",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "fiscalYearEnd",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "fundCurrency",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "fundLaunchDate",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "investmentObjective",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "isEtc",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "isEuDirectiveRelevant",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "isFundOfFunds",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "isPassiveFund",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "isReit",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "legalForm",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "legalFundNameOnly",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "openEndedOrClosedEndedFundStructure",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "typeOfEuDirective",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "ucitsVersion",
+            "type": {
+              "option": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ManagerKind",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Wallet"
+          },
+          {
+            "name": "Squads"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ManagerModel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "portfolioManagerName",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "pubkey",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "kind",
+            "type": {
+              "option": {
+                "defined": "ManagerKind"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "ShareClassModel",
       "type": {
         "kind": "struct",
@@ -1508,53 +1644,15 @@
             }
           },
           {
-            "name": "asset",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "assetPubkey",
+            "name": "fundId",
             "type": {
               "option": "publicKey"
             }
           },
           {
-            "name": "isin",
+            "name": "asset",
             "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "status",
-            "type": {
-              "option": {
-                "defined": "ShareClassStatus"
-              }
-            }
-          },
-          {
-            "name": "policyDistribution",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "extension",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "launchDate",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "lifecycle",
-            "type": {
-              "option": "string"
+              "option": "publicKey"
             }
           },
           {
@@ -1562,29 +1660,160 @@
             "type": {
               "option": "string"
             }
+          },
+          {
+            "name": "isRawOpenfund",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "rawOpenfund",
+            "type": {
+              "option": {
+                "defined": "ShareClassOpenfundModel"
+              }
+            }
           }
         ]
       }
     },
     {
-      "name": "ShareClassStatus",
+      "name": "ShareClassOpenfundModel",
       "type": {
-        "kind": "enum",
-        "variants": [
+        "kind": "struct",
+        "fields": [
           {
-            "name": "Open"
+            "name": "isin",
+            "type": {
+              "option": "string"
+            }
           },
           {
-            "name": "SoftClosed"
+            "name": "shareClassCurrency",
+            "type": {
+              "option": "string"
+            }
           },
           {
-            "name": "HardClosed"
+            "name": "fullShareClassName",
+            "type": {
+              "option": "string"
+            }
           },
           {
-            "name": "ClosedForRedemption"
+            "name": "hasPerformanceFee",
+            "type": {
+              "option": "bool"
+            }
           },
           {
-            "name": "ClosedForSubscriptionAndRedemption"
+            "name": "investmentStatus",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "managementFeeApplied",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "managementFeeAppliedReferenceDate",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "managementFeeMaximum",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "shareClassDistributionPolicy",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "shareClassExtension",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "shareClassLaunchDate",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "shareClassLifecycle",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "launchPrice",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "launchPriceCurrency",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "launchPriceDate",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "isValidIsin",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "lockUpComment",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "lockUpPeriodInDays",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "managementFeeMinimum",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "maximalNumberOfPossibleDecimalsAmount",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "maximalNumberOfPossibleDecimalsNav",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "maximalNumberOfPossibleDecimalsShares",
+            "type": {
+              "option": "string"
+            }
           }
         ]
       }
@@ -1616,10 +1845,10 @@
             "name": "FundGroupName"
           },
           {
-            "name": "DomicileOfManCo"
+            "name": "ManCo"
           },
           {
-            "name": "ManCo"
+            "name": "DomicileOfManCo"
           },
           {
             "name": "BICOfCustodian"
@@ -1967,7 +2196,7 @@
             "name": "CurrencyHedgeShareClass"
           },
           {
-            "name": "CurrencyofMinimalSubscription"
+            "name": "CurrencyOfMinimalSubscription"
           },
           {
             "name": "DistributionDeclarationFrequency"
@@ -2081,37 +2310,13 @@
             "name": "TERIncludingPerformanceFeeDate"
           },
           {
-            "name": "AbbreviatedShareClassName"
+            "name": "TransferAgentName"
           },
           {
             "name": "BICOfTransferAgent"
           },
           {
-            "name": "BloombergCode"
-          },
-          {
-            "name": "CurrencyOfMinimumRemainingAmount"
-          },
-          {
-            "name": "DistributionFeeMaximum"
-          },
-          {
-            "name": "DomicileofTransferAgent"
-          },
-          {
-            "name": "EFAMAActiveEFCClassification"
-          },
-          {
-            "name": "EFAMAEFCClassificationType"
-          },
-          {
-            "name": "EFAMAEFCInvestmentTheme"
-          },
-          {
-            "name": "EFAMAMainEFCCategory"
-          },
-          {
-            "name": "FIGICode"
+            "name": "DomicileOfTransferAgent"
           },
           {
             "name": "FormOfShare"
@@ -2120,13 +2325,46 @@
             "name": "HasDurationHedge"
           },
           {
-            "name": "IASector"
+            "name": "TypeOfEqualization"
           },
           {
-            "name": "InvestmentStatusDate"
+            "name": "IsMultiseries"
+          },
+          {
+            "name": "SeriesIssuance"
+          },
+          {
+            "name": "SeriesFrequency"
+          },
+          {
+            "name": "DoesFundIssueSidePocket"
+          },
+          {
+            "name": "HasRedemptionGates"
+          },
+          {
+            "name": "TypeOfAlternativeFundStructureVehicle"
+          },
+          {
+            "name": "BloombergCode"
+          },
+          {
+            "name": "FIGICode"
+          },
+          {
+            "name": "AbbreviatedShareClassName"
+          },
+          {
+            "name": "ValuationFrequency"
+          },
+          {
+            "name": "NAVPublicationTime"
           },
           {
             "name": "IsShareClassEligibleForUCITS"
+          },
+          {
+            "name": "InvestmentStatusDate"
           },
           {
             "name": "LaunchPrice"
@@ -2138,7 +2376,16 @@
             "name": "LaunchPriceDate"
           },
           {
-            "name": "NAVPublicationTime"
+            "name": "EFAMAMainEFCCategory"
+          },
+          {
+            "name": "EFAMAEFCClassificationType"
+          },
+          {
+            "name": "EFAMAActiveEFCClassification"
+          },
+          {
+            "name": "EFAMAEFCInvestmentTheme"
           },
           {
             "name": "PricingMethodology"
@@ -2147,133 +2394,463 @@
             "name": "SinglePricingType"
           },
           {
-            "name": "StandardMinimumRemainingAmount"
+            "name": "SwingFactor"
           },
           {
-            "name": "StandardMinimumRemainingCategory"
+            "name": "StandardMinimumRemainingAmount"
           },
           {
             "name": "StandardMinimumRemainingShares"
           },
           {
-            "name": "SwingFactor"
+            "name": "CurrencyOfMinimumRemainingAmount"
           },
           {
-            "name": "TransferAgentName"
+            "name": "StandardMinimumRemainingCategory"
           },
           {
-            "name": "ValuationFrequency"
+            "name": "HurdleRate"
           },
           {
-            "name": "AskNAV"
+            "name": "HighWaterMark"
           },
           {
-            "name": "AskNAVDate"
+            "name": "HasAppliedSubscriptionFeeInFavourOfFund"
           },
           {
-            "name": "AuMShareClass"
+            "name": "AppliedSubscriptionFeeInFavourOfFund"
           },
           {
-            "name": "AuMShareClassDate"
+            "name": "AppliedSubscriptionFeeInFavourOfFundReferenceDate"
           },
           {
-            "name": "BidNAV"
+            "name": "MaximumSubscriptionFeeInFavourOfFund"
           },
           {
-            "name": "BidNAVDate"
+            "name": "HasAppliedRedemptionFeeInFavourOfFund"
           },
           {
-            "name": "DividendAnnouncementDate"
+            "name": "AppliedRedemptionFeeInFavourOfFund"
           },
           {
-            "name": "DividendCurrency"
+            "name": "AppliedRedemptionFeeInFavourOfFundReferenceDate"
           },
           {
-            "name": "DividendExDate"
+            "name": "MaximumRedemptionFeeInFavourOfFund"
           },
           {
-            "name": "DividendGross"
+            "name": "EquivalentTrailerFeeCleanISIN"
           },
           {
-            "name": "DividendNet"
+            "name": "HasSeparateDistributionFee"
           },
           {
-            "name": "DividendPaymentDate"
+            "name": "DistributionFee"
           },
           {
-            "name": "DividendRecordDate"
+            "name": "DistributionFeeMaximum"
           },
           {
-            "name": "DynamicCurrency"
+            "name": "IASector"
           },
           {
-            "name": "DynamicDataType"
+            "name": "AbsorbingFundFullShareClassName"
           },
           {
-            "name": "DynamicValue"
+            "name": "AbsorbingFundShareClassISIN"
           },
           {
-            "name": "EqualisationRate"
+            "name": "AdministrationFeeMaximum"
           },
           {
-            "name": "GeneralReferenceDate"
+            "name": "AnnualDistributionAtFiscalYearEnd"
           },
           {
-            "name": "IsDividendFinal"
+            "name": "AnnualDistributionYieldAtFiscalYearEnd"
           },
           {
-            "name": "NoSShareClass"
+            "name": "AppliedRedemptionFeeInFavourOfDistributor"
           },
           {
-            "name": "NoSShareClassDate"
+            "name": "AppliedRedemptionFeeInFavourOfDistributorReferenceDate"
           },
           {
-            "name": "SplitRatio"
+            "name": "BankDetailsSSIForPaymentsProvision"
           },
           {
-            "name": "SplitReferenceDate"
+            "name": "BankDetailsLevelApplication"
           },
           {
-            "name": "TaxDeductedReinvestedAmount"
+            "name": "BenchmarkBloombergTicker"
           },
           {
-            "name": "TaxDeductedReinvestedAmountReferenceDate"
+            "name": "CalculationDateOffsetForRedemption"
           },
           {
-            "name": "TaxableIncomeperDividend"
+            "name": "CalculationDateOffsetForSubscription"
           },
           {
-            "name": "TaxableIncomeperShareEU"
+            "name": "CalendarOrBusinessDaysForCutOffDateOffsetForRedemption"
           },
           {
-            "name": "TransactionNAV"
+            "name": "CalendarOrBusinessDaysForCutOffDateOffsetForSubscription"
           },
           {
-            "name": "TransactionNAVDate"
+            "name": "CalendarOrBusinessDaysForPrePaymentDaysForSubscription"
           },
           {
-            "name": "ValuationNAV"
+            "name": "CalendarOrBusinessDaysForSettlementPeriodForRedemption"
           },
           {
-            "name": "ValuationNAVDate"
+            "name": "CalendarOrBusinessDaysForSettlementPeriodForSubscription"
           },
           {
-            "name": "YieldOneDayGross"
+            "name": "CalendarOrBusinessDaysForTransactions"
           },
           {
-            "name": "YieldOneDayNet"
+            "name": "CFICode"
           },
           {
-            "name": "YieldSevenDayGross"
+            "name": "ContingentDeferredSalesChargeExitFee"
           },
           {
-            "name": "YieldSevenDayNet"
+            "name": "ContingentDeferredSalesChargeUpfrontFee"
           },
           {
-            "name": "YieldThirtyDayGross"
+            "name": "CountryISOCodeAlpha2"
           },
           {
-            "name": "YieldThirtyDayNet"
+            "name": "CountryISOCodeAlpha3"
+          },
+          {
+            "name": "CountryName"
+          },
+          {
+            "name": "CurrenciesOfMulticurrencyShareClass"
+          },
+          {
+            "name": "CurrencyOfMinimalOrMaximumRedemption"
+          },
+          {
+            "name": "CustodianFeeApplied"
+          },
+          {
+            "name": "CustodianFeeAppliedReferenceDate"
+          },
+          {
+            "name": "CustodianFeeMaximum"
+          },
+          {
+            "name": "CutOffDateOffsetForRedemption"
+          },
+          {
+            "name": "CutOffDateOffsetForSubscription"
+          },
+          {
+            "name": "CutOffTimeForRedemption"
+          },
+          {
+            "name": "CutOffTimeForSubscription"
+          },
+          {
+            "name": "CutOffTimeForSwitchIn"
+          },
+          {
+            "name": "CutOffTimeForSwitchOut"
+          },
+          {
+            "name": "DealingDaysOfMultipleRedemptionTradeCycles"
+          },
+          {
+            "name": "DealingDaysOfMultipleSubscriptionTradeCycles"
+          },
+          {
+            "name": "DisseminationRecipient"
+          },
+          {
+            "name": "DistributionFeeReferenceDate"
+          },
+          {
+            "name": "DoesShareClassApplyMandatoryConversion"
+          },
+          {
+            "name": "DoesShareClassApplyPartialDealingDays"
+          },
+          {
+            "name": "DoesShareClassApplyPartialPaymentDays"
+          },
+          {
+            "name": "DormantEndDate"
+          },
+          {
+            "name": "DormantStartDate"
+          },
+          {
+            "name": "ExDividendDateCalendar"
+          },
+          {
+            "name": "ExitCostDescription"
+          },
+          {
+            "name": "HasContingentDeferredSalesChargeFee"
+          },
+          {
+            "name": "HasDilutionLevyAppliedByFund"
+          },
+          {
+            "name": "HasEqualizationMethodForDistribution"
+          },
+          {
+            "name": "HasEqualizationMethodForPerformanceFee"
+          },
+          {
+            "name": "HasForcedRedemption"
+          },
+          {
+            "name": "HasForwardPricing"
+          },
+          {
+            "name": "HasHighWaterMark"
+          },
+          {
+            "name": "HasLockUpForRedemption"
+          },
+          {
+            "name": "HasPreNoticeForSwitchIn"
+          },
+          {
+            "name": "HasPreNoticeForSwitchOut"
+          },
+          {
+            "name": "HasPrePaymentForSubscription"
+          },
+          {
+            "name": "HasRedemptionFeeInFavourOfDistributor"
+          },
+          {
+            "name": "HasTripartiteReport"
+          },
+          {
+            "name": "InvestmentStatusDescription"
+          },
+          {
+            "name": "IrregularRedemptionDealingDays"
+          },
+          {
+            "name": "IrregularSubscriptionDealingDays"
+          },
+          {
+            "name": "IsMulticurrencyShareClass"
+          },
+          {
+            "name": "IsRestrictedToSeparateFeeArrangement"
+          },
+          {
+            "name": "IsStructuredFinanceProduct"
+          },
+          {
+            "name": "IsValidISIN"
+          },
+          {
+            "name": "LiquidationStartDate"
+          },
+          {
+            "name": "LockUpComment"
+          },
+          {
+            "name": "LockUpPeriodInDays"
+          },
+          {
+            "name": "ManagementFeeMinimum"
+          },
+          {
+            "name": "MandatoryShareConversionDescriptionDetails"
+          },
+          {
+            "name": "MarketsRelevantToFundTradingCalendar"
+          },
+          {
+            "name": "MaximalNumberOfPossibleDecimalsAmount"
+          },
+          {
+            "name": "MaximalNumberOfPossibleDecimalsNAV"
+          },
+          {
+            "name": "MaximalNumberOfPossibleDecimalsShares"
+          },
+          {
+            "name": "MaximumInitialRedemptionInAmount"
+          },
+          {
+            "name": "MaximumInitialRedemptionInShares"
+          },
+          {
+            "name": "MaximumRedemptionFeeInFavourOfDistributor"
+          },
+          {
+            "name": "MaximumSubsequentRedemptionInAmount"
+          },
+          {
+            "name": "MaximumSubsequentRedemptionInShares"
+          },
+          {
+            "name": "MergerRatio"
+          },
+          {
+            "name": "MinimalInitialRedemptionInAmount"
+          },
+          {
+            "name": "MinimalInitialRedemptionInShares"
+          },
+          {
+            "name": "MinimalRedemptionCategory"
+          },
+          {
+            "name": "MinimalSubsequentRedemptionInAmount"
+          },
+          {
+            "name": "MinimalSubsequentRedemptionInShares"
+          },
+          {
+            "name": "MinimumRedemptionFeeInFavourOfDistributor"
+          },
+          {
+            "name": "MinimumRedemptionFeeInFavourOfFund"
+          },
+          {
+            "name": "MinimumSubscriptionFeeInFavourOfFund"
+          },
+          {
+            "name": "MonthlyRedemptionDealingDays"
+          },
+          {
+            "name": "MonthlySubscriptionDealingDays"
+          },
+          {
+            "name": "NasdaqFundNetworkNFNIdentifier"
+          },
+          {
+            "name": "NoTradingDate"
+          },
+          {
+            "name": "NumberOfPossibleRedemptionsWithinPeriod"
+          },
+          {
+            "name": "NumberOfPossibleSubscriptionsWithinPeriod"
+          },
+          {
+            "name": "PartialDealingDaysDateAndTime"
+          },
+          {
+            "name": "PartialPaymentDaysDateAndTime"
+          },
+          {
+            "name": "PaymentDateCalendar"
+          },
+          {
+            "name": "PerformanceFeeMinimum"
+          },
+          {
+            "name": "PreNoticeCutOffForRedemption"
+          },
+          {
+            "name": "PreNoticeCutOffForSubscription"
+          },
+          {
+            "name": "PrePaymentCutOffTimeForSubscription"
+          },
+          {
+            "name": "PrePaymentDaysForSubscription"
+          },
+          {
+            "name": "RecordDateCalendar"
+          },
+          {
+            "name": "RedemptionTradeCyclePeriod"
+          },
+          {
+            "name": "RoundingMethodForPrices"
+          },
+          {
+            "name": "RoundingMethodForRedemptionInAmount"
+          },
+          {
+            "name": "RoundingMethodForRedemptionInShares"
+          },
+          {
+            "name": "RoundingMethodForSubscriptionInAmount"
+          },
+          {
+            "name": "RoundingMethodForSubscriptionInShares"
+          },
+          {
+            "name": "SettlementPeriodForRedemption"
+          },
+          {
+            "name": "SettlementPeriodForSubscription"
+          },
+          {
+            "name": "SettlementPeriodForSwitchIn"
+          },
+          {
+            "name": "SettlementPeriodForSwitchOut"
+          },
+          {
+            "name": "ShareClassDividendType"
+          },
+          {
+            "name": "SingleRegisterAccountRestrictions"
+          },
+          {
+            "name": "SubscriptionPeriodEndDate"
+          },
+          {
+            "name": "SubscriptionPeriodStartDate"
+          },
+          {
+            "name": "SubscriptionTradeCyclePeriod"
+          },
+          {
+            "name": "SwitchInNoticePeriod"
+          },
+          {
+            "name": "SwitchOutNoticePeriod"
+          },
+          {
+            "name": "TerminationDate"
+          },
+          {
+            "name": "TimeZoneForCutOff"
+          },
+          {
+            "name": "TimeZoneForCutOffUsingTZDatabase"
+          },
+          {
+            "name": "ValuationFrequencyDetail"
+          },
+          {
+            "name": "ValuationReduction"
+          },
+          {
+            "name": "WeeklyRedemptionDealingDays"
+          },
+          {
+            "name": "WeeklySubscriptionDealingDays"
+          },
+          {
+            "name": "YearlyRedemptionDealingDays"
+          },
+          {
+            "name": "YearlySubscriptionDealingDays"
+          },
+          {
+            "name": "FundId"
+          },
+          {
+            "name": "ShareClassCurrencyId"
+          },
+          {
+            "name": "ImageUri"
           }
         ]
       }
@@ -2282,18 +2859,38 @@
   "errors": [
     {
       "code": 6000,
-      "name": "TransfersDisabled",
-      "msg": "Policy violation: transfers disabled"
+      "name": "CloseNotEmptyError",
+      "msg": "Error closing account: not empty"
     },
     {
       "code": 6001,
-      "name": "AmountTooBig",
-      "msg": "Policy violation: amount too big"
+      "name": "NotAuthorizedError",
+      "msg": "Error: not authorized"
     },
     {
       "code": 6002,
-      "name": "LockOut",
-      "msg": "Policy violation: lock out period"
+      "name": "InvalidFundName",
+      "msg": "Invalid fund name: max 30 chars"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidFundSymbol",
+      "msg": "Too many assets: max 50"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidFundUri",
+      "msg": "Too many assets: max 20"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidAssetsLen",
+      "msg": "Too many assets: max 100"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidAssetsWeights",
+      "msg": "Number of weights should match number of assets"
     }
   ],
   "metadata": {

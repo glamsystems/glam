@@ -1,4 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
+import * as util from "util";
 import { BN, Program, IdlTypes } from "@coral-xyz/anchor";
 import { PublicKey, Keypair, ComputeBudgetProgram } from "@solana/web3.js";
 import { GlamClient, Glam } from "../src";
@@ -90,55 +91,74 @@ describe("glam_crud", () => {
 
   it("Initialize fund", async () => {
     try {
-      // const defaultFundModel = <FundModel>{
-      //   id: null,
-      //   name: null,
-      //   symbol: null,
-      //   uri: null,
-      //   uriOpenfund: null,
-      //   isActive: null,
-      //   assets: [],
-      //   assetsWeights: [],
-      //   shareClass: [],
-      //   company: null,
-      //   manager: null,
-      //   created: null
-      // };
-      // const fundModel = {
-      //   ...defaultFundModel,
-      //   created: { key: [1, 2, 3, 4, 5, 6, 7, 8], manager: null },
-      //   name: fundName
-      // };
-      // const txId = await program.methods
-      //   .initializeV2(fundModel)
-      //   .accounts({
-      //     fund: fundPDA,
-      //     treasury: treasuryPDA,
-      //     openfund: openfundPDA,
-      //     share: sharePDA,
-      //     manager: manager.publicKey,
-      //     tokenProgram: TOKEN_2022_PROGRAM_ID
-      //   })
-      //   .remainingAccounts([
-      //     { pubkey: usdc, isSigner: false, isWritable: false },
-      //     { pubkey: btc, isSigner: false, isWritable: false },
-      //     { pubkey: eth, isSigner: false, isWritable: false }
-      //   ])
-      //   .preInstructions([
-      //     ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
-      //   ])
-      //   .rpc({ commitment });
       const [txId, fundPDA] = await client.createFund({
-        name: fundName,
-        symbol: fundSymbol,
-        uri: fundUri,
-        openfundUri
+        shareClasses: [
+          {
+            // Glam Token
+            symbol: "GBS",
+            name: "Glam Investment Fund BTC-SOL",
+            asset: usdc,
+            // Openfund Share Class
+            isin: "XS1082172823",
+            shareClassCurrency: "USDC",
+            fullShareClassName: null, // auto
+            hasPerformanceFee: false,
+            hasSubscriptionFeeInFavourOfDistributor: false,
+            investmentStatus: "open", //TODO: auto
+            shareClassDistributionPolicy: "accumulating", //TODO: auto
+            shareClassExtension: "",
+            shareClassLaunchDate: null, // auto
+            shareClassLifecycle: "active", //TODO: auto
+            // launchPrice: null,
+            // launchPriceCurrency: null,
+            // launchPriceDate: null,
+            hasAppliedSubscriptionFeeInFavourOfFund: false,
+            hasAppliedRedemptionFeeInFavourOfFund: false,
+            hasLockUpForRedemption: false,
+            hasRedemptionFeeInFavourOfDistributor: false,
+            isValidISIN: false
+            // lockUpComment: null,
+            // lockUpPeriodInDays: null,
+            // roundingMethodForPrices: null,
+            // roundingMethodForRedemptionInAmount: null,
+            // roundingMethodForRedemptionInShares: null,
+            // roundingMethodForSubscriptionInAmount: null,
+            // roundingMethodForSubscriptionInShares: null,
+          }
+        ],
+        // Glam
+        isEnabled: true,
+        assets: [usdc, btc, eth],
+        assetsWeights: [0, 60, 40],
+        // Openfund (Fund)
+        fundDomicileAlpha2: "XS",
+        legalFundNameIncludingUmbrella: null, // auto
+        fiscalYearEnd: "12-31",
+        fundCurrency: null, // auto
+        fundLaunchDate: null, // auto
+        investmentObjective: "demo",
+        // investmentObjective:
+        //   "The Glam Investment Fund seeks to reflect generally the performance of the price of Bitcoin and Solana.",
+        isFundOfFunds: false,
+        isPassiveFund: true, //TODO: auto
+        legalForm: "other",
+        openEndedOrClosedEndedFundStructure: "open-ended fund", //TODO: auto
+        // Openfund Company (simplified)
+        company: {
+          name: "Glam Systems",
+          email: "hello@glam.systems",
+          website: "https://glam.systems"
+        },
+        // Openfund Manager (simplified)
+        manager: {
+          name: "0x0ece.sol"
+        }
       });
       console.log(`Fund initialized: ${txId}`);
 
       // const fund = await program.account.fundAccount.fetch(fundPDA);
       const fund = await client.fetchFund(fundPDA);
-      console.log(fund);
+      console.log(util.inspect(fund, false, null));
     } catch (e) {
       console.error(e);
       throw e;

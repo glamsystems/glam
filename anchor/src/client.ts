@@ -16,10 +16,10 @@ import {
 
 import { Glam, GlamIDL, GlamProgram, getGlamProgramId } from "./glamExports";
 import { GlamClientConfig } from "./clientConfig";
+import { FundModel } from "./models";
 
 type FundAccount = IdlAccounts<Glam>["fundAccount"];
 type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
-type FundModel = IdlTypes<Glam>["FundModel"];
 
 export class GlamClient {
   provider: anchor.Provider;
@@ -58,29 +58,12 @@ export class GlamClient {
   }
 
   getFundModel(fund: any): FundModel {
-    const defaultFundModel = <FundModel>{
-      id: null,
-      name: null,
-      symbol: null,
-      uri: null,
-      openfundUri: null,
-      isActive: null,
-      assets: [],
-      assetsWeights: [],
-      shareClass: [],
-      company: null,
-      manager: null,
-      created: null
-    };
-    return {
-      ...defaultFundModel,
-      ...fund
-    };
+    return new FundModel(fund) as FundModel;
   }
 
   getFundPDA(fundModel: FundModel): PublicKey {
     const manager = this.getManager();
-    const [fundPDA, fundBump] = PublicKey.findProgramAddressSync(
+    const [pda, _bump] = PublicKey.findProgramAddressSync(
       [
         anchor.utils.bytes.utf8.encode("fund"),
         manager.toBuffer(),
@@ -88,11 +71,11 @@ export class GlamClient {
       ],
       this.programId
     );
-    return fundPDA;
+    return pda;
   }
 
   getTreasuryPDA(fundPDA: PublicKey): PublicKey {
-    const [pda, bump] = PublicKey.findProgramAddressSync(
+    const [pda, _bump] = PublicKey.findProgramAddressSync(
       [anchor.utils.bytes.utf8.encode("treasury"), fundPDA.toBuffer()],
       this.programId
     );
@@ -100,48 +83,99 @@ export class GlamClient {
   }
 
   getOpenfundPDA(fundPDA: PublicKey): PublicKey {
-    const [pda, bump] = PublicKey.findProgramAddressSync(
+    const [pda, _bump] = PublicKey.findProgramAddressSync(
       [anchor.utils.bytes.utf8.encode("openfund"), fundPDA.toBuffer()],
       this.programId
     );
     return pda;
   }
 
-  enrichFundModelInitialize(fundModel: FundModel): FundModel {
-    let { name, symbol } = fundModel;
+  getShareClassPDA(fundPDA: PublicKey, shareId: number): PublicKey {
+    const [pda, _bump] = PublicKey.findProgramAddressSync(
+      [
+        anchor.utils.bytes.utf8.encode("share"),
+        Uint8Array.from([shareId % 256]),
+        fundPDA.toBuffer()
+      ],
+      this.programId
+    );
+    return pda;
+  }
 
-    if (fundModel.shareClass.length == 1) {
+  getFundName(fundModel: FundModel) {
+    return (
+      fundModel.name ||
+      fundModel.rawOpenfund.legalFundNameIncludingUmbrella ||
+      fundModel.shareClasses[0]?.name ||
+      ""
+    );
+  }
+
+  enrichFundModelInitialize(fund: FundModel): FundModel {
+    let fundModel = this.getFundModel(fund);
+
+    // createdKey = hash fund name and get first 8 bytes
+    const createdKey = [
+      ...Buffer.from(
+        anchor.utils.sha256.hash(this.getFundName(fundModel))
+      ).slice(0, 8)
+    ];
+    fundModel.created = {
+      key: createdKey,
+      manager: null
+    };
+
+    if (fundModel.shareClasses?.length == 1) {
       // fund with a single share class
-      const shareClass = fundModel.shareClass[0];
-      name = fundModel.name || shareClass.name;
-      symbol = fundModel.symbol || shareClass.symbol;
+      const shareClass = fundModel.shareClasses[0];
+      fundModel.name = fundModel.name || shareClass.name;
+
+      fundModel.rawOpenfund.fundCurrency =
+        fundModel.rawOpenfund.fundCurrency ||
+        shareClass.rawOpenfund.shareClassCurrency;
     } else {
       // fund with multiple share classes
       // TODO
     }
 
-    // createdKey = hash fund name and get first 8 bytes
-    const createdKey = [
-      ...Buffer.from(anchor.utils.sha256.hash(fundModel.name || "")).slice(0, 8)
-    ];
+    // computed fields
 
-    return {
-      ...fundModel,
-      name,
-      symbol,
-      created: {
-        key: createdKey,
-        manager: null
+    if (fundModel.isEnabled) {
+      fundModel.rawOpenfund.fundLaunchDate =
+        fundModel.rawOpenfund.fundLaunchDate ||
+        new Date().toISOString().split("T")[0];
+    }
+
+    // fields containing fund id / pda
+    const fundPDA = this.getFundPDA(fundModel);
+    fundModel.uri =
+      fundModel.uri || `https://devnet.glam.systems/products/${fundPDA}`;
+    fundModel.openfundUri =
+      fundModel.openfundUri ||
+      `https://api.glam.systems/openfund/${fundPDA}.xlsx`;
+
+    // share classes
+    fundModel.shareClasses.forEach((shareClass, i) => {
+      if (shareClass.rawOpenfund.shareClassLifecycle == "active") {
+        shareClass.rawOpenfund.shareClassLaunchDate =
+          shareClass.rawOpenfund.shareClassLaunchDate ||
+          new Date().toISOString().split("T")[0];
       }
-    };
+
+      const sharePDA = this.getShareClassPDA(fundPDA, i);
+      shareClass.imageUri = `https://api.glam.systems/image/${sharePDA}.png`;
+    });
+
+    return fundModel;
   }
 
   public async createFund(
     fund: any
   ): Promise<[TransactionSignature, PublicKey]> {
-    const fundModel = this.enrichFundModelInitialize(this.getFundModel(fund));
+    const fundModel = this.enrichFundModelInitialize(fund);
     const fundPDA = this.getFundPDA(fundModel);
     const treasury = this.getTreasuryPDA(fundPDA);
+    const share = this.getShareClassPDA(fundPDA, 0);
     const openfund = this.getOpenfundPDA(fundPDA);
     const manager = this.getManager();
 
@@ -152,7 +186,7 @@ export class GlamClient {
         fund: fundPDA,
         treasury,
         openfund,
-        share: treasury,
+        share,
         manager,
         tokenProgram: TOKEN_2022_PROGRAM_ID
       })
@@ -174,11 +208,43 @@ export class GlamClient {
     return this.program.account.fundMetadataAccount.fetch(openfund);
   }
 
-  public async fetchFund(fundPDA: PublicKey): Promise<FundModel> {
-    console.log(fundPDA);
+  remapKeyValueArray(vec: Array<any>): any {
+    return vec.reduce((prev, el) => {
+      prev[Object.keys(el.name)[0]] = el.value;
+      return prev;
+    }, {});
+  }
+
+  public async fetchFund(fundPDA: PublicKey): Promise<any> {
     const fundAccount = await this.fetchFundAccount(fundPDA);
     const openfundAccount = await this.fetchFundMetadataAccount(fundPDA);
+
     //TODO rebuild model from accounts
-    return this.getFundModel(fundAccount);
+    let fundModel = this.getFundModel(fundAccount);
+    fundModel.id = fundPDA;
+    delete fundModel.manager;
+
+    let shareClasses = openfundAccount.shareClasses.map((shareClass) =>
+      this.remapKeyValueArray(shareClass)
+    );
+    shareClasses.forEach((shareClass, i) => {
+      shareClass.shareClassId = fundAccount.shareClasses[i];
+    });
+    let fundManagers = openfundAccount.fundManagers.map((fundManager) =>
+      this.remapKeyValueArray(fundManager)
+    );
+    fundManagers[0].pubkey = fundAccount.manager;
+
+    const openfundRemapped = {
+      ...this.remapKeyValueArray(openfundAccount.fund),
+      company: this.remapKeyValueArray(openfundAccount.company),
+      fundManagers,
+      shareClasses
+    };
+
+    return {
+      ...fundModel,
+      openfund: openfundRemapped
+    };
   }
 }

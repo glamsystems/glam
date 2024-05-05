@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 
+use super::model::*;
 use super::openfund::*;
 
 pub const MAX_ASSETS: usize = 5;
@@ -41,57 +42,12 @@ pub struct GlamParam {
     pub val: OFValue,
 }
 
-// impl From<OpenfundFund> for Map {
-//     fn from(of: OpenfundFund) -> Self {
-//         let mut v = vec![];
-//         if of.FundDomicileAlpha2 != "" {
-//             v.push(KV(
-//                 "Fund Domicile Alpha-2".to_string(),
-//                 Value::String(of.FundDomicileAlpha2),
-//             ))
-//         }
-//         if of.FundDomicileAlpha3 != "" {
-//             v.push(KV(
-//                 "Fund Domicile Alpha-3".to_string(),
-//                 Value::String(of.FundDomicileAlpha3),
-//             ))
-//         }
-//         if of.LegalFundNameIncludingUmbrella != "" {
-//             v.push(KV(
-//                 "Legal Fund Name Including Umbrella".to_string(),
-//                 Value::String(of.LegalFundNameIncludingUmbrella),
-//             ))
-//         }
-//         v
-//     }
-// }
-
-// impl From<Map> for OpenfundFund {
-//     fn from(m: Map) -> Self {
-//         let mut of = OpenfundFund::default();
-//         for kv in m.iter() {
-//             match kv.clone().1 {
-//                 Value::String(v) => match kv.0.as_str() {
-//                     "Fund Domicile Alpha-2" => of.FundDomicileAlpha2 = v.to_string(),
-//                     "Fund Domicile Alpha-3" => of.FundDomicileAlpha3 = v.to_string(),
-//                     "Legal Fund Name Including Umbrella" => {
-//                         of.LegalFundNameIncludingUmbrella = v.to_string()
-//                     }
-//                     _ => { /* do nothing */ }
-//                 },
-//                 _ => { /* do nothing */ }
-//             }
-//         }
-//         of
-//     }
-// }
-
 #[account]
 pub struct FundAccount {
     pub name: String,
     pub uri: String,
     pub treasury: Pubkey,
-    pub share_class: Vec<Pubkey>,
+    pub share_classes: Vec<Pubkey>,
     pub openfund: Pubkey,
     pub openfund_uri: String,
     pub manager: Pubkey,
@@ -107,73 +63,39 @@ pub struct FundMetadataAccount {
     pub fund_pubkey: Pubkey,
     pub company: Vec<CompanyField>,
     pub fund: Vec<FundField>,
-    pub share_class: Vec<Vec<ShareClassField>>,
-    pub fund_manager: Vec<Vec<FundManagerField>>,
+    pub share_classes: Vec<Vec<ShareClassField>>,
+    pub fund_managers: Vec<Vec<FundManagerField>>,
 }
 impl FundMetadataAccount {
     pub const INIT_SIZE: usize = 1024;
 }
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
-pub struct ShareClassModel {
-    pub symbol: Option<String>,
-    pub name: Option<String>,
-    pub uri: Option<String>,   // metadata uri
-    pub asset: Option<String>, // asset denom
-    pub asset_pubkey: Option<Pubkey>,
-    pub isin: Option<String>,
-    pub status: Option<ShareClassStatus>,
-    pub policy_distribution: Option<String>,
-    pub extension: Option<String>,
-    pub launch_date: Option<String>,
-    pub lifecycle: Option<String>,
-    pub image_uri: Option<String>,
-}
-
-#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
-pub struct CompanyModel {
-    pub name: Option<String>,
-}
-
-#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
-pub enum ManagerKind {
-    Wallet,
-    Squads,
-}
-
-#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
-pub struct ManagerModel {
-    pub pubkey: Option<Pubkey>,
-    pub name: Option<String>,
-    pub kind: Option<ManagerKind>,
-}
-
-#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
-pub struct CreatedModel {
-    pub key: [u8; 8],
-    pub manager: Option<Pubkey>,
-}
-
-#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
-pub struct FundModel {
-    // pub name: String,
-    // pub symbol: Option<String>,
-    pub id: Option<String>,
-    pub symbol: Option<String>,
-    pub name: Option<String>,
-    pub uri: Option<String>,
-    pub openfund_uri: Option<String>,
-    pub is_active: Option<bool>,
-
-    // assets
-    pub assets: Vec<Pubkey>,
-    pub assets_weights: Vec<u32>,
-
-    // relationships
-    pub share_class: Vec<ShareClassModel>,
-    pub company: Option<CompanyModel>,
-    pub manager: Option<ManagerModel>,
-    pub created: Option<CreatedModel>,
+impl From<FundModel> for FundMetadataAccount {
+    fn from(model: FundModel) -> Self {
+        let company = if let Some(company) = &model.company {
+            company.into()
+        } else {
+            vec![]
+        };
+        let fund_managers = if let Some(manager) = &model.manager {
+            vec![manager.into()]
+        } else {
+            vec![]
+        };
+        let share_classes = model
+            .share_classes
+            .iter()
+            .map(|share_class| share_class.into())
+            .collect::<Vec<_>>();
+        let fund = model.into();
+        FundMetadataAccount {
+            fund_pubkey: Pubkey::default(),
+            company,
+            fund,
+            share_classes,
+            fund_managers,
+        }
+    }
 }
 
 pub enum EngineModule {

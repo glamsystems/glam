@@ -6,6 +6,7 @@ pub mod state;
 use anchor_lang::prelude::*;
 
 use crate::state::fund::*;
+use crate::state::model::*;
 pub use constants::*;
 pub use instructions::*;
 

@@ -41,7 +41,8 @@ app.get("/openfund/:pubkey", async (req, res) => {
   let fund;
   try {
     fund = await client.fetchFund(key);
-  } catch (_) {
+  } catch (e) {
+    console.log(e);
     return res.sendStatus(404);
   }
   res.send(JSON.stringify(fund));

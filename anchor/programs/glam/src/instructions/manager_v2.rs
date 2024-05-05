@@ -4,7 +4,7 @@ use anchor_spl::token_interface::{Mint, Token2022};
 use spl_token_2022::{extension::ExtensionType, state::Mint as StateMint};
 
 use crate::error::ManagerError;
-use crate::state::fund::*;
+use crate::state::*;
 
 #[derive(Accounts)]
 #[instruction(fund_model: FundModel)]
@@ -68,18 +68,19 @@ pub fn initialize_fund_v2_handler<'c: 'info, 'info>(
     let share = &mut ctx.accounts.share;
     let openfund = &mut ctx.accounts.openfund;
 
-    if let Some(fund_name) = fund_model.name {
+    let model = fund_model.clone();
+    if let Some(fund_name) = model.name {
         require!(
             fund_name.len() < MAX_FUND_NAME,
             ManagerError::InvalidFundName
         );
         fund.name = fund_name;
     }
-    if let Some(fund_uri) = fund_model.uri {
+    if let Some(fund_uri) = model.uri {
         require!(fund_uri.len() < MAX_FUND_URI, ManagerError::InvalidFundUri);
         fund.uri = fund_uri;
     }
-    if let Some(openfund_uri) = fund_model.openfund_uri {
+    if let Some(openfund_uri) = model.openfund_uri {
         require!(
             openfund_uri.len() < MAX_FUND_URI,
             ManagerError::InvalidFundUri
@@ -88,7 +89,7 @@ pub fn initialize_fund_v2_handler<'c: 'info, 'info>(
     }
 
     fund.treasury = treasury.key();
-    fund.share_class = vec![share.key()];
+    fund.share_classes = vec![share.key()];
     fund.openfund = openfund.key();
     fund.manager = ctx.accounts.manager.key();
 
@@ -108,24 +109,13 @@ pub fn initialize_fund_v2_handler<'c: 'info, 'info>(
         //     val: OFValue::Boolean { val: activate },
         // },
     ]];
-    // fund.symbol = fund_symbol;
-    // fund.bump_fund = ctx.bumps.fund;
-    // fund.bump_treasury = ctx.bumps.treasury;
-    // fund.time_created = Clock::get()?.unix_timestamp;
-    // fund.share_classes_len = 1;
-    // fund.share_classes[0] = ctx.accounts.share.key();
-    // fund.share_classes_metadata[0] = share_class_metadata.clone();
-    // fund.share_classes_bumps[0] = ctx.bumps.share;
 
-    // fund.assets_len = assets_len as u8;
-    // for (i, account) in ctx.remaining_accounts.iter().enumerate() {
-    //     let asset = InterfaceAccount::<Mint>::try_from(account).expect("invalid asset");
-    //     fund.assets[i] = asset.key();
-    // }
-    // for (i, &w) in asset_weights.iter().enumerate() {
-    //     fund.assets_weights[i] = w;
-    // }
-    // fund.is_active = activate;
+    let openfund_metadata = FundMetadataAccount::from(fund_model);
+    openfund.fund_pubkey = fund.key();
+    openfund.company = openfund_metadata.company;
+    openfund.fund = openfund_metadata.fund;
+    openfund.share_classes = openfund_metadata.share_classes;
+    openfund.fund_managers = openfund_metadata.fund_managers;
 
     msg!("Fund created: {}", ctx.accounts.fund.key());
     Ok(())
