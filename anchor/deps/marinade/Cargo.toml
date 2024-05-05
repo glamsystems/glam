@@ -1,0 +1,19 @@
+[package]
+name = "marinade"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "marinade"
+
+[features]
+default = ["cpi"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+
+[dependencies]
+anchor-gen = { workspace = true }
+anchor-lang = { workspace = true }

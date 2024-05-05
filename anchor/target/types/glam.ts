@@ -551,6 +551,242 @@ export type Glam = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "marinadeDeposit",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "marinadeState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "reservePda",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "msolMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "msolMintAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liqPoolMsolLeg",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liqPoolMsolLegAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liqPoolSolLegPda",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mintTo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "fund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marinadeProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "solAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "marinadeDelayedUnstake",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "ticket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "msolMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "burnMsolFrom",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "burnMsolAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marinadeState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "reservePda",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marinadeProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "ticketBump",
+          "type": "u8"
+        },
+        {
+          "name": "treasuryBump",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "marinadeClaim",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ticket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marinadeState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "transferSolTo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "reservePda",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marinadeProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "treasuryBump",
+          "type": "u8"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -1340,6 +1576,242 @@ export const IDL: Glam = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "marinadeDeposit",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "marinadeState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "reservePda",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "msolMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "msolMintAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liqPoolMsolLeg",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liqPoolMsolLegAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liqPoolSolLegPda",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mintTo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "fund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marinadeProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "solAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "marinadeDelayedUnstake",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "ticket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "msolMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "burnMsolFrom",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "burnMsolAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marinadeState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "reservePda",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marinadeProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "ticketBump",
+          "type": "u8"
+        },
+        {
+          "name": "treasuryBump",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "marinadeClaim",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ticket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marinadeState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "transferSolTo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "reservePda",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marinadeProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "treasuryBump",
+          "type": "u8"
+        }
+      ]
     }
   ],
   "accounts": [

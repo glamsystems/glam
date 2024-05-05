@@ -27,3 +27,4 @@ spl-token-2022 = { workspace = true }
 spl-token-metadata-interface = { workspace = true }
 pyth-sdk-solana = { workspace = true }
 drift = { workspace = true }
+marinade = { workspace = true }

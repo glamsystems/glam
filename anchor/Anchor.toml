@@ -27,9 +27,9 @@ cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-# test = "../node_modules/.bin/nx run anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_staking"
+test = "../node_modules/.bin/nx run anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_staking"
 # test = "../node_modules/.bin/nx run anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_investor"
-test = "../node_modules/.bin/nx run anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_crud"
+# test = "../node_modules/.bin/nx run anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_crud"
 # test = "../node_modules/.bin/nx run anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_drift"
 #test = "../node_modules/.bin/nx run anchor:jest --verbose --testPathPattern tests/ --testNamePattern devnet"
 
@@ -42,6 +42,7 @@ upgradeable = true
 bind_address = "127.0.0.1"
 ledger = ".anchor/test-ledger"
 rpc_port = 8899
+slots_per_epoch = "32"
 url = "https://api.devnet.solana.com"
 
 [[test.validator.clone]]
@@ -101,7 +102,9 @@ address = "6ZBb3LRddLtBq6DeNtSaUrMipieaFJgTETgTBoiAGBCC"
 [[test.validator.clone]]
 address = "CWb949XA3vrdiEp2BFtjr9MbUonHke8CVdTb8Cr7Hctd"
 
-# Drift program
+#
+# Drift
+#
 [[test.genesis]]
 address = "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
 program = "fixtures/drift.so"
@@ -115,3 +118,42 @@ address = "GXWqPpjQpdz7KZw9p7f5PX2eGxHAhvpNXiviFkAB8zXg"
 address = "3x85u7SWkmmr7YQGYhtjARgxwegTLJgkSLRprfXod6rh"
 [[test.validator.clone]]
 address = "6gMq3mRCKf8aP3ttTyYhuijVZ2LGi14oDsBbkgubfLB3"
+
+#
+# Marinade
+#
+[[test.genesis]]
+address = "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
+program = "./fixtures/marinade.so"
+
+[[test.validator.account]] # marinade state account
+address = "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC"
+filename = "./fixtures/8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC.json"
+
+[[test.validator.account]] # mSOL token mint + authority (PDA)
+address = "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So"
+filename = "./fixtures/mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So.json"
+
+[[test.validator.account]] # Reserve SOL account (PDA)
+address = "Du3Ysj1wKbxPKkuPPnvzQLQh8oMSVifs3jGZjJWXFmHN"
+filename = "./fixtures/Du3Ysj1wKbxPKkuPPnvzQLQh8oMSVifs3jGZjJWXFmHN.json"
+
+[[test.validator.account]] # Treasury mSOL account
+address = "B1aLzaNMeFVAyQ6f3XbbUyKcH2YPHu2fqiEagmiF23VR"
+filename = "./fixtures/B1aLzaNMeFVAyQ6f3XbbUyKcH2YPHu2fqiEagmiF23VR.json"
+
+[[test.validator.account]] # mSOL-SOL-LP mint
+address = "LPmSozJJ8Jh69ut2WP3XmVohTjL4ipR18yiCzxrUmVj"
+filename = "./fixtures/LPmSozJJ8Jh69ut2WP3XmVohTjL4ipR18yiCzxrUmVj.json"
+
+[[test.validator.account]] # mSOL leg account
+address = "7GgPYjS5Dza89wV6FpZ23kUJRG5vbQ1GM25ezspYFSoE"
+filename = "./fixtures/7GgPYjS5Dza89wV6FpZ23kUJRG5vbQ1GM25ezspYFSoE.json"
+
+[[test.validator.account]] # mSOL leg authority
+address = "EyaSjUtSgo9aRD1f8LWXwdvkpDTmXAW54yoSHZRF14WL"
+filename = "./fixtures/EyaSjUtSgo9aRD1f8LWXwdvkpDTmXAW54yoSHZRF14WL.json"
+
+[[test.validator.account]] # SOL leg account
+address = "UefNb6z6yvArqe4cJHTXCqStRsKmWhGxnZzuHbikP5Q"
+filename = "./fixtures/UefNb6z6yvArqe4cJHTXCqStRsKmWhGxnZzuHbikP5Q.json"

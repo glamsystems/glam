@@ -105,4 +105,22 @@ pub mod glam {
     pub fn drift_close(ctx: Context<DriftClose>) -> Result<()> {
         drift::drift_close_handler(ctx)
     }
+
+    // Marinade
+    pub fn marinade_deposit(ctx: Context<MarinadeDeposit>, sol_amount: u64) -> Result<()> {
+        marinade::marinade_deposit(ctx, sol_amount)
+    }
+
+    pub fn marinade_delayed_unstake(
+        ctx: Context<MarinadeDelayedUnstake>,
+        amount: u64,
+        ticket_bump: u8,
+        treasury_bump: u8,
+    ) -> Result<()> {
+        marinade::marinade_delayed_unstake(ctx, amount, ticket_bump, treasury_bump)
+    }
+
+    pub fn marinade_claim(ctx: Context<MarinadeClaim>, treasury_bump: u8) -> Result<()> {
+        marinade::marinade_claim(ctx, treasury_bump)
+    }
 }

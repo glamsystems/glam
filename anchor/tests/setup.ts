@@ -1,8 +1,8 @@
 import { Program, Wallet, workspace } from "@coral-xyz/anchor";
 import { ComputeBudgetProgram, PublicKey } from "@solana/web3.js";
 import { Glam } from "../target/types/glam";
-import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { getMetadataUri, getImageUri, getFundUri } from "../src/offchain";
+import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token"; // Fix import warning in VSCode
 
 const program = workspace.Glam as Program<Glam>;
 

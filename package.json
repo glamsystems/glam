@@ -22,6 +22,7 @@
     "@drift-labs/sdk": "2.71.0-beta.4",
     "@hookform/resolvers": "^3.3.4",
     "@ibm/plex": "^6.4.0",
+    "@marinade.finance/marinade-ts-sdk": "^5.0.11",
     "@solana-developers/helpers": "^2.3.0",
     "@solana-developers/preset-react": "^2.2.0",
     "@solana/spl-token": "^0.3.11",
