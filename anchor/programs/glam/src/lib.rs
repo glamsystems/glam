@@ -5,8 +5,8 @@ pub mod state;
 
 use anchor_lang::prelude::*;
 
+use crate::instructions::*;
 pub use constants::*;
-pub use instructions::*;
 pub use state::fund::*;
 
 declare_id!("Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc");
@@ -111,16 +111,22 @@ pub mod glam {
         marinade::marinade_deposit(ctx, sol_amount)
     }
 
+    pub fn marinade_liquid_unstake(
+        ctx: Context<MarinadeLiquidUnstake>,
+        sol_amount: u64,
+    ) -> Result<()> {
+        marinade::marinade_liquid_unstake(ctx, sol_amount)
+    }
+
     pub fn marinade_delayed_unstake(
         ctx: Context<MarinadeDelayedUnstake>,
         amount: u64,
         ticket_bump: u8,
-        treasury_bump: u8,
     ) -> Result<()> {
-        marinade::marinade_delayed_unstake(ctx, amount, ticket_bump, treasury_bump)
+        marinade::marinade_delayed_unstake(ctx, amount, ticket_bump)
     }
 
-    pub fn marinade_claim(ctx: Context<MarinadeClaim>, treasury_bump: u8) -> Result<()> {
-        marinade::marinade_claim(ctx, treasury_bump)
+    pub fn marinade_claim(ctx: Context<MarinadeClaim>) -> Result<()> {
+        marinade::marinade_claim(ctx)
     }
 }

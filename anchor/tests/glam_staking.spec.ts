@@ -14,7 +14,7 @@ describe("glam_staking", () => {
   const manager = provider.wallet as anchor.Wallet;
   const program = anchor.workspace.Glam as Program<Glam>;
 
-  let fundPDA, fundBump, treasuryPDA, treasuryBump, sharePDA, shareBump;
+  let fundPDA, fundBump, fundTreasuryPDA, fundTreasuryBump, sharePDA, shareBump;
 
   // marinade setup
   const marinadeProgram = new PublicKey(
@@ -40,8 +40,8 @@ describe("glam_staking", () => {
     const fundData = await createFundForTest("Glam Fund TEST", "GTST", manager);
     fundPDA = fundData.fundPDA;
     fundBump = fundData.fundBump;
-    treasuryPDA = fundData.treasuryPDA;
-    treasuryBump = fundData.treasuryBump;
+    fundTreasuryPDA = fundData.treasuryPDA;
+    fundTreasuryBump = fundData.treasuryBump;
     sharePDA = fundData.sharePDA;
     shareBump = fundData.shareBump;
 
@@ -52,7 +52,7 @@ describe("glam_staking", () => {
     expect(fund.isActive).toEqual(true);
 
     // air drop to treasury and delay 1s for confirmation
-    await provider.connection.requestAirdrop(treasuryPDA, 100_000_000_000);
+    await provider.connection.requestAirdrop(fundTreasuryPDA, 100_000_000_000);
     await sleep(1000);
   });
 
@@ -62,7 +62,7 @@ describe("glam_staking", () => {
         await getOrCreateAssociatedTokenAccount(
           provider,
           marinadeState.mSolMintAddress,
-          treasuryPDA
+          fundTreasuryPDA
         )
       ).associatedTokenAccountAddress;
 
@@ -78,8 +78,33 @@ describe("glam_staking", () => {
           liqPoolMsolLegAuthority: await marinadeState.mSolLegAuthority(),
           liqPoolSolLegPda: await marinadeState.solLeg(),
           mintTo: treasurymSolAta,
-          treasury: treasuryPDA,
+          treasury: fundTreasuryPDA,
           fund: fundPDA,
+          marinadeProgram
+        })
+        .rpc({ commitment: "confirmed" });
+      console.log("Your transaction signature", tx);
+    } catch (error) {
+      console.log("Error", error);
+      throw error;
+    }
+  });
+
+  it("Liquid unstake", async () => {
+    try {
+      const tx = await program.methods
+        .marinadeLiquidUnstake(new anchor.BN(1e9))
+        .accounts({
+          manager: manager.publicKey,
+          treasury: fundTreasuryPDA,
+          fund: fundPDA,
+          marinadeState: marinadeState.marinadeStateAddress,
+          msolMint: marinadeState.mSolMintAddress,
+          liqPoolSolLegPda: await marinadeState.solLeg(),
+          liqPoolMsolLeg: marinadeState.mSolLeg,
+          getMsolFrom: treasurymSolAta,
+          getMsolFromAuthority: fundTreasuryPDA,
+          treasuryMsolAccount: marinadeTreasuryMsol,
           marinadeProgram
         })
         .rpc({ commitment: "confirmed" });
@@ -100,14 +125,14 @@ describe("glam_staking", () => {
 
     try {
       const tx = await program.methods
-        .marinadeDelayedUnstake(new anchor.BN(1e9), ticketBump, treasuryBump)
+        .marinadeDelayedUnstake(new anchor.BN(1e9), ticketBump)
         .accounts({
           manager: manager.publicKey,
           fund: fundPDA,
+          treasury: fundTreasuryPDA,
           ticket: ticketPda,
           msolMint: marinadeState.mSolMintAddress,
           burnMsolFrom: treasurymSolAta,
-          burnMsolAuthority: treasuryPDA,
           marinadeState: marinadeState.marinadeStateAddress,
           reservePda: await marinadeState.reserveAddress(),
           marinadeProgram
@@ -124,21 +149,16 @@ describe("glam_staking", () => {
     // wait for 30s so that the ticket is ready to be claimed
     await sleep(30_000);
 
-    // const [ticketPda, ticketBump] = PublicKey.findProgramAddressSync(
-    //   [Buffer.from("ticket")],
-    //   program.programId
-    // );
-
     console.log("ticketPda", ticketPda.toBase58(), "ticketBump", ticketBump);
 
     try {
       const tx = await program.methods
-        .marinadeClaim(treasuryBump)
+        .marinadeClaim()
         .accounts({
           manager: manager.publicKey,
           fund: fundPDA,
+          treasury: fundTreasuryPDA,
           ticket: ticketPda,
-          transferSolTo: treasuryPDA,
           marinadeState: marinadeState.marinadeStateAddress,
           reservePda: await marinadeState.reserveAddress(),
           marinadeProgram

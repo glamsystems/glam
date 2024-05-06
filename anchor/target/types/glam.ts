@@ -561,6 +561,16 @@ export type Glam = {
           "isSigner": true
         },
         {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "marinadeState",
           "isMut": true,
           "isSigner": false
@@ -601,16 +611,6 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "treasury",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "fund",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "marinadeProgram",
           "isMut": false,
           "isSigner": false
@@ -639,6 +639,82 @@ export type Glam = {
       ]
     },
     {
+      "name": "marinadeLiquidUnstake",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marinadeState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "msolMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liqPoolSolLegPda",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liqPoolMsolLeg",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryMsolAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "getMsolFrom",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "getMsolFromAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marinadeProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "solAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "marinadeDelayedUnstake",
       "accounts": [
         {
@@ -647,13 +723,18 @@ export type Glam = {
           "isSigner": true
         },
         {
-          "name": "ticket",
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "fund",
-          "isMut": false,
+          "name": "ticket",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -663,11 +744,6 @@ export type Glam = {
         },
         {
           "name": "burnMsolFrom",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "burnMsolAuthority",
           "isMut": true,
           "isSigner": false
         },
@@ -715,10 +791,6 @@ export type Glam = {
         {
           "name": "ticketBump",
           "type": "u8"
-        },
-        {
-          "name": "treasuryBump",
-          "type": "u8"
         }
       ]
     },
@@ -736,17 +808,17 @@ export type Glam = {
           "isSigner": false
         },
         {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "ticket",
           "isMut": true,
           "isSigner": false
         },
         {
           "name": "marinadeState",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "transferSolTo",
           "isMut": true,
           "isSigner": false
         },
@@ -781,12 +853,7 @@ export type Glam = {
           "isSigner": false
         }
       ],
-      "args": [
-        {
-          "name": "treasuryBump",
-          "type": "u8"
-        }
-      ]
+      "args": []
     }
   ],
   "accounts": [
@@ -1586,6 +1653,16 @@ export const IDL: Glam = {
           "isSigner": true
         },
         {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "marinadeState",
           "isMut": true,
           "isSigner": false
@@ -1626,16 +1703,6 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "treasury",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "fund",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "marinadeProgram",
           "isMut": false,
           "isSigner": false
@@ -1664,6 +1731,82 @@ export const IDL: Glam = {
       ]
     },
     {
+      "name": "marinadeLiquidUnstake",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marinadeState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "msolMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liqPoolSolLegPda",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liqPoolMsolLeg",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryMsolAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "getMsolFrom",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "getMsolFromAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marinadeProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "solAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "marinadeDelayedUnstake",
       "accounts": [
         {
@@ -1672,13 +1815,18 @@ export const IDL: Glam = {
           "isSigner": true
         },
         {
-          "name": "ticket",
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "fund",
-          "isMut": false,
+          "name": "ticket",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1688,11 +1836,6 @@ export const IDL: Glam = {
         },
         {
           "name": "burnMsolFrom",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "burnMsolAuthority",
           "isMut": true,
           "isSigner": false
         },
@@ -1740,10 +1883,6 @@ export const IDL: Glam = {
         {
           "name": "ticketBump",
           "type": "u8"
-        },
-        {
-          "name": "treasuryBump",
-          "type": "u8"
         }
       ]
     },
@@ -1761,17 +1900,17 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "ticket",
           "isMut": true,
           "isSigner": false
         },
         {
           "name": "marinadeState",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "transferSolTo",
           "isMut": true,
           "isSigner": false
         },
@@ -1806,12 +1945,7 @@ export const IDL: Glam = {
           "isSigner": false
         }
       ],
-      "args": [
-        {
-          "name": "treasuryBump",
-          "type": "u8"
-        }
-      ]
+      "args": []
     }
   ],
   "accounts": [
