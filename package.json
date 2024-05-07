@@ -8,7 +8,9 @@
     "anchor-localnet": "nx run anchor:anchor localnet",
     "anchor-test": "nx run anchor:anchor test",
     "build": "nx build web",
-    "dev": "nx serve web"
+    "dev": "nx serve web",
+    "api-serve": "nx run api:serve",
+    "api-test": "nx run api:test"
   },
   "private": true,
   "dependencies": {
@@ -38,7 +40,6 @@
     "@tabler/icons-react": "^2.47.0",
     "@tailwindcss/typography": "0.5.10",
     "@tanstack/react-query": "^5.35.1",
-    "axios": "^1.6.0",
     "bs58": "^5.0.0",
     "buffer": "^6.0.3",
     "carbon-components": "^10.58.12",
@@ -105,6 +106,7 @@
     "postcss": "^8.4.38",
     "prettier": "^2.8.8",
     "react-refresh": "^0.10.0",
+    "supertest": "^7.0.0",
     "tailwindcss": "3.2.7",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
