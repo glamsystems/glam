@@ -2859,38 +2859,33 @@
   "errors": [
     {
       "code": 6000,
-      "name": "CloseNotEmptyError",
-      "msg": "Error closing account: not empty"
+      "name": "FundNotActive",
+      "msg": "Fund is not active"
     },
     {
       "code": 6001,
-      "name": "NotAuthorizedError",
-      "msg": "Error: not authorized"
+      "name": "InvalidShareClass",
+      "msg": "Share class not allowed to subscribe"
     },
     {
       "code": 6002,
-      "name": "InvalidFundName",
-      "msg": "Invalid fund name: max 30 chars"
+      "name": "InvalidAssetSubscribe",
+      "msg": "Asset not allowed to subscribe"
     },
     {
       "code": 6003,
-      "name": "InvalidFundSymbol",
-      "msg": "Too many assets: max 50"
+      "name": "InvalidPricingOracle",
+      "msg": "Invalid oracle for asset price"
     },
     {
       "code": 6004,
-      "name": "InvalidFundUri",
-      "msg": "Too many assets: max 20"
+      "name": "InvalidAssetsRedeem",
+      "msg": "Invalid assets in redeem"
     },
     {
       "code": 6005,
-      "name": "InvalidAssetsLen",
-      "msg": "Too many assets: max 100"
-    },
-    {
-      "code": 6006,
-      "name": "InvalidAssetsWeights",
-      "msg": "Number of weights should match number of assets"
+      "name": "InvalidTreasuryAccount",
+      "msg": "Invalid treasury account"
     }
   ],
   "metadata": {

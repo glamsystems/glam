@@ -4,12 +4,16 @@
  */
 
 import express from "express";
+import * as ExcelJS from "exceljs";
 import * as path from "path";
+import * as util from "util";
+import { write, writeToBuffer } from "@fast-csv/format";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { AnchorProvider } from "@coral-xyz/anchor";
 
 import { GlamClient } from "@glam/anchor";
 import { validatePubkey } from "./validation";
+import { openfunds } from "./openfunds";
 
 const BASE_URL = "https://api.glam.systems";
 const SOLANA_RPC = process.env.SOLANA_RPC || "http://localhost:8899";
@@ -32,34 +36,22 @@ app.get("/_/health", (req, res) => {
   res.send("ok");
 });
 
-app.get("/openfund/:pubkey", async (req, res) => {
-  const key = validatePubkey(req.params.pubkey);
-  if (!key) {
-    return res.sendStatus(404);
-  }
+app.get("/openfunds", async (req, res) => {
+  return openfunds(
+    req.query.funds.split(","),
+    req.query.template,
+    req.query.format,
+    client,
+    res
+  );
+});
 
-  let fund;
-  try {
-    fund = await client.fetchFund(key);
-  } catch (e) {
-    console.log(e);
-    return res.sendStatus(404);
-  }
-  res.send(JSON.stringify(fund));
+app.get("/openfunds/:pubkey.:ext", async (req, res) => {
+  return openfunds([req.params.pubkey], "auto", req.params.ext, client, res);
+});
 
-  // TODO: Fetch name and symbol from blockchain
-
-  // const imageUri = `${BASE_URL}/image/${req.params.pubkey}.png`;
-  // res.set("content-type", "application/json");
-  // res.send(
-  //   JSON.stringify({
-  //     name: "name_placeholder",
-  //     symbol: "symbol_placeholder",
-  //     description: "",
-  //     external_url: "https://glam.systems",
-  //     image: imageUri
-  //   })
-  // );
+app.get("/openfunds/:pubkey", async (req, res) => {
+  return openfunds([req.params.pubkey], "auto", "json", client, res);
 });
 
 const port = process.env.PORT || 8080;

@@ -215,36 +215,43 @@ export class GlamClient {
     }, {});
   }
 
-  public async fetchFund(fundPDA: PublicKey): Promise<any> {
-    const fundAccount = await this.fetchFundAccount(fundPDA);
-    const openfundAccount = await this.fetchFundMetadataAccount(fundPDA);
+  getOpenfundsFromAccounts(
+    fundAccount: FundAccount,
+    openfundsAccount: FundMetadataAccount
+  ): any {
+    let shareClasses = openfundsAccount.shareClasses.map((shareClass, i) => ({
+      shareClassId: fundAccount.shareClasses[i],
+      ...this.remapKeyValueArray(shareClass)
+    }));
+    let fundManagers = openfundsAccount.fundManagers.map((fundManager) => ({
+      pubkey: fundAccount.manager,
+      ...this.remapKeyValueArray(fundManager)
+    }));
 
-    //TODO rebuild model from accounts
-    let fundModel = this.getFundModel(fundAccount);
-    fundModel.id = fundPDA;
-    delete fundModel.manager;
+    const company = this.remapKeyValueArray(openfundsAccount.company);
 
-    let shareClasses = openfundAccount.shareClasses.map((shareClass) =>
-      this.remapKeyValueArray(shareClass)
-    );
-    shareClasses.forEach((shareClass, i) => {
-      shareClass.shareClassId = fundAccount.shareClasses[i];
-    });
-    let fundManagers = openfundAccount.fundManagers.map((fundManager) =>
-      this.remapKeyValueArray(fundManager)
-    );
-    fundManagers[0].pubkey = fundAccount.manager;
-
-    const openfundRemapped = {
-      ...this.remapKeyValueArray(openfundAccount.fund),
-      company: this.remapKeyValueArray(openfundAccount.company),
+    let openfund = {
+      legalFundNameIncludingUmbrella: fundAccount.name,
+      ...this.remapKeyValueArray(openfundsAccount.fund),
+      company,
       fundManagers,
       shareClasses
     };
 
+    return openfund;
+  }
+
+  public async fetchFund(fundPDA: PublicKey): Promise<any> {
+    const fundAccount = await this.fetchFundAccount(fundPDA);
+    const openfundsAccount = await this.fetchFundMetadataAccount(fundPDA);
+
+    //TODO rebuild model from accounts
+    let fundModel = this.getFundModel(fundAccount);
+    fundModel.id = fundPDA;
+
     return {
       ...fundModel,
-      openfund: openfundRemapped
+      ...this.getOpenfundsFromAccounts(fundAccount, openfundsAccount)
     };
   }
 }
