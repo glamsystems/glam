@@ -40,7 +40,6 @@
     "@tabler/icons-react": "^2.47.0",
     "@tailwindcss/typography": "0.5.10",
     "@tanstack/react-query": "^5.35.1",
-    "axios": "^1.6.8",
     "bs58": "^5.0.0",
     "buffer": "^6.0.3",
     "carbon-components": "^10.58.12",
@@ -59,7 +58,6 @@
     "react-hot-toast": "^2.4.1",
     "react-router-dom": "^6.23.0",
     "sass": "^1.77.0",
-    "supertest": "^7.0.0",
     "tslib": "^2.6.2",
     "use-dark-mode": "^2.3.1",
     "zod": "^3.23.6"
@@ -108,6 +106,7 @@
     "postcss": "^8.4.38",
     "prettier": "^2.8.8",
     "react-refresh": "^0.10.0",
+    "supertest": "^7.0.0",
     "tailwindcss": "3.2.7",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",

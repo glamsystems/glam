@@ -1,4 +1,3 @@
-import exp from "constants";
 import server from "../src/main.js";
 import supertest from "supertest";
 const requestWithSupertest = supertest(server);
