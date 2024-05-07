@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: ["main"]
     paths:
-      - "api/**"
+      - "api_v0/**"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -47,4 +47,4 @@ jobs:
       - name: Install dependencies and run tests
         shell: bash
         run: |
-          cd api/ && pnpm install && pnpm run test
+          cd api_v0/ && pnpm install && pnpm run test
