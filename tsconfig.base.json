@@ -10,20 +10,15 @@
     "importHelpers": true,
     "target": "es2015",
     "module": "esnext",
-    "lib": [
-      "es2020",
-      "dom"
-    ],
+    "lib": ["es2020", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@glam/anchor": [
-        "anchor/src/index.ts"
-      ]
+      "@glam/anchor": ["anchor/src/index.ts"]
     },
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true
   },
-  "exclude": ["node_modules", "tmp", "api"]
+  "exclude": ["node_modules", "tmp", "api_v0", "api", "api-e2e"]
 }
