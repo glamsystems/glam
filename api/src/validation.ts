@@ -1,6 +1,6 @@
-const { base58 } = require("@scure/base");
+import { base58 } from "@scure/base";
 
-const validatePubkey = (pubkey) => {
+export const validatePubkey = (pubkey) => {
   if (pubkey.length > 50) {
     return false;
   }

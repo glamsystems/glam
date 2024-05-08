@@ -16,7 +16,7 @@ import {
 
 import { Glam, GlamIDL, GlamProgram, getGlamProgramId } from "./glamExports";
 import { GlamClientConfig } from "./clientConfig";
-import { FundModel } from "./models";
+import { FundModel, FundOpenfundsModel } from "./models";
 
 type FundAccount = IdlAccounts<Glam>["fundAccount"];
 type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
@@ -105,7 +105,7 @@ export class GlamClient {
   getFundName(fundModel: FundModel) {
     return (
       fundModel.name ||
-      fundModel.rawOpenfunds.legalFundNameIncludingUmbrella ||
+      fundModel.rawOpenfunds?.legalFundNameIncludingUmbrella ||
       fundModel.shareClasses[0]?.name ||
       ""
     );
@@ -125,14 +125,19 @@ export class GlamClient {
       manager: null
     };
 
+    if (!fundModel.rawOpenfunds) {
+      fundModel.rawOpenfunds = new FundOpenfundsModel({}) as FundOpenfundsModel;
+    }
+
     if (fundModel.shareClasses?.length == 1) {
       // fund with a single share class
       const shareClass = fundModel.shareClasses[0];
       fundModel.name = fundModel.name || shareClass.name;
 
       fundModel.rawOpenfunds.fundCurrency =
-        fundModel.rawOpenfunds.fundCurrency ||
-        shareClass.rawOpenfunds.shareClassCurrency;
+        fundModel.rawOpenfunds?.fundCurrency ||
+        shareClass.rawOpenfunds?.shareClassCurrency ||
+        null;
     } else {
       // fund with multiple share classes
       // TODO
@@ -142,7 +147,7 @@ export class GlamClient {
 
     if (fundModel.isEnabled) {
       fundModel.rawOpenfunds.fundLaunchDate =
-        fundModel.rawOpenfunds.fundLaunchDate ||
+        fundModel.rawOpenfunds?.fundLaunchDate ||
         new Date().toISOString().split("T")[0];
     }
 
@@ -156,7 +161,10 @@ export class GlamClient {
 
     // share classes
     fundModel.shareClasses.forEach((shareClass, i) => {
-      if (shareClass.rawOpenfunds.shareClassLifecycle == "active") {
+      if (
+        shareClass.rawOpenfunds &&
+        shareClass.rawOpenfunds.shareClassLifecycle === "active"
+      ) {
         shareClass.rawOpenfunds.shareClassLaunchDate =
           shareClass.rawOpenfunds.shareClassLaunchDate ||
           new Date().toISOString().split("T")[0];

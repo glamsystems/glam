@@ -17,18 +17,22 @@ export const FundModel = class<FundModel> {
       assetsWeights: obj.assetsWeights || [],
       shareClasses: obj.shareClasses
         ? obj.shareClasses.map(
-            (shareClass) => new ShareClassModel(shareClass) as ShareClassModel
+            (shareClass: any) =>
+              new ShareClassModel(shareClass) as ShareClassModel
           )
         : [],
-      company: obj.company
-        ? (new CompanyModel(obj.company) as CompanyModel)
-        : null,
-      manager: obj.manager
-        ? (new ManagerModel(obj.manager) as ManagerModel)
-        : null,
-      rawOpenfunds: obj.fundDomicileAlpha2
-        ? (new FundOpenfundsModel(obj) as FundOpenfundsModel)
-        : null
+      // company: obj.company
+      //   ? (new CompanyModel(obj.company) as CompanyModel)
+      //   : null,
+      // manager: obj.manager
+      //   ? (new ManagerModel(obj.manager) as ManagerModel)
+      //   : null,
+      // rawOpenfunds: obj.fundDomicileAlpha2
+      //   ? (new FundOpenfundsModel(obj) as FundOpenfundsModel)
+      //   : null
+      company: new CompanyModel(obj.company || {}),
+      manager: new ManagerModel(obj.manager || {}),
+      rawOpenfunds: new FundOpenfundsModel(obj)
     };
     return result;
   }
