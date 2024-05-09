@@ -315,8 +315,7 @@ pub struct Redeem<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    /// CHECK: skip
-    pub treasury: AccountInfo<'info>,
+    pub treasury: SystemAccount<'info>,
 
     // programs
     pub token_program: Program<'info, Token>,

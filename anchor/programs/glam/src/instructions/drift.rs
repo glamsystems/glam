@@ -19,8 +19,7 @@ pub struct DriftInitialize<'info> {
     #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
     pub fund: Account<'info, Fund>,
 
-    /// CHECK: treasury account is the same as fund treasury
-    pub treasury: AccountInfo<'info>,
+    pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
@@ -115,8 +114,7 @@ pub struct DriftUpdate<'info> {
     #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
     pub fund: Account<'info, Fund>,
 
-    /// CHECK: treasury account is the same as fund treasury
-    pub treasury: AccountInfo<'info>,
+    pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
@@ -167,7 +165,8 @@ pub fn drift_update_delegated_trader_handler(
 pub struct DriftDeposit<'info> {
     #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
     pub fund: Account<'info, Fund>,
-    pub treasury: Account<'info, Treasury>,
+
+    pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
@@ -236,7 +235,8 @@ pub fn drift_deposit_handler<'c: 'info, 'info>(
 pub struct DriftWithdraw<'info> {
     #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
     pub fund: Account<'info, Fund>,
-    pub treasury: Account<'info, Treasury>,
+
+    pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
@@ -308,7 +308,7 @@ pub fn drift_withdraw_handler<'c: 'info, 'info>(
 pub struct DriftClose<'info> {
     #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
     pub fund: Account<'info, Fund>,
-    pub treasury: Account<'info, Treasury>,
+    pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
     /// CHECK: checks are done inside cpi call

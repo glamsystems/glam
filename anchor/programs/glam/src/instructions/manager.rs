@@ -11,9 +11,8 @@ pub struct InitializeFund<'info> {
     #[account(init, seeds = [b"fund".as_ref(), manager.key().as_ref(), name.as_ref()], bump, payer = manager, space = 8 + Fund::INIT_SIZE + ShareClassMetadata::INIT_SIZE)]
     pub fund: Box<Account<'info, Fund>>,
 
-    /// CHECK: we'll create the account
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: AccountInfo<'info>,
+    pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
     pub manager: Signer<'info>,

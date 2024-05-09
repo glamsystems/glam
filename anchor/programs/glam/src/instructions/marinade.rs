@@ -224,9 +224,8 @@ pub struct MarinadeDelayedUnstake<'info> {
     #[account(has_one = manager, has_one = treasury)]
     pub fund: Box<Account<'info, Fund>>,
 
-    /// CHECK: skip
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: AccountInfo<'info>,
+    pub treasury: SystemAccount<'info>,
 
     /// CHECK: skip
     // #[account(init_if_needed, seeds = [b"ticket"], bump, payer = signer, space = 88, owner = marinade_program.key())]
@@ -264,9 +263,8 @@ pub struct MarinadeClaim<'info> {
     #[account(has_one = manager, has_one = treasury)]
     pub fund: Box<Account<'info, Fund>>,
 
-    /// CHECK: skip
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: AccountInfo<'info>,
+    pub treasury: SystemAccount<'info>,
 
     /// CHECK: skip
     // #[account(init_if_needed, seeds = [b"ticket"], bump, payer = signer, space = 88, owner = marinade_program.key())]
@@ -295,9 +293,8 @@ pub struct MarinadeLiquidUnstake<'info> {
     #[account(has_one = manager, has_one = treasury)]
     pub fund: Box<Account<'info, Fund>>,
 
-    /// CHECK: skip
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: AccountInfo<'info>,
+    pub treasury: SystemAccount<'info>,
 
     /// CHECK: skip
     #[account(mut)]
