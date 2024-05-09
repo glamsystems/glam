@@ -44,7 +44,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: Install dependencies and run tests
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run tests
         shell: bash
         run: |
-          cd api_v0/ && pnpm install && pnpm run test
+          pnpm api-test

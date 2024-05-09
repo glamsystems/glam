@@ -2,7 +2,8 @@
  * Fetch price data from benchmarks.pyth.network
  * Rate limit: https://docs.pyth.network/benchmarks/rate-limits
  */
-const priceHistory = async (symbol) => {
+export const priceHistory = async (symbol) => {
+  const emptyResult = { timestamps: null, closingPrices: null };
   if (
     ![
       "Crypto.ETH/USD",
@@ -12,17 +13,17 @@ const priceHistory = async (symbol) => {
     ].includes(symbol)
   ) {
     console.error("Invalid symbol", symbol);
-    return [];
+    return emptyResult;
   }
   const tsEnd = Math.floor(Date.now() / 1000);
   const tsStart = tsEnd - 60 * 60 * 24 * 30; // 30 days ago
 
-  const queryParams = {
-    symbol,
-    resolution: "1D",
-    from: tsStart,
-    to: tsEnd
-  };
+  const queryParams = [
+    ["symbol", symbol],
+    ["resolution", "1D"],
+    ["from", tsStart],
+    ["to", tsEnd]
+  ];
   const baseUrl =
     "https://benchmarks.pyth.network/v1/shims/tradingview/history";
   const queryString = new URLSearchParams(queryParams).toString();
@@ -37,13 +38,13 @@ const priceHistory = async (symbol) => {
     const { t: timestamps, c: closingPrices } = await response.json();
     return { timestamps, closingPrices };
   }
-  return [];
+  return emptyResult;
 };
 
 /**
  * Percent change in the last X days
  */
-const fundPerformance = (
+export const fundPerformance = (
   btcWeight,
   btcPrices,
   ethWeight,

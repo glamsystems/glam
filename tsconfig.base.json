@@ -20,5 +20,5 @@
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true
   },
-  "exclude": ["node_modules", "tmp", "api_v0", "api", "api-e2e"]
+  "exclude": ["node_modules", "tmp", "api"]
 }
