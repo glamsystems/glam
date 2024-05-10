@@ -9,6 +9,7 @@
     "anchor-test": "nx run anchor:anchor test",
     "build": "nx build web",
     "dev": "nx serve web",
+    "api-build": "nx run api:build",
     "api-serve": "nx run api:serve",
     "api-test": "nx run api:test"
   },

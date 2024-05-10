@@ -1,8 +1,3 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
-
 import express, { Express, Request, Response } from "express";
 import * as cors from "cors";
 import * as path from "path";

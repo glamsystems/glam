@@ -76,5 +76,5 @@ pnpm run dev
 ### Start the api server
 
 ```shell
-cd api && npm start
+pnpm run api-serve
 ```
