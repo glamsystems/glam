@@ -3,13 +3,13 @@ use anchor_spl::{token_2022, token_interface::Token2022};
 use spl_token_2022::{extension::ExtensionType, state::Mint as StateMint};
 
 use crate::error::ManagerError;
-use crate::state::fund::*;
+use crate::state::*;
 
 #[derive(Accounts)]
 #[instruction(name: String)]
 pub struct InitializeFund<'info> {
     #[account(init, seeds = [b"fund".as_ref(), manager.key().as_ref(), name.as_ref()], bump, payer = manager, space = 8 + Fund::INIT_SIZE + ShareClassMetadata::INIT_SIZE)]
-    pub fund: Box<Account<'info, Fund>>,
+    pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
@@ -89,7 +89,10 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
         .map(|a| a.key())
         .collect();
 
-    fund.init(
+    fund.manager = ctx.accounts.manager.key();
+    fund.treasury = ctx.accounts.treasury.key();
+
+    /*fund.init(
         fund_name,
         fund_symbol,
         fund_uri,
@@ -101,7 +104,7 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
         ctx.bumps.treasury,
         Clock::get()?.unix_timestamp,
         activate,
-    );
+    );*/
 
     msg!("Fund created: {}", ctx.accounts.fund.key());
     Ok(())
@@ -123,7 +126,7 @@ pub struct AddShareClass<'info> {
     pub share_class_mint: AccountInfo<'info>,
 
     #[account(mut, has_one = manager @ ManagerError::NotAuthorizedError)]
-    pub fund: Account<'info, Fund>,
+    pub fund: Account<'info, FundAccount>,
 
     #[account(mut)]
     pub manager: Signer<'info>,
@@ -138,7 +141,7 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
 ) -> Result<()> {
     let fund = &mut ctx.accounts.fund;
     fund.share_classes.push(ctx.accounts.share_class_mint.key());
-    fund.share_classes_bumps.push(ctx.bumps.share_class_mint);
+    // fund.share_classes_bumps.push(ctx.bumps.share_class_mint);
     //
     // Initialize share class mint and metadata
     //
@@ -367,7 +370,7 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
 #[derive(Accounts)]
 pub struct UpdateFund<'info> {
     #[account(mut, has_one = manager @ ManagerError::NotAuthorizedError)]
-    fund: Account<'info, Fund>,
+    fund: Account<'info, FundAccount>,
     #[account(mut)]
     manager: Signer<'info>,
 }
@@ -389,18 +392,18 @@ pub fn update_fund_handler<'c: 'info, 'info>(
         require!(uri.as_bytes().len() <= 100, ManagerError::InvalidFundName);
         fund.uri = uri;
     }
-    if let Some(activate) = activate {
-        fund.is_active = activate;
-    }
-    if let Some(asset_weights) = asset_weights {
-        require!(
-            asset_weights.len() == fund.assets_weights.len(),
-            ManagerError::InvalidAssetsLen
-        );
-        for (i, &w) in asset_weights.iter().enumerate() {
-            fund.assets_weights[i] = w;
-        }
-    }
+    // if let Some(activate) = activate {
+    //     fund.is_active = activate;
+    // }
+    // if let Some(asset_weights) = asset_weights {
+    //     require!(
+    //         asset_weights.len() == fund.assets_weights.len(),
+    //         ManagerError::InvalidAssetsLen
+    //     );
+    //     for (i, &w) in asset_weights.iter().enumerate() {
+    //         fund.assets_weights[i] = w;
+    //     }
+    // }
 
     msg!("Fund updated: {}", ctx.accounts.fund.key());
     Ok(())
@@ -409,7 +412,7 @@ pub fn update_fund_handler<'c: 'info, 'info>(
 #[derive(Accounts)]
 pub struct CloseFund<'info> {
     #[account(mut, close = manager, has_one = manager @ ManagerError::NotAuthorizedError)]
-    fund: Account<'info, Fund>,
+    fund: Account<'info, FundAccount>,
     #[account(mut)]
     manager: Signer<'info>,
 }

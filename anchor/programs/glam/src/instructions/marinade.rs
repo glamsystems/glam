@@ -9,7 +9,7 @@ use marinade::program::MarinadeFinance;
 use marinade::State as MarinadeState;
 use marinade::TicketAccountData;
 
-use crate::Fund;
+use crate::state::*;
 
 pub fn marinade_deposit<'c: 'info, 'info>(
     ctx: Context<MarinadeDeposit>,
@@ -169,7 +169,7 @@ pub struct MarinadeDeposit<'info> {
     pub manager: Signer<'info>,
 
     #[account(has_one = manager, has_one = treasury)]
-    pub fund: Box<Account<'info, Fund>>,
+    pub fund: Box<Account<'info, FundAccount>>,
 
     /// CHECK: skip
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
@@ -222,7 +222,7 @@ pub struct MarinadeDelayedUnstake<'info> {
     pub manager: Signer<'info>,
 
     #[account(has_one = manager, has_one = treasury)]
-    pub fund: Box<Account<'info, Fund>>,
+    pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
@@ -261,7 +261,7 @@ pub struct MarinadeClaim<'info> {
     pub manager: Signer<'info>,
 
     #[account(has_one = manager, has_one = treasury)]
-    pub fund: Box<Account<'info, Fund>>,
+    pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
@@ -291,7 +291,7 @@ pub struct MarinadeLiquidUnstake<'info> {
     pub manager: Signer<'info>,
 
     #[account(has_one = manager, has_one = treasury)]
-    pub fund: Box<Account<'info, Fund>>,
+    pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
