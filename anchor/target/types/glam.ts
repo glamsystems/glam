@@ -18,6 +18,11 @@ export type Glam = {
           "isSigner": false
         },
         {
+          "name": "openfunds",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "treasury",
           "isMut": true,
           "isSigner": false
@@ -35,26 +40,10 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "fundName",
-          "type": "string"
-        },
-        {
-          "name": "fundSymbol",
-          "type": "string"
-        },
-        {
-          "name": "fundUri",
-          "type": "string"
-        },
-        {
-          "name": "assetWeights",
+          "name": "fund",
           "type": {
-            "vec": "u32"
+            "defined": "FundModel"
           }
-        },
-        {
-          "name": "activate",
-          "type": "bool"
         }
       ]
     },
@@ -2857,6 +2846,11 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
+          "name": "openfunds",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "treasury",
           "isMut": true,
           "isSigner": false
@@ -2874,26 +2868,10 @@ export const IDL: Glam = {
       ],
       "args": [
         {
-          "name": "fundName",
-          "type": "string"
-        },
-        {
-          "name": "fundSymbol",
-          "type": "string"
-        },
-        {
-          "name": "fundUri",
-          "type": "string"
-        },
-        {
-          "name": "assetWeights",
+          "name": "fund",
           "type": {
-            "vec": "u32"
+            "defined": "FundModel"
           }
-        },
-        {
-          "name": "activate",
-          "type": "bool"
         }
       ]
     },

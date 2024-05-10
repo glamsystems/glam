@@ -6,10 +6,13 @@ use crate::error::ManagerError;
 use crate::state::*;
 
 #[derive(Accounts)]
-#[instruction(name: String)]
+#[instruction(fund_model: FundModel)]
 pub struct InitializeFund<'info> {
-    #[account(init, seeds = [b"fund".as_ref(), manager.key().as_ref(), name.as_ref()], bump, payer = manager, space = 8 + Fund::INIT_SIZE + ShareClassMetadata::INIT_SIZE)]
+    #[account(init, seeds = [b"fund".as_ref(), manager.key().as_ref(), fund_model.created.as_ref().unwrap().key.as_ref()], bump, payer = manager, space = 8 + FundAccount::INIT_SIZE)]
     pub fund: Box<Account<'info, FundAccount>>,
+
+    #[account(init, seeds = [b"openfunds".as_ref(), fund.key().as_ref()], bump, payer = manager, space = FundMetadataAccount::INIT_SIZE)]
+    pub openfunds: Box<Account<'info, FundMetadataAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
@@ -22,35 +25,8 @@ pub struct InitializeFund<'info> {
 
 pub fn initialize_fund_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, InitializeFund<'info>>,
-    fund_name: String,
-    fund_symbol: String,
-    fund_uri: String,
-    asset_weights: Vec<u32>,
-    activate: bool,
+    fund_model: FundModel,
 ) -> Result<()> {
-    //
-    // Validate the input
-    //
-    require!(
-        fund_name.as_bytes().len() <= MAX_FUND_NAME,
-        ManagerError::InvalidFundName
-    );
-    require!(
-        fund_symbol.as_bytes().len() <= MAX_FUND_SYMBOL,
-        ManagerError::InvalidFundSymbol
-    );
-    require!(
-        fund_uri.as_bytes().len() <= MAX_FUND_URI,
-        ManagerError::InvalidFundUri
-    );
-
-    let assets_len = ctx.remaining_accounts.len();
-    require!(assets_len <= MAX_ASSETS, ManagerError::InvalidAssetsLen);
-    require!(
-        asset_weights.len() == assets_len,
-        ManagerError::InvalidAssetsLen
-    );
-
     //
     // Create the treasury account
     //
@@ -83,28 +59,42 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     // Initialize the fund
     //
     let fund = &mut ctx.accounts.fund;
-    let asset_mints: Vec<Pubkey> = ctx
-        .remaining_accounts
-        .into_iter()
-        .map(|a| a.key())
-        .collect();
+    let treasury = &mut ctx.accounts.treasury;
+    let openfunds = &mut ctx.accounts.openfunds;
 
+    let model = fund_model.clone();
+    if let Some(fund_name) = model.name {
+        require!(
+            fund_name.len() < MAX_FUND_NAME,
+            ManagerError::InvalidFundName
+        );
+        fund.name = fund_name;
+    }
+    if let Some(fund_uri) = model.uri {
+        require!(fund_uri.len() < MAX_FUND_URI, ManagerError::InvalidFundUri);
+        fund.uri = fund_uri;
+    }
+    if let Some(openfunds_uri) = model.openfunds_uri {
+        require!(
+            openfunds_uri.len() < MAX_FUND_URI,
+            ManagerError::InvalidFundUri
+        );
+        fund.openfunds_uri = openfunds_uri;
+    }
+
+    fund.treasury = treasury.key();
+    fund.openfunds = openfunds.key();
     fund.manager = ctx.accounts.manager.key();
-    fund.treasury = ctx.accounts.treasury.key();
 
-    /*fund.init(
-        fund_name,
-        fund_symbol,
-        fund_uri,
-        ctx.accounts.manager.key(),
-        ctx.accounts.treasury.key(),
-        asset_mints,
-        asset_weights,
-        ctx.bumps.fund,
-        ctx.bumps.treasury,
-        Clock::get()?.unix_timestamp,
-        activate,
-    );*/
+    //
+    // Initialize openfunds
+    //
+    let openfunds_metadata = FundMetadataAccount::from(fund_model);
+    openfunds.fund_pubkey = fund.key();
+    openfunds.company = openfunds_metadata.company;
+    openfunds.fund = openfunds_metadata.fund;
+    openfunds.share_classes = openfunds_metadata.share_classes;
+    openfunds.fund_managers = openfunds_metadata.fund_managers;
 
     msg!("Fund created: {}", ctx.accounts.fund.key());
     Ok(())

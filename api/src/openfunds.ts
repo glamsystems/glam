@@ -83,13 +83,14 @@ export const openfunds = async (funds, template, format, client, res) => {
             // validate key
             const key = validatePubkey(fund);
             if (!key) {
-              reject(rejectErr);
+              return reject(rejectErr);
             }
             // fetch fund
             try {
-              resolve(await client.fetchFund(key));
+              return resolve(await client.fetchFund(key));
             } catch (err) {
-              reject(rejectErr);
+              console.error(err);
+              return reject(rejectErr);
             }
           })
       )

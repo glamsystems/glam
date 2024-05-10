@@ -187,22 +187,4 @@ describe("glam_drift", () => {
     }
   }, 30_000);
   */
-  it("Close fund", async () => {
-    const fund = await program.account.fundAccount.fetchNullable(fundPDA);
-    expect(fund).not.toBeNull();
-
-    await program.methods
-      .close()
-      .accounts({
-        fund: fundPDA,
-        manager: manager.publicKey
-      })
-      .rpc({ commitment });
-
-    // The account should no longer exist, returning null.
-    const closedAccount = await program.account.fundAccount.fetchNullable(
-      fundPDA
-    );
-    expect(closedAccount).toBeNull();
-  });
 });

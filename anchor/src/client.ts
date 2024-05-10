@@ -183,25 +183,23 @@ export class GlamClient {
     const fundModel = this.enrichFundModelInitialize(fund);
     const fundPDA = this.getFundPDA(fundModel);
     const treasury = this.getTreasuryPDA(fundPDA);
-    const share = this.getShareClassPDA(fundPDA, 0);
+    // const share = this.getShareClassPDA(fundPDA, 0);
     const openfunds = this.getOpenfundsPDA(fundPDA);
     const manager = this.getManager();
 
     //TODO: add instructions to "addShareClass" in the same tx
-    const txSig = ""; /*await this.program.methods
+    const txSig = await this.program.methods
       .initialize(fundModel)
       .accounts({
         fund: fundPDA,
         treasury,
         openfunds,
-        share,
-        manager,
-        tokenProgram: TOKEN_2022_PROGRAM_ID
+        manager
       })
       .preInstructions([
         ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
       ])
-      .rpc();*/
+      .rpc();
     return [txSig, fundPDA];
   }
 

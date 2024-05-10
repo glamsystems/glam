@@ -1,5 +1,6 @@
 import { Program, Wallet, workspace } from "@coral-xyz/anchor";
 import { ComputeBudgetProgram, PublicKey } from "@solana/web3.js";
+import { GlamClient } from "../src";
 import { Glam } from "../target/types/glam";
 import { getMetadataUri, getImageUri, getFundUri } from "../src/offchain";
 import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token"; // Fix import warning in VSCode
@@ -19,15 +20,87 @@ export const createFundForTest = async (
   symbol: string,
   manager: Wallet
 ) => {
-  const [fundPDA, fundBump] = PublicKey.findProgramAddressSync(
-    [Buffer.from("fund"), manager.publicKey.toBuffer(), Buffer.from(name)],
-    program.programId
-  );
+  const client = new GlamClient();
+  let txId, fundPDA;
+  try {
+    [txId, fundPDA] = await client.createFund({
+      shareClasses: [
+        {
+          // Glam Token
+          symbol: "GBS",
+          name: "Glam Investment Fund BTC-SOL",
+          asset: usdc,
+          // Openfund Share Class
+          isin: "XS1082172823",
+          shareClassCurrency: "USDC",
+          fullShareClassName: null, // auto
+          hasPerformanceFee: false,
+          hasSubscriptionFeeInFavourOfDistributor: false,
+          investmentStatus: "open", //TODO: auto
+          shareClassDistributionPolicy: "accumulating", //TODO: auto
+          shareClassExtension: "",
+          shareClassLaunchDate: null, // auto
+          shareClassLifecycle: "active", //TODO: auto
+          // launchPrice: null,
+          // launchPriceCurrency: null,
+          // launchPriceDate: null,
+          hasAppliedSubscriptionFeeInFavourOfFund: false,
+          hasAppliedRedemptionFeeInFavourOfFund: false,
+          hasLockUpForRedemption: false,
+          hasRedemptionFeeInFavourOfDistributor: false,
+          isValidISIN: false
+          // lockUpComment: null,
+          // lockUpPeriodInDays: null,
+          // roundingMethodForPrices: null,
+          // roundingMethodForRedemptionInAmount: null,
+          // roundingMethodForRedemptionInShares: null,
+          // roundingMethodForSubscriptionInAmount: null,
+          // roundingMethodForSubscriptionInShares: null,
+        }
+      ],
+      // Glam
+      isEnabled: true,
+      assets: [usdc, btc, eth],
+      assetsWeights: [0, 60, 40],
+      // Openfund (Fund)
+      fundDomicileAlpha2: "XS",
+      legalFundNameIncludingUmbrella: null, // auto
+      fiscalYearEnd: "12-31",
+      fundCurrency: null, // auto
+      fundLaunchDate: null, // auto
+      investmentObjective: "demo",
+      // investmentObjective:
+      //   "The Glam Investment Fund seeks to reflect generally the performance of the price of Bitcoin and Solana.",
+      isFundOfFunds: false,
+      isPassiveFund: true, //TODO: auto
+      legalForm: "other",
+      openEndedOrClosedEndedFundStructure: "open-ended fund", //TODO: auto
+      // Openfund Company (simplified)
+      company: {
+        name: "Glam Systems",
+        email: "hello@glam.systems",
+        website: "https://glam.systems"
+      },
+      // Openfund Manager (simplified)
+      manager: {
+        name: "0x0ece.sol"
+      }
+    });
+    console.log(`Fund ${fundPDA} initialized, txId: ${txId}`);
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
 
-  const [treasuryPDA, treasuryBump] = PublicKey.findProgramAddressSync(
-    [Buffer.from("treasury"), fundPDA.toBuffer()],
-    program.programId
-  );
+  // const [fundPDA, fundBump] = PublicKey.findProgramAddressSync(
+  //   [Buffer.from("fund"), manager.publicKey.toBuffer(), Buffer.from(name)],
+  //   program.programId
+  // );
+
+  // const [treasuryPDA, treasuryBump] = PublicKey.findProgramAddressSync(
+  //   [Buffer.from("treasury"), fundPDA.toBuffer()],
+  //   program.programId
+  // );
 
   const shareClassSymbol = `${symbol}.A`;
   const [sharePDA, shareBump] = PublicKey.findProgramAddressSync(
@@ -52,22 +125,22 @@ export const createFundForTest = async (
   };
 
   try {
-    let txId = await program.methods
-      .initialize(name, symbol, getFundUri(fundPDA), [10, 50, 40], true)
-      .accounts({
-        fund: fundPDA,
-        treasury: treasuryPDA,
-        manager: manager.publicKey
-      })
-      .remainingAccounts([
-        { pubkey: usdc, isSigner: false, isWritable: false },
-        { pubkey: btc, isSigner: false, isWritable: false },
-        { pubkey: eth, isSigner: false, isWritable: false }
-      ])
-      .rpc({ commitment: "confirmed" });
-    console.log(`Fund ${fundPDA} initialized, txId: ${txId}`);
+    // let txId = await program.methods
+    //   .initialize(name, symbol, getFundUri(fundPDA), [10, 50, 40], true)
+    //   .accounts({
+    //     fund: fundPDA,
+    //     treasury: treasuryPDA,
+    //     manager: manager.publicKey
+    //   })
+    //   .remainingAccounts([
+    //     { pubkey: usdc, isSigner: false, isWritable: false },
+    //     { pubkey: btc, isSigner: false, isWritable: false },
+    //     { pubkey: eth, isSigner: false, isWritable: false }
+    //   ])
+    //   .rpc({ commitment: "confirmed" });
+    // console.log(`Fund ${fundPDA} initialized, txId: ${txId}`);
 
-    txId = await program.methods
+    const txId = await program.methods
       .addShareClass(shareClassMetadata)
       .accounts({
         fund: fundPDA,
@@ -85,5 +158,12 @@ export const createFundForTest = async (
     throw e;
   }
 
-  return { fundPDA, fundBump, treasuryPDA, treasuryBump, sharePDA, shareBump };
+  return {
+    fundPDA,
+    fundBump: null,
+    treasuryPDA: client.getTreasuryPDA(fundPDA),
+    treasuryBump: null,
+    sharePDA,
+    shareBump
+  };
 };
