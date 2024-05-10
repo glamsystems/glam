@@ -1,5 +1,5 @@
 import express, { Express, Request, Response } from "express";
-import * as cors from "cors";
+import cors from "cors";
 import * as path from "path";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { AnchorProvider } from "@coral-xyz/anchor";
@@ -21,6 +21,7 @@ const BASE_URL = "https://api.glam.systems";
 const SOLANA_RPC = process.env.SOLANA_RPC || "http://localhost:8899";
 
 const app: Express = express();
+app.use(cors({ origin: "*", methods: "GET" }));
 
 const connection = new Connection(SOLANA_RPC, "confirmed");
 const provider = new AnchorProvider(connection, null, {
