@@ -5,43 +5,85 @@
 
 import * as ExcelJS from "exceljs";
 import * as util from "util";
+import * as lodash from "lodash";
 import { write, writeToBuffer } from "@fast-csv/format";
 import { parseString } from "@fast-csv/parse";
 
 import { validatePubkey } from "./validation";
 
-const openfundsKeyFromField = (f) => {
-  const words = f.field.replace("-", "").split(" ");
-  return [words[0].toLowerCase(), ...words.splice(1)].join("");
-};
-
 const openfundsGetTemplate = async (template) => {
-  // https://docs.google.com/spreadsheets/d/1PQFTn1iV90OkZqzdvwaOgTceltGnsEJxuxiCTdo_5Yo/edit#gid=0
   const templateUrl =
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vSH59SKOZv_mrXjfBUKCqK75sGj-yIXSLOkw4MMMnxMVSCZFodvOTfvTIRrymeMAOG2EBTnG5eN_ImV/pub?output=csv";
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vRieRstFVBGCkV0rVYwNmypV5nMdFtJcqP7TtzIgAC8JA9lXHePI4oXO04aaC7EcLc0f6bt9MW6tJw7/pub?output=csv";
   const res = await fetch(templateUrl);
 
-  const templateCsv = await new Promise(async (resolve, reject) => {
-    let templateCsv = [];
-    parseString(await res.text())
-      .on("data", (row) => {
-        templateCsv.push(row);
-      })
-      .on("end", (rowCount: number) => {
-        resolve(templateCsv);
-      });
-  });
-  const codes = templateCsv[0].slice(1).filter((x) => !!x);
-  const fields = templateCsv[1].slice(1).filter((x) => !!x);
-  const tags = templateCsv[2].slice(1).filter((x) => !!x);
-  const templates = templateCsv[3].slice(1).filter((x) => !!x);
-  const templateMap = codes.map((code, i) => ({
-    code,
-    field: fields[i],
-    tag: tags[i],
-    template: templates[i]
-  }));
-  // .filter((obj) => obj.template == "basic");
+  const templateCsv: Array<Array<string>> = await new Promise(
+    async (resolve, reject) => {
+      let templateCsv = [];
+      parseString(await res.text())
+        .on("data", (row) => {
+          templateCsv.push(row);
+        })
+        .on("end", (rowCount: number) => {
+          resolve(templateCsv);
+        });
+    }
+  );
+
+  let allowedTags = [];
+  let glamFields = true;
+  let filterTemplate = "complete";
+  switch (template) {
+    case "basic":
+    case "glam-basic":
+      filterTemplate = "basic";
+      break;
+    case "of-basic":
+      filterTemplate = "basic";
+      glamFields = false;
+      break;
+    case "of-complete":
+      glamFields = false;
+      break;
+    case "of-essential":
+      allowedTags = ["essential"];
+      // glamFields = false;
+      break;
+    case "of-core":
+      allowedTags = ["essential", "core"];
+      // glamFields = false;
+      break;
+    case "of-additional":
+      allowedTags = ["essential", "core", "additional"];
+      // glamFields = false;
+      break;
+  }
+
+  const cleanField = (field) =>
+    field
+      .split(" ")
+      .map((word) =>
+        [word[0].toUpperCase(), ...word.split("").splice(1)].join("")
+      )
+      .join(" ");
+
+  const templateMap = templateCsv
+    .slice(1)
+    .map((row, i) => ({
+      code: row[0],
+      field: cleanField(row[1]),
+      key: lodash.camelCase(row[1]),
+      tag: row[2],
+      template: row[8],
+      version: Number(row[9])
+    }))
+    .filter((obj) => obj.version === 1)
+    .filter((obj) =>
+      filterTemplate === "complete" ? true : obj.template === filterTemplate
+    )
+    .filter((obj) =>
+      allowedTags.length === 0 ? true : allowedTags.indexOf(obj.tag) >= 0
+    )
+    .filter((obj) => (glamFields ? true : obj.tag !== "glam"));
   // console.log(templateMap);
   return templateMap;
 };
@@ -60,11 +102,9 @@ const openfundsApplyCsvTemplate = async (models, template) => {
   return [
     fields.map((f) => f.code),
     fields.map((f) => f.field),
-    // fields.map((f) => openfundsKeyFromField(f)), // row with keys, just to debug
+    // fields.map((f) => f.key), // row with keys, just to debug
     ...models.flatMap((m) =>
-      openfundsCsvRows(m).map((row) =>
-        fields.map((f) => row[openfundsKeyFromField(f)])
-      )
+      openfundsCsvRows(m).map((row) => fields.map((f) => row[f.key]))
     )
   ];
 };
@@ -100,17 +140,23 @@ export const openfunds = async (funds, template, format, client, res) => {
   }
 
   console.log(util.inspect(models, false, null));
+  let actualTemplate = template;
+  if (template === "auto") {
+    actualTemplate = models.every((m) => m.shareClasses.length <= 1)
+      ? "basic"
+      : "complete";
+  }
 
   switch (format.toLowerCase()) {
     case "csv": {
-      const csv = await openfundsApplyCsvTemplate(models, template);
+      const csv = await openfundsApplyCsvTemplate(models, actualTemplate);
       res.setHeader("content-type", "text/csv");
       return res.send(await writeToBuffer(csv));
       break;
     }
     case "xls":
     case "xlsx": {
-      const csv = await openfundsApplyCsvTemplate(models, template);
+      const csv = await openfundsApplyCsvTemplate(models, actualTemplate);
       const workbook = new ExcelJS.Workbook();
       const worksheet = await workbook.csv.read(write(csv));
       res.setHeader(

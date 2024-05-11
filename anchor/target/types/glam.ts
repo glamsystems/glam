@@ -1374,15 +1374,15 @@ export type Glam = {
             }
           },
           {
-            "name": "fullShareClassName",
+            "name": "currencyOfMinimalSubscription",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "hasPerformanceFee",
+            "name": "fullShareClassName",
             "type": {
-              "option": "bool"
+              "option": "string"
             }
           },
           {
@@ -1392,19 +1392,19 @@ export type Glam = {
             }
           },
           {
-            "name": "managementFeeApplied",
+            "name": "minimalInitialSubscriptionCategory",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "managementFeeAppliedReferenceDate",
+            "name": "minimalInitialSubscriptionInAmount",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "managementFeeMaximum",
+            "name": "minimalInitialSubscriptionInShares",
             "type": {
               "option": "string"
             }
@@ -1452,6 +1452,18 @@ export type Glam = {
             }
           },
           {
+            "name": "currencyOfMinimalOrMaximumRedemption",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "hasLockUpForRedemption",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
             "name": "isValidIsin",
             "type": {
               "option": "bool"
@@ -1470,25 +1482,49 @@ export type Glam = {
             }
           },
           {
-            "name": "managementFeeMinimum",
+            "name": "maximumInitialRedemptionInAmount",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "maximalNumberOfPossibleDecimalsAmount",
+            "name": "maximumInitialRedemptionInShares",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "maximalNumberOfPossibleDecimalsNav",
+            "name": "minimalInitialRedemptionInAmount",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "maximalNumberOfPossibleDecimalsShares",
+            "name": "minimalInitialRedemptionInShares",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "minimalRedemptionCategory",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "shareClassDividendType",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "cusip",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "valor",
             "type": {
               "option": "string"
             }
@@ -2656,10 +2692,13 @@ export type Glam = {
             "name": "YearlySubscriptionDealingDays"
           },
           {
-            "name": "FundId"
+            "name": "CUSIP"
           },
           {
-            "name": "ShareClassCurrencyId"
+            "name": "Valor"
+          },
+          {
+            "name": "FundId"
           },
           {
             "name": "ImageUri"
@@ -4202,15 +4241,15 @@ export const IDL: Glam = {
             }
           },
           {
-            "name": "fullShareClassName",
+            "name": "currencyOfMinimalSubscription",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "hasPerformanceFee",
+            "name": "fullShareClassName",
             "type": {
-              "option": "bool"
+              "option": "string"
             }
           },
           {
@@ -4220,19 +4259,19 @@ export const IDL: Glam = {
             }
           },
           {
-            "name": "managementFeeApplied",
+            "name": "minimalInitialSubscriptionCategory",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "managementFeeAppliedReferenceDate",
+            "name": "minimalInitialSubscriptionInAmount",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "managementFeeMaximum",
+            "name": "minimalInitialSubscriptionInShares",
             "type": {
               "option": "string"
             }
@@ -4280,6 +4319,18 @@ export const IDL: Glam = {
             }
           },
           {
+            "name": "currencyOfMinimalOrMaximumRedemption",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "hasLockUpForRedemption",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
             "name": "isValidIsin",
             "type": {
               "option": "bool"
@@ -4298,25 +4349,49 @@ export const IDL: Glam = {
             }
           },
           {
-            "name": "managementFeeMinimum",
+            "name": "maximumInitialRedemptionInAmount",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "maximalNumberOfPossibleDecimalsAmount",
+            "name": "maximumInitialRedemptionInShares",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "maximalNumberOfPossibleDecimalsNav",
+            "name": "minimalInitialRedemptionInAmount",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "maximalNumberOfPossibleDecimalsShares",
+            "name": "minimalInitialRedemptionInShares",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "minimalRedemptionCategory",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "shareClassDividendType",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "cusip",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "valor",
             "type": {
               "option": "string"
             }
@@ -5484,10 +5559,13 @@ export const IDL: Glam = {
             "name": "YearlySubscriptionDealingDays"
           },
           {
-            "name": "FundId"
+            "name": "CUSIP"
           },
           {
-            "name": "ShareClassCurrencyId"
+            "name": "Valor"
+          },
+          {
+            "name": "FundId"
           },
           {
             "name": "ImageUri"
