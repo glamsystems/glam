@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 
 // Openfunds v2.0 Share Class
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug, strum::Display)]
 pub enum ShareClassFieldName {
     // Essential
     ISIN,               // impl

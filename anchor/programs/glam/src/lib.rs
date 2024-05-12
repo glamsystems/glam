@@ -28,7 +28,7 @@ pub mod glam {
 
     pub fn add_share_class<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, AddShareClass<'info>>,
-        share_class_metadata: ShareClassMetadata,
+        share_class_metadata: ShareClassModel,
     ) -> Result<()> {
         manager::add_share_class_handler(ctx, share_class_metadata)
     }

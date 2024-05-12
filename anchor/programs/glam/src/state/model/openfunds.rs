@@ -75,6 +75,25 @@ impl From<FundModel> for Vec<FundField> {
 impl From<&ShareClassModel> for Vec<ShareClassField> {
     fn from(model: &ShareClassModel) -> Self {
         let mut res = vec![];
+        // Derived fields
+        let is_raw_openfunds = model.is_raw_openfunds.unwrap_or(false);
+        let model = model.clone();
+        if !is_raw_openfunds {
+            //TODO
+            let v: Vec<(Option<String>, ShareClassFieldName)> = vec![
+                (pubkey2string(model.fund_id), ShareClassFieldName::FundId),
+                (model.image_uri, ShareClassFieldName::ImageUri),
+            ];
+            v.iter().for_each(|(value, field)| {
+                if let Some(value) = value {
+                    let value = value.to_string();
+                    res.push(ShareClassField {
+                        name: field.clone(),
+                        value: value.clone(),
+                    })
+                }
+            });
+        }
         // Raw Openfund fields
         if let Some(model) = model.raw_openfunds.clone() {
             //TODO
@@ -365,25 +384,6 @@ impl From<&ShareClassModel> for Vec<ShareClassField> {
             .iter()
             .for_each(|(value, field)| {
                 if let Some(value) = value {
-                    res.push(ShareClassField {
-                        name: field.clone(),
-                        value: value.clone(),
-                    })
-                }
-            });
-        }
-        // Derived fields
-        let is_raw_openfunds = model.is_raw_openfunds.unwrap_or(false);
-        let model = model.clone();
-        if !is_raw_openfunds {
-            //TODO
-            let v: Vec<(Option<String>, ShareClassFieldName)> = vec![
-                (pubkey2string(model.fund_id), ShareClassFieldName::FundId),
-                (model.image_uri, ShareClassFieldName::ImageUri),
-            ];
-            v.iter().for_each(|(value, field)| {
-                if let Some(value) = value {
-                    let value = value.to_string();
                     res.push(ShareClassField {
                         name: field.clone(),
                         value: value.clone(),

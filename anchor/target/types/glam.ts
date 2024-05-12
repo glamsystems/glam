@@ -61,6 +61,11 @@ export type Glam = {
           "isSigner": false
         },
         {
+          "name": "openfunds",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "manager",
           "isMut": true,
           "isSigner": true
@@ -80,7 +85,7 @@ export type Glam = {
         {
           "name": "shareClassMetadata",
           "type": {
-            "defined": "ShareClassMetadata"
+            "defined": "ShareClassModel"
           }
         }
       ]
@@ -2928,6 +2933,11 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
+          "name": "openfunds",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "manager",
           "isMut": true,
           "isSigner": true
@@ -2947,7 +2957,7 @@ export const IDL: Glam = {
         {
           "name": "shareClassMetadata",
           "type": {
-            "defined": "ShareClassMetadata"
+            "defined": "ShareClassModel"
           }
         }
       ]

@@ -1,5 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
-import * as util from "util";
+// import * as util from "util";
 import { BN, Program, IdlAccounts, IdlTypes } from "@coral-xyz/anchor";
 import {
   ComputeBudgetProgram,
@@ -186,15 +186,14 @@ export class GlamClient {
     let fundModel = this.enrichFundModelInitialize(fund);
     const fundPDA = this.getFundPDA(fundModel);
     const treasury = this.getTreasuryPDA(fundPDA);
-    // const share = this.getShareClassPDA(fundPDA, 0);
     const openfunds = this.getOpenfundsPDA(fundPDA);
     const manager = this.getManager();
 
     const shareClasses = fundModel.shareClasses;
     fundModel.shareClasses = [];
-    console.log(util.inspect(shareClasses, false, null));
 
-    //TODO: add instructions to "addShareClass" in the same tx
+    console.log(shareClasses);
+
     const txSig = await this.program.methods
       .initialize(fundModel)
       .accounts({
@@ -204,17 +203,24 @@ export class GlamClient {
         manager
       })
       .rpc();
-    // shareClasses.forEach(async (shareClass, j) => {
-    //   await this.program.methods
-    //     .addShareClass(shareClass)
-    //     .accounts({
-    //       fund: fundPDA,
-    //       treasury,
-    //       openfunds,
-    //       manager
-    //     })
-    //     .rpc();
-    // });
+    await Promise.all(
+      shareClasses.map(async (shareClass, j) => {
+        const shareClassMint = this.getShareClassPDA(fundPDA, j);
+        return await this.program.methods
+          .addShareClass(shareClass)
+          .accounts({
+            fund: fundPDA,
+            shareClassMint,
+            openfunds,
+            manager,
+            tokenProgram: TOKEN_2022_PROGRAM_ID
+          })
+          .preInstructions([
+            ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
+          ])
+          .rpc();
+      })
+    );
     return [txSig, fundPDA];
   }
 

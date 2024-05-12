@@ -27,35 +27,41 @@ export const createFundForTest = async (
       shareClasses: [
         {
           // Glam Token
-          symbol: "GBS",
           name: "Glam Investment Fund BTC-SOL",
+          symbol: "GBS",
           asset: usdc,
+          // Glam
+          permanentDelegate: manager,
+          lockUpTime: 40 * 24 * 60 * 60,
+          requiresMemoOnTransfer: true,
           // Openfunds Share Class
+          fullShareClassName: "Glam Investment Fund BTC-SOL",
           isin: "XS1082172823",
+          cusip: "demo",
+          valor: "demo",
           shareClassCurrency: "USDC",
-          fullShareClassName: null, // auto
-          hasPerformanceFee: false,
-          hasSubscriptionFeeInFavourOfDistributor: false,
-          investmentStatus: "open", //TODO: auto
-          shareClassDistributionPolicy: "accumulating", //TODO: auto
-          shareClassExtension: "",
-          shareClassLaunchDate: null, // auto
-          shareClassLifecycle: "active", //TODO: auto
-          // launchPrice: null,
-          // launchPriceCurrency: null,
-          // launchPriceDate: null,
-          hasAppliedSubscriptionFeeInFavourOfFund: false,
-          hasAppliedRedemptionFeeInFavourOfFund: false,
-          hasLockUpForRedemption: false,
-          hasRedemptionFeeInFavourOfDistributor: false,
-          isValidISIN: false
-          // lockUpComment: null,
-          // lockUpPeriodInDays: null,
-          // roundingMethodForPrices: null,
-          // roundingMethodForRedemptionInAmount: null,
-          // roundingMethodForRedemptionInShares: null,
-          // roundingMethodForSubscriptionInAmount: null,
-          // roundingMethodForSubscriptionInShares: null,
+          shareClassLifecycle: "active",
+          investmentStatus: "open",
+          shareClassDistributionPolicy: "accumulating",
+          shareClassLaunchDate: new Date().toISOString().split("T")[0],
+          minimalInitialSubscriptionCategory: "amount",
+          minimalInitialSubscriptionInShares: "0",
+          minimalInitialSubscriptionInAmount: "1000",
+          currencyOfMinimalSubscription: "USDC",
+          minimalRedemptionCategory: "shares",
+          minimalInitialRedemptionInShares: "1",
+          maximumInitialRedemptionInShares: "1000",
+          minimalInitialRedemptionInAmount: "0",
+          maximumInitialRedemptionInAmount: null,
+          currencyOfMinimalOrMaximumRedemption: "USDC",
+          shareClassDividendType: "both",
+          srri: "4",
+          hasLockUpForRedemption: true,
+          lockUpComment: "demo",
+          lockUpPeriodInDays: "40",
+          launchPrice: "100",
+          launchPriceCurrency: "USD",
+          launchPriceDate: new Date().toISOString().split("T")[0]
         }
       ],
       // Glam
@@ -64,95 +70,27 @@ export const createFundForTest = async (
       assetsWeights: [0, 60, 40],
       // Openfunds (Fund)
       fundDomicileAlpha2: "XS",
-      legalFundNameIncludingUmbrella: null, // auto
-      fiscalYearEnd: "12-31",
-      fundCurrency: null, // auto
-      fundLaunchDate: null, // auto
+      legalFundNameIncludingUmbrella: "Glam Investment Fund BTC-SOL (b)",
+      fundLaunchDate: new Date().toISOString().split("T")[0],
       investmentObjective: "demo",
-      // investmentObjective:
-      //   "The Glam Investment Fund seeks to reflect generally the performance of the price of Bitcoin and Solana.",
-      isFundOfFunds: false,
-      isPassiveFund: true, //TODO: auto
+      fundCurrency: "USDC",
+      openEndedOrClosedEndedFundStructure: "open-ended fund",
+      fiscalYearEnd: "12-31",
       legalForm: "other",
-      openEndedOrClosedEndedFundStructure: "open-ended fund", //TODO: auto
       // Openfunds Company (simplified)
       company: {
-        name: "Glam Systems",
-        email: "hello@glam.systems",
-        website: "https://glam.systems"
+        fundGroupName: "Glam Systems",
+        manCo: "Glam Management",
+        domicileOfManCo: "CH",
+        emailAddressOfManCo: "hello@glam.systems",
+        fundWebsiteOfManCo: "https://glam.systems"
       },
       // Openfunds Manager (simplified)
       manager: {
-        name: "0x0ece.sol"
+        portfolioManagerName: "0x0ece.sol"
       }
     });
     console.log(`Fund ${fundPDA} initialized, txId: ${txId}`);
-  } catch (e) {
-    console.error(e);
-    throw e;
-  }
-
-  // const [fundPDA, fundBump] = PublicKey.findProgramAddressSync(
-  //   [Buffer.from("fund"), manager.publicKey.toBuffer(), Buffer.from(name)],
-  //   program.programId
-  // );
-
-  // const [treasuryPDA, treasuryBump] = PublicKey.findProgramAddressSync(
-  //   [Buffer.from("treasury"), fundPDA.toBuffer()],
-  //   program.programId
-  // );
-
-  const shareClassSymbol = `${symbol}.A`;
-  const [sharePDA, shareBump] = PublicKey.findProgramAddressSync(
-    [Buffer.from("share"), Buffer.from(shareClassSymbol), fundPDA.toBuffer()],
-    program.programId
-  );
-  const shareClassMetadata = {
-    name: `${name} - A Share`,
-    symbol: shareClassSymbol,
-    uri: getMetadataUri(sharePDA),
-    shareClassAsset: "USDC",
-    shareClassAssetId: usdc,
-    isin: "XS1082172823",
-    status: "open",
-    feeManagement: 15_000, // 1_000_000 * 0.015,
-    feePerformance: 100_000, // 1_000_000 * 0.1,
-    policyDistribution: "accumulating",
-    extension: "",
-    launchDate: "2024-04-01",
-    lifecycle: "active",
-    imageUri: getImageUri(sharePDA)
-  };
-
-  try {
-    // let txId = await program.methods
-    //   .initialize(name, symbol, getFundUri(fundPDA), [10, 50, 40], true)
-    //   .accounts({
-    //     fund: fundPDA,
-    //     treasury: treasuryPDA,
-    //     manager: manager.publicKey
-    //   })
-    //   .remainingAccounts([
-    //     { pubkey: usdc, isSigner: false, isWritable: false },
-    //     { pubkey: btc, isSigner: false, isWritable: false },
-    //     { pubkey: eth, isSigner: false, isWritable: false }
-    //   ])
-    //   .rpc({ commitment: "confirmed" });
-    // console.log(`Fund ${fundPDA} initialized, txId: ${txId}`);
-
-    const txId = await program.methods
-      .addShareClass(shareClassMetadata)
-      .accounts({
-        fund: fundPDA,
-        shareClassMint: sharePDA,
-        manager: manager.publicKey,
-        tokenProgram: TOKEN_2022_PROGRAM_ID
-      })
-      .preInstructions([
-        ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
-      ])
-      .rpc({ commitment: "confirmed" });
-    console.log(`Share class ${sharePDA} added, txId: ${txId}`);
   } catch (e) {
     console.error(e);
     throw e;
@@ -163,7 +101,7 @@ export const createFundForTest = async (
     fundBump: null,
     treasuryPDA: client.getTreasuryPDA(fundPDA),
     treasuryBump: null,
-    sharePDA,
-    shareBump
+    sharePDA: client.getShareClassPDA(fundPDA, 0),
+    shareBump: null
   };
 };
