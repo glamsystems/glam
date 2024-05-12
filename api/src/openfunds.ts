@@ -6,6 +6,7 @@
 import * as ExcelJS from "exceljs";
 import * as util from "util";
 import * as lodash from "lodash";
+import { ShareClassModel } from "@glam/anchor";
 import { write, writeToBuffer } from "@fast-csv/format";
 import { parseString } from "@fast-csv/parse";
 
@@ -58,13 +59,20 @@ const openfundsGetTemplate = async (template) => {
       break;
   }
 
-  const cleanField = (field) =>
-    field
-      .split(" ")
-      .map((word) =>
-        [word[0].toUpperCase(), ...word.split("").splice(1)].join("")
-      )
-      .join(" ");
+  const cleanField = (field) => {
+    let val = "";
+    try {
+      val = field
+        .split(" ")
+        .map((word) =>
+          [word[0].toUpperCase(), ...word.split("").splice(1)].join("")
+        )
+        .join(" ");
+    } catch (e) {
+      console.log("field", field);
+    }
+    return val;
+  };
 
   const templateMap = templateCsv
     .slice(1)
@@ -73,8 +81,8 @@ const openfundsGetTemplate = async (template) => {
       field: cleanField(row[1]),
       key: lodash.camelCase(row[1]),
       tag: row[2],
-      template: row[8],
-      version: Number(row[9])
+      template: row[4],
+      version: Number(row[5])
     }))
     .filter((obj) => obj.version === 1)
     .filter((obj) =>
@@ -89,7 +97,11 @@ const openfundsGetTemplate = async (template) => {
 };
 
 const openfundsCsvRows = (model) => {
-  return model.shareClasses.map((shareClass) => ({
+  return (
+    model.shareClasses.length > 0
+      ? model.shareClasses
+      : [new ShareClassModel({})]
+  ).map((shareClass) => ({
     ...model,
     ...model.company,
     ...model.fundManagers[0],

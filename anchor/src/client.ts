@@ -1,4 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
+import * as util from "util";
 import { BN, Program, IdlAccounts, IdlTypes } from "@coral-xyz/anchor";
 import {
   ComputeBudgetProgram,
@@ -17,6 +18,7 @@ import {
 import { Glam, GlamIDL, GlamProgram, getGlamProgramId } from "./glamExports";
 import { GlamClientConfig } from "./clientConfig";
 import { FundModel, FundOpenfundsModel } from "./models";
+import { kMaxLength } from "buffer";
 
 type FundAccount = IdlAccounts<Glam>["fundAccount"];
 type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
@@ -171,6 +173,7 @@ export class GlamClient {
       }
 
       const sharePDA = this.getShareClassPDA(fundPDA, i);
+      shareClass.uri = `https://api.glam.systems/metadata/${sharePDA}`;
       shareClass.imageUri = `https://api.glam.systems/image/${sharePDA}.png`;
     });
 
@@ -180,12 +183,16 @@ export class GlamClient {
   public async createFund(
     fund: any
   ): Promise<[TransactionSignature, PublicKey]> {
-    const fundModel = this.enrichFundModelInitialize(fund);
+    let fundModel = this.enrichFundModelInitialize(fund);
     const fundPDA = this.getFundPDA(fundModel);
     const treasury = this.getTreasuryPDA(fundPDA);
     // const share = this.getShareClassPDA(fundPDA, 0);
     const openfunds = this.getOpenfundsPDA(fundPDA);
     const manager = this.getManager();
+
+    const shareClasses = fundModel.shareClasses;
+    fundModel.shareClasses = [];
+    console.log(util.inspect(shareClasses, false, null));
 
     //TODO: add instructions to "addShareClass" in the same tx
     const txSig = await this.program.methods
@@ -196,10 +203,18 @@ export class GlamClient {
         openfunds,
         manager
       })
-      .preInstructions([
-        ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
-      ])
       .rpc();
+    // shareClasses.forEach(async (shareClass, j) => {
+    //   await this.program.methods
+    //     .addShareClass(shareClass)
+    //     .accounts({
+    //       fund: fundPDA,
+    //       treasury,
+    //       openfunds,
+    //       manager
+    //     })
+    //     .rpc();
+    // });
     return [txSig, fundPDA];
   }
 

@@ -30,7 +30,7 @@ export const createFundForTest = async (
           symbol: "GBS",
           name: "Glam Investment Fund BTC-SOL",
           asset: usdc,
-          // Openfund Share Class
+          // Openfunds Share Class
           isin: "XS1082172823",
           shareClassCurrency: "USDC",
           fullShareClassName: null, // auto
@@ -62,7 +62,7 @@ export const createFundForTest = async (
       isEnabled: true,
       assets: [usdc, btc, eth],
       assetsWeights: [0, 60, 40],
-      // Openfund (Fund)
+      // Openfunds (Fund)
       fundDomicileAlpha2: "XS",
       legalFundNameIncludingUmbrella: null, // auto
       fiscalYearEnd: "12-31",
@@ -75,13 +75,13 @@ export const createFundForTest = async (
       isPassiveFund: true, //TODO: auto
       legalForm: "other",
       openEndedOrClosedEndedFundStructure: "open-ended fund", //TODO: auto
-      // Openfund Company (simplified)
+      // Openfunds Company (simplified)
       company: {
         name: "Glam Systems",
         email: "hello@glam.systems",
         website: "https://glam.systems"
       },
-      // Openfund Manager (simplified)
+      // Openfunds Manager (simplified)
       manager: {
         name: "0x0ece.sol"
       }
