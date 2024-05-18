@@ -64,12 +64,18 @@ export class GlamClient {
   }
 
   getFundPDA(fundModel: FundModel): PublicKey {
+    const createdKey = fundModel?.created?.key || [
+      ...Buffer.from(
+        anchor.utils.sha256.hash(this.getFundName(fundModel))
+      ).slice(0, 8)
+    ];
+
     const manager = this.getManager();
     const [pda, _bump] = PublicKey.findProgramAddressSync(
       [
         anchor.utils.bytes.utf8.encode("fund"),
         manager.toBuffer(),
-        Uint8Array.from(fundModel?.created?.key || [])
+        Uint8Array.from(createdKey)
       ],
       this.programId
     );
@@ -192,7 +198,7 @@ export class GlamClient {
     const shareClasses = fundModel.shareClasses;
     fundModel.shareClasses = [];
 
-    console.log(shareClasses);
+    // console.log(fundModel);
 
     const txSig = await this.program.methods
       .initialize(fundModel)

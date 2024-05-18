@@ -14,7 +14,7 @@ describe("glam_staking", () => {
   const manager = provider.wallet as anchor.Wallet;
   const program = anchor.workspace.Glam as Program<Glam>;
 
-  let fundPDA, fundBump, fundTreasuryPDA, fundTreasuryBump, sharePDA, shareBump;
+  let fundPDA, treasuryPDA, sharePDA;
 
   // marinade setup
   const marinadeProgram = new PublicKey(
@@ -37,22 +37,19 @@ describe("glam_staking", () => {
   });
 
   it("Create fund", async () => {
-    const fundData = await createFundForTest("Glam Fund TEST", "GTST", manager);
+    const fundData = await createFundForTest();
     fundPDA = fundData.fundPDA;
-    fundBump = fundData.fundBump;
-    fundTreasuryPDA = fundData.treasuryPDA;
-    fundTreasuryBump = fundData.treasuryBump;
+    treasuryPDA = fundData.treasuryPDA;
     sharePDA = fundData.sharePDA;
-    shareBump = fundData.shareBump;
 
     const fund = await program.account.fundAccount.fetch(fundData.fundPDA);
-    // expect(fund.shareClassesLen).toEqual(1);
+    expect(fund.shareClasses.length).toEqual(1);
     // expect(fund.assets.length).toEqual(3);
     // expect(fund.symbol).toEqual("GTST");
     // expect(fund.isActive).toEqual(true);
 
     // air drop to treasury and delay 1s for confirmation
-    await provider.connection.requestAirdrop(fundTreasuryPDA, 100_000_000_000);
+    await provider.connection.requestAirdrop(treasuryPDA, 100_000_000_000);
     await sleep(1000);
   });
 
@@ -62,7 +59,7 @@ describe("glam_staking", () => {
         await getOrCreateAssociatedTokenAccount(
           provider,
           marinadeState.mSolMintAddress,
-          fundTreasuryPDA
+          treasuryPDA
         )
       ).associatedTokenAccountAddress;
 
@@ -78,7 +75,7 @@ describe("glam_staking", () => {
           liqPoolMsolLegAuthority: await marinadeState.mSolLegAuthority(),
           liqPoolSolLegPda: await marinadeState.solLeg(),
           mintTo: treasurymSolAta,
-          treasury: fundTreasuryPDA,
+          treasury: treasuryPDA,
           fund: fundPDA,
           marinadeProgram
         })
@@ -96,14 +93,14 @@ describe("glam_staking", () => {
         .marinadeLiquidUnstake(new anchor.BN(1e9))
         .accounts({
           manager: manager.publicKey,
-          treasury: fundTreasuryPDA,
+          treasury: treasuryPDA,
           fund: fundPDA,
           marinadeState: marinadeState.marinadeStateAddress,
           msolMint: marinadeState.mSolMintAddress,
           liqPoolSolLegPda: await marinadeState.solLeg(),
           liqPoolMsolLeg: marinadeState.mSolLeg,
           getMsolFrom: treasurymSolAta,
-          getMsolFromAuthority: fundTreasuryPDA,
+          getMsolFromAuthority: treasuryPDA,
           treasuryMsolAccount: marinadeTreasuryMsol,
           marinadeProgram
         })
@@ -129,7 +126,7 @@ describe("glam_staking", () => {
         .accounts({
           manager: manager.publicKey,
           fund: fundPDA,
-          treasury: fundTreasuryPDA,
+          treasury: treasuryPDA,
           ticket: ticketPda,
           msolMint: marinadeState.mSolMintAddress,
           burnMsolFrom: treasurymSolAta,
@@ -157,7 +154,7 @@ describe("glam_staking", () => {
         .accounts({
           manager: manager.publicKey,
           fund: fundPDA,
-          treasury: fundTreasuryPDA,
+          treasury: treasuryPDA,
           ticket: ticketPda,
           marinadeState: marinadeState.marinadeStateAddress,
           reservePda: await marinadeState.reserveAddress(),

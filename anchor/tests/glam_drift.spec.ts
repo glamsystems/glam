@@ -20,22 +20,18 @@ describe("glam_drift", () => {
   const program = anchor.workspace.Glam as Program<Glam>;
   const commitment = "confirmed";
 
-  let fundPDA, fundBump, treasuryPDA, treasuryBump, sharePDA, shareBump;
+  let fundPDA, treasuryPDA, sharePDA;
 
   it("Create fund", async () => {
-    const fundData = await createFundForTest("Glam Fund BTC", "GBTC", manager);
+    const fundData = await createFundForTest();
     fundPDA = fundData.fundPDA;
-    fundBump = fundData.fundBump;
     treasuryPDA = fundData.treasuryPDA;
-    treasuryBump = fundData.treasuryBump;
     sharePDA = fundData.sharePDA;
-    shareBump = fundData.shareBump;
   });
 
   it("Initialize fund", async () => {
     const fund = await program.account.fundAccount.fetch(fundPDA);
-    // console.log(fund);
-    // expect(fund.shareClassesLen).toEqual(1);
+    expect(fund.shareClasses.length).toEqual(1);
     // expect(fund.assets.length).toEqual(3);
     // expect(fund.symbol).toEqual("GBTC");
     // expect(fund.isActive).toEqual(true);

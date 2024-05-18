@@ -87,6 +87,22 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     fund.manager = ctx.accounts.manager.key();
 
     //
+    // Set engine params
+    //
+    fund.params = vec![vec![
+        EngineField {
+            name: EngineFieldName::Assets,
+            value: EngineFieldValue::VecPubkey { val: model.assets },
+        },
+        EngineField {
+            name: EngineFieldName::AssetsWeights,
+            value: EngineFieldValue::VecU32 {
+                val: model.assets_weights,
+            },
+        },
+    ]];
+
+    //
     // Initialize openfunds
     //
     let openfunds_metadata = FundMetadataAccount::from(fund_model);
