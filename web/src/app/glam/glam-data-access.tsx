@@ -22,6 +22,7 @@ import {
   getDriftSignerPublicKey
 } from "@drift-labs/sdk";
 import {
+  GlamClient,
   GlamIDL,
   getFundUri,
   getGlamProgramId,
@@ -41,8 +42,14 @@ import { useTransactionToast } from "../ui/ui-layout";
 export function useGlamProgram() {
   const { connection } = useConnection();
   const { cluster } = useCluster();
-  const transactionToast = useTransactionToast();
   const provider = useAnchorProvider();
+
+  const client = new GlamClient({
+    provider,
+    cluster: cluster.network
+  });
+
+  const transactionToast = useTransactionToast();
   const programId = useMemo(
     () => getGlamProgramId(cluster.network as Cluster),
     [cluster]
@@ -97,57 +104,18 @@ export function useGlamProgram() {
       assetsStructure: number[];
       shareClassMetadata: ShareClassMetadata;
     }) => {
-      const [fundPDA, fundBump] = PublicKey.findProgramAddressSync(
-        [Buffer.from("fund"), manager.toBuffer(), Buffer.from(fundName)],
-        program.programId
-      );
-      const fundUri = getFundUri(fundPDA);
-
-      const [treasuryPDA, treasuryBump] = PublicKey.findProgramAddressSync(
-        [Buffer.from("treasury"), fundPDA.toBuffer()],
-        program.programId
-      );
-
-      const [sharePDA, shareBump] = PublicKey.findProgramAddressSync(
-        [
-          Buffer.from("share"),
-          Buffer.from(shareClassMetadata.symbol),
-          fundPDA.toBuffer()
-        ],
-        program.programId
-      );
-
-      shareClassMetadata.uri = getMetadataUri(sharePDA);
-      shareClassMetadata.imageUri = getImageUri(sharePDA);
-
-      const remainingAccounts: Array<AccountMeta> = assets.map((a) => ({
-        pubkey: new PublicKey(a),
-        isSigner: false,
-        isWritable: false
-      }));
-
-      await program.methods
-        .initialize(fundName, fundSymbol, fundUri, assetsStructure, true)
-        .accounts({
-          fund: fundPDA,
-          treasury: treasuryPDA,
-          manager: manager
-        })
-        .remainingAccounts(remainingAccounts)
-        .rpc({ commitment: "confirmed" });
-
-      return program.methods
-        .addShareClass(shareClassMetadata)
-        .accounts({
-          fund: fundPDA,
-          shareClassMint: sharePDA,
-          manager: manager,
-          tokenProgram: TOKEN_2022_PROGRAM_ID
-        })
-        .preInstructions([
-          ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
-        ])
-        .rpc({ commitment: "confirmed" });
+      const fundModel = {
+        name: fundName,
+        assets,
+        assetsWeights: assetsStructure,
+        shareClass: [
+          {
+            ...shareClassMetadata
+          }
+        ]
+      };
+      const [txId, fundPDA] = await client.createFund(fundModel);
+      return txId;
     },
     onSuccess: (tx) => {
       console.log(tx);
