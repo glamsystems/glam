@@ -64,7 +64,7 @@ impl From<FundModel> for Vec<FundField> {
         // Derived fields
         let is_raw_openfunds = model.is_raw_openfunds.unwrap_or(false);
         if !is_raw_openfunds {
-            //TODO
+            //TODO: add Glam extension fields
         }
         res
     }
@@ -79,7 +79,6 @@ impl From<&ShareClassModel> for Vec<ShareClassField> {
         let is_raw_openfunds = model.is_raw_openfunds.unwrap_or(false);
         let model = model.clone();
         if !is_raw_openfunds {
-            //TODO
             let v: Vec<(Option<String>, ShareClassFieldName)> = vec![
                 (pubkey2string(model.fund_id), ShareClassFieldName::FundId),
                 (model.image_uri, ShareClassFieldName::ImageUri),
