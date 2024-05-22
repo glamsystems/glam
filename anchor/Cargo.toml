@@ -23,6 +23,7 @@ spl-associated-token-account = "3.0.2"
 spl-token-metadata-interface = "0.3.3"
 spl-transfer-hook-interface = "0.6.3"
 pyth-sdk-solana = "0.10.1"
+strum = { version = "0.26", features = ["derive"] }
 
 drift = { path = "./deps/drift" }
 marinade = { path = "./deps/marinade" }

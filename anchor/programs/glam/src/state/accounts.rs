@@ -3,6 +3,40 @@ use anchor_lang::prelude::*;
 use super::model::*;
 use super::openfunds::*;
 
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
+pub enum EngineFieldName {
+    TimeCreated,
+    IsEnabled,
+    Assets,
+    AssetsWeights,
+}
+
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
+pub enum EngineFieldValue {
+    // openfunds
+    Boolean { val: bool },
+    Date { val: String }, // YYYY-MM-DD
+    Double { val: i64 },
+    Integer { val: i32 },
+    String { val: String },
+    Time { val: String }, // hh:mm (24 hour)
+    // more types
+    U8 { val: u8 },
+    U64 { val: u64 },
+    Pubkey { val: Pubkey },
+    Percentage { val: u32 }, // 100% = 1_000_000
+    URI { val: String },
+    Timestamp { val: i64 },
+    VecPubkey { val: Vec<Pubkey> },
+    VecU32 { val: Vec<u32> },
+}
+
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
+pub struct EngineField {
+    pub name: EngineFieldName,
+    pub value: EngineFieldValue,
+}
+
 #[account]
 pub struct FundAccount {
     pub name: String,
@@ -13,10 +47,44 @@ pub struct FundAccount {
     pub openfunds_uri: String,
     pub manager: Pubkey,
     pub engine: Pubkey,
-    //  pub params: Vec<Vec<GlamParam>>, // params[0]: EngineFundParams, ...
+    pub params: Vec<Vec<EngineField>>, // params[0]: EngineFundParams, ...
 }
 impl FundAccount {
     pub const INIT_SIZE: usize = 1024;
+
+    pub fn is_enabled(&self) -> bool {
+        return true;
+    }
+
+    pub fn assets(&self) -> Option<&Vec<Pubkey>> {
+        for EngineField { name, value } in &self.params[0] {
+            match name {
+                EngineFieldName::Assets => {
+                    return match value {
+                        EngineFieldValue::VecPubkey { val: v } => Some(v),
+                        _ => None,
+                    };
+                }
+                _ => { /* ignore */ }
+            }
+        }
+        return None;
+    }
+
+    pub fn assets_weights(&self) -> Option<&Vec<u32>> {
+        for EngineField { name, value } in &self.params[0] {
+            match name {
+                EngineFieldName::AssetsWeights => {
+                    return match value {
+                        EngineFieldValue::VecU32 { val: v } => Some(v),
+                        _ => None,
+                    };
+                }
+                _ => { /* ignore */ }
+            }
+        }
+        return None;
+    }
 }
 
 #[account]

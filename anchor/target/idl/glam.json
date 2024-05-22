@@ -18,6 +18,11 @@
           "isSigner": false
         },
         {
+          "name": "openfunds",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "treasury",
           "isMut": true,
           "isSigner": false
@@ -35,26 +40,10 @@
       ],
       "args": [
         {
-          "name": "fundName",
-          "type": "string"
-        },
-        {
-          "name": "fundSymbol",
-          "type": "string"
-        },
-        {
-          "name": "fundUri",
-          "type": "string"
-        },
-        {
-          "name": "assetWeights",
+          "name": "fund",
           "type": {
-            "vec": "u32"
+            "defined": "FundModel"
           }
-        },
-        {
-          "name": "activate",
-          "type": "bool"
         }
       ]
     },
@@ -68,6 +57,11 @@
         },
         {
           "name": "fund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "openfunds",
           "isMut": true,
           "isSigner": false
         },
@@ -91,7 +85,7 @@
         {
           "name": "shareClassMetadata",
           "type": {
-            "defined": "ShareClassMetadata"
+            "defined": "ShareClassModel"
           }
         }
       ]
@@ -895,6 +889,16 @@
           {
             "name": "engine",
             "type": "publicKey"
+          },
+          {
+            "name": "params",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": "EngineField"
+                }
+              }
+            }
           }
         ]
       }
@@ -1022,6 +1026,26 @@
     }
   ],
   "types": [
+    {
+      "name": "EngineField",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "defined": "EngineFieldName"
+            }
+          },
+          {
+            "name": "value",
+            "type": {
+              "defined": "EngineFieldValue"
+            }
+          }
+        ]
+      }
+    },
     {
       "name": "ShareClassMetadata",
       "type": {
@@ -1385,15 +1409,15 @@
             }
           },
           {
-            "name": "fullShareClassName",
+            "name": "currencyOfMinimalSubscription",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "hasPerformanceFee",
+            "name": "fullShareClassName",
             "type": {
-              "option": "bool"
+              "option": "string"
             }
           },
           {
@@ -1403,19 +1427,19 @@
             }
           },
           {
-            "name": "managementFeeApplied",
+            "name": "minimalInitialSubscriptionCategory",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "managementFeeAppliedReferenceDate",
+            "name": "minimalInitialSubscriptionInAmount",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "managementFeeMaximum",
+            "name": "minimalInitialSubscriptionInShares",
             "type": {
               "option": "string"
             }
@@ -1463,6 +1487,18 @@
             }
           },
           {
+            "name": "currencyOfMinimalOrMaximumRedemption",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "hasLockUpForRedemption",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
             "name": "isValidIsin",
             "type": {
               "option": "bool"
@@ -1481,25 +1517,49 @@
             }
           },
           {
-            "name": "managementFeeMinimum",
+            "name": "maximumInitialRedemptionInAmount",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "maximalNumberOfPossibleDecimalsAmount",
+            "name": "maximumInitialRedemptionInShares",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "maximalNumberOfPossibleDecimalsNav",
+            "name": "minimalInitialRedemptionInAmount",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "maximalNumberOfPossibleDecimalsShares",
+            "name": "minimalInitialRedemptionInShares",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "minimalRedemptionCategory",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "shareClassDividendType",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "cusip",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "valor",
             "type": {
               "option": "string"
             }
@@ -1695,6 +1755,164 @@
           },
           {
             "name": "LockOut"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EngineFieldName",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "TimeCreated"
+          },
+          {
+            "name": "IsEnabled"
+          },
+          {
+            "name": "Assets"
+          },
+          {
+            "name": "AssetsWeights"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EngineFieldValue",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Boolean",
+            "fields": [
+              {
+                "name": "val",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "Date",
+            "fields": [
+              {
+                "name": "val",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "Double",
+            "fields": [
+              {
+                "name": "val",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "Integer",
+            "fields": [
+              {
+                "name": "val",
+                "type": "i32"
+              }
+            ]
+          },
+          {
+            "name": "String",
+            "fields": [
+              {
+                "name": "val",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "Time",
+            "fields": [
+              {
+                "name": "val",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "U8",
+            "fields": [
+              {
+                "name": "val",
+                "type": "u8"
+              }
+            ]
+          },
+          {
+            "name": "U64",
+            "fields": [
+              {
+                "name": "val",
+                "type": "u64"
+              }
+            ]
+          },
+          {
+            "name": "Pubkey",
+            "fields": [
+              {
+                "name": "val",
+                "type": "publicKey"
+              }
+            ]
+          },
+          {
+            "name": "Percentage",
+            "fields": [
+              {
+                "name": "val",
+                "type": "u32"
+              }
+            ]
+          },
+          {
+            "name": "URI",
+            "fields": [
+              {
+                "name": "val",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "Timestamp",
+            "fields": [
+              {
+                "name": "val",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "VecPubkey",
+            "fields": [
+              {
+                "name": "val",
+                "type": {
+                  "vec": "publicKey"
+                }
+              }
+            ]
+          },
+          {
+            "name": "VecU32",
+            "fields": [
+              {
+                "name": "val",
+                "type": {
+                  "vec": "u32"
+                }
+              }
+            ]
           }
         ]
       }
@@ -2667,10 +2885,13 @@
             "name": "YearlySubscriptionDealingDays"
           },
           {
-            "name": "FundId"
+            "name": "CUSIP"
           },
           {
-            "name": "ShareClassCurrencyId"
+            "name": "Valor"
+          },
+          {
+            "name": "FundId"
           },
           {
             "name": "ImageUri"

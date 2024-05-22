@@ -1,4 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
+// import * as util from "util";
 import { BN, Program, IdlAccounts, IdlTypes } from "@coral-xyz/anchor";
 import {
   ComputeBudgetProgram,
@@ -17,6 +18,7 @@ import {
 import { Glam, GlamIDL, GlamProgram, getGlamProgramId } from "./glamExports";
 import { GlamClientConfig } from "./clientConfig";
 import { FundModel, FundOpenfundsModel } from "./models";
+import { kMaxLength } from "buffer";
 
 type FundAccount = IdlAccounts<Glam>["fundAccount"];
 type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
@@ -62,12 +64,18 @@ export class GlamClient {
   }
 
   getFundPDA(fundModel: FundModel): PublicKey {
+    const createdKey = fundModel?.created?.key || [
+      ...Buffer.from(
+        anchor.utils.sha256.hash(this.getFundName(fundModel))
+      ).slice(0, 8)
+    ];
+
     const manager = this.getManager();
     const [pda, _bump] = PublicKey.findProgramAddressSync(
       [
         anchor.utils.bytes.utf8.encode("fund"),
         manager.toBuffer(),
-        Uint8Array.from(fundModel?.created?.key || [])
+        Uint8Array.from(createdKey)
       ],
       this.programId
     );
@@ -171,6 +179,7 @@ export class GlamClient {
       }
 
       const sharePDA = this.getShareClassPDA(fundPDA, i);
+      shareClass.uri = `https://api.glam.systems/metadata/${sharePDA}`;
       shareClass.imageUri = `https://api.glam.systems/image/${sharePDA}.png`;
     });
 
@@ -180,28 +189,44 @@ export class GlamClient {
   public async createFund(
     fund: any
   ): Promise<[TransactionSignature, PublicKey]> {
-    const fundModel = this.enrichFundModelInitialize(fund);
+    let fundModel = this.enrichFundModelInitialize(fund);
     const fundPDA = this.getFundPDA(fundModel);
     const treasury = this.getTreasuryPDA(fundPDA);
-    const share = this.getShareClassPDA(fundPDA, 0);
     const openfunds = this.getOpenfundsPDA(fundPDA);
     const manager = this.getManager();
 
-    //TODO: add instructions to "addShareClass" in the same tx
-    const txSig = ""; /*await this.program.methods
+    const shareClasses = fundModel.shareClasses;
+    fundModel.shareClasses = [];
+
+    // console.log(fundModel);
+
+    const txSig = await this.program.methods
       .initialize(fundModel)
       .accounts({
         fund: fundPDA,
         treasury,
         openfunds,
-        share,
-        manager,
-        tokenProgram: TOKEN_2022_PROGRAM_ID
+        manager
       })
-      .preInstructions([
-        ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
-      ])
-      .rpc();*/
+      .rpc();
+    await Promise.all(
+      shareClasses.map(async (shareClass, j) => {
+        const shareClassMint = this.getShareClassPDA(fundPDA, j);
+        return await this.program.methods
+          .addShareClass(shareClass)
+          .accounts({
+            fund: fundPDA,
+            shareClassMint,
+            openfunds,
+            manager,
+            tokenProgram: TOKEN_2022_PROGRAM_ID
+          })
+          .preInstructions([
+            ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
+          ])
+          .rpc();
+      })
+    );
     return [txSig, fundPDA];
   }
 

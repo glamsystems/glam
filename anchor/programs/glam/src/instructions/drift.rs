@@ -3,7 +3,7 @@ use anchor_spl::token::Token;
 use anchor_spl::token_interface::TokenAccount;
 
 use crate::error::ManagerError;
-use crate::state::fund::*;
+use crate::state::*;
 
 use drift::cpi::accounts::{
     DeleteUser, Deposit, InitializeUser, InitializeUserStats, UpdateUserDelegate, Withdraw,
@@ -17,10 +17,10 @@ use drift::State;
 #[derive(Accounts)]
 pub struct DriftInitialize<'info> {
     #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
-    pub fund: Account<'info, Fund>,
+    pub fund: Account<'info, FundAccount>,
 
-    /// CHECK: treasury account is the same as fund treasury
-    pub treasury: AccountInfo<'info>,
+    #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
@@ -52,7 +52,7 @@ pub fn drift_initialize_handler(
     let seeds = &[
         "treasury".as_bytes(),
         fund_key.as_ref(),
-        &[ctx.accounts.fund.bump_treasury],
+        &[ctx.bumps.treasury],
     ];
     let signer_seeds = &[&seeds[..]];
 
@@ -113,10 +113,10 @@ pub fn drift_initialize_handler(
 #[derive(Accounts)]
 pub struct DriftUpdate<'info> {
     #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
-    pub fund: Account<'info, Fund>,
+    pub fund: Account<'info, FundAccount>,
 
-    /// CHECK: treasury account is the same as fund treasury
-    pub treasury: AccountInfo<'info>,
+    #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
@@ -141,7 +141,7 @@ pub fn drift_update_delegated_trader_handler(
     let seeds = &[
         "treasury".as_bytes(),
         fund_key.as_ref(),
-        &[ctx.accounts.fund.bump_treasury],
+        &[ctx.bumps.treasury],
     ];
     let signer_seeds = &[&seeds[..]];
 
@@ -166,8 +166,10 @@ pub fn drift_update_delegated_trader_handler(
 #[derive(Accounts)]
 pub struct DriftDeposit<'info> {
     #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
-    pub fund: Account<'info, Fund>,
-    pub treasury: Account<'info, Treasury>,
+    pub fund: Account<'info, FundAccount>,
+
+    #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
@@ -203,7 +205,7 @@ pub fn drift_deposit_handler<'c: 'info, 'info>(
     let seeds = &[
         "treasury".as_bytes(),
         fund_key.as_ref(),
-        &[ctx.accounts.fund.bump_treasury],
+        &[ctx.bumps.treasury],
     ];
     let signer_seeds = &[&seeds[..]];
 
@@ -236,7 +238,9 @@ pub fn drift_deposit_handler<'c: 'info, 'info>(
 pub struct DriftWithdraw<'info> {
     #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
     pub fund: Account<'info, Fund>,
-    pub treasury: Account<'info, Treasury>,
+
+    #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
@@ -274,7 +278,7 @@ pub fn drift_withdraw_handler<'c: 'info, 'info>(
     let seeds = &[
         "treasury".as_bytes(),
         fund_key.as_ref(),
-        &[ctx.accounts.fund.bump_treasury],
+        &[ctx.bumps.treasury],
     ];
     let signer_seeds = &[&seeds[..]];
 
@@ -307,8 +311,10 @@ pub fn drift_withdraw_handler<'c: 'info, 'info>(
 #[derive(Accounts)]
 pub struct DriftClose<'info> {
     #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
-    pub fund: Account<'info, Fund>,
-    pub treasury: Account<'info, Treasury>,
+    pub fund: Account<'info, FundAccount>,
+
+    #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
@@ -336,7 +342,7 @@ pub fn drift_close_handler(ctx: Context<DriftClose>) -> Result<()> {
     let seeds = &[
         "treasury".as_bytes(),
         fund_key.as_ref(),
-        &[ctx.accounts.fund.bump_treasury],
+        &[ctx.bumps.treasury],
     ];
     let signer_seeds = &[&seeds[..]];
 

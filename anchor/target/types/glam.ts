@@ -18,6 +18,11 @@ export type Glam = {
           "isSigner": false
         },
         {
+          "name": "openfunds",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "treasury",
           "isMut": true,
           "isSigner": false
@@ -35,26 +40,10 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "fundName",
-          "type": "string"
-        },
-        {
-          "name": "fundSymbol",
-          "type": "string"
-        },
-        {
-          "name": "fundUri",
-          "type": "string"
-        },
-        {
-          "name": "assetWeights",
+          "name": "fund",
           "type": {
-            "vec": "u32"
+            "defined": "FundModel"
           }
-        },
-        {
-          "name": "activate",
-          "type": "bool"
         }
       ]
     },
@@ -68,6 +57,11 @@ export type Glam = {
         },
         {
           "name": "fund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "openfunds",
           "isMut": true,
           "isSigner": false
         },
@@ -91,7 +85,7 @@ export type Glam = {
         {
           "name": "shareClassMetadata",
           "type": {
-            "defined": "ShareClassMetadata"
+            "defined": "ShareClassModel"
           }
         }
       ]
@@ -895,6 +889,16 @@ export type Glam = {
           {
             "name": "engine",
             "type": "publicKey"
+          },
+          {
+            "name": "params",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": "EngineField"
+                }
+              }
+            }
           }
         ]
       }
@@ -1022,6 +1026,26 @@ export type Glam = {
     }
   ],
   "types": [
+    {
+      "name": "EngineField",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "defined": "EngineFieldName"
+            }
+          },
+          {
+            "name": "value",
+            "type": {
+              "defined": "EngineFieldValue"
+            }
+          }
+        ]
+      }
+    },
     {
       "name": "ShareClassMetadata",
       "type": {
@@ -1385,15 +1409,15 @@ export type Glam = {
             }
           },
           {
-            "name": "fullShareClassName",
+            "name": "currencyOfMinimalSubscription",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "hasPerformanceFee",
+            "name": "fullShareClassName",
             "type": {
-              "option": "bool"
+              "option": "string"
             }
           },
           {
@@ -1403,19 +1427,19 @@ export type Glam = {
             }
           },
           {
-            "name": "managementFeeApplied",
+            "name": "minimalInitialSubscriptionCategory",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "managementFeeAppliedReferenceDate",
+            "name": "minimalInitialSubscriptionInAmount",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "managementFeeMaximum",
+            "name": "minimalInitialSubscriptionInShares",
             "type": {
               "option": "string"
             }
@@ -1463,6 +1487,18 @@ export type Glam = {
             }
           },
           {
+            "name": "currencyOfMinimalOrMaximumRedemption",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "hasLockUpForRedemption",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
             "name": "isValidIsin",
             "type": {
               "option": "bool"
@@ -1481,25 +1517,49 @@ export type Glam = {
             }
           },
           {
-            "name": "managementFeeMinimum",
+            "name": "maximumInitialRedemptionInAmount",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "maximalNumberOfPossibleDecimalsAmount",
+            "name": "maximumInitialRedemptionInShares",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "maximalNumberOfPossibleDecimalsNav",
+            "name": "minimalInitialRedemptionInAmount",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "maximalNumberOfPossibleDecimalsShares",
+            "name": "minimalInitialRedemptionInShares",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "minimalRedemptionCategory",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "shareClassDividendType",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "cusip",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "valor",
             "type": {
               "option": "string"
             }
@@ -1695,6 +1755,164 @@ export type Glam = {
           },
           {
             "name": "LockOut"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EngineFieldName",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "TimeCreated"
+          },
+          {
+            "name": "IsEnabled"
+          },
+          {
+            "name": "Assets"
+          },
+          {
+            "name": "AssetsWeights"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EngineFieldValue",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Boolean",
+            "fields": [
+              {
+                "name": "val",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "Date",
+            "fields": [
+              {
+                "name": "val",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "Double",
+            "fields": [
+              {
+                "name": "val",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "Integer",
+            "fields": [
+              {
+                "name": "val",
+                "type": "i32"
+              }
+            ]
+          },
+          {
+            "name": "String",
+            "fields": [
+              {
+                "name": "val",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "Time",
+            "fields": [
+              {
+                "name": "val",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "U8",
+            "fields": [
+              {
+                "name": "val",
+                "type": "u8"
+              }
+            ]
+          },
+          {
+            "name": "U64",
+            "fields": [
+              {
+                "name": "val",
+                "type": "u64"
+              }
+            ]
+          },
+          {
+            "name": "Pubkey",
+            "fields": [
+              {
+                "name": "val",
+                "type": "publicKey"
+              }
+            ]
+          },
+          {
+            "name": "Percentage",
+            "fields": [
+              {
+                "name": "val",
+                "type": "u32"
+              }
+            ]
+          },
+          {
+            "name": "URI",
+            "fields": [
+              {
+                "name": "val",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "Timestamp",
+            "fields": [
+              {
+                "name": "val",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "VecPubkey",
+            "fields": [
+              {
+                "name": "val",
+                "type": {
+                  "vec": "publicKey"
+                }
+              }
+            ]
+          },
+          {
+            "name": "VecU32",
+            "fields": [
+              {
+                "name": "val",
+                "type": {
+                  "vec": "u32"
+                }
+              }
+            ]
           }
         ]
       }
@@ -2667,10 +2885,13 @@ export type Glam = {
             "name": "YearlySubscriptionDealingDays"
           },
           {
-            "name": "FundId"
+            "name": "CUSIP"
           },
           {
-            "name": "ShareClassCurrencyId"
+            "name": "Valor"
+          },
+          {
+            "name": "FundId"
           },
           {
             "name": "ImageUri"
@@ -2857,6 +3078,11 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
+          "name": "openfunds",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "treasury",
           "isMut": true,
           "isSigner": false
@@ -2874,26 +3100,10 @@ export const IDL: Glam = {
       ],
       "args": [
         {
-          "name": "fundName",
-          "type": "string"
-        },
-        {
-          "name": "fundSymbol",
-          "type": "string"
-        },
-        {
-          "name": "fundUri",
-          "type": "string"
-        },
-        {
-          "name": "assetWeights",
+          "name": "fund",
           "type": {
-            "vec": "u32"
+            "defined": "FundModel"
           }
-        },
-        {
-          "name": "activate",
-          "type": "bool"
         }
       ]
     },
@@ -2907,6 +3117,11 @@ export const IDL: Glam = {
         },
         {
           "name": "fund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "openfunds",
           "isMut": true,
           "isSigner": false
         },
@@ -2930,7 +3145,7 @@ export const IDL: Glam = {
         {
           "name": "shareClassMetadata",
           "type": {
-            "defined": "ShareClassMetadata"
+            "defined": "ShareClassModel"
           }
         }
       ]
@@ -3734,6 +3949,16 @@ export const IDL: Glam = {
           {
             "name": "engine",
             "type": "publicKey"
+          },
+          {
+            "name": "params",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": "EngineField"
+                }
+              }
+            }
           }
         ]
       }
@@ -3861,6 +4086,26 @@ export const IDL: Glam = {
     }
   ],
   "types": [
+    {
+      "name": "EngineField",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "defined": "EngineFieldName"
+            }
+          },
+          {
+            "name": "value",
+            "type": {
+              "defined": "EngineFieldValue"
+            }
+          }
+        ]
+      }
+    },
     {
       "name": "ShareClassMetadata",
       "type": {
@@ -4224,15 +4469,15 @@ export const IDL: Glam = {
             }
           },
           {
-            "name": "fullShareClassName",
+            "name": "currencyOfMinimalSubscription",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "hasPerformanceFee",
+            "name": "fullShareClassName",
             "type": {
-              "option": "bool"
+              "option": "string"
             }
           },
           {
@@ -4242,19 +4487,19 @@ export const IDL: Glam = {
             }
           },
           {
-            "name": "managementFeeApplied",
+            "name": "minimalInitialSubscriptionCategory",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "managementFeeAppliedReferenceDate",
+            "name": "minimalInitialSubscriptionInAmount",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "managementFeeMaximum",
+            "name": "minimalInitialSubscriptionInShares",
             "type": {
               "option": "string"
             }
@@ -4302,6 +4547,18 @@ export const IDL: Glam = {
             }
           },
           {
+            "name": "currencyOfMinimalOrMaximumRedemption",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "hasLockUpForRedemption",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
             "name": "isValidIsin",
             "type": {
               "option": "bool"
@@ -4320,25 +4577,49 @@ export const IDL: Glam = {
             }
           },
           {
-            "name": "managementFeeMinimum",
+            "name": "maximumInitialRedemptionInAmount",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "maximalNumberOfPossibleDecimalsAmount",
+            "name": "maximumInitialRedemptionInShares",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "maximalNumberOfPossibleDecimalsNav",
+            "name": "minimalInitialRedemptionInAmount",
             "type": {
               "option": "string"
             }
           },
           {
-            "name": "maximalNumberOfPossibleDecimalsShares",
+            "name": "minimalInitialRedemptionInShares",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "minimalRedemptionCategory",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "shareClassDividendType",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "cusip",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "valor",
             "type": {
               "option": "string"
             }
@@ -4534,6 +4815,164 @@ export const IDL: Glam = {
           },
           {
             "name": "LockOut"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EngineFieldName",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "TimeCreated"
+          },
+          {
+            "name": "IsEnabled"
+          },
+          {
+            "name": "Assets"
+          },
+          {
+            "name": "AssetsWeights"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EngineFieldValue",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Boolean",
+            "fields": [
+              {
+                "name": "val",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "Date",
+            "fields": [
+              {
+                "name": "val",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "Double",
+            "fields": [
+              {
+                "name": "val",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "Integer",
+            "fields": [
+              {
+                "name": "val",
+                "type": "i32"
+              }
+            ]
+          },
+          {
+            "name": "String",
+            "fields": [
+              {
+                "name": "val",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "Time",
+            "fields": [
+              {
+                "name": "val",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "U8",
+            "fields": [
+              {
+                "name": "val",
+                "type": "u8"
+              }
+            ]
+          },
+          {
+            "name": "U64",
+            "fields": [
+              {
+                "name": "val",
+                "type": "u64"
+              }
+            ]
+          },
+          {
+            "name": "Pubkey",
+            "fields": [
+              {
+                "name": "val",
+                "type": "publicKey"
+              }
+            ]
+          },
+          {
+            "name": "Percentage",
+            "fields": [
+              {
+                "name": "val",
+                "type": "u32"
+              }
+            ]
+          },
+          {
+            "name": "URI",
+            "fields": [
+              {
+                "name": "val",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "Timestamp",
+            "fields": [
+              {
+                "name": "val",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "VecPubkey",
+            "fields": [
+              {
+                "name": "val",
+                "type": {
+                  "vec": "publicKey"
+                }
+              }
+            ]
+          },
+          {
+            "name": "VecU32",
+            "fields": [
+              {
+                "name": "val",
+                "type": {
+                  "vec": "u32"
+                }
+              }
+            ]
           }
         ]
       }
@@ -5506,10 +5945,13 @@ export const IDL: Glam = {
             "name": "YearlySubscriptionDealingDays"
           },
           {
-            "name": "FundId"
+            "name": "CUSIP"
           },
           {
-            "name": "ShareClassCurrencyId"
+            "name": "Valor"
+          },
+          {
+            "name": "FundId"
           },
           {
             "name": "ImageUri"

@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 
 // Openfunds v2.0 Share Class
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug, strum::Display)]
 pub enum ShareClassFieldName {
     // Essential
     ISIN,               // impl
@@ -51,7 +51,7 @@ pub enum ShareClassFieldName {
     ShareClassExtension,          // impl
     ShareClassLaunchDate,         // impl
     ShareClassLifecycle,          // impl
-    SRRI,
+    SRRI,                         // impl
     TERExcludingPerformanceFee,
     TERExcludingPerformanceFeeDate,
     TERIncludingPerformanceFee,
@@ -220,7 +220,7 @@ pub enum ShareClassFieldName {
     SettlementPeriodForSubscription,
     SettlementPeriodForSwitchIn,
     SettlementPeriodForSwitchOut,
-    ShareClassDividendType,
+    ShareClassDividendType, // impl
     SingleRegisterAccountRestrictions,
     SubscriptionPeriodEndDate,
     SubscriptionPeriodStartDate,
@@ -236,10 +236,12 @@ pub enum ShareClassFieldName {
     WeeklySubscriptionDealingDays,
     YearlyRedemptionDealingDays,
     YearlySubscriptionDealingDays,
+    // Full | Country
+    CUSIP, // impl
+    Valor, // impl
     // Glam Extensions
-    FundId,               // impl
-    ShareClassCurrencyId, // impl
-    ImageUri,             // impl
+    FundId,   // impl
+    ImageUri, // impl
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]

@@ -1,18 +1,24 @@
 import { IdlTypes } from "@coral-xyz/anchor";
 import { Glam } from "./glamExports";
+import { setDefaultResultOrder } from "dns/promises";
 
 export type FundModel = IdlTypes<Glam>["FundModel"];
 export const FundModel = class<FundModel> {
   constructor(obj: any) {
-    let result: IdlTypes<Glam>["FundModel"] = {
+    let partial: any = {
       id: null,
       name: null,
       uri: null,
-      openfundUri: null,
+      openfundsUri: null,
       isEnabled: null,
       created: null,
-      isRawOpenfunds: null,
-      ...obj,
+      isRawOpenfunds: null
+    };
+    for (const key in partial) {
+      partial[key] = obj[key] || null;
+    }
+    let result: IdlTypes<Glam>["FundModel"] = {
+      ...partial,
       assets: obj.assets || [],
       assetsWeights: obj.assetsWeights || [],
       shareClasses: obj.shareClasses
@@ -21,18 +27,13 @@ export const FundModel = class<FundModel> {
               new ShareClassModel(shareClass) as ShareClassModel
           )
         : [],
-      // company: obj.company
-      //   ? (new CompanyModel(obj.company) as CompanyModel)
-      //   : null,
-      // manager: obj.manager
-      //   ? (new ManagerModel(obj.manager) as ManagerModel)
-      //   : null,
-      // rawOpenfunds: obj.fundDomicileAlpha2
-      //   ? (new FundOpenfundsModel(obj) as FundOpenfundsModel)
-      //   : null
-      company: new CompanyModel(obj.company || {}),
-      manager: new ManagerModel(obj.manager || {}),
-      rawOpenfunds: new FundOpenfundsModel(obj)
+      company: obj.company
+        ? (new CompanyModel(obj.company) as CompanyModel)
+        : null,
+      manager: obj.manager
+        ? (new ManagerModel(obj.manager) as ManagerModel)
+        : null,
+      rawOpenfunds: new FundOpenfundsModel(obj) as FundOpenfundsModel
     };
     return result;
   }
@@ -41,7 +42,7 @@ export const FundModel = class<FundModel> {
 export type FundOpenfundsModel = IdlTypes<Glam>["FundOpenfundsModel"];
 export const FundOpenfundsModel = class<FundOpenfundsModel> {
   constructor(obj: any) {
-    const result: IdlTypes<Glam>["FundOpenfundsModel"] = {
+    let partial: any = {
       fundDomicileAlpha2: null,
       legalFundNameIncludingUmbrella: null,
       fiscalYearEnd: null,
@@ -57,8 +58,13 @@ export const FundOpenfundsModel = class<FundOpenfundsModel> {
       legalFundNameOnly: null,
       openEndedOrClosedEndedFundStructure: null,
       typeOfEuDirective: null,
-      ucitsVersion: null,
-      ...obj
+      ucitsVersion: null
+    };
+    for (const key in partial) {
+      partial[key] = obj[key] || null;
+    }
+    let result: IdlTypes<Glam>["FundOpenfundsModel"] = {
+      ...partial
     };
     return result;
   }
@@ -67,7 +73,19 @@ export const FundOpenfundsModel = class<FundOpenfundsModel> {
 export type ShareClassModel = IdlTypes<Glam>["ShareClassModel"];
 export const ShareClassModel = class<ShareClassModel> {
   constructor(obj: any) {
-    const result: IdlTypes<Glam>["ShareClassModel"] = {
+    let partial: any = {
+      symbol: null,
+      name: null,
+      uri: null,
+      fundId: null,
+      asset: null,
+      imageUri: null,
+      isRawOpenfunds: null
+    };
+    for (const key in partial) {
+      partial[key] = obj[key] || null;
+    }
+    let result: IdlTypes<Glam>["ShareClassModel"] = {
       symbol: null,
       name: null,
       uri: null,
@@ -75,10 +93,10 @@ export const ShareClassModel = class<ShareClassModel> {
       asset: null,
       imageUri: null,
       isRawOpenfunds: null,
-      ...obj,
-      rawOpenfunds: obj.shareClassCurrency
-        ? (new ShareClassOpenfundsModel(obj) as ShareClassOpenfundsModel)
-        : null
+      ...partial,
+      rawOpenfunds: new ShareClassOpenfundsModel(
+        obj
+      ) as ShareClassOpenfundsModel
     };
     return result;
   }
@@ -88,27 +106,15 @@ export type ShareClassOpenfundsModel =
   IdlTypes<Glam>["ShareClassOpenfundsModel"];
 export const ShareClassOpenfundsModel = class<ShareClassOpenfundsModel> {
   constructor(obj: any) {
-    const result: IdlTypes<Glam>["ShareClassOpenfundsModel"] = {
+    let partial: any = {
       isin: null,
       shareClassCurrency: null,
-      appliedSubscriptionFeeInFavourOfDistributor: null,
-      appliedSubscriptionFeeInFavourOfDistributorReferenceDate: null,
       currencyOfMinimalSubscription: null,
       fullShareClassName: null,
-      hasPerformanceFee: null,
-      hasSubscriptionFeeInFavourOfDistributor: null,
       investmentStatus: null,
-      managementFeeApplied: null,
-      managementFeeAppliedReferenceDate: null,
-      managementFeeMaximum: null,
-      maximumSubscriptionFeeInFavourOfDistributor: null,
       minimalInitialSubscriptionCategory: null,
       minimalInitialSubscriptionInAmount: null,
       minimalInitialSubscriptionInShares: null,
-      minimalSubsequentSubscriptionCategory: null,
-      minimalSubsequentSubscriptionInAmount: null,
-      minimalSubsequentSubscriptionInShares: null,
-      minimumSubscriptionFeeInFavourOfDistributor: null,
       shareClassDistributionPolicy: null,
       shareClassExtension: null,
       shareClassLaunchDate: null,
@@ -116,15 +122,25 @@ export const ShareClassOpenfundsModel = class<ShareClassOpenfundsModel> {
       launchPrice: null,
       launchPriceCurrency: null,
       launchPriceDate: null,
-      hasAppliedSubscriptionFeeInFavourOfFund: null,
-      appliedSubscriptionFeeInFavourOfFund: null,
-      appliedSubscriptionFeeInFavourOfFundReferenceDate: null,
-      maximumSubscriptionFeeInFavourOfFund: null,
-      hasAppliedRedemptionFeeInFavourOfFund: null,
-      appliedRedemptionFeeInFavourOfFund: null,
-      appliedRedemptionFeeInFavourOfFundReferenceDate: null,
-      maximumRedemptionFeeInFavourOfFund: null,
-      ...obj
+      currencyOfMinimalOrMaximumRedemption: null,
+      hasLockUpForRedemption: null,
+      isValidIsin: null,
+      lockUpComment: null,
+      lockUpPeriodInDays: null,
+      maximumInitialRedemptionInAmount: null,
+      maximumInitialRedemptionInShares: null,
+      minimalInitialRedemptionInAmount: null,
+      minimalInitialRedemptionInShares: null,
+      minimalRedemptionCategory: null,
+      shareClassDividendType: null,
+      cusip: null,
+      valor: null
+    };
+    for (const key in partial) {
+      partial[key] = obj[key] || null;
+    }
+    let result: IdlTypes<Glam>["ShareClassOpenfundsModel"] = {
+      ...partial
     };
     return result;
   }
@@ -133,7 +149,7 @@ export const ShareClassOpenfundsModel = class<ShareClassOpenfundsModel> {
 export type CompanyModel = IdlTypes<Glam>["CompanyModel"];
 export const CompanyModel = class<CompanyModel> {
   constructor(obj: any) {
-    const result: IdlTypes<Glam>["CompanyModel"] = {
+    let result: IdlTypes<Glam>["CompanyModel"] = {
       // alias name = fundGroupName
       fundGroupName: obj.fundGroupName || obj.name || null,
       // alias email = emailAddressOfManCo
@@ -150,7 +166,7 @@ export const CompanyModel = class<CompanyModel> {
 export type ManagerModel = IdlTypes<Glam>["ManagerModel"];
 export const ManagerModel = class<ManagerModel> {
   constructor(obj: any) {
-    const result: IdlTypes<Glam>["ManagerModel"] = {
+    let result: IdlTypes<Glam>["ManagerModel"] = {
       // alias name = portfolioManagerName
       portfolioManagerName: obj.portfolioManagerName || obj.name || null,
       pubkey: obj.pubkey || null,

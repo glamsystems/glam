@@ -8,6 +8,7 @@ use anchor_lang::prelude::*;
 use crate::instructions::*;
 pub use constants::*;
 pub use state::fund::*;
+pub use state::model::*;
 
 declare_id!("Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc");
 
@@ -20,25 +21,14 @@ pub mod glam {
 
     pub fn initialize<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, InitializeFund<'info>>,
-        fund_name: String,
-        fund_symbol: String,
-        fund_uri: String,
-        asset_weights: Vec<u32>,
-        activate: bool,
+        fund: FundModel,
     ) -> Result<()> {
-        manager::initialize_fund_handler(
-            ctx,
-            fund_name,
-            fund_symbol,
-            fund_uri,
-            asset_weights,
-            activate,
-        )
+        manager::initialize_fund_handler(ctx, fund)
     }
 
     pub fn add_share_class<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, AddShareClass<'info>>,
-        share_class_metadata: ShareClassMetadata,
+        share_class_metadata: ShareClassModel,
     ) -> Result<()> {
         manager::add_share_class_handler(ctx, share_class_metadata)
     }

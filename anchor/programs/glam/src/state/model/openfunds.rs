@@ -64,7 +64,7 @@ impl From<FundModel> for Vec<FundField> {
         // Derived fields
         let is_raw_openfunds = model.is_raw_openfunds.unwrap_or(false);
         if !is_raw_openfunds {
-            //TODO
+            //TODO: add Glam extension fields
         }
         res
     }
@@ -75,6 +75,24 @@ impl From<FundModel> for Vec<FundField> {
 impl From<&ShareClassModel> for Vec<ShareClassField> {
     fn from(model: &ShareClassModel) -> Self {
         let mut res = vec![];
+        // Derived fields
+        let is_raw_openfunds = model.is_raw_openfunds.unwrap_or(false);
+        let model = model.clone();
+        if !is_raw_openfunds {
+            let v: Vec<(Option<String>, ShareClassFieldName)> = vec![
+                (pubkey2string(model.fund_id), ShareClassFieldName::FundId),
+                (model.image_uri, ShareClassFieldName::ImageUri),
+            ];
+            v.iter().for_each(|(value, field)| {
+                if let Some(value) = value {
+                    let value = value.to_string();
+                    res.push(ShareClassField {
+                        name: field.clone(),
+                        value: value.clone(),
+                    })
+                }
+            });
+        }
         // Raw Openfund fields
         if let Some(model) = model.raw_openfunds.clone() {
             //TODO
@@ -94,18 +112,18 @@ impl From<&ShareClassModel> for Vec<ShareClassField> {
                 //     model.applied_subscription_fee_in_favour_of_distributor_reference_date,
                 //     ShareClassFieldName::AppliedSubscriptionFeeInFavourOfDistributorReferenceDate,
                 // ),
-                // (
-                //     model.currency_of_minimal_subscription,
-                //     ShareClassFieldName::CurrencyOfMinimalSubscription,
-                // ),
+                (
+                    model.currency_of_minimal_subscription,
+                    ShareClassFieldName::CurrencyOfMinimalSubscription,
+                ),
                 (
                     model.full_share_class_name,
                     ShareClassFieldName::FullShareClassName,
                 ),
-                (
-                    bool2string(model.has_performance_fee),
-                    ShareClassFieldName::HasPerformanceFee,
-                ),
+                // (
+                //     bool2string(model.has_performance_fee),
+                //     ShareClassFieldName::HasPerformanceFee,
+                // ),
                 // (
                 //     bool2string(model.has_subscription_fee_in_favour_of_distributor),
                 //     ShareClassFieldName::HasSubscriptionFeeInFavourOfDistributor,
@@ -114,34 +132,34 @@ impl From<&ShareClassModel> for Vec<ShareClassField> {
                     model.investment_status,
                     ShareClassFieldName::InvestmentStatus,
                 ),
-                (
-                    model.management_fee_applied,
-                    ShareClassFieldName::ManagementFeeApplied,
-                ),
-                (
-                    model.management_fee_applied_reference_date,
-                    ShareClassFieldName::ManagementFeeAppliedReferenceDate,
-                ),
-                (
-                    model.management_fee_maximum,
-                    ShareClassFieldName::ManagementFeeMaximum,
-                ),
+                // (
+                //     model.management_fee_applied,
+                //     ShareClassFieldName::ManagementFeeApplied,
+                // ),
+                // (
+                //     model.management_fee_applied_reference_date,
+                //     ShareClassFieldName::ManagementFeeAppliedReferenceDate,
+                // ),
+                // (
+                //     model.management_fee_maximum,
+                //     ShareClassFieldName::ManagementFeeMaximum,
+                // ),
                 // (
                 //     model.maximum_subscription_fee_in_favour_of_distributor,
                 //     ShareClassFieldName::MaximumSubscriptionFeeInFavourOfDistributor,
                 // ),
-                // (
-                //     model.minimal_initial_subscription_category,
-                //     ShareClassFieldName::MinimalInitialSubscriptionCategory,
-                // ),
-                // (
-                //     model.minimal_initial_subscription_in_amount,
-                //     ShareClassFieldName::MinimalInitialSubscriptionInAmount,
-                // ),
-                // (
-                //     model.minimal_initial_subscription_in_shares,
-                //     ShareClassFieldName::MinimalInitialSubscriptionInShares,
-                // ),
+                (
+                    model.minimal_initial_subscription_category,
+                    ShareClassFieldName::MinimalInitialSubscriptionCategory,
+                ),
+                (
+                    model.minimal_initial_subscription_in_amount,
+                    ShareClassFieldName::MinimalInitialSubscriptionInAmount,
+                ),
+                (
+                    model.minimal_initial_subscription_in_shares,
+                    ShareClassFieldName::MinimalInitialSubscriptionInShares,
+                ),
                 // (
                 //     model.minimal_subsequent_subscription_category,
                 //     ShareClassFieldName::MinimalSubsequentSubscriptionCategory,
@@ -225,10 +243,10 @@ impl From<&ShareClassModel> for Vec<ShareClassField> {
                 //     model.applied_redemption_fee_in_favour_of_distributor_reference_date,
                 //     ShareClassFieldName::AppliedRedemptionFeeInFavourOfDistributorReferenceDate,
                 // ),
-                // (
-                //     model.currency_of_minimal_or_maximum_redemption,
-                //     ShareClassFieldName::CurrencyOfMinimalOrMaximumRedemption,
-                // ),
+                (
+                    model.currency_of_minimal_or_maximum_redemption,
+                    ShareClassFieldName::CurrencyOfMinimalOrMaximumRedemption,
+                ),
                 // (
                 //     model.cut_off_date_offset_for_redemption,
                 //     ShareClassFieldName::CutOffDateOffsetForRedemption,
@@ -245,10 +263,10 @@ impl From<&ShareClassModel> for Vec<ShareClassField> {
                 //     model.cut_off_time_for_subscription,
                 //     ShareClassFieldName::CutOffTimeForSubscription,
                 // ),
-                // (
-                //     bool2string(model.has_lock_up_for_redemption),
-                //     ShareClassFieldName::HasLockUpForRedemption,
-                // ),
+                (
+                    bool2string(model.has_lock_up_for_redemption),
+                    ShareClassFieldName::HasLockUpForRedemption,
+                ),
                 // (
                 //     bool2string(model.has_redemption_fee_in_favour_of_distributor),
                 //     ShareClassFieldName::HasRedemptionFeeInFavourOfDistributor,
@@ -262,30 +280,30 @@ impl From<&ShareClassModel> for Vec<ShareClassField> {
                     model.lock_up_period_in_days,
                     ShareClassFieldName::LockUpPeriodInDays,
                 ),
-                (
-                    model.management_fee_minimum,
-                    ShareClassFieldName::ManagementFeeMinimum,
-                ),
-                (
-                    model.maximal_number_of_possible_decimals_amount,
-                    ShareClassFieldName::MaximalNumberOfPossibleDecimalsAmount,
-                ),
-                (
-                    model.maximal_number_of_possible_decimals_nav,
-                    ShareClassFieldName::MaximalNumberOfPossibleDecimalsNAV,
-                ),
-                (
-                    model.maximal_number_of_possible_decimals_shares,
-                    ShareClassFieldName::MaximalNumberOfPossibleDecimalsShares,
-                ),
                 // (
-                //     model.maximum_initialredemption_in_amount,
-                //     ShareClassFieldName::MaximumInitialRedemptionInAmount,
+                //     model.management_fee_minimum,
+                //     ShareClassFieldName::ManagementFeeMinimum,
                 // ),
                 // (
-                //     model.maximum_initialredemption_in_shares,
-                //     ShareClassFieldName::MaximumInitialRedemptionInShares,
+                //     model.maximal_number_of_possible_decimals_amount,
+                //     ShareClassFieldName::MaximalNumberOfPossibleDecimalsAmount,
                 // ),
+                // (
+                //     model.maximal_number_of_possible_decimals_nav,
+                //     ShareClassFieldName::MaximalNumberOfPossibleDecimalsNAV,
+                // ),
+                // (
+                //     model.maximal_number_of_possible_decimals_shares,
+                //     ShareClassFieldName::MaximalNumberOfPossibleDecimalsShares,
+                // ),
+                (
+                    model.maximum_initial_redemption_in_amount,
+                    ShareClassFieldName::MaximumInitialRedemptionInAmount,
+                ),
+                (
+                    model.maximum_initial_redemption_in_shares,
+                    ShareClassFieldName::MaximumInitialRedemptionInShares,
+                ),
                 // (
                 //     model.maximum_redemption_fee_in_favour_of_distributor,
                 //     ShareClassFieldName::MaximumRedemptionFeeInFavourOfDistributor,
@@ -298,18 +316,18 @@ impl From<&ShareClassModel> for Vec<ShareClassField> {
                 //     model.maximum_subsequent_redemption_in_shares,
                 //     ShareClassFieldName::MaximumSubsequentRedemptionInShares,
                 // ),
-                // (
-                //     model.minimal_initial_redemption_in_amount,
-                //     ShareClassFieldName::MinimalInitialRedemptionInAmount,
-                // ),
-                // (
-                //     model.minimal_initial_redemption_in_shares,
-                //     ShareClassFieldName::MinimalInitialRedemptionInShares,
-                // ),
-                // (
-                //     model.minimal_redemption_category,
-                //     ShareClassFieldName::MinimalRedemptionCategory,
-                // ),
+                (
+                    model.minimal_initial_redemption_in_amount,
+                    ShareClassFieldName::MinimalInitialRedemptionInAmount,
+                ),
+                (
+                    model.minimal_initial_redemption_in_shares,
+                    ShareClassFieldName::MinimalInitialRedemptionInShares,
+                ),
+                (
+                    model.minimal_redemption_category,
+                    ShareClassFieldName::MinimalRedemptionCategory,
+                ),
                 // (
                 //     model.minimal_subsequent_redemption_in_amount,
                 //     ShareClassFieldName::MinimalSubsequentRedemptionInAmount,
@@ -354,33 +372,17 @@ impl From<&ShareClassModel> for Vec<ShareClassField> {
                 //     model.rounding_method_for_subscription_in_shares,
                 //     ShareClassFieldName::RoundingMethodForSubscriptionInShares,
                 // ),
+                (
+                    model.share_class_dividend_type,
+                    ShareClassFieldName::ShareClassDividendType,
+                ),
+                // Full | Country
+                (model.cusip, ShareClassFieldName::CUSIP),
+                (model.valor, ShareClassFieldName::Valor),
             ]
             .iter()
             .for_each(|(value, field)| {
                 if let Some(value) = value {
-                    res.push(ShareClassField {
-                        name: field.clone(),
-                        value: value.clone(),
-                    })
-                }
-            });
-        }
-        // Derived fields
-        let is_raw_openfunds = model.is_raw_openfunds.unwrap_or(false);
-        let model = model.clone();
-        if !is_raw_openfunds {
-            //TODO
-            let v: Vec<(Option<String>, ShareClassFieldName)> = vec![
-                (pubkey2string(model.fund_id), ShareClassFieldName::FundId),
-                (
-                    pubkey2string(model.asset),
-                    ShareClassFieldName::ShareClassCurrencyId,
-                ),
-                (model.image_uri, ShareClassFieldName::ImageUri),
-            ];
-            v.iter().for_each(|(value, field)| {
-                if let Some(value) = value {
-                    let value = value.to_string();
                     res.push(ShareClassField {
                         name: field.clone(),
                         value: value.clone(),

@@ -1,17 +1,12 @@
 import { base58 } from "@scure/base";
+import { PublicKey } from "@solana/web3.js";
 
-export const validatePubkey = (pubkey) => {
-  if (pubkey.length > 50) {
-    return false;
-  }
+export const validatePubkey = (pubkey: string) => {
   let key;
   try {
-    key = base58.decode(pubkey);
-    if (key.length != 32) {
-      return false;
-    }
+    key = new PublicKey(pubkey);
   } catch (_e) {
-    return false;
+    return undefined;
   }
   return key;
 };

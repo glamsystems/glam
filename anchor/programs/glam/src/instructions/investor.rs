@@ -9,7 +9,7 @@ use pyth_sdk_solana::state::SolanaPriceAccount;
 use pyth_sdk_solana::Price;
 
 use crate::error::{FundError, InvestorError};
-use crate::state::fund::*;
+use crate::state::*;
 
 //TODO(security): check that treasury belongs to the fund
 
@@ -69,11 +69,17 @@ fn check_pricing_account(_asset: &str, _pricing_account: &str) -> bool {
 
 #[derive(Accounts)]
 pub struct Subscribe<'info> {
-    pub fund: Box<Account<'info, Fund>>,
+    pub fund: Box<Account<'info, FundAccount>>,
 
     // the shares to mint
-    #[account(mut, mint::authority = share_class, mint::token_program = token_2022_program)]
+    #[account(mut, seeds = [
+        b"share".as_ref(),
+        &[0u8], //TODO: add share_class_idx to instruction
+        fund.key().as_ref()
+      ],
+      bump, mint::authority = share_class, mint::token_program = token_2022_program)]
     pub share_class: Box<InterfaceAccount<'info, Mint>>, // mint
+
     #[account(
       init_if_needed,
       payer = signer,
@@ -109,7 +115,10 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     skip_state: bool,
 ) -> Result<()> {
     let fund = &ctx.accounts.fund;
-    require!(fund.is_active, InvestorError::FundNotActive);
+    require!(fund.is_enabled(), InvestorError::FundNotActive);
+
+    let assets = fund.assets().unwrap();
+    // msg!("assets: {:?}", assets);
 
     if fund.share_classes.len() > 1 {
         // we need to define how to split the total amount into share classes
@@ -117,8 +126,8 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     }
     require!(fund.share_classes.len() > 0, FundError::NoShareClassInFund);
 
-    msg!("fund.share_class[0]: {}", fund.share_classes[0]);
-    msg!("expected share class: {}", ctx.accounts.share_class.key());
+    // msg!("fund.share_class[0]: {}", fund.share_classes[0]);
+    // msg!("expected share class: {}", ctx.accounts.share_class.key());
 
     require!(
         fund.share_classes[0] == ctx.accounts.share_class.key(),
@@ -127,7 +136,8 @@ pub fn subscribe_handler<'c: 'info, 'info>(
 
     let asset_info = ctx.accounts.asset.to_account_info();
     let asset_key = asset_info.key();
-    let asset_idx = fund.assets.iter().position(|&asset| asset == asset_key);
+    let asset_idx = assets.iter().position(|&asset| asset == asset_key);
+    // msg!("asset={:?} idx={:?}", asset_key, asset_idx);
 
     require!(asset_idx.is_some(), InvestorError::InvalidAssetSubscribe);
     let asset_idx = asset_idx.unwrap();
@@ -153,7 +163,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     // the assets should be the fund.assets, including the base asset,
     // and in the correct order.
     require!(
-        ctx.remaining_accounts.len() == 2 * fund.assets.len(),
+        ctx.remaining_accounts.len() == 2 * assets.len(),
         InvestorError::InvalidAssetSubscribe
     );
 
@@ -276,9 +286,9 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         let fund_key = ctx.accounts.fund.key();
         let seeds = &[
             "share".as_bytes(),
-            share_class_symbol.as_bytes(),
+            &[0u8],
             fund_key.as_ref(),
-            &[ctx.accounts.fund.share_classes_bumps[0]],
+            &[ctx.bumps.share_class],
         ];
         let signer_seeds = &[&seeds[..]];
         mint_to(
@@ -303,7 +313,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
 
 #[derive(Accounts)]
 pub struct Redeem<'info> {
-    pub fund: Account<'info, Fund>,
+    pub fund: Account<'info, FundAccount>,
 
     // the shares to burn
     #[account(mut, mint::authority = share_class, mint::token_program = token_2022_program)]
@@ -315,8 +325,8 @@ pub struct Redeem<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    /// CHECK: skip
-    pub treasury: AccountInfo<'info>,
+    #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
 
     // programs
     pub token_program: Program<'info, Token>,
@@ -364,6 +374,9 @@ pub fn redeem_handler<'c: 'info, 'info>(
         let signer = &ctx.accounts.signer;
         let treasury = &ctx.accounts.treasury;
 
+        let assets = fund.assets().unwrap();
+        let assets_weights = fund.assets_weights().unwrap();
+
         // if we skip the redeem state, we attempt to do in_kind redeem,
         // i.e. transfer to the user a % of each asset in the fund (assuming
         // the fund is balanced, if it's not the redeem may fail).
@@ -371,7 +384,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
         // the assets should be the fund.assets, including the base asset,
         // and in the correct order.
         require!(
-            ctx.remaining_accounts.len() == 4 * fund.assets.len(),
+            ctx.remaining_accounts.len() == 4 * assets.len(),
             InvestorError::InvalidAssetsRedeem
         );
 
@@ -386,10 +399,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
                 .expect("invalid treasury account");
             let pricing_account = &accounts[3];
 
-            require!(
-                asset.key() == fund.assets[i],
-                InvestorError::InvalidAssetsRedeem
-            );
+            require!(asset.key() == assets[i], InvestorError::InvalidAssetsRedeem);
             require!(
                 signer_asset_ata.owner == signer.key(),
                 InvestorError::InvalidAssetsRedeem
@@ -476,7 +486,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
         //     value_to_redeem.price,
         //     value_to_redeem.expo
         // );
-        let total_weight: u32 = fund.assets_weights.iter().sum();
+        let total_weight: u32 = assets_weights.iter().sum();
 
         burn(
             CpiContext::new(
@@ -503,7 +513,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
                 ((value.price as u128 * 10u128.pow(att.asset_decimals as u32))
                     / att.asset_price.price as u128) as u64
             } else {
-                let weight: u32 = fund.assets_weights[i];
+                let weight: u32 = assets_weights[i];
                 if weight == 0 {
                     continue;
                 }
@@ -534,7 +544,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
             let seeds = &[
                 "treasury".as_bytes(),
                 fund_key.as_ref(),
-                &[ctx.accounts.fund.bump_treasury],
+                &[ctx.bumps.treasury],
             ];
             let signer_seeds = &[&seeds[..]];
             // msg!(
