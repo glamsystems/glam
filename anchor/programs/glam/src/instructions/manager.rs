@@ -282,7 +282,7 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
 }
 
 #[derive(Accounts)]
-pub struct InitShareClassAllowlistAndBlocklist<'info> {
+pub struct InitShareClassAcls<'info> {
     /// CHECK: must be among fund.share_classes
     #[account()]
     pub share_class_mint: AccountInfo<'info>,
@@ -294,17 +294,17 @@ pub struct InitShareClassAllowlistAndBlocklist<'info> {
         init,
         seeds = [b"allowlist".as_ref(), share_class_mint.key().as_ref()], bump,
         payer = manager,
-        space = InvestorAcl::INIT_SIZE
+        space = PubkeyAcl::INIT_SIZE
     )]
-    pub allowlist: Account<'info, InvestorAcl>,
+    pub allowlist: Account<'info, PubkeyAcl>,
 
     #[account(
         init,
         seeds = [b"blocklist".as_ref(), share_class_mint.key().as_ref()], bump,
         payer = manager,
-        space = InvestorAcl::INIT_SIZE
+        space = PubkeyAcl::INIT_SIZE
     )]
-    pub blocklist: Account<'info, InvestorAcl>,
+    pub blocklist: Account<'info, PubkeyAcl>,
 
     #[account(mut)]
     pub manager: Signer<'info>,
@@ -312,7 +312,7 @@ pub struct InitShareClassAllowlistAndBlocklist<'info> {
     pub system_program: Program<'info, System>,
 }
 pub fn init_share_class_allowlist_and_blocklist<'c: 'info, 'info>(
-    ctx: Context<'_, '_, 'c, 'info, InitShareClassAllowlistAndBlocklist<'info>>,
+    ctx: Context<'_, '_, 'c, 'info, InitShareClassAcls<'info>>,
 ) -> Result<()> {
     ctx.accounts.allowlist.items = Vec::new();
     ctx.accounts.blocklist.items = Vec::new();
@@ -329,7 +329,7 @@ pub struct UpsertShareClassAllowlist<'info> {
     pub fund: Account<'info, FundAccount>,
 
     #[account(mut)]
-    pub allowlist: Account<'info, InvestorAcl>,
+    pub allowlist: Account<'info, PubkeyAcl>,
 
     #[account(mut)]
     pub manager: Signer<'info>,
@@ -352,12 +352,12 @@ pub fn upsert_share_class_allowlist<'c: 'info, 'info>(
 
         let allowlist_account_info = ctx.accounts.allowlist.to_account_info();
         let curr_data_size = allowlist_account_info.data_len();
-        if curr_data_size == InvestorAcl::INIT_SIZE {
+        if curr_data_size == PubkeyAcl::INIT_SIZE {
             ctx.accounts.allowlist.items = Vec::new();
         }
 
         let space_left =
-            curr_data_size - ctx.accounts.allowlist.items.len() * 32 - InvestorAcl::INIT_SIZE;
+            curr_data_size - ctx.accounts.allowlist.items.len() * 32 - PubkeyAcl::INIT_SIZE;
 
         msg!("current data size: {}", curr_data_size);
         msg!(

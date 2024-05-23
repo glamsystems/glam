@@ -128,9 +128,9 @@ impl From<FundModel> for FundMetadataAccount {
 }
 
 #[account]
-pub struct InvestorAcl {
+pub struct PubkeyAcl {
     pub items: Vec<Pubkey>,
 }
-impl InvestorAcl {
+impl PubkeyAcl {
     pub const INIT_SIZE: usize = 8 + 4;
 }

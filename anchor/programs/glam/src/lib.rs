@@ -47,7 +47,7 @@ pub mod glam {
     }
 
     pub fn init_share_class_allowlist_and_blocklist<'c: 'info, 'info>(
-        ctx: Context<'_, '_, 'c, 'info, InitShareClassAllowlistAndBlocklist<'info>>,
+        ctx: Context<'_, '_, 'c, 'info, InitShareClassAcls<'info>>,
     ) -> Result<()> {
         manager::init_share_class_allowlist_and_blocklist(ctx)
     }

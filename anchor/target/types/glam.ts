@@ -1031,7 +1031,7 @@ export type Glam = {
       }
     },
     {
-      "name": "investorAcl",
+      "name": "pubkeyAcl",
       "type": {
         "kind": "struct",
         "fields": [
@@ -4184,7 +4184,7 @@ export const IDL: Glam = {
       }
     },
     {
-      "name": "investorAcl",
+      "name": "pubkeyAcl",
       "type": {
         "kind": "struct",
         "fields": [

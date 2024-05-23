@@ -81,7 +81,7 @@ describe("glam_crud", () => {
         })
         .rpc({ commitment });
 
-      const allowlist = await program.account.investorAcl.fetch(allowlistPda);
+      const allowlist = await program.account.pubkeyAcl.fetch(allowlistPda);
       console.log("Share class allowlist:", allowlist);
       expect(allowlist.items.length).toEqual(4);
     } catch (e) {
