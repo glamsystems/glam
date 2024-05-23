@@ -150,6 +150,85 @@ export type Glam = {
       "args": []
     },
     {
+      "name": "initShareClassAllowlistAndBlocklist",
+      "accounts": [
+        {
+          "name": "shareClassMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "fund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "allowlist",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "blocklist",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "upsertShareClassAllowlist",
+      "accounts": [
+        {
+          "name": "shareClassMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "fund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "allowlist",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "pubkeys",
+          "type": {
+            "vec": "publicKey"
+          }
+        }
+      ]
+    },
+    {
       "name": "subscribe",
       "accounts": [
         {
@@ -946,6 +1025,20 @@ export type Glam = {
                   "defined": "FundManagerField"
                 }
               }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "investorAcl",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "items",
+            "type": {
+              "vec": "publicKey"
             }
           }
         ]
@@ -3210,6 +3303,85 @@ export const IDL: Glam = {
       "args": []
     },
     {
+      "name": "initShareClassAllowlistAndBlocklist",
+      "accounts": [
+        {
+          "name": "shareClassMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "fund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "allowlist",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "blocklist",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "upsertShareClassAllowlist",
+      "accounts": [
+        {
+          "name": "shareClassMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "fund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "allowlist",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "pubkeys",
+          "type": {
+            "vec": "publicKey"
+          }
+        }
+      ]
+    },
+    {
       "name": "subscribe",
       "accounts": [
         {
@@ -4006,6 +4178,20 @@ export const IDL: Glam = {
                   "defined": "FundManagerField"
                 }
               }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "investorAcl",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "items",
+            "type": {
+              "vec": "publicKey"
             }
           }
         ]

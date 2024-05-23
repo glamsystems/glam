@@ -1,9 +1,11 @@
 use anchor_lang::{prelude::*, system_program};
 use anchor_spl::{token_2022, token_interface::Token2022};
+use solana_program::pubkey;
 use spl_token_2022::{extension::ExtensionType, state::Mint as StateMint};
 
 use crate::error::ManagerError;
 use crate::state::*;
+use std::cmp::max;
 
 #[derive(Accounts)]
 #[instruction(fund_model: FundModel)]
@@ -275,6 +277,127 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
             signer_seeds,
         )
     });
+
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct InitShareClassAllowlistAndBlocklist<'info> {
+    /// CHECK: must be among fund.share_classes
+    #[account()]
+    pub share_class_mint: AccountInfo<'info>,
+
+    #[account(mut, has_one = manager @ ManagerError::NotAuthorizedError)]
+    pub fund: Account<'info, FundAccount>,
+
+    #[account(
+        init,
+        seeds = [b"allowlist".as_ref(), share_class_mint.key().as_ref()], bump,
+        payer = manager,
+        space = InvestorAcl::INIT_SIZE
+    )]
+    pub allowlist: Account<'info, InvestorAcl>,
+
+    #[account(
+        init,
+        seeds = [b"blocklist".as_ref(), share_class_mint.key().as_ref()], bump,
+        payer = manager,
+        space = InvestorAcl::INIT_SIZE
+    )]
+    pub blocklist: Account<'info, InvestorAcl>,
+
+    #[account(mut)]
+    pub manager: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+}
+pub fn init_share_class_allowlist_and_blocklist<'c: 'info, 'info>(
+    ctx: Context<'_, '_, 'c, 'info, InitShareClassAllowlistAndBlocklist<'info>>,
+) -> Result<()> {
+    ctx.accounts.allowlist.items = Vec::new();
+    ctx.accounts.blocklist.items = Vec::new();
+
+    Ok(())
+}
+#[derive(Accounts)]
+pub struct UpsertShareClassAllowlist<'info> {
+    /// CHECK: must be among fund.share_classes
+    #[account()]
+    pub share_class_mint: AccountInfo<'info>,
+
+    #[account(mut, has_one = manager @ ManagerError::NotAuthorizedError)]
+    pub fund: Account<'info, FundAccount>,
+
+    #[account(mut)]
+    pub allowlist: Account<'info, InvestorAcl>,
+
+    #[account(mut)]
+    pub manager: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+    pub rent: Sysvar<'info, Rent>,
+}
+pub fn upsert_share_class_allowlist<'c: 'info, 'info>(
+    ctx: Context<'_, '_, 'c, 'info, UpsertShareClassAllowlist<'info>>,
+    pubkeys: Vec<Pubkey>,
+) -> Result<()> {
+    if let Some(found) = ctx
+        .accounts
+        .fund
+        .share_classes
+        .iter()
+        .find(|&x| *x == ctx.accounts.share_class_mint.key())
+    {
+        msg!("Share class found: {}", found);
+
+        let allowlist_account_info = ctx.accounts.allowlist.to_account_info();
+        let curr_data_size = allowlist_account_info.data_len();
+        if curr_data_size == InvestorAcl::INIT_SIZE {
+            ctx.accounts.allowlist.items = Vec::new();
+        }
+
+        let space_left =
+            curr_data_size - ctx.accounts.allowlist.items.len() * 32 - InvestorAcl::INIT_SIZE;
+
+        msg!("current data size: {}", curr_data_size);
+        msg!(
+            "current length of list: {}",
+            ctx.accounts.allowlist.items.len()
+        );
+        msg!("space left: {}", space_left);
+
+        if space_left < 32 {
+            let needed_len = curr_data_size + 64; // max(20, pubkeys.len()) * 32;
+            AccountInfo::realloc(&allowlist_account_info, needed_len, true)?;
+
+            // if more lamports are needed, transfer them to the account
+            let rent_exempt_lamports = ctx.accounts.rent.minimum_balance(needed_len).max(1);
+            let top_up_lamports =
+                rent_exempt_lamports.saturating_sub(allowlist_account_info.lamports());
+
+            msg!("top up lamports: {}", top_up_lamports);
+
+            if top_up_lamports > 0 {
+                anchor_lang::system_program::transfer(
+                    anchor_lang::context::CpiContext::new(
+                        ctx.accounts.system_program.to_account_info(),
+                        anchor_lang::system_program::Transfer {
+                            from: ctx.accounts.manager.to_account_info(),
+                            to: ctx.accounts.allowlist.to_account_info(),
+                        },
+                    ),
+                    top_up_lamports,
+                )?;
+            }
+        }
+
+        let curr_data_size = allowlist_account_info.data_len();
+        msg!("current data size after realloc: {}", curr_data_size);
+
+        ctx.accounts.allowlist.reload()?;
+        msg!("add pubkeys to allowlist: {:?}", pubkeys);
+        ctx.accounts.allowlist.items.extend(pubkeys);
+    }
 
     Ok(())
 }

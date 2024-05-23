@@ -46,6 +46,19 @@ pub mod glam {
         manager::close_handler(ctx)
     }
 
+    pub fn init_share_class_allowlist_and_blocklist<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, InitShareClassAllowlistAndBlocklist<'info>>,
+    ) -> Result<()> {
+        manager::init_share_class_allowlist_and_blocklist(ctx)
+    }
+
+    pub fn upsert_share_class_allowlist<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, UpsertShareClassAllowlist<'info>>,
+        pubkeys: Vec<Pubkey>,
+    ) -> Result<()> {
+        manager::upsert_share_class_allowlist(ctx, pubkeys)
+    }
+
     // Investor
 
     pub fn subscribe<'c: 'info, 'info>(
