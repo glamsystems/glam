@@ -366,8 +366,10 @@ pub fn upsert_share_class_allowlist<'c: 'info, 'info>(
         );
         msg!("space left: {}", space_left);
 
-        if space_left < 32 {
-            let needed_len = curr_data_size + 64; // max(20, pubkeys.len()) * 32;
+        // If space left is less than 10 pubkeys, reallocate the account
+        // Increase the account size by at least 20 pubkeys
+        if space_left < 10 * 32 {
+            let needed_len = curr_data_size + max(20, pubkeys.len()) * 32;
             AccountInfo::realloc(&allowlist_account_info, needed_len, true)?;
 
             // if more lamports are needed, transfer them to the account
