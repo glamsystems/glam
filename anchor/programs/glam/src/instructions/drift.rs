@@ -237,7 +237,7 @@ pub fn drift_deposit_handler<'c: 'info, 'info>(
 #[derive(Accounts)]
 pub struct DriftWithdraw<'info> {
     #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
-    pub fund: Account<'info, Fund>,
+    pub fund: Account<'info, FundAccount>,
 
     #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,

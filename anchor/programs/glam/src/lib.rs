@@ -7,7 +7,6 @@ use anchor_lang::prelude::*;
 
 use crate::instructions::*;
 pub use constants::*;
-pub use state::fund::*;
 pub use state::model::*;
 
 declare_id!("Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc");

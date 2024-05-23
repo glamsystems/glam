@@ -2,8 +2,7 @@ use anchor_lang::{prelude::*, system_program};
 use anchor_spl::{token_2022, token_interface::Token2022};
 use spl_token_2022::{extension::ExtensionType, state::Mint as StateMint};
 
-use crate::error::ManagerError;
-use crate::state::*;
+use crate::{state::*, error::ManagerError, MAX_FUND_NAME, MAX_FUND_URI};
 
 #[derive(Accounts)]
 #[instruction(fund_model: FundModel)]
@@ -31,7 +30,7 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     // Create the treasury account
     //
     let rent = Rent::get()?;
-    let lamports = rent.minimum_balance(std::mem::size_of::<Treasury>() + 8);
+    let lamports = rent.minimum_balance(8);
     let fund_key = ctx.accounts.fund.key();
 
     let seeds = &[
