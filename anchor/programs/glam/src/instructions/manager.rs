@@ -311,7 +311,7 @@ pub struct InitShareClassAcls<'info> {
 
     pub system_program: Program<'info, System>,
 }
-pub fn init_share_class_allowlist_and_blocklist<'c: 'info, 'info>(
+pub fn init_share_class_acls<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, InitShareClassAcls<'info>>,
 ) -> Result<()> {
     ctx.accounts.allowlist.items = Vec::new();
@@ -320,7 +320,7 @@ pub fn init_share_class_allowlist_and_blocklist<'c: 'info, 'info>(
     Ok(())
 }
 #[derive(Accounts)]
-pub struct UpsertShareClassAllowlist<'info> {
+pub struct AddToShareClassAllowlist<'info> {
     /// CHECK: must be among fund.share_classes
     #[account()]
     pub share_class_mint: AccountInfo<'info>,
@@ -338,7 +338,7 @@ pub struct UpsertShareClassAllowlist<'info> {
     pub rent: Sysvar<'info, Rent>,
 }
 pub fn upsert_share_class_allowlist<'c: 'info, 'info>(
-    ctx: Context<'_, '_, 'c, 'info, UpsertShareClassAllowlist<'info>>,
+    ctx: Context<'_, '_, 'c, 'info, AddToShareClassAllowlist<'info>>,
     pubkeys: Vec<Pubkey>,
 ) -> Result<()> {
     if let Some(found) = ctx

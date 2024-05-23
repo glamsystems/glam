@@ -49,11 +49,11 @@ pub mod glam {
     pub fn init_share_class_allowlist_and_blocklist<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, InitShareClassAcls<'info>>,
     ) -> Result<()> {
-        manager::init_share_class_allowlist_and_blocklist(ctx)
+        manager::init_share_class_acls(ctx)
     }
 
     pub fn upsert_share_class_allowlist<'c: 'info, 'info>(
-        ctx: Context<'_, '_, 'c, 'info, UpsertShareClassAllowlist<'info>>,
+        ctx: Context<'_, '_, 'c, 'info, AddToShareClassAllowlist<'info>>,
         pubkeys: Vec<Pubkey>,
     ) -> Result<()> {
         manager::upsert_share_class_allowlist(ctx, pubkeys)
