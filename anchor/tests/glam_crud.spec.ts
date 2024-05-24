@@ -5,7 +5,7 @@ import { getTokenMetadata } from "@solana/spl-token";
 
 import { createFundForTest, sleep } from "./setup";
 import { getImageUri, getMetadataUri } from "../src/offchain";
-import { PublicKey } from "@solana/web3.js";
+import { Keypair, PublicKey } from "@solana/web3.js";
 
 describe("glam_crud", () => {
   const provider = anchor.AnchorProvider.env();
@@ -34,7 +34,7 @@ describe("glam_crud", () => {
     // expect(image_uri).toEqual(getImageUri(sharePDA));
   });
 
-  it("Add pubkeys to share class allowlist", async () => {
+  it("Add pubkeys to share class acls", async () => {
     const fund = await program.account.fundAccount.fetch(fundPDA);
     const [allowlistPda] = PublicKey.findProgramAddressSync(
       [Buffer.from("allowlist"), fund.shareClasses[0].toBuffer()],
@@ -45,9 +45,15 @@ describe("glam_crud", () => {
       program.programId
     );
 
+    const allowlistPubkeys = [Keypair.generate().publicKey];
+    const blocklistPubkeys = [
+      Keypair.generate().publicKey,
+      Keypair.generate().publicKey
+    ];
+
     try {
       await program.methods
-        .initShareClassAllowlistAndBlocklist()
+        .initializeShareClassAcls()
         .accounts({
           shareClassMint: fund.shareClasses[0],
           fund: fundPDA,
@@ -57,33 +63,30 @@ describe("glam_crud", () => {
         })
         .rpc({ commitment });
 
-      sleep(1000);
-
       await program.methods
-        .upsertShareClassAllowlist([manager.publicKey, fundPDA])
+        .addToShareClassAcl(allowlistPubkeys)
         .accounts({
           shareClassMint: fund.shareClasses[0],
           fund: fundPDA,
-          allowlist: allowlistPda,
+          acl: allowlistPda,
           manager: manager.publicKey
         })
         .rpc({ commitment });
 
-      sleep(1000);
-
       await program.methods
-        .upsertShareClassAllowlist([manager.publicKey, fundPDA])
+        .addToShareClassAcl(blocklistPubkeys)
         .accounts({
           shareClassMint: fund.shareClasses[0],
           fund: fundPDA,
-          allowlist: allowlistPda,
+          acl: blocklistPda,
           manager: manager.publicKey
         })
         .rpc({ commitment });
 
       const allowlist = await program.account.pubkeyAcl.fetch(allowlistPda);
-      console.log("Share class allowlist:", allowlist);
-      expect(allowlist.items.length).toEqual(4);
+      const blocklist = await program.account.pubkeyAcl.fetch(blocklistPda);
+      expect(allowlist.items.length).toEqual(allowlistPubkeys.length);
+      expect(blocklist.items.length).toEqual(blocklistPubkeys.length);
     } catch (e) {
       console.log(e);
       throw e;

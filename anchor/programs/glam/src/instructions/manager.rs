@@ -1,6 +1,5 @@
 use anchor_lang::{prelude::*, system_program};
 use anchor_spl::{token_2022, token_interface::Token2022};
-use solana_program::pubkey;
 use spl_token_2022::{extension::ExtensionType, state::Mint as StateMint};
 
 use crate::error::ManagerError;
@@ -282,7 +281,7 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
 }
 
 #[derive(Accounts)]
-pub struct InitShareClassAcls<'info> {
+pub struct InitializeShareClassAcls<'info> {
     /// CHECK: must be among fund.share_classes
     #[account()]
     pub share_class_mint: AccountInfo<'info>,
@@ -311,8 +310,8 @@ pub struct InitShareClassAcls<'info> {
 
     pub system_program: Program<'info, System>,
 }
-pub fn init_share_class_acls<'c: 'info, 'info>(
-    ctx: Context<'_, '_, 'c, 'info, InitShareClassAcls<'info>>,
+pub fn initialize_share_class_acls<'c: 'info, 'info>(
+    ctx: Context<'_, '_, 'c, 'info, InitializeShareClassAcls<'info>>,
 ) -> Result<()> {
     ctx.accounts.allowlist.items = Vec::new();
     ctx.accounts.blocklist.items = Vec::new();
@@ -320,7 +319,7 @@ pub fn init_share_class_acls<'c: 'info, 'info>(
     Ok(())
 }
 #[derive(Accounts)]
-pub struct AddToShareClassAllowlist<'info> {
+pub struct AddToShareClassAcl<'info> {
     /// CHECK: must be among fund.share_classes
     #[account()]
     pub share_class_mint: AccountInfo<'info>,
@@ -329,7 +328,7 @@ pub struct AddToShareClassAllowlist<'info> {
     pub fund: Account<'info, FundAccount>,
 
     #[account(mut)]
-    pub allowlist: Account<'info, PubkeyAcl>,
+    pub acl: Account<'info, PubkeyAcl>, // allowlist or blocklist
 
     #[account(mut)]
     pub manager: Signer<'info>,
@@ -337,8 +336,8 @@ pub struct AddToShareClassAllowlist<'info> {
     pub system_program: Program<'info, System>,
     pub rent: Sysvar<'info, Rent>,
 }
-pub fn upsert_share_class_allowlist<'c: 'info, 'info>(
-    ctx: Context<'_, '_, 'c, 'info, AddToShareClassAllowlist<'info>>,
+pub fn add_to_share_class_acl<'c: 'info, 'info>(
+    ctx: Context<'_, '_, 'c, 'info, AddToShareClassAcl<'info>>,
     pubkeys: Vec<Pubkey>,
 ) -> Result<()> {
     if let Some(found) = ctx
@@ -350,20 +349,16 @@ pub fn upsert_share_class_allowlist<'c: 'info, 'info>(
     {
         msg!("Share class found: {}", found);
 
-        let allowlist_account_info = ctx.accounts.allowlist.to_account_info();
+        let allowlist_account_info = ctx.accounts.acl.to_account_info();
         let curr_data_size = allowlist_account_info.data_len();
         if curr_data_size == PubkeyAcl::INIT_SIZE {
-            ctx.accounts.allowlist.items = Vec::new();
+            ctx.accounts.acl.items = Vec::new();
         }
 
-        let space_left =
-            curr_data_size - ctx.accounts.allowlist.items.len() * 32 - PubkeyAcl::INIT_SIZE;
+        let space_left = curr_data_size - ctx.accounts.acl.items.len() * 32 - PubkeyAcl::INIT_SIZE;
 
         msg!("current data size: {}", curr_data_size);
-        msg!(
-            "current length of list: {}",
-            ctx.accounts.allowlist.items.len()
-        );
+        msg!("current length of list: {}", ctx.accounts.acl.items.len());
         msg!("space left: {}", space_left);
 
         // If space left is less than 10 pubkeys, reallocate the account
@@ -385,7 +380,7 @@ pub fn upsert_share_class_allowlist<'c: 'info, 'info>(
                         ctx.accounts.system_program.to_account_info(),
                         anchor_lang::system_program::Transfer {
                             from: ctx.accounts.manager.to_account_info(),
-                            to: ctx.accounts.allowlist.to_account_info(),
+                            to: ctx.accounts.acl.to_account_info(),
                         },
                     ),
                     top_up_lamports,
@@ -396,9 +391,9 @@ pub fn upsert_share_class_allowlist<'c: 'info, 'info>(
         let curr_data_size = allowlist_account_info.data_len();
         msg!("current data size after realloc: {}", curr_data_size);
 
-        ctx.accounts.allowlist.reload()?;
+        ctx.accounts.acl.reload()?;
         msg!("add pubkeys to allowlist: {:?}", pubkeys);
-        ctx.accounts.allowlist.items.extend(pubkeys);
+        ctx.accounts.acl.items.extend(pubkeys);
     }
 
     Ok(())

@@ -150,7 +150,7 @@ export type Glam = {
       "args": []
     },
     {
-      "name": "initShareClassAllowlistAndBlocklist",
+      "name": "initializeShareClassAcls",
       "accounts": [
         {
           "name": "shareClassMint",
@@ -186,7 +186,7 @@ export type Glam = {
       "args": []
     },
     {
-      "name": "upsertShareClassAllowlist",
+      "name": "addToShareClassAcl",
       "accounts": [
         {
           "name": "shareClassMint",
@@ -199,7 +199,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "allowlist",
+          "name": "acl",
           "isMut": true,
           "isSigner": false
         },
@@ -3303,7 +3303,7 @@ export const IDL: Glam = {
       "args": []
     },
     {
-      "name": "initShareClassAllowlistAndBlocklist",
+      "name": "initializeShareClassAcls",
       "accounts": [
         {
           "name": "shareClassMint",
@@ -3339,7 +3339,7 @@ export const IDL: Glam = {
       "args": []
     },
     {
-      "name": "upsertShareClassAllowlist",
+      "name": "addToShareClassAcl",
       "accounts": [
         {
           "name": "shareClassMint",
@@ -3352,7 +3352,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "allowlist",
+          "name": "acl",
           "isMut": true,
           "isSigner": false
         },

@@ -46,17 +46,17 @@ pub mod glam {
         manager::close_handler(ctx)
     }
 
-    pub fn init_share_class_allowlist_and_blocklist<'c: 'info, 'info>(
-        ctx: Context<'_, '_, 'c, 'info, InitShareClassAcls<'info>>,
+    pub fn initialize_share_class_acls<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, InitializeShareClassAcls<'info>>,
     ) -> Result<()> {
-        manager::init_share_class_acls(ctx)
+        manager::initialize_share_class_acls(ctx)
     }
 
-    pub fn upsert_share_class_allowlist<'c: 'info, 'info>(
-        ctx: Context<'_, '_, 'c, 'info, AddToShareClassAllowlist<'info>>,
+    pub fn add_to_share_class_acl<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, AddToShareClassAcl<'info>>,
         pubkeys: Vec<Pubkey>,
     ) -> Result<()> {
-        manager::upsert_share_class_allowlist(ctx, pubkeys)
+        manager::add_to_share_class_acl(ctx, pubkeys)
     }
 
     // Investor
