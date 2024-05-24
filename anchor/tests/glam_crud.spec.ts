@@ -1,28 +1,21 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Glam } from "../target/types/glam";
-import { getTokenMetadata } from "@solana/spl-token";
 
-import { createFundForTest, sleep } from "./setup";
-import { getImageUri, getMetadataUri } from "../src/offchain";
+import { createFundForTest } from "./setup";
 import { Keypair, PublicKey } from "@solana/web3.js";
+import { GlamClient } from "../src";
 
 describe("glam_crud", () => {
-  const provider = anchor.AnchorProvider.env();
-  anchor.setProvider(provider);
-
-  const manager = provider.wallet as anchor.Wallet;
-
-  const program = anchor.workspace.Glam as Program<Glam>;
-  const commitment = "confirmed";
+  const glamClient = new GlamClient();
 
   let fundPDA;
 
   it("Initialize fund", async () => {
-    const fundData = await createFundForTest();
+    const fundData = await createFundForTest(glamClient);
     fundPDA = fundData.fundPDA;
 
-    const fund = await program.account.fundAccount.fetch(fundPDA);
+    const fund = await glamClient.fetchFundAccount(fundPDA);
     expect(fund.shareClasses.length).toEqual(1);
     // expect(fund.assets.length).toEqual(3);
     // expect(fund.isEnabled).toEqual(true);
@@ -35,16 +28,7 @@ describe("glam_crud", () => {
   });
 
   it("Add pubkeys to share class acls", async () => {
-    const fund = await program.account.fundAccount.fetch(fundPDA);
-    const [allowlistPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from("allowlist"), fund.shareClasses[0].toBuffer()],
-      program.programId
-    );
-    const [blocklistPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from("blocklist"), fund.shareClasses[0].toBuffer()],
-      program.programId
-    );
-
+    const fund = await glamClient.fetchFundAccount(fundPDA);
     const allowlistPubkeys = [Keypair.generate().publicKey];
     const blocklistPubkeys = [
       Keypair.generate().publicKey,
@@ -52,39 +36,15 @@ describe("glam_crud", () => {
     ];
 
     try {
-      await program.methods
-        .initializeShareClassAcls()
-        .accounts({
-          shareClassMint: fund.shareClasses[0],
-          fund: fundPDA,
-          allowlist: allowlistPda,
-          blocklist: blocklistPda,
-          manager: manager.publicKey
-        })
-        .rpc({ commitment });
-
-      await program.methods
-        .addToShareClassAcl(allowlistPubkeys)
-        .accounts({
-          shareClassMint: fund.shareClasses[0],
-          fund: fundPDA,
-          acl: allowlistPda,
-          manager: manager.publicKey
-        })
-        .rpc({ commitment });
-
-      await program.methods
-        .addToShareClassAcl(blocklistPubkeys)
-        .accounts({
-          shareClassMint: fund.shareClasses[0],
-          fund: fundPDA,
-          acl: blocklistPda,
-          manager: manager.publicKey
-        })
-        .rpc({ commitment });
-
-      const allowlist = await program.account.pubkeyAcl.fetch(allowlistPda);
-      const blocklist = await program.account.pubkeyAcl.fetch(blocklistPda);
+      await glamClient.addToShareClassAcls(
+        fundPDA,
+        fund.shareClasses[0],
+        allowlistPubkeys,
+        blocklistPubkeys
+      );
+      const { allowlist, blocklist } = await glamClient.fetchShareClassAcls(
+        fund.shareClasses[0]
+      );
       expect(allowlist.items.length).toEqual(allowlistPubkeys.length);
       expect(blocklist.items.length).toEqual(blocklistPubkeys.length);
     } catch (e) {
@@ -95,34 +55,35 @@ describe("glam_crud", () => {
 
   it("Update fund", async () => {
     const newFundName = "Updated fund name";
-    await program.methods
+    await glamClient.program.methods
       .update(newFundName, null, null, false)
       .accounts({
         fund: fundPDA,
-        manager: manager.publicKey
+        manager: glamClient.getManager()
       })
-      .rpc({ commitment });
-    const fund = await program.account.fundAccount.fetch(fundPDA);
+      .rpc();
+    const fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
     expect(fund.name).toEqual(newFundName);
     // expect(fund.isActive).toEqual(false);
   });
 
   it("Close fund", async () => {
-    const fund = await program.account.fundAccount.fetchNullable(fundPDA);
+    const fund = await glamClient.program.account.fundAccount.fetchNullable(
+      fundPDA
+    );
     expect(fund).not.toBeNull();
 
-    await program.methods
+    await glamClient.program.methods
       .close()
       .accounts({
         fund: fundPDA,
-        manager: manager.publicKey
+        manager: glamClient.getManager()
       })
-      .rpc({ commitment });
+      .rpc();
 
     // The account should no longer exist, returning null.
-    const closedAccount = await program.account.fundAccount.fetchNullable(
-      fundPDA
-    );
+    const closedAccount =
+      await glamClient.program.account.fundAccount.fetchNullable(fundPDA);
     expect(closedAccount).toBeNull();
   });
 });

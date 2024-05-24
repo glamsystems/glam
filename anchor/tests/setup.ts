@@ -80,8 +80,11 @@ export const fundTestExample = {
   }
 };
 
-export const createFundForTest = async (fundTest?: any) => {
-  const client = new GlamClient();
+export const createFundForTest = async (
+  glamClient?: GlamClient,
+  fundTest?: any
+) => {
+  const client = glamClient || new GlamClient();
   const manager = client.getManager();
   let txId, fundPDA;
   try {

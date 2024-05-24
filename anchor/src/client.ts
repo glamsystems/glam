@@ -1,24 +1,16 @@
 import * as anchor from "@coral-xyz/anchor";
-// import * as util from "util";
-import { BN, Program, IdlAccounts, IdlTypes } from "@coral-xyz/anchor";
+import { Program, IdlAccounts } from "@coral-xyz/anchor";
 import {
   ComputeBudgetProgram,
   Connection,
   PublicKey,
   TransactionSignature
 } from "@solana/web3.js";
-import {
-  getMint,
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  TOKEN_2022_PROGRAM_ID,
-  TOKEN_PROGRAM_ID,
-  getAssociatedTokenAddressSync
-} from "@solana/spl-token";
+import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 
 import { Glam, GlamIDL, GlamProgram, getGlamProgramId } from "./glamExports";
 import { GlamClientConfig } from "./clientConfig";
 import { FundModel, FundOpenfundsModel } from "./models";
-import { kMaxLength } from "buffer";
 
 type FundAccount = IdlAccounts<Glam>["fundAccount"];
 type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
@@ -108,6 +100,18 @@ export class GlamClient {
       this.programId
     );
     return pda;
+  }
+
+  getShareClassAclsPDAs(shareClassPDA: PublicKey): [PublicKey, PublicKey] {
+    const [allowlistPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("allowlist"), shareClassPDA.toBuffer()],
+      this.programId
+    );
+    const [blocklistPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("blocklist"), shareClassPDA.toBuffer()],
+      this.programId
+    );
+    return [allowlistPda, blocklistPda];
   }
 
   getFundName(fundModel: FundModel) {
@@ -239,6 +243,70 @@ export class GlamClient {
   ): Promise<FundMetadataAccount> {
     const openfunds = this.getOpenfundsPDA(fundPDA);
     return this.program.account.fundMetadataAccount.fetch(openfunds);
+  }
+
+  public async fetchShareClassAcls(shareClass: PublicKey): Promise<any> {
+    const [allowlistPda, blocklistPda] = this.getShareClassAclsPDAs(shareClass);
+
+    const allowlist = await this.program.account.pubkeyAcl.fetch(allowlistPda);
+    const blocklist = await this.program.account.pubkeyAcl.fetch(blocklistPda);
+
+    return { allowlist, blocklist };
+  }
+
+  public async addToShareClassAcls(
+    fundPDA: PublicKey,
+    shareClass: PublicKey,
+    allowlistPubkeys?: PublicKey[],
+    blocklistPubkeys?: PublicKey[]
+  ): Promise<boolean> {
+    const [allowlistPda, blocklistPda] = this.getShareClassAclsPDAs(shareClass);
+
+    // check if allowlistPda has been initialized
+    const allowlistPdaInitialized =
+      await this.provider.connection.getAccountInfo(allowlistPda);
+    if (!allowlistPdaInitialized) {
+      await this.program.methods
+        .initializeShareClassAcls()
+        .accounts({
+          shareClassMint: shareClass,
+          fund: fundPDA,
+          allowlist: allowlistPda,
+          blocklist: blocklistPda,
+          manager: this.getManager()
+        })
+        .rpc();
+    }
+
+    try {
+      if (allowlistPubkeys) {
+        await this.program.methods
+          .addToShareClassAcl(allowlistPubkeys)
+          .accounts({
+            shareClassMint: shareClass,
+            fund: fundPDA,
+            acl: allowlistPda,
+            manager: this.getManager()
+          })
+          .rpc();
+      }
+      if (blocklistPubkeys) {
+        await this.program.methods
+          .addToShareClassAcl(blocklistPubkeys)
+          .accounts({
+            shareClassMint: shareClass,
+            fund: fundPDA,
+            acl: blocklistPda,
+            manager: this.getManager()
+          })
+          .rpc();
+      }
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
+
+    return true;
   }
 
   remapKeyValueArray(vec: Array<any>): any {
