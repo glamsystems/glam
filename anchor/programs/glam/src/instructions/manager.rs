@@ -313,11 +313,21 @@ pub struct InitializeShareClassAcls<'info> {
 pub fn initialize_share_class_acls<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, InitializeShareClassAcls<'info>>,
 ) -> Result<()> {
-    ctx.accounts.allowlist.items = Vec::new();
-    ctx.accounts.blocklist.items = Vec::new();
-
-    Ok(())
+    if let Some(found) = ctx
+        .accounts
+        .fund
+        .share_classes
+        .iter()
+        .find(|&x| *x == ctx.accounts.share_class_mint.key())
+    {
+        msg!("Share class found: {}", found);
+        ctx.accounts.allowlist.items = Vec::new();
+        ctx.accounts.blocklist.items = Vec::new();
+        return Ok(());
+    }
+    Err(ManagerError::NotAuthorizedError.into())
 }
+
 #[derive(Accounts)]
 pub struct AddToShareClassAcl<'info> {
     /// CHECK: must be among fund.share_classes
