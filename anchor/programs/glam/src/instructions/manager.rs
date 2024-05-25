@@ -276,6 +276,20 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
         )
     });
 
+    fund.params.push(vec![
+        EngineField {
+            name: EngineFieldName::ShareClassAllowlist,
+            value: EngineFieldValue::VecPubkey {
+                val: share_class_metadata.allowlist,
+            },
+        },
+        EngineField {
+            name: EngineFieldName::ShareClassBlocklist,
+            value: EngineFieldValue::VecPubkey {
+                val: share_class_metadata.blocklist,
+            },
+        },
+    ]);
     Ok(())
 }
 

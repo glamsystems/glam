@@ -198,8 +198,6 @@ export class GlamClient {
     const shareClasses = fundModel.shareClasses;
     fundModel.shareClasses = [];
 
-    // console.log(fundModel);
-
     const txSig = await this.program.methods
       .initialize(fundModel)
       .accounts({
@@ -282,9 +280,21 @@ export class GlamClient {
     let fundModel = this.getFundModel(fundAccount);
     fundModel.id = fundPDA;
 
-    return {
+    let fund = {
       ...fundModel,
       ...this.getOpenfundsFromAccounts(fundAccount, openfundsAccount)
     };
+
+    // Add data from fund params to share classes
+    fund.shareClasses = fund.shareClasses.map((shareClass: any, i: number) => {
+      const fund_param_idx = 1 + i;
+      shareClass.allowlist =
+        fundAccount.params[fund_param_idx][0].value.vecPubkey?.val;
+      shareClass.blocklist =
+        fundAccount.params[fund_param_idx][1].value.vecPubkey?.val;
+      return shareClass;
+    });
+
+    return fund;
   }
 }

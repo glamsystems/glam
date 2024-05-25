@@ -1,28 +1,26 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Glam } from "../target/types/glam";
-import { getTokenMetadata } from "@solana/spl-token";
 
-import { createFundForTest } from "./setup";
-import { getImageUri, getMetadataUri } from "../src/offchain";
+import {
+  shareClass0Allowlist,
+  createFundForTest,
+  shareClass0Blocklist
+} from "./setup";
+import { GlamClient } from "../src";
 
 describe("glam_crud", () => {
-  const provider = anchor.AnchorProvider.env();
-  anchor.setProvider(provider);
-
-  const manager = provider.wallet as anchor.Wallet;
-
-  const program = anchor.workspace.Glam as Program<Glam>;
-  const commitment = "confirmed";
-
+  const glamClient = new GlamClient();
   let fundPDA;
 
   it("Initialize fund", async () => {
-    const fundData = await createFundForTest();
+    const fundData = await createFundForTest(glamClient);
     fundPDA = fundData.fundPDA;
 
-    const fund = await program.account.fundAccount.fetch(fundPDA);
+    const fund = await glamClient.fetchFund(fundPDA);
     expect(fund.shareClasses.length).toEqual(1);
+    expect(fund.shareClasses[0].allowlist).toEqual(shareClass0Allowlist);
+    expect(fund.shareClasses[0].blocklist).toEqual(shareClass0Blocklist);
     // expect(fund.assets.length).toEqual(3);
     // expect(fund.isEnabled).toEqual(true);
 
@@ -35,34 +33,35 @@ describe("glam_crud", () => {
 
   it("Update fund", async () => {
     const newFundName = "Updated fund name";
-    await program.methods
+    await glamClient.program.methods
       .update(newFundName, null, null, false)
       .accounts({
         fund: fundPDA,
-        manager: manager.publicKey
+        manager: glamClient.getManager()
       })
-      .rpc({ commitment });
-    const fund = await program.account.fundAccount.fetch(fundPDA);
+      .rpc();
+    const fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
     expect(fund.name).toEqual(newFundName);
     // expect(fund.isActive).toEqual(false);
   });
 
   it("Close fund", async () => {
-    const fund = await program.account.fundAccount.fetchNullable(fundPDA);
+    const fund = await glamClient.program.account.fundAccount.fetchNullable(
+      fundPDA
+    );
     expect(fund).not.toBeNull();
 
-    await program.methods
+    await glamClient.program.methods
       .close()
       .accounts({
         fund: fundPDA,
-        manager: manager.publicKey
+        manager: glamClient.getManager()
       })
-      .rpc({ commitment });
+      .rpc();
 
     // The account should no longer exist, returning null.
-    const closedAccount = await program.account.fundAccount.fetchNullable(
-      fundPDA
-    );
+    const closedAccount =
+      await glamClient.program.account.fundAccount.fetchNullable(fundPDA);
     expect(closedAccount).toBeNull();
   });
 });

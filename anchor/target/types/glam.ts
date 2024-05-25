@@ -1387,6 +1387,18 @@ export type Glam = {
                 "defined": "ShareClassOpenfundsModel"
               }
             }
+          },
+          {
+            "name": "allowlist",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "blocklist",
+            "type": {
+              "vec": "publicKey"
+            }
           }
         ]
       }
@@ -1775,6 +1787,12 @@ export type Glam = {
           },
           {
             "name": "AssetsWeights"
+          },
+          {
+            "name": "ShareClassAllowlist"
+          },
+          {
+            "name": "ShareClassBlocklist"
           }
         ]
       }
@@ -4447,6 +4465,18 @@ export const IDL: Glam = {
                 "defined": "ShareClassOpenfundsModel"
               }
             }
+          },
+          {
+            "name": "allowlist",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "blocklist",
+            "type": {
+              "vec": "publicKey"
+            }
           }
         ]
       }
@@ -4835,6 +4865,12 @@ export const IDL: Glam = {
           },
           {
             "name": "AssetsWeights"
+          },
+          {
+            "name": "ShareClassAllowlist"
+          },
+          {
+            "name": "ShareClassBlocklist"
           }
         ]
       }

@@ -77,6 +77,10 @@ pub struct ShareClassModel {
     // Openfund
     pub is_raw_openfunds: Option<bool>,
     pub raw_openfunds: Option<ShareClassOpenfundsModel>,
+
+    // Acls
+    pub allowlist: Vec<Pubkey>,
+    pub blocklist: Vec<Pubkey>,
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]

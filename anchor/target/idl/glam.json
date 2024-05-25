@@ -1387,6 +1387,18 @@
                 "defined": "ShareClassOpenfundsModel"
               }
             }
+          },
+          {
+            "name": "allowlist",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "blocklist",
+            "type": {
+              "vec": "publicKey"
+            }
           }
         ]
       }
@@ -1775,6 +1787,12 @@
           },
           {
             "name": "AssetsWeights"
+          },
+          {
+            "name": "ShareClassAllowlist"
+          },
+          {
+            "name": "ShareClassBlocklist"
           }
         ]
       }

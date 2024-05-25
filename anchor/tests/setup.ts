@@ -1,13 +1,20 @@
 import { Program, workspace } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
 import { GlamClient } from "../src";
-import { Glam } from "../target/types/glam";
-
-const program = workspace.Glam as Program<Glam>;
 
 const usdc = new PublicKey("8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2"); // 6 decimals
 const eth = new PublicKey("So11111111111111111111111111111111111111112"); // 6 decimals
 const btc = new PublicKey("3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv"); // 9 decimals
+
+export const shareClass0Allowlist = [
+  new PublicKey("a19a3us1Rm3YAV4NjjQzsaZ2brJWihsS1mf1fe94Ycj"),
+  new PublicKey("a1fwSFaH4w3LN8F2VNCz5WRb4KZTPZxgULG7vpNdB74"),
+  new PublicKey("a1sGZyirTFTv1SYUDHgCy3wWiTWXLRTa2vJSeDRDu9x")
+];
+export const shareClass0Blocklist = [
+  new PublicKey("b182JJfadsQBao9wBYdSSiUxA1vo4Bb1ETXjyrsBumP"),
+  new PublicKey("b1NWY3dDonmeFXBZRHi13BKusrbWJeYDR2mjUgNHZYH")
+];
 
 export const sleep = async (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -20,6 +27,8 @@ export const fundTestExample = {
       name: "Glam Investment Fund BTC-SOL",
       symbol: "GBS",
       asset: usdc,
+      allowlist: shareClass0Allowlist,
+      blocklist: shareClass0Blocklist,
       // Glam
       lockUpTime: 40 * 24 * 60 * 60,
       requiresMemoOnTransfer: true,
@@ -80,8 +89,11 @@ export const fundTestExample = {
   }
 };
 
-export const createFundForTest = async (fundTest?: any) => {
-  const client = new GlamClient();
+export const createFundForTest = async (
+  glamClient?: GlamClient,
+  fundTest?: any
+) => {
+  const client = glamClient || new GlamClient();
   const manager = client.getManager();
   let txId, fundPDA;
   try {
