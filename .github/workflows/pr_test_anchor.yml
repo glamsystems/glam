@@ -1,4 +1,4 @@
-name: Test api
+name: Run glam program test
 
 on:
   pull_request:
