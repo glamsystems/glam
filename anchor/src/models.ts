@@ -80,7 +80,9 @@ export const ShareClassModel = class<ShareClassModel> {
       fundId: null,
       asset: null,
       imageUri: null,
-      isRawOpenfunds: null
+      isRawOpenfunds: null,
+      allowlist: [],
+      blocklist: []
     };
     for (const key in partial) {
       partial[key] = obj[key] || null;

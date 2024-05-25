@@ -9,6 +9,8 @@ pub enum EngineFieldName {
     IsEnabled,
     Assets,
     AssetsWeights,
+    ShareClassAllowlist,
+    ShareClassBlocklist,
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
@@ -48,12 +50,51 @@ pub struct FundAccount {
     pub manager: Pubkey,
     pub engine: Pubkey,
     pub params: Vec<Vec<EngineField>>, // params[0]: EngineFundParams, ...
+                                       // params[1]: EngineShareClass0Params, ...
 }
 impl FundAccount {
     pub const INIT_SIZE: usize = 1024;
 
     pub fn is_enabled(&self) -> bool {
         return true;
+    }
+
+    pub fn share_class_allowlist(&self, share_class_id: usize) -> Option<&Vec<Pubkey>> {
+        // params[1]: share class 0 acls
+        // params[2]: share class 1 acls
+        // ...
+        let param_idx = share_class_id + 1;
+        for EngineField { name, value } in &self.params[param_idx] {
+            match name {
+                EngineFieldName::ShareClassAllowlist => {
+                    return match value {
+                        EngineFieldValue::VecPubkey { val: v } => Some(v),
+                        _ => None,
+                    };
+                }
+                _ => { /* ignore */ }
+            }
+        }
+        return None;
+    }
+
+    pub fn share_class_blocklist(&self, share_class_id: usize) -> Option<&Vec<Pubkey>> {
+        // params[1]: share class 0 acls
+        // params[2]: share class 1 acls
+        // ...
+        let param_idx = share_class_id + 1;
+        for EngineField { name, value } in &self.params[param_idx] {
+            match name {
+                EngineFieldName::ShareClassBlocklist => {
+                    return match value {
+                        EngineFieldValue::VecPubkey { val: v } => Some(v),
+                        _ => None,
+                    };
+                }
+                _ => { /* ignore */ }
+            }
+        }
+        return None;
     }
 
     pub fn assets(&self) -> Option<&Vec<Pubkey>> {
@@ -125,4 +166,12 @@ impl From<FundModel> for FundMetadataAccount {
             fund_managers,
         }
     }
+}
+
+#[account]
+pub struct PubkeyAcl {
+    pub items: Vec<Pubkey>,
+}
+impl PubkeyAcl {
+    pub const INIT_SIZE: usize = 8 + 4;
 }

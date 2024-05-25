@@ -952,6 +952,20 @@ export type Glam = {
       }
     },
     {
+      "name": "pubkeyAcl",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "items",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "fund",
       "type": {
         "kind": "struct",
@@ -1387,6 +1401,18 @@ export type Glam = {
                 "defined": "ShareClassOpenfundsModel"
               }
             }
+          },
+          {
+            "name": "allowlist",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "blocklist",
+            "type": {
+              "vec": "publicKey"
+            }
           }
         ]
       }
@@ -1775,6 +1801,12 @@ export type Glam = {
           },
           {
             "name": "AssetsWeights"
+          },
+          {
+            "name": "ShareClassAllowlist"
+          },
+          {
+            "name": "ShareClassBlocklist"
           }
         ]
       }
@@ -4012,6 +4044,20 @@ export const IDL: Glam = {
       }
     },
     {
+      "name": "pubkeyAcl",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "items",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "fund",
       "type": {
         "kind": "struct",
@@ -4447,6 +4493,18 @@ export const IDL: Glam = {
                 "defined": "ShareClassOpenfundsModel"
               }
             }
+          },
+          {
+            "name": "allowlist",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "blocklist",
+            "type": {
+              "vec": "publicKey"
+            }
           }
         ]
       }
@@ -4835,6 +4893,12 @@ export const IDL: Glam = {
           },
           {
             "name": "AssetsWeights"
+          },
+          {
+            "name": "ShareClassAllowlist"
+          },
+          {
+            "name": "ShareClassBlocklist"
           }
         ]
       }

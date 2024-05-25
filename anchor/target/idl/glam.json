@@ -952,6 +952,20 @@
       }
     },
     {
+      "name": "PubkeyAcl",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "items",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "Fund",
       "type": {
         "kind": "struct",
@@ -1387,6 +1401,18 @@
                 "defined": "ShareClassOpenfundsModel"
               }
             }
+          },
+          {
+            "name": "allowlist",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "blocklist",
+            "type": {
+              "vec": "publicKey"
+            }
           }
         ]
       }
@@ -1775,6 +1801,12 @@
           },
           {
             "name": "AssetsWeights"
+          },
+          {
+            "name": "ShareClassAllowlist"
+          },
+          {
+            "name": "ShareClassBlocklist"
           }
         ]
       }
