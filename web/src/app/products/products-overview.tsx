@@ -35,6 +35,8 @@ export default function ProductsOverview() {
   const { accounts } = useGlamProgram();
   const navigate = useNavigate();
 
+  console.log("accounts", accounts.data);
+
   const allRows = (accounts.data || [])
     .map((account) => {
       const fund = account.account;
@@ -42,9 +44,9 @@ export default function ProductsOverview() {
         imageURL: getImageUri(fund.shareClasses[0]),
         id: account.publicKey.toBase58(),
         name: fund.name,
-        symbol: fund.symbol,
+        // symbol: fund.symbol,
         share_classes_len: fund.shareClasses.length,
-        assets_len: fund.assets.length,
+        // assets_len: fund.assets.length,
         // FIXME
         fees_management: "", // fund.shareClassesMetadata[0].feeManagement / 10_000.0,
         fees_performance: "", // fund.shareClassesMetadata[0].feePerformance / 10_000.0,
@@ -115,7 +117,9 @@ export default function ProductsOverview() {
                       if (cell.info.header === "inception") {
                         return (
                           <TableCell key={cell.id}>
-                            {cell.value.toISOString().split("T")[0]}
+                            {cell.value
+                              ? cell.value.toISOString().split("T")[0]
+                              : ""}
                           </TableCell>
                         );
                       } else if (cell.info.header === "aum") {

@@ -28,6 +28,7 @@ import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { getImageUri } from "@glam/anchor";
+import { Number_0 } from "@carbon/icons-react";
 
 const OBJECTIVE_MAP: { [key: string]: string } = {
   AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2:
@@ -89,9 +90,9 @@ export default function ProductPage() {
   ];
   const { account, shareClassMetadata } = useGlamProgramAccount({ fundKey });
   // Snake case keys for on-chain metadata
-  const { image_uri, launch_date, share_class_asset } = Object.fromEntries(
-    shareClassMetadata.data!.additionalMetadata
-  );
+  // const { image_uri, launch_date, share_class_asset } = Object.fromEntries(
+  //   shareClassMetadata.data!.additionalMetadata
+  // );
   const data = account.data;
   const { aum, totalShares } = getAum(
     data?.treasury?.toString() || "",
@@ -109,9 +110,9 @@ export default function ProductPage() {
 
   const fund = {
     id: fundId,
-    symbol: data?.symbol || "",
+    symbol: "",
     name: data?.name,
-    imgURL: image_uri,
+    imgURL: "", //image_uri,
     manager: data?.manager,
     treasury: data?.treasury,
     shareClass0: data?.shareClasses[0],
@@ -124,14 +125,14 @@ export default function ProductPage() {
     // dailyNetInflows: 13987428,
     // "24HourNetInflowChange": 0.0089,
     fees: {
-      management: fundModel.getManagementFee(),
-      performance: fundModel.getPerformanceFee(),
+      management: 0, //fundModel.getManagementFee(),
+      performance: 0, //fundModel.getPerformanceFee(),
       subscription: 0.0,
       redemption: 0.0
     },
     facts: {
-      launchDate: launch_date,
-      fundAsset: share_class_asset
+      launchDate: "", //launch_date,
+      fundAsset: "" //share_class_asset
     },
     terms: {
       highWaterMark: false,

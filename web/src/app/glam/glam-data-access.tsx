@@ -58,7 +58,7 @@ export function useGlamProgram() {
 
   const accounts = useQuery({
     queryKey: ["glam", "all", { cluster }],
-    queryFn: () => program.account.fund.all()
+    queryFn: () => program.account.fundAccount.all()
   });
 
   const getProgramAccount = useQuery({
@@ -173,13 +173,13 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
 
   const account = useQuery({
     queryKey: ["glam", "fetch-fund", { fundKey }],
-    queryFn: () => program.account.fund.fetch(fundKey)
+    queryFn: () => program.account.fundAccount.fetch(fundKey)
   });
 
   const shareClassMetadata = useQuery({
     queryKey: ["glam", "fetch-share-class-metadata", { fundKey }],
     queryFn: async () => {
-      const fund = await program.account.fund.fetch(fundKey);
+      const fund = await program.account.fundAccount.fetch(fundKey);
       const shareClass = fund.shareClasses[0];
       return getTokenMetadata(connection, shareClass);
     }

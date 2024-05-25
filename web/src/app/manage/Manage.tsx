@@ -56,7 +56,7 @@ export const Manage = () => {
       const id = d.publicKey.toString();
       return {
         id,
-        symbol: fund.symbol,
+        // symbol: fund.symbol,
         name: fund.name,
         aum: 0,
         nav: 0,
@@ -86,7 +86,7 @@ export const Manage = () => {
               >
                 <div className="flex flex-col gap-[32px]">
                   <div className="flex flex-col">
-                    <p className="gray">{position.symbol}</p>
+                    <p className="gray">{""}</p>
                     <strong>{position.name}</strong>
                   </div>
                   {(position.aum && (

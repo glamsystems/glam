@@ -38,36 +38,39 @@ export function UiLayout({ children }: { children: ReactNode }) {
 
   return (
     <>
-    <div className="h-[100vh] w-full pt-[60px]" style={{ overflowY: "scroll" }}>
-      <HeaderContainer
-        render={({ isSideNavExpanded, onClickSideNavExpand }) => (
-          <Header aria-label="GLAM *.+">
-            <SkipToContent />
-            <HeaderMenuButton
-              aria-label={isSideNavExpanded ? "Close menu" : "Open menu"}
-              onClick={onClickSideNavExpand}
-              isActive={isSideNavExpanded}
-              aria-expanded={isSideNavExpanded}
-            />
-            <Link to="/products">
-              <HeaderName
-                prefix="GLAM *.+"
-                className="h-full w-full"
-                title="GLAM *.+"
-              >
-                &nbsp;
-              </HeaderName>
-            </Link>
-            <HeaderNavigation aria-label="GLAM *.+">
+      <div
+        className="h-[100vh] w-full pt-[60px]"
+        style={{ overflowY: "scroll" }}
+      >
+        <HeaderContainer
+          render={({ isSideNavExpanded, onClickSideNavExpand }) => (
+            <Header aria-label="GLAM *.+">
+              <SkipToContent />
+              <HeaderMenuButton
+                aria-label={isSideNavExpanded ? "Close menu" : "Open menu"}
+                onClick={onClickSideNavExpand}
+                isActive={isSideNavExpanded}
+                aria-expanded={isSideNavExpanded}
+              />
               <Link to="/products">
-                <HeaderMenuItem
-                  isActive={pathname.includes("/products")}
+                <HeaderName
+                  prefix="GLAM *.+"
                   className="h-full w-full"
+                  title="GLAM *.+"
                 >
-                  Products
-                </HeaderMenuItem>
+                  &nbsp;
+                </HeaderName>
               </Link>
-              {/* <Link to="/account">
+              <HeaderNavigation aria-label="GLAM *.+">
+                <Link to="/products">
+                  <HeaderMenuItem
+                    isActive={pathname.includes("/products")}
+                    className="h-full w-full"
+                  >
+                    Products
+                  </HeaderMenuItem>
+                </Link>
+                {/* <Link to="/account">
                 <HeaderMenuItem
                   href="/account"
                   isActive={pathname === "/account"}
@@ -76,61 +79,59 @@ export function UiLayout({ children }: { children: ReactNode }) {
                   Account
                 </HeaderMenuItem>
               </Link> */}
-              <Link to="/manage">
-                <HeaderMenuItem
-                  href="/manage"
-                  isActive={
-                    pathname === "/manage" || pathname === "/create-product"
-                  }
-                  className="h-full w-full"
-                >
-                  Manage
-                </HeaderMenuItem>
-              </Link>
-            </HeaderNavigation>
-            <HeaderGlobalBar>
-              <span style={{ fontSize: "0.875rem", margin: "auto 0" }}>
-                {ellipsify(publicKey?.toString() || "")}
-              </span>
-              <HeaderGlobalAction
-                aria-label={!publicKey ? "Connect Wallet" : "Account"}
-                tooltipAlignment="end"
-                onClick={
-                  // perform same action as clicking the wallet button
-                  () => {
-                    const walletButton = document.getElementsByClassName(
-                      "wallet-adapter-button-trigger"
-                    );
+                <Link to="/manage">
+                  <HeaderMenuItem
+                    isActive={
+                      pathname === "/manage" || pathname === "/create-product"
+                    }
+                    className="h-full w-full"
+                  >
+                    Manage
+                  </HeaderMenuItem>
+                </Link>
+              </HeaderNavigation>
+              <HeaderGlobalBar>
+                <span style={{ fontSize: "0.875rem", margin: "auto 0" }}>
+                  {ellipsify(publicKey?.toString() || "")}
+                </span>
+                <HeaderGlobalAction
+                  aria-label={!publicKey ? "Connect Wallet" : "Account"}
+                  tooltipAlignment="end"
+                  onClick={
+                    // perform same action as clicking the wallet button
+                    () => {
+                      const walletButton = document.getElementsByClassName(
+                        "wallet-adapter-button-trigger"
+                      );
 
-                    if (walletButton.length > 0) {
-                      (walletButton[0] as HTMLButtonElement).click();
+                      if (walletButton.length > 0) {
+                        (walletButton[0] as HTMLButtonElement).click();
+                      }
                     }
                   }
-                }
+                >
+                  <WalletButton>x</WalletButton>
+                </HeaderGlobalAction>
+              </HeaderGlobalBar>
+              <SideNav
+                aria-label="Side navigation"
+                expanded={isSideNavExpanded}
+                isPersistent={false}
+                onSideNavBlur={onClickSideNavExpand}
               >
-                <WalletButton>x</WalletButton>
-              </HeaderGlobalAction>
-            </HeaderGlobalBar>
-            <SideNav
-              aria-label="Side navigation"
-              expanded={isSideNavExpanded}
-              isPersistent={false}
-              onSideNavBlur={onClickSideNavExpand}
-            >
-              <SideNavItems>
-                <HeaderSideNavItems>
-                  <HeaderMenuItem href="/products">Products</HeaderMenuItem>
-                  <HeaderMenuItem href="/account">Account</HeaderMenuItem>
-                  <HeaderMenuItem href="/manage">Manage</HeaderMenuItem>
-                </HeaderSideNavItems>
-              </SideNavItems>
-            </SideNav>
-          </Header>
-        )}
-      />
-      {children}
-      <Toaster position="bottom-right" />
-    </div>
+                <SideNavItems>
+                  <HeaderSideNavItems>
+                    <HeaderMenuItem href="/products">Products</HeaderMenuItem>
+                    <HeaderMenuItem href="/manage">Manage</HeaderMenuItem>
+                  </HeaderSideNavItems>
+                </SideNavItems>
+              </SideNav>
+            </Header>
+          )}
+        />
+        {children}
+        <Toaster position="bottom-right" />
+      </div>
       {showWarning && (
         <div
           className="flex text-white bg-[#FF383C] w-full items-center"
@@ -138,20 +139,27 @@ export function UiLayout({ children }: { children: ReactNode }) {
             position: "absolute",
             bottom: 0,
             padding: 4,
-            zIndex: 2,
+            zIndex: 2
           }}
         >
           <p className="ml-auto mr-auto">
-            GLAM Devnet Alpha -
-            Check out <Link className="underline" to="/products/AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2">GBS</Link>,
-            or create your own (works with{" "} 
-              <a href="https://beta.drift.trade"
-                className="underline"
-                target="_blank"
-                rel="noreferrer"
-              >beta.drift.trade</a>
-            ).
-            Provide feedback & get updates{" "}
+            GLAM Devnet Alpha - Check out{" "}
+            <Link
+              className="underline"
+              to="/products/AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2"
+            >
+              GBS
+            </Link>
+            , or create your own (works with{" "}
+            <a
+              href="https://beta.drift.trade"
+              className="underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              beta.drift.trade
+            </a>
+            ). Provide feedback & get updates{" "}
             <a
               href="https://x.com/glamsystems"
               className="underline"
@@ -159,7 +167,8 @@ export function UiLayout({ children }: { children: ReactNode }) {
               rel="noreferrer"
             >
               on X
-            </a>.
+            </a>
+            .
           </p>
           <button
             className="pointer text-black mr-4"
