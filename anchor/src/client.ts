@@ -286,11 +286,14 @@ export class GlamClient {
     };
 
     // Add data from fund params to share classes
-    fund.shareClasses = fund.shareClasses.map((shareClass, i) => ({
-      ...shareClass,
-      allowlist: fundAccount.params[1 + i][0].value.vecPubkey?.val,
-      blocklist: fundAccount.params[1 + i][1].value.vecPubkey?.val
-    }));
+    fund.shareClasses = fund.shareClasses.map((shareClass: any, i: number) => {
+      const fund_param_idx = 1 + i;
+      shareClass.allowlist =
+        fundAccount.params[fund_param_idx][0].value.vecPubkey?.val;
+      shareClass.blocklist =
+        fundAccount.params[fund_param_idx][1].value.vecPubkey?.val;
+      return shareClass;
+    });
 
     return fund;
   }

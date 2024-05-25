@@ -952,20 +952,6 @@ export type Glam = {
       }
     },
     {
-      "name": "pubkeyAcl",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "items",
-            "type": {
-              "vec": "publicKey"
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "fund",
       "type": {
         "kind": "struct",
@@ -4038,20 +4024,6 @@ export const IDL: Glam = {
                   "defined": "FundManagerField"
                 }
               }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "pubkeyAcl",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "items",
-            "type": {
-              "vec": "publicKey"
             }
           }
         ]

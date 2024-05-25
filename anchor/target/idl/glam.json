@@ -952,20 +952,6 @@
       }
     },
     {
-      "name": "PubkeyAcl",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "items",
-            "type": {
-              "vec": "publicKey"
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "Fund",
       "type": {
         "kind": "struct",
