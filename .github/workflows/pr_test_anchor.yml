@@ -1,0 +1,33 @@
+name: Test api
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "anchor/**"
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: projectserum/build:v0.24.2
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: List rustup toolchains
+        run: rustup toolchain list
+      - name: Set default toolchain
+        run: rustup default stable
+      - name: List rustup toolchains
+        run: rustup toolchain list
+      - name: Generate new keygen
+        run: solana-keygen new
+      - name: Set solana target cluster to local
+        run: solana config set --url http:localhost:8899
+      - name: Check solana config
+        run: solana config get
