@@ -1,12 +1,9 @@
-import { Keypair, PublicKey } from '@solana/web3.js';
-import { useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { ellipsify } from '../ui/ui-layout';
-import { ExplorerLink } from '../cluster/cluster-ui';
-import {
-  useGlamProgram,
-  useGlamProgramAccount,
-} from './glam-data-access';
+import { Keypair, PublicKey } from "@solana/web3.js";
+import { useMemo } from "react";
+import { Link } from "react-router-dom";
+import { ellipsify } from "../ui/ui-layout";
+import { ExplorerLink } from "../cluster/cluster-ui";
+import { useGlamProgram, useGlamProgramAccount } from "./glam-data-access";
 
 // export function CounterCreate() {
 //   const { initialize } = useGlamProgram();
@@ -39,7 +36,7 @@ export function GlamList() {
     );
   }
   return (
-    <div className={'space-y-6'}>
+    <div className={"space-y-6"}>
       {accounts.isLoading ? (
         <span className="loading loading-spinner loading-lg"></span>
       ) : accounts.data?.length ? (
@@ -53,7 +50,7 @@ export function GlamList() {
         </div>
       ) : (
         <div className="text-center">
-          <h2 className={'text-2xl'}>No Glams`</h2>
+          <h2 className={"text-2xl"}>No Glams`</h2>
           No glams found. Create one above to get started.
         </div>
       )}
@@ -62,10 +59,9 @@ export function GlamList() {
 }
 
 function GlamCard({ fundKey }: { fundKey: PublicKey }) {
-  const { account } =
-    useGlamProgramAccount({
-      fundKey,
-    });
+  const { account } = useGlamProgramAccount({
+    fundKey
+  });
 
   return account.isLoading ? (
     <span className="loading loading-spinner loading-lg"></span>
@@ -77,15 +73,16 @@ function GlamCard({ fundKey }: { fundKey: PublicKey }) {
             className="card-title justify-center text-3xl cursor-pointer"
             onClick={() => account.refetch()}
           >
-            {account.data?.symbol}
+            {account.data?.name}
           </h2>
           <div className="text-center space-y-4">
             <p>
-              <Link to={`/products/${fundKey}`}>{ellipsify(fundKey.toString())}</Link><br/><br/>
-              <ExplorerLink
-                path={`account/${fundKey}`}
-                label={"explorer"}
-              />
+              <Link to={`/products/${fundKey}`}>
+                {ellipsify(fundKey.toString())}
+              </Link>
+              <br />
+              <br />
+              <ExplorerLink path={`account/${fundKey}`} label={"explorer"} />
             </p>
           </div>
         </div>

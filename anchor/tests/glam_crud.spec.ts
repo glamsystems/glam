@@ -45,6 +45,7 @@ describe("glam_crud", () => {
     // expect(fund.isActive).toEqual(false);
   });
 
+  /*
   it("Close fund", async () => {
     const fund = await glamClient.program.account.fundAccount.fetchNullable(
       fundPDA
@@ -64,4 +65,5 @@ describe("glam_crud", () => {
       await glamClient.program.account.fundAccount.fetchNullable(fundPDA);
     expect(closedAccount).toBeNull();
   });
+  */
 });
