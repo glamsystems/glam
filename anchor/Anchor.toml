@@ -32,6 +32,7 @@ wallet = "~/.config/solana/id.json"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_investor"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_drift"
 test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_staking"
+#test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_jupiter"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_openfunds"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern devnet"
 
@@ -159,3 +160,10 @@ filename = "./fixtures/EyaSjUtSgo9aRD1f8LWXwdvkpDTmXAW54yoSHZRF14WL.json"
 [[test.validator.account]] # SOL leg account
 address = "UefNb6z6yvArqe4cJHTXCqStRsKmWhGxnZzuHbikP5Q"
 filename = "./fixtures/UefNb6z6yvArqe4cJHTXCqStRsKmWhGxnZzuHbikP5Q.json"
+
+#
+# Jupiter
+#
+[[test.genesis]]
+address = "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"
+program = "./fixtures/jupiter.so"

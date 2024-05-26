@@ -117,4 +117,9 @@ pub mod glam {
     pub fn marinade_claim(ctx: Context<MarinadeClaim>) -> Result<()> {
         marinade::marinade_claim(ctx)
     }
+
+    // Jupiter
+    pub fn jupiter_swap(ctx: Context<JupiterSwap>, data: Vec<u8>) -> Result<()> {
+        jupiter::jupiter_swap(ctx, data)
+    }
 }

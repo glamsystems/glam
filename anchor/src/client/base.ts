@@ -6,7 +6,10 @@ import {
   PublicKey,
   TransactionSignature
 } from "@solana/web3.js";
-import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
+import {
+  TOKEN_2022_PROGRAM_ID,
+  getAssociatedTokenAddressSync
+} from "@solana/spl-token";
 
 import { Glam, GlamIDL, GlamProgram, getGlamProgramId } from "../glamExports";
 import { GlamClientConfig } from "../clientConfig";
@@ -80,6 +83,14 @@ export class BaseClient {
       this.programId
     );
     return pda;
+  }
+
+  getTreasuryAta(fundPDA: PublicKey, mint: PublicKey): PublicKey {
+    return getAssociatedTokenAddressSync(
+      this.getTreasuryPDA(fundPDA),
+      mint,
+      true
+    );
   }
 
   getOpenfundsPDA(fundPDA: PublicKey): PublicKey {
