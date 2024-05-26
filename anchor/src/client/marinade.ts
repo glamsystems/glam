@@ -47,6 +47,17 @@ export class MarinadeClient {
     ).rpc();
   }
 
+  public async liquidUnstake(
+    fund: PublicKey,
+    amount: BN
+  ): Promise<TransactionSignature> {
+    return await this.liquidUnstakeTxBuilder(
+      fund,
+      this.base.getManager(),
+      amount
+    ).rpc();
+  }
+
   /*
    * Utils
    */
@@ -64,11 +75,14 @@ export class MarinadeClient {
     // https://docs.marinade.finance/developers/contract-addresses
     // TODO: use marinade.getMarinadeState(); ?
     return {
-      mSolMintAddress: new PublicKey(
-        "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So"
-      ),
       marinadeStateAddress: new PublicKey(
         "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC"
+      ),
+      msolMintAddress: new PublicKey(
+        "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So"
+      ),
+      treasuryMsolAccount: new PublicKey(
+        "B1aLzaNMeFVAyQ6f3XbbUyKcH2YPHu2fqiEagmiF23VR"
       ),
       reserveAddress: new PublicKey(
         "Du3Ysj1wKbxPKkuPPnvzQLQh8oMSVifs3jGZjJWXFmHN"
@@ -76,8 +90,8 @@ export class MarinadeClient {
       mSolMintAuthority: new PublicKey(
         "3JLPCS1qM2zRw3Dp6V4hZnYHd4toMNPkNesXdX9tg6KM"
       ),
-      mSolLeg: new PublicKey("7GgPYjS5Dza89wV6FpZ23kUJRG5vbQ1GM25ezspYFSoE"),
-      mSolLegAuthority: new PublicKey(
+      msolLeg: new PublicKey("7GgPYjS5Dza89wV6FpZ23kUJRG5vbQ1GM25ezspYFSoE"),
+      msolLegAuthority: new PublicKey(
         "EyaSjUtSgo9aRD1f8LWXwdvkpDTmXAW54yoSHZRF14WL"
       ),
       solLeg: new PublicKey("UefNb6z6yvArqe4cJHTXCqStRsKmWhGxnZzuHbikP5Q")
@@ -96,8 +110,8 @@ export class MarinadeClient {
     const treasury = this.base.getTreasuryPDA(fund);
     const ticket = this.getMarinadeTicketPDA(fund);
     const marinadeState = this.getMarinadeState();
-    const treasuryMSolAta = getAssociatedTokenAddressSync(
-      marinadeState.mSolMintAddress,
+    const treasuryMsolAta = getAssociatedTokenAddressSync(
+      marinadeState.msolMintAddress,
       treasury,
       true
     );
@@ -107,12 +121,12 @@ export class MarinadeClient {
       manager,
       reservePda: marinadeState.reserveAddress,
       marinadeState: marinadeState.marinadeStateAddress,
-      msolMint: marinadeState.mSolMintAddress,
+      msolMint: marinadeState.msolMintAddress,
       msolMintAuthority: marinadeState.mSolMintAuthority,
-      liqPoolMsolLeg: marinadeState.mSolLeg,
-      liqPoolMsolLegAuthority: marinadeState.mSolLegAuthority,
+      liqPoolMsolLeg: marinadeState.msolLeg,
+      liqPoolMsolLegAuthority: marinadeState.msolLegAuthority,
       liqPoolSolLegPda: marinadeState.solLeg,
-      mintTo: treasuryMSolAta,
+      mintTo: treasuryMsolAta,
       marinadeProgram
     });
   }
@@ -125,8 +139,8 @@ export class MarinadeClient {
     const treasury = this.base.getTreasuryPDA(fund);
     const ticket = this.getMarinadeTicketPDA(fund);
     const marinadeState = this.getMarinadeState();
-    const treasuryMSolAta = getAssociatedTokenAddressSync(
-      marinadeState.mSolMintAddress,
+    const treasuryMsolAta = getAssociatedTokenAddressSync(
+      marinadeState.msolMintAddress,
       treasury,
       true
     );
@@ -135,8 +149,8 @@ export class MarinadeClient {
       treasury,
       manager,
       ticket,
-      msolMint: marinadeState.mSolMintAddress,
-      burnMsolFrom: treasuryMSolAta,
+      msolMint: marinadeState.msolMintAddress,
+      burnMsolFrom: treasuryMsolAta,
       marinadeState: marinadeState.marinadeStateAddress,
       reservePda: marinadeState.reserveAddress,
       marinadeProgram
@@ -158,6 +172,34 @@ export class MarinadeClient {
       ticket,
       marinadeState: marinadeState.marinadeStateAddress,
       reservePda: marinadeState.reserveAddress,
+      marinadeProgram
+    });
+  }
+
+  liquidUnstakeTxBuilder(
+    fund: PublicKey,
+    manager: PublicKey,
+    amount: BN
+  ): any /* MethodsBuilder<Glam, ?> */ {
+    const treasury = this.base.getTreasuryPDA(fund);
+    const ticket = this.getMarinadeTicketPDA(fund);
+    const marinadeState = this.getMarinadeState();
+    const treasuryMsolAta = getAssociatedTokenAddressSync(
+      marinadeState.msolMintAddress,
+      treasury,
+      true
+    );
+    return this.base.program.methods.marinadeLiquidUnstake(amount).accounts({
+      fund,
+      treasury,
+      manager,
+      marinadeState: marinadeState.marinadeStateAddress,
+      msolMint: marinadeState.msolMintAddress,
+      liqPoolSolLegPda: marinadeState.solLeg,
+      liqPoolMsolLeg: marinadeState.msolLeg,
+      getMsolFrom: treasuryMsolAta,
+      getMsolFromAuthority: treasury,
+      treasuryMsolAccount: marinadeState.treasuryMsolAccount,
       marinadeProgram
     });
   }
