@@ -58,22 +58,6 @@ export class JupiterClient {
     return resp;
   };
 
-  instructionDataToTransactionInstruction = (instructionPayload: any) => {
-    if (instructionPayload === null) {
-      return null;
-    }
-
-    return new TransactionInstruction({
-      programId: new PublicKey(instructionPayload.programId),
-      keys: instructionPayload.accounts.map((key) => ({
-        pubkey: new PublicKey(key.pubkey),
-        isSigner: key.isSigner,
-        isWritable: key.isWritable
-      })),
-      data: Buffer.from(instructionPayload.data, "base64")
-    });
-  };
-
   public async swap(
     fund: PublicKey,
     fromMint: PublicKey,
@@ -134,7 +118,16 @@ export class JupiterClient {
       toAccount,
       quote
     );
-    return this.instructionDataToTransactionInstruction(swapInstruction);
+
+    return new TransactionInstruction({
+      programId: new PublicKey(swapInstruction.programId),
+      keys: swapInstruction.accounts.map((key: any) => ({
+        pubkey: new PublicKey(key.pubkey),
+        isSigner: key.isSigner,
+        isWritable: key.isWritable
+      })),
+      data: Buffer.from(swapInstruction.data, "base64")
+    });
   }
 
   /*
