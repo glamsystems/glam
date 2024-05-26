@@ -1,5 +1,5 @@
-import { base58 } from "@scure/base";
 import { PublicKey } from "@solana/web3.js";
+import { BN } from "@coral-xyz/anchor";
 
 export const validatePubkey = (pubkey: string) => {
   let key;
@@ -11,4 +11,12 @@ export const validatePubkey = (pubkey: string) => {
   return key;
 };
 
-module.exports = { validatePubkey };
+export const validateBN = (num: string) => {
+  let res;
+  try {
+    res = new BN(num);
+  } catch (_e) {
+    return undefined;
+  }
+  return res;
+};

@@ -1,5 +1,6 @@
 import express, { Express, Request, Response } from "express";
 import cors from "cors";
+import bodyParser from "body-parser";
 import * as path from "path";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { AnchorProvider } from "@coral-xyz/anchor";
@@ -16,12 +17,14 @@ import { GlamClient } from "@glam/anchor";
 import { validatePubkey } from "./validation";
 import { priceHistory, fundPerformance } from "./prices";
 import { openfunds } from "./openfunds";
+import { marinadeDelayedUnstakeTx, marinadeDelayedUnstakeClaimTx } from "./tx";
 
 const BASE_URL = "https://api.glam.systems";
 const SOLANA_RPC = process.env.SOLANA_RPC || "http://localhost:8899";
 
 const app: Express = express();
 app.use(cors({ origin: "*", methods: "GET" }));
+app.use(bodyParser.json());
 
 const connection = new Connection(SOLANA_RPC, "confirmed");
 const provider = new AnchorProvider(connection, null, {
@@ -42,6 +45,10 @@ app.get("/api", (req: Request, res: Response) => {
   res.send({ message: "Welcome to Glam!" });
 });
 
+/*
+ * Openfunds
+ */
+
 app.get("/openfunds", async (req, res) => {
   return openfunds(
     req.query.funds.split(","),
@@ -59,6 +66,27 @@ app.get("/openfunds/:pubkey.:ext", async (req, res) => {
 app.get("/openfunds/:pubkey", async (req, res) => {
   return openfunds([req.params.pubkey], "auto", "json", client, res);
 });
+
+/*
+ * Tx
+ */
+
+app.post("/tx/jupiter/swap", async (req, res) => {
+  // TODO: implement
+  return res.send("Not implemented");
+});
+
+app.post("/tx/marinade/unstake", async (req, res) => {
+  return marinadeDelayedUnstakeTx(client, req, res);
+});
+
+app.post("/tx/marinade/unstake/claim", async (req, res) => {
+  return marinadeDelayedUnstakeClaimTx(client, req, res);
+});
+
+/*
+ * Other
+ */
 
 app.get("/prices", async (req, res) => {
   const data = await pythClient.getData();
