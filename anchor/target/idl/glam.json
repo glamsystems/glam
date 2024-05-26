@@ -781,10 +781,6 @@
         {
           "name": "amount",
           "type": "u64"
-        },
-        {
-          "name": "ticketBump",
-          "type": "u8"
         }
       ]
     },

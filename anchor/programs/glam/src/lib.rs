@@ -110,9 +110,8 @@ pub mod glam {
     pub fn marinade_delayed_unstake(
         ctx: Context<MarinadeDelayedUnstake>,
         amount: u64,
-        ticket_bump: u8,
     ) -> Result<()> {
-        marinade::marinade_delayed_unstake(ctx, amount, ticket_bump)
+        marinade::marinade_delayed_unstake(ctx, amount)
     }
 
     pub fn marinade_claim(ctx: Context<MarinadeClaim>) -> Result<()> {

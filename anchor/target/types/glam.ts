@@ -781,10 +781,6 @@ export type Glam = {
         {
           "name": "amount",
           "type": "u64"
-        },
-        {
-          "name": "ticketBump",
-          "type": "u8"
         }
       ]
     },
@@ -3722,10 +3718,6 @@ export const IDL: Glam = {
         {
           "name": "amount",
           "type": "u64"
-        },
-        {
-          "name": "ticketBump",
-          "type": "u8"
         }
       ]
     },

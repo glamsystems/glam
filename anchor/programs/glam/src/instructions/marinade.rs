@@ -58,12 +58,12 @@ pub fn marinade_deposit<'c: 'info, 'info>(
 pub fn marinade_delayed_unstake<'c: 'info, 'info>(
     ctx: Context<MarinadeDelayedUnstake>,
     msol_amount: u64,
-    ticket_bump: u8,
 ) -> Result<()> {
     let rent = Rent::get()?;
     let lamports = rent.minimum_balance(500); // Minimum balance to make the account rent-exempt
 
-    let seeds = &["ticket".as_bytes(), &[ticket_bump]];
+    let fund_key = ctx.accounts.fund.key();
+    let seeds = &[b"ticket".as_ref(), fund_key.as_ref(), &[ctx.bumps.ticket]];
     let signer_seeds = &[&seeds[..]];
     let space = std::mem::size_of::<TicketAccountData>() as u64 + 8;
 
@@ -229,7 +229,7 @@ pub struct MarinadeDelayedUnstake<'info> {
 
     /// CHECK: skip
     // #[account(init_if_needed, seeds = [b"ticket"], bump, payer = signer, space = 88, owner = marinade_program.key())]
-    #[account(mut)]
+    #[account(mut, seeds = [b"ticket".as_ref(), fund.key().as_ref()], bump)]
     pub ticket: AccountInfo<'info>,
 
     /// CHECK: skip
