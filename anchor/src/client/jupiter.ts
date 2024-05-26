@@ -82,26 +82,20 @@ export class JupiterClient {
     slippage: number = 0.5,
     onlyDirectRoutes: boolean = true
   ): Promise<TransactionSignature> {
-    const quote = await this.getQuote(
+    const fromAccount = this.base.getTreasuryAta(fund, fromMint);
+    const toAccount = this.base.getTreasuryAta(fund, toMint);
+
+    const payload = await this.jupiterPayload(
       fromMint,
       toMint,
+      fromAccount,
+      toAccount,
       amount,
       slippage,
       onlyDirectRoutes
     );
-    console.log("quote response:", quote);
 
-    const fromAccount = this.base.getTreasuryAta(fund, fromMint);
-    const toAccount = this.base.getTreasuryAta(fund, toMint);
-
-    const { swapInstruction } = await this.getSwapIx(
-      fromAccount,
-      toAccount,
-      quote
-    );
-    let swapIx = this.instructionDataToTransactionInstruction(swapInstruction);
-
-    return this.swapTxBuilder(fund, this.base.getManager(), swapIx.data).rpc();
+    return this.swapTxBuilder(fund, this.base.getManager(), payload.data).rpc();
   }
 
   /*
@@ -117,16 +111,61 @@ export class JupiterClient {
     });
   }
 
+  async jupiterPayload(
+    fromMint: PublicKey,
+    toMint: PublicKey,
+    fromAccount: PublicKey,
+    toAccount: PublicKey,
+    amount: BN,
+    slippage: number,
+    onlyDirectRoutes: boolean
+  ): Promise<TransactionInstruction> {
+    const quote = await this.getQuote(
+      fromMint,
+      toMint,
+      amount,
+      slippage,
+      onlyDirectRoutes
+    );
+    console.log("quote response:", quote);
+
+    const { swapInstruction } = await this.getSwapIx(
+      fromAccount,
+      toAccount,
+      quote
+    );
+    return this.instructionDataToTransactionInstruction(swapInstruction);
+  }
+
   /*
    * API methods
    */
 
   public async swapTx(
     fund: PublicKey,
-    manager: PublicKey,
-    data: Buffer,
-    amount: BN
+    fromMint: PublicKey,
+    toMint: PublicKey,
+    amount: BN,
+    slippage: number = 0.5,
+    onlyDirectRoutes: boolean = true
   ): Promise<Transaction> {
-    return await this.swapTxBuilder(fund, manager, data, amount).transaction();
+    const fromAccount = this.base.getTreasuryAta(fund, fromMint);
+    const toAccount = this.base.getTreasuryAta(fund, toMint);
+
+    const payload = await this.jupiterPayload(
+      fromMint,
+      toMint,
+      fromAccount,
+      toAccount,
+      amount,
+      slippage,
+      onlyDirectRoutes
+    );
+
+    return this.swapTxBuilder(
+      fund,
+      this.base.getManager(),
+      payload.data
+    ).transaction();
   }
 }
