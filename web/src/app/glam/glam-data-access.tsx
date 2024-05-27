@@ -262,7 +262,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
       const shareClassMetadata = await getTokenMetadata(connection, shareClass);
 
       return program.methods
-        .subscribe(amount, shareClassMetadata!.symbol, true)
+        .subscribe(amount, true)
         .accounts({
           fund: fundKey,
           shareClass,

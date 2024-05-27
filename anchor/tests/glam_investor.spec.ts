@@ -731,7 +731,7 @@ describe("glam_investor", () => {
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("2.50");
   });
 
-  it("Bob subscribes to fund with 250 USDC", async () => {
+  it("Bob is not allowed to subscribe", async () => {
     const bobUsdcAta = getAssociatedTokenAddressSync(
       usdc.publicKey,
       bob.publicKey,
@@ -762,6 +762,7 @@ describe("glam_investor", () => {
         .signers([bob])
         .rpc({ commitment });
       console.log("tx:", txId);
+      expect(txId).toBeUndefined();
     } catch (e) {
       console.error(e);
       expect(e.message).toContain("Share class not allowed to subscribe");
@@ -769,7 +770,7 @@ describe("glam_investor", () => {
     }
   });
 
-  it("Eve subscribes to fund with 250 USDC", async () => {
+  it("Eve is not allowed to subscribe", async () => {
     const eveUsdcAta = getAssociatedTokenAddressSync(
       usdc.publicKey,
       eve.publicKey,
@@ -800,6 +801,7 @@ describe("glam_investor", () => {
         .signers([eve])
         .rpc({ commitment });
       console.log("tx:", txId);
+      expect(txId).toBeUndefined();
     } catch (e) {
       console.error(e);
       expect(e.message).toContain("Share class not allowed to subscribe");
