@@ -111,20 +111,39 @@ pub struct Subscribe<'info> {
 pub fn subscribe_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, Subscribe<'info>>,
     amount: u64,
-    share_class_symbol: String,
     skip_state: bool,
 ) -> Result<()> {
     let fund = &ctx.accounts.fund;
     require!(fund.is_enabled(), InvestorError::FundNotActive);
-
-    let assets = fund.assets().unwrap();
-    // msg!("assets: {:?}", assets);
 
     if fund.share_classes.len() > 1 {
         // we need to define how to split the total amount into share classes
         panic!("not implemented")
     }
     require!(fund.share_classes.len() > 0, FundError::NoShareClassInFund);
+
+    if let Some(share_class_blocklist) = fund.share_class_blocklist(0) {
+        require!(
+            share_class_blocklist.len() == 0
+                || !share_class_blocklist
+                    .iter()
+                    .any(|&k| k == ctx.accounts.signer.key()),
+            InvestorError::InvalidShareClass
+        );
+    }
+
+    if let Some(share_class_allowlist) = fund.share_class_allowlist(0) {
+        require!(
+            share_class_allowlist.len() == 0
+                || share_class_allowlist
+                    .iter()
+                    .any(|&k| k == ctx.accounts.signer.key()),
+            InvestorError::InvalidShareClass
+        );
+    }
+
+    let assets = fund.assets().unwrap();
+    // msg!("assets: {:?}", assets);
 
     // msg!("fund.share_class[0]: {}", fund.share_classes[0]);
     // msg!("expected share class: {}", ctx.accounts.share_class.key());

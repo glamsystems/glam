@@ -214,10 +214,6 @@
           "type": "u64"
         },
         {
-          "name": "shareClassSymbol",
-          "type": "string"
-        },
-        {
           "name": "skipState",
           "type": "bool"
         }

@@ -22,15 +22,13 @@ import {
 } from "@solana/spl-token";
 
 import { fundTestExample, createFundForTest } from "./setup";
-import { Glam } from "../target/types/glam";
 import { GlamClient } from "../src";
-import { getFundUri, getImageUri, getMetadataUri } from "../src/offchain";
 
 describe("glam_investor", () => {
   const userKeypairs = [
-    Keypair.generate(), // mock user 0
-    Keypair.generate(), // ...
-    Keypair.generate()
+    Keypair.generate(), // alice
+    Keypair.generate(), // bob
+    Keypair.generate() // eve
   ];
   const alice = userKeypairs[0];
   const bob = userKeypairs[1];
@@ -47,25 +45,35 @@ describe("glam_investor", () => {
   const BTC_TOKEN_PROGRAM_ID = TOKEN_2022_PROGRAM_ID;
 
   const client = new GlamClient();
+  const manager = (client.provider as anchor.AnchorProvider)
+    .wallet as anchor.Wallet;
+
+  // overwrite share class acls
+  // alice and manager are allowed to subcribe
+  // bob and eve will be blocked
+  let fundTestExampleCopy = { ...fundTestExample };
+  fundTestExampleCopy.shareClasses[0].allowlist = [
+    alice.publicKey,
+    bob.publicKey,
+    manager.publicKey
+  ];
+  fundTestExampleCopy.shareClasses[0].blocklist = [
+    bob.publicKey,
+    eve.publicKey
+  ];
+
   const fundExample = {
-    ...fundTestExample,
+    ...fundTestExampleCopy,
     name: "Glam Investment",
     assets: [usdc.publicKey, btc.publicKey, eth.publicKey]
   } as any;
-  const shareClassSymbol = fundExample.shareClasses[0].symbol;
   const fundPDA = client.getFundPDA(fundExample);
   const treasuryPDA = client.getTreasuryPDA(fundPDA);
   const sharePDA = client.getShareClassPDA(fundPDA, 0);
 
-  // Configure the client to use the local cluster.
-  const provider = anchor.AnchorProvider.env();
-  anchor.setProvider(provider);
-  const connection = provider.connection;
-  const program = anchor.workspace.Glam as Program<Glam>;
+  const connection = client.provider.connection;
   const commitment = "confirmed";
-
-  const manager = provider.wallet as anchor.Wallet;
-  console.log("Manager:", manager.publicKey);
+  const program = client.program;
 
   const treasuryUsdcAta = getAssociatedTokenAddressSync(
     usdc.publicKey,
@@ -192,7 +200,7 @@ describe("glam_investor", () => {
         // exec in parallel, but await before ending the test
         tokenKeypairs.map(async (token, idx) => {
           const mint = await createMint(
-            connection,
+            client.provider.connection,
             manager.payer,
             manager.publicKey,
             null,
@@ -258,7 +266,7 @@ describe("glam_investor", () => {
       //
       // create fund
       //
-      const fundData = await createFundForTest(fundExample);
+      const fundData = await createFundForTest(client, fundExample);
     } catch (e) {
       console.error(e);
       throw e;
@@ -332,7 +340,7 @@ describe("glam_investor", () => {
     const expectedShares = "3000"; // $10/share => 3k shares
     try {
       const txId = await program.methods
-        .subscribe(amount, shareClassSymbol, true)
+        .subscribe(amount, true)
         .accounts({
           fund: fundPDA,
           shareClass: sharePDA,
@@ -394,7 +402,7 @@ describe("glam_investor", () => {
         ASSOCIATED_TOKEN_PROGRAM_ID
       );
       const txId = await program.methods
-        .subscribe(new BN(1 * 10 ** 9), shareClassSymbol, true)
+        .subscribe(new BN(1 * 10 ** 9), true)
         .accounts({
           fund: fundPDA,
           shareClass: invalidShareClass,
@@ -412,8 +420,6 @@ describe("glam_investor", () => {
       console.error(e);
       expect(e.message).toContain("A seeds constraint was violated");
       expect(e.message).toContain("Error Code: ConstraintSeeds");
-      // expect(e.message).toContain("Share class not allowed to subscribe");
-      // expect(e.message).toContain("Error Code: InvalidShareClass");
     }
   });
 
@@ -422,7 +428,7 @@ describe("glam_investor", () => {
     const expectedShares = "8100"; // 3,000 + 5,100
     try {
       const txId = await program.methods
-        .subscribe(amount, shareClassSymbol, true)
+        .subscribe(amount, true)
         .accounts({
           fund: fundPDA,
           shareClass: sharePDA,
@@ -690,7 +696,7 @@ describe("glam_investor", () => {
     const amount = new BN(250 * 10 ** 6); // USDC has 6 decimals
     try {
       const txId = await program.methods
-        .subscribe(amount, shareClassSymbol, true)
+        .subscribe(amount, true)
         .accounts({
           fund: fundPDA,
           shareClass: sharePDA,
@@ -723,5 +729,83 @@ describe("glam_investor", () => {
     // $250 for $100 per share => 2.5 shares
     // in reality it will be less due to fees but toFixed(2) rounds it up
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("2.50");
+  });
+
+  it("Bob is not allowed to subscribe", async () => {
+    const bobUsdcAta = getAssociatedTokenAddressSync(
+      usdc.publicKey,
+      bob.publicKey,
+      false,
+      TOKEN_PROGRAM_ID,
+      ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    const amount = new BN(250 * 10 ** 6); // USDC has 6 decimals
+    try {
+      const txId = await program.methods
+        .subscribe(amount, true)
+        .accounts({
+          fund: fundPDA,
+          shareClass: sharePDA,
+          signerShareAta: bobSharesAta,
+          asset: usdc.publicKey,
+          treasuryAta: treasuryUsdcAta,
+          signerAssetAta: bobUsdcAta,
+          signer: bob.publicKey,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          token2022Program: TOKEN_2022_PROGRAM_ID
+        })
+        .remainingAccounts(remainingAccountsSubscribe)
+        .preInstructions([
+          ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
+        ])
+        .signers([bob])
+        .rpc({ commitment });
+      console.log("tx:", txId);
+      expect(txId).toBeUndefined();
+    } catch (e) {
+      console.error(e);
+      expect(e.message).toContain("Share class not allowed to subscribe");
+      expect(e.message).toContain("Error Code: InvalidShareClass");
+    }
+  });
+
+  it("Eve is not allowed to subscribe", async () => {
+    const eveUsdcAta = getAssociatedTokenAddressSync(
+      usdc.publicKey,
+      eve.publicKey,
+      false,
+      TOKEN_PROGRAM_ID,
+      ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    const amount = new BN(250 * 10 ** 6); // USDC has 6 decimals
+    try {
+      const txId = await program.methods
+        .subscribe(amount, true)
+        .accounts({
+          fund: fundPDA,
+          shareClass: sharePDA,
+          signerShareAta: eveSharesAta,
+          asset: usdc.publicKey,
+          treasuryAta: treasuryUsdcAta,
+          signerAssetAta: eveUsdcAta,
+          signer: eve.publicKey,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          token2022Program: TOKEN_2022_PROGRAM_ID
+        })
+        .remainingAccounts(remainingAccountsSubscribe)
+        .preInstructions([
+          ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
+        ])
+        .signers([eve])
+        .rpc({ commitment });
+      console.log("tx:", txId);
+      expect(txId).toBeUndefined();
+    } catch (e) {
+      console.error(e);
+      expect(e.message).toContain("Share class not allowed to subscribe");
+      expect(e.message).toContain("Error Code: InvalidShareClass");
+    }
   });
 });

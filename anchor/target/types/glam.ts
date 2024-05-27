@@ -214,10 +214,6 @@ export type Glam = {
           "type": "u64"
         },
         {
-          "name": "shareClassSymbol",
-          "type": "string"
-        },
-        {
           "name": "skipState",
           "type": "bool"
         }
@@ -3272,10 +3268,6 @@ export const IDL: Glam = {
         {
           "name": "amount",
           "type": "u64"
-        },
-        {
-          "name": "shareClassSymbol",
-          "type": "string"
         },
         {
           "name": "skipState",
