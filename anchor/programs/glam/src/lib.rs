@@ -122,4 +122,13 @@ pub mod glam {
     pub fn jupiter_swap(ctx: Context<JupiterSwap>, data: Vec<u8>) -> Result<()> {
         jupiter::jupiter_swap(ctx, data)
     }
+
+    // wSOL
+    pub fn wsol_wrap(ctx: Context<WSolWrap>, amount: u64) -> Result<()> {
+        wsol::wsol_wrap(ctx, amount)
+    }
+
+    pub fn wsol_unwrap(ctx: Context<WSolUnwrap>) -> Result<()> {
+        wsol::wsol_unwrap(ctx)
+    }
 }
