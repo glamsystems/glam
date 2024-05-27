@@ -17,7 +17,12 @@ import { GlamClient } from "@glam/anchor";
 import { validatePubkey } from "./validation";
 import { priceHistory, fundPerformance } from "./prices";
 import { openfunds } from "./openfunds";
-import { marinadeDelayedUnstakeTx, marinadeDelayedUnstakeClaimTx } from "./tx";
+import {
+  marinadeDelayedUnstakeTx,
+  marinadeDelayedUnstakeClaimTx,
+  wsolWrapTx,
+  wsolUnwrapTx
+} from "./tx";
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config({ path: ".env.local", override: true });
@@ -113,6 +118,14 @@ app.post("/tx/marinade/unstake", async (req, res) => {
 
 app.post("/tx/marinade/unstake/claim", async (req, res) => {
   return marinadeDelayedUnstakeClaimTx(req.client, req, res);
+});
+
+app.post("/tx/wsol/wrap", async (req, res) => {
+  return wsolWrapTx(req.client, req, res);
+});
+
+app.post("/tx/wsol/unwrap", async (req, res) => {
+  return wsolUnwrapTx(req.client, req, res);
 });
 
 /*
