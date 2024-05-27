@@ -2,7 +2,7 @@ use anchor_lang::{prelude::*, system_program};
 use anchor_spl::{token_2022, token_interface::Token2022};
 use spl_token_2022::{extension::ExtensionType, state::Mint as StateMint};
 
-use crate::{state::*, error::ManagerError, MAX_FUND_NAME, MAX_FUND_URI};
+use crate::{error::ManagerError, state::*, MAX_FUND_NAME, MAX_FUND_URI};
 
 #[derive(Accounts)]
 #[instruction(fund_model: FundModel)]
@@ -302,21 +302,25 @@ pub struct UpdateFund<'info> {
 
 pub fn update_fund_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, UpdateFund<'info>>,
-    name: Option<String>,
-    uri: Option<String>,
-    asset_weights: Option<Vec<u32>>,
-    activate: Option<bool>,
+    fund_model: FundModel,
 ) -> Result<()> {
     let fund = &mut ctx.accounts.fund;
 
-    if let Some(name) = name {
+    if let Some(name) = fund_model.name {
         require!(name.as_bytes().len() <= 50, ManagerError::InvalidFundName);
         fund.name = name;
     }
-    if let Some(uri) = uri {
+    if let Some(uri) = fund_model.uri {
         require!(uri.as_bytes().len() <= 100, ManagerError::InvalidFundName);
         fund.uri = uri;
     }
+
+    if let Some(manager_model) = fund_model.manager {
+        if let Some(manager) = manager_model.pubkey {
+            fund.manager = manager
+        }
+    }
+
     // if let Some(activate) = activate {
     //     fund.is_active = activate;
     // }
@@ -343,6 +347,7 @@ pub struct CloseFund<'info> {
 }
 
 pub fn close_handler(ctx: Context<CloseFund>) -> Result<()> {
+    panic!("Not implemented");
     //TODO: check that all share classes have 0 supply
     //TODO: close treasury (checkin that it's empty)
     msg!("Fund closed: {}", ctx.accounts.fund.key());
