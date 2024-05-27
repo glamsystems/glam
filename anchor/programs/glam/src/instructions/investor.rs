@@ -111,11 +111,31 @@ pub struct Subscribe<'info> {
 pub fn subscribe_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, Subscribe<'info>>,
     amount: u64,
-    share_class_symbol: String,
     skip_state: bool,
 ) -> Result<()> {
     let fund = &ctx.accounts.fund;
     require!(fund.is_enabled(), InvestorError::FundNotActive);
+
+    if let Some(share_class_allowlist) = fund.share_class_allowlist(0) {
+        msg!("share_class_allowlist: {:?}", share_class_allowlist);
+        msg!("signer: {:?}", ctx.accounts.signer.key());
+        require!(
+            share_class_allowlist
+                .iter()
+                .any(|&k| k == ctx.accounts.signer.key()),
+            InvestorError::InvalidShareClass
+        );
+    }
+
+    if let Some(share_class_blocklist) = fund.share_class_blocklist(0) {
+        // ctx.accounts.signer.key() must not be in the blocklist
+        require!(
+            !share_class_blocklist
+                .iter()
+                .any(|&k| k == ctx.accounts.signer.key()),
+            InvestorError::InvalidShareClass
+        );
+    }
 
     let assets = fund.assets().unwrap();
     // msg!("assets: {:?}", assets);
