@@ -137,7 +137,7 @@ app.get("/api", (req: Request, res: Response) => {
 });
 
 app.get("/genesis", async (req: Request, res: Response) => {
-  const genesis = await mainnetClient.provider.connection.getGenesisHash();
+  const genesis = await req.client.provider.connection.getGenesisHash();
   res.send({ genesis });
 });
 
