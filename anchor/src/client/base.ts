@@ -87,8 +87,8 @@ export class BaseClient {
 
   getTreasuryAta(fundPDA: PublicKey, mint: PublicKey): PublicKey {
     return getAssociatedTokenAddressSync(
-      this.getTreasuryPDA(fundPDA),
       mint,
+      this.getTreasuryPDA(fundPDA),
       true
     );
   }
