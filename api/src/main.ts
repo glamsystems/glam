@@ -19,18 +19,32 @@ import { priceHistory, fundPerformance } from "./prices";
 import { openfunds } from "./openfunds";
 import { marinadeDelayedUnstakeTx, marinadeDelayedUnstakeClaimTx } from "./tx";
 
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config({ path: ".env.local", override: true });
+}
+
 const BASE_URL = "https://api.glam.systems";
 const SOLANA_RPC = process.env.SOLANA_RPC || "http://localhost:8899";
+const SOLANA_MAINNET_KEY = process.env.SOLANA_MAINNET_KEY || "";
 
-const app: Express = express();
-app.use(cors({ origin: "*", methods: "GET" }));
-app.use(bodyParser.json());
+/* GlamClient for devnet and testnet */
 
-const connection = new Connection(SOLANA_RPC, "confirmed");
-const provider = new AnchorProvider(connection, null, {
+const devnetConnection = new Connection(SOLANA_RPC, "confirmed");
+const devnetProvider = new AnchorProvider(devnetConnection, null, {
   commitment: "confirmed"
 });
-const client = new GlamClient({ provider });
+const devnetClient = new GlamClient({ provider: devnetProvider });
+
+const mainnetConnection = new Connection(
+  `https://mainnet.helius-rpc.com/?api-key=${SOLANA_MAINNET_KEY}`,
+  "confirmed"
+);
+const mainnetProvider = new AnchorProvider(mainnetConnection, null, {
+  commitment: "confirmed"
+});
+const mainnetClient = new GlamClient({ provider: mainnetProvider });
+
+/* Pyth client */
 
 const PYTHNET_CLUSTER_NAME: PythCluster = "pythnet";
 const pythClient = new PythHttpClient(
@@ -39,11 +53,22 @@ const pythClient = new PythHttpClient(
   "confirmed"
 );
 
-app.use("/assets", express.static(path.join(__dirname, "assets")));
+/* Express app */
 
-app.get("/api", (req: Request, res: Response) => {
-  res.send({ message: "Welcome to Glam!" });
+const app: Express = express();
+app.use(cors({ origin: "*", methods: "GET" }));
+app.use(bodyParser.json());
+
+app.use((req, res, next) => {
+  if (req.hostname === "api.glam.systems") {
+    req.client = mainnetClient;
+  } else {
+    req.client = devnetClient;
+  }
+  next();
 });
+
+app.use("/assets", express.static(path.join(__dirname, "assets")));
 
 /*
  * Openfunds
@@ -54,17 +79,23 @@ app.get("/openfunds", async (req, res) => {
     req.query.funds.split(","),
     req.query.template,
     req.query.format,
-    client,
+    req.client,
     res
   );
 });
 
 app.get("/openfunds/:pubkey.:ext", async (req, res) => {
-  return openfunds([req.params.pubkey], "auto", req.params.ext, client, res);
+  return openfunds(
+    [req.params.pubkey],
+    "auto",
+    req.params.ext,
+    req.client,
+    res
+  );
 });
 
 app.get("/openfunds/:pubkey", async (req, res) => {
-  return openfunds([req.params.pubkey], "auto", "json", client, res);
+  return openfunds([req.params.pubkey], "auto", "json", req.client, res);
 });
 
 /*
@@ -77,16 +108,25 @@ app.post("/tx/jupiter/swap", async (req, res) => {
 });
 
 app.post("/tx/marinade/unstake", async (req, res) => {
-  return marinadeDelayedUnstakeTx(client, req, res);
+  return marinadeDelayedUnstakeTx(req.client, req, res);
 });
 
 app.post("/tx/marinade/unstake/claim", async (req, res) => {
-  return marinadeDelayedUnstakeClaimTx(client, req, res);
+  return marinadeDelayedUnstakeClaimTx(req.client, req, res);
 });
 
 /*
  * Other
  */
+
+app.get("/api", (req: Request, res: Response) => {
+  res.send({ message: "Welcome to Glam!" });
+});
+
+app.get("/genesis", async (req: Request, res: Response) => {
+  const genesis = await mainnetClient.provider.connection.getGenesisHash();
+  res.send({ genesis });
+});
 
 app.get("/prices", async (req, res) => {
   const data = await pythClient.getData();
@@ -216,7 +256,7 @@ app.get("/image/:pubkey.png", async (req, res) => {
 
 const port = process.env.PORT || 8080;
 const server = app.listen(port, () => {
-  console.log(`Listening at http://localhost:${port}/api`);
+  console.log(`Api ${process.env.NODE_ENV} at http://localhost:${port}`);
 });
 server.on("error", console.error);
 
