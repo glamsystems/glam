@@ -1,6 +1,13 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Glam } from "../target/types/glam";
+import {
+  PublicKey,
+  Transaction,
+  sendAndConfirmTransaction,
+  ComputeBudgetProgram,
+  Keypair
+} from "@solana/web3.js";
 
 import {
   shareClass0Allowlist,
@@ -32,17 +39,88 @@ describe("glam_crud", () => {
   });
 
   it("Update fund", async () => {
-    const newFundName = "Updated fund name";
+    const newName = "Updated fund name";
+    const updatedFund = glamClient.getFundModel({
+      name: newName
+    });
+
     await glamClient.program.methods
-      .update(newFundName, null, null, false)
+      .update(updatedFund)
       .accounts({
         fund: fundPDA,
         manager: glamClient.getManager()
       })
       .rpc();
     const fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
-    expect(fund.name).toEqual(newFundName);
-    // expect(fund.isActive).toEqual(false);
+    expect(fund.name).toEqual(newName);
+  });
+
+  it("Update manager", async () => {
+    const manager = glamClient.getManager();
+    const newManager = Keypair.generate();
+    console.log("New manager:", newManager.publicKey);
+
+    const updatedFund = glamClient.getFundModel({
+      manager: {
+        name: "New Manager",
+        pubkey: newManager.publicKey
+        // kind: "Wallet"
+      }
+    });
+    console.log(updatedFund);
+    try {
+      await glamClient.program.methods
+        .update(updatedFund)
+        .accounts({
+          fund: fundPDA,
+          manager
+        })
+        .rpc();
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+    let fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
+    expect(fund.manager.toString()).toEqual(newManager.publicKey.toString());
+
+    const updatedFund2 = glamClient.getFundModel({
+      manager: {
+        name: "Old Manager",
+        pubkey: manager
+        // kind: "Wallet"
+      }
+    });
+
+    /* old manager can NOT update back */
+    try {
+      const txId = await glamClient.program.methods
+        .update(updatedFund2)
+        .accounts({
+          fund: fundPDA,
+          manager
+        })
+        .rpc();
+      expect(txId).toBeUndefined();
+    } catch (err) {
+      expect(err.message).toContain("not authorized");
+    }
+
+    /* new manager CAN update back */
+    try {
+      const txId = await glamClient.program.methods
+        .update(updatedFund2)
+        .accounts({
+          fund: fundPDA,
+          manager: newManager.publicKey
+        })
+        .signers([newManager])
+        .rpc();
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+    fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
+    expect(fund.manager.toString()).toEqual(manager.toString());
   });
 
   /*
@@ -52,13 +130,18 @@ describe("glam_crud", () => {
     );
     expect(fund).not.toBeNull();
 
-    await glamClient.program.methods
-      .close()
-      .accounts({
-        fund: fundPDA,
-        manager: glamClient.getManager()
-      })
-      .rpc();
+    try {
+      await glamClient.program.methods
+        .close()
+        .accounts({
+          fund: fundPDA,
+          manager: glamClient.getManager()
+        })
+        .rpc();
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
 
     // The account should no longer exist, returning null.
     const closedAccount =

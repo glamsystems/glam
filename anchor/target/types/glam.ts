@@ -106,29 +106,9 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "name",
+          "name": "fund",
           "type": {
-            "option": "string"
-          }
-        },
-        {
-          "name": "uri",
-          "type": {
-            "option": "string"
-          }
-        },
-        {
-          "name": "assetWeights",
-          "type": {
-            "option": {
-              "vec": "u32"
-            }
-          }
-        },
-        {
-          "name": "activate",
-          "type": {
-            "option": "bool"
+            "defined": "FundModel"
           }
         }
       ]
@@ -3162,29 +3142,9 @@ export const IDL: Glam = {
       ],
       "args": [
         {
-          "name": "name",
+          "name": "fund",
           "type": {
-            "option": "string"
-          }
-        },
-        {
-          "name": "uri",
-          "type": {
-            "option": "string"
-          }
-        },
-        {
-          "name": "assetWeights",
-          "type": {
-            "option": {
-              "vec": "u32"
-            }
-          }
-        },
-        {
-          "name": "activate",
-          "type": {
-            "option": "bool"
+            "defined": "FundModel"
           }
         }
       ]
