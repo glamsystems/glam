@@ -2,6 +2,11 @@
 
 set -e
 
+if [[ -ne api/ || -ne anchor ]]; then
+  echo "Error: must run this script from the root of the project!"
+  exit 1
+fi
+
 TARGET="dev"
 if [[ $1 == "--prod" || $1 == "-p" ]]; then
   TARGET="prod"
@@ -15,6 +20,7 @@ pnpm install
 pnpm run api-build
 
 cp api/app.yaml $DIST/app.yaml
+cp api/.env.yaml $DIST/.env.yaml
 # cp pnpm-lock.yaml $DIST/pnpm-lock.yaml
 
 jq '.scripts +={"gcp-build": ""} +{"start": "node main.js"}' package.json  > $DIST/tmp_package.json
@@ -31,6 +37,10 @@ deps_to_remove=(
   "@hookform/resolvers"
   "@solana-developers/helpers"
   "@solana-developers/preset-react"
+  "@solana/wallet-adapter-base"
+  "@solana/wallet-adapter-react"
+  "@solana/wallet-adapter-react-ui"
+  "@solana/wallet-adapter-solflare"
   "@swc/helpers"
   "@tabler/icons-react"
   "@tailwindcss/typography"
@@ -44,6 +54,7 @@ deps_to_remove=(
   "react-hook-form"
   "react-hot-toast"
   "react-router-dom"
+  "sass"
   "use-dark-mode"
   "zod"
 )
