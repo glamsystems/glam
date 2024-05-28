@@ -1,10 +1,11 @@
 import * as anchor from "@coral-xyz/anchor";
-import { BN } from "@coral-xyz/anchor";
 import {
+  AddressLookupTableAccount,
   PublicKey,
-  Transaction,
   TransactionInstruction,
-  TransactionSignature
+  TransactionSignature,
+  TransactionMessage,
+  VersionedTransaction
 } from "@solana/web3.js";
 
 import { BaseClient } from "./base";
@@ -12,7 +13,6 @@ import { BaseClient } from "./base";
 const jupiterProgram = new PublicKey(
   "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"
 );
-const JUPITER_API = "https://quote-api.jup.ag/v6";
 
 export class JupiterClient {
   public constructor(readonly base: BaseClient) {}
@@ -21,113 +21,127 @@ export class JupiterClient {
    * Client methods
    */
 
-  getQuote = async (
-    fromMint: PublicKey,
-    toMint: PublicKey,
-    amount: number,
-    slippage: number,
-    onlyDirectRoutes: boolean
-  ) => {
-    const reponse = await fetch(
-      `${JUPITER_API}/quote?outputMint=${toMint.toBase58()}&inputMint=${fromMint.toBase58()}&amount=${amount}&slippage=${slippage}&onlyDirectRoutes=${onlyDirectRoutes}`
-    );
-    return await reponse.json();
-  };
-
-  getSwapIx = async (
-    fromAccount: PublicKey,
-    toAccount: PublicKey,
-    quote: any
-  ): Promise<any> => {
-    const data = {
-      quoteResponse: quote,
-      userPublicKey: fromAccount.toBase58(),
-      destinationTokenAccount: toAccount.toBase58()
-    };
-    const response = await fetch(`${JUPITER_API}/swap-instructions`, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(data)
-    });
-
-    const resp = await response.json();
-    console.log("swap-instructions response:", resp);
-    return resp;
-  };
-
   public async swap(
     fund: PublicKey,
-    fromMint: PublicKey,
-    toMint: PublicKey,
-    amount: BN,
-    slippage: number = 0.5,
-    onlyDirectRoutes: boolean = true
+    quote?: any,
+    quoteResponse?: any,
+    swapInstruction?: any,
+    addressLookupTableAddresses?: any
   ): Promise<TransactionSignature> {
-    const fromAccount = this.base.getTreasuryAta(fund, fromMint);
-    const toAccount = this.base.getTreasuryAta(fund, toMint);
-
-    const payload = await this.jupiterPayload(
-      fromMint,
-      toMint,
-      fromAccount,
-      toAccount,
-      amount,
-      slippage,
-      onlyDirectRoutes
+    const tx = await this.swapTxBuilder(
+      fund,
+      this.base.getManager(),
+      quote,
+      quoteResponse,
+      swapInstruction,
+      addressLookupTableAddresses
     );
-
-    return this.swapTxBuilder(fund, this.base.getManager(), payload.data).rpc();
+    tx.sign([this.base.getWalletSigner()]);
+    return await this.base.provider.connection.sendTransaction(tx);
   }
 
   /*
    * Tx Builders
    */
 
-  swapTxBuilder(fund: PublicKey, manager: PublicKey, data: Buffer): any {
-    return this.base.program.methods.jupiterSwap(data).accounts({
-      fund,
-      manager,
-      treasury: this.base.getTreasuryPDA(fund),
-      jupiterProgram
-    });
+  async swapTxBuilder(
+    fund: PublicKey,
+    manager: PublicKey,
+    quote?: any,
+    quoteResponse?: any,
+    swapInstruction?: any,
+    addressLookupTableAddresses?: string[]
+  ): Promise<VersionedTransaction> /* MethodsBuilder<Glam, ?> */ {
+    if (swapInstruction === undefined) {
+      if (quoteResponse === undefined) {
+        /* Fetch quoteResponse is not specified */
+        console.log("Fetching quoteResponse...");
+        quoteResponse = await this.getQuoteResponse(quote);
+      }
+      /* Fetch swapInstruction is not specified */
+      console.log("Fetching swapInstruction...");
+      [swapInstruction, addressLookupTableAddresses] =
+        await this.getSwapInstruction({
+          userPublicKey: manager,
+          quoteResponse
+        });
+    }
+    // console.log("swapInstruction", swapInstruction);
+    /* Create the tx for jupiterSwap using the swapInstruction */
+    const tx = await this.base.program.methods
+      .jupiterSwap(swapInstruction.data)
+      .accounts({
+        fund,
+        manager,
+        treasury: this.base.getTreasuryPDA(fund),
+        jupiterProgram
+      })
+      .remainingAccounts(swapInstruction.keys)
+      .transaction();
+
+    const connection = this.base.provider.connection;
+    const lookupTableAccounts = (
+      await Promise.all(
+        (addressLookupTableAddresses || []).map(
+          async (address) =>
+            (
+              await connection.getAddressLookupTable(new PublicKey(address))
+            ).value
+        )
+      )
+    ).filter((x) => !!x) as AddressLookupTableAccount[];
+
+    const messageV0 = new TransactionMessage({
+      payerKey: manager,
+      recentBlockhash: (await connection.getLatestBlockhash()).blockhash,
+      instructions: tx.instructions
+    }).compileToV0Message(lookupTableAccounts);
+
+    return new VersionedTransaction(messageV0);
   }
 
-  async jupiterPayload(
-    fromMint: PublicKey,
-    toMint: PublicKey,
-    fromAccount: PublicKey,
-    toAccount: PublicKey,
-    amount: BN,
-    slippage: number,
-    onlyDirectRoutes: boolean
-  ): Promise<TransactionInstruction> {
-    const quote = await this.getQuote(
-      fromMint,
-      toMint,
-      amount,
-      slippage,
-      onlyDirectRoutes
+  public async getQuoteResponse(quote: any): Promise<any> {
+    const res = await fetch(
+      `${this.base.jupiterApi}/quote?` +
+        new URLSearchParams(Object.entries(quote))
     );
-    console.log("quote response:", quote);
+    const quoteResponse = await res.json();
+    // console.log("quoteResponse", quoteResponse);
+    return quoteResponse;
+  }
 
-    const { swapInstruction } = await this.getSwapIx(
-      fromAccount,
-      toAccount,
-      quote
-    );
-
-    return new TransactionInstruction({
-      programId: new PublicKey(swapInstruction.programId),
-      keys: swapInstruction.accounts.map((key: any) => ({
-        pubkey: new PublicKey(key.pubkey),
-        isSigner: key.isSigner,
-        isWritable: key.isWritable
-      })),
-      data: Buffer.from(swapInstruction.data, "base64")
+  public async getSwapInstructions(quoteResponse: any): Promise<any> {
+    const res = await fetch(`${this.base.jupiterApi}/swap-instructions`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(quoteResponse)
     });
+
+    const instructions = await res.json();
+    return instructions;
+  }
+
+  async getSwapInstruction(
+    quoteResponse: any
+  ): Promise<[TransactionInstruction, string[]]> {
+    const { swapInstruction, addressLookupTableAddresses } =
+      await this.getSwapInstructions(quoteResponse);
+
+    return [
+      new TransactionInstruction({
+        programId: new PublicKey(swapInstruction.programId),
+        keys: swapInstruction.accounts.map((key: any) => ({
+          pubkey: new PublicKey(key.pubkey),
+          isSigner: key.isSigner,
+          isWritable: key.isWritable
+        })),
+        data: Buffer.from(swapInstruction.data, "base64")
+      }),
+      addressLookupTableAddresses
+    ];
   }
 
   /*
@@ -136,29 +150,19 @@ export class JupiterClient {
 
   public async swapTx(
     fund: PublicKey,
-    fromMint: PublicKey,
-    toMint: PublicKey,
-    amount: BN,
-    slippage: number = 0.5,
-    onlyDirectRoutes: boolean = true
-  ): Promise<Transaction> {
-    const fromAccount = this.base.getTreasuryAta(fund, fromMint);
-    const toAccount = this.base.getTreasuryAta(fund, toMint);
-
-    const payload = await this.jupiterPayload(
-      fromMint,
-      toMint,
-      fromAccount,
-      toAccount,
-      amount,
-      slippage,
-      onlyDirectRoutes
-    );
-
-    return this.swapTxBuilder(
+    manager: PublicKey,
+    quote?: any,
+    quoteResponse?: any,
+    swapInstruction?: any,
+    addressLookupTableAddresses?: any
+  ): Promise<VersionedTransaction> {
+    return await this.swapTxBuilder(
       fund,
-      this.base.getManager(),
-      payload.data
-    ).transaction();
+      manager,
+      quote,
+      quoteResponse,
+      swapInstruction,
+      addressLookupTableAddresses
+    );
   }
 }

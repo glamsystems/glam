@@ -1,4 +1,9 @@
 import * as anchor from "@coral-xyz/anchor";
+import {
+  Transaction,
+  SystemProgram,
+  sendAndConfirmTransaction
+} from "@solana/web3.js";
 
 import { createFundForTest, sleep } from "./setup";
 import { GlamClient } from "../src";
@@ -12,26 +17,25 @@ describe("glam_wsol", () => {
     fundPDA = fundData.fundPDA;
 
     const connection = glamClient.provider.connection;
-    // air drop to treasury and delay 1s for confirmation
-    const airdropTx = await connection.requestAirdrop(
-      fundData.treasuryPDA,
-      10_000_000_000
+    // transfer 0.1 SOL to treasury
+    const tranferTx = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey: glamClient.getManager(),
+        toPubkey: glamClient.getTreasuryPDA(fundPDA),
+        lamports: 100_000_000
+      })
     );
-    await connection.confirmTransaction({
-      ...(await connection.getLatestBlockhash()),
-      signature: airdropTx
-    });
+    await sendAndConfirmTransaction(connection, tranferTx, [
+      glamClient.getWalletSigner()
+    ]);
   });
 
   it("wSOL wrap", async () => {
     try {
-      let tx = await glamClient.wsol.wrap(
-        fundPDA,
-        new anchor.BN(3_000_000_000)
-      );
+      let tx = await glamClient.wsol.wrap(fundPDA, new anchor.BN(30_000_000));
       console.log("Wrap #1:", tx);
 
-      tx = await glamClient.wsol.wrap(fundPDA, new anchor.BN(2_000_000_000));
+      tx = await glamClient.wsol.wrap(fundPDA, new anchor.BN(20_000_000));
       console.log("Wrap #2:", tx);
     } catch (error) {
       console.log("Error", error);

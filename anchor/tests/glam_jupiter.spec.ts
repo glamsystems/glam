@@ -29,12 +29,12 @@ describe("glam_jupiter", () => {
 
   it("Swap", async () => {
     try {
-      const txId = await glamClient.jupiter.swap(
-        fundPDA,
-        wSol,
-        mSol,
-        500_000_000
-      );
+      const txId = await glamClient.jupiter.swap(fundPDA, {
+        inputMint: wSol,
+        outputMint: mSol,
+        amount: 500_000_000,
+        maxAccounts: 10
+      });
       console.log("swap txId", txId);
     } catch (e) {
       console.error(e);

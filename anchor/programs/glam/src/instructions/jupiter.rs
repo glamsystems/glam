@@ -19,14 +19,14 @@ impl anchor_lang::Id for Jupiter {
 
 #[derive(Accounts)]
 pub struct JupiterSwap<'info> {
-    #[account(mut)]
-    pub manager: Signer<'info>,
+    #[account(has_one = manager, has_one = treasury)]
+    pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
 
-    #[account(has_one = manager, has_one = treasury)]
-    pub fund: Box<Account<'info, FundAccount>>,
+    #[account(mut)]
+    pub manager: Signer<'info>,
 
     pub jupiter_program: Program<'info, Jupiter>,
     pub system_program: Program<'info, System>,

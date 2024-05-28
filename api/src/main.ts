@@ -13,11 +13,12 @@ import {
   getPythProgramKeyForCluster
 } from "@pythnetwork/client";
 
-import { GlamClient } from "@glam/anchor";
+import { GlamClient, JUPITER_API_DEFAULT } from "@glam/anchor";
 import { validatePubkey } from "./validation";
 import { priceHistory, fundPerformance } from "./prices";
 import { openfunds } from "./openfunds";
 import {
+  jupiterSwapTx,
   marinadeDelayedUnstakeTx,
   marinadeDelayedUnstakeClaimTx,
   wsolWrapTx,
@@ -31,14 +32,10 @@ if (process.env.NODE_ENV !== "production") {
 const BASE_URL = "https://api.glam.systems";
 const SOLANA_RPC = process.env.SOLANA_RPC || "http://localhost:8899";
 const SOLANA_MAINNET_KEY = process.env.SOLANA_MAINNET_KEY || "";
+const FORCE_MAINNET = process.env.MAINNET === "1";
+const JUPITER_API = process.env.JUPITER_API || JUPITER_API_DEFAULT;
 
 /* GlamClient for devnet and testnet */
-
-const devnetConnection = new Connection(SOLANA_RPC, "confirmed");
-const devnetProvider = new AnchorProvider(devnetConnection, null, {
-  commitment: "confirmed"
-});
-const devnetClient = new GlamClient({ provider: devnetProvider });
 
 const mainnetConnection = new Connection(
   `https://mainnet.helius-rpc.com/?api-key=${SOLANA_MAINNET_KEY}`,
@@ -47,7 +44,18 @@ const mainnetConnection = new Connection(
 const mainnetProvider = new AnchorProvider(mainnetConnection, null, {
   commitment: "confirmed"
 });
-const mainnetClient = new GlamClient({ provider: mainnetProvider });
+const mainnetClient = new GlamClient({
+  provider: mainnetProvider,
+  jupiterApi: JUPITER_API
+});
+
+const devnetConnection = new Connection(SOLANA_RPC, "confirmed");
+const devnetProvider = new AnchorProvider(devnetConnection, null, {
+  commitment: "confirmed"
+});
+const devnetClient = FORCE_MAINNET
+  ? mainnetClient
+  : new GlamClient({ provider: devnetProvider });
 
 /* Pyth client */
 
@@ -108,8 +116,7 @@ app.get("/openfunds/:pubkey", async (req, res) => {
  */
 
 app.post("/tx/jupiter/swap", async (req, res) => {
-  // TODO: implement
-  return res.send("Not implemented");
+  return jupiterSwapTx(req.client, req, res);
 });
 
 app.post("/tx/marinade/unstake", async (req, res) => {

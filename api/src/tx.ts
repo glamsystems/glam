@@ -4,6 +4,34 @@ import { validatePubkey, validateBN } from "./validation";
  * Marinade
  */
 
+export const jupiterSwapTx = async (client, req, res) => {
+  const fund = validatePubkey(req.body.fund);
+  const manager = validatePubkey(req.body.manager);
+
+  if (fund === undefined || manager === undefined) {
+    return res.sendStatus(400);
+  }
+
+  let tx;
+  try {
+    tx = await client.jupiter.swapTx(
+      fund,
+      manager,
+      req.body.quote,
+      req.body.quoteResponse,
+      req.body.swapInstruction
+    );
+  } catch (err) {
+    console.log(err);
+    return res.status(400).send({ error: err.message });
+  }
+  return await serializeTx(tx, manager, client, res);
+};
+
+/*
+ * Marinade
+ */
+
 export const marinadeDelayedUnstakeTx = async (client, req, res) => {
   const fund = validatePubkey(req.body.fund);
   const manager = validatePubkey(req.body.manager);
@@ -75,15 +103,15 @@ const serializeTx = async (tx, manager, client, res) => {
       await client.provider.connection.getLatestBlockhash()
     ).blockhash;
 
-    serializedTx = tx
-      .serialize({
+    serializedTx = new Buffer(
+      tx.serialize({
         requireAllSignatures: false,
         verifySignatures: false
       })
-      .toString("hex");
+    ).toString("hex");
   } catch (err) {
     console.log(err);
-    return res.sendStatus(400);
+    return res.status(400).send({ error: err.message });
   }
   return res.send(
     JSON.stringify({

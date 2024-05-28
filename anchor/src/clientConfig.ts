@@ -6,4 +6,5 @@ export type ClusterOrCustom = Cluster | "custom";
 export type GlamClientConfig = {
   provider?: Provider;
   cluster?: ClusterOrCustom;
+  jupiterApi?: string;
 };

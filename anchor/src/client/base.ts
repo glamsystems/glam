@@ -1,9 +1,15 @@
 import * as anchor from "@coral-xyz/anchor";
-import { Program, IdlAccounts } from "@coral-xyz/anchor";
+import {
+  AnchorProvider,
+  IdlAccounts,
+  Program,
+  Wallet
+} from "@coral-xyz/anchor";
 import {
   ComputeBudgetProgram,
   Connection,
   PublicKey,
+  Signer,
   TransactionSignature
 } from "@solana/web3.js";
 import {
@@ -18,10 +24,13 @@ import { FundModel, FundOpenfundsModel } from "../models";
 type FundAccount = IdlAccounts<Glam>["fundAccount"];
 type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
 
+export const JUPITER_API_DEFAULT = "https://quote-api.jup.ag/v6";
+
 export class BaseClient {
   provider: anchor.Provider;
   program: GlamProgram;
   programId: PublicKey;
+  jupiterApi: string;
 
   public constructor(config?: GlamClientConfig) {
     this.programId = getGlamProgramId(config?.cluster || "devnet");
@@ -48,10 +57,16 @@ export class BaseClient {
       anchor.setProvider(this.provider);
       this.program = anchor.workspace.Glam as GlamProgram;
     }
+
+    this.jupiterApi = config?.jupiterApi || JUPITER_API_DEFAULT;
   }
 
   getManager(): PublicKey {
     return this.provider?.publicKey || new PublicKey(0);
+  }
+
+  getWalletSigner(): Signer {
+    return ((this.provider as AnchorProvider).wallet as Wallet).payer;
   }
 
   getFundModel(fund: any): FundModel {

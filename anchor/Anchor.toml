@@ -6,18 +6,10 @@ seeds = false
 skip-lint = false
 
 [programs.devnet]
-custody = "Gcu1vbed9bwpfwU9PCnJw8QanQfVHfETWxAK3EZczbgo"
 glam = "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc"
-policy = "Gpo1jXtEFepqyPQWTG7oDJrg8rye8JL3zcsczHzXKqLt"
-pricing = "Gpr1WZZXAty2L9eiMwZPC7ra69vMFojhdqDuiRHkQQQp"
-strategy = "Gst1YGe5vKURSWfCqM7GhZys1oML9E9t91WRyV2rt4yS"
 
 [programs.localnet]
-custody = "Gcu1vbed9bwpfwU9PCnJw8QanQfVHfETWxAK3EZczbgo"
 glam = "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc"
-policy = "Gpo1jXtEFepqyPQWTG7oDJrg8rye8JL3zcsczHzXKqLt"
-pricing = "Gpr1WZZXAty2L9eiMwZPC7ra69vMFojhdqDuiRHkQQQp"
-strategy = "Gst1YGe5vKURSWfCqM7GhZys1oML9E9t91WRyV2rt4yS"
 
 [registry]
 url = "https://api.apr.dev"
@@ -25,14 +17,15 @@ url = "https://api.apr.dev"
 [provider]
 cluster = "localnet"
 #cluster = "devnet"
+#cluster = "mainnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_crud"
+#test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_crud"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_investor"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_drift"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_staking"
-#test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_jupiter"
+test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_jupiter"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_openfunds"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_wsol"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern devnet"

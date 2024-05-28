@@ -1,11 +1,16 @@
 import * as anchor from "@coral-xyz/anchor";
 
 import { GlamClientConfig } from "./clientConfig";
-import { BaseClient } from "./client/base";
+import {
+  BaseClient,
+  JUPITER_API_DEFAULT as _JUPITER_API_DEFAULT
+} from "./client/base";
 import { DriftClient } from "./client/drift";
 import { JupiterClient } from "./client/jupiter";
 import { MarinadeClient } from "./client/marinade";
 import { WSolClient } from "./client/wsol";
+
+export const JUPITER_API_DEFAULT = _JUPITER_API_DEFAULT;
 
 export class GlamClient extends BaseClient {
   drift: DriftClient;
