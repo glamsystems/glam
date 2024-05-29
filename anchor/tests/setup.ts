@@ -6,14 +6,17 @@ const usdc = new PublicKey("8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2"); // 6
 const eth = new PublicKey("So11111111111111111111111111111111111111112"); // 6 decimals
 const btc = new PublicKey("3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv"); // 9 decimals
 
+const wsol = new PublicKey("So11111111111111111111111111111111111111112"); // 9 decimals
+const msol = new PublicKey("mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So"); // 9 decimals
+
 export const shareClass0Allowlist = [
-  new PublicKey("a19a3us1Rm3YAV4NjjQzsaZ2brJWihsS1mf1fe94Ycj"),
-  new PublicKey("a1fwSFaH4w3LN8F2VNCz5WRb4KZTPZxgULG7vpNdB74"),
-  new PublicKey("a1sGZyirTFTv1SYUDHgCy3wWiTWXLRTa2vJSeDRDu9x")
+  // new PublicKey("a19a3us1Rm3YAV4NjjQzsaZ2brJWihsS1mf1fe94Ycj"),
+  // new PublicKey("a1fwSFaH4w3LN8F2VNCz5WRb4KZTPZxgULG7vpNdB74"),
+  // new PublicKey("a1sGZyirTFTv1SYUDHgCy3wWiTWXLRTa2vJSeDRDu9x")
 ];
 export const shareClass0Blocklist = [
-  new PublicKey("b182JJfadsQBao9wBYdSSiUxA1vo4Bb1ETXjyrsBumP"),
-  new PublicKey("b1NWY3dDonmeFXBZRHi13BKusrbWJeYDR2mjUgNHZYH")
+  // new PublicKey("b182JJfadsQBao9wBYdSSiUxA1vo4Bb1ETXjyrsBumP"),
+  // new PublicKey("b1NWY3dDonmeFXBZRHi13BKusrbWJeYDR2mjUgNHZYH")
 ];
 
 export const sleep = async (ms: number) => {
@@ -24,20 +27,20 @@ export const fundTestExample = {
   shareClasses: [
     {
       // Glam Token
-      name: "Glam Investment Fund BTC-SOL",
+      name: "Glam Fund SOL-mSOL",
       symbol: "GBS",
       asset: usdc,
       allowlist: shareClass0Allowlist,
       blocklist: shareClass0Blocklist,
       // Glam
-      lockUpTime: 40 * 24 * 60 * 60,
+      lockUpTime: 4 * 60 * 60,
       requiresMemoOnTransfer: true,
       // Openfunds Share Class
-      fullShareClassName: "Glam Investment Fund BTC-SOL",
+      fullShareClassName: "Glam Fund SOL-mSOL",
       isin: "XS1082172823",
       cusip: "demo",
       valor: "demo",
-      shareClassCurrency: "USDC",
+      shareClassCurrency: "SOL",
       shareClassLifecycle: "active",
       investmentStatus: "open",
       shareClassDistributionPolicy: "accumulating",
@@ -45,13 +48,13 @@ export const fundTestExample = {
       minimalInitialSubscriptionCategory: "amount",
       minimalInitialSubscriptionInShares: "0",
       minimalInitialSubscriptionInAmount: "1000",
-      currencyOfMinimalSubscription: "USDC",
+      currencyOfMinimalSubscription: "SOL",
       minimalRedemptionCategory: "shares",
       minimalInitialRedemptionInShares: "1",
       maximumInitialRedemptionInShares: "1000",
       minimalInitialRedemptionInAmount: "0",
       maximumInitialRedemptionInAmount: null,
-      currencyOfMinimalOrMaximumRedemption: "USDC",
+      currencyOfMinimalOrMaximumRedemption: "SOL",
       shareClassDividendType: "both",
       srri: "4",
       hasLockUpForRedemption: true,
@@ -64,14 +67,14 @@ export const fundTestExample = {
   ],
   // Glam
   isEnabled: true,
-  assets: [usdc, btc, eth],
-  assetsWeights: [0, 60, 40],
+  assets: [wsol, msol],
+  assetsWeights: [50, 50],
   // Openfunds (Fund)
   fundDomicileAlpha2: "XS",
-  legalFundNameIncludingUmbrella: "Glam Investment Fund BTC-SOL",
+  legalFundNameIncludingUmbrella: "Glam Fund SOL-mSOL",
   fundLaunchDate: new Date().toISOString().split("T")[0],
   investmentObjective: "demo",
-  fundCurrency: "USDC",
+  fundCurrency: "SOL",
   openEndedOrClosedEndedFundStructure: "open-ended fund",
   fiscalYearEnd: "12-31",
   legalForm: "other",
@@ -85,7 +88,7 @@ export const fundTestExample = {
   },
   // Openfunds Manager (simplified)
   manager: {
-    portfolioManagerName: "0x0ece.sol"
+    portfolioManagerName: "glam.sol"
   }
 };
 

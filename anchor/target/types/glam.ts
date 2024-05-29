@@ -825,9 +825,9 @@ export type Glam = {
       "name": "jupiterSwap",
       "accounts": [
         {
-          "name": "manager",
-          "isMut": true,
-          "isSigner": true
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "treasury",
@@ -835,9 +835,9 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "fund",
-          "isMut": false,
-          "isSigner": false
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
         },
         {
           "name": "jupiterProgram",
@@ -3861,9 +3861,9 @@ export const IDL: Glam = {
       "name": "jupiterSwap",
       "accounts": [
         {
-          "name": "manager",
-          "isMut": true,
-          "isSigner": true
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "treasury",
@@ -3871,9 +3871,9 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "fund",
-          "isMut": false,
-          "isSigner": false
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
         },
         {
           "name": "jupiterProgram",
