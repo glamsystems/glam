@@ -9,16 +9,6 @@ const btc = new PublicKey("3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv"); // 9 
 const wsol = new PublicKey("So11111111111111111111111111111111111111112"); // 9 decimals
 const msol = new PublicKey("mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So"); // 9 decimals
 
-export const shareClass0Allowlist = [
-  // new PublicKey("a19a3us1Rm3YAV4NjjQzsaZ2brJWihsS1mf1fe94Ycj"),
-  // new PublicKey("a1fwSFaH4w3LN8F2VNCz5WRb4KZTPZxgULG7vpNdB74"),
-  // new PublicKey("a1sGZyirTFTv1SYUDHgCy3wWiTWXLRTa2vJSeDRDu9x")
-];
-export const shareClass0Blocklist = [
-  // new PublicKey("b182JJfadsQBao9wBYdSSiUxA1vo4Bb1ETXjyrsBumP"),
-  // new PublicKey("b1NWY3dDonmeFXBZRHi13BKusrbWJeYDR2mjUgNHZYH")
-];
-
 export const sleep = async (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
@@ -30,8 +20,8 @@ export const fundTestExample = {
       name: "Glam Fund SOL-mSOL",
       symbol: "GBS",
       asset: usdc,
-      allowlist: shareClass0Allowlist,
-      blocklist: shareClass0Blocklist,
+      allowlist: [] as PublicKey[],
+      blocklist: [] as PublicKey[],
       // Glam
       lockUpTime: 4 * 60 * 60,
       requiresMemoOnTransfer: true,

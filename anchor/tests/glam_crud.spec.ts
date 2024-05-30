@@ -1,19 +1,6 @@
-import * as anchor from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
-import { Glam } from "../target/types/glam";
-import {
-  PublicKey,
-  Transaction,
-  sendAndConfirmTransaction,
-  ComputeBudgetProgram,
-  Keypair
-} from "@solana/web3.js";
+import { Keypair } from "@solana/web3.js";
 
-import {
-  shareClass0Allowlist,
-  createFundForTest,
-  shareClass0Blocklist
-} from "./setup";
+import { createFundForTest, fundTestExample } from "./setup";
 import { GlamClient } from "../src";
 
 describe("glam_crud", () => {
@@ -21,13 +8,14 @@ describe("glam_crud", () => {
   let fundPDA;
 
   it("Initialize fund", async () => {
+    fundTestExample.shareClasses[0].allowlist = [glamClient.getManager()];
     const fundData = await createFundForTest(glamClient);
     fundPDA = fundData.fundPDA;
 
     const fund = await glamClient.fetchFund(fundPDA);
     expect(fund.shareClasses.length).toEqual(1);
-    expect(fund.shareClasses[0].allowlist).toEqual(shareClass0Allowlist);
-    expect(fund.shareClasses[0].blocklist).toEqual(shareClass0Blocklist);
+    expect(fund.shareClasses[0].allowlist).toEqual([glamClient.getManager()]);
+    expect(fund.shareClasses[0].blocklist).toEqual([]);
     // expect(fund.assets.length).toEqual(3);
     // expect(fund.isEnabled).toEqual(true);
 
