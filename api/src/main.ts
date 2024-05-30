@@ -24,6 +24,7 @@ import {
   wsolWrapTx,
   wsolUnwrapTx
 } from "./tx";
+import { getTokenMetadata } from "@solana/spl-token";
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config({ path: ".env.local", override: true });
@@ -202,22 +203,38 @@ app.get("/fund/:pubkey/perf", async (req, res) => {
 });
 
 app.get("/metadata/:pubkey", async (req, res) => {
-  const key = validatePubkey(req.params.pubkey);
-  if (!key) {
+  const pubkey = validatePubkey(req.params.pubkey);
+  if (!pubkey) {
     return res.sendStatus(404);
   }
 
-  // TODO: Fetch name and symbol from blockchain
+  let metadata;
+  try {
+    // If a fund account pubkey is provided we read metadata of the 1st share class of the fund
+    const fund = await req.client.program.account.fundAccount.fetch(pubkey);
+    metadata = await getTokenMetadata(
+      req.client.provider.connection,
+      fund.shareClasses[0]
+    );
+  } catch (error) {
+    // If a share class pubkey is provided we read its metadata
+    if (error.message.includes("Invalid account discriminator")) {
+      metadata = await getTokenMetadata(req.client.provider.connection, pubkey);
+    } else {
+      throw error;
+    }
+  }
 
-  const imageUri = `${BASE_URL}/image/${req.params.pubkey}.png`;
+  const { image_uri } = Object.fromEntries(metadata!.additionalMetadata);
+
   res.set("content-type", "application/json");
   res.send(
     JSON.stringify({
-      name: "name_placeholder",
-      symbol: "symbol_placeholder",
+      name: metadata.name,
+      symbol: metadata.symbol,
       description: "",
       external_url: "https://glam.systems",
-      image: imageUri
+      image: image_uri
     })
   );
 });
