@@ -2,8 +2,9 @@ import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import * as path from "path";
-import { Connection, PublicKey } from "@solana/web3.js";
+import { Connection } from "@solana/web3.js";
 import { AnchorProvider } from "@coral-xyz/anchor";
+import { base58 } from "@scure/base";
 
 import { createCanvas, loadImage } from "canvas";
 import {
@@ -24,6 +25,7 @@ import {
   wsolWrapTx,
   wsolUnwrapTx
 } from "./tx";
+import { getTokenMetadata } from "@solana/spl-token";
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config({ path: ".env.local", override: true });
@@ -202,39 +204,57 @@ app.get("/fund/:pubkey/perf", async (req, res) => {
 });
 
 app.get("/metadata/:pubkey", async (req, res) => {
-  const key = validatePubkey(req.params.pubkey);
-  if (!key) {
+  const pubkey = validatePubkey(req.params.pubkey);
+  if (!pubkey) {
     return res.sendStatus(404);
   }
 
-  // TODO: Fetch name and symbol from blockchain
+  let metadata;
+  try {
+    // If a fund account pubkey is provided we read metadata of the 1st share class of the fund
+    const fund = await req.client.program.account.fundAccount.fetch(pubkey);
+    metadata = await getTokenMetadata(
+      req.client.provider.connection,
+      fund.shareClasses[0]
+    );
+  } catch (error) {
+    // If a share class pubkey is provided we read its metadata
+    if (error.message.includes("Invalid account discriminator")) {
+      metadata = await getTokenMetadata(req.client.provider.connection, pubkey);
+    } else {
+      throw error;
+    }
+  }
 
-  const imageUri = `${BASE_URL}/image/${req.params.pubkey}.png`;
+  const { image_uri } = Object.fromEntries(metadata!.additionalMetadata);
+
   res.set("content-type", "application/json");
   res.send(
     JSON.stringify({
-      name: "name_placeholder",
-      symbol: "symbol_placeholder",
+      name: metadata.name,
+      symbol: metadata.symbol,
       description: "",
       external_url: "https://glam.systems",
-      image: imageUri
+      image: image_uri
     })
   );
 });
 
 app.get("/image/:pubkey.png", async (req, res) => {
-  // convert pubkey from base58 to bytes[32]
-  const key = validatePubkey(req.params.pubkey);
-  if (!key) {
+  const pubkey = validatePubkey(req.params.pubkey);
+  if (!pubkey) {
     return res.sendStatus(404);
   }
 
+  // convert pubkey string from base58 to bytes[32]
+  const decoded = base58.decode(req.params.pubkey);
+
   // fetch params from the key bytes
-  const angle = 6.28 * (key[0] / 256.0); // between 0.0 and 2*pi
-  const alpha = key[1] / 256.0 / 4 + 0.75; // between 0.5 and 1.0
-  const colorR = key[2]; // between 0 and 255
-  const colorG = key[3];
-  const colorB = key[4];
+  const angle = 6.28 * (decoded[0] / 256.0); // between 0.0 and 2*pi
+  const alpha = decoded[1] / 256.0 / 4 + 0.75; // between 0.5 and 1.0
+  const colorR = decoded[2]; // between 0 and 255
+  const colorG = decoded[3];
+  const colorB = decoded[4];
 
   const fullSize = 512; // size of the input
   const size = fullSize / 2; // size of the output
