@@ -2,8 +2,9 @@ import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import * as path from "path";
-import { Connection, PublicKey } from "@solana/web3.js";
+import { Connection } from "@solana/web3.js";
 import { AnchorProvider } from "@coral-xyz/anchor";
+import { base58 } from "@scure/base";
 
 import { createCanvas, loadImage } from "canvas";
 import {
@@ -240,18 +241,20 @@ app.get("/metadata/:pubkey", async (req, res) => {
 });
 
 app.get("/image/:pubkey.png", async (req, res) => {
-  // convert pubkey from base58 to bytes[32]
-  const key = validatePubkey(req.params.pubkey);
-  if (!key) {
+  const pubkey = validatePubkey(req.params.pubkey);
+  if (!pubkey) {
     return res.sendStatus(404);
   }
 
+  // convert pubkey string from base58 to bytes[32]
+  const decoded = base58.decode(req.params.pubkey);
+
   // fetch params from the key bytes
-  const angle = 6.28 * (key[0] / 256.0); // between 0.0 and 2*pi
-  const alpha = key[1] / 256.0 / 4 + 0.75; // between 0.5 and 1.0
-  const colorR = key[2]; // between 0 and 255
-  const colorG = key[3];
-  const colorB = key[4];
+  const angle = 6.28 * (decoded[0] / 256.0); // between 0.0 and 2*pi
+  const alpha = decoded[1] / 256.0 / 4 + 0.75; // between 0.5 and 1.0
+  const colorR = decoded[2]; // between 0 and 255
+  const colorG = decoded[3];
+  const colorB = decoded[4];
 
   const fullSize = 512; // size of the input
   const size = fullSize / 2; // size of the output
