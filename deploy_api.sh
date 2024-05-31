@@ -2,7 +2,7 @@
 
 set -e
 
-if [[ -ne api/ || -ne anchor ]]; then
+if [[ ! -d api/ || ! -d anchor/ ]]; then
   echo "Error: must run this script from the root of the project!"
   exit 1
 fi
