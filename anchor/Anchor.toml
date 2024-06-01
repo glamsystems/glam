@@ -63,9 +63,9 @@ address = "8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2"
 [[test.validator.clone]]
 # Drift BTC
 address = "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv"
-[[test.validator.clone]]
+#[[test.validator.clone]]
 # WSOL
-address = "So11111111111111111111111111111111111111112"
+#address = "So11111111111111111111111111111111111111112"
 
 # Fund GBS AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2
 # fund + share class + treasury + treasury ATAs
@@ -120,6 +120,7 @@ address = "6gMq3mRCKf8aP3ttTyYhuijVZ2LGi14oDsBbkgubfLB3"
 # Marinade
 #
 [[test.genesis]]
+# solana program dump MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD ./fixtures/marinade.so
 address = "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
 program = "./fixtures/marinade.so"
 
@@ -161,3 +162,47 @@ filename = "./fixtures/UefNb6z6yvArqe4cJHTXCqStRsKmWhGxnZzuHbikP5Q.json"
 [[test.genesis]]
 address = "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"
 program = "./fixtures/jupiter.so"
+
+[[test.genesis]]
+address = "SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ"
+program = "./fixtures/saber.so"
+
+[[test.genesis]]
+address = "MERLuDFBMmsHnsBPZw2sDQZHvXFMwp8EdjudcU2HKky"
+program = "./fixtures/mercurial.so"
+
+[[test.genesis]]
+address = "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB"
+program = "./fixtures/meteora.so"
+
+[[test.validator.account]]
+address = "So11111111111111111111111111111111111111112"
+filename = "./fixtures/So11111111111111111111111111111111111111112.json"
+
+[[test.validator.account]]
+address = "Lee1XZJfJ9Hm2K1qTyeCz1LXNc1YBZaKZszvNY4KCDw"
+filename = "./fixtures/Lee1XZJfJ9Hm2K1qTyeCz1LXNc1YBZaKZszvNY4KCDw.json"
+
+[[test.validator.account]]
+address = "HcjZvfeSNJbNkfLD4eEcRBr96AD3w1GpmMppaeRZf7ur"
+filename = "./fixtures/HcjZvfeSNJbNkfLD4eEcRBr96AD3w1GpmMppaeRZf7ur.json"
+
+[[test.validator.account]]
+# Mercurial
+address = "MAR1zHjHaQcniE2gXsDptkyKUnNfMEsLBVcfP7vLyv7"
+filename = "./fixtures/MAR1zHjHaQcniE2gXsDptkyKUnNfMEsLBVcfP7vLyv7.json"
+
+[[test.validator.account]]
+# Mercurial
+address = "GM48qFn8rnqhyNMrBHyPJgUVwXQ1JvMbcu3b9zkThW9L"
+filename = "./fixtures/GM48qFn8rnqhyNMrBHyPJgUVwXQ1JvMbcu3b9zkThW9L.json"
+
+[[test.validator.account]]
+# Mercurial
+address = "EWy2hPdVT4uGrYokx65nAyn2GFBv7bUYA2pFPY96pw7Y"
+filename = "./fixtures/EWy2hPdVT4uGrYokx65nAyn2GFBv7bUYA2pFPY96pw7Y.json"
+
+[[test.validator.account]]
+# Mercurial address table
+address = "6TSS8bTxDjGitZgtTc7gdVWkzKdpGLb9QDi7kXAQQXXp"
+filename = "./fixtures/6TSS8bTxDjGitZgtTc7gdVWkzKdpGLb9QDi7kXAQQXXp.json"

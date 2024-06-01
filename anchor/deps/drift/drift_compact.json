@@ -1,0 +1,451 @@
+{
+  "version": "2.71.0",
+  "name": "drift",
+  "instructions": [
+    {
+      "name": "initializeUser",
+      "accounts": [
+        { "name": "user", "isMut": true, "isSigner": false },
+        { "name": "userStats", "isMut": true, "isSigner": false },
+        { "name": "state", "isMut": true, "isSigner": false },
+        { "name": "authority", "isMut": false, "isSigner": true },
+        { "name": "payer", "isMut": true, "isSigner": true },
+        { "name": "rent", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "subAccountId", "type": "u16" },
+        { "name": "name", "type": { "array": ["u8", 32] } }
+      ]
+    },
+    {
+      "name": "initializeUserStats",
+      "accounts": [
+        { "name": "userStats", "isMut": true, "isSigner": false },
+        { "name": "state", "isMut": true, "isSigner": false },
+        { "name": "authority", "isMut": false, "isSigner": true },
+        { "name": "payer", "isMut": true, "isSigner": true },
+        { "name": "rent", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "deposit",
+      "accounts": [
+        { "name": "state", "isMut": false, "isSigner": false },
+        { "name": "user", "isMut": true, "isSigner": false },
+        { "name": "userStats", "isMut": true, "isSigner": false },
+        { "name": "authority", "isMut": false, "isSigner": true },
+        { "name": "spotMarketVault", "isMut": true, "isSigner": false },
+        { "name": "userTokenAccount", "isMut": true, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "marketIndex", "type": "u16" },
+        { "name": "amount", "type": "u64" },
+        { "name": "reduceOnly", "type": "bool" }
+      ]
+    },
+    {
+      "name": "withdraw",
+      "accounts": [
+        { "name": "state", "isMut": false, "isSigner": false },
+        { "name": "user", "isMut": true, "isSigner": false },
+        { "name": "userStats", "isMut": true, "isSigner": false },
+        { "name": "authority", "isMut": false, "isSigner": true },
+        { "name": "spotMarketVault", "isMut": true, "isSigner": false },
+        { "name": "driftSigner", "isMut": false, "isSigner": false },
+        { "name": "userTokenAccount", "isMut": true, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "marketIndex", "type": "u16" },
+        { "name": "amount", "type": "u64" },
+        { "name": "reduceOnly", "type": "bool" }
+      ]
+    },
+    {
+      "name": "updateUserDelegate",
+      "accounts": [
+        { "name": "user", "isMut": true, "isSigner": false },
+        { "name": "authority", "isMut": false, "isSigner": true }
+      ],
+      "args": [
+        { "name": "subAccountId", "type": "u16" },
+        { "name": "delegate", "type": "publicKey" }
+      ]
+    },
+    {
+      "name": "deleteUser",
+      "accounts": [
+        { "name": "user", "isMut": true, "isSigner": false },
+        { "name": "userStats", "isMut": true, "isSigner": false },
+        { "name": "state", "isMut": true, "isSigner": false },
+        { "name": "authority", "isMut": false, "isSigner": true }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "State",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "admin", "type": "publicKey" },
+          { "name": "whitelistMint", "type": "publicKey" },
+          { "name": "discountMint", "type": "publicKey" },
+          { "name": "signer", "type": "publicKey" },
+          { "name": "srmVault", "type": "publicKey" },
+          { "name": "perpFeeStructure", "type": { "defined": "FeeStructure" } },
+          { "name": "spotFeeStructure", "type": { "defined": "FeeStructure" } },
+          {
+            "name": "oracleGuardRails",
+            "type": { "defined": "OracleGuardRails" }
+          },
+          { "name": "numberOfAuthorities", "type": "u64" },
+          { "name": "numberOfSubAccounts", "type": "u64" },
+          { "name": "lpCooldownTime", "type": "u64" },
+          { "name": "liquidationMarginBufferRatio", "type": "u32" },
+          { "name": "settlementDuration", "type": "u16" },
+          { "name": "numberOfMarkets", "type": "u16" },
+          { "name": "numberOfSpotMarkets", "type": "u16" },
+          { "name": "signerNonce", "type": "u8" },
+          { "name": "minPerpAuctionDuration", "type": "u8" },
+          { "name": "defaultMarketOrderTimeInForce", "type": "u8" },
+          { "name": "defaultSpotAuctionDuration", "type": "u8" },
+          { "name": "exchangeStatus", "type": "u8" },
+          { "name": "liquidationDuration", "type": "u8" },
+          { "name": "initialPctToLiquidate", "type": "u16" },
+          { "name": "maxNumberOfSubAccounts", "type": "u16" },
+          { "name": "maxInitializeUserFee", "type": "u16" },
+          { "name": "padding", "type": { "array": ["u8", 10] } }
+        ]
+      }
+    },
+    {
+      "name": "User",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "docs": ["The owner/authority of the account"],
+            "type": "publicKey"
+          },
+          {
+            "name": "delegate",
+            "docs": [
+              "An addresses that can control the account on the authority's behalf. Has limited power, cant withdraw"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "name",
+            "docs": ["Encoded display name e.g. \"toly\""],
+            "type": { "array": ["u8", 32] }
+          },
+          {
+            "name": "spotPositions",
+            "docs": ["The user's spot positions"],
+            "type": { "array": [{ "defined": "SpotPosition" }, 8] }
+          },
+          {
+            "name": "perpPositions",
+            "docs": ["The user's perp positions"],
+            "type": { "array": [{ "defined": "PerpPosition" }, 8] }
+          },
+          {
+            "name": "orders",
+            "docs": ["The user's orders"],
+            "type": { "array": [{ "defined": "Order" }, 32] }
+          },
+          {
+            "name": "lastAddPerpLpSharesTs",
+            "docs": ["The last time the user added perp lp positions"],
+            "type": "i64"
+          },
+          {
+            "name": "totalDeposits",
+            "docs": [
+              "The total values of deposits the user has made",
+              "precision: QUOTE_PRECISION"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "totalWithdraws",
+            "docs": [
+              "The total values of withdrawals the user has made",
+              "precision: QUOTE_PRECISION"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "totalSocialLoss",
+            "docs": [
+              "The total socialized loss the users has incurred upon the protocol",
+              "precision: QUOTE_PRECISION"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "settledPerpPnl",
+            "docs": [
+              "Fees (taker fees, maker rebate, referrer reward, filler reward) and pnl for perps",
+              "precision: QUOTE_PRECISION"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "cumulativeSpotFees",
+            "docs": [
+              "Fees (taker fees, maker rebate, filler reward) for spot",
+              "precision: QUOTE_PRECISION"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "cumulativePerpFunding",
+            "docs": [
+              "Cumulative funding paid/received for perps",
+              "precision: QUOTE_PRECISION"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "liquidationMarginFreed",
+            "docs": [
+              "The amount of margin freed during liquidation. Used to force the liquidation to occur over a period of time",
+              "Defaults to zero when not being liquidated",
+              "precision: QUOTE_PRECISION"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "lastActiveSlot",
+            "docs": [
+              "The last slot a user was active. Used to determine if a user is idle"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "nextOrderId",
+            "docs": [
+              "Every user order has an order id. This is the next order id to be used"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "maxMarginRatio",
+            "docs": ["Custom max initial margin ratio for the user"],
+            "type": "u32"
+          },
+          {
+            "name": "nextLiquidationId",
+            "docs": ["The next liquidation id to be used for user"],
+            "type": "u16"
+          },
+          {
+            "name": "subAccountId",
+            "docs": ["The sub account id for this user"],
+            "type": "u16"
+          },
+          {
+            "name": "status",
+            "docs": [
+              "Whether the user is active, being liquidated or bankrupt"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "isMarginTradingEnabled",
+            "docs": ["Whether the user has enabled margin trading"],
+            "type": "bool"
+          },
+          {
+            "name": "idle",
+            "docs": [
+              "User is idle if they haven't interacted with the protocol in 1 week and they have no orders, perp positions or borrows",
+              "Off-chain keeper bots can ignore users that are idle"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "openOrders",
+            "docs": ["number of open orders"],
+            "type": "u8"
+          },
+          {
+            "name": "hasOpenOrder",
+            "docs": ["Whether or not user has open order"],
+            "type": "bool"
+          },
+          {
+            "name": "openAuctions",
+            "docs": ["number of open orders with auction"],
+            "type": "u8"
+          },
+          {
+            "name": "hasOpenAuction",
+            "docs": ["Whether or not user has open order with auction"],
+            "type": "bool"
+          },
+          { "name": "padding", "type": { "array": ["u8", 21] } }
+        ]
+      }
+    },
+    {
+      "name": "UserStats",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "docs": ["The authority for all of a users sub accounts"],
+            "type": "publicKey"
+          },
+          {
+            "name": "referrer",
+            "docs": ["The address that referred this user"],
+            "type": "publicKey"
+          },
+          {
+            "name": "fees",
+            "docs": ["Stats on the fees paid by the user"],
+            "type": { "defined": "UserFees" }
+          },
+          {
+            "name": "nextEpochTs",
+            "docs": [
+              "The timestamp of the next epoch",
+              "Epoch is used to limit referrer rewards earned in single epoch"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "makerVolume30d",
+            "docs": [
+              "Rolling 30day maker volume for user",
+              "precision: QUOTE_PRECISION"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "takerVolume30d",
+            "docs": [
+              "Rolling 30day taker volume for user",
+              "precision: QUOTE_PRECISION"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "fillerVolume30d",
+            "docs": [
+              "Rolling 30day filler volume for user",
+              "precision: QUOTE_PRECISION"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "lastMakerVolume30dTs",
+            "docs": ["last time the maker volume was updated"],
+            "type": "i64"
+          },
+          {
+            "name": "lastTakerVolume30dTs",
+            "docs": ["last time the taker volume was updated"],
+            "type": "i64"
+          },
+          {
+            "name": "lastFillerVolume30dTs",
+            "docs": ["last time the filler volume was updated"],
+            "type": "i64"
+          },
+          {
+            "name": "ifStakedQuoteAssetAmount",
+            "docs": [
+              "The amount of tokens staked in the quote spot markets if"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "numberOfSubAccounts",
+            "docs": ["The current number of sub accounts"],
+            "type": "u16"
+          },
+          {
+            "name": "numberOfSubAccountsCreated",
+            "docs": [
+              "The number of sub accounts created. Can be greater than the number of sub accounts if user",
+              "has deleted sub accounts"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "isReferrer",
+            "docs": [
+              "Whether the user is a referrer. Sub account 0 can not be deleted if user is a referrer"
+            ],
+            "type": "bool"
+          },
+          { "name": "disableUpdatePerpBidAskTwap", "type": "bool" },
+          { "name": "padding", "type": { "array": ["u8", 50] } }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "LiquidatePerpRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "marketIndex", "type": "u16" },
+          { "name": "oraclePrice", "type": "i64" },
+          { "name": "baseAssetAmount", "type": "i64" },
+          { "name": "quoteAssetAmount", "type": "i64" },
+          {
+            "name": "lpShares",
+            "docs": ["precision: AMM_RESERVE_PRECISION"],
+            "type": "u64"
+          },
+          { "name": "fillRecordId", "type": "u64" },
+          { "name": "userOrderId", "type": "u32" },
+          { "name": "liquidatorOrderId", "type": "u32" },
+          {
+            "name": "liquidatorFee",
+            "docs": ["precision: QUOTE_PRECISION"],
+            "type": "u64"
+          },
+          {
+            "name": "ifFee",
+            "docs": ["precision: QUOTE_PRECISION"],
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "NewUserRecord",
+      "fields": [
+        { "name": "ts", "type": "i64", "index": false },
+        { "name": "userAuthority", "type": "publicKey", "index": false },
+        { "name": "user", "type": "publicKey", "index": false },
+        { "name": "subAccountId", "type": "u16", "index": false },
+        { "name": "name", "type": { "array": ["u8", 32] }, "index": false },
+        { "name": "referrer", "type": "publicKey", "index": false }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidSpotMarketAuthority",
+      "msg": "Invalid Spot Market Authority"
+    }
+  ]
+}
