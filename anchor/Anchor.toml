@@ -42,6 +42,9 @@ rpc_port = 8899
 slots_per_epoch = "32"
 url = "https://api.devnet.solana.com"
 
+#
+# Pricing
+#
 [[test.validator.clone]]
 # Pyth SOL/USD
 address = "J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"
@@ -54,19 +57,18 @@ address = "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J"
 [[test.validator.clone]]
 # Pyth ETH/USD
 address = "EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw"
+
 [[test.validator.clone]]
-# Drift program data
-address = "7dLgmtcTavcguNoynVimF9ZNVb13FvhXVRfj2HyrDGaP"
-[[test.validator.clone]]
-# Drift USDC
-address = "8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2"
-[[test.validator.clone]]
-# Drift BTC
-address = "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv"
+# Marinade Staking state for pricing
+address = "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC"
+
 [[test.validator.clone]]
 # WSOL
 address = "So11111111111111111111111111111111111111112"
 
+#
+# Funds
+#
 
 # Fund GBS AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2
 # fund + share class + treasury + treasury ATAs
@@ -116,6 +118,16 @@ address = "GXWqPpjQpdz7KZw9p7f5PX2eGxHAhvpNXiviFkAB8zXg"
 address = "3x85u7SWkmmr7YQGYhtjARgxwegTLJgkSLRprfXod6rh"
 [[test.validator.clone]]
 address = "6gMq3mRCKf8aP3ttTyYhuijVZ2LGi14oDsBbkgubfLB3"
+
+[[test.validator.clone]]
+# Drift program data
+address = "7dLgmtcTavcguNoynVimF9ZNVb13FvhXVRfj2HyrDGaP"
+[[test.validator.clone]]
+# Drift USDC
+address = "8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2"
+[[test.validator.clone]]
+# Drift BTC
+address = "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv"
 
 #
 # Marinade

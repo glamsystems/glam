@@ -37,7 +37,7 @@ static ASSETS: phf::Map<&'static str, AssetInfo> = phf_map! {
         pyth_account: "5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7",
         staking_state: "",
     },
-    // USDT
+    // USDT (TODO)
     "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB" =>
     AssetInfo {
         decimals: 6,
@@ -45,7 +45,7 @@ static ASSETS: phf::Map<&'static str, AssetInfo> = phf_map! {
         pyth_account: "3vxLXJqLqF3JG5TCbYycbKWRBbCJQLxQmBGCkyqEEefL",
         staking_state: "",
     },
-    // PYUSD
+    // PYUSD (TODO)
     "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo" =>
     AssetInfo {
         decimals: 6,
@@ -62,7 +62,7 @@ static ASSETS: phf::Map<&'static str, AssetInfo> = phf_map! {
         pyth_account: "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J",
         staking_state: "",
     },
-    // tBTC
+    // tBTC (TODO)
     "6DNSN2BJsaPFdFFc1zP37kkeNe4Usc1Sqkzr9C9vPWcU" =>
     AssetInfo {
         decimals: 8,
@@ -98,7 +98,7 @@ static ASSETS: phf::Map<&'static str, AssetInfo> = phf_map! {
     // Marinade staked SOL (mSOL)
     "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So" =>
     AssetInfo {
-        decimals: 5,
+        decimals: 9,
         is_stable_coin: false,
         pyth_account: "E4v1BBgoso9s64TQvmyownAVJbhbEPGyzA3qn4n46qj9",
         staking_state: "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC",
@@ -181,7 +181,7 @@ static ASSETS: phf::Map<&'static str, AssetInfo> = phf_map! {
 //     // Marinade staked SOL (mSOL)
 //     "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So" =>
 //     AssetInfo {
-//         decimals: 5,
+//         decimals: 9,
 //         is_stable_coin: false,
 //         pyth_account: "E4v1BBgoso9s64TQvmyownAVJbhbEPGyzA3qn4n46qj9",
 //         staking_state: "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC",

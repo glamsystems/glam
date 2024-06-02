@@ -32,6 +32,8 @@ const str2seed = (str: String) =>
   );
 
 describe("glam_investor", () => {
+  const glamClient = new GlamClient();
+
   const userKeypairs = [
     Keypair.generate(), // alice
     Keypair.generate(), // bob
@@ -347,24 +349,29 @@ describe("glam_investor", () => {
     const amount = new BN(10 * 10 ** 6); // 10 ETH = $30k
     const expectedShares = "3000"; // $10/share => 3k shares
     try {
-      const txId = await program.methods
-        .subscribe(amount, true)
-        .accounts({
-          fund: fundPDA,
-          shareClass: sharePDA,
-          signerShareAta: managerSharesAta,
-          asset: eth.publicKey,
-          treasuryAta: treasuryEthAta,
-          signerAssetAta: managerEthAta,
-          signer: manager.publicKey,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID
-        })
-        .remainingAccounts(remainingAccountsSubscribe)
-        .preInstructions([
-          ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
-        ])
-        .rpc({ commitment });
+      const txId = await glamClient.investor.subscribe(
+        fundPDA,
+        eth.publicKey,
+        amount
+      );
+      // const txId = await program.methods
+      //   .subscribe(amount, true)
+      //   .accounts({
+      //     fund: fundPDA,
+      //     shareClass: sharePDA,
+      //     signerShareAta: managerSharesAta,
+      //     asset: eth.publicKey,
+      //     treasuryAta: treasuryEthAta,
+      //     signerAssetAta: managerEthAta,
+      //     signer: manager.publicKey,
+      //     tokenProgram: TOKEN_PROGRAM_ID,
+      //     token2022Program: TOKEN_2022_PROGRAM_ID
+      //   })
+      //   .remainingAccounts(remainingAccountsSubscribe)
+      //   .preInstructions([
+      //     ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
+      //   ])
+      //   .rpc({ commitment });
       console.log("subscribe eth:", txId);
     } catch (e) {
       console.error(e);

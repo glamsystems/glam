@@ -8,9 +8,12 @@ import {
 import {
   ComputeBudgetProgram,
   Connection,
+  Keypair,
   PublicKey,
-  Signer,
-  TransactionSignature
+  Transaction,
+  TransactionMessage,
+  TransactionSignature,
+  VersionedTransaction
 } from "@solana/web3.js";
 import {
   TOKEN_2022_PROGRAM_ID,
@@ -61,6 +64,19 @@ export class BaseClient {
     this.jupiterApi = config?.jupiterApi || JUPITER_API_DEFAULT;
   }
 
+  async intoVersionedTransaction(
+    tx: Transaction,
+    payerKey: PublicKey
+  ): Promise<VersionedTransaction> {
+    const connection = this.provider.connection;
+    const messageV0 = new TransactionMessage({
+      payerKey,
+      recentBlockhash: (await connection.getLatestBlockhash()).blockhash,
+      instructions: tx.instructions
+    }).compileToV0Message();
+    return new VersionedTransaction(messageV0);
+  }
+
   getManager(): PublicKey {
     return this.provider?.publicKey || new PublicKey(0);
   }
@@ -69,7 +85,7 @@ export class BaseClient {
     return getAssociatedTokenAddressSync(mint, this.getManager());
   }
 
-  getWalletSigner(): Signer {
+  getWalletSigner(): Keypair {
     return ((this.provider as AnchorProvider).wallet as Wallet).payer;
   }
 
@@ -104,11 +120,16 @@ export class BaseClient {
     return pda;
   }
 
-  getTreasuryAta(fundPDA: PublicKey, mint: PublicKey): PublicKey {
+  getTreasuryAta(
+    fundPDA: PublicKey,
+    mint: PublicKey,
+    programId?: PublicKey
+  ): PublicKey {
     return getAssociatedTokenAddressSync(
       mint,
       this.getTreasuryPDA(fundPDA),
-      true
+      true,
+      programId
     );
   }
 
@@ -133,7 +154,12 @@ export class BaseClient {
   }
 
   getShareClassAta(user: PublicKey, shareClassPDA: PublicKey): PublicKey {
-    return getAssociatedTokenAddressSync(shareClassPDA, user, true);
+    return getAssociatedTokenAddressSync(
+      shareClassPDA,
+      user,
+      true,
+      TOKEN_2022_PROGRAM_ID
+    );
   }
 
   getFundName(fundModel: FundModel) {
@@ -305,6 +331,11 @@ export class BaseClient {
     //TODO rebuild model from accounts
     let fundModel = this.getFundModel(fundAccount);
     fundModel.id = fundPDA;
+    fundAccount.params[0].forEach((param) => {
+      const name = Object.keys(param.name)[0];
+      const value = Object.values(param.value)[0].val;
+      fundModel[name] = value;
+    });
 
     let fund = {
       ...fundModel,
