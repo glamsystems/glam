@@ -47,6 +47,7 @@ const mainnetProvider = new AnchorProvider(mainnetConnection, null, {
   commitment: "confirmed"
 });
 const mainnetClient = new GlamClient({
+  cluster: "mainnet-beta",
   provider: mainnetProvider,
   jupiterApi: JUPITER_API
 });

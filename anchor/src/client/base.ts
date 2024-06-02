@@ -8,7 +8,6 @@ import {
 import {
   BlockhashWithExpiryBlockHeight,
   ComputeBudgetProgram,
-  ConfirmOptions,
   Connection,
   Keypair,
   PublicKey,
@@ -23,8 +22,9 @@ import {
 } from "@solana/spl-token";
 
 import { Glam, GlamIDL, GlamProgram, getGlamProgramId } from "../glamExports";
-import { GlamClientConfig } from "../clientConfig";
+import { ClusterOrCustom, GlamClientConfig } from "../clientConfig";
 import { FundModel, FundOpenfundsModel } from "../models";
+import { AssetMeta, ASSETS_DEVNET, ASSETS_MAINNET } from "./assets";
 
 type FundAccount = IdlAccounts<Glam>["fundAccount"];
 type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
@@ -32,13 +32,15 @@ type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
 export const JUPITER_API_DEFAULT = "https://quote-api.jup.ag/v6";
 
 export class BaseClient {
+  cluster: ClusterOrCustom;
   provider: anchor.Provider;
   program: GlamProgram;
   programId: PublicKey;
   jupiterApi: string;
 
   public constructor(config?: GlamClientConfig) {
-    this.programId = getGlamProgramId(config?.cluster || "devnet");
+    this.cluster = config?.cluster || "devnet";
+    this.programId = getGlamProgramId(this.cluster);
     if (config?.provider) {
       this.provider = config.provider;
       this.program = new Program(
@@ -64,6 +66,18 @@ export class BaseClient {
     }
 
     this.jupiterApi = config?.jupiterApi || JUPITER_API_DEFAULT;
+  }
+
+  isMainnet(): boolean {
+    return this.cluster === "mainnet-beta";
+  }
+
+  getAssetMeta(asset: string): AssetMeta {
+    return (
+      (this.isMainnet()
+        ? ASSETS_MAINNET.get(asset)
+        : ASSETS_DEVNET.get(asset)) || new AssetMeta()
+    );
   }
 
   latestBlockhash?: BlockhashWithExpiryBlockHeight;
