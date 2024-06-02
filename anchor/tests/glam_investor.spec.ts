@@ -24,6 +24,13 @@ import {
 import { fundTestExample, createFundForTest } from "./setup";
 import { GlamClient } from "../src";
 
+const str2seed = (str: String) =>
+  Uint8Array.from(
+    Array.from(str)
+      .map((letter) => letter.charCodeAt(0))
+      .concat(new Array(32 - str.length).fill(0))
+  );
+
 describe("glam_investor", () => {
   const userKeypairs = [
     Keypair.generate(), // alice
@@ -35,14 +42,18 @@ describe("glam_investor", () => {
   const eve = userKeypairs[2];
 
   const tokenKeypairs = [
-    Keypair.generate(), // mock token 0
-    Keypair.generate(), // ...
-    Keypair.generate()
+    Keypair.fromSeed(str2seed("usdc")), // mock token 0
+    Keypair.fromSeed(str2seed("eth")), // ...
+    Keypair.fromSeed(str2seed("btc"))
   ];
   const usdc = tokenKeypairs[0]; // 6 decimals
   const eth = tokenKeypairs[1]; // 6 decimals
   const btc = tokenKeypairs[2]; // 9 decimals, token2022
   const BTC_TOKEN_PROGRAM_ID = TOKEN_2022_PROGRAM_ID;
+
+  // console.log("USDC", usdc.publicKey);
+  // console.log("ETH", eth.publicKey);
+  // console.log("BTC", btc.publicKey);
 
   const client = new GlamClient();
   const manager = (client.provider as anchor.AnchorProvider)

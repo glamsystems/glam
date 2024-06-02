@@ -6,3 +6,6 @@ pub use model::*;
 
 pub mod accounts;
 pub use accounts::*;
+
+pub mod assets;
+pub use assets::*;

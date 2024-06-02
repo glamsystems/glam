@@ -132,6 +132,10 @@ export class BaseClient {
     return pda;
   }
 
+  getShareClassAta(user: PublicKey, shareClassPDA: PublicKey): PublicKey {
+    return getAssociatedTokenAddressSync(shareClassPDA, user, true);
+  }
+
   getFundName(fundModel: FundModel) {
     return (
       fundModel.name ||

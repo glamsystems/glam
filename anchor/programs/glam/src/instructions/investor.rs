@@ -121,6 +121,10 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         panic!("not implemented")
     }
     require!(fund.share_classes.len() > 0, FundError::NoShareClassInFund);
+    require!(
+        fund.share_classes[0] == ctx.accounts.share_class.key(),
+        InvestorError::InvalidShareClass
+    );
 
     if let Some(share_class_blocklist) = fund.share_class_blocklist(0) {
         require!(
@@ -144,15 +148,6 @@ pub fn subscribe_handler<'c: 'info, 'info>(
 
     let assets = fund.assets().unwrap();
     // msg!("assets: {:?}", assets);
-
-    // msg!("fund.share_class[0]: {}", fund.share_classes[0]);
-    // msg!("expected share class: {}", ctx.accounts.share_class.key());
-
-    require!(
-        fund.share_classes[0] == ctx.accounts.share_class.key(),
-        InvestorError::InvalidShareClass
-    );
-
     let asset_info = ctx.accounts.asset.to_account_info();
     let asset_key = asset_info.key();
     let asset_idx = assets.iter().position(|&asset| asset == asset_key);
@@ -190,13 +185,22 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     let mut subscribe_asset_price = total_value;
     let mut subscribe_asset_expo = 0i32;
     for (i, accounts) in ctx.remaining_accounts.chunks(2).enumerate() {
+        let cur_asset = assets[i];
+        let cur_asset_str = cur_asset.to_string();
+        let cur_asset_meta = AssetInfo::get(cur_asset_str.as_str())?;
+
         let treasury_ata = InterfaceAccount::<TokenAccount>::try_from(&accounts[0])
             .expect("invalid treasury account");
+        require!(
+            treasury_ata.mint == cur_asset,
+            InvestorError::InvalidTreasuryAccount
+        );
+
         let pricing_account = &accounts[1];
-        // require!(
-        //     treasury_ata.mint == fund.assets[i],
-        //     InvestorError::InvalidTreasuryAccount
-        // );
+        require!(
+            pricing_account.key().to_string().as_str() == cur_asset_meta.pyth_account,
+            InvestorError::InvalidPricingOracle
+        );
 
         let price_feed: pyth_sdk_solana::PriceFeed =
             SolanaPriceAccount::account_info_to_feed(pricing_account).unwrap();
@@ -217,7 +221,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         //     publish_time: 0,
         // };
 
-        let asset_decimals: u8 = if i == 1 { 9 } else { 6 };
+        let asset_decimals = cur_asset_meta.decimals;
         let asset_expo = -(asset_decimals as i32);
         asset_price = asset_price.scale_to_exponent(asset_expo).unwrap();
         let asset_amount = treasury_ata.amount;
