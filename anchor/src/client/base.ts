@@ -1,3 +1,4 @@
+const util = require("util");
 import * as anchor from "@coral-xyz/anchor";
 import {
   AnchorProvider,
@@ -7,6 +8,7 @@ import {
 } from "@coral-xyz/anchor";
 import {
   ComputeBudgetProgram,
+  ConfirmOptions,
   Connection,
   Keypair,
   PublicKey,
@@ -75,6 +77,20 @@ export class BaseClient {
       instructions: tx.instructions
     }).compileToV0Message();
     return new VersionedTransaction(messageV0);
+  }
+
+  async sendAndConfirm(
+    tx: VersionedTransaction,
+    signer: Keypair
+  ): Promise<TransactionSignature> {
+    // Anchor provider.sendAndConfirm forces a signature with the wallet, which we don't want
+    // https://github.com/coral-xyz/anchor/blob/v0.30.0/ts/packages/anchor/src/provider.ts#L159
+    const connection = this.provider.connection;
+    tx.sign([signer]);
+    const signature = await connection.sendTransaction(tx);
+    // await confirmation
+    await connection.confirmTransaction({ signature });
+    return signature;
   }
 
   getManager(): PublicKey {

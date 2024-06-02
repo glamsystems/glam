@@ -90,7 +90,7 @@ export class InvestorClient {
       shareClassId,
       skipState
     );
-    return await this.base.provider.sendAndConfirm(tx, [user]);
+    return await this.base.sendAndConfirm(tx, user);
   }
 
   /*
@@ -107,8 +107,18 @@ export class InvestorClient {
   ): Promise<VersionedTransaction> {
     const shareClass = this.base.getShareClassPDA(fund, shareClassId);
     const signerShareAta = this.base.getShareClassAta(signer, shareClass);
-    const treasuryAta = this.base.getTreasuryAta(fund, asset);
-    const signerAssetAta = getAssociatedTokenAddressSync(asset, signer);
+    const assetMeta = ASSETS_DEVNET[asset.toBase58()];
+    const treasuryAta = this.base.getTreasuryAta(
+      fund,
+      asset,
+      assetMeta.programId
+    );
+    const signerAssetAta = getAssociatedTokenAddressSync(
+      asset,
+      signer,
+      true,
+      assetMeta.programId
+    );
 
     const fundModel = await this.base.fetchFund(fund);
     const remainingAccounts = (fundModel.assets || []).flatMap((asset) => {
