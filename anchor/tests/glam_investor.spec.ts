@@ -48,25 +48,22 @@ describe("glam_investor", () => {
   const manager = (client.provider as anchor.AnchorProvider)
     .wallet as anchor.Wallet;
 
+  const fundExample = {
+    ...fundTestExample,
+    name: "Glam Investment",
+    assets: [usdc.publicKey, btc.publicKey, eth.publicKey],
+    assetsWeights: [0, 60, 40]
+  } as any;
   // overwrite share class acls
   // alice and manager are allowed to subcribe
   // bob and eve will be blocked
-  let fundTestExampleCopy = { ...fundTestExample };
-  fundTestExampleCopy.shareClasses[0].allowlist = [
+  fundExample.shareClasses[0].allowlist = [
     alice.publicKey,
     bob.publicKey,
     manager.publicKey
   ];
-  fundTestExampleCopy.shareClasses[0].blocklist = [
-    bob.publicKey,
-    eve.publicKey
-  ];
+  fundExample.shareClasses[0].blocklist = [bob.publicKey, eve.publicKey];
 
-  const fundExample = {
-    ...fundTestExampleCopy,
-    name: "Glam Investment",
-    assets: [usdc.publicKey, btc.publicKey, eth.publicKey]
-  } as any;
   const fundPDA = client.getFundPDA(fundExample);
   const treasuryPDA = client.getTreasuryPDA(fundPDA);
   const sharePDA = client.getShareClassPDA(fundPDA, 0);
@@ -417,7 +414,7 @@ describe("glam_investor", () => {
         .remainingAccounts(remainingAccountsSubscribe)
         .rpc({ commitment });
     } catch (e) {
-      console.error(e);
+      // console.error(e);
       expect(e.message).toContain("A seeds constraint was violated");
       expect(e.message).toContain("Error Code: ConstraintSeeds");
     }
@@ -764,7 +761,7 @@ describe("glam_investor", () => {
       console.log("tx:", txId);
       expect(txId).toBeUndefined();
     } catch (e) {
-      console.error(e);
+      // console.error(e);
       expect(e.message).toContain("Share class not allowed to subscribe");
       expect(e.message).toContain("Error Code: InvalidShareClass");
     }
@@ -803,7 +800,7 @@ describe("glam_investor", () => {
       console.log("tx:", txId);
       expect(txId).toBeUndefined();
     } catch (e) {
-      console.error(e);
+      // console.error(e);
       expect(e.message).toContain("Share class not allowed to subscribe");
       expect(e.message).toContain("Error Code: InvalidShareClass");
     }
