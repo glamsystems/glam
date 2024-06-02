@@ -1,4 +1,3 @@
-const util = require("util");
 import * as anchor from "@coral-xyz/anchor";
 import {
   AnchorProvider,
@@ -7,6 +6,7 @@ import {
   Wallet
 } from "@coral-xyz/anchor";
 import {
+  BlockhashWithExpiryBlockHeight,
   ComputeBudgetProgram,
   ConfirmOptions,
   Connection,
@@ -66,14 +66,32 @@ export class BaseClient {
     this.jupiterApi = config?.jupiterApi || JUPITER_API_DEFAULT;
   }
 
+  latestBlockhash?: BlockhashWithExpiryBlockHeight;
+  async getLatestBlockhash(): Promise<BlockhashWithExpiryBlockHeight> {
+    if (this.latestBlockhash !== undefined) {
+      //TODO: better caching
+      // right now we cache for 1 call, this is sufficient to create and send
+      // one versioned transaction
+      const latestBlockhash = this.latestBlockhash;
+      this.latestBlockhash = undefined;
+      return latestBlockhash;
+    }
+    this.latestBlockhash = await this.provider.connection.getLatestBlockhash();
+    return this.latestBlockhash;
+  }
+
   async intoVersionedTransaction(
     tx: Transaction,
-    payerKey: PublicKey
+    payerKey: PublicKey,
+    latestBlockhash?: BlockhashWithExpiryBlockHeight
   ): Promise<VersionedTransaction> {
+    if (latestBlockhash === undefined) {
+      latestBlockhash = await this.getLatestBlockhash();
+    }
     const connection = this.provider.connection;
     const messageV0 = new TransactionMessage({
       payerKey,
-      recentBlockhash: (await connection.getLatestBlockhash()).blockhash,
+      recentBlockhash: latestBlockhash.blockhash,
       instructions: tx.instructions
     }).compileToV0Message();
     return new VersionedTransaction(messageV0);
@@ -81,15 +99,22 @@ export class BaseClient {
 
   async sendAndConfirm(
     tx: VersionedTransaction,
-    signer: Keypair
+    signer: Keypair,
+    latestBlockhash?: BlockhashWithExpiryBlockHeight
   ): Promise<TransactionSignature> {
+    if (latestBlockhash === undefined) {
+      latestBlockhash = await this.getLatestBlockhash();
+    }
     // Anchor provider.sendAndConfirm forces a signature with the wallet, which we don't want
     // https://github.com/coral-xyz/anchor/blob/v0.30.0/ts/packages/anchor/src/provider.ts#L159
-    const connection = this.provider.connection;
     tx.sign([signer]);
-    const signature = await connection.sendTransaction(tx);
+    const connection = this.provider.connection;
+    const signature = await connection.sendTransaction(tx); // can throw
     // await confirmation
-    await connection.confirmTransaction({ signature });
+    await connection.confirmTransaction({
+      ...latestBlockhash,
+      signature
+    });
     return signature;
   }
 
@@ -340,7 +365,7 @@ export class BaseClient {
     return openfund;
   }
 
-  public async fetchFund(fundPDA: PublicKey): Promise<any> {
+  public async fetchFund(fundPDA: PublicKey): Promise<FundModel> {
     const fundAccount = await this.fetchFundAccount(fundPDA);
     const openfundsAccount = await this.fetchFundMetadataAccount(fundPDA);
 
@@ -350,6 +375,7 @@ export class BaseClient {
     fundAccount.params[0].forEach((param) => {
       const name = Object.keys(param.name)[0];
       const value = Object.values(param.value)[0].val;
+      //@ts-ignore
       fundModel[name] = value;
     });
 
