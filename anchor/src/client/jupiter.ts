@@ -23,7 +23,7 @@ export class JupiterClient {
 
   public async swap(
     fund: PublicKey,
-    quote?: any,
+    quoteParams?: any,
     quoteResponse?: any,
     swapInstruction?: any,
     addressLookupTableAddresses?: any
@@ -31,14 +31,54 @@ export class JupiterClient {
     const tx = await this.swapTxBuilder(
       fund,
       this.base.getManager(),
-      quote,
+      this.base.getTreasuryAta(fund, quoteParams.outputMint),
+      quoteParams,
       quoteResponse,
       swapInstruction,
       addressLookupTableAddresses
     );
-    tx.sign([this.base.getWalletSigner()]);
-    return await this.base.provider.connection.sendTransaction(tx);
+    return await this.base.provider.sendAndConfirm(tx, [
+      this.base.getWalletSigner()
+    ]);
   }
+
+  ixDataToTransactionInstruction = (ixPayload: any) => {
+    if (ixPayload === null) {
+      return null;
+    }
+
+    return new TransactionInstruction({
+      programId: new PublicKey(ixPayload.programId),
+      keys: ixPayload.accounts.map((key) => ({
+        pubkey: new PublicKey(key.pubkey),
+        isSigner: key.isSigner,
+        isWritable: key.isWritable
+      })),
+      data: Buffer.from(ixPayload.data, "base64")
+    });
+  };
+
+  getAdressLookupTableAccounts = async (
+    keys: string[]
+  ): Promise<AddressLookupTableAccount[]> => {
+    const addressLookupTableAccountInfos =
+      await this.base.provider.connection.getMultipleAccountsInfo(
+        keys.map((key) => new PublicKey(key))
+      );
+
+    return addressLookupTableAccountInfos.reduce((acc, accountInfo, index) => {
+      const addressLookupTableAddress = keys[index];
+      if (accountInfo) {
+        const addressLookupTableAccount = new AddressLookupTableAccount({
+          key: new PublicKey(addressLookupTableAddress),
+          state: AddressLookupTableAccount.deserialize(accountInfo.data)
+        });
+        acc.push(addressLookupTableAccount);
+      }
+
+      return acc;
+    }, new Array<AddressLookupTableAccount>());
+  };
 
   /*
    * Tx Builders
@@ -47,101 +87,98 @@ export class JupiterClient {
   async swapTxBuilder(
     fund: PublicKey,
     manager: PublicKey,
-    quote?: any,
+    destinationTokenAccount?: PublicKey,
+    quoteParams?: any,
     quoteResponse?: any,
     swapInstruction?: any,
     addressLookupTableAddresses?: string[]
   ): Promise<VersionedTransaction> /* MethodsBuilder<Glam, ?> */ {
     if (swapInstruction === undefined) {
       if (quoteResponse === undefined) {
-        /* Fetch quoteResponse is not specified */
-        console.log("Fetching quoteResponse...");
-        quoteResponse = await this.getQuoteResponse(quote);
+        // Fetch quoteResponse if not specified - quoteParams must be specified in this case
+        if (quoteParams === undefined) {
+          throw new Error(
+            "quoteParams must be specified when quoteResponse and swapInstruction are not specified."
+          );
+        }
+        console.log("Fetching quoteResponse with quoteParams:", quoteParams);
+        quoteResponse = await this.getQuoteResponse(quoteParams);
       }
-      /* Fetch swapInstruction is not specified */
-      console.log("Fetching swapInstruction...");
-      [swapInstruction, addressLookupTableAddresses] =
-        await this.getSwapInstruction({
-          userPublicKey: manager,
-          quoteResponse
-        });
-    }
-    // console.log("swapInstruction", swapInstruction);
-    /* Create the tx for jupiterSwap using the swapInstruction */
-    const tx = await this.base.program.methods
-      .jupiterSwap(swapInstruction.data)
-      .accounts({
-        fund,
+
+      const ins = await this.getSwapInstructions(
+        quoteResponse,
         manager,
-        treasury: this.base.getTreasuryPDA(fund),
-        jupiterProgram
-      })
-      .remainingAccounts(swapInstruction.keys)
-      .transaction();
+        destinationTokenAccount
+      );
+      console.log("/swap-instructions returns:", JSON.stringify(ins));
+      swapInstruction = ins.swapInstruction;
+      addressLookupTableAddresses = ins.addressLookupTableAddresses;
+    }
 
-    const connection = this.base.provider.connection;
-    const lookupTableAccounts = (
-      await Promise.all(
-        (addressLookupTableAddresses || []).map(
-          async (address) =>
-            (
-              await connection.getAddressLookupTable(new PublicKey(address))
-            ).value
-        )
-      )
-    ).filter((x) => !!x) as AddressLookupTableAccount[];
+    console.log("swapInstruction:", swapInstruction);
 
+    const swapIx = this.ixDataToTransactionInstruction(swapInstruction);
+    const instructions = [
+      await this.base.program.methods
+        .jupiterSwap(new anchor.BN(quoteParams.amount), swapIx.data)
+        .accounts({
+          fund,
+          manager,
+          managerWsolAta: this.base.getManagerAta(quoteParams.inputMint),
+          treasury: this.base.getTreasuryPDA(fund),
+          treasuryMsolAta: destinationTokenAccount,
+          wsolMint: quoteParams.inputMint,
+          msolMint: quoteParams.outputMint,
+          jupiterProgram
+        })
+        .remainingAccounts(swapIx.keys)
+        .instruction()
+    ];
+    const addressLookupTableAccounts = await this.getAdressLookupTableAccounts(
+      addressLookupTableAddresses
+    );
     const messageV0 = new TransactionMessage({
-      payerKey: manager,
-      recentBlockhash: (await connection.getLatestBlockhash()).blockhash,
-      instructions: tx.instructions
-    }).compileToV0Message(lookupTableAccounts);
+      payerKey: this.base.getWalletSigner().publicKey,
+      recentBlockhash: (
+        await this.base.provider.connection.getLatestBlockhash()
+      ).blockhash,
+      instructions
+    }).compileToV0Message(addressLookupTableAccounts);
 
     return new VersionedTransaction(messageV0);
   }
 
-  public async getQuoteResponse(quote: any): Promise<any> {
+  public async getQuoteResponse(quoteParams: any): Promise<any> {
     const res = await fetch(
       `${this.base.jupiterApi}/quote?` +
-        new URLSearchParams(Object.entries(quote))
+        new URLSearchParams(Object.entries(quoteParams))
     );
-    const quoteResponse = await res.json();
-    // console.log("quoteResponse", quoteResponse);
-    return quoteResponse;
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(`Failed to fetch quote: ${data}`);
+    }
+    return data;
   }
 
-  public async getSwapInstructions(quoteResponse: any): Promise<any> {
+  async getSwapInstructions(
+    quoteResponse: any,
+    from: PublicKey,
+    to?: PublicKey
+  ): Promise<any> {
     const res = await fetch(`${this.base.jupiterApi}/swap-instructions`, {
       method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(quoteResponse)
+      body: JSON.stringify({
+        quoteResponse,
+        userPublicKey: from.toBase58(),
+        destinationTokenAccount: to?.toBase58()
+      })
     });
 
-    const instructions = await res.json();
-    return instructions;
-  }
-
-  async getSwapInstruction(
-    quoteResponse: any
-  ): Promise<[TransactionInstruction, string[]]> {
-    const { swapInstruction, addressLookupTableAddresses } =
-      await this.getSwapInstructions(quoteResponse);
-
-    return [
-      new TransactionInstruction({
-        programId: new PublicKey(swapInstruction.programId),
-        keys: swapInstruction.accounts.map((key: any) => ({
-          pubkey: new PublicKey(key.pubkey),
-          isSigner: key.isSigner,
-          isWritable: key.isWritable
-        })),
-        data: Buffer.from(swapInstruction.data, "base64")
-      }),
-      addressLookupTableAddresses
-    ];
+    return await res.json();
   }
 
   /*

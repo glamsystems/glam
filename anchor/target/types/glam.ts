@@ -830,7 +830,7 @@ export type Glam = {
           "isSigner": true
         },
         {
-          "name": "treasury",
+          "name": "managerWsolAta",
           "isMut": true,
           "isSigner": false
         },
@@ -840,7 +840,32 @@ export type Glam = {
           "isSigner": false
         },
         {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryMsolAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "wsolMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "msolMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "jupiterProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
         },
@@ -848,9 +873,18 @@ export type Glam = {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
         {
           "name": "data",
           "type": "bytes"
@@ -3866,7 +3900,7 @@ export const IDL: Glam = {
           "isSigner": true
         },
         {
-          "name": "treasury",
+          "name": "managerWsolAta",
           "isMut": true,
           "isSigner": false
         },
@@ -3876,7 +3910,32 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryMsolAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "wsolMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "msolMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "jupiterProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
         },
@@ -3884,9 +3943,18 @@ export const IDL: Glam = {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
         {
           "name": "data",
           "type": "bytes"

@@ -65,6 +65,10 @@ export class BaseClient {
     return this.provider?.publicKey || new PublicKey(0);
   }
 
+  getManagerAta(mint: PublicKey): PublicKey {
+    return getAssociatedTokenAddressSync(mint, this.getManager());
+  }
+
   getWalletSigner(): Signer {
     return ((this.provider as AnchorProvider).wallet as Wallet).payer;
   }

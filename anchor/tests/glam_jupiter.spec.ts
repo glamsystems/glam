@@ -15,15 +15,28 @@ describe("glam_jupiter", () => {
 
     const fund = await glamClient.fetchFund(fundPDA);
     expect(fund.shareClasses.length).toEqual(1);
+
+    // Air drop some SOL to the treasury
+    const airdrop = await glamClient.provider.connection.requestAirdrop(
+      glamClient.getTreasuryPDA(fundPDA),
+      1_000_000_000
+    );
+    await glamClient.provider.connection.confirmTransaction(airdrop);
   });
 
   it("Swap", async () => {
+    const amount = 50_000_000;
     try {
       const txId = await glamClient.jupiter.swap(fundPDA, {
         inputMint: wSol,
         outputMint: mSol,
-        amount: 500_000_000,
-        maxAccounts: 10
+        amount,
+        autoSlippage: true,
+        autoSlippageCollisionUsdValue: 1000,
+        swapMode: "ExactIn",
+        onlyDirectRoutes: false,
+        asLegacyTransaction: false,
+        maxAccounts: 20
       });
       console.log("swap txId", txId);
     } catch (e) {
