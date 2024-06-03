@@ -830,7 +830,7 @@ export type Glam = {
           "isSigner": true
         },
         {
-          "name": "managerWsolAta",
+          "name": "inputAta",
           "isMut": true,
           "isSigner": false
         },
@@ -845,17 +845,17 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "treasuryMsolAta",
+          "name": "outputAta",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "wsolMint",
+          "name": "inputMint",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "msolMint",
+          "name": "outputMint",
           "isMut": false,
           "isSigner": false
         },
@@ -3900,7 +3900,7 @@ export const IDL: Glam = {
           "isSigner": true
         },
         {
-          "name": "managerWsolAta",
+          "name": "inputAta",
           "isMut": true,
           "isSigner": false
         },
@@ -3915,17 +3915,17 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "treasuryMsolAta",
+          "name": "outputAta",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "wsolMint",
+          "name": "inputMint",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "msolMint",
+          "name": "outputMint",
           "isMut": false,
           "isSigner": false
         },

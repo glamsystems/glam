@@ -5,7 +5,8 @@ import {
   TransactionInstruction,
   TransactionSignature,
   TransactionMessage,
-  VersionedTransaction
+  VersionedTransaction,
+  AccountMeta
 } from "@solana/web3.js";
 
 import { BaseClient } from "./base";
@@ -13,6 +14,34 @@ import { BaseClient } from "./base";
 const jupiterProgram = new PublicKey(
   "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"
 );
+
+interface QuoteParams {
+  inputMint: PublicKey;
+  outputMint: PublicKey;
+  amount: number;
+  autoSlippage?: boolean;
+  autoSlippageCollisionUsdValue?: number;
+  slippageBps?: number;
+  swapMode?: string;
+  onlyDirectRoutes?: boolean;
+  asLegacyTransaction?: boolean;
+  maxAccounts?: number;
+}
+
+interface QuoteResponse {
+  inputMint: string;
+  inAmount: number;
+  outputMint: string;
+  outAmount: number;
+  otherAmountThreshold: number;
+  swapMode: string;
+  slippageBps: number;
+  platformFee?: number;
+  priceImpactPct: number;
+  routePlan: any[];
+  contextSlot: number;
+  timeTaken: number;
+}
 
 export class JupiterClient {
   public constructor(readonly base: BaseClient) {}
@@ -23,33 +52,44 @@ export class JupiterClient {
 
   public async swap(
     fund: PublicKey,
-    quoteParams?: any,
-    quoteResponse?: any,
+    quoteParams?: QuoteParams,
+    quoteResponse?: QuoteResponse,
     swapInstruction?: any,
     addressLookupTableAddresses?: any
   ): Promise<TransactionSignature> {
+    const outputMint =
+      quoteParams?.outputMint || new PublicKey(quoteResponse!.outputMint);
+
     const tx = await this.swapTxBuilder(
       fund,
       this.base.getManager(),
-      this.base.getTreasuryAta(fund, quoteParams.outputMint),
+      this.base.getTreasuryAta(fund, outputMint),
       quoteParams,
       quoteResponse,
       swapInstruction,
       addressLookupTableAddresses
     );
-    return await this.base.provider.sendAndConfirm(tx, [
-      this.base.getWalletSigner()
-    ]);
+    if (!this.base.provider) {
+      throw new Error("Provider is undefined");
+    }
+    return await (this.base.provider as anchor.AnchorProvider).sendAndConfirm(
+      tx,
+      [this.base.getWalletSigner()]
+    );
   }
 
-  ixDataToTransactionInstruction = (ixPayload: any) => {
+  ixDataToTransactionInstruction = (ixPayload: {
+    programId: string;
+    accounts: any[];
+    data: string;
+  }) => {
     if (ixPayload === null) {
-      return null;
+      throw new Error("ixPayload is null");
     }
 
     return new TransactionInstruction({
       programId: new PublicKey(ixPayload.programId),
-      keys: ixPayload.accounts.map((key) => ({
+      keys: ixPayload.accounts.map((key: any) => ({
         pubkey: new PublicKey(key.pubkey),
         isSigner: key.isSigner,
         isWritable: key.isWritable
@@ -59,8 +99,12 @@ export class JupiterClient {
   };
 
   getAdressLookupTableAccounts = async (
-    keys: string[]
+    keys?: string[]
   ): Promise<AddressLookupTableAccount[]> => {
+    if (!keys) {
+      throw new Error("addressLookupTableAddresses is undefined");
+    }
+
     const addressLookupTableAccountInfos =
       await this.base.provider.connection.getMultipleAccountsInfo(
         keys.map((key) => new PublicKey(key))
@@ -88,11 +132,17 @@ export class JupiterClient {
     fund: PublicKey,
     manager: PublicKey,
     destinationTokenAccount?: PublicKey,
-    quoteParams?: any,
-    quoteResponse?: any,
+    quoteParams?: QuoteParams,
+    quoteResponse?: QuoteResponse,
     swapInstruction?: any,
     addressLookupTableAddresses?: string[]
-  ): Promise<VersionedTransaction> /* MethodsBuilder<Glam, ?> */ {
+  ): Promise<VersionedTransaction> {
+    const swapAmount = quoteParams?.amount || quoteResponse?.inAmount;
+    const inputMint =
+      quoteParams?.inputMint || new PublicKey(quoteResponse!.inputMint);
+    const outputMint =
+      quoteParams?.outputMint || new PublicKey(quoteResponse!.outputMint);
+
     if (swapInstruction === undefined) {
       if (quoteResponse === undefined) {
         // Fetch quoteResponse if not specified - quoteParams must be specified in this case
@@ -117,18 +167,20 @@ export class JupiterClient {
 
     console.log("swapInstruction:", swapInstruction);
 
-    const swapIx = this.ixDataToTransactionInstruction(swapInstruction);
+    const swapIx: { data: any; keys: AccountMeta[] } =
+      this.ixDataToTransactionInstruction(swapInstruction);
+
     const instructions = [
       await this.base.program.methods
-        .jupiterSwap(new anchor.BN(quoteParams.amount), swapIx.data)
+        .jupiterSwap(new anchor.BN(swapAmount), swapIx.data)
         .accounts({
           fund,
           manager,
-          managerWsolAta: this.base.getManagerAta(quoteParams.inputMint),
+          inputAta: this.base.getManagerAta(inputMint),
           treasury: this.base.getTreasuryPDA(fund),
-          treasuryMsolAta: destinationTokenAccount,
-          wsolMint: quoteParams.inputMint,
-          msolMint: quoteParams.outputMint,
+          outputAta: destinationTokenAccount,
+          inputMint,
+          outputMint,
           jupiterProgram
         })
         .remainingAccounts(swapIx.keys)

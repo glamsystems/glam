@@ -830,7 +830,7 @@
           "isSigner": true
         },
         {
-          "name": "managerWsolAta",
+          "name": "inputAta",
           "isMut": true,
           "isSigner": false
         },
@@ -845,17 +845,17 @@
           "isSigner": false
         },
         {
-          "name": "treasuryMsolAta",
+          "name": "outputAta",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "wsolMint",
+          "name": "inputMint",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "msolMint",
+          "name": "outputMint",
           "isMut": false,
           "isSigner": false
         },

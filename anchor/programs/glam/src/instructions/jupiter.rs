@@ -29,9 +29,9 @@ pub struct JupiterSwap<'info> {
     #[account(
         init_if_needed,
         payer = manager,
-        associated_token::mint = wsol_mint,
+        associated_token::mint = input_mint,
         associated_token::authority = manager)]
-    pub manager_wsol_ata: Account<'info, TokenAccount>,
+    pub input_ata: Account<'info, TokenAccount>,
 
     // Fund and treasury
     #[account(has_one = manager, has_one = treasury)]
@@ -41,12 +41,12 @@ pub struct JupiterSwap<'info> {
     #[account(
         init_if_needed,
         payer = manager,
-        associated_token::mint = msol_mint,
+        associated_token::mint = output_mint,
         associated_token::authority = treasury)]
-    pub treasury_msol_ata: Account<'info, TokenAccount>,
+    pub output_ata: Account<'info, TokenAccount>,
 
-    pub wsol_mint: Account<'info, Mint>,
-    pub msol_mint: Account<'info, Mint>,
+    pub input_mint: Account<'info, Mint>,
+    pub output_mint: Account<'info, Mint>,
 
     pub jupiter_program: Program<'info, Jupiter>,
     pub token_program: Program<'info, Token>,
@@ -55,6 +55,8 @@ pub struct JupiterSwap<'info> {
 }
 
 pub fn jupiter_swap(ctx: Context<JupiterSwap>, amount: u64, data: Vec<u8>) -> Result<()> {
+    // TODO: check input mint and output mint are supported & allowed
+
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
         "treasury".as_bytes(),
@@ -64,13 +66,14 @@ pub fn jupiter_swap(ctx: Context<JupiterSwap>, amount: u64, data: Vec<u8>) -> Re
     let signer_seeds = &[&seeds[..]];
     //
     // Transfer sol from treasury to manager wsol ata
+    // TODO: this only supports SOL transfer, need to support other tokens
     //
     system_program::transfer(
         CpiContext::new_with_signer(
             ctx.accounts.system_program.to_account_info(),
             system_program::Transfer {
                 from: ctx.accounts.treasury.to_account_info(),
-                to: ctx.accounts.manager_wsol_ata.to_account_info(),
+                to: ctx.accounts.input_ata.to_account_info(),
             },
             signer_seeds,
         ),
@@ -79,7 +82,7 @@ pub fn jupiter_swap(ctx: Context<JupiterSwap>, amount: u64, data: Vec<u8>) -> Re
     sync_native(CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
         SyncNative {
-            account: ctx.accounts.manager_wsol_ata.to_account_info(),
+            account: ctx.accounts.input_ata.to_account_info(),
         },
         &[],
     ))?;
