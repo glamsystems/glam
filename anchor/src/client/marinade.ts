@@ -108,7 +108,6 @@ export class MarinadeClient {
     amount: BN
   ): any /* MethodsBuilder<Glam, ?> */ {
     const treasury = this.base.getTreasuryPDA(fund);
-    const ticket = this.getMarinadeTicketPDA(fund);
     const marinadeState = this.getMarinadeState();
     const treasuryMsolAta = getAssociatedTokenAddressSync(
       marinadeState.msolMintAddress,

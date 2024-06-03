@@ -6,11 +6,15 @@ import {
   Wallet
 } from "@coral-xyz/anchor";
 import {
+  BlockhashWithExpiryBlockHeight,
   ComputeBudgetProgram,
   Connection,
+  Keypair,
   PublicKey,
-  Signer,
-  TransactionSignature
+  Transaction,
+  TransactionMessage,
+  TransactionSignature,
+  VersionedTransaction
 } from "@solana/web3.js";
 import {
   TOKEN_2022_PROGRAM_ID,
@@ -18,8 +22,9 @@ import {
 } from "@solana/spl-token";
 
 import { Glam, GlamIDL, GlamProgram, getGlamProgramId } from "../glamExports";
-import { GlamClientConfig } from "../clientConfig";
+import { ClusterOrCustom, GlamClientConfig } from "../clientConfig";
 import { FundModel, FundOpenfundsModel } from "../models";
+import { AssetMeta, ASSETS_DEVNET, ASSETS_MAINNET } from "./assets";
 
 type FundAccount = IdlAccounts<Glam>["fundAccount"];
 type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
@@ -27,13 +32,15 @@ type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
 export const JUPITER_API_DEFAULT = "https://quote-api.jup.ag/v6";
 
 export class BaseClient {
+  cluster: ClusterOrCustom;
   provider: anchor.Provider;
   program: GlamProgram;
   programId: PublicKey;
   jupiterApi: string;
 
   public constructor(config?: GlamClientConfig) {
-    this.programId = getGlamProgramId(config?.cluster || "devnet");
+    this.cluster = config?.cluster || "devnet";
+    this.programId = getGlamProgramId(this.cluster);
     if (config?.provider) {
       this.provider = config.provider;
       this.program = new Program(
@@ -61,6 +68,70 @@ export class BaseClient {
     this.jupiterApi = config?.jupiterApi || JUPITER_API_DEFAULT;
   }
 
+  isMainnet(): boolean {
+    return this.cluster === "mainnet-beta";
+  }
+
+  getAssetMeta(asset: string): AssetMeta {
+    return (
+      (this.isMainnet()
+        ? ASSETS_MAINNET.get(asset)
+        : ASSETS_DEVNET.get(asset)) || new AssetMeta()
+    );
+  }
+
+  latestBlockhash?: BlockhashWithExpiryBlockHeight;
+  async getLatestBlockhash(): Promise<BlockhashWithExpiryBlockHeight> {
+    if (this.latestBlockhash !== undefined) {
+      //TODO: better caching
+      // right now we cache for 1 call, this is sufficient to create and send
+      // one versioned transaction
+      const latestBlockhash = this.latestBlockhash;
+      this.latestBlockhash = undefined;
+      return latestBlockhash;
+    }
+    this.latestBlockhash = await this.provider.connection.getLatestBlockhash();
+    return this.latestBlockhash;
+  }
+
+  async intoVersionedTransaction(
+    tx: Transaction,
+    payerKey: PublicKey,
+    latestBlockhash?: BlockhashWithExpiryBlockHeight
+  ): Promise<VersionedTransaction> {
+    if (latestBlockhash === undefined) {
+      latestBlockhash = await this.getLatestBlockhash();
+    }
+    const connection = this.provider.connection;
+    const messageV0 = new TransactionMessage({
+      payerKey,
+      recentBlockhash: latestBlockhash.blockhash,
+      instructions: tx.instructions
+    }).compileToV0Message();
+    return new VersionedTransaction(messageV0);
+  }
+
+  async sendAndConfirm(
+    tx: VersionedTransaction,
+    signer: Keypair,
+    latestBlockhash?: BlockhashWithExpiryBlockHeight
+  ): Promise<TransactionSignature> {
+    if (latestBlockhash === undefined) {
+      latestBlockhash = await this.getLatestBlockhash();
+    }
+    // Anchor provider.sendAndConfirm forces a signature with the wallet, which we don't want
+    // https://github.com/coral-xyz/anchor/blob/v0.30.0/ts/packages/anchor/src/provider.ts#L159
+    tx.sign([signer]);
+    const connection = this.provider.connection;
+    const signature = await connection.sendTransaction(tx); // can throw
+    // await confirmation
+    await connection.confirmTransaction({
+      ...latestBlockhash,
+      signature
+    });
+    return signature;
+  }
+
   getManager(): PublicKey {
     return this.provider?.publicKey || new PublicKey(0);
   }
@@ -69,7 +140,7 @@ export class BaseClient {
     return getAssociatedTokenAddressSync(mint, this.getManager());
   }
 
-  getWalletSigner(): Signer {
+  getWalletSigner(): Keypair {
     return ((this.provider as AnchorProvider).wallet as Wallet).payer;
   }
 
@@ -104,11 +175,16 @@ export class BaseClient {
     return pda;
   }
 
-  getTreasuryAta(fundPDA: PublicKey, mint: PublicKey): PublicKey {
+  getTreasuryAta(
+    fundPDA: PublicKey,
+    mint: PublicKey,
+    programId?: PublicKey
+  ): PublicKey {
     return getAssociatedTokenAddressSync(
       mint,
       this.getTreasuryPDA(fundPDA),
-      true
+      true,
+      programId
     );
   }
 
@@ -130,6 +206,15 @@ export class BaseClient {
       this.programId
     );
     return pda;
+  }
+
+  getShareClassAta(user: PublicKey, shareClassPDA: PublicKey): PublicKey {
+    return getAssociatedTokenAddressSync(
+      shareClassPDA,
+      user,
+      true,
+      TOKEN_2022_PROGRAM_ID
+    );
   }
 
   getFundName(fundModel: FundModel) {
@@ -294,13 +379,19 @@ export class BaseClient {
     return openfund;
   }
 
-  public async fetchFund(fundPDA: PublicKey): Promise<any> {
+  public async fetchFund(fundPDA: PublicKey): Promise<FundModel> {
     const fundAccount = await this.fetchFundAccount(fundPDA);
     const openfundsAccount = await this.fetchFundMetadataAccount(fundPDA);
 
     //TODO rebuild model from accounts
     let fundModel = this.getFundModel(fundAccount);
     fundModel.id = fundPDA;
+    fundAccount.params[0].forEach((param) => {
+      const name = Object.keys(param.name)[0];
+      const value = Object.values(param.value)[0].val;
+      //@ts-ignore
+      fundModel[name] = value;
+    });
 
     let fund = {
       ...fundModel,

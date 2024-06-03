@@ -24,7 +24,18 @@ import {
 import { fundTestExample, createFundForTest } from "./setup";
 import { GlamClient } from "../src";
 
+const str2seed = (str: String) =>
+  Uint8Array.from(
+    Array.from(str)
+      .map((letter) => letter.charCodeAt(0))
+      .concat(new Array(32 - str.length).fill(0))
+  );
+
 describe("glam_investor", () => {
+  const glamClient = new GlamClient();
+
+  const useWsolInsteadOfEth = true;
+
   const userKeypairs = [
     Keypair.generate(), // alice
     Keypair.generate(), // bob
@@ -35,38 +46,41 @@ describe("glam_investor", () => {
   const eve = userKeypairs[2];
 
   const tokenKeypairs = [
-    Keypair.generate(), // mock token 0
-    Keypair.generate(), // ...
-    Keypair.generate()
+    Keypair.fromSeed(str2seed("usdc")), // mock token 0
+    Keypair.fromSeed(str2seed("eth")), // ...
+    Keypair.fromSeed(str2seed("btc"))
   ];
   const usdc = tokenKeypairs[0]; // 6 decimals
-  const eth = tokenKeypairs[1]; // 6 decimals
-  const btc = tokenKeypairs[2]; // 9 decimals, token2022
+  const eth = tokenKeypairs[1]; // 8 decimals
+  const btc = tokenKeypairs[2]; // 8 decimals, token2022
   const BTC_TOKEN_PROGRAM_ID = TOKEN_2022_PROGRAM_ID;
+  const wsol = new PublicKey("So11111111111111111111111111111111111111112");
+  const ethOrWsol = useWsolInsteadOfEth ? wsol : eth.publicKey;
+
+  // console.log("USDC", usdc.publicKey);
+  // console.log("ETH", eth.publicKey);
+  // console.log("BTC", btc.publicKey);
 
   const client = new GlamClient();
   const manager = (client.provider as anchor.AnchorProvider)
     .wallet as anchor.Wallet;
 
+  const fundExample = {
+    ...fundTestExample,
+    name: "Glam Investment",
+    assets: [usdc.publicKey, btc.publicKey, ethOrWsol],
+    assetsWeights: [0, 60, 40]
+  } as any;
   // overwrite share class acls
   // alice and manager are allowed to subcribe
   // bob and eve will be blocked
-  let fundTestExampleCopy = { ...fundTestExample };
-  fundTestExampleCopy.shareClasses[0].allowlist = [
+  fundExample.shareClasses[0].allowlist = [
     alice.publicKey,
     bob.publicKey,
     manager.publicKey
   ];
-  fundTestExampleCopy.shareClasses[0].blocklist = [
-    bob.publicKey,
-    eve.publicKey
-  ];
+  fundExample.shareClasses[0].blocklist = [bob.publicKey, eve.publicKey];
 
-  const fundExample = {
-    ...fundTestExampleCopy,
-    name: "Glam Investment",
-    assets: [usdc.publicKey, btc.publicKey, eth.publicKey]
-  } as any;
   const fundPDA = client.getFundPDA(fundExample);
   const treasuryPDA = client.getTreasuryPDA(fundPDA);
   const sharePDA = client.getShareClassPDA(fundPDA, 0);
@@ -83,7 +97,7 @@ describe("glam_investor", () => {
     ASSOCIATED_TOKEN_PROGRAM_ID
   );
   const treasuryEthAta = getAssociatedTokenAddressSync(
-    eth.publicKey,
+    ethOrWsol,
     treasuryPDA,
     true,
     TOKEN_PROGRAM_ID,
@@ -106,7 +120,7 @@ describe("glam_investor", () => {
     ASSOCIATED_TOKEN_PROGRAM_ID
   );
   const managerEthAta = getAssociatedTokenAddressSync(
-    eth.publicKey,
+    ethOrWsol,
     manager.publicKey,
     false,
     TOKEN_PROGRAM_ID,
@@ -127,73 +141,6 @@ describe("glam_investor", () => {
     ASSOCIATED_TOKEN_PROGRAM_ID
   );
 
-  // users' shares
-  const aliceSharesAta = getAssociatedTokenAddressSync(
-    sharePDA,
-    alice.publicKey,
-    false,
-    TOKEN_2022_PROGRAM_ID,
-    ASSOCIATED_TOKEN_PROGRAM_ID
-  );
-  const bobSharesAta = getAssociatedTokenAddressSync(
-    sharePDA,
-    bob.publicKey,
-    false,
-    TOKEN_2022_PROGRAM_ID,
-    ASSOCIATED_TOKEN_PROGRAM_ID
-  );
-  const eveSharesAta = getAssociatedTokenAddressSync(
-    sharePDA,
-    eve.publicKey,
-    false,
-    TOKEN_2022_PROGRAM_ID,
-    ASSOCIATED_TOKEN_PROGRAM_ID
-  );
-
-  // pricing
-  const pricingUsdc = new PublicKey(
-    "5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7"
-  );
-  const pricingSol = new PublicKey(
-    "J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"
-  );
-  const pricingBtc = new PublicKey(
-    "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J"
-  );
-  const pricingEth = new PublicKey(
-    "EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw"
-  );
-
-  let remainingAccountsSubscribe = [
-    // { pubkey: usdc.publicKey, isSigner: false, isWritable: false },
-    // { pubkey: managerUsdcAta, isSigner: false, isWritable: true },
-    { pubkey: treasuryUsdcAta, isSigner: false, isWritable: false },
-    { pubkey: pricingUsdc, isSigner: false, isWritable: false },
-    // { pubkey: btc.publicKey, isSigner: false, isWritable: false },
-    // { pubkey: managerBtcAta, isSigner: false, isWritable: true },
-    { pubkey: treasuryBtcAta, isSigner: false, isWritable: false },
-    { pubkey: pricingBtc, isSigner: false, isWritable: false },
-    // { pubkey: eth.publicKey, isSigner: false, isWritable: false },
-    // { pubkey: managerEthAta, isSigner: false, isWritable: true },
-    { pubkey: treasuryEthAta, isSigner: false, isWritable: false },
-    { pubkey: pricingEth, isSigner: false, isWritable: false }
-  ];
-
-  let remainingAccountsRedeem = [
-    { pubkey: usdc.publicKey, isSigner: false, isWritable: false },
-    { pubkey: managerUsdcAta, isSigner: false, isWritable: true },
-    { pubkey: treasuryUsdcAta, isSigner: false, isWritable: true },
-    { pubkey: pricingUsdc, isSigner: false, isWritable: false },
-    { pubkey: btc.publicKey, isSigner: false, isWritable: false },
-    { pubkey: managerBtcAta, isSigner: false, isWritable: true },
-    { pubkey: treasuryBtcAta, isSigner: false, isWritable: true },
-    { pubkey: pricingBtc, isSigner: false, isWritable: false },
-    { pubkey: eth.publicKey, isSigner: false, isWritable: false },
-    { pubkey: managerEthAta, isSigner: false, isWritable: true },
-    { pubkey: treasuryEthAta, isSigner: false, isWritable: true },
-    { pubkey: pricingEth, isSigner: false, isWritable: false }
-  ];
-
   beforeAll(async () => {
     try {
       await Promise.all(
@@ -204,7 +151,7 @@ describe("glam_investor", () => {
             manager.payer,
             manager.publicKey,
             null,
-            idx == 2 ? 9 : 6,
+            idx == 0 ? 6 : 8,
             token,
             { commitment }, // await 'confirmed'
             idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID
@@ -312,7 +259,7 @@ describe("glam_investor", () => {
           manager.publicKey,
           treasuryEthAta,
           treasuryPDA,
-          eth.publicKey,
+          ethOrWsol,
           TOKEN_PROGRAM_ID,
           ASSOCIATED_TOKEN_PROGRAM_ID
         ),
@@ -336,27 +283,16 @@ describe("glam_investor", () => {
   });
 
   it("Manager tests subscribe ETH to fund", async () => {
-    const amount = new BN(10 * 10 ** 6); // 10 ETH = $30k
+    const amount = useWsolInsteadOfEth
+      ? new BN(500 * 10 ** 9)
+      : new BN(10 * 10 ** 8); // 500 SOL ~= 10 ETH = $30k
     const expectedShares = "3000"; // $10/share => 3k shares
     try {
-      const txId = await program.methods
-        .subscribe(amount, true)
-        .accounts({
-          fund: fundPDA,
-          shareClass: sharePDA,
-          signerShareAta: managerSharesAta,
-          asset: eth.publicKey,
-          treasuryAta: treasuryEthAta,
-          signerAssetAta: managerEthAta,
-          signer: manager.publicKey,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID
-        })
-        .remainingAccounts(remainingAccountsSubscribe)
-        .preInstructions([
-          ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
-        ])
-        .rpc({ commitment });
+      const txId = await glamClient.investor.subscribe(
+        fundPDA,
+        ethOrWsol,
+        amount
+      );
       console.log("subscribe eth:", txId);
     } catch (e) {
       console.error(e);
@@ -402,9 +338,10 @@ describe("glam_investor", () => {
         ASSOCIATED_TOKEN_PROGRAM_ID
       );
       const txId = await program.methods
-        .subscribe(new BN(1 * 10 ** 9), true)
+        .subscribe(new BN(1 * 10 ** 8), true)
         .accounts({
           fund: fundPDA,
+          treasury: treasuryPDA,
           shareClass: invalidShareClass,
           signerShareAta: shareAta,
           asset: btc.publicKey,
@@ -414,34 +351,23 @@ describe("glam_investor", () => {
           tokenProgram: TOKEN_PROGRAM_ID,
           token2022Program: TOKEN_2022_PROGRAM_ID
         })
-        .remainingAccounts(remainingAccountsSubscribe)
         .rpc({ commitment });
     } catch (e) {
-      console.error(e);
+      // console.error(e);
       expect(e.message).toContain("A seeds constraint was violated");
       expect(e.message).toContain("Error Code: ConstraintSeeds");
     }
   });
 
   it("Manager tests subscribe BTC to fund", async () => {
-    const amount = new BN(1 * 10 ** 9); // 1 BTC = $51k
+    const amount = new BN(1 * 10 ** 8); // 1 BTC = $51k
     const expectedShares = "8100"; // 3,000 + 5,100
     try {
-      const txId = await program.methods
-        .subscribe(amount, true)
-        .accounts({
-          fund: fundPDA,
-          shareClass: sharePDA,
-          signerShareAta: managerSharesAta,
-          asset: btc.publicKey,
-          treasuryAta: treasuryBtcAta,
-          signerAssetAta: managerBtcAta,
-          signer: manager.publicKey,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID
-        })
-        .remainingAccounts(remainingAccountsSubscribe)
-        .rpc({ commitment });
+      const txId = await glamClient.investor.subscribe(
+        fundPDA,
+        btc.publicKey,
+        amount
+      );
       console.log("subscribe btc:", txId);
     } catch (e) {
       console.error(e);
@@ -476,19 +402,8 @@ describe("glam_investor", () => {
     const amount = new BN(shares.supply / 2n);
     console.log("total shares:", shares.supply, "amount:", amount);
     try {
-      await program.methods
-        .redeem(amount, true, true)
-        .accounts({
-          fund: fundPDA,
-          treasury: treasuryPDA,
-          shareClass: sharePDA,
-          signerShareAta: managerSharesAta,
-          signer: manager.publicKey,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID
-        })
-        .remainingAccounts(remainingAccountsRedeem)
-        .rpc({ commitment });
+      const txId = await glamClient.investor.redeem(fundPDA, amount, true);
+      console.log("redeem 50%:", txId);
     } catch (e) {
       // redeem
       console.error(e);
@@ -557,20 +472,8 @@ describe("glam_investor", () => {
 
     const amount = new BN(500_000_000);
     try {
-      const txId = await program.methods
-        .redeem(amount, false, true)
-        .accounts({
-          fund: fundPDA,
-          treasury: treasuryPDA,
-          shareClass: sharePDA,
-          signerShareAta: managerSharesAta,
-          signer: manager.publicKey,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID
-        })
-        .remainingAccounts(remainingAccountsRedeem)
-        .rpc({ commitment });
-      console.log("tx:", txId);
+      const txId = await glamClient.investor.redeem(fundPDA, amount, false);
+      console.log("redeem USDC:", txId);
     } catch (e) {
       // redeem
       console.error(e);
@@ -608,19 +511,8 @@ describe("glam_investor", () => {
     );
     const amount = new BN(shares.supply);
     try {
-      await program.methods
-        .redeem(amount, true, true)
-        .accounts({
-          fund: fundPDA,
-          treasury: treasuryPDA,
-          shareClass: sharePDA,
-          signerShareAta: managerSharesAta,
-          signer: manager.publicKey,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID
-        })
-        .remainingAccounts(remainingAccountsRedeem)
-        .rpc({ commitment });
+      const txId = await glamClient.investor.redeem(fundPDA, amount, true);
+      console.log("redeem 100%:", txId);
     } catch (e) {
       // redeem
       console.error(e);
@@ -669,51 +561,16 @@ describe("glam_investor", () => {
   });
 
   it("Alice subscribes to fund with 250 USDC", async () => {
-    const aliceBtcAta = getAssociatedTokenAddressSync(
-      btc.publicKey,
-      alice.publicKey,
-      false,
-      TOKEN_2022_PROGRAM_ID,
-      ASSOCIATED_TOKEN_PROGRAM_ID
-    );
-    const aliceEthAta = getAssociatedTokenAddressSync(
-      eth.publicKey,
-      alice.publicKey,
-      false,
-      TOKEN_PROGRAM_ID,
-      ASSOCIATED_TOKEN_PROGRAM_ID
-    );
-    const aliceUsdcAta = getAssociatedTokenAddressSync(
-      usdc.publicKey,
-      alice.publicKey,
-      false,
-      TOKEN_PROGRAM_ID,
-      ASSOCIATED_TOKEN_PROGRAM_ID
-    );
-
-    // const amount = new BN(5 * 10 ** 8); // BTC has 9 decimals
-    // const amount = new BN(5 * 10 ** 5); // ETH has 6 decimals
     const amount = new BN(250 * 10 ** 6); // USDC has 6 decimals
     try {
-      const txId = await program.methods
-        .subscribe(amount, true)
-        .accounts({
-          fund: fundPDA,
-          shareClass: sharePDA,
-          signerShareAta: aliceSharesAta,
-          asset: usdc.publicKey,
-          treasuryAta: treasuryUsdcAta,
-          signerAssetAta: aliceUsdcAta,
-          signer: alice.publicKey,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID
-        })
-        .remainingAccounts(remainingAccountsSubscribe)
-        .preInstructions([
-          ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
-        ])
-        .signers([alice])
-        .rpc({ commitment });
+      const txId = await glamClient.investor.subscribe(
+        fundPDA,
+        usdc.publicKey,
+        amount,
+        0,
+        true,
+        alice
+      );
       console.log("tx:", txId);
     } catch (e) {
       console.error(e);
@@ -732,80 +589,44 @@ describe("glam_investor", () => {
   });
 
   it("Bob is not allowed to subscribe", async () => {
-    const bobUsdcAta = getAssociatedTokenAddressSync(
-      usdc.publicKey,
-      bob.publicKey,
-      false,
-      TOKEN_PROGRAM_ID,
-      ASSOCIATED_TOKEN_PROGRAM_ID
-    );
-
     const amount = new BN(250 * 10 ** 6); // USDC has 6 decimals
     try {
-      const txId = await program.methods
-        .subscribe(amount, true)
-        .accounts({
-          fund: fundPDA,
-          shareClass: sharePDA,
-          signerShareAta: bobSharesAta,
-          asset: usdc.publicKey,
-          treasuryAta: treasuryUsdcAta,
-          signerAssetAta: bobUsdcAta,
-          signer: bob.publicKey,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID
-        })
-        .remainingAccounts(remainingAccountsSubscribe)
-        .preInstructions([
-          ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
-        ])
-        .signers([bob])
-        .rpc({ commitment });
+      const txId = await glamClient.investor.subscribe(
+        fundPDA,
+        usdc.publicKey,
+        amount,
+        0,
+        true,
+        bob
+      );
       console.log("tx:", txId);
       expect(txId).toBeUndefined();
-    } catch (e) {
-      console.error(e);
-      expect(e.message).toContain("Share class not allowed to subscribe");
-      expect(e.message).toContain("Error Code: InvalidShareClass");
+    } catch (err) {
+      // console.error(err);
+      const errMsg = err.message + err.logs;
+      expect(errMsg).toContain("Share class not allowed to subscribe");
+      expect(errMsg).toContain("Error Code: InvalidShareClass");
     }
   });
 
   it("Eve is not allowed to subscribe", async () => {
-    const eveUsdcAta = getAssociatedTokenAddressSync(
-      usdc.publicKey,
-      eve.publicKey,
-      false,
-      TOKEN_PROGRAM_ID,
-      ASSOCIATED_TOKEN_PROGRAM_ID
-    );
-
     const amount = new BN(250 * 10 ** 6); // USDC has 6 decimals
     try {
-      const txId = await program.methods
-        .subscribe(amount, true)
-        .accounts({
-          fund: fundPDA,
-          shareClass: sharePDA,
-          signerShareAta: eveSharesAta,
-          asset: usdc.publicKey,
-          treasuryAta: treasuryUsdcAta,
-          signerAssetAta: eveUsdcAta,
-          signer: eve.publicKey,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID
-        })
-        .remainingAccounts(remainingAccountsSubscribe)
-        .preInstructions([
-          ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
-        ])
-        .signers([eve])
-        .rpc({ commitment });
+      const txId = await glamClient.investor.subscribe(
+        fundPDA,
+        usdc.publicKey,
+        amount,
+        0,
+        true,
+        eve
+      );
       console.log("tx:", txId);
       expect(txId).toBeUndefined();
-    } catch (e) {
-      console.error(e);
-      expect(e.message).toContain("Share class not allowed to subscribe");
-      expect(e.message).toContain("Error Code: InvalidShareClass");
+    } catch (err) {
+      // console.error(err);
+      const errMsg = err.message + err.logs;
+      expect(errMsg).toContain("Share class not allowed to subscribe");
+      expect(errMsg).toContain("Error Code: InvalidShareClass");
     }
   });
 });

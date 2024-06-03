@@ -138,6 +138,11 @@ export type Glam = {
           "isSigner": false
         },
         {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "shareClass",
           "isMut": true,
           "isSigner": false
@@ -3210,6 +3215,11 @@ export const IDL: Glam = {
         {
           "name": "fund",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
           "isSigner": false
         },
         {

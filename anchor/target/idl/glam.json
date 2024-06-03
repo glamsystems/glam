@@ -138,6 +138,11 @@
           "isSigner": false
         },
         {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "shareClass",
           "isMut": true,
           "isSigner": false
