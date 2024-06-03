@@ -115,8 +115,8 @@ pub mod glam {
     }
 
     // Jupiter
-    pub fn jupiter_swap(ctx: Context<JupiterSwap>, data: Vec<u8>) -> Result<()> {
-        jupiter::jupiter_swap(ctx, data)
+    pub fn jupiter_swap(ctx: Context<JupiterSwap>, amount: u64, data: Vec<u8>) -> Result<()> {
+        jupiter::jupiter_swap(ctx, amount, data)
     }
 
     // wSOL

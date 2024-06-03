@@ -1,5 +1,3 @@
-import * as anchor from "@coral-xyz/anchor";
-
 import { GlamClientConfig } from "./clientConfig";
 import {
   BaseClient,

@@ -830,7 +830,7 @@ export type Glam = {
           "isSigner": true
         },
         {
-          "name": "treasury",
+          "name": "inputAta",
           "isMut": true,
           "isSigner": false
         },
@@ -840,7 +840,32 @@ export type Glam = {
           "isSigner": false
         },
         {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "outputAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "inputMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "outputMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "jupiterProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
         },
@@ -848,9 +873,18 @@ export type Glam = {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
         {
           "name": "data",
           "type": "bytes"
@@ -3030,6 +3064,11 @@ export type Glam = {
       "code": 6006,
       "name": "InvalidAssetsWeights",
       "msg": "Number of weights should match number of assets"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidAssetForSwap",
+      "msg": "Asset cannot be swapped"
     }
   ]
 };
@@ -3866,7 +3905,7 @@ export const IDL: Glam = {
           "isSigner": true
         },
         {
-          "name": "treasury",
+          "name": "inputAta",
           "isMut": true,
           "isSigner": false
         },
@@ -3876,7 +3915,32 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "outputAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "inputMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "outputMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "jupiterProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
         },
@@ -3884,9 +3948,18 @@ export const IDL: Glam = {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
         {
           "name": "data",
           "type": "bytes"
@@ -6066,6 +6139,11 @@ export const IDL: Glam = {
       "code": 6006,
       "name": "InvalidAssetsWeights",
       "msg": "Number of weights should match number of assets"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidAssetForSwap",
+      "msg": "Asset cannot be swapped"
     }
   ]
 };
