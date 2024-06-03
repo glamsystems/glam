@@ -11,7 +11,6 @@ import {
 import {
   getAssociatedTokenAddressSync,
   createAssociatedTokenAccountInstruction,
-  TOKEN_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
   createSyncNativeInstruction
 } from "@solana/spl-token";
@@ -153,21 +152,6 @@ export class InvestorClient {
       }
     }
 
-    // const accountInfo = await this.base.provider.connection.getAccountInfo(
-    //   treasuryAta
-    // );
-    // if (!accountInfo) {
-    //   preInstructions.push(
-    //     createAssociatedTokenAccountInstruction(
-    //       signer,
-    //       treasuryAta,
-    //       treasury,
-    //       asset,
-    //       assetMeta?.programId
-    //     )
-    //   );
-    // }
-
     const tx = await this.base.program.methods
       .subscribe(amount, skipState)
       .accounts({
@@ -179,7 +163,6 @@ export class InvestorClient {
         treasuryAta,
         signerAssetAta,
         signer,
-        tokenProgram: TOKEN_PROGRAM_ID,
         token2022Program: TOKEN_2022_PROGRAM_ID
       })
       .remainingAccounts(remainingAccounts)
@@ -231,7 +214,41 @@ export class InvestorClient {
       ];
     });
 
-    let preInstructions: TransactionInstruction[] = [];
+    const preInstructions = (
+      await Promise.all(
+        (fundModel.assets || []).map(async (asset, j) => {
+          // not in kind, we only need the base asset ATA
+          if (!inKind && j > 0) {
+            return null;
+          }
+          // in kind, we need ATAs for all assets with weight > 0
+          if (inKind && fundModel.assetsWeights[j] === 0) {
+            return null;
+          }
+
+          const assetMeta = this.base.getAssetMeta(asset.toBase58());
+          const signerAta = getAssociatedTokenAddressSync(
+            asset,
+            signer,
+            true,
+            assetMeta?.programId
+          );
+
+          const accountInfo =
+            await this.base.provider.connection.getAccountInfo(signerAta);
+          if (accountInfo) {
+            return null;
+          }
+          return createAssociatedTokenAccountInstruction(
+            signer,
+            signerAta,
+            signer,
+            asset,
+            assetMeta?.programId
+          );
+        })
+      )
+    ).filter((x) => !!x) as TransactionInstruction[];
 
     const tx = await this.base.program.methods
       .redeem(amount, inKind, skipState)
@@ -241,7 +258,6 @@ export class InvestorClient {
         shareClass,
         signerShareAta,
         signer,
-        tokenProgram: TOKEN_PROGRAM_ID,
         token2022Program: TOKEN_2022_PROGRAM_ID
       })
       .remainingAccounts(remainingAccounts)
