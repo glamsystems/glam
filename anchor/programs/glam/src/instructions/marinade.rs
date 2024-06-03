@@ -206,7 +206,6 @@ pub struct MarinadeDeposit<'info> {
         payer = manager,
         associated_token::mint = msol_mint,
         associated_token::authority = treasury,
-        associated_token::token_program = token_program
     )]
     pub mint_to: Account<'info, TokenAccount>,
 

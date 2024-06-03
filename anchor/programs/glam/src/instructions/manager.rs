@@ -346,10 +346,10 @@ pub struct CloseFund<'info> {
     manager: Signer<'info>,
 }
 
-pub fn close_handler(ctx: Context<CloseFund>) -> Result<()> {
+pub fn close_handler(_ctx: Context<CloseFund>) -> Result<()> {
     panic!("Not implemented");
     //TODO: check that all share classes have 0 supply
     //TODO: close treasury (checkin that it's empty)
-    msg!("Fund closed: {}", ctx.accounts.fund.key());
-    Ok(())
+    // msg!("Fund closed: {}", ctx.accounts.fund.key());
+    // Ok(())
 }
