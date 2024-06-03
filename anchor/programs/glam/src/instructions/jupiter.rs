@@ -124,5 +124,8 @@ pub fn jupiter_swap(ctx: Context<JupiterSwap>, amount: u64, data: Vec<u8>) -> Re
         &[],
     );
 
+    // TODO: implement swap and transfer which more secure
+    // We shouldn't allow manager to set destination account as we have no way to validate it
+
     Ok(())
 }
