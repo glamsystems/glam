@@ -24,6 +24,9 @@ fn _log_price(price: Price) -> f64 {
 pub struct Subscribe<'info> {
     pub fund: Box<Account<'info, FundAccount>>,
 
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
+
     // the shares to mint
     #[account(mut, seeds = [
         b"share".as_ref(),
@@ -142,59 +145,51 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         let cur_asset_str = cur_asset.to_string();
         let cur_asset_meta = AssetInfo::get(cur_asset_str.as_str())?;
 
-        let treasury_ata = InterfaceAccount::<TokenAccount>::try_from(&accounts[0])
-            .expect("invalid treasury account");
+        let treasury_ata: InterfaceAccount<TokenAccount> =
+            InterfaceAccount::<TokenAccount>::try_from(&accounts[0])
+                .expect("invalid treasury account");
         require!(
             treasury_ata.mint == cur_asset,
             InvestorError::InvalidTreasuryAccount
         );
-
-        let pricing_account = &accounts[1];
-        require!(
-            pricing_account.key().to_string().as_str() == cur_asset_meta.pyth_account,
-            InvestorError::InvalidPricingOracle
-        );
-
-        let price_feed: pyth_sdk_solana::PriceFeed =
-            SolanaPriceAccount::account_info_to_feed(pricing_account).unwrap();
-        let mut asset_price = price_feed.get_price_no_older_than(timestamp, 60).unwrap();
-        // let mut asset_price = Price {
-        //     // i=0 => 1 USDC
-        //     // i=1 => 51000 BTC
-        //     // i=2 => 3000 ETH
-        //     price: if i == 0 {
-        //         1
-        //     } else if i == 1 {
-        //         51000
-        //     } else {
-        //         3000
-        //     },
-        //     conf: 0,
-        //     expo: 0,
-        //     publish_time: 0,
-        // };
-
-        let asset_decimals = cur_asset_meta.decimals;
-        let asset_expo = -(asset_decimals as i32);
-        asset_price = asset_price.scale_to_exponent(asset_expo).unwrap();
         let asset_amount = treasury_ata.amount;
-        let asset_value = asset_price
-            .cmul(asset_amount.try_into().unwrap(), asset_expo)
-            .unwrap();
-        /*
-        msg!(
-            "- asset {}: amount={:.2} decimals={} price={:.2} value={:.2}",
-            i,
-            log_decimal(asset_amount, asset_expo),
-            asset_decimals,
-            log_price(asset_price),
-            log_price(asset_value),
-        );
-        */
 
-        if i == asset_idx {
-            subscribe_asset_price = asset_price;
-            subscribe_asset_expo = asset_expo;
+        let mut asset_value = Price::default();
+        let need_price = asset_amount > 0 || i == asset_idx || true;
+        if need_price {
+            let pricing_account = &accounts[1];
+            // msg!("pricing={}", pricing_account.key());
+            require!(
+                pricing_account.key().to_string().as_str() == cur_asset_meta.pyth_account,
+                InvestorError::InvalidPricingOracle
+            );
+
+            let price_feed: pyth_sdk_solana::PriceFeed =
+                SolanaPriceAccount::account_info_to_feed(pricing_account).unwrap();
+            let mut asset_price = price_feed.get_price_no_older_than(timestamp, 60).unwrap();
+            // let mut asset_price = price_feed.get_price_unchecked();
+
+            let asset_decimals = cur_asset_meta.decimals;
+            let asset_expo = -(asset_decimals as i32);
+            asset_price = asset_price.scale_to_exponent(asset_expo).unwrap();
+            asset_value = asset_price
+                .cmul(asset_amount.try_into().unwrap(), asset_expo)
+                .unwrap();
+            /*
+            msg!(
+                "- asset {}: amount={:.2} decimals={} price={:.2} value={:.2}",
+                i,
+                log_decimal(asset_amount, asset_expo),
+                asset_decimals,
+                log_price(asset_price),
+                log_price(asset_value),
+            );
+            */
+
+            if i == asset_idx {
+                subscribe_asset_price = asset_price;
+                subscribe_asset_expo = asset_expo;
+            }
         }
 
         total_value = total_value
@@ -360,13 +355,25 @@ pub fn redeem_handler<'c: 'info, 'info>(
         let timestamp = Clock::get()?.unix_timestamp;
         let mut assets_to_transfer: Vec<AssetToTransfer> = Vec::new();
         for (i, accounts) in ctx.remaining_accounts.chunks(4).enumerate() {
+            let cur_asset = assets[i];
+            let cur_asset_str = cur_asset.to_string();
+            let cur_asset_meta = AssetInfo::get(cur_asset_str.as_str())?;
+
             let asset = InterfaceAccount::<Mint>::try_from(&accounts[0]).expect("invalid asset");
             let signer_asset_ata: InterfaceAccount<'_, TokenAccount> =
                 InterfaceAccount::<TokenAccount>::try_from(&accounts[1])
                     .expect("invalid user account");
             let treasury_ata = InterfaceAccount::<TokenAccount>::try_from(&accounts[2])
                 .expect("invalid treasury account");
+            require!(
+                treasury_ata.mint == cur_asset,
+                InvestorError::InvalidTreasuryAccount
+            );
             let pricing_account = &accounts[3];
+            require!(
+                pricing_account.key().to_string().as_str() == cur_asset_meta.pyth_account,
+                InvestorError::InvalidPricingOracle
+            );
 
             require!(asset.key() == assets[i], InvestorError::InvalidAssetsRedeem);
             require!(
@@ -377,23 +384,8 @@ pub fn redeem_handler<'c: 'info, 'info>(
             let price_feed: pyth_sdk_solana::PriceFeed =
                 SolanaPriceAccount::account_info_to_feed(pricing_account).unwrap();
             let mut asset_price = price_feed.get_price_no_older_than(timestamp, 60).unwrap();
-            // let mut asset_price = Price {
-            //     // i=0 => 1 USDC
-            //     // i=1 => 51000 BTC
-            //     // i=2 => 3000 ETH
-            //     price: if i == 0 {
-            //         1
-            //     } else if i == 1 {
-            //         51000
-            //     } else {
-            //         3000
-            //     },
-            //     conf: 0,
-            //     expo: 0,
-            //     publish_time: 0,
-            // };
 
-            let asset_decimals: u8 = if i == 1 { 9 } else { 6 };
+            let asset_decimals = cur_asset_meta.decimals;
             let asset_expo = -(asset_decimals as i32);
             asset_price = asset_price.scale_to_exponent(asset_expo).unwrap();
             let asset_amount = treasury_ata.amount;
@@ -494,7 +486,12 @@ pub fn redeem_handler<'c: 'info, 'info>(
                     * 10u128.pow(att.asset_decimals as u32))
                     / att.asset_price.price as u128) as u64
             };
-            msg!("- asset {}: amount={}", i, amount_asset);
+            msg!(
+                "- asset {}: amount={} total={}",
+                i,
+                amount_asset,
+                att.treasury_ata.amount
+            );
 
             if amount_asset == 0 {
                 continue;
