@@ -4,6 +4,7 @@ import {
   Keypair,
   PublicKey,
   SystemProgram,
+  TransactionInstruction,
   TransactionSignature,
   VersionedTransaction
 } from "@solana/web3.js";
@@ -40,6 +41,28 @@ export class InvestorClient {
       user.publicKey,
       asset,
       amount,
+      shareClassId,
+      skipState
+    );
+    return await this.base.sendAndConfirm(tx, user);
+  }
+
+  public async redeem(
+    fund: PublicKey,
+    amount: BN,
+    inKind: boolean = false,
+    shareClassId: number = 0,
+    skipState: boolean = true,
+    user?: Keypair
+  ): Promise<TransactionSignature> {
+    if (user === undefined) {
+      user = this.base.getWalletSigner();
+    }
+    const tx = await this.redeemTx(
+      fund,
+      user.publicKey,
+      amount,
+      inKind,
       shareClassId,
       skipState
     );
@@ -99,7 +122,7 @@ export class InvestorClient {
 
     // SOL -> wSOL
     // If the user doesn't have enough wSOL but does have SOL, we auto wrap
-    let preInstructions = [];
+    let preInstructions: TransactionInstruction[] = [];
     if (asset.toBase58() === "So11111111111111111111111111111111111111112") {
       const connection = this.base.provider.connection;
       let wsolBalance = new BN(0);
@@ -155,6 +178,68 @@ export class InvestorClient {
         asset,
         treasuryAta,
         signerAssetAta,
+        signer,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        token2022Program: TOKEN_2022_PROGRAM_ID
+      })
+      .remainingAccounts(remainingAccounts)
+      .preInstructions(preInstructions)
+      .transaction();
+
+    return await this.base.intoVersionedTransaction(tx, signer);
+  }
+
+  public async redeemTx(
+    fund: PublicKey,
+    signer: PublicKey,
+    amount: BN,
+    inKind: boolean = false,
+    shareClassId: number = 0,
+    skipState: boolean = true
+  ): Promise<VersionedTransaction> {
+    const treasury = this.base.getTreasuryPDA(fund);
+
+    // share class token to receive
+    const shareClass = this.base.getShareClassPDA(fund, shareClassId);
+    const signerShareAta = this.base.getShareClassAta(signer, shareClass);
+
+    // remaining accounts = assets + signer atas + treasury atas + pricing to compute AUM
+    const fundModel = await this.base.fetchFund(fund);
+    const remainingAccounts = (fundModel.assets || []).flatMap((asset) => {
+      const assetMeta = this.base.getAssetMeta(asset.toBase58());
+      const treasuryAta = this.base.getTreasuryAta(
+        fund,
+        asset,
+        assetMeta?.programId
+      );
+      const signerAta = getAssociatedTokenAddressSync(
+        asset,
+        signer,
+        true,
+        assetMeta?.programId
+      );
+
+      return [
+        { pubkey: asset, isSigner: false, isWritable: false },
+        { pubkey: signerAta, isSigner: false, isWritable: true },
+        { pubkey: treasuryAta, isSigner: false, isWritable: true },
+        {
+          pubkey: assetMeta.pricingAccount,
+          isSigner: false,
+          isWritable: false
+        }
+      ];
+    });
+
+    let preInstructions: TransactionInstruction[] = [];
+
+    const tx = await this.base.program.methods
+      .redeem(amount, inKind, skipState)
+      .accounts({
+        fund,
+        treasury,
+        shareClass,
+        signerShareAta,
         signer,
         tokenProgram: TOKEN_PROGRAM_ID,
         token2022Program: TOKEN_2022_PROGRAM_ID

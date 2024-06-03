@@ -34,7 +34,7 @@ const str2seed = (str: String) =>
 describe("glam_investor", () => {
   const glamClient = new GlamClient();
 
-  const useWsolInsteadOfEth = false;
+  const useWsolInsteadOfEth = true;
 
   const userKeypairs = [
     Keypair.generate(), // alice
@@ -140,35 +140,6 @@ describe("glam_investor", () => {
     TOKEN_2022_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID
   );
-
-  // pricing
-  const pricingUsdc = new PublicKey(
-    "5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7"
-  );
-  const pricingSol = new PublicKey(
-    "J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"
-  );
-  const pricingBtc = new PublicKey(
-    "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J"
-  );
-  const pricingEth = new PublicKey(
-    "EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw"
-  );
-
-  let remainingAccountsRedeem = [
-    { pubkey: usdc.publicKey, isSigner: false, isWritable: false },
-    { pubkey: managerUsdcAta, isSigner: false, isWritable: true },
-    { pubkey: treasuryUsdcAta, isSigner: false, isWritable: true },
-    { pubkey: pricingUsdc, isSigner: false, isWritable: false },
-    { pubkey: btc.publicKey, isSigner: false, isWritable: false },
-    { pubkey: managerBtcAta, isSigner: false, isWritable: true },
-    { pubkey: treasuryBtcAta, isSigner: false, isWritable: true },
-    { pubkey: pricingBtc, isSigner: false, isWritable: false },
-    { pubkey: ethOrWsol, isSigner: false, isWritable: false },
-    { pubkey: managerEthAta, isSigner: false, isWritable: true },
-    { pubkey: treasuryEthAta, isSigner: false, isWritable: true },
-    { pubkey: pricingEth, isSigner: false, isWritable: false }
-  ];
 
   beforeAll(async () => {
     try {
@@ -431,19 +402,8 @@ describe("glam_investor", () => {
     const amount = new BN(shares.supply / 2n);
     console.log("total shares:", shares.supply, "amount:", amount);
     try {
-      await program.methods
-        .redeem(amount, true, true)
-        .accounts({
-          fund: fundPDA,
-          treasury: treasuryPDA,
-          shareClass: sharePDA,
-          signerShareAta: managerSharesAta,
-          signer: manager.publicKey,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID
-        })
-        .remainingAccounts(remainingAccountsRedeem)
-        .rpc({ commitment });
+      const txId = await glamClient.investor.redeem(fundPDA, amount, true);
+      console.log("redeem 50%:", txId);
     } catch (e) {
       // redeem
       console.error(e);
@@ -512,20 +472,8 @@ describe("glam_investor", () => {
 
     const amount = new BN(500_000_000);
     try {
-      const txId = await program.methods
-        .redeem(amount, false, true)
-        .accounts({
-          fund: fundPDA,
-          treasury: treasuryPDA,
-          shareClass: sharePDA,
-          signerShareAta: managerSharesAta,
-          signer: manager.publicKey,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID
-        })
-        .remainingAccounts(remainingAccountsRedeem)
-        .rpc({ commitment });
-      console.log("tx:", txId);
+      const txId = await glamClient.investor.redeem(fundPDA, amount, false);
+      console.log("redeem USDC:", txId);
     } catch (e) {
       // redeem
       console.error(e);
@@ -563,19 +511,8 @@ describe("glam_investor", () => {
     );
     const amount = new BN(shares.supply);
     try {
-      await program.methods
-        .redeem(amount, true, true)
-        .accounts({
-          fund: fundPDA,
-          treasury: treasuryPDA,
-          shareClass: sharePDA,
-          signerShareAta: managerSharesAta,
-          signer: manager.publicKey,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID
-        })
-        .remainingAccounts(remainingAccountsRedeem)
-        .rpc({ commitment });
+      const txId = await glamClient.investor.redeem(fundPDA, amount, true);
+      console.log("redeem 100%:", txId);
     } catch (e) {
       // redeem
       console.error(e);
