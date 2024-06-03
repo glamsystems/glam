@@ -3,8 +3,9 @@ import { GlamClient } from "../src";
 import { PublicKey } from "@solana/web3.js";
 
 describe("glam_jupiter", () => {
-  const wSol = new PublicKey("So11111111111111111111111111111111111111112");
-  const mSol = new PublicKey("mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So");
+  const wsol = new PublicKey("So11111111111111111111111111111111111111112");
+  const msol = new PublicKey("mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So");
+  const usdc = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
 
   const glamClient = new GlamClient();
   let fundPDA;
@@ -16,7 +17,7 @@ describe("glam_jupiter", () => {
     const fund = await glamClient.fetchFund(fundPDA);
     expect(fund.shareClasses.length).toEqual(1);
 
-    // Air drop some SOL to the treasury
+    // Airdrop some SOL to the treasury
     const airdrop = await glamClient.provider.connection.requestAirdrop(
       glamClient.getTreasuryPDA(fundPDA),
       1_000_000_000
@@ -24,12 +25,39 @@ describe("glam_jupiter", () => {
     await glamClient.provider.connection.confirmTransaction(airdrop);
   });
 
+  it("Asset not allowed to swap", async () => {
+    const amount = 50_000_000;
+    try {
+      const txId = await glamClient.jupiter.swap(fundPDA, {
+        inputMint: usdc,
+        outputMint: msol,
+        amount,
+        autoSlippage: true,
+        autoSlippageCollisionUsdValue: 1000,
+        swapMode: "ExactIn",
+        onlyDirectRoutes: false,
+        asLegacyTransaction: false,
+        maxAccounts: 20
+      });
+      console.log("swap txId", txId);
+    } catch (e) {
+      console.error(e);
+      expect(
+        e.logs.some(
+          (log) =>
+            log.includes("Error Code: InvalidAssetForSwap") &&
+            log.includes("Asset cannot be swapped.")
+        )
+      ).toBeTruthy();
+    }
+  }, 15_000);
+
   it("Swap", async () => {
     const amount = 50_000_000;
     try {
       const txId = await glamClient.jupiter.swap(fundPDA, {
-        inputMint: wSol,
-        outputMint: mSol,
+        inputMint: wsol,
+        outputMint: msol,
         amount,
         autoSlippage: true,
         autoSlippageCollisionUsdValue: 1000,

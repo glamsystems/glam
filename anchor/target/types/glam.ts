@@ -3064,6 +3064,11 @@ export type Glam = {
       "code": 6006,
       "name": "InvalidAssetsWeights",
       "msg": "Number of weights should match number of assets"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidAssetForSwap",
+      "msg": "Asset cannot be swapped"
     }
   ]
 };
@@ -6134,6 +6139,11 @@ export const IDL: Glam = {
       "code": 6006,
       "name": "InvalidAssetsWeights",
       "msg": "Number of weights should match number of assets"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidAssetForSwap",
+      "msg": "Asset cannot be swapped"
     }
   ]
 };

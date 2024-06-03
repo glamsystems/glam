@@ -69,9 +69,7 @@ export class JupiterClient {
       swapInstruction,
       addressLookupTableAddresses
     );
-    if (!this.base.provider) {
-      throw new Error("Provider is undefined");
-    }
+
     return await (this.base.provider as anchor.AnchorProvider).sendAndConfirm(
       tx,
       [this.base.getWalletSigner()]

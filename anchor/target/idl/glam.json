@@ -3064,6 +3064,11 @@
       "code": 6006,
       "name": "InvalidAssetsWeights",
       "msg": "Number of weights should match number of assets"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidAssetForSwap",
+      "msg": "Asset cannot be swapped"
     }
   ],
   "metadata": {

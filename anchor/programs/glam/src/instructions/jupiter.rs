@@ -5,6 +5,7 @@ use anchor_spl::{
 };
 use solana_program::{instruction::Instruction, program::invoke_signed};
 
+use crate::error::ManagerError;
 use crate::state::*;
 
 mod jupiter {
@@ -55,7 +56,14 @@ pub struct JupiterSwap<'info> {
 }
 
 pub fn jupiter_swap(ctx: Context<JupiterSwap>, amount: u64, data: Vec<u8>) -> Result<()> {
-    // TODO: check input mint and output mint are supported & allowed
+    // Check if the input and output mint are allowed
+    if let Some(assets) = ctx.accounts.fund.assets() {
+        require!(
+            assets.iter().any(|&k| k == ctx.accounts.input_mint.key())
+                && assets.iter().any(|&k| k == ctx.accounts.output_mint.key()),
+            ManagerError::InvalidAssetForSwap
+        );
+    }
 
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
