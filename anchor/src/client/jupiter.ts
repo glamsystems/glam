@@ -141,6 +141,8 @@ export class JupiterClient {
     const outputMint =
       quoteParams?.outputMint || new PublicKey(quoteResponse!.outputMint);
 
+    let computeBudgetInstructions = [];
+
     if (swapInstruction === undefined) {
       if (quoteResponse === undefined) {
         // Fetch quoteResponse if not specified - quoteParams must be specified in this case
@@ -159,6 +161,7 @@ export class JupiterClient {
         destinationTokenAccount
       );
       console.log("/swap-instructions returns:", JSON.stringify(ins));
+      computeBudgetInstructions = ins.computeBudgetInstructions;
       swapInstruction = ins.swapInstruction;
       addressLookupTableAddresses = ins.addressLookupTableAddresses;
     }
@@ -169,6 +172,7 @@ export class JupiterClient {
       this.ixDataToTransactionInstruction(swapInstruction);
 
     const instructions = [
+      ...computeBudgetInstructions.map(this.ixDataToTransactionInstruction),
       await this.base.program.methods
         .jupiterSwap(new anchor.BN(swapAmount), swapIx.data)
         .accounts({
