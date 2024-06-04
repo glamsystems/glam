@@ -67,6 +67,7 @@ address = "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv"
 # WSOL
 address = "So11111111111111111111111111111111111111112"
 
+
 # Fund GBS AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2
 # fund + share class + treasury + treasury ATAs
 [[test.validator.clone]]
@@ -161,3 +162,7 @@ filename = "./fixtures/UefNb6z6yvArqe4cJHTXCqStRsKmWhGxnZzuHbikP5Q.json"
 [[test.genesis]]
 address = "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"
 program = "./fixtures/jupiter.so"
+
+[[test.validator.account]] # USDC 
+address = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+filename = "./fixtures/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v.json"
