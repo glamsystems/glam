@@ -1,7 +1,9 @@
 name: Run anchor test
 
 on:
-  pull_request:
+  push:
+    branches:
+      - main
     paths:
       - "anchor/**"
       - ".github/workflows/**"
