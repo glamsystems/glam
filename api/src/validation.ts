@@ -1,7 +1,7 @@
 import { PublicKey } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 
-export const validatePubkey = (pubkey: string) => {
+export const validatePubkey = (pubkey: string): PublicKey => {
   let key;
   try {
     key = new PublicKey(pubkey);

@@ -4,9 +4,8 @@ import bodyParser from "body-parser";
 import * as path from "path";
 import { Connection } from "@solana/web3.js";
 import { AnchorProvider } from "@coral-xyz/anchor";
-import { base58 } from "@scure/base";
+import imageRouter from "./routers/image";
 
-import { createCanvas, loadImage } from "canvas";
 import {
   PythHttpClient,
   PythCluster,
@@ -74,7 +73,9 @@ const pythClient = new PythHttpClient(
 const app: Express = express();
 app.use(cors({ origin: "*", methods: "GET" }));
 app.use(bodyParser.json());
+app.use("/assets", express.static(path.join(__dirname, "assets")));
 
+app.use(imageRouter);
 app.use((req, res, next) => {
   if (req.hostname === "api.glam.systems") {
     req.client = mainnetClient;
@@ -83,8 +84,6 @@ app.use((req, res, next) => {
   }
   next();
 });
-
-app.use("/assets", express.static(path.join(__dirname, "assets")));
 
 /*
  * Openfunds
@@ -239,60 +238,6 @@ app.get("/metadata/:pubkey", async (req, res) => {
       image: image_uri
     })
   );
-});
-
-app.get("/image/:pubkey.png", async (req, res) => {
-  const pubkey = validatePubkey(req.params.pubkey);
-  if (!pubkey) {
-    return res.sendStatus(404);
-  }
-
-  // convert pubkey string from base58 to bytes[32]
-  const decoded = base58.decode(req.params.pubkey);
-
-  // fetch params from the key bytes
-  const angle = 6.28 * (decoded[0] / 256.0); // between 0.0 and 2*pi
-  const alpha = decoded[1] / 256.0 / 4 + 0.75; // between 0.5 and 1.0
-  const colorR = decoded[2]; // between 0 and 255
-  const colorG = decoded[3];
-  const colorB = decoded[4];
-
-  const fullSize = 512; // size of the input
-  const size = fullSize / 2; // size of the output
-  const offset = size / 2; // offset for rotation/translation
-
-  function componentToHex(c) {
-    var hex = c.toString(16);
-    return hex.length == 1 ? "0" + hex : hex;
-  }
-
-  function rgbToHex(r, g, b) {
-    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
-  }
-
-  // canvas
-  const canvas = createCanvas(size, size);
-  const ctx = canvas.getContext("2d");
-
-  // base color
-  ctx.fillStyle = rgbToHex(colorR, colorG, colorB);
-  ctx.fillRect(0, 0, size, size);
-
-  // rotation (relative to image center)
-  ctx.translate(offset, offset);
-  ctx.rotate(angle);
-  ctx.translate(-offset, -offset);
-
-  // render the image full size, on half size canvas
-  // so that we don't see broken corners
-  ctx.globalAlpha = alpha;
-  const image = await loadImage(path.join(__dirname, "assets/glam.png"));
-  ctx.drawImage(image, -offset, -offset, fullSize, fullSize);
-
-  // return the image
-  const buffer = canvas.toBuffer("image/png");
-  res.set("content-type", "image/png");
-  res.send(buffer);
 });
 
 const port = process.env.PORT || 8080;
