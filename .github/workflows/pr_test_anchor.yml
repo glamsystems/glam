@@ -1,0 +1,61 @@
+name: Run anchor test
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "anchor/**"
+      - ".github/workflows/**"
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: ghcr.io/yurushao/soldev:release
+
+    steps:
+      - name: Setup rust
+        run: rustup default stable
+
+      - name: Check anchor version
+        run: rm /root/.cargo/bin/anchor && ln -s /root/.avm/bin/anchor-0.29.0 /root/.cargo/bin/anchor && anchor --version
+
+      - name: Generate new keygen
+        run: solana-keygen new --no-bip39-passphrase --force
+      - name: Set solana target cluster to local
+        run: solana config set --url l
+      - name: Check solana config
+        run: solana config get
+
+      - uses: actions/checkout@v3
+
+      - uses: pnpm/action-setup@v3
+        name: Install pnpm
+        with:
+          version: 9.1.2
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run anchor-test
