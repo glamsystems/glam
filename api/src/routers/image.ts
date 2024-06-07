@@ -28,8 +28,7 @@ function publicKeyToAttributes(pubKey: PublicKey, numColors) {
   return attributes;
 }
 function generateSVGContent(attributes) {
-  return `
-      <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" style="padding: 0; margin: 0;">
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" style="padding: 0; margin: 0;">
         <foreignObject width="100%" height="100%" style="margin: 0; background: conic-gradient(from ${attributes.angle}deg at 50% 50%, ${attributes.color1}, rgba(0,0,0,0));">
           <div></div>
         </foreignObject>
@@ -47,11 +46,15 @@ router.get("/image/:pubkey.:format", async (req, res) => {
     return;
   }
 
-  // Calculate attributes from public key
+  // Calculate attributes from public key and generate SVG content
   const attributes = publicKeyToAttributes(pubKey, 1); // Only one color for now
-
-  // Generate SVG content
   const svgContent = generateSVGContent(attributes);
+
+  if (format === "svg") {
+    res.setHeader("Content-Type", "image/svg+xml");
+    res.send(svgContent);
+    return;
+  }
 
   try {
     const browser = await puppeteer.launch({ headless: true });
@@ -68,29 +71,21 @@ router.get("/image/:pubkey.:format", async (req, res) => {
       document.body.style.padding = "0";
     });
 
-    if (format === "svg") {
-      res.setHeader("Content-Type", "image/svg+xml");
-      res.send(svgContent);
-      return;
-    }
-
     await page.setContent(svgContent);
 
     // Take a screenshot with transparent background
-    if (format === "png") {
-      const imageBuffer = await page.screenshot({
-        type: "png",
-        omitBackground: true,
-        clip: {
-          x: 0 + 16,
-          y: 0 + 16,
-          width: svgWidth - 16,
-          height: svgHeight - 16
-        } // Clip the screenshot to match SVG dimensions
-      });
-      res.setHeader("Content-Type", "image/png");
-      res.send(imageBuffer);
-    }
+    const imageBuffer = await page.screenshot({
+      type: "png",
+      omitBackground: true,
+      clip: {
+        x: 0 + 16,
+        y: 0 + 16,
+        width: svgWidth - 16,
+        height: svgHeight - 16
+      } // Clip the screenshot to match SVG dimensions
+    });
+    res.set("Content-Type", "image/png");
+    res.send(imageBuffer);
 
     await browser.close();
   } catch (error) {
