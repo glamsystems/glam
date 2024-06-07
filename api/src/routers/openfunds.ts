@@ -1,16 +1,12 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
-
-import * as ExcelJS from "exceljs";
-import * as util from "util";
-import * as lodash from "lodash";
+import ExcelJS from "exceljs";
+import util from "util";
+import lodash from "lodash";
 import { ShareClassModel } from "@glam/anchor";
 import { write, writeToBuffer } from "@fast-csv/format";
 import { parseString } from "@fast-csv/parse";
 
-import { validatePubkey } from "./validation";
+import { validatePubkey } from "../validation";
+import { Router } from "express";
 
 const openfundsGetTemplate = async (template) => {
   const templateUrl =
@@ -121,7 +117,7 @@ const openfundsApplyCsvTemplate = async (models, template) => {
   ];
 };
 
-export const openfunds = async (funds, template, format, client, res) => {
+const openfunds = async (funds, template, format, client, res) => {
   console.log(`openfunds funds=${funds} template=${template} format=${format}`);
   let models;
   try {
@@ -162,22 +158,54 @@ export const openfunds = async (funds, template, format, client, res) => {
   switch (format.toLowerCase()) {
     case "csv": {
       const csv = await openfundsApplyCsvTemplate(models, actualTemplate);
-      res.setHeader("content-type", "text/csv");
+      res.set("content-type", "text/csv");
       return res.send(await writeToBuffer(csv));
-      break;
     }
     case "xls":
     case "xlsx": {
       const csv = await openfundsApplyCsvTemplate(models, actualTemplate);
       const workbook = new ExcelJS.Workbook();
       const worksheet = await workbook.csv.read(write(csv));
-      res.setHeader(
+      res.set(
         "content-type",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
       );
       return res.send(await workbook.xlsx.writeBuffer());
-      break;
     }
   }
+
+  res.set("content-type", "application/json");
   res.send(JSON.stringify(models));
 };
+
+/*
+ * Openfunds
+ */
+
+const router = Router();
+
+router.get("/openfunds", async (req, res) => {
+  return openfunds(
+    req.query.funds.split(","),
+    req.query.template,
+    req.query.format,
+    req.client,
+    res
+  );
+});
+
+router.get("/openfunds/:pubkey.:ext", async (req, res) => {
+  return openfunds(
+    [req.params.pubkey],
+    "auto",
+    req.params.ext,
+    req.client,
+    res
+  );
+});
+
+router.get("/openfunds/:pubkey", async (req, res) => {
+  return openfunds([req.params.pubkey], "auto", "json", req.client, res);
+});
+
+export default router;
