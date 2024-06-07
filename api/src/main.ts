@@ -66,7 +66,7 @@ app.use(fundRouter);
 app.use(openfundsRouter);
 
 /*
- * Endpoints for DevOps
+ * Endpoints for dev ops
  */
 
 app.get("/genesis", async (req: Request, res: Response) => {
@@ -75,7 +75,7 @@ app.get("/genesis", async (req: Request, res: Response) => {
 });
 
 app.get("/version", async (req: Request, res: Response) => {
-  res.send({ id: process.env.GAE_DEPLOYMENT_ID });
+  res.send({ id: process.env.GAE_VERSION });
 });
 
 const port = process.env.PORT || 8080;

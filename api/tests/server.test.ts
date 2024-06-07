@@ -2,15 +2,14 @@ import server from "../src/main.js";
 import supertest from "supertest";
 const requestWithSupertest = supertest(server);
 
-describe("Test /api", () => {
+describe("Test /version", () => {
   afterAll(() => {
     server.close();
   });
 
   it("test", async () => {
-    const res = await requestWithSupertest.get("/api");
+    const res = await requestWithSupertest.get("/version");
     expect(res.status).toEqual(200);
-    expect(res.body).toEqual({ message: "Welcome to Glam!" });
   });
 });
 
