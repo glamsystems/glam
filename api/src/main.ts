@@ -8,6 +8,7 @@ import imageRouter from "./routers/image";
 import txRouter from "./routers/tx";
 import openfundsRouter from "./routers/openfunds";
 import fundRouter from "./routers/fund";
+import miscRouter from "./routers/misc";
 
 import { GlamClient, JUPITER_API_DEFAULT } from "@glam/anchor";
 
@@ -59,24 +60,13 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(miscRouter);
 app.use(imageRouter);
+
 // routers that need to use glam client must be registered after req.client is set
 app.use(txRouter);
 app.use(fundRouter);
 app.use(openfundsRouter);
-
-/*
- * Endpoints for dev ops
- */
-
-app.get("/genesis", async (req: Request, res: Response) => {
-  const genesis = await req.client.provider.connection.getGenesisHash();
-  res.send({ genesis });
-});
-
-app.get("/version", async (req: Request, res: Response) => {
-  res.send({ id: process.env.GAE_VERSION });
-});
 
 const port = process.env.PORT || 8080;
 const server = app.listen(port, () => {
