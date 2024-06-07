@@ -20,10 +20,11 @@ pnpm install
 pnpm run api-build
 
 cp api/app.yaml $DIST/app.yaml
+cp api/.puppeteerrc.cjs $DIST/.puppeteerrc.cjs
 cp api/.env.yaml $DIST/.env.yaml
 # cp pnpm-lock.yaml $DIST/pnpm-lock.yaml
 
-jq '.scripts +={"gcp-build": ""} +{"start": "node main.js"}' package.json  > $DIST/tmp_package.json
+jq '.scripts +={"gcp-build": "npx puppeteer browsers install chrome"} +{"start": "node main.js"}' package.json  > $DIST/tmp_package.json
 
 # Delete unnecessary dependencies for the api to speed up the deploy and reduce the size of build artifact
 deps_to_remove=(
