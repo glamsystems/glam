@@ -1,6 +1,9 @@
 name: Deploy api to GAE
 
 on:
+  pull_request:
+    branches: ["main"]
+
   workflow_dispatch:
     inputs:
       environment:
@@ -18,6 +21,14 @@ jobs:
   build-test-deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: GCP auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -50,14 +61,6 @@ jobs:
 
       - name: Run tests
         run: pnpm api-test
-
-      - name: GCP auth
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
 
       - nmae: Deploy to GAE
         run: gcloud info && ./deploy_api.sh --${{ inputs.environment }}
