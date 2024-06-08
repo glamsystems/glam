@@ -1,10 +1,11 @@
-import { validatePubkey, validateBN } from "./validation";
+import { Router } from "express";
+import { validatePubkey, validateBN } from "../validation";
 
 /*
  * Marinade
  */
 
-export const jupiterSwapTx = async (client, req, res) => {
+const jupiterSwapTx = async (client, req, res) => {
   const fund = validatePubkey(req.body.fund);
   const manager = validatePubkey(req.body.manager);
 
@@ -32,7 +33,7 @@ export const jupiterSwapTx = async (client, req, res) => {
  * Marinade
  */
 
-export const marinadeDelayedUnstakeTx = async (client, req, res) => {
+const marinadeDelayedUnstakeTx = async (client, req, res) => {
   const fund = validatePubkey(req.body.fund);
   const manager = validatePubkey(req.body.manager);
   const amount = validateBN(req.body.amount);
@@ -46,7 +47,7 @@ export const marinadeDelayedUnstakeTx = async (client, req, res) => {
   return await serializeTx(tx, manager, client, res);
 };
 
-export const marinadeDelayedUnstakeClaimTx = async (client, req, res) => {
+const marinadeDelayedUnstakeClaimTx = async (client, req, res) => {
   const fund = validatePubkey(req.body.fund);
   const manager = validatePubkey(req.body.manager);
 
@@ -63,7 +64,7 @@ export const marinadeDelayedUnstakeClaimTx = async (client, req, res) => {
  * wSOL
  */
 
-export const wsolWrapTx = async (client, req, res) => {
+const wsolWrapTx = async (client, req, res) => {
   const fund = validatePubkey(req.body.fund);
   const manager = validatePubkey(req.body.manager);
   const amount = validateBN(req.body.amount);
@@ -72,12 +73,13 @@ export const wsolWrapTx = async (client, req, res) => {
     return res.sendStatus(400);
   }
 
+  console.log("client", client);
   const tx = await client.wsol.wrapTx(fund, manager, amount);
 
   return await serializeTx(tx, manager, client, res);
 };
 
-export const wsolUnwrapTx = async (client, req, res) => {
+const wsolUnwrapTx = async (client, req, res) => {
   const fund = validatePubkey(req.body.fund);
   const manager = validatePubkey(req.body.manager);
 
@@ -119,3 +121,36 @@ const serializeTx = async (tx, manager, client, res) => {
     }) + "\n"
   );
 };
+
+/*
+ * Tx
+ */
+
+const router = Router();
+
+router.post("/tx/jupiter/swap", async (req, res) => {
+  res.set("content-type", "application/json");
+  return jupiterSwapTx(req.client, req, res);
+});
+
+router.post("/tx/marinade/unstake", async (req, res) => {
+  res.set("content-type", "application/json");
+  return marinadeDelayedUnstakeTx(req.client, req, res);
+});
+
+router.post("/tx/marinade/unstake/claim", async (req, res) => {
+  res.set("content-type", "application/json");
+  return marinadeDelayedUnstakeClaimTx(req.client, req, res);
+});
+
+router.post("/tx/wsol/wrap", async (req, res) => {
+  res.set("content-type", "application/json");
+  return wsolWrapTx(req.client, req, res);
+});
+
+router.post("/tx/wsol/unwrap", async (req, res) => {
+  res.set("content-type", "application/json");
+  return wsolUnwrapTx(req.client, req, res);
+});
+
+export default router;

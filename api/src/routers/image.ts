@@ -57,7 +57,10 @@ router.get("/image/:pubkey.:format", async (req, res) => {
   }
 
   try {
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ["--no-sandbox"]
+    });
     const page = await browser.newPage();
 
     // Set viewport size to match SVG dimensions
