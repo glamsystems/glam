@@ -62,5 +62,5 @@ jobs:
       - name: Run tests
         run: pnpm api-test
 
-      - nmae: Deploy to GAE
+      - name: Deploy to GAE
         run: gcloud info && ./deploy_api.sh --${{ inputs.environment }}
