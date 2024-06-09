@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { validatePubkey, validateBN } from "../validation";
+import { Transaction, VersionedTransaction } from "@solana/web3.js";
 
 /*
  * Marinade
@@ -13,20 +14,19 @@ const jupiterSwapTx = async (client, req, res) => {
     return res.sendStatus(400);
   }
 
-  let tx;
   try {
-    tx = await client.jupiter.swapTx(
+    const tx = await client.jupiter.swapTx(
       fund,
       manager,
       req.body.quote,
       req.body.quoteResponse,
       req.body.swapInstruction
     );
+    return serializeVersionedTx(tx, res);
   } catch (err) {
     console.log(err);
     return res.status(400).send({ error: err.message });
   }
-  return await serializeTx(tx, manager, client, res);
 };
 
 /*
@@ -64,7 +64,7 @@ const marinadeDelayedUnstakeClaimTx = async (client, req, res) => {
  * Common
  */
 
-const serializeTx = async (tx, manager, client, res) => {
+const serializeTx = async (tx: Transaction, manager, client, res) => {
   tx.feePayer = manager;
 
   try {
@@ -77,7 +77,20 @@ const serializeTx = async (tx, manager, client, res) => {
         verifySignatures: false
       })
     ).toString("hex");
-    return res.send({ tx: serializedTx });
+    return res.send({ tx: serializedTx, versioned: false });
+  } catch (err) {
+    console.log(err);
+    return res.status(400).send({ error: err.message });
+  }
+};
+
+const serializeVersionedTx = async (tx: VersionedTransaction, res) => {
+  try {
+    const serializedTx = Buffer.from(tx.serialize()).toString("hex");
+    return res.send({
+      tx: serializedTx,
+      versioned: true
+    });
   } catch (err) {
     console.log(err);
     return res.status(400).send({ error: err.message });

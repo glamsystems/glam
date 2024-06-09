@@ -16,8 +16,8 @@ const jupiterProgram = new PublicKey(
 );
 
 interface QuoteParams {
-  inputMint: PublicKey;
-  outputMint: PublicKey;
+  inputMint: string;
+  outputMint: string;
   amount: number;
   autoSlippage?: boolean;
   autoSlippageCollisionUsdValue?: number;
@@ -57,13 +57,16 @@ export class JupiterClient {
     swapInstruction?: any,
     addressLookupTableAddresses?: any
   ): Promise<TransactionSignature> {
-    const outputMint =
-      quoteParams?.outputMint || new PublicKey(quoteResponse!.outputMint);
-
+    // TODO: should not allow client side to specify destination token account
+    const outputMint = quoteParams?.outputMint || quoteResponse!.outputMint;
+    const destinationTokenAccount = this.base.getTreasuryAta(
+      fund,
+      new PublicKey(outputMint)
+    );
     const tx = await this.swapTxBuilder(
       fund,
       this.base.getManager(),
-      this.base.getTreasuryAta(fund, outputMint),
+      destinationTokenAccount,
       quoteParams,
       quoteResponse,
       swapInstruction,
@@ -191,8 +194,18 @@ export class JupiterClient {
     const addressLookupTableAccounts = await this.getAdressLookupTableAccounts(
       addressLookupTableAddresses
     );
+
+    let payerPublicKey;
+    try {
+      payerPublicKey = await this.base.getWalletSigner().publicKey;
+    } catch (e) {
+      console.log("Cannot wallet signer:", e.message);
+      console.log("Default to fund manager as payer");
+      payerPublicKey = manager;
+    }
+
     const messageV0 = new TransactionMessage({
-      payerKey: this.base.getWalletSigner().publicKey,
+      payerKey: payerPublicKey,
       recentBlockhash: (
         await this.base.provider.connection.getLatestBlockhash()
       ).blockhash,
@@ -242,18 +255,23 @@ export class JupiterClient {
   public async swapTx(
     fund: PublicKey,
     manager: PublicKey,
-    quote?: any,
-    quoteResponse?: any,
+    quoteParams?: QuoteParams,
+    quoteResponse?: QuoteResponse,
     swapInstruction?: any,
     addressLookupTableAddresses?: any
   ): Promise<VersionedTransaction> {
-    const outputMint =
-      quote?.outputMint || new PublicKey(quoteResponse!.outputMint);
+    // TODO: should not allow client side to specify destination token account
+    const outputMint = quoteParams?.outputMint || quoteResponse!.outputMint;
+    const destinationTokenAccount = this.base.getTreasuryAta(
+      fund,
+      new PublicKey(outputMint)
+    );
+
     return await this.swapTxBuilder(
       fund,
       manager,
-      this.base.getTreasuryAta(fund, new PublicKey(outputMint)),
-      quote,
+      destinationTokenAccount,
+      quoteParams,
       quoteResponse,
       swapInstruction,
       addressLookupTableAddresses
