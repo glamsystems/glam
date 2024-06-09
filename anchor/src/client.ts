@@ -1,15 +1,12 @@
 import { GlamClientConfig } from "./clientConfig";
-import {
-  BaseClient,
-  JUPITER_API_DEFAULT as _JUPITER_API_DEFAULT
-} from "./client/base";
+import { BaseClient } from "./client/base";
 import { DriftClient } from "./client/drift";
 import { InvestorClient } from "./client/investor";
 import { JupiterClient } from "./client/jupiter";
 import { MarinadeClient } from "./client/marinade";
 import { WSolClient } from "./client/wsol";
 
-export const JUPITER_API_DEFAULT = _JUPITER_API_DEFAULT;
+export { JUPITER_API_DEFAULT } from "./client/base";
 
 export class GlamClient extends BaseClient {
   drift: DriftClient;

@@ -178,7 +178,7 @@ export class JupiterClient {
         .accounts({
           fund,
           manager,
-          inputAta: this.base.getManagerAta(inputMint),
+          inputAta: this.base.getManagerAta(new PublicKey(inputMint)),
           treasury: this.base.getTreasuryPDA(fund),
           outputAta: destinationTokenAccount,
           inputMint,
@@ -247,9 +247,12 @@ export class JupiterClient {
     swapInstruction?: any,
     addressLookupTableAddresses?: any
   ): Promise<VersionedTransaction> {
+    const outputMint =
+      quote?.outputMint || new PublicKey(quoteResponse!.outputMint);
     return await this.swapTxBuilder(
       fund,
       manager,
+      this.base.getTreasuryAta(fund, new PublicKey(outputMint)),
       quote,
       quoteResponse,
       swapInstruction,
