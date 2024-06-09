@@ -199,7 +199,7 @@ export class JupiterClient {
     try {
       payerPublicKey = await this.base.getWalletSigner().publicKey;
     } catch (e) {
-      console.log("Cannot wallet signer:", e.message);
+      console.log("Cannot wallet signer:", e);
       console.log("Default to fund manager as payer");
       payerPublicKey = manager;
     }
