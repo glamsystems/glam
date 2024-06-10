@@ -175,9 +175,10 @@ export class JupiterClient {
       this.ixDataToTransactionInstruction(swapInstruction);
 
     let inputAta;
-    if (this.base.getManager()) {
+    try {
       inputAta = this.base.getManagerAta(new PublicKey(inputMint));
-    } else {
+    } catch (e) {
+      console.log("Cannot get manager ata:", e);
       // When called from API, we cannot get manager from provider
       // We need to pass the manager from client side
       inputAta = this.base.getManagerAta(new PublicKey(inputMint), manager);

@@ -3,16 +3,31 @@ import {
   Transaction,
   sendAndConfirmTransaction,
   PublicKey,
-  VersionedTransaction
+  VersionedTransaction,
+  ConfirmOptions
 } from "@solana/web3.js";
 import { GlamClient } from "../src/client";
 
-// const API = "https://api.glam.systems";
-const API = "http://localhost:8080";
+/**
+ * This test suite is a demonstration of how to interact with the glam API.
+ *
+ * Before running this test suite, make sure you [provider] is correclty set up in Anchor.toml:
+ * 1) cluster: set to "mainnet-beta"
+ * 2) wallet: set to the path of the manager wallet
+ *
+ * To run the tests (optional to skip build, must skip deploy):
+ *  anchor test --skip-build --skip-deploy
+ */
+
+const API = "https://api.glam.systems";
 const wsol = new PublicKey("So11111111111111111111111111111111111111112");
 const msol = new PublicKey("mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So");
 const manager = "gLJHKPrZLGBiBZ33hFgZh6YnsEhTVxuRT17UCqNp6ff";
 const fund = "4gAcSdfSAxVPcxj2Hi3AvKKViGat3iUysDD5ZzbqhDTk";
+const confirmOptions: ConfirmOptions = {
+  commitment: "confirmed",
+  maxRetries: 3
+};
 
 describe("glam_api_tx", () => {
   const glamClient = new GlamClient();
@@ -30,7 +45,8 @@ describe("glam_api_tx", () => {
       const txId = await sendAndConfirmTransaction(
         glamClient.provider.connection,
         Transaction.from(Buffer.from(tx, "hex")),
-        [glamClient.getWalletSigner()]
+        [glamClient.getWalletSigner()],
+        confirmOptions
       );
       console.log("Wrap txId:", txId);
     } catch (error) {
@@ -52,7 +68,8 @@ describe("glam_api_tx", () => {
       const txId = await sendAndConfirmTransaction(
         glamClient.provider.connection,
         Transaction.from(Buffer.from(tx, "hex")),
-        [glamClient.getWalletSigner()]
+        [glamClient.getWalletSigner()],
+        confirmOptions
       );
       console.log("Unwrap txId:", txId);
     } catch (error) {
@@ -86,7 +103,7 @@ describe("glam_api_tx", () => {
     try {
       const txId = await (
         glamClient.provider as anchor.AnchorProvider
-      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()]);
+      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
       console.log("jupiter swap txId", txId);
     } catch (error) {
       console.error("Error", error);
