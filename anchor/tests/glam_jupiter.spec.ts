@@ -29,8 +29,8 @@ describe("glam_jupiter", () => {
     const amount = 50_000_000;
     try {
       const txId = await glamClient.jupiter.swap(fundPDA, {
-        inputMint: usdc,
-        outputMint: msol,
+        inputMint: usdc.toBase58(),
+        outputMint: msol.toBase58(),
         amount,
         autoSlippage: true,
         autoSlippageCollisionUsdValue: 1000,
@@ -56,8 +56,8 @@ describe("glam_jupiter", () => {
     const amount = 50_000_000;
     try {
       const txId = await glamClient.jupiter.swap(fundPDA, {
-        inputMint: wsol,
-        outputMint: msol,
+        inputMint: wsol.toBase58(),
+        outputMint: msol.toBase58(),
         amount,
         autoSlippage: true,
         autoSlippageCollisionUsdValue: 1000,

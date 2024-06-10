@@ -16,6 +16,7 @@ export const validateBN = (num: string) => {
   try {
     res = new BN(num);
   } catch (_e) {
+    console.error(_e);
     return undefined;
   }
   return res;

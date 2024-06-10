@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { validatePubkey, validateBN } from "../validation";
+import { Transaction, VersionedTransaction } from "@solana/web3.js";
 
 /*
  * Marinade
@@ -13,20 +14,19 @@ const jupiterSwapTx = async (client, req, res) => {
     return res.sendStatus(400);
   }
 
-  let tx;
   try {
-    tx = await client.jupiter.swapTx(
+    const tx = await client.jupiter.swapTx(
       fund,
       manager,
       req.body.quote,
       req.body.quoteResponse,
       req.body.swapInstruction
     );
+    return serializeVersionedTx(tx, res);
   } catch (err) {
     console.log(err);
     return res.status(400).send({ error: err.message });
   }
-  return await serializeTx(tx, manager, client, res);
 };
 
 /*
@@ -61,65 +61,40 @@ const marinadeDelayedUnstakeClaimTx = async (client, req, res) => {
 };
 
 /*
- * wSOL
- */
-
-const wsolWrapTx = async (client, req, res) => {
-  const fund = validatePubkey(req.body.fund);
-  const manager = validatePubkey(req.body.manager);
-  const amount = validateBN(req.body.amount);
-
-  if (fund === undefined || manager === undefined || amount === undefined) {
-    return res.sendStatus(400);
-  }
-
-  console.log("client", client);
-  const tx = await client.wsol.wrapTx(fund, manager, amount);
-
-  return await serializeTx(tx, manager, client, res);
-};
-
-const wsolUnwrapTx = async (client, req, res) => {
-  const fund = validatePubkey(req.body.fund);
-  const manager = validatePubkey(req.body.manager);
-
-  if (fund === undefined || manager === undefined) {
-    return res.sendStatus(400);
-  }
-
-  const tx = await client.wsol.unwrapTx(fund, manager);
-
-  return await serializeTx(tx, manager, client, res);
-};
-
-/*
  * Common
  */
 
-const serializeTx = async (tx, manager, client, res) => {
+const serializeTx = async (tx: Transaction, manager, client, res) => {
   tx.feePayer = manager;
 
-  let serializedTx = "";
   try {
     tx.recentBlockhash = (
       await client.provider.connection.getLatestBlockhash()
     ).blockhash;
-
-    serializedTx = new Buffer(
+    const serializedTx = Buffer.from(
       tx.serialize({
         requireAllSignatures: false,
         verifySignatures: false
       })
     ).toString("hex");
+    return res.send({ tx: serializedTx, versioned: false });
   } catch (err) {
     console.log(err);
     return res.status(400).send({ error: err.message });
   }
-  return res.send(
-    JSON.stringify({
-      tx: serializedTx
-    }) + "\n"
-  );
+};
+
+const serializeVersionedTx = async (tx: VersionedTransaction, res) => {
+  try {
+    const serializedTx = Buffer.from(tx.serialize()).toString("hex");
+    return res.send({
+      tx: serializedTx,
+      versioned: true
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(400).send({ error: err.message });
+  }
 };
 
 /*
@@ -144,13 +119,34 @@ router.post("/tx/marinade/unstake/claim", async (req, res) => {
 });
 
 router.post("/tx/wsol/wrap", async (req, res) => {
+  const fund = validatePubkey(req.body.fund);
+  const manager = validatePubkey(req.body.manager);
+  const amount = validateBN(req.body.amount);
+
+  console.log(fund, manager, amount);
+
+  if (!fund || !manager || !amount) {
+    return res.sendStatus(400);
+  }
+
   res.set("content-type", "application/json");
-  return wsolWrapTx(req.client, req, res);
+  const tx = await req.client.wsol.wrapTx(fund, manager, amount);
+
+  return await serializeTx(tx, manager, req.client, res);
 });
 
 router.post("/tx/wsol/unwrap", async (req, res) => {
+  const fund = validatePubkey(req.body.fund);
+  const manager = validatePubkey(req.body.manager);
+
+  if (!fund || !manager) {
+    return res.sendStatus(400);
+  }
+
   res.set("content-type", "application/json");
-  return wsolUnwrapTx(req.client, req, res);
+  const tx = await req.client.wsol.unwrapTx(fund, manager);
+
+  return await serializeTx(tx, manager, req.client, res);
 });
 
 export default router;

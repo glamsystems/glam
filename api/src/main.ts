@@ -16,34 +16,31 @@ if (process.env.NODE_ENV !== "production") {
   require("dotenv").config({ path: ".env.local", override: true });
 }
 
-const BASE_URL = "https://api.glam.systems";
 const SOLANA_RPC = process.env.SOLANA_RPC || "http://localhost:8899";
-const SOLANA_MAINNET_KEY = process.env.SOLANA_MAINNET_KEY || "";
-const FORCE_MAINNET = process.env.MAINNET === "1";
+const SOLANA_CLUSTER = (process.env.SOLANA_CLUSTER || "custom") as any;
 const JUPITER_API = process.env.JUPITER_API || JUPITER_API_DEFAULT;
 
-/* GlamClient for devnet and testnet */
+/* GlamClient setup */
 
-const mainnetConnection = new Connection(
-  `https://mainnet.helius-rpc.com/?api-key=${SOLANA_MAINNET_KEY}`,
-  "confirmed"
-);
-const mainnetProvider = new AnchorProvider(mainnetConnection, null, {
-  commitment: "confirmed"
-});
-const mainnetClient = new GlamClient({
-  cluster: "mainnet-beta",
-  provider: mainnetProvider,
+// Default client is configured by environment variables
+const defaultClient = new GlamClient({
+  cluster: SOLANA_CLUSTER,
+  provider: new AnchorProvider(
+    new Connection(SOLANA_RPC, "confirmed"),
+    null,
+    {}
+  ),
   jupiterApi: JUPITER_API
 });
 
-const devnetConnection = new Connection(SOLANA_RPC, "confirmed");
-const devnetProvider = new AnchorProvider(devnetConnection, null, {
-  commitment: "confirmed"
+const devnetClient = new GlamClient({
+  cluster: "devnet",
+  provider: new AnchorProvider(
+    new Connection("https://api.devnet.solana.com", "confirmed"),
+    null,
+    {}
+  )
 });
-const devnetClient = FORCE_MAINNET
-  ? mainnetClient
-  : new GlamClient({ provider: devnetProvider });
 
 /* Express app */
 
@@ -52,9 +49,9 @@ app.use(cors({ origin: "*", methods: "GET" }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "assets")));
 app.use((req, res, next) => {
-  if (req.hostname === "api.glam.systems") {
-    req.client = mainnetClient;
-  } else {
+  req.client = defaultClient;
+  // Use devnet client if running on GAE and not on api.glam.systems
+  if (process.env.GAE_SERVICE && req.hostname !== "api.glam.systems") {
     req.client = devnetClient;
   }
   next();
