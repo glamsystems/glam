@@ -194,7 +194,6 @@ export class JupiterClient {
     const addressLookupTableAccounts = await this.getAdressLookupTableAccounts(
       addressLookupTableAddresses
     );
-
     let payerPublicKey;
     try {
       payerPublicKey = await this.base.getWalletSigner().publicKey;
