@@ -10,7 +10,7 @@ const jupiterSwapTx = async (client, req, res) => {
   const fund = validatePubkey(req.body.fund);
   const manager = validatePubkey(req.body.manager);
 
-  if (fund === undefined || manager === undefined) {
+  if (!fund || !manager) {
     return res.sendStatus(400);
   }
 

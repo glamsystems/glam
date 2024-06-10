@@ -174,6 +174,15 @@ export class JupiterClient {
     const swapIx: { data: any; keys: AccountMeta[] } =
       this.ixDataToTransactionInstruction(swapInstruction);
 
+    let inputAta;
+    if (this.base.getManager()) {
+      inputAta = this.base.getManagerAta(new PublicKey(inputMint));
+    } else {
+      // When called from API, we cannot get manager from provider
+      // We need to pass the manager from client side
+      inputAta = this.base.getManagerAta(new PublicKey(inputMint), manager);
+    }
+
     const instructions = [
       ...computeBudgetInstructions.map(this.ixDataToTransactionInstruction),
       await this.base.program.methods
@@ -181,7 +190,7 @@ export class JupiterClient {
         .accounts({
           fund,
           manager,
-          inputAta: this.base.getManagerAta(new PublicKey(inputMint)),
+          inputAta,
           treasury: this.base.getTreasuryPDA(fund),
           outputAta: destinationTokenAccount,
           inputMint,
@@ -194,6 +203,7 @@ export class JupiterClient {
     const addressLookupTableAccounts = await this.getAdressLookupTableAccounts(
       addressLookupTableAddresses
     );
+
     let payerPublicKey;
     try {
       payerPublicKey = await this.base.getWalletSigner().publicKey;
