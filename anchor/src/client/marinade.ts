@@ -207,6 +207,14 @@ export class MarinadeClient {
    * API methods
    */
 
+  public async stakeTx(
+    fund: PublicKey,
+    manager: PublicKey,
+    amount: BN
+  ): Promise<Transaction> {
+    return await this.stakeTxBuilder(fund, manager, amount).transaction();
+  }
+
   public async delayedUnstakeTx(
     fund: PublicKey,
     manager: PublicKey,

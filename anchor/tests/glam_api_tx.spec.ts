@@ -110,4 +110,80 @@ describe("glam_api_tx", () => {
       throw error;
     }
   }, 30_000);
+
+  it("Stake 0.1 sol", async () => {
+    const response = await fetch(`${API}/tx/marinade/stake`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ manager, fund, amount: 100000000 })
+    });
+    const { tx } = await response.json();
+    console.log("Stake tx:", tx);
+
+    try {
+      const txId = await sendAndConfirmTransaction(
+        glamClient.provider.connection,
+        Transaction.from(Buffer.from(tx, "hex")),
+        [glamClient.getWalletSigner()],
+        confirmOptions
+      );
+      console.log("Stake txId:", txId);
+    } catch (error) {
+      console.log("Error", error);
+      throw error;
+    }
+  }, 30_000);
+
+  //
+  // Uncomment the following tests if you want to perform delayed unstake in mainnet
+  //
+  /*
+  it("Order unstake 0.01 msol", async () => {
+    const response = await fetch(`${API}/tx/marinade/unstake`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ manager, fund, amount: 10000000 })
+    });
+    const { tx } = await response.json();
+    console.log("Order unstake tx:", tx);
+
+    try {
+      const txId = await sendAndConfirmTransaction(
+        glamClient.provider.connection,
+        Transaction.from(Buffer.from(tx, "hex")),
+        [glamClient.getWalletSigner()],
+        confirmOptions
+      );
+      console.log("Order unstake txId:", txId);
+    } catch (error) {
+      console.log("Error", error);
+      throw error;
+    }
+  }, 30_000);
+
+  it("Claim ticket", async () => {
+    await sleep(30_000);
+
+    const response = await fetch(`${API}/tx/marinade/unstake/claim`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ manager, fund })
+    });
+    const { tx } = await response.json();
+    console.log("Claim tx:", tx);
+
+    try {
+      const txId = await sendAndConfirmTransaction(
+        glamClient.provider.connection,
+        Transaction.from(Buffer.from(tx, "hex")),
+        [glamClient.getWalletSigner()],
+        confirmOptions
+      );
+      console.log("Claim txId:", txId);
+    } catch (error) {
+      console.log("Error", error);
+      throw error;
+    }
+  }, 35_000);
+  */
 });
