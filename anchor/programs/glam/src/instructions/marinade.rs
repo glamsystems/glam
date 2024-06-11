@@ -6,8 +6,8 @@ use anchor_spl::{
 use marinade::cpi::accounts::{Claim, Deposit, LiquidUnstake, OrderUnstake};
 use marinade::cpi::{claim, deposit, liquid_unstake, order_unstake};
 use marinade::program::MarinadeFinance;
+use marinade::state::delayed_unstake_ticket::TicketAccountData;
 use marinade::State as MarinadeState;
-use marinade::TicketAccountData;
 
 use crate::state::*;
 

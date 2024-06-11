@@ -139,11 +139,10 @@ pub fn subscribe_handler<'c: 'info, 'info>(
 
     let timestamp = Clock::get()?.unix_timestamp;
     let mut subscribe_asset_price = total_value;
-    let mut subscribe_asset_expo = 0i32;
     for (i, accounts) in ctx.remaining_accounts.chunks(2).enumerate() {
         let cur_asset = assets[i];
         let cur_asset_str = cur_asset.to_string();
-        let cur_asset_meta = AssetInfo::get(cur_asset_str.as_str())?;
+        let cur_asset_meta = AssetMeta::get(cur_asset_str.as_str())?;
 
         let treasury_ata: InterfaceAccount<TokenAccount> =
             InterfaceAccount::<TokenAccount>::try_from(&accounts[0])
@@ -160,20 +159,21 @@ pub fn subscribe_handler<'c: 'info, 'info>(
             let pricing_account = &accounts[1];
             // msg!("pricing={}", pricing_account.key());
             require!(
-                pricing_account.key().to_string().as_str() == cur_asset_meta.pyth_account,
+                pricing_account.key().to_string().as_str() == cur_asset_meta.get_pricing_account(),
                 InvestorError::InvalidPricingOracle
             );
 
-            let price_feed: pyth_sdk_solana::PriceFeed =
-                SolanaPriceAccount::account_info_to_feed(pricing_account).unwrap();
-            let mut asset_price = price_feed.get_price_no_older_than(timestamp, 60).unwrap();
-            // let mut asset_price = price_feed.get_price_unchecked();
+            // let price_feed: pyth_sdk_solana::PriceFeed =
+            //     SolanaPriceAccount::account_info_to_feed(pricing_account).unwrap();
+            // let mut asset_price = price_feed.get_price_no_older_than(timestamp, 60).unwrap();
+            // // let mut asset_price = price_feed.get_price_unchecked();
 
-            let asset_decimals = cur_asset_meta.decimals;
-            let asset_expo = -(asset_decimals as i32);
-            asset_price = asset_price.scale_to_exponent(asset_expo).unwrap();
+            // let asset_decimals: i32 = cur_asset_meta.decimals;
+            // let asset_expo = -(asset_decimals as i32);
+            // asset_price = asset_price.scale_to_exponent(asset_expo).unwrap();
+            let asset_price = cur_asset_meta.get_price(pricing_account, timestamp)?;
             asset_value = asset_price
-                .cmul(asset_amount.try_into().unwrap(), asset_expo)
+                .cmul(asset_amount.try_into().unwrap(), asset_price.expo)
                 .unwrap();
             /*
             msg!(
@@ -188,7 +188,6 @@ pub fn subscribe_handler<'c: 'info, 'info>(
 
             if i == asset_idx {
                 subscribe_asset_price = asset_price;
-                subscribe_asset_expo = asset_expo;
             }
         }
 
@@ -198,7 +197,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     }
 
     let asset_value = subscribe_asset_price
-        .cmul(amount.try_into().unwrap(), subscribe_asset_expo)
+        .cmul(amount.try_into().unwrap(), subscribe_asset_price.expo)
         .unwrap()
         .scale_to_exponent(share_expo)
         .unwrap()
@@ -218,7 +217,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     } as u64;
     msg!(
         "Subscribe: {} for {} shares",
-        log_decimal(amount, subscribe_asset_expo),
+        log_decimal(amount, subscribe_asset_price.expo),
         log_decimal(amount_shares, share_expo)
     );
 
@@ -357,7 +356,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
         for (i, accounts) in ctx.remaining_accounts.chunks(4).enumerate() {
             let cur_asset = assets[i];
             let cur_asset_str = cur_asset.to_string();
-            let cur_asset_meta = AssetInfo::get(cur_asset_str.as_str())?;
+            let cur_asset_meta = AssetMeta::get(cur_asset_str.as_str())?;
 
             let asset = InterfaceAccount::<Mint>::try_from(&accounts[0]).expect("invalid asset");
             let signer_asset_ata: InterfaceAccount<'_, TokenAccount> =
@@ -371,7 +370,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
             );
             let pricing_account = &accounts[3];
             require!(
-                pricing_account.key().to_string().as_str() == cur_asset_meta.pyth_account,
+                pricing_account.key().to_string().as_str() == cur_asset_meta.get_pricing_account(),
                 InvestorError::InvalidPricingOracle
             );
 

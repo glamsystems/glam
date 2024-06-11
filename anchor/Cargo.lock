@@ -253,6 +253,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6c4fd6e43b2ca6220d2ef1641539e678bfc31b6cc393cf892b373b5997b6a39a"
 dependencies = [
  "anchor-lang",
+ "borsh 0.10.3",
  "solana-program",
  "spl-associated-token-account 2.3.1",
  "spl-token",
@@ -1107,7 +1108,7 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "drift",
- "marinade",
+ "marinade-finance",
  "phf",
  "pyth-sdk-solana",
  "solana-program",
@@ -1375,11 +1376,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "90ed8c1e510134f979dbc4f070f87d4313098b704861a105fe34231c70a3901c"
 
 [[package]]
-name = "marinade"
+name = "marinade-finance"
 version = "0.1.0"
+source = "git+https://github.com/marinade-finance/liquid-staking-program?branch=anchor-0.29#ff987638f423aa349045af9a8ae18f30592c39b7"
 dependencies = [
- "anchor-gen",
  "anchor-lang",
+ "anchor-spl",
+ "solana-security-txt",
 ]
 
 [[package]]
