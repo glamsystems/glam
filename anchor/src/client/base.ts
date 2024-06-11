@@ -133,11 +133,15 @@ export class BaseClient {
   }
 
   getManager(): PublicKey {
-    return this.provider?.publicKey || new PublicKey(0);
+    const managerPublicKey = this.provider?.publicKey;
+    if (!managerPublicKey) {
+      throw new Error("Manager public key cannot be retrieved from provider");
+    }
+    return managerPublicKey;
   }
 
-  getManagerAta(mint: PublicKey): PublicKey {
-    return getAssociatedTokenAddressSync(mint, this.getManager());
+  getManagerAta(mint: PublicKey, manager?: PublicKey): PublicKey {
+    return getAssociatedTokenAddressSync(mint, manager || this.getManager());
   }
 
   getWalletSigner(): Keypair {
