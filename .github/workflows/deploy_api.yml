@@ -1,18 +1,14 @@
 name: Deploy api to GAE
 
 on:
-  pull_request:
-    branches: ["main"]
-
   workflow_dispatch:
     inputs:
       environment:
         description: "Environment to deploy to"
         required: true
         default: "dev"
-        options:
-          - "dev"
-          - "prod"
+        type: choice
+        options: [dev, prod]
 
 permissions:
   contents: read
