@@ -22,17 +22,6 @@ jobs:
   build-test-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: "GCP auth"
-        uses: "google-github-actions/auth@v2"
-        with:
-          project_id: "glam-api-419002"
-          workload_identity_provider: "principal://iam.googleapis.com/projects/639940077006/locations/global/workloadIdentityPools/github-workflow/providers/github"
-          service_account: "glam-api-419002@appspot.gserviceaccount.com"
-
-      - name: "gcloud cli test"
-        run: |-
-          gcloud services list
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -65,6 +54,16 @@ jobs:
 
       - name: Run tests
         run: pnpm api-test
+
+      - name: "GCP auth"
+        uses: "google-github-actions/auth@v2"
+        with:
+          project_id: "glam-api-419002"
+          workload_identity_provider: "principal://iam.googleapis.com/projects/639940077006/locations/global/workloadIdentityPools/github-workflow/providers/github"
+          service_account: "glam-api-419002@appspot.gserviceaccount.com"
+
+      - name: "gcloud"
+        run: gcloud services list
 
       - name: Deploy to GAE
         run: ./deploy_api.sh --${{ inputs.environment }}
