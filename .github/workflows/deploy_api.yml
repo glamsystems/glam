@@ -66,10 +66,12 @@ jobs:
         run: gcloud services list
 
       - name: "Set up env variables"
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
         run: |-
           echo "env_variables:" > api/.env.yaml
-          echo "  SOLANA_RPC: https://api.mainnet-beta.solana.com" >> api/.env.yaml
-          echo "  GIT_SHA: $(git rev-parse HEAD)" >> api/.env.yaml
+          echo "  SOLANA_RPC: https://mainnet.helius-rpc.com/?api-key=$HELIUS_API_KEY" >> api/.env.yaml
+          echo "  GIT_SHA: $GITHUB_SHA" >> api/.env.yaml
 
       - name: Deploy to GAE
         run: ./deploy_api.sh --${{ inputs.environment }}
