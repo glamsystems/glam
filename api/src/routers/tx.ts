@@ -3,7 +3,7 @@ import { validatePubkey, validateBN } from "../validation";
 import { Transaction, VersionedTransaction } from "@solana/web3.js";
 
 /*
- * Marinade
+ * Jupiter
  */
 
 const jupiterSwapTx = async (client, req, res) => {
@@ -32,6 +32,20 @@ const jupiterSwapTx = async (client, req, res) => {
 /*
  * Marinade
  */
+
+const marinadeStakeTx = async (client, req, res) => {
+  const fund = validatePubkey(req.body.fund);
+  const manager = validatePubkey(req.body.manager);
+  const amount = validateBN(req.body.amount);
+
+  if (!fund || !manager || !amount) {
+    return res.sendStatus(400);
+  }
+
+  const tx = await client.marinade.stakeTx(fund, manager, amount);
+
+  return await serializeTx(tx, manager, client, res);
+};
 
 const marinadeDelayedUnstakeTx = async (client, req, res) => {
   const fund = validatePubkey(req.body.fund);
@@ -106,6 +120,11 @@ const router = Router();
 router.post("/tx/jupiter/swap", async (req, res) => {
   res.set("content-type", "application/json");
   return jupiterSwapTx(req.client, req, res);
+});
+
+router.post("/tx/marinade/stake", async (req, res) => {
+  res.set("content-type", "application/json");
+  return marinadeStakeTx(req.client, req, res);
 });
 
 router.post("/tx/marinade/unstake", async (req, res) => {
