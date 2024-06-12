@@ -59,9 +59,8 @@ address = "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J"
 # Pyth ETH/USD
 address = "EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw"
 
-[[test.validator.clone]]
 # Marinade Staking state for pricing
-address = "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC"
+# do NOT clone or staking tests will fail
 
 [[test.validator.clone]]
 # WSOL
