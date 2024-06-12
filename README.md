@@ -35,6 +35,7 @@ Fund:
 - [x] Segregated treasury account
 - [x] Share classes (Token 2022)
   - [x] On chain Openfunds Share Class (Metadata Extension)
+  - [x] Allow/deny-list for subscription 
   - [x] Lockup period (Transfer Hook, in progress)
   - [ ] Non-Transferable
   - [ ] Permanent Delegate
@@ -47,9 +48,10 @@ Fund:
 Integrations:
 
 - [x] User wallets (Phantom, Backpack)
-- [x] Pricing (Pyth)
+- [x] Pricing (Pyth, LST)
 - [x] Trading (Drift delegate account, deposit, withdraw)
-- [ ] Swap, rebalance (Orca?, Jupiter?)
+- [x] Swap (Jupiter)
+- [x] Staking (Marinade stake, liquid vs delayed unstake)
 - [ ] Alternative strategy engine (Symmetry?)
 - [ ] Alternative custody (Squad?)
 
