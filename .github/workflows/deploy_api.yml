@@ -69,7 +69,7 @@ jobs:
         run: |-
           echo "env_variables:" > api/.env.yaml
           echo "  SOLANA_RPC: https://api.mainnet-beta.solana.com" >> api/.env.yaml
-          echo "  $(git rev-parse HEAD)" >> api/.env.yaml
+          echo "  GIT_SHA: $(git rev-parse HEAD)" >> api/.env.yaml
 
       - name: Deploy to GAE
         run: ./deploy_api.sh --${{ inputs.environment }}
