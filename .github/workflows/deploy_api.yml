@@ -1,8 +1,8 @@
 name: Deploy api to GAE
 
 on:
-  # pull_request:
-  #   branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
   workflow_dispatch:
     inputs:
@@ -21,13 +21,16 @@ jobs:
   build-test-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: GCP auth
-        uses: google-github-actions/auth@v2
+      - name: "GCP auth"
+        uses: "google-github-actions/auth@v2"
         with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          project_id: "glam-api-419002"
+          workload_identity_provider: "principal://iam.googleapis.com/projects/639940077006/locations/global/workloadIdentityPools/github-workflow/providers/github"
+          service_account: "glam-api-419002@appspot.gserviceaccount.com"
 
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+      - name: "gcloud cli test"
+        run: |-
+          gcloud services list
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -63,4 +66,4 @@ jobs:
         run: pnpm api-test
 
       - name: Deploy to GAE
-        run: gcloud info && ./deploy_api.sh --${{ inputs.environment }}
+        run: ./deploy_api.sh --${{ inputs.environment }}
