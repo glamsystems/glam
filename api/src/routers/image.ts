@@ -1,5 +1,5 @@
 import { Router } from "express";
-import crypto from "crypto";
+import crypto from "node:crypto";
 import puppeteer from "puppeteer";
 import { PublicKey } from "@solana/web3.js";
 import { validatePubkey } from "../validation";

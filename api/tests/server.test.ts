@@ -2,13 +2,13 @@ import server from "../src/main.js";
 import supertest from "supertest";
 const requestWithSupertest = supertest(server);
 
-describe("Test /version", () => {
+describe("Test /_/version", () => {
   afterAll(() => {
     server.close();
   });
 
   it("test", async () => {
-    const res = await requestWithSupertest.get("/version");
+    const res = await requestWithSupertest.get("/_/version");
     expect(res.status).toEqual(200);
   });
 });

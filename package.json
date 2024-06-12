@@ -46,7 +46,6 @@
     "body-parser": "^1.20.2",
     "bs58": "^5.0.0",
     "buffer": "^6.0.3",
-    "canvas": "^2.11.2",
     "carbon-components": "^10.58.12",
     "carbon-components-react": "^8.56.0",
     "carbon-icons": "^7.0.7",
@@ -67,10 +66,8 @@
     "react-router-dom": "^6.23.0",
     "sass": "^1.77.0",
     "tslib": "^2.6.2",
-    "use-dark-mode": "^2.3.1",
     "zod": "^3.23.6",
-    "puppeteer": "^22.6.3",
-    "crypto": "^1.0.1"
+    "puppeteer": "^22.6.3"
   },
   "devDependencies": {
     "@babel/core": "^7.24.5",

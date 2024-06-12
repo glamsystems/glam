@@ -56,7 +56,6 @@ deps_to_remove=(
   "react-hot-toast"
   "react-router-dom"
   "sass"
-  "use-dark-mode"
   "zod"
 )
 jq_command=". | del(.devDependencies)"
