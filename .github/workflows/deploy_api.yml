@@ -59,7 +59,7 @@ jobs:
         uses: "google-github-actions/auth@v2"
         with:
           project_id: "glam-api-419002"
-          workload_identity_provider: "principal://iam.googleapis.com/projects/639940077006/locations/global/workloadIdentityPools/github-workflow/providers/github"
+          workload_identity_provider: "projects/639940077006/locations/global/workloadIdentityPools/github-workflow/providers/github"
           service_account: "glam-api-419002@appspot.gserviceaccount.com"
 
       - name: "gcloud"
