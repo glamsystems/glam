@@ -3,33 +3,6 @@ import { validatePubkey, validateBN } from "../validation";
 import { Transaction, VersionedTransaction } from "@solana/web3.js";
 
 /*
- * Jupiter
- */
-
-const jupiterSwapTx = async (client, req, res) => {
-  const fund = validatePubkey(req.body.fund);
-  const manager = validatePubkey(req.body.manager);
-
-  if (!fund || !manager) {
-    return res.sendStatus(400);
-  }
-
-  try {
-    const tx = await client.jupiter.swapTx(
-      fund,
-      manager,
-      req.body.quote,
-      req.body.quoteResponse,
-      req.body.swapInstruction
-    );
-    return serializeVersionedTx(tx, res);
-  } catch (err) {
-    console.log(err);
-    return res.status(400).send({ error: err.message });
-  }
-};
-
-/*
  * Marinade
  */
 
@@ -119,7 +92,41 @@ const router = Router();
 
 router.post("/tx/jupiter/swap", async (req, res) => {
   res.set("content-type", "application/json");
-  return jupiterSwapTx(req.client, req, res);
+
+  const fund = validatePubkey(req.body.fund);
+  const manager = validatePubkey(req.body.manager);
+
+  if (!fund || !manager) {
+    return res.status(400).send({ error: "Invalid fund or manager" });
+  }
+
+  const { quote, quoteResponse, swapInstruction, addressLookupTableAddresses } =
+    req.body;
+
+  if (!quote && !quoteResponse) {
+    // If quote and quoteResponse are not provided, swapInstruction and addressLookupTableAddresses must be provided
+    if (!swapInstruction || !addressLookupTableAddresses) {
+      return res.status(400).send({
+        error:
+          "Both swapInstruction and addressLookupTableAddresses must be provided"
+      });
+    }
+  }
+
+  try {
+    const tx = await req.client.jupiter.swapTx(
+      fund,
+      manager,
+      quote,
+      quoteResponse,
+      swapInstruction,
+      addressLookupTableAddresses
+    );
+    return serializeVersionedTx(tx, res);
+  } catch (err) {
+    console.log(err);
+    return res.status(400).send({ error: err.message });
+  }
 });
 
 router.post("/tx/marinade/stake", async (req, res) => {

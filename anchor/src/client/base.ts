@@ -51,7 +51,10 @@ export class BaseClient {
     } else {
       const defaultProvider = anchor.AnchorProvider.env();
       const url = defaultProvider.connection.rpcEndpoint;
-      const connection = new Connection(url, "confirmed");
+      const connection = new Connection(url, {
+        commitment: "confirmed",
+        confirmTransactionInitialTimeout: 45000 // default timeout is 30s, we extend it to 45s
+      });
       this.provider = new anchor.AnchorProvider(
         connection,
         defaultProvider.wallet,

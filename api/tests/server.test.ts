@@ -85,3 +85,31 @@ describe("Test /prices", () => {
     });
   });
 });
+
+describe("Test /tx/jupiter/swap", () => {
+  afterAll(() => {
+    server.close();
+  });
+
+  it("Invalid manager/fund params", async () => {
+    const res = await requestWithSupertest.post("/tx/jupiter/swap").send({
+      fund: "xyz",
+      manager: "abc"
+    });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({ error: "Invalid fund or manager" });
+  });
+
+  it("Invalid swap params", async () => {
+    const res = await requestWithSupertest.post("/tx/jupiter/swap").send({
+      fund: "11111111111111111111111111111111",
+      manager: "11111111111111111111111111111111",
+      swapInstruction: "abc"
+    });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      error:
+        "Both swapInstruction and addressLookupTableAddresses must be provided"
+    });
+  });
+});
