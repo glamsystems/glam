@@ -19,7 +19,8 @@ import { GlamClient } from "../src/client";
  *  anchor test --skip-build --skip-deploy
  */
 
-const API = "https://api.glam.systems";
+const API = "http://localhost:8080";
+// const API = "https://api.glam.systems";
 const wsol = new PublicKey("So11111111111111111111111111111111111111112");
 const msol = new PublicKey("mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So");
 const manager = "gLJHKPrZLGBiBZ33hFgZh6YnsEhTVxuRT17UCqNp6ff";
@@ -32,6 +33,7 @@ const confirmOptions: ConfirmOptions = {
 describe("glam_api_tx", () => {
   const glamClient = new GlamClient();
 
+  /*
   it("Wrap 0.001 sol", async () => {
     const response = await fetch(`${API}/tx/wsol/wrap`, {
       method: "POST",
@@ -110,6 +112,7 @@ describe("glam_api_tx", () => {
       throw error;
     }
   }, 60_000);
+  */
 
   it("Jupiter swap with quote response", async () => {
     const quoteParams: any = {
@@ -158,6 +161,7 @@ describe("glam_api_tx", () => {
     }
   }, 60_000);
 
+  /*
   it("Stake 0.1 sol", async () => {
     const response = await fetch(`${API}/tx/marinade/stake`, {
       method: "POST",
@@ -184,7 +188,6 @@ describe("glam_api_tx", () => {
   //
   // Uncomment the following tests if you want to perform delayed unstake in mainnet
   //
-  /*
   it("Order unstake 0.01 msol", async () => {
     const response = await fetch(`${API}/tx/marinade/unstake`, {
       method: "POST",

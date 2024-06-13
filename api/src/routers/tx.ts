@@ -92,7 +92,6 @@ const router = Router();
 
 router.post("/tx/jupiter/swap", async (req, res) => {
   res.set("content-type", "application/json");
-
   const fund = validatePubkey(req.body.fund);
   const manager = validatePubkey(req.body.manager);
 

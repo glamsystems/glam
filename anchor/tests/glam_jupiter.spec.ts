@@ -52,7 +52,7 @@ describe("glam_jupiter", () => {
     }
   }, 15_000);
 
-  it("Swap", async () => {
+  it("Swap by providing quote params", async () => {
     const amount = 50_000_000;
     try {
       const txId = await glamClient.jupiter.swap(fundPDA, {
@@ -66,6 +66,49 @@ describe("glam_jupiter", () => {
         asLegacyTransaction: false,
         maxAccounts: 20
       });
+      console.log("swap txId", txId);
+    } catch (e) {
+      console.error(e);
+      // make sure program has reached jupiter
+      expect(e.logs).toContain(
+        "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]"
+      );
+    }
+  }, 15_000);
+
+  it("Swap by providing swap instructions", async () => {
+    const quoteParams: any = {
+      inputMint: msol.toBase58(),
+      outputMint: wsol.toBase58(),
+      amount: 50000000,
+      autoSlippage: true,
+      autoSlippageCollisionUsdValue: 1000,
+      swapMode: "ExactIn",
+      onlyDirectRoutes: false,
+      asLegacyTransaction: false,
+      maxAccounts: 20
+    };
+    const quoteResponse = await (
+      await fetch(
+        `${glamClient.jupiterApi}/quote?${new URLSearchParams(
+          Object.entries(quoteParams)
+        )}`
+      )
+    ).json();
+    const swapInstructions = await glamClient.jupiter.getSwapInstructions(
+      quoteResponse,
+      glamClient.getManager()
+    );
+    console.log("swapInstructions", swapInstructions);
+
+    const amount = 50_000_000;
+    try {
+      const txId = await glamClient.jupiter.swap(
+        fundPDA,
+        undefined,
+        undefined,
+        swapInstructions
+      );
       console.log("swap txId", txId);
     } catch (e) {
       console.error(e);

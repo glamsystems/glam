@@ -15,7 +15,7 @@ const jupiterProgram = new PublicKey(
   "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"
 );
 
-interface QuoteParams {
+type QuoteParams = {
   inputMint: string;
   outputMint: string;
   amount: number;
@@ -26,9 +26,9 @@ interface QuoteParams {
   onlyDirectRoutes?: boolean;
   asLegacyTransaction?: boolean;
   maxAccounts?: number;
-}
+};
 
-interface QuoteResponse {
+type QuoteResponse = {
   inputMint: string;
   inAmount: number;
   outputMint: string;
@@ -41,7 +41,23 @@ interface QuoteResponse {
   routePlan: any[];
   contextSlot: number;
   timeTaken: number;
-}
+};
+
+type InstructionFromJupiter = {
+  programId: string;
+  accounts: AccountMeta[];
+  data: string;
+};
+
+type SwapInstructions = {
+  tokenLedgerInstruction?: InstructionFromJupiter;
+  otherInstructions: InstructionFromJupiter[];
+  computeBudgetInstructions: InstructionFromJupiter[];
+  setupInstructions: InstructionFromJupiter[];
+  swapInstruction: InstructionFromJupiter;
+  cleanupInstruction?: InstructionFromJupiter;
+  addressLookupTableAddresses: string[];
+};
 
 export class JupiterClient {
   public constructor(readonly base: BaseClient) {}
@@ -54,8 +70,7 @@ export class JupiterClient {
     fund: PublicKey,
     quoteParams?: QuoteParams,
     quoteResponse?: QuoteResponse,
-    swapInstruction?: any,
-    addressLookupTableAddresses?: any
+    swapInstructions?: SwapInstructions
   ): Promise<TransactionSignature> {
     // TODO: should not allow client side to specify destination token account
     const outputMint = quoteParams?.outputMint || quoteResponse!.outputMint;
@@ -69,8 +84,7 @@ export class JupiterClient {
       destinationTokenAccount,
       quoteParams,
       quoteResponse,
-      swapInstruction,
-      addressLookupTableAddresses
+      swapInstructions
     );
 
     return await (this.base.provider as anchor.AnchorProvider).sendAndConfirm(
@@ -79,11 +93,7 @@ export class JupiterClient {
     );
   }
 
-  ixDataToTransactionInstruction = (ixPayload: {
-    programId: string;
-    accounts: any[];
-    data: string;
-  }) => {
+  toTransactionInstruction = (ixPayload: InstructionFromJupiter) => {
     if (ixPayload === null) {
       throw new Error("ixPayload is null");
     }
@@ -135,8 +145,7 @@ export class JupiterClient {
     destinationTokenAccount?: PublicKey,
     quoteParams?: QuoteParams,
     quoteResponse?: QuoteResponse,
-    swapInstruction?: any,
-    addressLookupTableAddresses?: string[]
+    swapInstructions?: SwapInstructions
   ): Promise<VersionedTransaction> {
     const swapAmount = quoteParams?.amount || quoteResponse?.inAmount;
     const inputMint =
@@ -144,11 +153,13 @@ export class JupiterClient {
     const outputMint =
       quoteParams?.outputMint || new PublicKey(quoteResponse!.outputMint);
 
-    let computeBudgetInstructions = [];
+    let computeBudgetInstructions: InstructionFromJupiter[] = [];
+    let swapInstruction: InstructionFromJupiter;
+    let addressLookupTableAddresses: string[];
 
-    if (swapInstruction === undefined) {
+    if (swapInstructions === undefined) {
+      // Fetch quoteResponse if not specified - quoteParams must be specified in this case
       if (quoteResponse === undefined) {
-        // Fetch quoteResponse if not specified - quoteParams must be specified in this case
         if (quoteParams === undefined) {
           throw new Error(
             "quoteParams must be specified when quoteResponse and swapInstruction are not specified."
@@ -167,12 +178,17 @@ export class JupiterClient {
       computeBudgetInstructions = ins.computeBudgetInstructions;
       swapInstruction = ins.swapInstruction;
       addressLookupTableAddresses = ins.addressLookupTableAddresses;
+    } else {
+      computeBudgetInstructions = swapInstructions.computeBudgetInstructions;
+      swapInstruction = swapInstructions.swapInstruction;
+      addressLookupTableAddresses =
+        swapInstructions.addressLookupTableAddresses;
     }
 
     console.log("swapInstruction:", swapInstruction);
 
     const swapIx: { data: any; keys: AccountMeta[] } =
-      this.ixDataToTransactionInstruction(swapInstruction);
+      this.toTransactionInstruction(swapInstruction);
 
     let inputAta;
     try {
@@ -185,7 +201,7 @@ export class JupiterClient {
     }
 
     const instructions = [
-      ...computeBudgetInstructions.map(this.ixDataToTransactionInstruction),
+      ...computeBudgetInstructions.map(this.toTransactionInstruction),
       await this.base.program.methods
         .jupiterSwap(new anchor.BN(swapAmount), swapIx.data)
         .accounts({
@@ -267,8 +283,7 @@ export class JupiterClient {
     manager: PublicKey,
     quoteParams?: QuoteParams,
     quoteResponse?: QuoteResponse,
-    swapInstruction?: any,
-    addressLookupTableAddresses?: any
+    swapInstructions?: SwapInstructions
   ): Promise<VersionedTransaction> {
     // TODO: should not allow client side to specify destination token account
     const outputMint = quoteParams?.outputMint || quoteResponse!.outputMint;
@@ -283,8 +298,7 @@ export class JupiterClient {
       destinationTokenAccount,
       quoteParams,
       quoteResponse,
-      swapInstruction,
-      addressLookupTableAddresses
+      swapInstructions
     );
   }
 }
