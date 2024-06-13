@@ -78,7 +78,7 @@ describe("glam_api_tx", () => {
     }
   }, 30_000);
 
-  it("Jupiter swap", async () => {
+  it("Jupiter swap with quote params", async () => {
     const response = await fetch(`${API}/tx/jupiter/swap`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -109,7 +109,54 @@ describe("glam_api_tx", () => {
       console.error("Error", error);
       throw error;
     }
-  }, 30_000);
+  }, 60_000);
+
+  it("Jupiter swap with quote response", async () => {
+    const quoteParams: any = {
+      inputMint: msol.toBase58(),
+      outputMint: wsol.toBase58(),
+      amount: 50000000,
+      autoSlippage: true,
+      autoSlippageCollisionUsdValue: 1000,
+      swapMode: "ExactIn",
+      onlyDirectRoutes: false,
+      asLegacyTransaction: false,
+      maxAccounts: 20
+    };
+    const quoteResponse = await (
+      await fetch(
+        `${glamClient.jupiterApi}/quote?${new URLSearchParams(
+          Object.entries(quoteParams)
+        )}`
+      )
+    ).json();
+
+    console.log("quoteResponse", quoteResponse);
+
+    const response = await fetch(`${API}/tx/jupiter/swap`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fund,
+        manager,
+        quoteResponse
+      })
+    });
+
+    const { tx } = await response.json();
+    console.log("tx", tx);
+
+    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "hex"));
+    try {
+      const txId = await (
+        glamClient.provider as anchor.AnchorProvider
+      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
+      console.log("jupiter swap txId", txId);
+    } catch (error) {
+      console.error("Error", error);
+      throw error;
+    }
+  }, 60_000);
 
   it("Stake 0.1 sol", async () => {
     const response = await fetch(`${API}/tx/marinade/stake`, {
