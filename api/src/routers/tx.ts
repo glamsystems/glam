@@ -99,27 +99,58 @@ router.post("/tx/jupiter/swap", async (req, res) => {
     return res.status(400).send({ error: "Invalid fund or manager" });
   }
 
-  const { quote, quoteResponse, swapInstruction, addressLookupTableAddresses } =
-    req.body;
+  const { quoteParams, quoteResponse } = req.body;
 
-  if (!quote && !quoteResponse) {
-    // If quote and quoteResponse are not provided, swapInstruction and addressLookupTableAddresses must be provided
-    if (!swapInstruction || !addressLookupTableAddresses) {
-      return res.status(400).send({
-        error:
-          "Both swapInstruction and addressLookupTableAddresses must be provided"
-      });
-    }
+  if (!quoteParams && !quoteResponse) {
+    return res.status(400).send({
+      error: "quoteParams or quoteResponse must be provided"
+    });
   }
 
   try {
     const tx = await req.client.jupiter.swapTx(
       fund,
       manager,
-      quote,
-      quoteResponse,
-      swapInstruction,
-      addressLookupTableAddresses
+      quoteParams,
+      quoteResponse
+    );
+    return serializeVersionedTx(tx, res);
+  } catch (err) {
+    console.log(err);
+    return res.status(400).send({ error: err.message });
+  }
+});
+
+router.post("/tx/jupiter/swap/ix", async (req, res) => {
+  res.set("content-type", "application/json");
+  const fund = validatePubkey(req.body.fund);
+  const manager = validatePubkey(req.body.manager);
+  const inputMint = validatePubkey(req.body.inputMint);
+  const outputMint = validatePubkey(req.body.outputMint);
+  const amount = validateBN(req.body.amount);
+
+  if (!fund || !manager || !inputMint || !outputMint || !amount) {
+    return res.status(400).send({
+      error: "Invalid parameter fund/manager/inputMint/outputMint/amount"
+    });
+  }
+
+  const { swapInstruction, addressLookupTableAddresses } = req.body;
+
+  if (!swapInstruction || !addressLookupTableAddresses) {
+    return res.status(400).send({
+      error:
+        "Both swapInstruction and addressLookupTableAddresses must be provided"
+    });
+  }
+  try {
+    const tx = await req.client.jupiter.swapTxFromIx(
+      fund,
+      manager,
+      amount,
+      inputMint,
+      outputMint,
+      { swapInstruction, addressLookupTableAddresses }
     );
     return serializeVersionedTx(tx, res);
   } catch (err) {

@@ -37,7 +37,7 @@ describe("glam_jupiter", () => {
         swapMode: "ExactIn",
         onlyDirectRoutes: false,
         asLegacyTransaction: false,
-        maxAccounts: 20
+        maxAccounts: 10
       });
       console.log("swap txId", txId);
     } catch (e) {
@@ -64,7 +64,7 @@ describe("glam_jupiter", () => {
         swapMode: "ExactIn",
         onlyDirectRoutes: false,
         asLegacyTransaction: false,
-        maxAccounts: 20
+        maxAccounts: 15
       });
       console.log("swap txId", txId);
     } catch (e) {
@@ -77,16 +77,18 @@ describe("glam_jupiter", () => {
   }, 15_000);
 
   it("Swap by providing swap instructions", async () => {
+    const amount = 50_000_000;
+
     const quoteParams: any = {
-      inputMint: msol.toBase58(),
-      outputMint: wsol.toBase58(),
-      amount: 50000000,
+      inputMint: wsol.toBase58(),
+      outputMint: msol.toBase58(),
+      amount,
       autoSlippage: true,
       autoSlippageCollisionUsdValue: 1000,
       swapMode: "ExactIn",
       onlyDirectRoutes: false,
       asLegacyTransaction: false,
-      maxAccounts: 20
+      maxAccounts: 15
     };
     const quoteResponse = await (
       await fetch(
@@ -97,16 +99,18 @@ describe("glam_jupiter", () => {
     ).json();
     const swapInstructions = await glamClient.jupiter.getSwapInstructions(
       quoteResponse,
-      glamClient.getManager()
+      glamClient.getManager(),
+      glamClient.getTreasuryAta(fundPDA, msol)
     );
     console.log("swapInstructions", swapInstructions);
 
-    const amount = 50_000_000;
     try {
-      const txId = await glamClient.jupiter.swap(
+      const txId = await glamClient.jupiter.swapWithIx(
         fundPDA,
-        undefined,
-        undefined,
+        glamClient.getManager(),
+        amount,
+        wsol,
+        msol,
         swapInstructions
       );
       console.log("swap txId", txId);
