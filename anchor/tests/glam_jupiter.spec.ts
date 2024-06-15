@@ -38,7 +38,7 @@ describe("glam_jupiter", () => {
         swapMode: "ExactIn",
         onlyDirectRoutes: false,
         asLegacyTransaction: false,
-        maxAccounts: 10
+        maxAccounts: 20
       });
       console.log("swap txId", txId);
     } catch (e) {
@@ -65,7 +65,7 @@ describe("glam_jupiter", () => {
         swapMode: "ExactIn",
         onlyDirectRoutes: false,
         asLegacyTransaction: false,
-        maxAccounts: 15
+        maxAccounts: 20
       });
       console.log("swap txId", txId);
     } catch (e) {
