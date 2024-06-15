@@ -70,9 +70,9 @@ export class JupiterClient {
     fund: PublicKey,
     manager: PublicKey,
     amount: anchor.BN,
-    inputMint?: PublicKey,
-    outputMint?: PublicKey,
-    swapInstructions?: SwapInstructions
+    inputMint: PublicKey,
+    outputMint: PublicKey,
+    swapInstructions: SwapInstructions
   ): Promise<TransactionSignature> {
     const tx = await this.swapTxBuilder(
       fund,
@@ -174,21 +174,12 @@ export class JupiterClient {
     fund: PublicKey,
     manager: PublicKey,
     amount: anchor.BN,
-    inputMint?: PublicKey,
-    outputMint?: PublicKey,
+    inputMint: PublicKey,
+    outputMint: PublicKey,
     quoteParams?: QuoteParams,
     quoteResponse?: QuoteResponse,
     swapInstructions?: SwapInstructions
   ): Promise<VersionedTransaction> {
-    inputMint =
-      inputMint ||
-      new PublicKey(quoteParams?.inputMint || quoteResponse!.inputMint);
-    outputMint =
-      outputMint ||
-      new PublicKey(quoteParams?.outputMint || quoteResponse!.outputMint);
-    const swapAmount =
-      amount || new anchor.BN(quoteParams?.amount || quoteResponse?.inAmount);
-
     const destinationTokenAccount = this.base.getTreasuryAta(
       fund,
       new PublicKey(outputMint)
@@ -242,7 +233,7 @@ export class JupiterClient {
     const instructions = [
       ...computeBudgetInstructions.map(this.toTransactionInstruction),
       await this.base.program.methods
-        .jupiterSwap(new anchor.BN(swapAmount), swapIx.data)
+        .jupiterSwap(amount, swapIx.data)
         .accounts({
           fund,
           manager,
@@ -350,9 +341,9 @@ export class JupiterClient {
     fund: PublicKey,
     manager: PublicKey,
     amount: anchor.BN,
-    inputMint?: PublicKey,
-    outputMint?: PublicKey,
-    swapInstructions?: SwapInstructions
+    inputMint: PublicKey,
+    outputMint: PublicKey,
+    swapInstructions: SwapInstructions
   ): Promise<VersionedTransaction> {
     return await this.swapTxBuilder(
       fund,

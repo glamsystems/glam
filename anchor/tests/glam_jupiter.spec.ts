@@ -1,6 +1,7 @@
 import { createFundForTest } from "./setup";
 import { GlamClient } from "../src";
 import { PublicKey } from "@solana/web3.js";
+import { BN } from "@coral-xyz/anchor";
 
 describe("glam_jupiter", () => {
   const wsol = new PublicKey("So11111111111111111111111111111111111111112");
@@ -108,7 +109,7 @@ describe("glam_jupiter", () => {
       const txId = await glamClient.jupiter.swapWithIx(
         fundPDA,
         glamClient.getManager(),
-        amount,
+        new BN(amount),
         wsol,
         msol,
         swapInstructions
