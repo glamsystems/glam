@@ -51,9 +51,9 @@ type InstructionFromJupiter = {
 
 type SwapInstructions = {
   tokenLedgerInstruction?: InstructionFromJupiter;
-  otherInstructions: InstructionFromJupiter[];
+  otherInstructions?: InstructionFromJupiter[];
   computeBudgetInstructions: InstructionFromJupiter[];
-  setupInstructions: InstructionFromJupiter[];
+  setupInstructions?: InstructionFromJupiter[];
   swapInstruction: InstructionFromJupiter;
   cleanupInstruction?: InstructionFromJupiter;
   addressLookupTableAddresses: string[];
@@ -187,6 +187,7 @@ export class JupiterClient {
 
     let computeBudgetInstructions: InstructionFromJupiter[];
     let swapInstruction: InstructionFromJupiter;
+    let cleanupInstruction: InstructionFromJupiter | undefined;
     let addressLookupTableAddresses: string[];
 
     if (swapInstructions === undefined) {
@@ -208,11 +209,13 @@ export class JupiterClient {
       );
       computeBudgetInstructions = ins.computeBudgetInstructions || [];
       swapInstruction = ins.swapInstruction;
+      cleanupInstruction = ins.cleanupInstruction;
       addressLookupTableAddresses = ins.addressLookupTableAddresses;
     } else {
       computeBudgetInstructions =
         swapInstructions.computeBudgetInstructions || [];
       swapInstruction = swapInstructions.swapInstruction;
+      cleanupInstruction = swapInstructions.cleanupInstruction;
       addressLookupTableAddresses =
         swapInstructions.addressLookupTableAddresses;
     }
@@ -247,6 +250,9 @@ export class JupiterClient {
         .remainingAccounts(swapIx.keys)
         .instruction()
     ];
+    if (cleanupInstruction) {
+      instructions.push(this.toTransactionInstruction(cleanupInstruction));
+    }
     const addressLookupTableAccounts = await this.getAdressLookupTableAccounts(
       addressLookupTableAddresses
     );

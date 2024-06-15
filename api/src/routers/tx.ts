@@ -63,7 +63,7 @@ const serializeTx = async (tx: Transaction, manager, client, res) => {
         requireAllSignatures: false,
         verifySignatures: false
       })
-    ).toString("hex");
+    ).toString("base64");
     return res.send({ tx: serializedTx, versioned: false });
   } catch (err) {
     console.log(err);
@@ -73,7 +73,7 @@ const serializeTx = async (tx: Transaction, manager, client, res) => {
 
 const serializeVersionedTx = async (tx: VersionedTransaction, res) => {
   try {
-    const serializedTx = Buffer.from(tx.serialize()).toString("hex");
+    const serializedTx = Buffer.from(tx.serialize()).toString("base64");
     return res.send({
       tx: serializedTx,
       versioned: true
@@ -135,7 +135,12 @@ router.post("/tx/jupiter/swap/ix", async (req, res) => {
     });
   }
 
-  const { swapInstruction, addressLookupTableAddresses } = req.body;
+  const {
+    swapInstruction,
+    addressLookupTableAddresses,
+    computeBudgetInstructions,
+    cleanupInstruction
+  } = req.body;
 
   if (!swapInstruction || !addressLookupTableAddresses) {
     return res.status(400).send({
@@ -150,7 +155,12 @@ router.post("/tx/jupiter/swap/ix", async (req, res) => {
       amount,
       inputMint,
       outputMint,
-      { swapInstruction, addressLookupTableAddresses }
+      {
+        swapInstruction,
+        addressLookupTableAddresses,
+        computeBudgetInstructions,
+        cleanupInstruction
+      }
     );
     return serializeVersionedTx(tx, res);
   } catch (err) {
