@@ -1,6 +1,7 @@
 import { createFundForTest } from "./setup";
 import { GlamClient } from "../src";
 import { PublicKey } from "@solana/web3.js";
+import { BN } from "@coral-xyz/anchor";
 
 describe("glam_jupiter", () => {
   const wsol = new PublicKey("So11111111111111111111111111111111111111112");
@@ -52,7 +53,7 @@ describe("glam_jupiter", () => {
     }
   }, 15_000);
 
-  it("Swap", async () => {
+  it("Swap by providing quote params", async () => {
     const amount = 50_000_000;
     try {
       const txId = await glamClient.jupiter.swap(fundPDA, {
@@ -66,6 +67,53 @@ describe("glam_jupiter", () => {
         asLegacyTransaction: false,
         maxAccounts: 20
       });
+      console.log("swap txId", txId);
+    } catch (e) {
+      console.error(e);
+      // make sure program has reached jupiter
+      expect(e.logs).toContain(
+        "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]"
+      );
+    }
+  }, 15_000);
+
+  it("Swap by providing swap instructions", async () => {
+    const amount = 50_000_000;
+
+    const quoteParams: any = {
+      inputMint: wsol.toBase58(),
+      outputMint: msol.toBase58(),
+      amount,
+      autoSlippage: true,
+      autoSlippageCollisionUsdValue: 1000,
+      swapMode: "ExactIn",
+      onlyDirectRoutes: false,
+      asLegacyTransaction: false,
+      maxAccounts: 15
+    };
+    const quoteResponse = await (
+      await fetch(
+        `${glamClient.jupiterApi}/quote?${new URLSearchParams(
+          Object.entries(quoteParams)
+        )}`
+      )
+    ).json();
+    const swapInstructions = await glamClient.jupiter.getSwapInstructions(
+      quoteResponse,
+      glamClient.getManager(),
+      glamClient.getTreasuryAta(fundPDA, msol)
+    );
+    console.log("swapInstructions", swapInstructions);
+
+    try {
+      const txId = await glamClient.jupiter.swapWithIx(
+        fundPDA,
+        glamClient.getManager(),
+        new BN(amount),
+        wsol,
+        msol,
+        swapInstructions
+      );
       console.log("swap txId", txId);
     } catch (e) {
       console.error(e);

@@ -15,7 +15,7 @@ const jupiterProgram = new PublicKey(
   "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"
 );
 
-interface QuoteParams {
+type QuoteParams = {
   inputMint: string;
   outputMint: string;
   amount: number;
@@ -26,9 +26,9 @@ interface QuoteParams {
   onlyDirectRoutes?: boolean;
   asLegacyTransaction?: boolean;
   maxAccounts?: number;
-}
+};
 
-interface QuoteResponse {
+type QuoteResponse = {
   inputMint: string;
   inAmount: number;
   outputMint: string;
@@ -41,7 +41,23 @@ interface QuoteResponse {
   routePlan: any[];
   contextSlot: number;
   timeTaken: number;
-}
+};
+
+type InstructionFromJupiter = {
+  programId: string;
+  accounts: AccountMeta[];
+  data: string;
+};
+
+type SwapInstructions = {
+  tokenLedgerInstruction?: InstructionFromJupiter;
+  otherInstructions?: InstructionFromJupiter[];
+  computeBudgetInstructions: InstructionFromJupiter[];
+  setupInstructions?: InstructionFromJupiter[];
+  swapInstruction: InstructionFromJupiter;
+  cleanupInstruction?: InstructionFromJupiter;
+  addressLookupTableAddresses: string[];
+};
 
 export class JupiterClient {
   public constructor(readonly base: BaseClient) {}
@@ -50,27 +66,23 @@ export class JupiterClient {
    * Client methods
    */
 
-  public async swap(
+  public async swapWithIx(
     fund: PublicKey,
-    quoteParams?: QuoteParams,
-    quoteResponse?: QuoteResponse,
-    swapInstruction?: any,
-    addressLookupTableAddresses?: any
+    manager: PublicKey,
+    amount: anchor.BN,
+    inputMint: PublicKey,
+    outputMint: PublicKey,
+    swapInstructions: SwapInstructions
   ): Promise<TransactionSignature> {
-    // TODO: should not allow client side to specify destination token account
-    const outputMint = quoteParams?.outputMint || quoteResponse!.outputMint;
-    const destinationTokenAccount = this.base.getTreasuryAta(
-      fund,
-      new PublicKey(outputMint)
-    );
     const tx = await this.swapTxBuilder(
       fund,
-      this.base.getManager(),
-      destinationTokenAccount,
-      quoteParams,
-      quoteResponse,
-      swapInstruction,
-      addressLookupTableAddresses
+      manager,
+      amount,
+      inputMint,
+      outputMint,
+      undefined,
+      undefined,
+      swapInstructions
     );
 
     return await (this.base.provider as anchor.AnchorProvider).sendAndConfirm(
@@ -79,11 +91,40 @@ export class JupiterClient {
     );
   }
 
-  ixDataToTransactionInstruction = (ixPayload: {
-    programId: string;
-    accounts: any[];
-    data: string;
-  }) => {
+  public async swap(
+    fund: PublicKey,
+    quoteParams?: QuoteParams,
+    quoteResponse?: QuoteResponse
+  ): Promise<TransactionSignature> {
+    // TODO: should not allow client side to specify destination token account
+    const inputMint = new PublicKey(
+      quoteParams?.inputMint || quoteResponse!.inputMint
+    );
+    const outputMint = new PublicKey(
+      quoteParams?.outputMint || quoteResponse!.outputMint
+    );
+    const amount = new anchor.BN(
+      quoteParams?.amount || quoteResponse?.inAmount
+    );
+
+    const tx = await this.swapTxBuilder(
+      fund,
+      this.base.getManager(),
+      amount,
+      inputMint,
+      outputMint,
+      quoteParams,
+      quoteResponse,
+      undefined
+    );
+
+    return await (this.base.provider as anchor.AnchorProvider).sendAndConfirm(
+      tx,
+      [this.base.getWalletSigner()]
+    );
+  }
+
+  toTransactionInstruction = (ixPayload: InstructionFromJupiter) => {
     if (ixPayload === null) {
       throw new Error("ixPayload is null");
     }
@@ -132,23 +173,26 @@ export class JupiterClient {
   async swapTxBuilder(
     fund: PublicKey,
     manager: PublicKey,
-    destinationTokenAccount?: PublicKey,
+    amount: anchor.BN,
+    inputMint: PublicKey,
+    outputMint: PublicKey,
     quoteParams?: QuoteParams,
     quoteResponse?: QuoteResponse,
-    swapInstruction?: any,
-    addressLookupTableAddresses?: string[]
+    swapInstructions?: SwapInstructions
   ): Promise<VersionedTransaction> {
-    const swapAmount = quoteParams?.amount || quoteResponse?.inAmount;
-    const inputMint =
-      quoteParams?.inputMint || new PublicKey(quoteResponse!.inputMint);
-    const outputMint =
-      quoteParams?.outputMint || new PublicKey(quoteResponse!.outputMint);
+    const destinationTokenAccount = this.base.getTreasuryAta(
+      fund,
+      new PublicKey(outputMint)
+    );
 
-    let computeBudgetInstructions = [];
+    let computeBudgetInstructions: InstructionFromJupiter[];
+    let swapInstruction: InstructionFromJupiter;
+    let cleanupInstruction: InstructionFromJupiter | undefined;
+    let addressLookupTableAddresses: string[];
 
-    if (swapInstruction === undefined) {
+    if (swapInstructions === undefined) {
+      // Fetch quoteResponse if not specified - quoteParams must be specified in this case
       if (quoteResponse === undefined) {
-        // Fetch quoteResponse if not specified - quoteParams must be specified in this case
         if (quoteParams === undefined) {
           throw new Error(
             "quoteParams must be specified when quoteResponse and swapInstruction are not specified."
@@ -163,16 +207,21 @@ export class JupiterClient {
         manager,
         destinationTokenAccount
       );
-      console.log("/swap-instructions returns:", JSON.stringify(ins));
-      computeBudgetInstructions = ins.computeBudgetInstructions;
+      computeBudgetInstructions = ins.computeBudgetInstructions || [];
       swapInstruction = ins.swapInstruction;
+      cleanupInstruction = ins.cleanupInstruction;
       addressLookupTableAddresses = ins.addressLookupTableAddresses;
+    } else {
+      computeBudgetInstructions =
+        swapInstructions.computeBudgetInstructions || [];
+      swapInstruction = swapInstructions.swapInstruction;
+      cleanupInstruction = swapInstructions.cleanupInstruction;
+      addressLookupTableAddresses =
+        swapInstructions.addressLookupTableAddresses;
     }
 
-    console.log("swapInstruction:", swapInstruction);
-
     const swapIx: { data: any; keys: AccountMeta[] } =
-      this.ixDataToTransactionInstruction(swapInstruction);
+      this.toTransactionInstruction(swapInstruction);
 
     let inputAta;
     try {
@@ -185,9 +234,9 @@ export class JupiterClient {
     }
 
     const instructions = [
-      ...computeBudgetInstructions.map(this.ixDataToTransactionInstruction),
+      ...computeBudgetInstructions.map(this.toTransactionInstruction),
       await this.base.program.methods
-        .jupiterSwap(new anchor.BN(swapAmount), swapIx.data)
+        .jupiterSwap(amount, swapIx.data)
         .accounts({
           fund,
           manager,
@@ -201,6 +250,9 @@ export class JupiterClient {
         .remainingAccounts(swapIx.keys)
         .instruction()
     ];
+    if (cleanupInstruction) {
+      instructions.push(this.toTransactionInstruction(cleanupInstruction));
+    }
     const addressLookupTableAccounts = await this.getAdressLookupTableAccounts(
       addressLookupTableAddresses
     );
@@ -266,25 +318,48 @@ export class JupiterClient {
     fund: PublicKey,
     manager: PublicKey,
     quoteParams?: QuoteParams,
-    quoteResponse?: QuoteResponse,
-    swapInstruction?: any,
-    addressLookupTableAddresses?: any
+    quoteResponse?: QuoteResponse
   ): Promise<VersionedTransaction> {
     // TODO: should not allow client side to specify destination token account
-    const outputMint = quoteParams?.outputMint || quoteResponse!.outputMint;
-    const destinationTokenAccount = this.base.getTreasuryAta(
-      fund,
-      new PublicKey(outputMint)
+    const inputMint = new PublicKey(
+      quoteParams?.inputMint || quoteResponse!.inputMint
+    );
+    const outputMint = new PublicKey(
+      quoteParams?.outputMint || quoteResponse!.outputMint
+    );
+    const amount = new anchor.BN(
+      quoteParams?.amount || quoteResponse?.inAmount
     );
 
     return await this.swapTxBuilder(
       fund,
       manager,
-      destinationTokenAccount,
+      amount,
+      inputMint,
+      outputMint,
       quoteParams,
       quoteResponse,
-      swapInstruction,
-      addressLookupTableAddresses
+      undefined
+    );
+  }
+
+  public async swapTxFromIx(
+    fund: PublicKey,
+    manager: PublicKey,
+    amount: anchor.BN,
+    inputMint: PublicKey,
+    outputMint: PublicKey,
+    swapInstructions: SwapInstructions
+  ): Promise<VersionedTransaction> {
+    return await this.swapTxBuilder(
+      fund,
+      manager,
+      amount,
+      inputMint,
+      outputMint,
+      undefined,
+      undefined,
+      swapInstructions
     );
   }
 }

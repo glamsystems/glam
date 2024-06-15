@@ -19,11 +19,13 @@ import { GlamClient } from "../src/client";
  *  anchor test --skip-build --skip-deploy
  */
 
-const API = "https://api.glam.systems";
+const API = "http://localhost:8080";
+// const API = "https://api.glam.systems";
 const wsol = new PublicKey("So11111111111111111111111111111111111111112");
 const msol = new PublicKey("mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So");
 const manager = "gLJHKPrZLGBiBZ33hFgZh6YnsEhTVxuRT17UCqNp6ff";
 const fund = "4gAcSdfSAxVPcxj2Hi3AvKKViGat3iUysDD5ZzbqhDTk";
+const treasuryMSolAta = "GSkYFJBNcnRNgGmC6KgkrGtsy2omk8yf94wTPJtcYNtw";
 const confirmOptions: ConfirmOptions = {
   commitment: "confirmed",
   maxRetries: 3
@@ -44,7 +46,7 @@ describe("glam_api_tx", () => {
     try {
       const txId = await sendAndConfirmTransaction(
         glamClient.provider.connection,
-        Transaction.from(Buffer.from(tx, "hex")),
+        Transaction.from(Buffer.from(tx, "base64")),
         [glamClient.getWalletSigner()],
         confirmOptions
       );
@@ -67,7 +69,7 @@ describe("glam_api_tx", () => {
     try {
       const txId = await sendAndConfirmTransaction(
         glamClient.provider.connection,
-        Transaction.from(Buffer.from(tx, "hex")),
+        Transaction.from(Buffer.from(tx, "base64")),
         [glamClient.getWalletSigner()],
         confirmOptions
       );
@@ -99,7 +101,7 @@ describe("glam_api_tx", () => {
       })
     });
     const { tx } = await response.json();
-    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "hex"));
+    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
     try {
       const txId = await (
         glamClient.provider as anchor.AnchorProvider
@@ -112,10 +114,11 @@ describe("glam_api_tx", () => {
   }, 60_000);
 
   it("Jupiter swap with quote response", async () => {
+    const amount = 1_000_000;
     const quoteParams: any = {
-      inputMint: msol.toBase58(),
-      outputMint: wsol.toBase58(),
-      amount: 50000000,
+      inputMint: wsol.toBase58(),
+      outputMint: msol.toBase58(),
+      amount,
       autoSlippage: true,
       autoSlippageCollisionUsdValue: 1000,
       swapMode: "ExactIn",
@@ -146,7 +149,68 @@ describe("glam_api_tx", () => {
     const { tx } = await response.json();
     console.log("tx", tx);
 
-    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "hex"));
+    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
+    try {
+      const txId = await (
+        glamClient.provider as anchor.AnchorProvider
+      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
+      console.log("jupiter swap txId", txId);
+    } catch (error) {
+      console.error("Error", error);
+      throw error;
+    }
+  }, 60_000);
+
+  it("Jupiter swap with swap instructions", async () => {
+    const amount = 1_000_000;
+    const quoteParams: any = {
+      inputMint: wsol.toBase58(),
+      outputMint: msol.toBase58(),
+      amount,
+      autoSlippage: true,
+      autoSlippageCollisionUsdValue: 1000,
+      swapMode: "ExactIn",
+      onlyDirectRoutes: false,
+      asLegacyTransaction: false,
+      maxAccounts: 20
+    };
+    const quoteResponse = await (
+      await fetch(
+        `${glamClient.jupiterApi}/quote?${new URLSearchParams(
+          Object.entries(quoteParams)
+        )}`
+      )
+    ).json();
+    const swapInstructions = await (
+      await fetch(`${glamClient.jupiterApi}/swap-instructions`, {
+        method: "POST",
+        body: JSON.stringify({
+          quoteResponse,
+          userPublicKey: manager,
+          destinationTokenAccount: treasuryMSolAta
+        })
+      })
+    ).json();
+
+    console.log("swapInstructions", swapInstructions);
+
+    const response = await fetch(`${API}/tx/jupiter/swap/ix`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fund,
+        manager,
+        amount,
+        inputMint: wsol.toBase58(),
+        outputMint: msol.toBase58(),
+        ...swapInstructions
+      })
+    });
+
+    const { tx } = await response.json();
+    console.log("tx", tx);
+
+    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
     try {
       const txId = await (
         glamClient.provider as anchor.AnchorProvider
@@ -170,7 +234,7 @@ describe("glam_api_tx", () => {
     try {
       const txId = await sendAndConfirmTransaction(
         glamClient.provider.connection,
-        Transaction.from(Buffer.from(tx, "hex")),
+        Transaction.from(Buffer.from(tx, "base64")),
         [glamClient.getWalletSigner()],
         confirmOptions
       );
@@ -197,7 +261,7 @@ describe("glam_api_tx", () => {
     try {
       const txId = await sendAndConfirmTransaction(
         glamClient.provider.connection,
-        Transaction.from(Buffer.from(tx, "hex")),
+        Transaction.from(Buffer.from(tx, "base64")),
         [glamClient.getWalletSigner()],
         confirmOptions
       );
@@ -222,7 +286,7 @@ describe("glam_api_tx", () => {
     try {
       const txId = await sendAndConfirmTransaction(
         glamClient.provider.connection,
-        Transaction.from(Buffer.from(tx, "hex")),
+        Transaction.from(Buffer.from(tx, "base64")),
         [glamClient.getWalletSigner()],
         confirmOptions
       );

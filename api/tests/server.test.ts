@@ -103,13 +103,11 @@ describe("Test /tx/jupiter/swap", () => {
   it("Invalid swap params", async () => {
     const res = await requestWithSupertest.post("/tx/jupiter/swap").send({
       fund: "11111111111111111111111111111111",
-      manager: "11111111111111111111111111111111",
-      swapInstruction: "abc"
+      manager: "11111111111111111111111111111111"
     });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
-      error:
-        "Both swapInstruction and addressLookupTableAddresses must be provided"
+      error: "quoteParams or quoteResponse must be provided"
     });
   });
 });

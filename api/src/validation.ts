@@ -11,7 +11,7 @@ export const validatePubkey = (pubkey: string): PublicKey => {
   return key;
 };
 
-export const validateBN = (num: string) => {
+export const validateBN = (num: string): BN => {
   let res;
   try {
     res = new BN(num);
