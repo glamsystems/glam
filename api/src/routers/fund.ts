@@ -71,6 +71,13 @@ router.get("/fund/:pubkey/perf", async (req, res) => {
   );
 });
 
+router.get("/fund/:pubkey/tickets", async (req, res) => {
+  const fund = validatePubkey(req.params.pubkey);
+  const tickets = await req.client.marinade.getExistingTickets(fund);
+  res.set("content-type", "application/json");
+  res.send({ tickets });
+});
+
 router.get("/metadata/:pubkey", async (req, res) => {
   const pubkey = validatePubkey(req.params.pubkey);
   if (!pubkey) {
