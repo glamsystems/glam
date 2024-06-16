@@ -9,12 +9,12 @@ const msol = new PublicKey("mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So");
 describe("glam_staking", () => {
   const glamClient = new GlamClient();
   let fundPDA;
-  it("Create fund", async () => {
+
+  it("Create fund with 100 SOLs in treasury", async () => {
     const fundData = await createFundForTest(glamClient);
     fundPDA = fundData.fundPDA;
 
     const connection = glamClient.provider.connection;
-    // air drop to treasury and delay 1s for confirmation
     const airdropTx = await connection.requestAirdrop(
       fundData.treasuryPDA,
       100_000_000_000
@@ -25,7 +25,7 @@ describe("glam_staking", () => {
     });
   });
 
-  it("Marinade desposit", async () => {
+  it("Marinade desposit: stake 10 SOLs twice", async () => {
     try {
       let tx = await glamClient.marinade.stake(fundPDA, new anchor.BN(1e10));
       console.log("Stake #1:", tx);
@@ -38,7 +38,7 @@ describe("glam_staking", () => {
     }
   });
 
-  it("Liquid unstake", async () => {
+  it("Liquid unstake 1 mSOL", async () => {
     try {
       const tx = await glamClient.marinade.liquidUnstake(
         fundPDA,
@@ -51,18 +51,16 @@ describe("glam_staking", () => {
     }
   });
 
-  it("Order unstake", async () => {
+  it("Order unstake 1 mSOL twice", async () => {
     try {
       let tx = await glamClient.marinade.delayedUnstake(
         fundPDA,
-        0,
         new anchor.BN(1e9)
       );
       console.log("Delayed unstake #0:", tx);
 
       tx = await glamClient.marinade.delayedUnstake(
         fundPDA,
-        1,
         new anchor.BN(1e9)
       );
       console.log("Delayed unstake #1:", tx);
@@ -108,7 +106,7 @@ describe("glam_staking", () => {
       console.log("Error", error);
       throw error;
     }
-  }, 35_000);
+  }, 15_000);
 
   it("Search tickets after claim", async () => {
     const tickets = await glamClient.marinade.getExistingTickets(fundPDA);

@@ -769,7 +769,7 @@
         },
         {
           "name": "ticketId",
-          "type": "u8"
+          "type": "string"
         }
       ]
     },

@@ -107,7 +107,7 @@ pub mod glam {
         ctx: Context<MarinadeDelayedUnstake>,
         amount: u64,
         bump: u8,
-        ticket_id: u8,
+        ticket_id: String,
     ) -> Result<()> {
         marinade::marinade_delayed_unstake(ctx, amount, bump, ticket_id)
     }

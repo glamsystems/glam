@@ -769,7 +769,7 @@ export type Glam = {
         },
         {
           "name": "ticketId",
-          "type": "u8"
+          "type": "string"
         }
       ]
     },
@@ -3857,7 +3857,7 @@ export const IDL: Glam = {
         },
         {
           "name": "ticketId",
-          "type": "u8"
+          "type": "string"
         }
       ]
     },

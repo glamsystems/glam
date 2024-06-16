@@ -59,7 +59,7 @@ pub fn marinade_delayed_unstake<'c: 'info, 'info>(
     ctx: Context<MarinadeDelayedUnstake>,
     msol_amount: u64,
     ticket_bump: u8,
-    ticket_id: u8,
+    ticket_id: String,
 ) -> Result<()> {
     let rent = Rent::get()?;
     let lamports = rent.minimum_balance(500); // Minimum balance to make the account rent-exempt
@@ -69,7 +69,7 @@ pub fn marinade_delayed_unstake<'c: 'info, 'info>(
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
         b"ticket".as_ref(),
-        &[ticket_id],
+        ticket_id.as_bytes(),
         fund_key.as_ref(),
         &[ticket_bump],
     ];
@@ -225,7 +225,7 @@ pub struct MarinadeDeposit<'info> {
 }
 
 #[derive(Accounts)]
-// #[instruction(ticket_id: u8)]
+// #[instruction(ticket_id: String)]
 pub struct MarinadeDelayedUnstake<'info> {
     #[account(mut)]
     pub manager: Signer<'info>,
@@ -237,8 +237,8 @@ pub struct MarinadeDelayedUnstake<'info> {
     pub treasury: SystemAccount<'info>,
 
     /// CHECK: skip
-    // #[account(mut, seeds = [b"ticket".as_ref(), &[ticket_id], fund.key().as_ref()], bump)]
-    // For some reason, the above line doesn't work, so we have to pass the bump as an instruction param
+    // #[account(mut, seeds = [b"ticket".as_ref(), ticket_id.as_bytes(), fund.key().as_ref()], bump)]
+    // The line above wll cause "Error: memory allocation failed, out of memory"
     #[account(mut)]
     pub ticket: AccountInfo<'info>,
 
