@@ -29,21 +29,25 @@ export class MarinadeClient {
 
   public async delayedUnstake(
     fund: PublicKey,
+    ticketId: number,
     amount: BN
   ): Promise<TransactionSignature> {
     return await this.delayedUnstakeTxBuilder(
       fund,
       this.base.getManager(),
+      ticketId,
       amount
     ).rpc();
   }
 
   public async delayedUnstakeClaim(
-    fund: PublicKey
+    fund: PublicKey,
+    ticket: PublicKey
   ): Promise<TransactionSignature> {
     return await this.delayedUnstakeClaimTxBuilder(
       fund,
-      this.base.getManager()
+      this.base.getManager(),
+      ticket
     ).rpc();
   }
 
@@ -62,12 +66,39 @@ export class MarinadeClient {
    * Utils
    */
 
-  getMarinadeTicketPDA(fundPDA: PublicKey): PublicKey {
-    const [pda, _bump] = PublicKey.findProgramAddressSync(
-      [anchor.utils.bytes.utf8.encode("ticket"), fundPDA.toBuffer()],
+  getMarinadeTicketPDA(
+    fundPDA: PublicKey,
+    ticketId: number
+  ): [PublicKey, number] {
+    return PublicKey.findProgramAddressSync(
+      [
+        anchor.utils.bytes.utf8.encode("ticket"),
+        Uint8Array.from([ticketId % 256]),
+        fundPDA.toBuffer()
+      ],
       this.base.programId
     );
-    return pda;
+  }
+
+  async getExistingTickets(fundPDA: PublicKey): Promise<PublicKey[]> {
+    const accounts =
+      await this.base.provider.connection.getParsedProgramAccounts(
+        marinadeProgram,
+        {
+          filters: [
+            {
+              dataSize: 88
+            },
+            {
+              memcmp: {
+                offset: 40,
+                bytes: this.base.getTreasuryPDA(fundPDA).toBase58()
+              }
+            }
+          ]
+        }
+      );
+    return accounts.map((a) => a.pubkey);
   }
 
   getMarinadeState(): any {
@@ -133,37 +164,41 @@ export class MarinadeClient {
   delayedUnstakeTxBuilder(
     fund: PublicKey,
     manager: PublicKey,
+    ticketId: number,
     amount: BN
   ): any /* MethodsBuilder<Glam, ?> */ {
     const treasury = this.base.getTreasuryPDA(fund);
-    const ticket = this.getMarinadeTicketPDA(fund);
+    const [ticket, bump] = this.getMarinadeTicketPDA(fund, ticketId);
     const marinadeState = this.getMarinadeState();
-    const treasuryMsolAta = getAssociatedTokenAddressSync(
-      marinadeState.msolMintAddress,
-      treasury,
-      true
-    );
-    return this.base.program.methods.marinadeDelayedUnstake(amount).accounts({
+    const treasuryMsolAta = this.base.getTreasuryAta(
       fund,
-      treasury,
-      manager,
-      ticket,
-      msolMint: marinadeState.msolMintAddress,
-      burnMsolFrom: treasuryMsolAta,
-      marinadeState: marinadeState.marinadeStateAddress,
-      reservePda: marinadeState.reserveAddress,
-      marinadeProgram
-    });
+      marinadeState.msolMintAddress
+    );
+
+    console.log(`Ticket ${ticketId}`, ticket.toBase58());
+
+    return this.base.program.methods
+      .marinadeDelayedUnstake(amount, bump, ticketId)
+      .accounts({
+        fund,
+        treasury,
+        manager,
+        ticket,
+        msolMint: marinadeState.msolMintAddress,
+        burnMsolFrom: treasuryMsolAta,
+        marinadeState: marinadeState.marinadeStateAddress,
+        reservePda: marinadeState.reserveAddress,
+        marinadeProgram
+      });
   }
 
   delayedUnstakeClaimTxBuilder(
     fund: PublicKey,
-    manager: PublicKey
+    manager: PublicKey,
+    ticket: PublicKey
   ): any /* MethodsBuilder<Glam, ?> */ {
     const treasury = this.base.getTreasuryPDA(fund);
-    const ticket = this.getMarinadeTicketPDA(fund);
     const marinadeState = this.getMarinadeState();
-
     return this.base.program.methods.marinadeClaim().accounts({
       fund,
       treasury,
@@ -181,7 +216,6 @@ export class MarinadeClient {
     amount: BN
   ): any /* MethodsBuilder<Glam, ?> */ {
     const treasury = this.base.getTreasuryPDA(fund);
-    const ticket = this.getMarinadeTicketPDA(fund);
     const marinadeState = this.getMarinadeState();
     const treasuryMsolAta = getAssociatedTokenAddressSync(
       marinadeState.msolMintAddress,
@@ -218,19 +252,26 @@ export class MarinadeClient {
   public async delayedUnstakeTx(
     fund: PublicKey,
     manager: PublicKey,
+    ticketId: number,
     amount: BN
   ): Promise<Transaction> {
     return await this.delayedUnstakeTxBuilder(
       fund,
       manager,
+      ticketId,
       amount
     ).transaction();
   }
 
   public async delayedUnstakeClaimTx(
     fund: PublicKey,
-    manager: PublicKey
+    manager: PublicKey,
+    ticket: PublicKey
   ): Promise<Transaction> {
-    return await this.delayedUnstakeClaimTxBuilder(fund, manager).transaction();
+    return await this.delayedUnstakeClaimTxBuilder(
+      fund,
+      manager,
+      ticket
+    ).transaction();
   }
 }
