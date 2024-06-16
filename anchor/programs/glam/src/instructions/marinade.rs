@@ -58,12 +58,21 @@ pub fn marinade_deposit<'c: 'info, 'info>(
 pub fn marinade_delayed_unstake<'c: 'info, 'info>(
     ctx: Context<MarinadeDelayedUnstake>,
     msol_amount: u64,
+    ticket_bump: u8,
+    ticket_id: String,
 ) -> Result<()> {
     let rent = Rent::get()?;
     let lamports = rent.minimum_balance(500); // Minimum balance to make the account rent-exempt
 
+    msg!("ticket id: {}, ticket bump: {}", ticket_id, ticket_bump);
+
     let fund_key = ctx.accounts.fund.key();
-    let seeds = &[b"ticket".as_ref(), fund_key.as_ref(), &[ctx.bumps.ticket]];
+    let seeds = &[
+        b"ticket".as_ref(),
+        ticket_id.as_bytes(),
+        fund_key.as_ref(),
+        &[ticket_bump],
+    ];
     let signer_seeds = &[&seeds[..]];
     let space = std::mem::size_of::<TicketAccountData>() as u64 + 8;
 
@@ -216,6 +225,7 @@ pub struct MarinadeDeposit<'info> {
 }
 
 #[derive(Accounts)]
+// #[instruction(ticket_id: String)]
 pub struct MarinadeDelayedUnstake<'info> {
     #[account(mut)]
     pub manager: Signer<'info>,
@@ -227,8 +237,9 @@ pub struct MarinadeDelayedUnstake<'info> {
     pub treasury: SystemAccount<'info>,
 
     /// CHECK: skip
-    // #[account(init_if_needed, seeds = [b"ticket"], bump, payer = signer, space = 88, owner = marinade_program.key())]
-    #[account(mut, seeds = [b"ticket".as_ref(), fund.key().as_ref()], bump)]
+    // #[account(mut, seeds = [b"ticket".as_ref(), ticket_id.as_bytes(), fund.key().as_ref()], bump)]
+    // The line above wll cause "Error: memory allocation failed, out of memory"
+    #[account(mut)]
     pub ticket: AccountInfo<'info>,
 
     /// CHECK: skip
@@ -265,10 +276,8 @@ pub struct MarinadeClaim<'info> {
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
 
-    /// CHECK: skip
-    // #[account(init_if_needed, seeds = [b"ticket"], bump, payer = signer, space = 88, owner = marinade_program.key())]
-    #[account(mut)]
-    pub ticket: AccountInfo<'info>,
+    #[account(mut, constraint = ticket.beneficiary == treasury.key())]
+    pub ticket: Account<'info, TicketAccountData>,
 
     /// CHECK: skip
     #[account(mut)]
