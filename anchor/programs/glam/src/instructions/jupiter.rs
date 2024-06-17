@@ -135,7 +135,7 @@ pub fn jupiter_swap(ctx: Context<JupiterSwap>, amount: u64, data: Vec<u8>) -> Re
         &Instruction {
             program_id: *ctx.accounts.jupiter_program.key,
             accounts,
-            data,
+            data: data.clone(),
         },
         &accounts_infos,
         &[],
@@ -150,6 +150,16 @@ pub fn jupiter_swap(ctx: Context<JupiterSwap>, amount: u64, data: Vec<u8>) -> Re
     ctx.accounts.output_signer_ata.reload()?;
     let output_amount = ctx.accounts.output_signer_ata.amount - output_amount_before;
     require!(output_amount > 0, ManagerError::InvalidSwap);
+
+    // Compare output amounts from the data and the actual output
+    let parsed_input_amount = u64::from_le_bytes(data[16..24].try_into().unwrap());
+    let parsed_output_amount = u64::from_le_bytes(data[24..32].try_into().unwrap());
+    msg!(
+        "parsed_input_amount: {}, parsed_output_amount: {}, actual_output_amount: {}",
+        parsed_input_amount,
+        parsed_output_amount,
+        output_amount
+    );
 
     let output_program = if ctx.accounts.output_signer_ata.owner == Token2022::id() {
         ctx.accounts.token_2022_program.to_account_info()
