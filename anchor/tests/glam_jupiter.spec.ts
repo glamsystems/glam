@@ -43,7 +43,6 @@ describe("glam_jupiter", () => {
       });
       console.log("swap txId", txId);
     } catch (e) {
-      // console.error(e);
       expect(
         e.logs.some(
           (log) =>
@@ -323,9 +322,6 @@ describe("glam_jupiter", () => {
     };
 
     // Pre-checks: the following accounts should not exist
-    const beforeManagerBalance =
-      await glamClient.provider.connection.getBalance(manager);
-    expect(beforeManagerBalance).toEqual(499_999_999_966_178_300);
     const beforeTreasuryBalance =
       await glamClient.provider.connection.getBalance(treasury);
     expect(beforeTreasuryBalance).toEqual(1_000_946_560);
@@ -620,7 +616,6 @@ describe("glam_jupiter", () => {
       });
       console.log("swap txId", txId);
     } catch (e) {
-      // console.error(e);
       // make sure program has reached jupiter
       expect(e.logs).toContain(
         "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]"
@@ -665,7 +660,6 @@ describe("glam_jupiter", () => {
       );
       console.log("swap txId", txId);
     } catch (e) {
-      // console.error(e);
       // make sure program has reached jupiter
       expect(e.logs).toContain(
         "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]"

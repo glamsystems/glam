@@ -30,11 +30,11 @@ pub struct JupiterSwap<'info> {
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
 
-    /// CHECK: no need to create because input ata should exist to swap, and
-    ///        no need to deser because we transfer_checked from input_ata to
-    ///        input_signer_ata
+    /// CHECK: no need to create because input ata should exist to swap,
+    ///        and no need to deser because we transfer_checked from
+    ///        input_treasury_ata to input_signer_ata
     #[account(mut)]
-    pub input_ata: UncheckedAccount<'info>,
+    pub input_treasury_ata: UncheckedAccount<'info>,
     #[account(
         init_if_needed,
         payer = manager,
@@ -53,7 +53,7 @@ pub struct JupiterSwap<'info> {
         payer = manager,
         associated_token::mint = output_mint,
         associated_token::authority = treasury)]
-    pub output_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub output_treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     pub input_mint: Box<InterfaceAccount<'info, Mint>>,
     pub output_mint: Box<InterfaceAccount<'info, Mint>>,
@@ -101,7 +101,7 @@ pub fn jupiter_swap(ctx: Context<JupiterSwap>, amount: u64, data: Vec<u8>) -> Re
         CpiContext::new_with_signer(
             input_program,
             TransferChecked {
-                from: ctx.accounts.input_ata.to_account_info(),
+                from: ctx.accounts.input_treasury_ata.to_account_info(),
                 mint: ctx.accounts.input_mint.to_account_info(),
                 to: ctx.accounts.input_signer_ata.to_account_info(),
                 authority: ctx.accounts.treasury.to_account_info(),
@@ -162,7 +162,7 @@ pub fn jupiter_swap(ctx: Context<JupiterSwap>, amount: u64, data: Vec<u8>) -> Re
             TransferChecked {
                 from: ctx.accounts.output_signer_ata.to_account_info(),
                 mint: ctx.accounts.output_mint.to_account_info(),
-                to: ctx.accounts.output_ata.to_account_info(),
+                to: ctx.accounts.output_treasury_ata.to_account_info(),
                 authority: ctx.accounts.manager.to_account_info(),
             },
         ),

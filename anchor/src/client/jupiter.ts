@@ -1,4 +1,3 @@
-import util from "util";
 import * as anchor from "@coral-xyz/anchor";
 import {
   AddressLookupTableAccount,
@@ -87,7 +86,6 @@ export class JupiterClient {
       quoteResponse,
       swapInstructions
     );
-    // console.log("tx", util.inspect(tx, false, null));
     return await this.base.sendAndConfirm(tx, this.base.getWalletSigner());
   }
 
@@ -124,13 +122,10 @@ export class JupiterClient {
             "quoteParams must be specified when quoteResponse and swapInstruction are not specified."
           );
         }
-        // console.log("Fetching quoteResponse with quoteParams:", quoteParams);
         quoteResponse = await this.getQuoteResponse(quoteParams);
-        // console.log("quoteResponse", util.inspect(quoteResponse, false, null));
       }
 
       const ins = await this.getSwapInstructions(quoteResponse, manager);
-      // console.log("SwapInstructions", util.inspect(ins, false, null));
       computeBudgetInstructions = ins.computeBudgetInstructions || [];
       swapInstruction = ins.swapInstruction;
       addressLookupTableAddresses = ins.addressLookupTableAddresses;
@@ -152,8 +147,8 @@ export class JupiterClient {
         .accounts({
           fund,
           treasury: this.base.getTreasuryPDA(fund),
-          inputAta: this.base.getTreasuryAta(fund, inputMint),
-          outputAta: this.base.getTreasuryAta(fund, outputMint),
+          inputTreasuryAta: this.base.getTreasuryAta(fund, inputMint),
+          outputTreasuryAta: this.base.getTreasuryAta(fund, outputMint),
           inputSignerAta: this.base.getManagerAta(inputMint, manager),
           outputSignerAta: this.base.getManagerAta(outputMint, manager),
           inputMint,

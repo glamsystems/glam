@@ -848,12 +848,12 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "inputAta",
+          "name": "inputTreasuryAta",
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "no need to deser because we transfer_checked from input_ata to",
-            "input_signer_ata"
+            "and no need to deser because we transfer_checked from",
+            "input_treasury_ata to input_signer_ata"
           ]
         },
         {
@@ -867,7 +867,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "outputAta",
+          "name": "outputTreasuryAta",
           "isMut": true,
           "isSigner": false
         },
@@ -3960,12 +3960,12 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "inputAta",
+          "name": "inputTreasuryAta",
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "no need to deser because we transfer_checked from input_ata to",
-            "input_signer_ata"
+            "and no need to deser because we transfer_checked from",
+            "input_treasury_ata to input_signer_ata"
           ]
         },
         {
@@ -3979,7 +3979,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "outputAta",
+          "name": "outputTreasuryAta",
           "isMut": true,
           "isSigner": false
         },
