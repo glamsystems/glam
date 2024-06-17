@@ -8,7 +8,7 @@ export const formatNumber = (value: number) => {
     currency: "USD",
     currencyDisplay: "symbol",
     minimumFractionDigits: 0,
-    maximumFractionDigits: 2
+    maximumFractionDigits: 2,
   });
 };
 
@@ -17,6 +17,6 @@ export function formatDateFromTimestamp(timestampStr: string): string {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
-    year: "numeric"
+    year: "numeric",
   }).format(date);
 }

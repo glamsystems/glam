@@ -9,3 +9,5 @@ dist
 tmp
 build
 test-ledger
+pnpm-lock.yaml
+Cargo.lock

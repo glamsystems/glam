@@ -11,7 +11,7 @@ export const CustomPagination = ({
   currentPage,
   setCurrentPage,
   pageSize,
-  totalItems
+  totalItems,
 }: CustomPaginationProps) => {
   const totalPages = Math.ceil(totalItems / pageSize);
 
@@ -42,7 +42,7 @@ export const CustomPagination = ({
             disabled={currentPage === 1}
             style={{
               cursor: currentPage === 1 ? "not-allowed" : "pointer",
-              color: currentPage === 1 ? "#525252" : "black"
+              color: currentPage === 1 ? "#525252" : "black",
             }}
           >
             Prev
@@ -52,7 +52,7 @@ export const CustomPagination = ({
             disabled={currentPage === totalPages}
             style={{
               cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-              color: currentPage === totalPages ? "#525252" : "black"
+              color: currentPage === totalPages ? "#525252" : "black",
             }}
           >
             Next

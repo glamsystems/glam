@@ -4,7 +4,7 @@ import {
   sendAndConfirmTransaction,
   PublicKey,
   VersionedTransaction,
-  ConfirmOptions
+  ConfirmOptions,
 } from "@solana/web3.js";
 import { GlamClient } from "../src/client";
 
@@ -28,7 +28,7 @@ const fund = "4gAcSdfSAxVPcxj2Hi3AvKKViGat3iUysDD5ZzbqhDTk";
 const treasuryMSolAta = "GSkYFJBNcnRNgGmC6KgkrGtsy2omk8yf94wTPJtcYNtw";
 const confirmOptions: ConfirmOptions = {
   commitment: "confirmed",
-  maxRetries: 3
+  maxRetries: 3,
 };
 
 describe("glam_api_tx", () => {
@@ -38,7 +38,7 @@ describe("glam_api_tx", () => {
     const response = await fetch(`${API}/tx/wsol/wrap`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ manager, fund, amount: 1000000 })
+      body: JSON.stringify({ manager, fund, amount: 1000000 }),
     });
     const { tx } = await response.json();
     console.log("Wrap tx:", tx);
@@ -61,7 +61,7 @@ describe("glam_api_tx", () => {
     const response = await fetch(`${API}/tx/wsol/unwrap`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ manager, fund })
+      body: JSON.stringify({ manager, fund }),
     });
     const { tx } = await response.json();
     console.log("Unwrap tx", tx);
@@ -96,9 +96,9 @@ describe("glam_api_tx", () => {
           swapMode: "ExactIn",
           onlyDirectRoutes: false,
           asLegacyTransaction: false,
-          maxAccounts: 20
-        }
-      })
+          maxAccounts: 20,
+        },
+      }),
     });
     const { tx } = await response.json();
     const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
@@ -124,7 +124,7 @@ describe("glam_api_tx", () => {
       swapMode: "ExactIn",
       onlyDirectRoutes: false,
       asLegacyTransaction: false,
-      maxAccounts: 20
+      maxAccounts: 20,
     };
     const quoteResponse = await (
       await fetch(
@@ -142,8 +142,8 @@ describe("glam_api_tx", () => {
       body: JSON.stringify({
         fund,
         manager,
-        quoteResponse
-      })
+        quoteResponse,
+      }),
     });
 
     const { tx } = await response.json();
@@ -172,7 +172,7 @@ describe("glam_api_tx", () => {
       swapMode: "ExactIn",
       onlyDirectRoutes: false,
       asLegacyTransaction: false,
-      maxAccounts: 20
+      maxAccounts: 20,
     };
     const quoteResponse = await (
       await fetch(
@@ -187,8 +187,8 @@ describe("glam_api_tx", () => {
         body: JSON.stringify({
           quoteResponse,
           userPublicKey: manager,
-          destinationTokenAccount: treasuryMSolAta
-        })
+          destinationTokenAccount: treasuryMSolAta,
+        }),
       })
     ).json();
 
@@ -203,8 +203,8 @@ describe("glam_api_tx", () => {
         amount,
         inputMint: wsol.toBase58(),
         outputMint: msol.toBase58(),
-        ...swapInstructions
-      })
+        ...swapInstructions,
+      }),
     });
 
     const { tx } = await response.json();
@@ -226,7 +226,7 @@ describe("glam_api_tx", () => {
     const response = await fetch(`${API}/tx/marinade/stake`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ manager, fund, amount: 100000000 })
+      body: JSON.stringify({ manager, fund, amount: 100000000 }),
     });
     const { tx } = await response.json();
     console.log("Stake tx:", tx);

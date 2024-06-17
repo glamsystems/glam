@@ -6,7 +6,7 @@ import {
   TransactionSignature,
   TransactionMessage,
   VersionedTransaction,
-  AccountMeta
+  AccountMeta,
 } from "@solana/web3.js";
 import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 
@@ -155,10 +155,10 @@ export class JupiterClient {
           outputMint,
           manager,
           jupiterProgram,
-          token2022Program: TOKEN_2022_PROGRAM_ID
+          token2022Program: TOKEN_2022_PROGRAM_ID,
         })
         .remainingAccounts(swapIx.keys)
-        .instruction()
+        .instruction(),
     ];
     const addressLookupTableAccounts = await this.getAdressLookupTableAccounts(
       addressLookupTableAddresses
@@ -169,7 +169,7 @@ export class JupiterClient {
       recentBlockhash: (
         await this.base.provider.connection.getLatestBlockhash()
       ).blockhash,
-      instructions
+      instructions,
     }).compileToV0Message(addressLookupTableAccounts);
 
     return new VersionedTransaction(messageV0);
@@ -189,9 +189,9 @@ export class JupiterClient {
       keys: ixPayload.accounts.map((key: any) => ({
         pubkey: new PublicKey(key.pubkey),
         isSigner: key.isSigner,
-        isWritable: key.isWritable
+        isWritable: key.isWritable,
       })),
-      data: Buffer.from(ixPayload.data, "base64")
+      data: Buffer.from(ixPayload.data, "base64"),
     });
   };
 
@@ -212,7 +212,7 @@ export class JupiterClient {
       if (accountInfo) {
         const addressLookupTableAccount = new AddressLookupTableAccount({
           key: new PublicKey(addressLookupTableAddress),
-          state: AddressLookupTableAccount.deserialize(accountInfo.data)
+          state: AddressLookupTableAccount.deserialize(accountInfo.data),
         });
         acc.push(addressLookupTableAccount);
       }
@@ -238,12 +238,12 @@ export class JupiterClient {
       method: "POST",
       headers: {
         Accept: "application/json",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         quoteResponse,
-        userPublicKey: from.toBase58()
-      })
+        userPublicKey: from.toBase58(),
+      }),
     });
 
     return await res.json();

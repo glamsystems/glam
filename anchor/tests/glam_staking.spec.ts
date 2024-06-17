@@ -21,7 +21,7 @@ describe("glam_staking", () => {
     );
     await connection.confirmTransaction({
       ...(await connection.getLatestBlockhash()),
-      signature: airdropTx
+      signature: airdropTx,
     });
   });
 

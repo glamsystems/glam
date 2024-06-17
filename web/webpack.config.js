@@ -1,5 +1,5 @@
-const { composePlugins, withNx } = require('@nx/webpack');
-const { withReact } = require('@nx/react');
+const { composePlugins, withNx } = require("@nx/webpack");
+const { withReact } = require("@nx/react");
 
 // Nx plugins for webpack.
 module.exports = composePlugins(withNx(), withReact(), (config) => {
@@ -8,14 +8,14 @@ module.exports = composePlugins(withNx(), withReact(), (config) => {
   config.ignoreWarnings = [/Failed to parse source map/];
 
   config.resolve.fallback = {
-    "crypto": false,
-    "fs": false,
-    "path": false,
-    "os": false,
-    "net": false,
-    "stream": false,
-    "tls": false,
-    "process": false,
+    crypto: false,
+    fs: false,
+    path: false,
+    os: false,
+    net: false,
+    stream: false,
+    tls: false,
+    process: false,
   };
 
   return config;

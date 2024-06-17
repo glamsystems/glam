@@ -78,7 +78,7 @@ const openfundsGetTemplate = async (template) => {
       key: lodash.camelCase(row[1]),
       tag: row[2],
       template: row[4],
-      version: Number(row[5])
+      version: Number(row[5]),
     }))
     .filter((obj) => obj.version === 1)
     .filter((obj) =>
@@ -101,7 +101,7 @@ const openfundsCsvRows = (model) => {
     ...model,
     ...model.company,
     ...model.fundManagers[0],
-    ...shareClass
+    ...shareClass,
   }));
 };
 
@@ -113,7 +113,7 @@ const openfundsApplyCsvTemplate = async (models, template) => {
     // fields.map((f) => f.key), // row with keys, just to debug
     ...models.flatMap((m) =>
       openfundsCsvRows(m).map((row) => fields.map((f) => row[f.key]))
-    )
+    ),
   ];
 };
 

@@ -13,8 +13,8 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
     {
       pricingAccount: new PublicKey(
         "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG" // pyth
-      )
-    }
+      ),
+    },
   ],
   [
     // USDC
@@ -22,8 +22,8 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
     {
       pricingAccount: new PublicKey(
         "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD" // pyth
-      )
-    }
+      ),
+    },
   ],
   [
     // USDT
@@ -31,15 +31,15 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
     {
       pricingAccount: new PublicKey(
         "3vxLXJqLqF3JG5TCbYycbKWRBbCJQLxQmBGCkyqEEefL" // pyth
-      )
-    }
+      ),
+    },
   ],
   [
     // PYUSD
     "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo",
     {
-      pricingAccount: new PublicKey(0)
-    }
+      pricingAccount: new PublicKey(0),
+    },
   ],
   [
     // BTC
@@ -47,8 +47,8 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
     {
       pricingAccount: new PublicKey(
         "Eavb8FKNoYPbHnSS8kMi4tnUh8qK8bqxTjCojer4pZrr" // pyth
-      )
-    }
+      ),
+    },
   ],
   [
     // tBTC
@@ -56,8 +56,8 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
     {
       pricingAccount: new PublicKey(
         "6qCHPXxQiCiM3dEE4W6fpZk17uSZW9WBpD7cyN8Tg2Ac" // pyth
-      )
-    }
+      ),
+    },
   ],
   [
     // ETH
@@ -65,8 +65,8 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
     {
       pricingAccount: new PublicKey(
         "JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB" // pyth
-      )
-    }
+      ),
+    },
   ],
   [
     // PYTH
@@ -74,8 +74,8 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
     {
       pricingAccount: new PublicKey(
         "nrYkQQQur7z8rYTST3G9GqATviK5SxTDkrqd21MW6Ue" // state
-      )
-    }
+      ),
+    },
   ],
   [
     // BONK
@@ -83,8 +83,8 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
     {
       pricingAccount: new PublicKey(
         "8ihFLu5FimgTQ1Unh4dVyEHUGodJ5gJQCrQf4KUVB9bN" // state
-      )
-    }
+      ),
+    },
   ],
   [
     // mSOL
@@ -92,9 +92,9 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
     {
       pricingAccount: new PublicKey(
         "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC" // state
-      )
-    }
-  ]
+      ),
+    },
+  ],
 ]);
 
 export const ASSETS_DEVNET: Map<string, AssetMeta> = new Map([
@@ -104,8 +104,8 @@ export const ASSETS_DEVNET: Map<string, AssetMeta> = new Map([
     {
       pricingAccount: new PublicKey(
         "J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix" // pyth
-      )
-    }
+      ),
+    },
   ],
   [
     // USDC (Drift)
@@ -113,8 +113,8 @@ export const ASSETS_DEVNET: Map<string, AssetMeta> = new Map([
     {
       pricingAccount: new PublicKey(
         "5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7" // pyth
-      )
-    }
+      ),
+    },
   ],
   [
     // BTC (Drift)
@@ -122,8 +122,8 @@ export const ASSETS_DEVNET: Map<string, AssetMeta> = new Map([
     {
       pricingAccount: new PublicKey(
         "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J" // pyth
-      )
-    }
+      ),
+    },
   ],
   [
     // mSOL
@@ -131,8 +131,8 @@ export const ASSETS_DEVNET: Map<string, AssetMeta> = new Map([
     {
       pricingAccount: new PublicKey(
         "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC" // state
-      )
-    }
+      ),
+    },
   ],
 
   //
@@ -145,8 +145,8 @@ export const ASSETS_DEVNET: Map<string, AssetMeta> = new Map([
     {
       pricingAccount: new PublicKey(
         "5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7" // pyth
-      )
-    }
+      ),
+    },
   ],
   [
     // BTC
@@ -155,8 +155,8 @@ export const ASSETS_DEVNET: Map<string, AssetMeta> = new Map([
       pricingAccount: new PublicKey(
         "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J" // pyth
       ),
-      programId: TOKEN_2022_PROGRAM_ID
-    }
+      programId: TOKEN_2022_PROGRAM_ID,
+    },
   ],
   [
     // ETH
@@ -164,7 +164,7 @@ export const ASSETS_DEVNET: Map<string, AssetMeta> = new Map([
     {
       pricingAccount: new PublicKey(
         "EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw" // pyth
-      )
-    }
-  ]
+      ),
+    },
+  ],
 ]);

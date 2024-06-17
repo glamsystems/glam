@@ -10,7 +10,7 @@ export const countryList = [
     code_currency: "AWG",
     currency: "Aruban Florin",
     flag_png: "aw.png",
-    flag_svg: "aw.svg"
+    flag_svg: "aw.svg",
   },
   {
     name: "Afghanistan",
@@ -23,7 +23,7 @@ export const countryList = [
     code_currency: "AFN",
     currency: "Afghani",
     flag_png: "af.png",
-    flag_svg: "af.svg"
+    flag_svg: "af.svg",
   },
   {
     name: "Angola",
@@ -36,7 +36,7 @@ export const countryList = [
     code_currency: "AOA",
     currency: "Kwanza",
     flag_png: "ao.png",
-    flag_svg: "ao.svg"
+    flag_svg: "ao.svg",
   },
   {
     name: "Anguilla",
@@ -49,7 +49,7 @@ export const countryList = [
     code_currency: "XCD",
     currency: "East Caribbean Dollar",
     flag_png: "ai.png",
-    flag_svg: "ai.svg"
+    flag_svg: "ai.svg",
   },
   {
     name: "Åland Islands",
@@ -62,7 +62,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "ax.png",
-    flag_svg: "ax.svg"
+    flag_svg: "ax.svg",
   },
   {
     name: "Albania",
@@ -75,7 +75,7 @@ export const countryList = [
     code_currency: "ALL",
     currency: "Lek",
     flag_png: "al.png",
-    flag_svg: "al.svg"
+    flag_svg: "al.svg",
   },
   {
     name: "Andorra",
@@ -88,7 +88,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "ad.png",
-    flag_svg: "ad.svg"
+    flag_svg: "ad.svg",
   },
   {
     name: "United Arab Emirates (the)",
@@ -101,7 +101,7 @@ export const countryList = [
     code_currency: "AED",
     currency: "UAE Dirham",
     flag_png: "ae.png",
-    flag_svg: "ae.svg"
+    flag_svg: "ae.svg",
   },
   {
     name: "Argentina",
@@ -114,7 +114,7 @@ export const countryList = [
     code_currency: "ARS",
     currency: "Argentine Peso",
     flag_png: "ar.png",
-    flag_svg: "ar.svg"
+    flag_svg: "ar.svg",
   },
   {
     name: "Armenia",
@@ -127,7 +127,7 @@ export const countryList = [
     code_currency: "AMD",
     currency: "Armenian Dram",
     flag_png: "am.png",
-    flag_svg: "am.svg"
+    flag_svg: "am.svg",
   },
   {
     name: "American Samoa",
@@ -140,7 +140,7 @@ export const countryList = [
     code_currency: "USD",
     currency: "US Dollar",
     flag_png: "as.png",
-    flag_svg: "as.svg"
+    flag_svg: "as.svg",
   },
   {
     name: "Antarctica",
@@ -153,7 +153,7 @@ export const countryList = [
     code_currency: "",
     currency: "No universal currency",
     flag_png: "aq.png",
-    flag_svg: "aq.svg"
+    flag_svg: "aq.svg",
   },
   {
     name: "French Southern Territories (the)",
@@ -166,7 +166,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "tf.png",
-    flag_svg: "tf.svg"
+    flag_svg: "tf.svg",
   },
   {
     name: "Antigua and Barbuda",
@@ -179,7 +179,7 @@ export const countryList = [
     code_currency: "XCD",
     currency: "East Caribbean Dollar",
     flag_png: "ag.png",
-    flag_svg: "ag.svg"
+    flag_svg: "ag.svg",
   },
   {
     name: "Australia",
@@ -192,7 +192,7 @@ export const countryList = [
     code_currency: "AUD",
     currency: "Australian Dollar",
     flag_png: "au.png",
-    flag_svg: "au.svg"
+    flag_svg: "au.svg",
   },
   {
     name: "Austria",
@@ -205,7 +205,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "at.png",
-    flag_svg: "at.svg"
+    flag_svg: "at.svg",
   },
   {
     name: "Azerbaijan",
@@ -218,7 +218,7 @@ export const countryList = [
     code_currency: "AZN",
     currency: "Azerbaijan Manat",
     flag_png: "az.png",
-    flag_svg: "az.svg"
+    flag_svg: "az.svg",
   },
   {
     name: "Burundi",
@@ -231,7 +231,7 @@ export const countryList = [
     code_currency: "BIF",
     currency: "Burundi Franc",
     flag_png: "bi.png",
-    flag_svg: "bi.svg"
+    flag_svg: "bi.svg",
   },
   {
     name: "Belgium",
@@ -244,7 +244,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "be.png",
-    flag_svg: "be.svg"
+    flag_svg: "be.svg",
   },
   {
     name: "Benin",
@@ -257,7 +257,7 @@ export const countryList = [
     code_currency: "XOF",
     currency: "CFA Franc BCEAO",
     flag_png: "bj.png",
-    flag_svg: "bj.svg"
+    flag_svg: "bj.svg",
   },
   {
     name: "Bonaire, Sint Eustatius and Saba",
@@ -270,7 +270,7 @@ export const countryList = [
     code_currency: "USD",
     currency: "US Dollar",
     flag_png: "bq.png",
-    flag_svg: "bq.svg"
+    flag_svg: "bq.svg",
   },
   {
     name: "Burkina Faso",
@@ -283,7 +283,7 @@ export const countryList = [
     code_currency: "XOF",
     currency: "CFA Franc BCEAO",
     flag_png: "bf.png",
-    flag_svg: "bf.svg"
+    flag_svg: "bf.svg",
   },
   {
     name: "Bangladesh",
@@ -296,7 +296,7 @@ export const countryList = [
     code_currency: "BDT",
     currency: "Taka",
     flag_png: "bd.png",
-    flag_svg: "bd.svg"
+    flag_svg: "bd.svg",
   },
   {
     name: "Bulgaria",
@@ -309,7 +309,7 @@ export const countryList = [
     code_currency: "BGN",
     currency: "Bulgarian Lev",
     flag_png: "bg.png",
-    flag_svg: "bg.svg"
+    flag_svg: "bg.svg",
   },
   {
     name: "Bahrain",
@@ -322,7 +322,7 @@ export const countryList = [
     code_currency: "BHD",
     currency: "Bahraini Dinar",
     flag_png: "bh.png",
-    flag_svg: "bh.svg"
+    flag_svg: "bh.svg",
   },
   {
     name: "Bahamas (the)",
@@ -335,7 +335,7 @@ export const countryList = [
     code_currency: "BSD",
     currency: "Bahamian Dollar",
     flag_png: "bs.png",
-    flag_svg: "bs.svg"
+    flag_svg: "bs.svg",
   },
   {
     name: "Bosnia and Herzegovina",
@@ -348,7 +348,7 @@ export const countryList = [
     code_currency: "BAM",
     currency: "Convertible Mark",
     flag_png: "ba.png",
-    flag_svg: "ba.svg"
+    flag_svg: "ba.svg",
   },
   {
     name: "Saint Barthélemy",
@@ -361,7 +361,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "bl.png",
-    flag_svg: "bl.svg"
+    flag_svg: "bl.svg",
   },
   {
     name: "Belarus",
@@ -374,7 +374,7 @@ export const countryList = [
     code_currency: "BYN",
     currency: "Belarusian Ruble",
     flag_png: "by.png",
-    flag_svg: "by.svg"
+    flag_svg: "by.svg",
   },
   {
     name: "Belize",
@@ -387,7 +387,7 @@ export const countryList = [
     code_currency: "BZD",
     currency: "Belize Dollar",
     flag_png: "bz.png",
-    flag_svg: "bz.svg"
+    flag_svg: "bz.svg",
   },
   {
     name: "Bermuda",
@@ -400,7 +400,7 @@ export const countryList = [
     code_currency: "BMD",
     currency: "Bermudian Dollar",
     flag_png: "bm.png",
-    flag_svg: "bm.svg"
+    flag_svg: "bm.svg",
   },
   {
     name: "Bolivia (Plurinational State of)",
@@ -413,7 +413,7 @@ export const countryList = [
     code_currency: "BOB",
     currency: "Boliviano",
     flag_png: "bo.png",
-    flag_svg: "bo.svg"
+    flag_svg: "bo.svg",
   },
   {
     name: "Brazil",
@@ -426,7 +426,7 @@ export const countryList = [
     code_currency: "BRL",
     currency: "Brazilian Real",
     flag_png: "br.png",
-    flag_svg: "br.svg"
+    flag_svg: "br.svg",
   },
   {
     name: "Barbados",
@@ -439,7 +439,7 @@ export const countryList = [
     code_currency: "BBD",
     currency: "Barbados Dollar",
     flag_png: "bb.png",
-    flag_svg: "bb.svg"
+    flag_svg: "bb.svg",
   },
   {
     name: "Brunei Darussalam",
@@ -452,7 +452,7 @@ export const countryList = [
     code_currency: "BND",
     currency: "Brunei Dollar",
     flag_png: "bn.png",
-    flag_svg: "bn.svg"
+    flag_svg: "bn.svg",
   },
   {
     name: "Bhutan",
@@ -465,7 +465,7 @@ export const countryList = [
     code_currency: "INR",
     currency: "Indian Rupee",
     flag_png: "bt.png",
-    flag_svg: "bt.svg"
+    flag_svg: "bt.svg",
   },
   {
     name: "Bouvet Island",
@@ -478,7 +478,7 @@ export const countryList = [
     code_currency: "NOK",
     currency: "Norwegian Krone",
     flag_png: "bv.png",
-    flag_svg: "bv.svg"
+    flag_svg: "bv.svg",
   },
   {
     name: "Botswana",
@@ -491,7 +491,7 @@ export const countryList = [
     code_currency: "BWP",
     currency: "Pula",
     flag_png: "bw.png",
-    flag_svg: "bw.svg"
+    flag_svg: "bw.svg",
   },
   {
     name: "Central African Republic (the)",
@@ -504,7 +504,7 @@ export const countryList = [
     code_currency: "XAF",
     currency: "CFA Franc BEAC",
     flag_png: "cf.png",
-    flag_svg: "cf.svg"
+    flag_svg: "cf.svg",
   },
   {
     name: "Canada",
@@ -517,7 +517,7 @@ export const countryList = [
     code_currency: "CAD",
     currency: "Canadian Dollar",
     flag_png: "ca.png",
-    flag_svg: "ca.svg"
+    flag_svg: "ca.svg",
   },
   {
     name: "Cocos (Keeling) Islands (the)",
@@ -530,7 +530,7 @@ export const countryList = [
     code_currency: "AUD",
     currency: "Australian Dollar",
     flag_png: "cc.png",
-    flag_svg: "cc.svg"
+    flag_svg: "cc.svg",
   },
   {
     name: "Switzerland",
@@ -543,7 +543,7 @@ export const countryList = [
     code_currency: "CHF",
     currency: "Swiss Franc",
     flag_png: "ch.png",
-    flag_svg: "ch.svg"
+    flag_svg: "ch.svg",
   },
   {
     name: "Chile",
@@ -556,7 +556,7 @@ export const countryList = [
     code_currency: "CLP",
     currency: "Chilean Peso",
     flag_png: "cl.png",
-    flag_svg: "cl.svg"
+    flag_svg: "cl.svg",
   },
   {
     name: "China",
@@ -569,7 +569,7 @@ export const countryList = [
     code_currency: "CNY",
     currency: "Yuan Renminbi",
     flag_png: "cn.png",
-    flag_svg: "cn.svg"
+    flag_svg: "cn.svg",
   },
   {
     name: "Côte d'Ivoire",
@@ -582,7 +582,7 @@ export const countryList = [
     code_currency: "XOF",
     currency: "CFA Franc BCEAO",
     flag_png: "ci.png",
-    flag_svg: "ci.svg"
+    flag_svg: "ci.svg",
   },
   {
     name: "Cameroon",
@@ -595,7 +595,7 @@ export const countryList = [
     code_currency: "XAF",
     currency: "CFA Franc BEAC",
     flag_png: "cm.png",
-    flag_svg: "cm.svg"
+    flag_svg: "cm.svg",
   },
   {
     name: "Congo (the Democratic Republic of the)",
@@ -608,7 +608,7 @@ export const countryList = [
     code_currency: "CDF",
     currency: "Congolese Franc",
     flag_png: "cd.png",
-    flag_svg: "cd.svg"
+    flag_svg: "cd.svg",
   },
   {
     name: "Congo (the)",
@@ -621,7 +621,7 @@ export const countryList = [
     code_currency: "XAF",
     currency: "CFA Franc BEAC",
     flag_png: "cg.png",
-    flag_svg: "cg.svg"
+    flag_svg: "cg.svg",
   },
   {
     name: "Cook Islands (the)",
@@ -634,7 +634,7 @@ export const countryList = [
     code_currency: "NZD",
     currency: "New Zealand Dollar",
     flag_png: "ck.png",
-    flag_svg: "ck.svg"
+    flag_svg: "ck.svg",
   },
   {
     name: "Colombia",
@@ -647,7 +647,7 @@ export const countryList = [
     code_currency: "COP",
     currency: "Colombian Peso",
     flag_png: "co.png",
-    flag_svg: "co.svg"
+    flag_svg: "co.svg",
   },
   {
     name: "Comoros (the)",
@@ -660,7 +660,7 @@ export const countryList = [
     code_currency: "KMF",
     currency: "Comorian Franc",
     flag_png: "km.png",
-    flag_svg: "km.svg"
+    flag_svg: "km.svg",
   },
   {
     name: "Cabo Verde",
@@ -673,7 +673,7 @@ export const countryList = [
     code_currency: "CVE",
     currency: "Cabo Verde Escudo",
     flag_png: "cv.png",
-    flag_svg: "cv.svg"
+    flag_svg: "cv.svg",
   },
   {
     name: "Costa Rica",
@@ -686,7 +686,7 @@ export const countryList = [
     code_currency: "CRC",
     currency: "Costa Rican Colon",
     flag_png: "cr.png",
-    flag_svg: "cr.svg"
+    flag_svg: "cr.svg",
   },
   {
     name: "Cuba",
@@ -699,7 +699,7 @@ export const countryList = [
     code_currency: "CUP",
     currency: "Cuban Peso",
     flag_png: "cu.png",
-    flag_svg: "cu.svg"
+    flag_svg: "cu.svg",
   },
   {
     name: "Curaçao",
@@ -712,7 +712,7 @@ export const countryList = [
     code_currency: "ANG",
     currency: "Netherlands Antillean Guilder",
     flag_png: "cw.png",
-    flag_svg: "cw.svg"
+    flag_svg: "cw.svg",
   },
   {
     name: "Christmas Island",
@@ -725,7 +725,7 @@ export const countryList = [
     code_currency: "AUD",
     currency: "Australian Dollar",
     flag_png: "cx.png",
-    flag_svg: "cx.svg"
+    flag_svg: "cx.svg",
   },
   {
     name: "Cayman Islands (the)",
@@ -738,7 +738,7 @@ export const countryList = [
     code_currency: "KYD",
     currency: "Cayman Islands Dollar",
     flag_png: "ky.png",
-    flag_svg: "ky.svg"
+    flag_svg: "ky.svg",
   },
   {
     name: "Cyprus",
@@ -751,7 +751,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "cy.png",
-    flag_svg: "cy.svg"
+    flag_svg: "cy.svg",
   },
   {
     name: "Czechia",
@@ -764,7 +764,7 @@ export const countryList = [
     code_currency: "CZK",
     currency: "Czech Koruna",
     flag_png: "cz.png",
-    flag_svg: "cz.svg"
+    flag_svg: "cz.svg",
   },
   {
     name: "Germany",
@@ -777,7 +777,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "de.png",
-    flag_svg: "de.svg"
+    flag_svg: "de.svg",
   },
   {
     name: "Djibouti",
@@ -790,7 +790,7 @@ export const countryList = [
     code_currency: "DJF",
     currency: "Djibouti Franc",
     flag_png: "dj.png",
-    flag_svg: "dj.svg"
+    flag_svg: "dj.svg",
   },
   {
     name: "Dominica",
@@ -803,7 +803,7 @@ export const countryList = [
     code_currency: "XCD",
     currency: "East Caribbean Dollar",
     flag_png: "dm.png",
-    flag_svg: "dm.svg"
+    flag_svg: "dm.svg",
   },
   {
     name: "Denmark",
@@ -816,7 +816,7 @@ export const countryList = [
     code_currency: "DKK",
     currency: "Danish Krone",
     flag_png: "dk.png",
-    flag_svg: "dk.svg"
+    flag_svg: "dk.svg",
   },
   {
     name: "Dominican Republic (the)",
@@ -829,7 +829,7 @@ export const countryList = [
     code_currency: "DOP",
     currency: "Dominican Peso",
     flag_png: "do.png",
-    flag_svg: "do.svg"
+    flag_svg: "do.svg",
   },
   {
     name: "Algeria",
@@ -842,7 +842,7 @@ export const countryList = [
     code_currency: "DZD",
     currency: "Algerian Dinar",
     flag_png: "dz.png",
-    flag_svg: "dz.svg"
+    flag_svg: "dz.svg",
   },
   {
     name: "Ecuador",
@@ -855,7 +855,7 @@ export const countryList = [
     code_currency: "USD",
     currency: "US Dollar",
     flag_png: "ec.png",
-    flag_svg: "ec.svg"
+    flag_svg: "ec.svg",
   },
   {
     name: "Egypt",
@@ -868,7 +868,7 @@ export const countryList = [
     code_currency: "EGP",
     currency: "Egyptian Pound",
     flag_png: "eg.png",
-    flag_svg: "eg.svg"
+    flag_svg: "eg.svg",
   },
   {
     name: "Eritrea",
@@ -881,7 +881,7 @@ export const countryList = [
     code_currency: "ERN",
     currency: "Nakfa",
     flag_png: "er.png",
-    flag_svg: "er.svg"
+    flag_svg: "er.svg",
   },
   {
     name: "Western Sahara*",
@@ -894,7 +894,7 @@ export const countryList = [
     code_currency: "MAD",
     currency: "Moroccan Dirham",
     flag_png: "eh.png",
-    flag_svg: "eh.svg"
+    flag_svg: "eh.svg",
   },
   {
     name: "Spain",
@@ -907,7 +907,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "es.png",
-    flag_svg: "es.svg"
+    flag_svg: "es.svg",
   },
   {
     name: "Estonia",
@@ -920,7 +920,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "ee.png",
-    flag_svg: "ee.svg"
+    flag_svg: "ee.svg",
   },
   {
     name: "Ethiopia",
@@ -933,7 +933,7 @@ export const countryList = [
     code_currency: "ETB",
     currency: "Ethiopian Birr",
     flag_png: "et.png",
-    flag_svg: "et.svg"
+    flag_svg: "et.svg",
   },
   {
     name: "Finland",
@@ -946,7 +946,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "fi.png",
-    flag_svg: "fi.svg"
+    flag_svg: "fi.svg",
   },
   {
     name: "Fiji",
@@ -959,7 +959,7 @@ export const countryList = [
     code_currency: "FJD",
     currency: "Fiji Dollar",
     flag_png: "fj.png",
-    flag_svg: "fj.svg"
+    flag_svg: "fj.svg",
   },
   {
     name: "Falkland Islands (the) [Malvinas]",
@@ -972,7 +972,7 @@ export const countryList = [
     code_currency: "FKP",
     currency: "Falkland Islands Pound",
     flag_png: "fk.png",
-    flag_svg: "fk.svg"
+    flag_svg: "fk.svg",
   },
   {
     name: "France",
@@ -985,7 +985,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "fr.png",
-    flag_svg: "fr.svg"
+    flag_svg: "fr.svg",
   },
   {
     name: "Faroe Islands (the)",
@@ -998,7 +998,7 @@ export const countryList = [
     code_currency: "DKK",
     currency: "Danish Krone",
     flag_png: "fo.png",
-    flag_svg: "fo.svg"
+    flag_svg: "fo.svg",
   },
   {
     name: "Micronesia (Federated States of)",
@@ -1011,7 +1011,7 @@ export const countryList = [
     code_currency: "USD",
     currency: "US Dollar",
     flag_png: "fm.png",
-    flag_svg: "fm.svg"
+    flag_svg: "fm.svg",
   },
   {
     name: "Gabon",
@@ -1024,7 +1024,7 @@ export const countryList = [
     code_currency: "XAF",
     currency: "CFA Franc BEAC",
     flag_png: "ga.png",
-    flag_svg: "ga.svg"
+    flag_svg: "ga.svg",
   },
   {
     name: "United Kingdom of Great Britain and Northern Ireland (the)",
@@ -1037,7 +1037,7 @@ export const countryList = [
     code_currency: "GBP",
     currency: "Pound Sterling",
     flag_png: "gb.png",
-    flag_svg: "gb.svg"
+    flag_svg: "gb.svg",
   },
   {
     name: "Georgia",
@@ -1050,7 +1050,7 @@ export const countryList = [
     code_currency: "GEL",
     currency: "Lari",
     flag_png: "ge.png",
-    flag_svg: "ge.svg"
+    flag_svg: "ge.svg",
   },
   {
     name: "Guernsey",
@@ -1063,7 +1063,7 @@ export const countryList = [
     code_currency: "GBP",
     currency: "Pound Sterling",
     flag_png: "gg.png",
-    flag_svg: "gg.svg"
+    flag_svg: "gg.svg",
   },
   {
     name: "Ghana",
@@ -1076,7 +1076,7 @@ export const countryList = [
     code_currency: "GHS",
     currency: "Ghana Cedi",
     flag_png: "gh.png",
-    flag_svg: "gh.svg"
+    flag_svg: "gh.svg",
   },
   {
     name: "Gibraltar",
@@ -1089,7 +1089,7 @@ export const countryList = [
     code_currency: "GIP",
     currency: "Gibraltar Pound",
     flag_png: "gi.png",
-    flag_svg: "gi.svg"
+    flag_svg: "gi.svg",
   },
   {
     name: "Guinea",
@@ -1102,7 +1102,7 @@ export const countryList = [
     code_currency: "GNF",
     currency: "Guinean Franc",
     flag_png: "gn.png",
-    flag_svg: "gn.svg"
+    flag_svg: "gn.svg",
   },
   {
     name: "Guadeloupe",
@@ -1115,7 +1115,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "gp.png",
-    flag_svg: "gp.svg"
+    flag_svg: "gp.svg",
   },
   {
     name: "Gambia (the)",
@@ -1128,7 +1128,7 @@ export const countryList = [
     code_currency: "GMD",
     currency: "Dalasi",
     flag_png: "gm.png",
-    flag_svg: "gm.svg"
+    flag_svg: "gm.svg",
   },
   {
     name: "Guinea-Bissau",
@@ -1141,7 +1141,7 @@ export const countryList = [
     code_currency: "XOF",
     currency: "CFA Franc BCEAO",
     flag_png: "gw.png",
-    flag_svg: "gw.svg"
+    flag_svg: "gw.svg",
   },
   {
     name: "Equatorial Guinea",
@@ -1154,7 +1154,7 @@ export const countryList = [
     code_currency: "XAF",
     currency: "CFA Franc BEAC",
     flag_png: "gq.png",
-    flag_svg: "gq.svg"
+    flag_svg: "gq.svg",
   },
   {
     name: "Greece",
@@ -1167,7 +1167,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "gr.png",
-    flag_svg: "gr.svg"
+    flag_svg: "gr.svg",
   },
   {
     name: "Grenada",
@@ -1180,7 +1180,7 @@ export const countryList = [
     code_currency: "XCD",
     currency: "East Caribbean Dollar",
     flag_png: "gd.png",
-    flag_svg: "gd.svg"
+    flag_svg: "gd.svg",
   },
   {
     name: "Greenland",
@@ -1193,7 +1193,7 @@ export const countryList = [
     code_currency: "DKK",
     currency: "Danish Krone",
     flag_png: "gl.png",
-    flag_svg: "gl.svg"
+    flag_svg: "gl.svg",
   },
   {
     name: "Guatemala",
@@ -1206,7 +1206,7 @@ export const countryList = [
     code_currency: "GTQ",
     currency: "Quetzal",
     flag_png: "gt.png",
-    flag_svg: "gt.svg"
+    flag_svg: "gt.svg",
   },
   {
     name: "French Guiana",
@@ -1219,7 +1219,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "gf.png",
-    flag_svg: "gf.svg"
+    flag_svg: "gf.svg",
   },
   {
     name: "Guam",
@@ -1232,7 +1232,7 @@ export const countryList = [
     code_currency: "USD",
     currency: "US Dollar",
     flag_png: "gu.png",
-    flag_svg: "gu.svg"
+    flag_svg: "gu.svg",
   },
   {
     name: "Guyana",
@@ -1245,7 +1245,7 @@ export const countryList = [
     code_currency: "GYD",
     currency: "Guyana Dollar",
     flag_png: "gy.png",
-    flag_svg: "gy.svg"
+    flag_svg: "gy.svg",
   },
   {
     name: "Hong Kong",
@@ -1258,7 +1258,7 @@ export const countryList = [
     code_currency: "HKD",
     currency: "Hong Kong Dollar",
     flag_png: "hk.png",
-    flag_svg: "hk.svg"
+    flag_svg: "hk.svg",
   },
   {
     name: "Heard Island and McDonald Islands",
@@ -1271,7 +1271,7 @@ export const countryList = [
     code_currency: "AUD",
     currency: "Australian Dollar",
     flag_png: "hm.png",
-    flag_svg: "hm.svg"
+    flag_svg: "hm.svg",
   },
   {
     name: "Honduras",
@@ -1284,7 +1284,7 @@ export const countryList = [
     code_currency: "HNL",
     currency: "Lempira",
     flag_png: "hn.png",
-    flag_svg: "hn.svg"
+    flag_svg: "hn.svg",
   },
   {
     name: "Croatia",
@@ -1297,7 +1297,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "hr.png",
-    flag_svg: "hr.svg"
+    flag_svg: "hr.svg",
   },
   {
     name: "Haiti",
@@ -1310,7 +1310,7 @@ export const countryList = [
     code_currency: "HTG",
     currency: "Gourde",
     flag_png: "ht.png",
-    flag_svg: "ht.svg"
+    flag_svg: "ht.svg",
   },
   {
     name: "Hungary",
@@ -1323,7 +1323,7 @@ export const countryList = [
     code_currency: "HUF",
     currency: "Forint",
     flag_png: "hu.png",
-    flag_svg: "hu.svg"
+    flag_svg: "hu.svg",
   },
   {
     name: "Indonesia",
@@ -1336,7 +1336,7 @@ export const countryList = [
     code_currency: "IDR",
     currency: "Rupiah",
     flag_png: "id.png",
-    flag_svg: "id.svg"
+    flag_svg: "id.svg",
   },
   {
     name: "Isle of Man",
@@ -1349,7 +1349,7 @@ export const countryList = [
     code_currency: "GBP",
     currency: "Pound Sterling",
     flag_png: "im.png",
-    flag_svg: "im.svg"
+    flag_svg: "im.svg",
   },
   {
     name: "India",
@@ -1362,7 +1362,7 @@ export const countryList = [
     code_currency: "INR",
     currency: "Indian Rupee",
     flag_png: "in.png",
-    flag_svg: "in.svg"
+    flag_svg: "in.svg",
   },
   {
     name: "British Indian Ocean Territory (the)",
@@ -1375,7 +1375,7 @@ export const countryList = [
     code_currency: "USD",
     currency: "US Dollar",
     flag_png: "io.png",
-    flag_svg: "io.svg"
+    flag_svg: "io.svg",
   },
   {
     name: "Ireland",
@@ -1388,7 +1388,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "ie.png",
-    flag_svg: "ie.svg"
+    flag_svg: "ie.svg",
   },
   {
     name: "Iran (Islamic Republic of)",
@@ -1401,7 +1401,7 @@ export const countryList = [
     code_currency: "IRR",
     currency: "Iranian Rial",
     flag_png: "ir.png",
-    flag_svg: "ir.svg"
+    flag_svg: "ir.svg",
   },
   {
     name: "Iraq",
@@ -1414,7 +1414,7 @@ export const countryList = [
     code_currency: "IQD",
     currency: "Iraqi Dinar",
     flag_png: "iq.png",
-    flag_svg: "iq.svg"
+    flag_svg: "iq.svg",
   },
   {
     name: "Iceland",
@@ -1427,7 +1427,7 @@ export const countryList = [
     code_currency: "ISK",
     currency: "Iceland Krona",
     flag_png: "is.png",
-    flag_svg: "is.svg"
+    flag_svg: "is.svg",
   },
   {
     name: "Israel",
@@ -1440,7 +1440,7 @@ export const countryList = [
     code_currency: "ILS",
     currency: "New Israeli Sheqel",
     flag_png: "il.png",
-    flag_svg: "il.svg"
+    flag_svg: "il.svg",
   },
   {
     name: "Italy",
@@ -1453,7 +1453,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "it.png",
-    flag_svg: "it.svg"
+    flag_svg: "it.svg",
   },
   {
     name: "Jamaica",
@@ -1466,7 +1466,7 @@ export const countryList = [
     code_currency: "JMD",
     currency: "Jamaican Dollar",
     flag_png: "jm.png",
-    flag_svg: "jm.svg"
+    flag_svg: "jm.svg",
   },
   {
     name: "Jersey",
@@ -1479,7 +1479,7 @@ export const countryList = [
     code_currency: "GBP",
     currency: "Pound Sterling",
     flag_png: "je.png",
-    flag_svg: "je.svg"
+    flag_svg: "je.svg",
   },
   {
     name: "Jordan",
@@ -1492,7 +1492,7 @@ export const countryList = [
     code_currency: "JOD",
     currency: "Jordanian Dinar",
     flag_png: "jo.png",
-    flag_svg: "jo.svg"
+    flag_svg: "jo.svg",
   },
   {
     name: "Japan",
@@ -1505,7 +1505,7 @@ export const countryList = [
     code_currency: "JPY",
     currency: "Yen",
     flag_png: "jp.png",
-    flag_svg: "jp.svg"
+    flag_svg: "jp.svg",
   },
   {
     name: "Kazakhstan",
@@ -1518,7 +1518,7 @@ export const countryList = [
     code_currency: "KZT",
     currency: "Tenge",
     flag_png: "kz.png",
-    flag_svg: "kz.svg"
+    flag_svg: "kz.svg",
   },
   {
     name: "Kenya",
@@ -1531,7 +1531,7 @@ export const countryList = [
     code_currency: "KES",
     currency: "Kenyan Shilling",
     flag_png: "ke.png",
-    flag_svg: "ke.svg"
+    flag_svg: "ke.svg",
   },
   {
     name: "Kyrgyzstan",
@@ -1544,7 +1544,7 @@ export const countryList = [
     code_currency: "KGS",
     currency: "Som",
     flag_png: "kg.png",
-    flag_svg: "kg.svg"
+    flag_svg: "kg.svg",
   },
   {
     name: "Cambodia",
@@ -1557,7 +1557,7 @@ export const countryList = [
     code_currency: "KHR",
     currency: "Riel",
     flag_png: "kh.png",
-    flag_svg: "kh.svg"
+    flag_svg: "kh.svg",
   },
   {
     name: "Kiribati",
@@ -1570,7 +1570,7 @@ export const countryList = [
     code_currency: "AUD",
     currency: "Australian Dollar",
     flag_png: "ki.png",
-    flag_svg: "ki.svg"
+    flag_svg: "ki.svg",
   },
   {
     name: "Saint Kitts and Nevis",
@@ -1583,7 +1583,7 @@ export const countryList = [
     code_currency: "XCD",
     currency: "East Caribbean Dollar",
     flag_png: "kn.png",
-    flag_svg: "kn.svg"
+    flag_svg: "kn.svg",
   },
   {
     name: "Korea (the Republic of)",
@@ -1596,7 +1596,7 @@ export const countryList = [
     code_currency: "KRW",
     currency: "Won",
     flag_png: "kr.png",
-    flag_svg: "kr.svg"
+    flag_svg: "kr.svg",
   },
   {
     name: "Kuwait",
@@ -1609,7 +1609,7 @@ export const countryList = [
     code_currency: "KWD",
     currency: "Kuwaiti Dinar",
     flag_png: "kw.png",
-    flag_svg: "kw.svg"
+    flag_svg: "kw.svg",
   },
   {
     name: "Lao People's Democratic Republic (the)",
@@ -1622,7 +1622,7 @@ export const countryList = [
     code_currency: "LAK",
     currency: "Lao Kip",
     flag_png: "la.png",
-    flag_svg: "la.svg"
+    flag_svg: "la.svg",
   },
   {
     name: "Lebanon",
@@ -1635,7 +1635,7 @@ export const countryList = [
     code_currency: "LBP",
     currency: "Lebanese Pound",
     flag_png: "lb.png",
-    flag_svg: "lb.svg"
+    flag_svg: "lb.svg",
   },
   {
     name: "Liberia",
@@ -1648,7 +1648,7 @@ export const countryList = [
     code_currency: "LRD",
     currency: "Liberian Dollar",
     flag_png: "lr.png",
-    flag_svg: "lr.svg"
+    flag_svg: "lr.svg",
   },
   {
     name: "Libya",
@@ -1661,7 +1661,7 @@ export const countryList = [
     code_currency: "LYD",
     currency: "Libyan Dinar",
     flag_png: "ly.png",
-    flag_svg: "ly.svg"
+    flag_svg: "ly.svg",
   },
   {
     name: "Saint Lucia",
@@ -1674,7 +1674,7 @@ export const countryList = [
     code_currency: "XCD",
     currency: "East Caribbean Dollar",
     flag_png: "lc.png",
-    flag_svg: "lc.svg"
+    flag_svg: "lc.svg",
   },
   {
     name: "Liechtenstein",
@@ -1687,7 +1687,7 @@ export const countryList = [
     code_currency: "CHF",
     currency: "Swiss Franc",
     flag_png: "li.png",
-    flag_svg: "li.svg"
+    flag_svg: "li.svg",
   },
   {
     name: "Sri Lanka",
@@ -1700,7 +1700,7 @@ export const countryList = [
     code_currency: "LKR",
     currency: "Sri Lanka Rupee",
     flag_png: "lk.png",
-    flag_svg: "lk.svg"
+    flag_svg: "lk.svg",
   },
   {
     name: "Lesotho",
@@ -1713,7 +1713,7 @@ export const countryList = [
     code_currency: "LSL",
     currency: "Loti",
     flag_png: "ls.png",
-    flag_svg: "ls.svg"
+    flag_svg: "ls.svg",
   },
   {
     name: "Lithuania",
@@ -1726,7 +1726,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "lt.png",
-    flag_svg: "lt.svg"
+    flag_svg: "lt.svg",
   },
   {
     name: "Luxembourg",
@@ -1739,7 +1739,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "lu.png",
-    flag_svg: "lu.svg"
+    flag_svg: "lu.svg",
   },
   {
     name: "Latvia",
@@ -1752,7 +1752,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "lv.png",
-    flag_svg: "lv.svg"
+    flag_svg: "lv.svg",
   },
   {
     name: "Macao",
@@ -1765,7 +1765,7 @@ export const countryList = [
     code_currency: "MOP",
     currency: "Pataca",
     flag_png: "mo.png",
-    flag_svg: "mo.svg"
+    flag_svg: "mo.svg",
   },
   {
     name: "Saint Martin (French part)",
@@ -1778,7 +1778,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "mf.png",
-    flag_svg: "mf.svg"
+    flag_svg: "mf.svg",
   },
   {
     name: "Morocco",
@@ -1791,7 +1791,7 @@ export const countryList = [
     code_currency: "MAD",
     currency: "Moroccan Dirham",
     flag_png: "ma.png",
-    flag_svg: "ma.svg"
+    flag_svg: "ma.svg",
   },
   {
     name: "Monaco",
@@ -1804,7 +1804,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "mc.png",
-    flag_svg: "mc.svg"
+    flag_svg: "mc.svg",
   },
   {
     name: "Moldova (the Republic of)",
@@ -1817,7 +1817,7 @@ export const countryList = [
     code_currency: "MDL",
     currency: "Moldovan Leu",
     flag_png: "md.png",
-    flag_svg: "md.svg"
+    flag_svg: "md.svg",
   },
   {
     name: "Madagascar",
@@ -1830,7 +1830,7 @@ export const countryList = [
     code_currency: "MGA",
     currency: "Malagasy Ariary",
     flag_png: "mg.png",
-    flag_svg: "mg.svg"
+    flag_svg: "mg.svg",
   },
   {
     name: "Maldives",
@@ -1843,7 +1843,7 @@ export const countryList = [
     code_currency: "MVR",
     currency: "Rufiyaa",
     flag_png: "mv.png",
-    flag_svg: "mv.svg"
+    flag_svg: "mv.svg",
   },
   {
     name: "Mexico",
@@ -1856,7 +1856,7 @@ export const countryList = [
     code_currency: "MXN",
     currency: "Mexican Peso",
     flag_png: "mx.png",
-    flag_svg: "mx.svg"
+    flag_svg: "mx.svg",
   },
   {
     name: "Marshall Islands (the)",
@@ -1869,7 +1869,7 @@ export const countryList = [
     code_currency: "USD",
     currency: "US Dollar",
     flag_png: "mh.png",
-    flag_svg: "mh.svg"
+    flag_svg: "mh.svg",
   },
   {
     name: "North Macedonia",
@@ -1882,7 +1882,7 @@ export const countryList = [
     code_currency: "MKD",
     currency: "Denar",
     flag_png: "mk.png",
-    flag_svg: "mk.svg"
+    flag_svg: "mk.svg",
   },
   {
     name: "Mali",
@@ -1895,7 +1895,7 @@ export const countryList = [
     code_currency: "XOF",
     currency: "CFA Franc BCEAO",
     flag_png: "ml.png",
-    flag_svg: "ml.svg"
+    flag_svg: "ml.svg",
   },
   {
     name: "Malta",
@@ -1908,7 +1908,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "mt.png",
-    flag_svg: "mt.svg"
+    flag_svg: "mt.svg",
   },
   {
     name: "Myanmar",
@@ -1921,7 +1921,7 @@ export const countryList = [
     code_currency: "MMK",
     currency: "Kyat",
     flag_png: "mm.png",
-    flag_svg: "mm.svg"
+    flag_svg: "mm.svg",
   },
   {
     name: "Montenegro",
@@ -1934,7 +1934,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "me.png",
-    flag_svg: "me.svg"
+    flag_svg: "me.svg",
   },
   {
     name: "Mongolia",
@@ -1947,7 +1947,7 @@ export const countryList = [
     code_currency: "MNT",
     currency: "Tugrik",
     flag_png: "mn.png",
-    flag_svg: "mn.svg"
+    flag_svg: "mn.svg",
   },
   {
     name: "Northern Mariana Islands (the)",
@@ -1960,7 +1960,7 @@ export const countryList = [
     code_currency: "USD",
     currency: "US Dollar",
     flag_png: "mp.png",
-    flag_svg: "mp.svg"
+    flag_svg: "mp.svg",
   },
   {
     name: "Mozambique",
@@ -1973,7 +1973,7 @@ export const countryList = [
     code_currency: "MZN",
     currency: "Mozambique Metical",
     flag_png: "mz.png",
-    flag_svg: "mz.svg"
+    flag_svg: "mz.svg",
   },
   {
     name: "Mauritania",
@@ -1986,7 +1986,7 @@ export const countryList = [
     code_currency: "MRU",
     currency: "Ouguiya",
     flag_png: "mr.png",
-    flag_svg: "mr.svg"
+    flag_svg: "mr.svg",
   },
   {
     name: "Montserrat",
@@ -1999,7 +1999,7 @@ export const countryList = [
     code_currency: "XCD",
     currency: "East Caribbean Dollar",
     flag_png: "ms.png",
-    flag_svg: "ms.svg"
+    flag_svg: "ms.svg",
   },
   {
     name: "Martinique",
@@ -2012,7 +2012,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "mq.png",
-    flag_svg: "mq.svg"
+    flag_svg: "mq.svg",
   },
   {
     name: "Mauritius",
@@ -2025,7 +2025,7 @@ export const countryList = [
     code_currency: "MUR",
     currency: "Mauritius Rupee",
     flag_png: "mu.png",
-    flag_svg: "mu.svg"
+    flag_svg: "mu.svg",
   },
   {
     name: "Malawi",
@@ -2038,7 +2038,7 @@ export const countryList = [
     code_currency: "MWK",
     currency: "Malawi Kwacha",
     flag_png: "mw.png",
-    flag_svg: "mw.svg"
+    flag_svg: "mw.svg",
   },
   {
     name: "Malaysia",
@@ -2051,7 +2051,7 @@ export const countryList = [
     code_currency: "MYR",
     currency: "Malaysian Ringgit",
     flag_png: "my.png",
-    flag_svg: "my.svg"
+    flag_svg: "my.svg",
   },
   {
     name: "Mayotte",
@@ -2064,7 +2064,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "yt.png",
-    flag_svg: "yt.svg"
+    flag_svg: "yt.svg",
   },
   {
     name: "Namibia",
@@ -2077,7 +2077,7 @@ export const countryList = [
     code_currency: "NAD",
     currency: "Namibia Dollar",
     flag_png: "na.png",
-    flag_svg: "na.svg"
+    flag_svg: "na.svg",
   },
   {
     name: "New Caledonia",
@@ -2090,7 +2090,7 @@ export const countryList = [
     code_currency: "XPF",
     currency: "CFP Franc",
     flag_png: "nc.png",
-    flag_svg: "nc.svg"
+    flag_svg: "nc.svg",
   },
   {
     name: "Niger (the)",
@@ -2103,7 +2103,7 @@ export const countryList = [
     code_currency: "XOF",
     currency: "CFA Franc BCEAO",
     flag_png: "ne.png",
-    flag_svg: "ne.svg"
+    flag_svg: "ne.svg",
   },
   {
     name: "Norfolk Island",
@@ -2116,7 +2116,7 @@ export const countryList = [
     code_currency: "AUD",
     currency: "Australian Dollar",
     flag_png: "nf.png",
-    flag_svg: "nf.svg"
+    flag_svg: "nf.svg",
   },
   {
     name: "Nigeria",
@@ -2129,7 +2129,7 @@ export const countryList = [
     code_currency: "NGN",
     currency: "Naira",
     flag_png: "ng.png",
-    flag_svg: "ng.svg"
+    flag_svg: "ng.svg",
   },
   {
     name: "Nicaragua",
@@ -2142,7 +2142,7 @@ export const countryList = [
     code_currency: "NIO",
     currency: "Cordoba Oro",
     flag_png: "ni.png",
-    flag_svg: "ni.svg"
+    flag_svg: "ni.svg",
   },
   {
     name: "Niue",
@@ -2155,7 +2155,7 @@ export const countryList = [
     code_currency: "NZD",
     currency: "New Zealand Dollar",
     flag_png: "nu.png",
-    flag_svg: "nu.svg"
+    flag_svg: "nu.svg",
   },
   {
     name: "Netherlands (the)",
@@ -2168,7 +2168,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "nl.png",
-    flag_svg: "nl.svg"
+    flag_svg: "nl.svg",
   },
   {
     name: "Norway",
@@ -2181,7 +2181,7 @@ export const countryList = [
     code_currency: "NOK",
     currency: "Norwegian Krone",
     flag_png: "no.png",
-    flag_svg: "no.svg"
+    flag_svg: "no.svg",
   },
   {
     name: "Nepal",
@@ -2194,7 +2194,7 @@ export const countryList = [
     code_currency: "NPR",
     currency: "Nepalese Rupee",
     flag_png: "np.png",
-    flag_svg: "np.svg"
+    flag_svg: "np.svg",
   },
   {
     name: "Nauru",
@@ -2207,7 +2207,7 @@ export const countryList = [
     code_currency: "AUD",
     currency: "Australian Dollar",
     flag_png: "nr.png",
-    flag_svg: "nr.svg"
+    flag_svg: "nr.svg",
   },
   {
     name: "New Zealand",
@@ -2220,7 +2220,7 @@ export const countryList = [
     code_currency: "NZD",
     currency: "New Zealand Dollar",
     flag_png: "nz.png",
-    flag_svg: "nz.svg"
+    flag_svg: "nz.svg",
   },
   {
     name: "Oman",
@@ -2233,7 +2233,7 @@ export const countryList = [
     code_currency: "OMR",
     currency: "Rial Omani",
     flag_png: "om.png",
-    flag_svg: "om.svg"
+    flag_svg: "om.svg",
   },
   {
     name: "Pakistan",
@@ -2246,7 +2246,7 @@ export const countryList = [
     code_currency: "PKR",
     currency: "Pakistan Rupee",
     flag_png: "pk.png",
-    flag_svg: "pk.svg"
+    flag_svg: "pk.svg",
   },
   {
     name: "Panama",
@@ -2259,7 +2259,7 @@ export const countryList = [
     code_currency: "PAB",
     currency: "Balboa",
     flag_png: "pa.png",
-    flag_svg: "pa.svg"
+    flag_svg: "pa.svg",
   },
   {
     name: "Pitcairn",
@@ -2272,7 +2272,7 @@ export const countryList = [
     code_currency: "NZD",
     currency: "New Zealand Dollar",
     flag_png: "pn.png",
-    flag_svg: "pn.svg"
+    flag_svg: "pn.svg",
   },
   {
     name: "Peru",
@@ -2285,7 +2285,7 @@ export const countryList = [
     code_currency: "PEN",
     currency: "Sol",
     flag_png: "pe.png",
-    flag_svg: "pe.svg"
+    flag_svg: "pe.svg",
   },
   {
     name: "Philippines (the)",
@@ -2298,7 +2298,7 @@ export const countryList = [
     code_currency: "PHP",
     currency: "Philippine Peso",
     flag_png: "ph.png",
-    flag_svg: "ph.svg"
+    flag_svg: "ph.svg",
   },
   {
     name: "Palau",
@@ -2311,7 +2311,7 @@ export const countryList = [
     code_currency: "USD",
     currency: "US Dollar",
     flag_png: "pw.png",
-    flag_svg: "pw.svg"
+    flag_svg: "pw.svg",
   },
   {
     name: "Papua New Guinea",
@@ -2324,7 +2324,7 @@ export const countryList = [
     code_currency: "PGK",
     currency: "Kina",
     flag_png: "pg.png",
-    flag_svg: "pg.svg"
+    flag_svg: "pg.svg",
   },
   {
     name: "Poland",
@@ -2337,7 +2337,7 @@ export const countryList = [
     code_currency: "PLN",
     currency: "Zloty",
     flag_png: "pl.png",
-    flag_svg: "pl.svg"
+    flag_svg: "pl.svg",
   },
   {
     name: "Puerto Rico",
@@ -2350,7 +2350,7 @@ export const countryList = [
     code_currency: "USD",
     currency: "US Dollar",
     flag_png: "pr.png",
-    flag_svg: "pr.svg"
+    flag_svg: "pr.svg",
   },
   {
     name: "Korea (the Democratic People's Republic of)",
@@ -2363,7 +2363,7 @@ export const countryList = [
     code_currency: "KPW",
     currency: "North Korean Won",
     flag_png: "kp.png",
-    flag_svg: "kp.svg"
+    flag_svg: "kp.svg",
   },
   {
     name: "Portugal",
@@ -2376,7 +2376,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "pt.png",
-    flag_svg: "pt.svg"
+    flag_svg: "pt.svg",
   },
   {
     name: "Paraguay",
@@ -2389,7 +2389,7 @@ export const countryList = [
     code_currency: "PYG",
     currency: "Guarani",
     flag_png: "py.png",
-    flag_svg: "py.svg"
+    flag_svg: "py.svg",
   },
   {
     name: "Palestine, State of",
@@ -2402,7 +2402,7 @@ export const countryList = [
     code_currency: "",
     currency: "No universal currency",
     flag_png: "ps.png",
-    flag_svg: "ps.svg"
+    flag_svg: "ps.svg",
   },
   {
     name: "French Polynesia",
@@ -2415,7 +2415,7 @@ export const countryList = [
     code_currency: "XPF",
     currency: "CFP Franc",
     flag_png: "pf.png",
-    flag_svg: "pf.svg"
+    flag_svg: "pf.svg",
   },
   {
     name: "Qatar",
@@ -2428,7 +2428,7 @@ export const countryList = [
     code_currency: "QAR",
     currency: "Qatari Rial",
     flag_png: "qa.png",
-    flag_svg: "qa.svg"
+    flag_svg: "qa.svg",
   },
   {
     name: "Réunion",
@@ -2441,7 +2441,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "re.png",
-    flag_svg: "re.svg"
+    flag_svg: "re.svg",
   },
   {
     name: "Romania",
@@ -2454,7 +2454,7 @@ export const countryList = [
     code_currency: "RON",
     currency: "Romanian Leu",
     flag_png: "ro.png",
-    flag_svg: "ro.svg"
+    flag_svg: "ro.svg",
   },
   {
     name: "Russian Federation (the)",
@@ -2467,7 +2467,7 @@ export const countryList = [
     code_currency: "RUB",
     currency: "Russian Ruble",
     flag_png: "ru.png",
-    flag_svg: "ru.svg"
+    flag_svg: "ru.svg",
   },
   {
     name: "Rwanda",
@@ -2480,7 +2480,7 @@ export const countryList = [
     code_currency: "RWF",
     currency: "Rwanda Franc",
     flag_png: "rw.png",
-    flag_svg: "rw.svg"
+    flag_svg: "rw.svg",
   },
   {
     name: "Saudi Arabia",
@@ -2493,7 +2493,7 @@ export const countryList = [
     code_currency: "SAR",
     currency: "Saudi Riyal",
     flag_png: "sa.png",
-    flag_svg: "sa.svg"
+    flag_svg: "sa.svg",
   },
   {
     name: "Sudan (the)",
@@ -2506,7 +2506,7 @@ export const countryList = [
     code_currency: "SDG",
     currency: "Sudanese Pound",
     flag_png: "sd.png",
-    flag_svg: "sd.svg"
+    flag_svg: "sd.svg",
   },
   {
     name: "Senegal",
@@ -2519,7 +2519,7 @@ export const countryList = [
     code_currency: "XOF",
     currency: "CFA Franc BCEAO",
     flag_png: "sn.png",
-    flag_svg: "sn.svg"
+    flag_svg: "sn.svg",
   },
   {
     name: "Singapore",
@@ -2532,7 +2532,7 @@ export const countryList = [
     code_currency: "SGD",
     currency: "Singapore Dollar",
     flag_png: "sg.png",
-    flag_svg: "sg.svg"
+    flag_svg: "sg.svg",
   },
   {
     name: "South Georgia and the South Sandwich Islands",
@@ -2545,7 +2545,7 @@ export const countryList = [
     code_currency: "",
     currency: "No universal currency",
     flag_png: "gs.png",
-    flag_svg: "gs.svg"
+    flag_svg: "gs.svg",
   },
   {
     name: "Saint Helena, Ascension and Tristan da Cunha",
@@ -2558,7 +2558,7 @@ export const countryList = [
     code_currency: "SHP",
     currency: "Saint Helena Pound",
     flag_png: "sh.png",
-    flag_svg: "sh.svg"
+    flag_svg: "sh.svg",
   },
   {
     name: "Svalbard and Jan Mayen",
@@ -2571,7 +2571,7 @@ export const countryList = [
     code_currency: "NOK",
     currency: "Norwegian Krone",
     flag_png: "sj.png",
-    flag_svg: "sj.svg"
+    flag_svg: "sj.svg",
   },
   {
     name: "Solomon Islands",
@@ -2584,7 +2584,7 @@ export const countryList = [
     code_currency: "SBD",
     currency: "Solomon Islands Dollar",
     flag_png: "sb.png",
-    flag_svg: "sb.svg"
+    flag_svg: "sb.svg",
   },
   {
     name: "Sierra Leone",
@@ -2597,7 +2597,7 @@ export const countryList = [
     code_currency: "SLL",
     currency: "Leone",
     flag_png: "sl.png",
-    flag_svg: "sl.svg"
+    flag_svg: "sl.svg",
   },
   {
     name: "El Salvador",
@@ -2610,7 +2610,7 @@ export const countryList = [
     code_currency: "SVC",
     currency: "El Salvador Colon",
     flag_png: "sv.png",
-    flag_svg: "sv.svg"
+    flag_svg: "sv.svg",
   },
   {
     name: "San Marino",
@@ -2623,7 +2623,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "sm.png",
-    flag_svg: "sm.svg"
+    flag_svg: "sm.svg",
   },
   {
     name: "Somalia",
@@ -2636,7 +2636,7 @@ export const countryList = [
     code_currency: "SOS",
     currency: "Somali Shilling",
     flag_png: "so.png",
-    flag_svg: "so.svg"
+    flag_svg: "so.svg",
   },
   {
     name: "Saint Pierre and Miquelon",
@@ -2649,7 +2649,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "pm.png",
-    flag_svg: "pm.svg"
+    flag_svg: "pm.svg",
   },
   {
     name: "Serbia",
@@ -2662,7 +2662,7 @@ export const countryList = [
     code_currency: "RSD",
     currency: "Serbian Dinar",
     flag_png: "rs.png",
-    flag_svg: "rs.svg"
+    flag_svg: "rs.svg",
   },
   {
     name: "South Sudan",
@@ -2675,7 +2675,7 @@ export const countryList = [
     code_currency: "SSP",
     currency: "South Sudanese Pound",
     flag_png: "ss.png",
-    flag_svg: "ss.svg"
+    flag_svg: "ss.svg",
   },
   {
     name: "Sao Tome and Principe",
@@ -2688,7 +2688,7 @@ export const countryList = [
     code_currency: "STN",
     currency: "Dobra",
     flag_png: "st.png",
-    flag_svg: "st.svg"
+    flag_svg: "st.svg",
   },
   {
     name: "Suriname",
@@ -2701,7 +2701,7 @@ export const countryList = [
     code_currency: "SRD",
     currency: "Surinam Dollar",
     flag_png: "sr.png",
-    flag_svg: "sr.svg"
+    flag_svg: "sr.svg",
   },
   {
     name: "Slovakia",
@@ -2714,7 +2714,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "sk.png",
-    flag_svg: "sk.svg"
+    flag_svg: "sk.svg",
   },
   {
     name: "Slovenia",
@@ -2727,7 +2727,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "si.png",
-    flag_svg: "si.svg"
+    flag_svg: "si.svg",
   },
   {
     name: "Sweden",
@@ -2740,7 +2740,7 @@ export const countryList = [
     code_currency: "SEK",
     currency: "Swedish Krona",
     flag_png: "se.png",
-    flag_svg: "se.svg"
+    flag_svg: "se.svg",
   },
   {
     name: "Eswatini",
@@ -2753,7 +2753,7 @@ export const countryList = [
     code_currency: "SZL",
     currency: "Lilangeni",
     flag_png: "sz.png",
-    flag_svg: "sz.svg"
+    flag_svg: "sz.svg",
   },
   {
     name: "Sint Maarten (Dutch part)",
@@ -2766,7 +2766,7 @@ export const countryList = [
     code_currency: "ANG",
     currency: "Netherlands Antillean Guilder",
     flag_png: "sx.png",
-    flag_svg: "sx.svg"
+    flag_svg: "sx.svg",
   },
   {
     name: "Seychelles",
@@ -2779,7 +2779,7 @@ export const countryList = [
     code_currency: "SCR",
     currency: "Seychelles Rupee",
     flag_png: "sc.png",
-    flag_svg: "sc.svg"
+    flag_svg: "sc.svg",
   },
   {
     name: "Syrian Arab Republic (the)",
@@ -2792,7 +2792,7 @@ export const countryList = [
     code_currency: "SYP",
     currency: "Syrian Pound",
     flag_png: "sy.png",
-    flag_svg: "sy.svg"
+    flag_svg: "sy.svg",
   },
   {
     name: "Turks and Caicos Islands (the)",
@@ -2805,7 +2805,7 @@ export const countryList = [
     code_currency: "USD",
     currency: "US Dollar",
     flag_png: "tc.png",
-    flag_svg: "tc.svg"
+    flag_svg: "tc.svg",
   },
   {
     name: "Chad",
@@ -2818,7 +2818,7 @@ export const countryList = [
     code_currency: "XAF",
     currency: "CFA Franc BEAC",
     flag_png: "td.png",
-    flag_svg: "td.svg"
+    flag_svg: "td.svg",
   },
   {
     name: "Togo",
@@ -2831,7 +2831,7 @@ export const countryList = [
     code_currency: "XOF",
     currency: "CFA Franc BCEAO",
     flag_png: "tg.png",
-    flag_svg: "tg.svg"
+    flag_svg: "tg.svg",
   },
   {
     name: "Thailand",
@@ -2844,7 +2844,7 @@ export const countryList = [
     code_currency: "THB",
     currency: "Baht",
     flag_png: "th.png",
-    flag_svg: "th.svg"
+    flag_svg: "th.svg",
   },
   {
     name: "Tajikistan",
@@ -2857,7 +2857,7 @@ export const countryList = [
     code_currency: "TJS",
     currency: "Somoni",
     flag_png: "tj.png",
-    flag_svg: "tj.svg"
+    flag_svg: "tj.svg",
   },
   {
     name: "Tokelau",
@@ -2870,7 +2870,7 @@ export const countryList = [
     code_currency: "NZD",
     currency: "New Zealand Dollar",
     flag_png: "tk.png",
-    flag_svg: "tk.svg"
+    flag_svg: "tk.svg",
   },
   {
     name: "Turkmenistan",
@@ -2883,7 +2883,7 @@ export const countryList = [
     code_currency: "TMT",
     currency: "Turkmenistan New Manat",
     flag_png: "tm.png",
-    flag_svg: "tm.svg"
+    flag_svg: "tm.svg",
   },
   {
     name: "Timor-Leste",
@@ -2896,7 +2896,7 @@ export const countryList = [
     code_currency: "USD",
     currency: "US Dollar",
     flag_png: "tl.png",
-    flag_svg: "tl.svg"
+    flag_svg: "tl.svg",
   },
   {
     name: "Tonga",
@@ -2909,7 +2909,7 @@ export const countryList = [
     code_currency: "TOP",
     currency: "Pa’anga",
     flag_png: "to.png",
-    flag_svg: "to.svg"
+    flag_svg: "to.svg",
   },
   {
     name: "Trinidad and Tobago",
@@ -2922,7 +2922,7 @@ export const countryList = [
     code_currency: "TTD",
     currency: "Trinidad and Tobago Dollar",
     flag_png: "tt.png",
-    flag_svg: "tt.svg"
+    flag_svg: "tt.svg",
   },
   {
     name: "Tunisia",
@@ -2935,7 +2935,7 @@ export const countryList = [
     code_currency: "TND",
     currency: "Tunisian Dinar",
     flag_png: "tn.png",
-    flag_svg: "tn.svg"
+    flag_svg: "tn.svg",
   },
   {
     name: "Türkiye",
@@ -2948,7 +2948,7 @@ export const countryList = [
     code_currency: "TRY",
     currency: "Turkish Lira",
     flag_png: "tr.png",
-    flag_svg: "tr.svg"
+    flag_svg: "tr.svg",
   },
   {
     name: "Tuvalu",
@@ -2961,7 +2961,7 @@ export const countryList = [
     code_currency: "AUD",
     currency: "Australian Dollar",
     flag_png: "tv.png",
-    flag_svg: "tv.svg"
+    flag_svg: "tv.svg",
   },
   {
     name: "Taiwan (Province of China)",
@@ -2974,7 +2974,7 @@ export const countryList = [
     code_currency: "TWD",
     currency: "New Taiwan Dollar",
     flag_png: "tw.png",
-    flag_svg: "tw.svg"
+    flag_svg: "tw.svg",
   },
   {
     name: "Tanzania, the United Republic of",
@@ -2987,7 +2987,7 @@ export const countryList = [
     code_currency: "TZS",
     currency: "Tanzanian Shilling",
     flag_png: "tz.png",
-    flag_svg: "tz.svg"
+    flag_svg: "tz.svg",
   },
   {
     name: "Uganda",
@@ -3000,7 +3000,7 @@ export const countryList = [
     code_currency: "UGX",
     currency: "Uganda Shilling",
     flag_png: "ug.png",
-    flag_svg: "ug.svg"
+    flag_svg: "ug.svg",
   },
   {
     name: "Ukraine",
@@ -3013,7 +3013,7 @@ export const countryList = [
     code_currency: "UAH",
     currency: "Hryvnia",
     flag_png: "ua.png",
-    flag_svg: "ua.svg"
+    flag_svg: "ua.svg",
   },
   {
     name: "United States Minor Outlying Islands (the)",
@@ -3026,7 +3026,7 @@ export const countryList = [
     code_currency: "USD",
     currency: "US Dollar",
     flag_png: "um.png",
-    flag_svg: "um.svg"
+    flag_svg: "um.svg",
   },
   {
     name: "Uruguay",
@@ -3039,7 +3039,7 @@ export const countryList = [
     code_currency: "UYU",
     currency: "Peso Uruguayo",
     flag_png: "uy.png",
-    flag_svg: "uy.svg"
+    flag_svg: "uy.svg",
   },
   {
     name: "United States of America (the)",
@@ -3052,7 +3052,7 @@ export const countryList = [
     code_currency: "USD",
     currency: "US Dollar",
     flag_png: "us.png",
-    flag_svg: "us.svg"
+    flag_svg: "us.svg",
   },
   {
     name: "Uzbekistan",
@@ -3065,7 +3065,7 @@ export const countryList = [
     code_currency: "UZS",
     currency: "Uzbekistan Sum",
     flag_png: "uz.png",
-    flag_svg: "uz.svg"
+    flag_svg: "uz.svg",
   },
   {
     name: "Holy See (the)",
@@ -3078,7 +3078,7 @@ export const countryList = [
     code_currency: "EUR",
     currency: "Euro",
     flag_png: "va.png",
-    flag_svg: "va.svg"
+    flag_svg: "va.svg",
   },
   {
     name: "Saint Vincent and the Grenadines",
@@ -3091,7 +3091,7 @@ export const countryList = [
     code_currency: "XCD",
     currency: "East Caribbean Dollar",
     flag_png: "vc.png",
-    flag_svg: "vc.svg"
+    flag_svg: "vc.svg",
   },
   {
     name: "Venezuela (Bolivarian Republic of)",
@@ -3104,7 +3104,7 @@ export const countryList = [
     code_currency: "VES",
     currency: "Bolívar Soberano",
     flag_png: "ve.png",
-    flag_svg: "ve.svg"
+    flag_svg: "ve.svg",
   },
   {
     name: "Virgin Islands (British)",
@@ -3117,7 +3117,7 @@ export const countryList = [
     code_currency: "USD",
     currency: "US Dollar",
     flag_png: "vg.png",
-    flag_svg: "vg.svg"
+    flag_svg: "vg.svg",
   },
   {
     name: "Virgin Islands (U.S.)",
@@ -3130,7 +3130,7 @@ export const countryList = [
     code_currency: "USD",
     currency: "US Dollar",
     flag_png: "vi.png",
-    flag_svg: "vi.svg"
+    flag_svg: "vi.svg",
   },
   {
     name: "Viet Nam",
@@ -3143,7 +3143,7 @@ export const countryList = [
     code_currency: "VND",
     currency: "Dong",
     flag_png: "vn.png",
-    flag_svg: "vn.svg"
+    flag_svg: "vn.svg",
   },
   {
     name: "Vanuatu",
@@ -3156,7 +3156,7 @@ export const countryList = [
     code_currency: "VUV",
     currency: "Vatu",
     flag_png: "vu.png",
-    flag_svg: "vu.svg"
+    flag_svg: "vu.svg",
   },
   {
     name: "Wallis and Futuna",
@@ -3169,7 +3169,7 @@ export const countryList = [
     code_currency: "XPF",
     currency: "CFP Franc",
     flag_png: "wf.png",
-    flag_svg: "wf.svg"
+    flag_svg: "wf.svg",
   },
   {
     name: "Samoa",
@@ -3182,7 +3182,7 @@ export const countryList = [
     code_currency: "WST",
     currency: "Tala",
     flag_png: "ws.png",
-    flag_svg: "ws.svg"
+    flag_svg: "ws.svg",
   },
   {
     name: "Yemen",
@@ -3195,7 +3195,7 @@ export const countryList = [
     code_currency: "YER",
     currency: "Yemeni Rial",
     flag_png: "ye.png",
-    flag_svg: "ye.svg"
+    flag_svg: "ye.svg",
   },
   {
     name: "South Africa",
@@ -3208,7 +3208,7 @@ export const countryList = [
     code_currency: "ZAR",
     currency: "Rand",
     flag_png: "za.png",
-    flag_svg: "za.svg"
+    flag_svg: "za.svg",
   },
   {
     name: "Zambia",
@@ -3221,7 +3221,7 @@ export const countryList = [
     code_currency: "ZMW",
     currency: "Zambian Kwacha",
     flag_png: "zm.png",
-    flag_svg: "zm.svg"
+    flag_svg: "zm.svg",
   },
   {
     name: "Zimbabwe",
@@ -3234,6 +3234,6 @@ export const countryList = [
     code_currency: "ZWL",
     currency: "Zimbabwe Dollar",
     flag_png: "zw.png",
-    flag_svg: "zw.svg"
-  }
+    flag_svg: "zw.svg",
+  },
 ];

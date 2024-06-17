@@ -60,7 +60,7 @@ export function GlamList() {
 
 function GlamCard({ fundKey }: { fundKey: PublicKey }) {
   const { account } = useGlamProgramAccount({
-    fundKey
+    fundKey,
   });
 
   return account.isLoading ? (

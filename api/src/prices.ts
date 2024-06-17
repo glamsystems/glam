@@ -9,7 +9,7 @@ export const priceHistory = async (symbol) => {
       "Crypto.ETH/USD",
       "Crypto.BTC/USD",
       "Crypto.SOL/USD",
-      "Crypto.USDC/USD"
+      "Crypto.USDC/USD",
     ].includes(symbol)
   ) {
     console.error("Invalid symbol", symbol);
@@ -22,7 +22,7 @@ export const priceHistory = async (symbol) => {
     ["symbol", symbol],
     ["resolution", "1D"],
     ["from", tsStart],
-    ["to", tsEnd]
+    ["to", tsEnd],
   ];
   const baseUrl =
     "https://benchmarks.pyth.network/v1/shims/tradingview/history";
@@ -30,7 +30,7 @@ export const priceHistory = async (symbol) => {
   const urlWithQuery = `${baseUrl}?${queryString}`;
   const response = await fetch(urlWithQuery, {
     method: "GET",
-    headers: { Accept: "application/json" }
+    headers: { Accept: "application/json" },
   });
   if (response.status === 200) {
     // {"s":"ok","t":[...],"o":[...],"h":[...],"l":[...],"c":[...],"v":[...]}

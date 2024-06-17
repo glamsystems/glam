@@ -39,7 +39,7 @@ describe("glam_jupiter", () => {
         swapMode: "ExactIn",
         onlyDirectRoutes: false,
         asLegacyTransaction: false,
-        maxAccounts: 20
+        maxAccounts: 20,
       });
       console.log("swap txId", txId);
     } catch (e) {
@@ -81,13 +81,13 @@ describe("glam_jupiter", () => {
             inAmount: "50000000",
             outAmount: "41795874",
             feeAmount: "4180",
-            feeMint: "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So"
+            feeMint: "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So",
           },
-          percent: 100
-        }
+          percent: 100,
+        },
       ],
       contextSlot: 272229534,
-      timeTaken: 0.002053234
+      timeTaken: 0.002053234,
     };
 
     const swapInstructions = {
@@ -96,8 +96,8 @@ describe("glam_jupiter", () => {
         {
           programId: "ComputeBudget111111111111111111111111111111",
           accounts: [],
-          data: "AsBcFQA="
-        }
+          data: "AsBcFQA=",
+        },
       ],
       setupInstructions: [
         {
@@ -106,35 +106,35 @@ describe("glam_jupiter", () => {
             {
               pubkey: "FsbYwp2VmCdouBbJLKTGo5Gf8RsUUQWVZzA1gvRbsk89",
               isSigner: true,
-              isWritable: true
+              isWritable: true,
             },
             {
               pubkey: "Ghk24stAfSCWywoUygdzkhWxZkXZHTmjBWaprkrC3EDh",
               isSigner: false,
-              isWritable: true
+              isWritable: true,
             },
             {
               pubkey: "FsbYwp2VmCdouBbJLKTGo5Gf8RsUUQWVZzA1gvRbsk89",
               isSigner: false,
-              isWritable: false
+              isWritable: false,
             },
             {
               pubkey: "So11111111111111111111111111111111111111112",
               isSigner: false,
-              isWritable: false
+              isWritable: false,
             },
             {
               pubkey: "11111111111111111111111111111111",
               isSigner: false,
-              isWritable: false
+              isWritable: false,
             },
             {
               pubkey: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
               isSigner: false,
-              isWritable: false
-            }
+              isWritable: false,
+            },
           ],
-          data: "AQ=="
+          data: "AQ==",
         },
         {
           programId: "11111111111111111111111111111111",
@@ -142,15 +142,15 @@ describe("glam_jupiter", () => {
             {
               pubkey: "FsbYwp2VmCdouBbJLKTGo5Gf8RsUUQWVZzA1gvRbsk89",
               isSigner: true,
-              isWritable: true
+              isWritable: true,
             },
             {
               pubkey: "Ghk24stAfSCWywoUygdzkhWxZkXZHTmjBWaprkrC3EDh",
               isSigner: false,
-              isWritable: true
-            }
+              isWritable: true,
+            },
           ],
-          data: "AgAAAIDw+gIAAAAA"
+          data: "AgAAAIDw+gIAAAAA",
         },
         {
           programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
@@ -158,10 +158,10 @@ describe("glam_jupiter", () => {
             {
               pubkey: "Ghk24stAfSCWywoUygdzkhWxZkXZHTmjBWaprkrC3EDh",
               isSigner: false,
-              isWritable: true
-            }
+              isWritable: true,
+            },
           ],
-          data: "EQ=="
+          data: "EQ==",
         },
         {
           programId: "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
@@ -169,36 +169,36 @@ describe("glam_jupiter", () => {
             {
               pubkey: "FsbYwp2VmCdouBbJLKTGo5Gf8RsUUQWVZzA1gvRbsk89",
               isSigner: true,
-              isWritable: true
+              isWritable: true,
             },
             {
               pubkey: "2pqUNdx8Rvf63PQGTB3wMGnmGKjofBTrcQCyqgzbvKPP",
               isSigner: false,
-              isWritable: true
+              isWritable: true,
             },
             {
               pubkey: "FsbYwp2VmCdouBbJLKTGo5Gf8RsUUQWVZzA1gvRbsk89",
               isSigner: false,
-              isWritable: false
+              isWritable: false,
             },
             {
               pubkey: "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So",
               isSigner: false,
-              isWritable: false
+              isWritable: false,
             },
             {
               pubkey: "11111111111111111111111111111111",
               isSigner: false,
-              isWritable: false
+              isWritable: false,
             },
             {
               pubkey: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
               isSigner: false,
-              isWritable: false
-            }
+              isWritable: false,
+            },
           ],
-          data: "AQ=="
-        }
+          data: "AQ==",
+        },
       ],
       swapInstruction: {
         programId: "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
@@ -206,95 +206,95 @@ describe("glam_jupiter", () => {
           {
             pubkey: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: manager.toBase58(),
             isSigner: true,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: inputSignerAta.toBase58(),
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: outputSignerAta.toBase58(),
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So",
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: "D8cy77BBepLMngZx6ZukaTff5hCt1HrWyKk3Hnd9oitf",
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: "MERLuDFBMmsHnsBPZw2sDQZHvXFMwp8EdjudcU2HKky",
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: "MAR1zHjHaQcniE2gXsDptkyKUnNfMEsLBVcfP7vLyv7",
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: "GcJckEnDiWjpjQ8sqDKuNZjJUKAFZSiuQZ9WmuQpC92a",
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: manager.toBase58(),
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: inputSignerAta.toBase58(),
             isSigner: false,
-            isWritable: true
+            isWritable: true,
           },
           {
             pubkey: outputSignerAta.toBase58(),
             isSigner: false,
-            isWritable: true
+            isWritable: true,
           },
           {
             pubkey: "EWy2hPdVT4uGrYokx65nAyn2GFBv7bUYA2pFPY96pw7Y",
             isSigner: false,
-            isWritable: true
+            isWritable: true,
           },
           {
             pubkey: "GM48qFn8rnqhyNMrBHyPJgUVwXQ1JvMbcu3b9zkThW9L",
             isSigner: false,
-            isWritable: true
-          }
+            isWritable: true,
+          },
         ],
-        data: "5RfLl3rjrSoBAAAACmQAAYDw+gIAAAAAIsF9AgAAAAAfAAA="
+        data: "5RfLl3rjrSoBAAAACmQAAYDw+gIAAAAAIsF9AgAAAAAfAAA=",
       },
       cleanupInstruction: {
         programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
@@ -302,26 +302,26 @@ describe("glam_jupiter", () => {
           {
             pubkey: "Ghk24stAfSCWywoUygdzkhWxZkXZHTmjBWaprkrC3EDh",
             isSigner: false,
-            isWritable: true
+            isWritable: true,
           },
           {
             pubkey: "FsbYwp2VmCdouBbJLKTGo5Gf8RsUUQWVZzA1gvRbsk89",
             isSigner: false,
-            isWritable: true
+            isWritable: true,
           },
           {
             pubkey: "FsbYwp2VmCdouBbJLKTGo5Gf8RsUUQWVZzA1gvRbsk89",
             isSigner: true,
-            isWritable: false
-          }
+            isWritable: false,
+          },
         ],
-        data: "CQ=="
+        data: "CQ==",
       },
       otherInstructions: [],
       addressLookupTableAddresses: [
-        "6TSS8bTxDjGitZgtTc7gdVWkzKdpGLb9QDi7kXAQQXXp"
+        "6TSS8bTxDjGitZgtTc7gdVWkzKdpGLb9QDi7kXAQQXXp",
       ],
-      prioritizationFeeLamports: 0
+      prioritizationFeeLamports: 0,
     };
 
     // Pre-checks: the following accounts should not exist
@@ -332,7 +332,7 @@ describe("glam_jupiter", () => {
       glamClient.getManagerAta(wsol),
       glamClient.getManagerAta(msol),
       glamClient.getTreasuryAta(fundPDA, wsol),
-      glamClient.getTreasuryAta(fundPDA, msol)
+      glamClient.getTreasuryAta(fundPDA, msol),
     ];
     beforeNoAccounts.forEach(async (account) => {
       try {
@@ -356,7 +356,7 @@ describe("glam_jupiter", () => {
           amount,
           swapMode: "ExactIn",
           onlyDirectRoutes: true,
-          maxAccounts: 8
+          maxAccounts: 8,
         },
         quoteResponse,
         swapInstructions
@@ -371,7 +371,7 @@ describe("glam_jupiter", () => {
     const afterAccounts = [
       glamClient.getManagerAta(wsol),
       glamClient.getManagerAta(msol),
-      glamClient.getTreasuryAta(fundPDA, wsol)
+      glamClient.getTreasuryAta(fundPDA, wsol),
       // glamClient.getTreasuryAta(fundPDA, msol) - this should exist and contain mSOL
     ];
     afterAccounts.forEach(async (account) => {
@@ -411,8 +411,8 @@ describe("glam_jupiter", () => {
         {
           programId: "ComputeBudget111111111111111111111111111111",
           accounts: [],
-          data: "AsBcFQA="
-        }
+          data: "AsBcFQA=",
+        },
       ],
       setupInstructions: [
         {
@@ -421,36 +421,36 @@ describe("glam_jupiter", () => {
             {
               pubkey: "FsbYwp2VmCdouBbJLKTGo5Gf8RsUUQWVZzA1gvRbsk89",
               isSigner: true,
-              isWritable: true
+              isWritable: true,
             },
             {
               pubkey: "Ghk24stAfSCWywoUygdzkhWxZkXZHTmjBWaprkrC3EDh",
               isSigner: false,
-              isWritable: true
+              isWritable: true,
             },
             {
               pubkey: "FsbYwp2VmCdouBbJLKTGo5Gf8RsUUQWVZzA1gvRbsk89",
               isSigner: false,
-              isWritable: false
+              isWritable: false,
             },
             {
               pubkey: "So11111111111111111111111111111111111111112",
               isSigner: false,
-              isWritable: false
+              isWritable: false,
             },
             {
               pubkey: "11111111111111111111111111111111",
               isSigner: false,
-              isWritable: false
+              isWritable: false,
             },
             {
               pubkey: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
               isSigner: false,
-              isWritable: false
-            }
+              isWritable: false,
+            },
           ],
-          data: "AQ=="
-        }
+          data: "AQ==",
+        },
       ],
       swapInstruction: {
         programId: "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
@@ -458,95 +458,95 @@ describe("glam_jupiter", () => {
           {
             pubkey: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: manager.toBase58(),
             isSigner: true,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: inputSignerAta.toBase58(),
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: outputSignerAta.toBase58(),
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: "So11111111111111111111111111111111111111112",
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: "D8cy77BBepLMngZx6ZukaTff5hCt1HrWyKk3Hnd9oitf",
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: "MERLuDFBMmsHnsBPZw2sDQZHvXFMwp8EdjudcU2HKky",
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: "MAR1zHjHaQcniE2gXsDptkyKUnNfMEsLBVcfP7vLyv7",
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: "GcJckEnDiWjpjQ8sqDKuNZjJUKAFZSiuQZ9WmuQpC92a",
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: manager.toBase58(),
             isSigner: false,
-            isWritable: false
+            isWritable: false,
           },
           {
             pubkey: inputSignerAta.toBase58(),
             isSigner: false,
-            isWritable: true
+            isWritable: true,
           },
           {
             pubkey: outputSignerAta.toBase58(),
             isSigner: false,
-            isWritable: true
+            isWritable: true,
           },
           {
             pubkey: "EWy2hPdVT4uGrYokx65nAyn2GFBv7bUYA2pFPY96pw7Y",
             isSigner: false,
-            isWritable: true
+            isWritable: true,
           },
           {
             pubkey: "GM48qFn8rnqhyNMrBHyPJgUVwXQ1JvMbcu3b9zkThW9L",
             isSigner: false,
-            isWritable: true
-          }
+            isWritable: true,
+          },
         ],
-        data: "5RfLl3rjrSoBAAAACmQAAUCccQIAAAAA8knsAgAAAAAyAAA="
+        data: "5RfLl3rjrSoBAAAACmQAAUCccQIAAAAA8knsAgAAAAAyAAA=",
       },
       cleanupInstruction: {
         programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
@@ -554,26 +554,26 @@ describe("glam_jupiter", () => {
           {
             pubkey: "Ghk24stAfSCWywoUygdzkhWxZkXZHTmjBWaprkrC3EDh",
             isSigner: false,
-            isWritable: true
+            isWritable: true,
           },
           {
             pubkey: "FsbYwp2VmCdouBbJLKTGo5Gf8RsUUQWVZzA1gvRbsk89",
             isSigner: false,
-            isWritable: true
+            isWritable: true,
           },
           {
             pubkey: "FsbYwp2VmCdouBbJLKTGo5Gf8RsUUQWVZzA1gvRbsk89",
             isSigner: true,
-            isWritable: false
-          }
+            isWritable: false,
+          },
         ],
-        data: "CQ=="
+        data: "CQ==",
       },
       otherInstructions: [],
       addressLookupTableAddresses: [
-        "6TSS8bTxDjGitZgtTc7gdVWkzKdpGLb9QDi7kXAQQXXp"
+        "6TSS8bTxDjGitZgtTc7gdVWkzKdpGLb9QDi7kXAQQXXp",
       ],
-      prioritizationFeeLamports: 0
+      prioritizationFeeLamports: 0,
     };
 
     // Swap
@@ -587,7 +587,7 @@ describe("glam_jupiter", () => {
           amount,
           swapMode: "ExactIn",
           onlyDirectRoutes: true,
-          maxAccounts: 8
+          maxAccounts: 8,
         },
         undefined,
         swapInstructions
@@ -619,7 +619,7 @@ describe("glam_jupiter", () => {
         swapMode: "ExactIn",
         onlyDirectRoutes: false,
         asLegacyTransaction: false,
-        maxAccounts: 20
+        maxAccounts: 20,
       });
       console.log("swap txId", txId);
     } catch (e) {
@@ -642,7 +642,7 @@ describe("glam_jupiter", () => {
       swapMode: "ExactIn",
       onlyDirectRoutes: false,
       asLegacyTransaction: false,
-      maxAccounts: 15
+      maxAccounts: 15,
     };
     const quoteResponse = await (
       await fetch(

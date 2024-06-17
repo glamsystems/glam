@@ -35,7 +35,7 @@ import {
   TOKEN_2022_PROGRAM_ID,
   getMint,
   getAccount,
-  createTransferCheckedInstruction
+  createTransferCheckedInstruction,
 } from "@solana/spl-token";
 import {
   DriftClient,
@@ -59,7 +59,7 @@ describe("glam_devnet", () => {
   const commitment = "confirmed";
 
   const usdc = new PublicKey("8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2"); // 6 decimals
-  const wsol = new PublicKey("So11111111111111111111111111111111111111112");  // 9 decimals
+  const wsol = new PublicKey("So11111111111111111111111111111111111111112"); // 9 decimals
   const wbtc = new PublicKey("3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv"); // 6 decimals
   const BTC_TOKEN_PROGRAM_ID = TOKEN_PROGRAM_ID;
 
@@ -90,7 +90,7 @@ describe("glam_devnet", () => {
     [
       anchor.utils.bytes.utf8.encode("fund"),
       manager.publicKey.toBuffer(),
-      anchor.utils.bytes.utf8.encode(fundName)
+      anchor.utils.bytes.utf8.encode(fundName),
     ],
     program.programId
   );
@@ -162,9 +162,15 @@ describe("glam_devnet", () => {
     ASSOCIATED_TOKEN_PROGRAM_ID
   );
 
-  const pricingUsdc = new PublicKey("5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7");
-  const pricingSol =  new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix");
-  const pricingBtc =  new PublicKey("HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J");
+  const pricingUsdc = new PublicKey(
+    "5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7"
+  );
+  const pricingSol = new PublicKey(
+    "J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"
+  );
+  const pricingBtc = new PublicKey(
+    "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J"
+  );
 
   let remainingAccountsSubscribe = [
     // { pubkey: usdc, isSigner: false, isWritable: false },
@@ -337,11 +343,11 @@ describe("glam_devnet", () => {
           manager: manager.publicKey,
           driftProgram: DRIFT_PROGRAM_ID,
         })
-        .rpc({commitment}); // await 'confirmed'
+        .rpc({ commitment }); // await 'confirmed'
 
-      await connection.getParsedTransaction(txId, {commitment});
+      await connection.getParsedTransaction(txId, { commitment });
       console.log("driftUpdateDelegatedTrader", txId);
-    } catch(e) {
+    } catch (e) {
       console.error(e);
       throw e;
     }
@@ -489,11 +495,6 @@ describe("glam_devnet", () => {
     }
   }, 30_000);
   */
-
-
-
-
-
 
   /*
       TESTS TO CREATE - do NOT rerun
@@ -709,5 +710,4 @@ describe("glam_devnet", () => {
     }
   }, 10_000);
   */
-
 });

@@ -7,7 +7,7 @@ import {
   PythHttpClient,
   PythCluster,
   getPythClusterApiUrl,
-  getPythProgramKeyForCluster
+  getPythProgramKeyForCluster,
 } from "@pythnetwork/client";
 
 const router = Router();
@@ -26,7 +26,7 @@ router.get("/prices", async (req, res) => {
       btc: data.productPrice.get("Crypto.BTC/USD").price,
       eth: data.productPrice.get("Crypto.ETH/USD").price,
       sol: data.productPrice.get("Crypto.SOL/USD").price,
-      usdc: data.productPrice.get("Crypto.USDC/USD").price
+      usdc: data.productPrice.get("Crypto.USDC/USD").price,
     })
   );
 });
@@ -66,7 +66,7 @@ router.get("/fund/:pubkey/perf", async (req, res) => {
       fundPerformance: weightedChanges,
       btcPerformance: btcChanges,
       ethPerformance: ethChanges,
-      solPerformance: solChanges
+      solPerformance: solChanges,
     })
   );
 });
@@ -110,7 +110,7 @@ router.get("/metadata/:pubkey", async (req, res) => {
       symbol: metadata.symbol,
       description: "",
       external_url: "https://glam.systems",
-      image: image_uri
+      image: image_uri,
     })
   );
 });

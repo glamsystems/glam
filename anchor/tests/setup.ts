@@ -52,8 +52,8 @@ export const fundTestExample = {
       lockUpPeriodInDays: "40",
       launchPrice: "100",
       launchPriceCurrency: "USD",
-      launchPriceDate: new Date().toISOString().split("T")[0]
-    }
+      launchPriceDate: new Date().toISOString().split("T")[0],
+    },
   ],
   // Glam
   isEnabled: true,
@@ -74,12 +74,12 @@ export const fundTestExample = {
     manCo: "Glam Management",
     domicileOfManCo: "CH",
     emailAddressOfManCo: "hello@glam.systems",
-    fundWebsiteOfManCo: "https://glam.systems"
+    fundWebsiteOfManCo: "https://glam.systems",
   },
   // Openfunds Manager (simplified)
   manager: {
-    portfolioManagerName: "glam.sol"
-  }
+    portfolioManagerName: "glam.sol",
+  },
 };
 
 export const createFundForTest = async (
@@ -92,7 +92,7 @@ export const createFundForTest = async (
   try {
     [txId, fundPDA] = await client.createFund({
       ...(fundTest || fundTestExample),
-      manager
+      manager,
     });
     console.log(`Fund ${fundPDA} initialized, txId: ${txId}`);
   } catch (e) {
@@ -103,6 +103,6 @@ export const createFundForTest = async (
   return {
     fundPDA,
     treasuryPDA: client.getTreasuryPDA(fundPDA),
-    sharePDA: client.getShareClassPDA(fundPDA, 0)
+    sharePDA: client.getShareClassPDA(fundPDA, 0),
   };
 };

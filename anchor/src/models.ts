@@ -12,7 +12,7 @@ export const FundModel = class<FundModel> {
       openfundsUri: null,
       isEnabled: null,
       created: null,
-      isRawOpenfunds: null
+      isRawOpenfunds: null,
     };
     for (const key in partial) {
       partial[key] = obj[key] || null;
@@ -33,7 +33,7 @@ export const FundModel = class<FundModel> {
       manager: obj.manager
         ? (new ManagerModel(obj.manager) as ManagerModel)
         : null,
-      rawOpenfunds: new FundOpenfundsModel(obj) as FundOpenfundsModel
+      rawOpenfunds: new FundOpenfundsModel(obj) as FundOpenfundsModel,
     };
     return result;
   }
@@ -58,13 +58,13 @@ export const FundOpenfundsModel = class<FundOpenfundsModel> {
       legalFundNameOnly: null,
       openEndedOrClosedEndedFundStructure: null,
       typeOfEuDirective: null,
-      ucitsVersion: null
+      ucitsVersion: null,
     };
     for (const key in partial) {
       partial[key] = obj[key] || null;
     }
     let result: IdlTypes<Glam>["FundOpenfundsModel"] = {
-      ...partial
+      ...partial,
     };
     return result;
   }
@@ -82,7 +82,7 @@ export const ShareClassModel = class<ShareClassModel> {
       imageUri: null,
       isRawOpenfunds: null,
       allowlist: [],
-      blocklist: []
+      blocklist: [],
     };
     for (const key in partial) {
       partial[key] = obj[key] || null;
@@ -98,7 +98,7 @@ export const ShareClassModel = class<ShareClassModel> {
       ...partial,
       rawOpenfunds: new ShareClassOpenfundsModel(
         obj
-      ) as ShareClassOpenfundsModel
+      ) as ShareClassOpenfundsModel,
     };
     return result;
   }
@@ -136,13 +136,13 @@ export const ShareClassOpenfundsModel = class<ShareClassOpenfundsModel> {
       minimalRedemptionCategory: null,
       shareClassDividendType: null,
       cusip: null,
-      valor: null
+      valor: null,
     };
     for (const key in partial) {
       partial[key] = obj[key] || null;
     }
     let result: IdlTypes<Glam>["ShareClassOpenfundsModel"] = {
-      ...partial
+      ...partial,
     };
     return result;
   }
@@ -159,7 +159,7 @@ export const CompanyModel = class<CompanyModel> {
       // alias website = fundWebsiteOfManCo
       fundWebsiteOfManCo: obj.fundWebsiteOfManCo || obj.website || null,
       manCo: obj.manCo || null,
-      domicileOfManCo: obj.domicileOfManCo || null
+      domicileOfManCo: obj.domicileOfManCo || null,
     };
     return result;
   }
@@ -172,7 +172,7 @@ export const ManagerModel = class<ManagerModel> {
       // alias name = portfolioManagerName
       portfolioManagerName: obj.portfolioManagerName || obj.name || null,
       pubkey: obj.pubkey || null,
-      kind: (obj.kind as IdlTypes<Glam>["ManagerKind"]) || null
+      kind: (obj.kind as IdlTypes<Glam>["ManagerKind"]) || null,
     };
     return result;
   }

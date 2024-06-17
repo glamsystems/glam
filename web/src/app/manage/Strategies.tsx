@@ -3,7 +3,7 @@ import {
   UseFormGetValues,
   UseFormRegister,
   UseFormSetValue,
-  UseFormWatch
+  UseFormWatch,
 } from "react-hook-form";
 import { SelectableTile, TextInput, Tile } from "@carbon/react";
 
@@ -30,7 +30,7 @@ export const Strategies = ({
   watch,
   errors,
   strategies,
-  errorStyle
+  errorStyle,
 }: StrategyProps) => {
   return (
     <div className="flex gap-[90px]">

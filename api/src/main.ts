@@ -30,7 +30,7 @@ const defaultClient = new GlamClient({
     null,
     {}
   ),
-  jupiterApi: JUPITER_API
+  jupiterApi: JUPITER_API,
 });
 
 const devnetClient = new GlamClient({
@@ -39,7 +39,7 @@ const devnetClient = new GlamClient({
     new Connection("https://api.devnet.solana.com", "confirmed"),
     null,
     {}
-  )
+  ),
 });
 
 /* Express app */

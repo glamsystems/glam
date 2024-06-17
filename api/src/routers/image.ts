@@ -59,7 +59,7 @@ router.get("/image/:pubkey.:format", async (req, res) => {
   try {
     const browser = await puppeteer.launch({
       headless: true,
-      args: ["--no-sandbox"]
+      args: ["--no-sandbox"],
     });
     const page = await browser.newPage();
 
@@ -84,8 +84,8 @@ router.get("/image/:pubkey.:format", async (req, res) => {
         x: 0 + 16,
         y: 0 + 16,
         width: svgWidth - 16,
-        height: svgHeight - 16
-      } // Clip the screenshot to match SVG dimensions
+        height: svgHeight - 16,
+      }, // Clip the screenshot to match SVG dimensions
     });
     res.set("Content-Type", "image/png");
     res.send(imageBuffer);

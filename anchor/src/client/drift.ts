@@ -42,7 +42,7 @@ export class DriftClient {
       .accounts({
         fund,
         treasury,
-        manager
+        manager,
       });
   }
 

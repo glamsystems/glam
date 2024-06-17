@@ -1,9 +1,9 @@
-import { useConnection } from '@solana/wallet-adapter-react';
-import { IconTrash } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
-import { ReactNode, useState } from 'react';
-import { AppModal } from '../ui/ui-layout';
-import { ClusterNetwork, useCluster } from './cluster-data-access';
+import { useConnection } from "@solana/wallet-adapter-react";
+import { IconTrash } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
+import { ReactNode, useState } from "react";
+import { AppModal } from "../ui/ui-layout";
+import { ClusterNetwork, useCluster } from "./cluster-data-access";
 
 export function ExplorerLink({
   path,
@@ -40,7 +40,7 @@ export function ClusterChecker({ children }: { children: ReactNode }) {
   const { connection } = useConnection();
 
   const query = useQuery({
-    queryKey: ['version', { cluster, endpoint: connection.rpcEndpoint }],
+    queryKey: ["version", { cluster, endpoint: connection.rpcEndpoint }],
     queryFn: () => connection.getVersion(),
     retry: 1,
   });
@@ -80,7 +80,7 @@ export function ClusterUiSelect() {
           <li key={item.name}>
             <button
               className={`btn btn-sm ${
-                item.active ? 'btn-primary' : 'btn-ghost'
+                item.active ? "btn-primary" : "btn-ghost"
               }`}
               onClick={() => setCluster(item)}
             >
@@ -101,13 +101,13 @@ export function ClusterUiModal({
   show: boolean;
 }) {
   const { addCluster } = useCluster();
-  const [name, setName] = useState('');
+  const [name, setName] = useState("");
   const [network, setNetwork] = useState<ClusterNetwork | undefined>();
-  const [endpoint, setEndpoint] = useState('');
+  const [endpoint, setEndpoint] = useState("");
 
   return (
     <AppModal
-      title={'Add Cluster'}
+      title={"Add Cluster"}
       hide={hideModal}
       show={show}
       submit={() => {
@@ -157,7 +157,7 @@ export function ClusterUiTable() {
         </thead>
         <tbody>
           {clusters.map((item) => (
-            <tr key={item.name} className={item?.active ? 'bg-base-200' : ''}>
+            <tr key={item.name} className={item?.active ? "bg-base-200" : ""}>
               <td className="space-y-2">
                 <div className="whitespace-nowrap space-x-2">
                   <span className="text-xl">
@@ -175,7 +175,7 @@ export function ClusterUiTable() {
                   </span>
                 </div>
                 <span className="text-xs">
-                  Network: {item.network ?? 'custom'}
+                  Network: {item.network ?? "custom"}
                 </span>
                 <div className="whitespace-nowrap text-gray-500 text-xs">
                   {item.endpoint}
@@ -186,7 +186,7 @@ export function ClusterUiTable() {
                   disabled={item?.active}
                   className="btn btn-xs btn-default btn-outline"
                   onClick={() => {
-                    if (!window.confirm('Are you sure?')) return;
+                    if (!window.confirm("Are you sure?")) return;
                     deleteCluster(item);
                   }}
                 >
