@@ -54,8 +54,11 @@ describe("glam_jupiter", () => {
   });
 
   it("Swap end to end", async () => {
-    const manager = glamClient.getManager();
     const treasury = glamClient.getTreasuryPDA(fundPDA);
+
+    const manager = glamClient.getManager();
+    const inputSignerAta = glamClient.getManagerAta(wsol);
+    const outputSignerAta = glamClient.getManagerAta(msol);
 
     const quoteResponse = {
       inputMint: "So11111111111111111111111111111111111111112",
@@ -206,17 +209,17 @@ describe("glam_jupiter", () => {
             isWritable: false
           },
           {
-            pubkey: "FsbYwp2VmCdouBbJLKTGo5Gf8RsUUQWVZzA1gvRbsk89",
+            pubkey: manager.toBase58(),
             isSigner: true,
             isWritable: false
           },
           {
-            pubkey: "Ghk24stAfSCWywoUygdzkhWxZkXZHTmjBWaprkrC3EDh",
+            pubkey: inputSignerAta.toBase58(),
             isSigner: false,
             isWritable: false
           },
           {
-            pubkey: "2pqUNdx8Rvf63PQGTB3wMGnmGKjofBTrcQCyqgzbvKPP",
+            pubkey: outputSignerAta.toBase58(),
             isSigner: false,
             isWritable: false
           },
@@ -266,17 +269,17 @@ describe("glam_jupiter", () => {
             isWritable: false
           },
           {
-            pubkey: "FsbYwp2VmCdouBbJLKTGo5Gf8RsUUQWVZzA1gvRbsk89",
+            pubkey: manager.toBase58(),
             isSigner: false,
             isWritable: false
           },
           {
-            pubkey: "Ghk24stAfSCWywoUygdzkhWxZkXZHTmjBWaprkrC3EDh",
+            pubkey: inputSignerAta.toBase58(),
             isSigner: false,
             isWritable: true
           },
           {
-            pubkey: "2pqUNdx8Rvf63PQGTB3wMGnmGKjofBTrcQCyqgzbvKPP",
+            pubkey: outputSignerAta.toBase58(),
             isSigner: false,
             isWritable: true
           },
@@ -398,6 +401,10 @@ describe("glam_jupiter", () => {
   });
 
   it("Swap back end to end", async () => {
+    const manager = glamClient.getManager();
+    const inputSignerAta = glamClient.getManagerAta(msol);
+    const outputSignerAta = glamClient.getManagerAta(wsol);
+
     const swapInstructions = {
       tokenLedgerInstruction: null,
       computeBudgetInstructions: [
@@ -454,17 +461,17 @@ describe("glam_jupiter", () => {
             isWritable: false
           },
           {
-            pubkey: "FsbYwp2VmCdouBbJLKTGo5Gf8RsUUQWVZzA1gvRbsk89",
+            pubkey: manager.toBase58(),
             isSigner: true,
             isWritable: false
           },
           {
-            pubkey: "2pqUNdx8Rvf63PQGTB3wMGnmGKjofBTrcQCyqgzbvKPP",
+            pubkey: inputSignerAta.toBase58(),
             isSigner: false,
             isWritable: false
           },
           {
-            pubkey: "Ghk24stAfSCWywoUygdzkhWxZkXZHTmjBWaprkrC3EDh",
+            pubkey: outputSignerAta.toBase58(),
             isSigner: false,
             isWritable: false
           },
@@ -514,17 +521,17 @@ describe("glam_jupiter", () => {
             isWritable: false
           },
           {
-            pubkey: "FsbYwp2VmCdouBbJLKTGo5Gf8RsUUQWVZzA1gvRbsk89",
+            pubkey: manager.toBase58(),
             isSigner: false,
             isWritable: false
           },
           {
-            pubkey: "2pqUNdx8Rvf63PQGTB3wMGnmGKjofBTrcQCyqgzbvKPP",
+            pubkey: inputSignerAta.toBase58(),
             isSigner: false,
             isWritable: true
           },
           {
-            pubkey: "Ghk24stAfSCWywoUygdzkhWxZkXZHTmjBWaprkrC3EDh",
+            pubkey: outputSignerAta.toBase58(),
             isSigner: false,
             isWritable: true
           },
