@@ -2,10 +2,7 @@
   "pubkey": "Du3Ysj1wKbxPKkuPPnvzQLQh8oMSVifs3jGZjJWXFmHN",
   "account": {
     "lamports": 64489462465967,
-    "data": [
-      "",
-      "base64"
-    ],
+    "data": ["", "base64"],
     "owner": "11111111111111111111111111111111",
     "executable": false,
     "rentEpoch": 18446744073709551615,

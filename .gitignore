@@ -34,6 +34,7 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+# Project specific
 .nx/cache
 .anchor
 !anchor/target/deploy/.gitignore

@@ -1,11 +1,11 @@
-import { useWallet } from '@solana/wallet-adapter-react';
-import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
-import { IconRefresh } from '@tabler/icons-react';
-import { useQueryClient } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
-import { AppModal, ellipsify } from '../ui/ui-layout';
-import { useCluster } from '../cluster/cluster-data-access';
-import { ExplorerLink } from '../cluster/cluster-ui';
+import { useWallet } from "@solana/wallet-adapter-react";
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import { IconRefresh } from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { AppModal, ellipsify } from "../ui/ui-layout";
+import { useCluster } from "../cluster/cluster-data-access";
+import { ExplorerLink } from "../cluster/cluster-ui";
 import {
   useGetBalance,
   useGetSignatures,
@@ -13,7 +13,7 @@ import {
   useGetTokenAccounts,
   useRequestAirdrop,
   useTransferSol,
-} from './account-data-access';
+} from "./account-data-access";
 
 export function AccountBalance({ address }: { address: PublicKey }) {
   const query = useGetBalance({ address });
@@ -24,7 +24,7 @@ export function AccountBalance({ address }: { address: PublicKey }) {
         className="text-5xl font-bold cursor-pointer"
         onClick={() => query.refetch()}
       >
-        {query.data ? <BalanceSol balance={query.data} /> : '...'} SOL
+        {query.data ? <BalanceSol balance={query.data} /> : "..."} SOL
       </h1>
     </div>
   );
@@ -91,7 +91,7 @@ export function AccountButtons({ address }: { address: PublicKey }) {
       />
       <div className="space-x-2">
         <button
-          disabled={cluster.network?.includes('mainnet')}
+          disabled={cluster.network?.includes("mainnet")}
           className="btn btn-xs lg:btn-md btn-outline"
           onClick={() => setShowAirdropModal(true)}
         >
@@ -138,7 +138,7 @@ export function AccountTokens({ address }: { address: PublicKey }) {
                 onClick={async () => {
                   await query.refetch();
                   await client.invalidateQueries({
-                    queryKey: ['getTokenAccountBalance'],
+                    queryKey: ["getTokenAccountBalance"],
                   });
                 }}
               >
@@ -204,7 +204,7 @@ export function AccountTokens({ address }: { address: PublicKey }) {
                         className="btn btn-xs btn-outline"
                         onClick={() => setShowAll(!showAll)}
                       >
-                        {showAll ? 'Show Less' : 'Show All'}
+                        {showAll ? "Show Less" : "Show All"}
                       </button>
                     </td>
                   </tr>
@@ -313,7 +313,7 @@ export function AccountTransactions({ address }: { address: PublicKey }) {
                         className="btn btn-xs btn-outline"
                         onClick={() => setShowAll(!showAll)}
                       >
-                        {showAll ? 'Show Less' : 'Show All'}
+                        {showAll ? "Show Less" : "Show All"}
                       </button>
                     </td>
                   </tr>
@@ -360,7 +360,7 @@ function ModalAirdrop({
   address: PublicKey;
 }) {
   const mutation = useRequestAirdrop({ address });
-  const [amount, setAmount] = useState('2');
+  const [amount, setAmount] = useState("2");
 
   return (
     <AppModal
@@ -396,8 +396,8 @@ function ModalSend({
 }) {
   const wallet = useWallet();
   const mutation = useTransferSol({ address });
-  const [destination, setDestination] = useState('');
-  const [amount, setAmount] = useState('1');
+  const [destination, setDestination] = useState("");
+  const [amount, setAmount] = useState("1");
 
   if (!address || !wallet.sendTransaction) {
     return <div>Wallet not connected</div>;

@@ -43,7 +43,7 @@ const FormSchema = z.object({
     .string()
     .length(5)
     .refine((date) => +date.split("/")[0] <= 12 && +date.split("/")[1] <= 31, {
-      message: "Invalid date"
+      message: "Invalid date",
     }),
   isFoF: z.boolean().optional().or(z.literal("")),
   isPassiveFund: z.boolean().optional().or(z.literal("")),
@@ -61,7 +61,7 @@ const FormSchema = z.object({
   policyDistribution: z.enum([
     "Accumulating",
     "Accumulating & Distributing",
-    "Distributing"
+    "Distributing",
   ]),
   extension: z.enum(["A", "B", "C", "D", "E", "1", "2", "3", "4", "5"]),
   shareClassLaunchDate: z.string().optional().or(z.literal("")),
@@ -69,7 +69,7 @@ const FormSchema = z.object({
     "Projected",
     "To Be Launched",
     "Offering Period",
-    "Active"
+    "Active",
   ]),
   // ------ Policies ------
   lockupPeriod: z.number(), // (Transfer Hook)
@@ -83,7 +83,7 @@ const FormSchema = z.object({
       "weeks",
       "months",
       "quarters",
-      "years"
+      "years",
     ])
     .optional(),
   nonTransferable: z.boolean(),
@@ -95,7 +95,7 @@ const FormSchema = z.object({
   assets: z.array(z.string()),
   // ------ Strategy ------
   counterParties: z.array(z.string()).optional(),
-  traderIdDrift: z.string().min(32).max(44).optional().or(z.literal(""))
+  traderIdDrift: z.string().min(32).max(44).optional().or(z.literal("")),
 });
 
 export type FormFields = z.infer<typeof FormSchema>;
@@ -111,14 +111,14 @@ export const CreateProduct = () => {
 
   const errorStyle = {
     color: "red",
-    fontSize: "14px"
+    fontSize: "14px",
   };
 
   const strategies = [
     { id: "Drift", name: "Drift" },
     { id: "Backpack", name: "Backpack" },
     { id: "Orca", name: "Orca" },
-    { id: "Jupiter", name: "Jupiter" }
+    { id: "Jupiter", name: "Jupiter" },
   ];
 
   const steps = [
@@ -131,13 +131,13 @@ export const CreateProduct = () => {
         "investmentObjective",
         "fundAsset",
         "countryAlpha2",
-        "countryAlpha3"
-      ]
+        "countryAlpha3",
+      ],
     },
     {
       id: 1,
       label: "Share Classes",
-      fields: ["shareClassAsset"]
+      fields: ["shareClassAsset"],
     },
     {
       id: 2,
@@ -148,24 +148,24 @@ export const CreateProduct = () => {
         "transferFees",
         "permanentDelegate",
         "nonTransferable",
-        "redemptions"
-      ]
+        "redemptions",
+      ],
     },
     {
       id: 3,
       label: "Assets",
-      fields: ["assets"]
+      fields: ["assets"],
     },
     {
       id: 4,
       label: "Strategy",
-      fields: ["counterParties", "traderIdDrift"]
+      fields: ["counterParties", "traderIdDrift"],
     },
     {
       id: 5,
       label: "Review",
-      fields: []
-    }
+      fields: [],
+    },
   ];
 
   const {
@@ -176,7 +176,7 @@ export const CreateProduct = () => {
     watch,
     getValues,
     setValue,
-    formState: { errors, isSubmitting }
+    formState: { errors, isSubmitting },
   } = useForm<FormFields>({
     defaultValues: {
       fundName: "",
@@ -209,9 +209,9 @@ export const CreateProduct = () => {
       nonTransferable: false,
       transferFees: Number(0),
       lockupPeriod: Number(0),
-      lockupPeriodUnits: "days"
+      lockupPeriodUnits: "days",
     },
-    resolver: zodResolver(FormSchema)
+    resolver: zodResolver(FormSchema),
   });
 
   const fundname = watch("fundName");
@@ -253,8 +253,8 @@ export const CreateProduct = () => {
             lifecycle: data.shareClassLifecycle.toLowerCase(),
             // these will be updated by initialize
             uri: "",
-            imageUri: ""
-          }
+            imageUri: "",
+          },
         },
         {
           onSuccess: () => {
@@ -263,15 +263,15 @@ export const CreateProduct = () => {
           onError: (error) => {
             console.error(error);
             setError("root", {
-              message: "An error occurred. Please try again later."
+              message: "An error occurred. Please try again later.",
             });
-          }
+          },
         }
       );
     } catch (error) {
       console.error(error);
       setError("root", {
-        message: "An error occurred. Please try again later."
+        message: "An error occurred. Please try again later.",
       });
     }
   };

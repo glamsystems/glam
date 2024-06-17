@@ -9,14 +9,14 @@ import {
   TabPanels,
   Tabs,
   Tag,
-  Tile
+  Tile,
 } from "@carbon/react";
 import { formatNumber, formatPercent } from "../utils/format-number";
 import {
   getAum,
   getTotalShares,
   useFundPerfChartData,
-  useGlamProgramAccount
+  useGlamProgramAccount,
 } from "../glam/glam-data-access";
 
 import { ExplorerLink } from "../cluster/cluster-ui";
@@ -34,15 +34,15 @@ const OBJECTIVE_MAP: { [key: string]: string } = {
   AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2:
     "The Glam Investment Fund seeks to reflect generally the performance of the price of Bitcoin and Solana.",
   Dt4uayF35AKhhgaPNxdVRh4khNaGAih8L9SMSs9Wr6CP:
-    "LFG aims to generate superior returns through trading in futures markets."
+    "LFG aims to generate superior returns through trading in futures markets.",
 };
 
 const LOCKUP_MAP: { [key: string]: number } = {
-  Dt4uayF35AKhhgaPNxdVRh4khNaGAih8L9SMSs9Wr6CP: 72 * 60
+  Dt4uayF35AKhhgaPNxdVRh4khNaGAih8L9SMSs9Wr6CP: 72 * 60,
 };
 
 const DISABLE_PERF: { [key: string]: boolean } = {
-  Dt4uayF35AKhhgaPNxdVRh4khNaGAih8L9SMSs9Wr6CP: true
+  Dt4uayF35AKhhgaPNxdVRh4khNaGAih8L9SMSs9Wr6CP: true,
 };
 
 export default function ProductPage() {
@@ -72,7 +72,7 @@ export default function ProductPage() {
   const grayStyle = {
     color: gray70Hover,
     // fontSize: "14px",
-    lineHeight: "18px"
+    lineHeight: "18px",
   };
 
   // retrieve the publicKey from the URL
@@ -86,7 +86,7 @@ export default function ProductPage() {
 
   const fundPerfChartData = useFundPerfChartData(fundId) || [
     { value: 0 },
-    { value: 0 }
+    { value: 0 },
   ];
   const { account, shareClassMetadata } = useGlamProgramAccount({ fundKey });
   // Snake case keys for on-chain metadata
@@ -128,19 +128,19 @@ export default function ProductPage() {
       management: 0, //fundModel.getManagementFee(),
       performance: 0, //fundModel.getPerformanceFee(),
       subscription: 0.0,
-      redemption: 0.0
+      redemption: 0.0,
     },
     facts: {
       launchDate: "", //launch_date,
-      fundAsset: "" //share_class_asset
+      fundAsset: "", //share_class_asset
     },
     terms: {
       highWaterMark: false,
       hurdleRate: false,
       lockupPeriod: LOCKUP_MAP[fundId] || 60, // denominated in minutes
       minimumSubscription: 0,
-      maximumSubscription: 10000
-    }
+      maximumSubscription: 10000,
+    },
   };
 
   const chartData = {
@@ -150,25 +150,25 @@ export default function ProductPage() {
       axes: {
         bottom: {
           mapsTo: "date",
-          scaleType: ScaleTypes.TIME
+          scaleType: ScaleTypes.TIME,
         },
         left: {
           mapsTo: "value",
-          scaleType: ScaleTypes.LINEAR
-        }
+          scaleType: ScaleTypes.LINEAR,
+        },
       },
       curve: "curveMonotoneX",
       height: "365px",
       legend: {
-        enabled: true
+        enabled: true,
       },
       toolbar: {
-        enabled: false
+        enabled: false,
       },
       tooltip: {
-        showTotal: false
-      }
-    }
+        showTotal: false,
+      },
+    },
   };
 
   return (
@@ -177,7 +177,7 @@ export default function ProductPage() {
         <div className="flex gap-[8px] mb-[10px]">
           <p
             style={{
-              color: gray70Hover
+              color: gray70Hover,
             }}
           >
             Products{" "}
@@ -190,14 +190,14 @@ export default function ProductPage() {
             src={fund.imgURL}
             style={{
               width: "64px",
-              height: "64px"
+              height: "64px",
             }}
             alt="fund logo"
           />
           <h1
             style={{
               fontSize: "32px",
-              lineHeight: "40px"
+              lineHeight: "40px",
             }}
           >
             {fund.name}
@@ -223,7 +223,7 @@ export default function ProductPage() {
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(5, 1fr)",
-                  gap: "8px"
+                  gap: "8px",
                 }}
               >
                 <div className="col-span-1">
@@ -325,7 +325,7 @@ export default function ProductPage() {
                       aria-label="List of tabs"
                       contained
                       style={{
-                        width: "100%"
+                        width: "100%",
                       }}
                     >
                       <Tab disabled={!isManager}>Manage</Tab>
@@ -449,7 +449,7 @@ export default function ProductPage() {
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(5, 1fr)",
-                  gap: "8px"
+                  gap: "8px",
                 }}
               >
                 <div className="col-span-1">
@@ -489,7 +489,7 @@ export default function ProductPage() {
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(5, 1fr)",
-                  gap: "8px"
+                  gap: "8px",
                 }}
               >
                 <div className="col-span-1">
@@ -529,7 +529,7 @@ export default function ProductPage() {
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(5, 1fr)",
-                  gap: "8px"
+                  gap: "8px",
                 }}
               >
                 <div className="col-span-1">

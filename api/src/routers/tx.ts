@@ -61,7 +61,7 @@ const serializeTx = async (tx: Transaction, manager, client, res) => {
     const serializedTx = Buffer.from(
       tx.serialize({
         requireAllSignatures: false,
-        verifySignatures: false
+        verifySignatures: false,
       })
     ).toString("base64");
     return res.send({ tx: serializedTx, versioned: false });
@@ -76,7 +76,7 @@ const serializeVersionedTx = async (tx: VersionedTransaction, res) => {
     const serializedTx = Buffer.from(tx.serialize()).toString("base64");
     return res.send({
       tx: serializedTx,
-      versioned: true
+      versioned: true,
     });
   } catch (err) {
     console.log(err);
@@ -103,7 +103,7 @@ router.post("/tx/jupiter/swap", async (req, res) => {
 
   if (!quoteParams && !quoteResponse) {
     return res.status(400).send({
-      error: "quoteParams or quoteResponse must be provided"
+      error: "quoteParams or quoteResponse must be provided",
     });
   }
 

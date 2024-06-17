@@ -6,13 +6,13 @@ import {
   SystemProgram,
   TransactionInstruction,
   TransactionSignature,
-  VersionedTransaction
+  VersionedTransaction,
 } from "@solana/web3.js";
 import {
   getAssociatedTokenAddressSync,
   createAssociatedTokenAccountInstruction,
   TOKEN_2022_PROGRAM_ID,
-  createSyncNativeInstruction
+  createSyncNativeInstruction,
 } from "@solana/spl-token";
 
 import { BaseClient } from "./base";
@@ -114,8 +114,8 @@ export class InvestorClient {
         {
           pubkey: assetMeta.pricingAccount,
           isSigner: false,
-          isWritable: false
-        }
+          isWritable: false,
+        },
       ];
     });
 
@@ -145,9 +145,9 @@ export class InvestorClient {
           SystemProgram.transfer({
             fromPubkey: signer,
             toPubkey: signerAssetAta,
-            lamports: delta
+            lamports: delta,
           }),
-          createSyncNativeInstruction(signerAssetAta)
+          createSyncNativeInstruction(signerAssetAta),
         ]);
       }
     }
@@ -163,7 +163,7 @@ export class InvestorClient {
         treasuryAta,
         signerAssetAta,
         signer,
-        token2022Program: TOKEN_2022_PROGRAM_ID
+        token2022Program: TOKEN_2022_PROGRAM_ID,
       })
       .remainingAccounts(remainingAccounts)
       .preInstructions(preInstructions)
@@ -209,8 +209,8 @@ export class InvestorClient {
         {
           pubkey: assetMeta.pricingAccount,
           isSigner: false,
-          isWritable: false
-        }
+          isWritable: false,
+        },
       ];
     });
 
@@ -258,7 +258,7 @@ export class InvestorClient {
         shareClass,
         signerShareAta,
         signer,
-        token2022Program: TOKEN_2022_PROGRAM_ID
+        token2022Program: TOKEN_2022_PROGRAM_ID,
       })
       .remainingAccounts(remainingAccounts)
       .preInstructions(preInstructions)

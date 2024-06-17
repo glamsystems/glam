@@ -4,7 +4,7 @@ import {
   UseFormGetValues,
   UseFormRegister,
   UseFormSetValue,
-  UseFormWatch
+  UseFormWatch,
 } from "react-hook-form";
 
 import { FormFields } from "./CreateProduct";
@@ -28,7 +28,7 @@ export const BasicInformation = ({
   register,
   errors,
   errorStyle,
-  fundName
+  fundName,
 }: BasicInformationProps) => {
   return (
     <>

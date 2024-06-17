@@ -6,20 +6,20 @@ import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
-  getAssociatedTokenAddressSync
+  getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
 import {
   GetProgramAccountsFilter,
   ComputeBudgetProgram,
   Cluster,
   AccountMeta,
-  PublicKey
+  PublicKey,
 } from "@solana/web3.js";
 import {
   getDriftStateAccountPublicKey,
   getUserAccountPublicKey,
   getUserStatsAccountPublicKey,
-  getDriftSignerPublicKey
+  getDriftSignerPublicKey,
 } from "@drift-labs/sdk";
 import {
   GlamClient,
@@ -27,7 +27,7 @@ import {
   getFundUri,
   getGlamProgramId,
   getImageUri,
-  getMetadataUri
+  getMetadataUri,
 } from "@glam/anchor";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
@@ -46,7 +46,7 @@ export function useGlamProgram() {
 
   const client = new GlamClient({
     provider,
-    cluster: cluster.network
+    cluster: cluster.network,
   });
 
   const transactionToast = useTransactionToast();
@@ -58,12 +58,12 @@ export function useGlamProgram() {
 
   const accounts = useQuery({
     queryKey: ["glam", "all", { cluster }],
-    queryFn: () => program.account.fundAccount.all()
+    queryFn: () => program.account.fundAccount.all(),
   });
 
   const getProgramAccount = useQuery({
     queryKey: ["get-program-account", { cluster }],
-    queryFn: () => connection.getParsedAccountInfo(programId)
+    queryFn: () => connection.getParsedAccountInfo(programId),
   });
 
   const shareClassMetadata = {
@@ -82,7 +82,7 @@ export function useGlamProgram() {
     extension: "",
     launchDate: "2024-04-01",
     lifecycle: "active",
-    imageUri: ""
+    imageUri: "",
   };
 
   type ShareClassMetadata = typeof shareClassMetadata;
@@ -95,7 +95,7 @@ export function useGlamProgram() {
       manager,
       assets,
       assetsStructure,
-      shareClassMetadata
+      shareClassMetadata,
     }: {
       fundName: string;
       fundSymbol: string;
@@ -110,9 +110,9 @@ export function useGlamProgram() {
         assetsWeights: assetsStructure,
         shareClass: [
           {
-            ...shareClassMetadata
-          }
-        ]
+            ...shareClassMetadata,
+          },
+        ],
       };
       const [txId, fundPDA] = await client.createFund(fundModel);
       return txId;
@@ -125,7 +125,7 @@ export function useGlamProgram() {
     onError: (e) => {
       console.error("Failed to initialize: ", e);
       return toast.error("Failed to create product");
-    }
+    },
   });
 
   return {
@@ -133,7 +133,7 @@ export function useGlamProgram() {
     programId,
     accounts,
     getProgramAccount,
-    initialize
+    initialize,
   };
 }
 
@@ -173,7 +173,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
 
   const account = useQuery({
     queryKey: ["glam", "fetch-fund", { fundKey }],
-    queryFn: () => program.account.fundAccount.fetch(fundKey)
+    queryFn: () => program.account.fundAccount.fetch(fundKey),
   });
 
   const shareClassMetadata = useQuery({
@@ -182,7 +182,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
       const fund = await program.account.fundAccount.fetch(fundKey);
       const shareClass = fund.shareClasses[0];
       return getTokenMetadata(connection, shareClass);
-    }
+    },
   });
 
   const subscribe = useMutation({
@@ -256,7 +256,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
         // { pubkey: wbtc, isSigner: false, isWritable: false },
         // { pubkey: managerBtcAta, isSigner: false, isWritable: true },
         { pubkey: treasuryBtcAta, isSigner: false, isWritable: true },
-        { pubkey: pricingBtc, isSigner: false, isWritable: false }
+        { pubkey: pricingBtc, isSigner: false, isWritable: false },
       ];
 
       const shareClassMetadata = await getTokenMetadata(connection, shareClass);
@@ -272,11 +272,11 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
           signerAssetAta,
           signer,
           tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID
+          token2022Program: TOKEN_2022_PROGRAM_ID,
         })
         .remainingAccounts(remainingAccountsSubscribe)
         .preInstructions([
-          ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
+          ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 }),
         ])
         .rpc();
     },
@@ -290,7 +290,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
       return toast.error(
         "Failed to subscribe, please connect your wallet first."
       );
-    }
+    },
   });
 
   const redeem = useMutation({
@@ -379,7 +379,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
         { pubkey: wbtc, isSigner: false, isWritable: false },
         { pubkey: signerBtcAta, isSigner: false, isWritable: true },
         { pubkey: treasuryBtcAta, isSigner: false, isWritable: true },
-        { pubkey: pricingBtc, isSigner: false, isWritable: false }
+        { pubkey: pricingBtc, isSigner: false, isWritable: false },
       ];
 
       return program.methods
@@ -391,7 +391,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
           signerShareAta,
           signer,
           tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID
+          token2022Program: TOKEN_2022_PROGRAM_ID,
         })
         .remainingAccounts(remainingAccountsRedeem)
         .rpc();
@@ -404,7 +404,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
     onError: (e) => {
       console.error("Failed to redeem: ", e);
       return toast.error("Failed to redeem, please connect your wallet first.");
-    }
+    },
   });
 
   /* Drift */
@@ -444,7 +444,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
         { pubkey: pricingSol, isSigner: false, isWritable: false },
         { pubkey: pricingUsdc, isSigner: false, isWritable: false },
         { pubkey: driftSpotSol, isSigner: false, isWritable: true },
-        { pubkey: driftSpotUsdc, isSigner: false, isWritable: true }
+        { pubkey: driftSpotUsdc, isSigner: false, isWritable: true },
       ];
 
       return program.methods
@@ -459,7 +459,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
           state: statePublicKey,
           manager: signer,
           driftProgram: DRIFT_PROGRAM_ID,
-          tokenProgram: TOKEN_PROGRAM_ID
+          tokenProgram: TOKEN_PROGRAM_ID,
         })
         .remainingAccounts(remainingAccountsDeposit)
         .rpc();
@@ -472,7 +472,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
     onError: (e) => {
       console.error("Failed to deposit: ", e);
       return toast.error("Failed to deposit");
-    }
+    },
   });
 
   const driftWithdraw = useMutation({
@@ -520,7 +520,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
         { pubkey: pricingUsdc, isSigner: false, isWritable: false },
         { pubkey: pricingSol, isSigner: false, isWritable: false },
         { pubkey: driftSpotUsdc, isSigner: false, isWritable: true },
-        { pubkey: driftSpotSol, isSigner: false, isWritable: true }
+        { pubkey: driftSpotSol, isSigner: false, isWritable: true },
       ];
 
       return program.methods
@@ -536,7 +536,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
           manager: signer,
           driftSigner: signerPublicKey,
           driftProgram: DRIFT_PROGRAM_ID,
-          tokenProgram: TOKEN_PROGRAM_ID
+          tokenProgram: TOKEN_PROGRAM_ID,
         })
         .remainingAccounts(remainingAccountsWithdraw)
         .rpc();
@@ -549,7 +549,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
     onError: (e) => {
       console.error("Failed to withdraw: ", e);
       return toast.error("Failed to withdraw");
-    }
+    },
   });
 
   return {
@@ -558,7 +558,7 @@ export function useGlamProgramAccount({ fundKey }: { fundKey: PublicKey }) {
     subscribe,
     redeem,
     driftDeposit,
-    driftWithdraw
+    driftWithdraw,
   };
 }
 
@@ -579,7 +579,7 @@ export function getTotalShares(shareClassAddress: PublicKey) {
         console.error(e);
       }
       return 0.0;
-    }
+    },
   });
 
   return data;
@@ -593,14 +593,14 @@ export function getAum(treasuryAddress: string, shareClassAddress: PublicKey) {
       try {
         const filters: GetProgramAccountsFilter[] = [
           {
-            dataSize: 165 //size of account (bytes)
+            dataSize: 165, //size of account (bytes)
           },
           {
             memcmp: {
               offset: 32,
-              bytes: treasuryAddress
-            }
-          }
+              bytes: treasuryAddress,
+            },
+          },
         ];
         const accounts = await connection.getParsedProgramAccounts(
           TOKEN_PROGRAM_ID,
@@ -656,7 +656,7 @@ export function getAum(treasuryAddress: string, shareClassAddress: PublicKey) {
         console.error(e);
       }
       return 0;
-    }
+    },
   });
   return data;
 }
@@ -681,13 +681,13 @@ export function useFundPerfChartData(fund: string) {
             {
               group: "This fund",
               date: new Date(ts * 1000),
-              value: fundValue
+              value: fundValue,
             },
             {
               group: "BTC",
               date: new Date(ts * 1000),
-              value: btcValue
-            }
+              value: btcValue,
+            },
             // {
             //   group: "SOL",
             //   date: new Date(ts * 1000),
@@ -703,7 +703,7 @@ export function useFundPerfChartData(fund: string) {
         .flat();
 
       return chartData;
-    }
+    },
   });
 
   return data;

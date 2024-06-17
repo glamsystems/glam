@@ -3,7 +3,7 @@ import {
   FieldErrors,
   UseFormGetValues,
   UseFormRegister,
-  UseFormSetValue
+  UseFormSetValue,
 } from "react-hook-form";
 
 import { FormFields } from "./CreateProduct";
@@ -25,7 +25,7 @@ export const Policies = ({
   errors,
   errorStyle,
   disabeld,
-  setDisabled
+  setDisabled,
 }: PolicyProps) => {
   return (
     <div className="flex flex-col gap-[30px]">
@@ -74,7 +74,7 @@ export const Policies = ({
             label={getValues("lockupPeriodUnits") ?? "days"}
             selectedItem={{
               id: getValues("lockupPeriodUnits"),
-              name: getValues("lockupPeriodUnits")
+              name: getValues("lockupPeriodUnits"),
             }}
             onChange={(e) => {
               setValue(
@@ -90,7 +90,7 @@ export const Policies = ({
               { id: "weeks", name: "weeks" },
               { id: "months", name: "months" },
               { id: "quarters", name: "quarters" },
-              { id: "years", name: "years" }
+              { id: "years", name: "years" },
             ]}
             itemToString={(item) => item?.name ?? "days"}
             titleText="Lockup Time Units"
@@ -158,7 +158,7 @@ export const Policies = ({
           label={getValues("nonTransferable") ? "Yes" : "No"}
           items={[
             { id: true, name: "Yes" },
-            { id: false, name: "No" }
+            { id: false, name: "No" },
           ]}
           onChange={(e) => {
             setValue("nonTransferable", e.selectedItem?.id ?? false);
@@ -176,7 +176,7 @@ export const Policies = ({
             items={[
               { id: "Share Class Asset", name: "Share Class Asset" },
               { id: "In-Kind", name: "In-Kind" },
-              { id: "Both", name: "Both" }
+              { id: "Both", name: "Both" },
             ]}
             onChange={(e) => {
               setValue(

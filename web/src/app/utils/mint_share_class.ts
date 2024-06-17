@@ -14,7 +14,7 @@ import {
   Transaction,
   clusterApiUrl,
   sendAndConfirmTransaction,
-} from '@solana/web3.js';
+} from "@solana/web3.js";
 import {
   ExtensionType,
   LENGTH_SIZE,
@@ -24,44 +24,44 @@ import {
   createInitializeMintInstruction,
   getMintLen,
   getTokenMetadata,
-} from '@solana/spl-token';
+} from "@solana/spl-token";
 import {
   TokenMetadata,
   createInitializeInstruction,
   createUpdateFieldInstruction,
   pack,
-} from '@solana/spl-token-metadata';
+} from "@solana/spl-token-metadata";
 
-import { getKeypairFromFile } from '@solana-developers/helpers';
+import { getKeypairFromFile } from "@solana-developers/helpers";
 
 async function mintShareClass(): Promise<TokenMetadata> {
-  const connection = new Connection(clusterApiUrl('devnet'));
+  const connection = new Connection(clusterApiUrl("devnet"));
 
   const payer = await getKeypairFromFile(
-    '/Users/fabio/code/Crypto/wallets/solana/000.json'
+    "/Users/fabio/code/Crypto/wallets/solana/000.json"
   );
-  console.log('payer:', payer.publicKey.toBase58());
+  console.log("payer:", payer.publicKey.toBase58());
 
   const mint = Keypair.generate();
-  console.log('mint:', mint.publicKey.toBase58());
+  console.log("mint:", mint.publicKey.toBase58());
 
   const metadata: TokenMetadata = {
     mint: mint.publicKey,
-    name: 'Global Asset Management Layer Fund B USDC',
-    symbol: 'GLAM-B-USDC',
-    uri: 'https://glam.systems',
+    name: "Global Asset Management Layer Fund B USDC",
+    symbol: "GLAM-B-USDC",
+    uri: "https://glam.systems",
     additionalMetadata: [
-      ['fund_id', 'Pubkey'],
-      ['share_class_asset', 'USDC'],
-      ['share_class_asset_id', 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'],
-      ['isin', 'XS1082172823'],
-      ['status', 'OPEN'],
-      ['fee_management', '0.015'],
-      ['fee_performance', '0.1'],
-      ['policy_distribution', 'ACCUMULATING'],
-      ['extension', 'A'],
-      ['launch_date', '2024-04-26'],
-      ['lifecycle', 'ACTIVE'],
+      ["fund_id", "Pubkey"],
+      ["share_class_asset", "USDC"],
+      ["share_class_asset_id", "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"],
+      ["isin", "XS1082172823"],
+      ["status", "OPEN"],
+      ["fee_management", "0.015"],
+      ["fee_performance", "0.1"],
+      ["policy_distribution", "ACCUMULATING"],
+      ["extension", "A"],
+      ["launch_date", "2024-04-26"],
+      ["lifecycle", "ACTIVE"],
     ],
   };
 
@@ -219,10 +219,10 @@ async function mintShareClass(): Promise<TokenMetadata> {
     mint,
   ]);
 
-  console.log('Signature: ', sig);
+  console.log("Signature: ", sig);
 
   const chainMetadata = getTokenMetadata(connection, mint.publicKey);
 
-  console.log('On-chain Metadata: ', chainMetadata);
+  console.log("On-chain Metadata: ", chainMetadata);
   return metadata;
 }

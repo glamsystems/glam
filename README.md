@@ -35,7 +35,7 @@ Fund:
 - [x] Segregated treasury account
 - [x] Share classes (Token 2022)
   - [x] On chain Openfunds Share Class (Metadata Extension)
-  - [x] Allow/deny-list for subscription 
+  - [x] Allow/deny-list for subscription
   - [x] Lockup period (Transfer Hook, in progress)
   - [ ] Non-Transferable
   - [ ] Permanent Delegate

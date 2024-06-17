@@ -4,7 +4,7 @@ import {
   RadioButton,
   RadioButtonGroup,
   Select,
-  TextInput
+  TextInput,
 } from "@carbon/react";
 
 import { Add } from "@carbon/icons-react";
@@ -24,12 +24,12 @@ type SideActionBarProps = {
 const ASSETS_MAP: { [key: string]: string } = {
   USDC: "8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2",
   WSOL: "So11111111111111111111111111111111111111112",
-  BTC: "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv"
+  BTC: "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv",
 };
 
 const SubscribeActionBar = ({
   fund,
-  subscribe
+  subscribe,
 }: {
   fund: any;
   subscribe: any;
@@ -71,7 +71,7 @@ const SubscribeActionBar = ({
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            paddingInlineEnd: "16px"
+            paddingInlineEnd: "16px",
           }}
           className="w-full"
           kind="primary"
@@ -87,7 +87,7 @@ const SubscribeActionBar = ({
             const subscribeData = {
               fund: fund.data,
               asset: new PublicKey(ASSETS_MAP[asset]),
-              amount: amountBn
+              amount: amountBn,
             };
             try {
               await subscribe.mutateAsync(subscribeData);
@@ -159,7 +159,7 @@ const RedeemActionBar = ({ fund, redeem }: { fund: any; redeem: any }) => {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            paddingInlineEnd: "16px"
+            paddingInlineEnd: "16px",
           }}
           className="w-full"
           kind="primary"
@@ -172,7 +172,7 @@ const RedeemActionBar = ({ fund, redeem }: { fund: any; redeem: any }) => {
             const redeemData = {
               fund: fund.data,
               amount: amountBn,
-              inKind: inKind == 1
+              inKind: inKind == 1,
             };
             try {
               await redeem.mutateAsync(redeemData);
@@ -205,7 +205,7 @@ const RedeemActionBar = ({ fund, redeem }: { fund: any; redeem: any }) => {
 const ManageActionBar = ({
   fund,
   driftDeposit,
-  driftWithdraw
+  driftWithdraw,
 }: {
   fund: any;
   driftDeposit: any;
@@ -269,7 +269,7 @@ const ManageActionBar = ({
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            paddingInlineEnd: "16px"
+            paddingInlineEnd: "16px",
           }}
           className="w-full"
           kind="primary"
@@ -284,7 +284,7 @@ const ManageActionBar = ({
             const driftDepositData = {
               fund: fund.data,
               asset: new PublicKey(ASSETS_MAP[asset]),
-              amount: amountBn
+              amount: amountBn,
             };
             try {
               await driftDeposit.mutateAsync(driftDepositData);
@@ -307,7 +307,7 @@ const ManageActionBar = ({
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            paddingInlineEnd: "16px"
+            paddingInlineEnd: "16px",
           }}
           className="bg-[#393939] w-full"
           kind="secondary"
@@ -322,7 +322,7 @@ const ManageActionBar = ({
             const driftWithdrawData = {
               fund: fund.data,
               asset: new PublicKey(ASSETS_MAP[asset]),
-              amount: amountBn
+              amount: amountBn,
             };
             try {
               await driftWithdraw.mutateAsync(driftWithdrawData);
@@ -349,12 +349,12 @@ const ManageActionBar = ({
 export const SideActionBar = ({
   type,
   fund,
-  primayButtonFunction
+  primayButtonFunction,
 }: SideActionBarProps) => {
   const grayStyle = {
     color: gray70Hover,
     fontSize: "14px",
-    lineHeight: "18px"
+    lineHeight: "18px",
   };
 
   const { subscribe, redeem, driftDeposit, driftWithdraw } =

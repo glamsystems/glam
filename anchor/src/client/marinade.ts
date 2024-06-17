@@ -72,7 +72,7 @@ export class MarinadeClient {
       [
         anchor.utils.bytes.utf8.encode("ticket"),
         anchor.utils.bytes.utf8.encode(ticketId),
-        fundPDA.toBuffer()
+        fundPDA.toBuffer(),
       ],
       this.base.programId
     );
@@ -85,15 +85,15 @@ export class MarinadeClient {
         {
           filters: [
             {
-              dataSize: 88
+              dataSize: 88,
             },
             {
               memcmp: {
                 offset: 40,
-                bytes: this.base.getTreasuryPDA(fundPDA).toBase58()
-              }
-            }
-          ]
+                bytes: this.base.getTreasuryPDA(fundPDA).toBase58(),
+              },
+            },
+          ],
         }
       );
     return accounts.map((a) => a.pubkey);
@@ -123,7 +123,7 @@ export class MarinadeClient {
       msolLegAuthority: new PublicKey(
         "EyaSjUtSgo9aRD1f8LWXwdvkpDTmXAW54yoSHZRF14WL"
       ),
-      solLeg: new PublicKey("UefNb6z6yvArqe4cJHTXCqStRsKmWhGxnZzuHbikP5Q")
+      solLeg: new PublicKey("UefNb6z6yvArqe4cJHTXCqStRsKmWhGxnZzuHbikP5Q"),
     };
   }
 
@@ -155,7 +155,7 @@ export class MarinadeClient {
       liqPoolMsolLegAuthority: marinadeState.msolLegAuthority,
       liqPoolSolLegPda: marinadeState.solLeg,
       mintTo: treasuryMsolAta,
-      marinadeProgram
+      marinadeProgram,
     });
   }
 
@@ -188,7 +188,7 @@ export class MarinadeClient {
         burnMsolFrom: treasuryMsolAta,
         marinadeState: marinadeState.marinadeStateAddress,
         reservePda: marinadeState.reserveAddress,
-        marinadeProgram
+        marinadeProgram,
       });
   }
 
@@ -206,7 +206,7 @@ export class MarinadeClient {
       ticket,
       marinadeState: marinadeState.marinadeStateAddress,
       reservePda: marinadeState.reserveAddress,
-      marinadeProgram
+      marinadeProgram,
     });
   }
 
@@ -233,7 +233,7 @@ export class MarinadeClient {
       getMsolFrom: treasuryMsolAta,
       getMsolFromAuthority: treasury,
       treasuryMsolAccount: marinadeState.treasuryMsolAccount,
-      marinadeProgram
+      marinadeProgram,
     });
   }
 

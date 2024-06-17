@@ -10,7 +10,7 @@ import {
   TableRow,
   TableToolbar,
   TableToolbarContent,
-  TableToolbarSearch
+  TableToolbarSearch,
 } from "@carbon/react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -53,7 +53,7 @@ export default function ProductsOverview() {
         inception: "", // new Date(Date.parse(fund.shareClassesMetadata[0].launchDate)),
         status: "", // capitalize(fund.shareClassesMetadata[0].lifecycle),
         shareClassAsset: "", // fund.shareClassesMetadata[0].shareClassAsset,
-        policyDistribution: "" // capitalize(fund.shareClassesMetadata[0].policyDistribution)
+        policyDistribution: "", // capitalize(fund.shareClassesMetadata[0].policyDistribution)
       };
     })
     .sort(sortFunds);
@@ -85,7 +85,7 @@ export default function ProductsOverview() {
     { key: "fees_management", header: "MGMT (%)" },
     { key: "fees_performance", header: "PERF (%)" },
     { key: "inception", header: "Inception" },
-    { key: "status", header: "Status" }
+    { key: "status", header: "Status" },
   ];
 
   return (
@@ -109,7 +109,7 @@ export default function ProductsOverview() {
                   <TableRow
                     {...getRowProps({ row })}
                     style={{
-                      cursor: "pointer"
+                      cursor: "pointer",
                     }}
                     onClick={() => navigate(`/products/${row.id}`)}
                   >
@@ -136,7 +136,7 @@ export default function ProductsOverview() {
                               alt="Fund"
                               style={{
                                 marginBottom: "2px",
-                                maxHeight: "36px"
+                                maxHeight: "36px",
                               }}
                             />
                           </TableCell>

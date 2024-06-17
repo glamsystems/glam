@@ -3,7 +3,7 @@ import {
   AnchorProvider,
   IdlAccounts,
   Program,
-  Wallet
+  Wallet,
 } from "@coral-xyz/anchor";
 import {
   BlockhashWithExpiryBlockHeight,
@@ -14,11 +14,11 @@ import {
   Transaction,
   TransactionMessage,
   TransactionSignature,
-  VersionedTransaction
+  VersionedTransaction,
 } from "@solana/web3.js";
 import {
   TOKEN_2022_PROGRAM_ID,
-  getAssociatedTokenAddressSync
+  getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
 
 import { Glam, GlamIDL, GlamProgram, getGlamProgramId } from "../glamExports";
@@ -53,7 +53,7 @@ export class BaseClient {
       const url = defaultProvider.connection.rpcEndpoint;
       const connection = new Connection(url, {
         commitment: "confirmed",
-        confirmTransactionInitialTimeout: 45000 // default timeout is 30s, we extend it to 45s
+        confirmTransactionInitialTimeout: 45000, // default timeout is 30s, we extend it to 45s
       });
       this.provider = new anchor.AnchorProvider(
         connection,
@@ -61,7 +61,7 @@ export class BaseClient {
         {
           ...defaultProvider.opts,
           commitment: "confirmed",
-          preflightCommitment: "confirmed"
+          preflightCommitment: "confirmed",
         }
       );
       anchor.setProvider(this.provider);
@@ -109,7 +109,7 @@ export class BaseClient {
     const messageV0 = new TransactionMessage({
       payerKey,
       recentBlockhash: latestBlockhash.blockhash,
-      instructions: tx.instructions
+      instructions: tx.instructions,
     }).compileToV0Message();
     return new VersionedTransaction(messageV0);
   }
@@ -130,7 +130,7 @@ export class BaseClient {
     // await confirmation
     await connection.confirmTransaction({
       ...latestBlockhash,
-      signature
+      signature,
     });
     return signature;
   }
@@ -159,7 +159,7 @@ export class BaseClient {
     const createdKey = fundModel?.created?.key || [
       ...Buffer.from(
         anchor.utils.sha256.hash(this.getFundName(fundModel))
-      ).slice(0, 8)
+      ).slice(0, 8),
     ];
 
     const manager = this.getManager();
@@ -167,7 +167,7 @@ export class BaseClient {
       [
         anchor.utils.bytes.utf8.encode("fund"),
         manager.toBuffer(),
-        Uint8Array.from(createdKey)
+        Uint8Array.from(createdKey),
       ],
       this.programId
     );
@@ -208,7 +208,7 @@ export class BaseClient {
       [
         anchor.utils.bytes.utf8.encode("share"),
         Uint8Array.from([shareId % 256]),
-        fundPDA.toBuffer()
+        fundPDA.toBuffer(),
       ],
       this.programId
     );
@@ -240,11 +240,11 @@ export class BaseClient {
     const createdKey = [
       ...Buffer.from(
         anchor.utils.sha256.hash(this.getFundName(fundModel))
-      ).slice(0, 8)
+      ).slice(0, 8),
     ];
     fundModel.created = {
       key: createdKey,
-      manager: null
+      manager: null,
     };
 
     if (!fundModel.rawOpenfunds) {
@@ -318,7 +318,7 @@ export class BaseClient {
         fund: fundPDA,
         treasury,
         openfunds,
-        manager
+        manager,
       })
       .rpc();
     await Promise.all(
@@ -331,10 +331,10 @@ export class BaseClient {
             shareClassMint,
             openfunds,
             manager,
-            tokenProgram: TOKEN_2022_PROGRAM_ID
+            tokenProgram: TOKEN_2022_PROGRAM_ID,
           })
           .preInstructions([
-            ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 })
+            ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 }),
           ])
           .rpc();
       })
@@ -366,11 +366,11 @@ export class BaseClient {
   ): any {
     let shareClasses = openfundsAccount.shareClasses.map((shareClass, i) => ({
       shareClassId: fundAccount.shareClasses[i],
-      ...this.remapKeyValueArray(shareClass)
+      ...this.remapKeyValueArray(shareClass),
     }));
     let fundManagers = openfundsAccount.fundManagers.map((fundManager) => ({
       pubkey: fundAccount.manager,
-      ...this.remapKeyValueArray(fundManager)
+      ...this.remapKeyValueArray(fundManager),
     }));
 
     const company = this.remapKeyValueArray(openfundsAccount.company);
@@ -380,7 +380,7 @@ export class BaseClient {
       ...this.remapKeyValueArray(openfundsAccount.fund),
       company,
       fundManagers,
-      shareClasses
+      shareClasses,
     };
 
     return openfund;
@@ -402,7 +402,7 @@ export class BaseClient {
 
     let fund = {
       ...fundModel,
-      ...this.getOpenfundsFromAccounts(fundAccount, openfundsAccount)
+      ...this.getOpenfundsFromAccounts(fundAccount, openfundsAccount),
     };
 
     // Add data from fund params to share classes

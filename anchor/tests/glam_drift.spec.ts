@@ -7,7 +7,7 @@ import { DRIFT_PROGRAM_ID } from "@drift-labs/sdk";
 import {
   getDriftStateAccountPublicKey,
   getUserAccountPublicKey,
-  getUserStatsAccountPublicKey
+  getUserStatsAccountPublicKey,
 } from "@drift-labs/sdk";
 import { createFundForTest } from "./setup";
 
@@ -61,7 +61,7 @@ describe("glam_drift", () => {
           user: userAccountPublicKey,
           state: statePublicKey,
           manager: manager.publicKey,
-          driftProgram: new PublicKey(DRIFT_PROGRAM_ID)
+          driftProgram: new PublicKey(DRIFT_PROGRAM_ID),
         })
         .rpc({ commitment });
       console.log("driftInitialize", txId);
@@ -87,7 +87,7 @@ describe("glam_drift", () => {
           treasury: treasuryPDA,
           user: userAccountPublicKey,
           manager: manager.publicKey,
-          driftProgram: DRIFT_PROGRAM_ID
+          driftProgram: DRIFT_PROGRAM_ID,
         })
         .rpc({ commitment });
 

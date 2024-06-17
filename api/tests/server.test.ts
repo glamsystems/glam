@@ -64,7 +64,7 @@ describe("Test /fund/:pubkey/perf", () => {
       // usdcClosingPrices: expect.any(Array),
       btcPerformance: expect.any(Array),
       ethPerformance: expect.any(Array),
-      solPerformance: expect.any(Array)
+      solPerformance: expect.any(Array),
     });
   });
 });
@@ -81,7 +81,7 @@ describe("Test /prices", () => {
       btc: expect.any(Number),
       eth: expect.any(Number),
       sol: expect.any(Number),
-      usdc: expect.any(Number)
+      usdc: expect.any(Number),
     });
   });
 });
@@ -94,7 +94,7 @@ describe("Test /tx/jupiter/swap", () => {
   it("Invalid manager/fund params", async () => {
     const res = await requestWithSupertest.post("/tx/jupiter/swap").send({
       fund: "xyz",
-      manager: "abc"
+      manager: "abc",
     });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({ error: "Invalid fund or manager" });
@@ -103,11 +103,11 @@ describe("Test /tx/jupiter/swap", () => {
   it("Invalid swap params", async () => {
     const res = await requestWithSupertest.post("/tx/jupiter/swap").send({
       fund: "11111111111111111111111111111111",
-      manager: "11111111111111111111111111111111"
+      manager: "11111111111111111111111111111111",
     });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
-      error: "quoteParams or quoteResponse must be provided"
+      error: "quoteParams or quoteResponse must be provided",
     });
   });
 });

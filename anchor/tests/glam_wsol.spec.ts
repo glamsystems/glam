@@ -2,7 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 import {
   Transaction,
   SystemProgram,
-  sendAndConfirmTransaction
+  sendAndConfirmTransaction,
 } from "@solana/web3.js";
 
 import { createFundForTest, sleep } from "./setup";
@@ -22,11 +22,11 @@ describe("glam_wsol", () => {
       SystemProgram.transfer({
         fromPubkey: glamClient.getManager(),
         toPubkey: glamClient.getTreasuryPDA(fundPDA),
-        lamports: 100_000_000
+        lamports: 100_000_000,
       })
     );
     await sendAndConfirmTransaction(connection, tranferTx, [
-      glamClient.getWalletSigner()
+      glamClient.getWalletSigner(),
     ]);
   });
 

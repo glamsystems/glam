@@ -1,2 +1,2 @@
-import * as buffer from 'buffer';
+import * as buffer from "buffer";
 window.Buffer = buffer.Buffer;

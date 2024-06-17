@@ -1,9 +1,9 @@
-import { useWallet } from '@solana/wallet-adapter-react';
-import { WalletButton } from '../solana/solana-provider';
-import { AppHero, ellipsify } from '../ui/ui-layout';
-import { ExplorerLink } from '../cluster/cluster-ui';
-import { useGlamProgram } from './glam-data-access';
-import { GlamList } from './glam-ui';
+import { useWallet } from "@solana/wallet-adapter-react";
+import { WalletButton } from "../solana/solana-provider";
+import { AppHero, ellipsify } from "../ui/ui-layout";
+import { ExplorerLink } from "../cluster/cluster-ui";
+import { useGlamProgram } from "./glam-data-access";
+import { GlamList } from "./glam-ui";
 
 export default function CounterFeature() {
   const { publicKey } = useWallet();

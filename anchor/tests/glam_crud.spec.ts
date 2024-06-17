@@ -29,14 +29,14 @@ describe("glam_crud", () => {
   it("Update fund", async () => {
     const newName = "Updated fund name";
     const updatedFund = glamClient.getFundModel({
-      name: newName
+      name: newName,
     });
 
     await glamClient.program.methods
       .update(updatedFund)
       .accounts({
         fund: fundPDA,
-        manager: glamClient.getManager()
+        manager: glamClient.getManager(),
       })
       .rpc();
     const fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
@@ -51,9 +51,9 @@ describe("glam_crud", () => {
     const updatedFund = glamClient.getFundModel({
       manager: {
         name: "New Manager",
-        pubkey: newManager.publicKey
+        pubkey: newManager.publicKey,
         // kind: "Wallet"
-      }
+      },
     });
     console.log(updatedFund);
     try {
@@ -61,7 +61,7 @@ describe("glam_crud", () => {
         .update(updatedFund)
         .accounts({
           fund: fundPDA,
-          manager
+          manager,
         })
         .rpc();
     } catch (err) {
@@ -74,9 +74,9 @@ describe("glam_crud", () => {
     const updatedFund2 = glamClient.getFundModel({
       manager: {
         name: "Old Manager",
-        pubkey: manager
+        pubkey: manager,
         // kind: "Wallet"
-      }
+      },
     });
 
     /* old manager can NOT update back */
@@ -85,7 +85,7 @@ describe("glam_crud", () => {
         .update(updatedFund2)
         .accounts({
           fund: fundPDA,
-          manager
+          manager,
         })
         .rpc();
       expect(txId).toBeUndefined();
@@ -99,7 +99,7 @@ describe("glam_crud", () => {
         .update(updatedFund2)
         .accounts({
           fund: fundPDA,
-          manager: newManager.publicKey
+          manager: newManager.publicKey,
         })
         .signers([newManager])
         .rpc();

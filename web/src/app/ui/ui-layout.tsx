@@ -3,7 +3,7 @@ import * as React from "react";
 import {
   ClusterChecker,
   ClusterUiSelect,
-  ExplorerLink
+  ExplorerLink,
 } from "../cluster/cluster-ui";
 import {
   Header,
@@ -20,7 +20,7 @@ import {
   Search,
   SideNav,
   SideNavItems,
-  SkipToContent
+  SkipToContent,
 } from "@carbon/react";
 import { Link, useLocation } from "react-router-dom";
 import { ReactNode, Suspense, useEffect, useRef } from "react";
@@ -139,7 +139,7 @@ export function UiLayout({ children }: { children: ReactNode }) {
             position: "absolute",
             bottom: 0,
             padding: 4,
-            zIndex: 2
+            zIndex: 2,
           }}
         >
           <p className="ml-auto mr-auto">
@@ -189,7 +189,7 @@ export function AppModal({
   show,
   submit,
   submitDisabled,
-  submitLabel
+  submitLabel,
 }: {
   children: ReactNode;
   title: string;
@@ -239,7 +239,7 @@ export function AppModal({
 export function AppHero({
   children,
   title,
-  subtitle
+  subtitle,
 }: {
   children?: ReactNode;
   title: ReactNode;

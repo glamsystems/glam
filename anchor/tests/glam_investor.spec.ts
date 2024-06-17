@@ -5,7 +5,7 @@ import {
   Transaction,
   sendAndConfirmTransaction,
   ComputeBudgetProgram,
-  Keypair
+  Keypair,
 } from "@solana/web3.js";
 import {
   createMint,
@@ -18,7 +18,7 @@ import {
   TOKEN_2022_PROGRAM_ID,
   getMint,
   getAccount,
-  createTransferCheckedInstruction
+  createTransferCheckedInstruction,
 } from "@solana/spl-token";
 
 import { fundTestExample, createFundForTest } from "./setup";
@@ -39,7 +39,7 @@ describe("glam_investor", () => {
   const userKeypairs = [
     Keypair.generate(), // alice
     Keypair.generate(), // bob
-    Keypair.generate() // eve
+    Keypair.generate(), // eve
   ];
   const alice = userKeypairs[0];
   const bob = userKeypairs[1];
@@ -48,7 +48,7 @@ describe("glam_investor", () => {
   const tokenKeypairs = [
     Keypair.fromSeed(str2seed("usdc")), // mock token 0
     Keypair.fromSeed(str2seed("eth")), // ...
-    Keypair.fromSeed(str2seed("btc"))
+    Keypair.fromSeed(str2seed("btc")),
   ];
   const usdc = tokenKeypairs[0]; // 6 decimals
   const eth = tokenKeypairs[1]; // 8 decimals
@@ -69,7 +69,7 @@ describe("glam_investor", () => {
     ...fundTestExample,
     name: "Glam Investment",
     assets: [usdc.publicKey, btc.publicKey, ethOrWsol],
-    assetsWeights: [0, 60, 40]
+    assetsWeights: [0, 60, 40],
   } as any;
   // overwrite share class acls
   // alice and manager are allowed to subcribe
@@ -77,7 +77,7 @@ describe("glam_investor", () => {
   fundExample.shareClasses[0].allowlist = [
     alice.publicKey,
     bob.publicKey,
-    manager.publicKey
+    manager.publicKey,
   ];
   fundExample.shareClasses[0].blocklist = [bob.publicKey, eve.publicKey];
 
@@ -274,7 +274,7 @@ describe("glam_investor", () => {
       );
       await sendAndConfirmTransaction(connection, tx, [manager.payer], {
         skipPreflight: true,
-        commitment
+        commitment,
       });
     } catch (e) {
       console.error(e);
@@ -349,7 +349,7 @@ describe("glam_investor", () => {
           signerAssetAta: managerBtcAta,
           signer: manager.publicKey,
           tokenProgram: TOKEN_PROGRAM_ID,
-          token2022Program: TOKEN_2022_PROGRAM_ID
+          token2022Program: TOKEN_2022_PROGRAM_ID,
         })
         .rpc({ commitment });
     } catch (e) {
@@ -445,7 +445,7 @@ describe("glam_investor", () => {
       );
       await sendAndConfirmTransaction(connection, tx1, [manager.payer], {
         skipPreflight: true,
-        commitment
+        commitment,
       });
     } catch (e) {
       // transfer usdc into treasury

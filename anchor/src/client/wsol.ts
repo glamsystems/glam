@@ -41,7 +41,7 @@ export class WSolClient {
       treasury,
       treasuryWsolAta,
       wsolMint,
-      manager
+      manager,
     });
   }
 
@@ -57,7 +57,7 @@ export class WSolClient {
       treasury,
       treasuryWsolAta,
       wsolMint,
-      manager
+      manager,
     });
   }
 

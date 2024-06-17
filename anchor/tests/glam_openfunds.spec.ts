@@ -50,8 +50,8 @@ describe("glam_openfunds", () => {
         lockUpPeriodInDays: 40, //TODO: auto
         launchPrice: null, // auto
         launchPriceCurrency: null, // auto
-        launchPriceDate: null // auto
-      }
+        launchPriceDate: null, // auto
+      },
     ],
     // Glam
     isEnabled: true,
@@ -72,12 +72,12 @@ describe("glam_openfunds", () => {
       email: "hello@glam.systems",
       website: "https://glam.systems",
       manCo: "Glam Management",
-      domicileOfManCo: "CH"
+      domicileOfManCo: "CH",
     },
     // Openfunds Manager (simplified)
     manager: {
-      name: "0x0ece.sol"
-    }
+      name: "0x0ece.sol",
+    },
   };
 
   // fund1b: 1 share class, all fields explicit
@@ -119,8 +119,8 @@ describe("glam_openfunds", () => {
         lockUpPeriodInDays: "40",
         launchPrice: "100",
         launchPriceCurrency: "USD",
-        launchPriceDate: new Date().toISOString().split("T")[0]
-      }
+        launchPriceDate: new Date().toISOString().split("T")[0],
+      },
     ],
     // Glam
     isEnabled: true,
@@ -141,12 +141,12 @@ describe("glam_openfunds", () => {
       manCo: "Glam Management",
       domicileOfManCo: "CH",
       emailAddressOfManCo: "hello@glam.systems",
-      fundWebsiteOfManCo: "https://glam.systems"
+      fundWebsiteOfManCo: "https://glam.systems",
     },
     // Openfunds Manager (simplified)
     manager: {
-      portfolioManagerName: "0x0ece.sol"
-    }
+      portfolioManagerName: "0x0ece.sol",
+    },
   };
 
   // fund2: 2 share classes

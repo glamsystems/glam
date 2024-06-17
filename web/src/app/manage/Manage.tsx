@@ -60,7 +60,7 @@ export const Manage = () => {
         name: fund.name,
         aum: 0,
         nav: 0,
-        backgroundImage: `url("https://api.glam.systems/image/${fund.shareClasses[0]}.png")`
+        backgroundImage: `url("https://api.glam.systems/image/${fund.shareClasses[0]}.png")`,
       };
     });
   // if (!data.length) {
@@ -114,7 +114,7 @@ export const Manage = () => {
                       backgroundSize: "cover",
                       position: "relative",
                       top: "15px",
-                      left: "15px"
+                      left: "15px",
                     }}
                   ></div>
                 </div>
@@ -153,7 +153,7 @@ export const Manage = () => {
                       'url("https://api.glam.systems/image/11111111111111111111111111111111.png")',
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat",
-                    backgroundSize: "cover"
+                    backgroundSize: "cover",
                   }}
                 ></div>
               </div>

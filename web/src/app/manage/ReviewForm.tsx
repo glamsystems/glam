@@ -4,7 +4,7 @@ import {
   StructuredListCell,
   StructuredListHead,
   StructuredListRow,
-  StructuredListWrapper
+  StructuredListWrapper,
 } from "@carbon/react";
 
 import { FormFields } from "./CreateProduct";
@@ -20,7 +20,7 @@ type ReviewFormProps = {
 export const ReviewForm = ({
   getValues,
   assets,
-  isSubmitting
+  isSubmitting,
 }: ReviewFormProps) => {
   return (
     <>
@@ -28,7 +28,7 @@ export const ReviewForm = ({
         <StructuredListWrapper
           isCondensed
           style={{
-            width: "80%"
+            width: "80%",
           }}
         >
           <StructuredListHead>

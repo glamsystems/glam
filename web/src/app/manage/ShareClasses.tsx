@@ -4,7 +4,7 @@ import {
   UseFormGetValues,
   UseFormRegister,
   UseFormSetValue,
-  UseFormWatch
+  UseFormWatch,
 } from "react-hook-form";
 
 import { FormFields } from "./CreateProduct";
@@ -27,7 +27,7 @@ export const ShareClasses = ({
   register,
   errors,
   errorStyle,
-  assets
+  assets,
 }: ShareClassProps) => {
   return (
     <>
@@ -72,7 +72,7 @@ export const ShareClasses = ({
             { id: "2", name: "2" },
             { id: "3", name: "3" },
             { id: "4", name: "4" },
-            { id: "5", name: "5" }
+            { id: "5", name: "5" },
           ]}
           itemToString={(item) => item?.name ?? ""}
           titleText="Extension"
@@ -134,7 +134,7 @@ export const ShareClasses = ({
             { id: "Projected", name: "Projected" },
             { id: "To Be Launched", name: "To Be Launched" },
             { id: "Offering Period", name: "Offering Period" },
-            { id: "Active", name: "Active" }
+            { id: "Active", name: "Active" },
           ]}
           itemToString={(item) => item?.name ?? ""}
           titleText="Share Class Lifecycle"
@@ -157,9 +157,9 @@ export const ShareClasses = ({
             { id: "Accumulating", name: "Accumulating" },
             {
               id: "Accumulating & Distributing",
-              name: "Accumulating & Distributing"
+              name: "Accumulating & Distributing",
             },
-            { id: "Distributing", name: "Distributing" }
+            { id: "Distributing", name: "Distributing" },
           ]}
           itemToString={(item) => item?.name ?? ""}
           titleText="Policy Distribution"
