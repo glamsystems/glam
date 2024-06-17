@@ -112,55 +112,8 @@ router.post("/tx/jupiter/swap", async (req, res) => {
       fund,
       manager,
       quoteParams,
-      quoteResponse
-    );
-    return serializeVersionedTx(tx, res);
-  } catch (err) {
-    console.log(err);
-    return res.status(400).send({ error: err.message });
-  }
-});
-
-router.post("/tx/jupiter/swap/ix", async (req, res) => {
-  res.set("content-type", "application/json");
-  const fund = validatePubkey(req.body.fund);
-  const manager = validatePubkey(req.body.manager);
-  const inputMint = validatePubkey(req.body.inputMint);
-  const outputMint = validatePubkey(req.body.outputMint);
-  const amount = validateBN(req.body.amount);
-
-  if (!fund || !manager || !inputMint || !outputMint || !amount) {
-    return res.status(400).send({
-      error: "Invalid parameter fund/manager/inputMint/outputMint/amount"
-    });
-  }
-
-  const {
-    swapInstruction,
-    addressLookupTableAddresses,
-    computeBudgetInstructions,
-    cleanupInstruction
-  } = req.body;
-
-  if (!swapInstruction || !addressLookupTableAddresses) {
-    return res.status(400).send({
-      error:
-        "Both swapInstruction and addressLookupTableAddresses must be provided"
-    });
-  }
-  try {
-    const tx = await req.client.jupiter.swapTxFromIx(
-      fund,
-      manager,
-      amount,
-      inputMint,
-      outputMint,
-      {
-        swapInstruction,
-        addressLookupTableAddresses,
-        computeBudgetInstructions,
-        cleanupInstruction
-      }
+      quoteResponse,
+      req.body.swapInstructions
     );
     return serializeVersionedTx(tx, res);
   } catch (err) {

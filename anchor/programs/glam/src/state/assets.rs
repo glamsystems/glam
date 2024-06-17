@@ -221,12 +221,57 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
         pyth_account: "8ihFLu5FimgTQ1Unh4dVyEHUGodJ5gJQCrQf4KUVB9bN",
         staking_state: "",
     },
-    // Marinade staked SOL (mSOL)
+
+    //
+    // LST
+    //
+
+    // mSOL - Marinade staked SOL
     "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So" =>
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
         pyth_account: "E4v1BBgoso9s64TQvmyownAVJbhbEPGyzA3qn4n46qj9",
         staking_state: "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC",
+    },
+    // bonkSOL
+    "BonK1YhkXEGLZzwtcvRTip3gAL9nCeQD7ppZBLXhtTs" =>
+    AssetMeta {
+        decimals: 9,
+        is_stable_coin: false,
+        pyth_account: "",
+        staking_state: "ArAQfbzsdotoKB5jJcZa3ajQrrPcWr2YQoDAEAiFxJAC",
+    },
+    // dSOL - Drift Staked SOL
+    "Dso1bDeDjCQxTrWHqUUi63oBvV7Mdm6WaobLbQ7gnPQ" =>
+    AssetMeta {
+        decimals: 9,
+        is_stable_coin: false,
+        pyth_account: "",
+        staking_state: "9mhGNSPArRMHpLDMSmxAvuoizBqtBGqYdT8WGuqgxNdn",
+    },
+    // picoSOL
+    "picobAEvs6w7QEknPce34wAE4gknZA9v5tTonnmHYdX" =>
+    AssetMeta {
+        decimals: 9,
+        is_stable_coin: false,
+        pyth_account: "",
+        staking_state: "8Dv3hNYcEWEaa4qVx9BTN1Wfvtha1z8cWDUXb7KVACVe",
+    },
+    // JitoSOL
+    "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn" =>
+    AssetMeta {
+        decimals: 9,
+        is_stable_coin: false,
+        pyth_account: "",
+        staking_state: "Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb",
+    },
+    // LST - Liquid Staking Token
+    "LSTxxxnJzKDFSLr4dUkPcmCf5VyryEqzPLz5j4bpxFp" =>
+    AssetMeta {
+        decimals: 9,
+        is_stable_coin: false,
+        pyth_account: "",
+        staking_state: "DqhH94PjkZsjAqEze2BEkWhFQJ6EyU6MdtMphMgnXqeK",
     },
 };

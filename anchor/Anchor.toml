@@ -175,6 +175,42 @@ filename = "./fixtures/UefNb6z6yvArqe4cJHTXCqStRsKmWhGxnZzuHbikP5Q.json"
 address = "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"
 program = "./fixtures/jupiter.so"
 
-[[test.validator.account]] # USDC 
+[[test.genesis]] # Mercurial - for e2e swap test
+address = "MERLuDFBMmsHnsBPZw2sDQZHvXFMwp8EdjudcU2HKky"
+program = "./fixtures/mercurial.so"
+
+[[test.validator.account]] # Mercurial AMM - for e2e swap test
+address = "MAR1zHjHaQcniE2gXsDptkyKUnNfMEsLBVcfP7vLyv7"
+filename = "./fixtures/MAR1zHjHaQcniE2gXsDptkyKUnNfMEsLBVcfP7vLyv7.json"
+
+[[test.validator.account]] # Address Lookup - for e2e swap test
+address = "6TSS8bTxDjGitZgtTc7gdVWkzKdpGLb9QDi7kXAQQXXp"
+filename = "./fixtures/6TSS8bTxDjGitZgtTc7gdVWkzKdpGLb9QDi7kXAQQXXp.json"
+
+[[test.validator.account]] # for e2e swap test
+address = "EWy2hPdVT4uGrYokx65nAyn2GFBv7bUYA2pFPY96pw7Y"
+filename = "./fixtures/EWy2hPdVT4uGrYokx65nAyn2GFBv7bUYA2pFPY96pw7Y.json"
+
+[[test.validator.account]] # for e2e swap test
+address = "GM48qFn8rnqhyNMrBHyPJgUVwXQ1JvMbcu3b9zkThW9L"
+filename = "./fixtures/GM48qFn8rnqhyNMrBHyPJgUVwXQ1JvMbcu3b9zkThW9L.json"
+
+[[test.validator.account]] # for e2e swap test
+address = "CapuXNQoDviLvU1PxFiizLgPNQCxrsag1uMeyk6zLVps"
+filename = "./fixtures/CapuXNQoDviLvU1PxFiizLgPNQCxrsag1uMeyk6zLVps.json"
+
+[[test.validator.account]] # for e2e swap test
+address = "91bUbswo6Di8235jAPwim1At4cPZLbG2pkpneyqKg4NQ"
+filename = "./fixtures/91bUbswo6Di8235jAPwim1At4cPZLbG2pkpneyqKg4NQ.json"
+
+[[test.validator.account]] # for e2e swap test
+address = "BWdb6kE1yLzSDocaoJ9VWCEHG6fEnfGCUxguJ3VgEjtx"
+filename = "./fixtures/BWdb6kE1yLzSDocaoJ9VWCEHG6fEnfGCUxguJ3VgEjtx.json"
+
+#
+# Others
+#
+
+[[test.validator.account]] # USDC
 address = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 filename = "./fixtures/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v.json"

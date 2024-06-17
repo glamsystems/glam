@@ -18,6 +18,8 @@ pub enum ManagerError {
     InvalidAssetsWeights,
     #[msg("Asset cannot be swapped")]
     InvalidAssetForSwap,
+    #[msg("Swap failed")]
+    InvalidSwap,
 }
 
 #[error_code]

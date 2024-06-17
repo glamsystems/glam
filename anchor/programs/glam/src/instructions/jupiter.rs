@@ -1,7 +1,8 @@
-use anchor_lang::{prelude::*, system_program};
-use anchor_spl::{
-    associated_token::AssociatedToken,
-    token::{sync_native, Mint, SyncNative, Token, TokenAccount},
+use anchor_lang::prelude::*;
+use anchor_spl::associated_token::AssociatedToken;
+use anchor_spl::token::Token;
+use anchor_spl::token_interface::{
+    transfer_checked, Mint, Token2022, TokenAccount, TransferChecked,
 };
 use solana_program::{instruction::Instruction, program::invoke_signed};
 
@@ -24,35 +25,48 @@ impl anchor_lang::Id for Jupiter {
 
 #[derive(Accounts)]
 pub struct JupiterSwap<'info> {
-    // Manager
+    #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
+    pub fund: Box<Account<'info, FundAccount>>,
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
+
+    /// CHECK: no need to create because input ata should exist to swap, and
+    ///        no need to deser because we transfer_checked from input_ata to
+    ///        input_signer_ata
     #[account(mut)]
-    pub manager: Signer<'info>,
+    pub input_ata: UncheckedAccount<'info>,
     #[account(
         init_if_needed,
         payer = manager,
         associated_token::mint = input_mint,
         associated_token::authority = manager)]
-    pub input_ata: Account<'info, TokenAccount>,
+    pub input_signer_ata: InterfaceAccount<'info, TokenAccount>,
 
-    // Fund and treasury
-    #[account(has_one = manager, has_one = treasury)]
-    pub fund: Box<Account<'info, FundAccount>>,
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    #[account(
+        init_if_needed,
+        payer = manager,
+        associated_token::mint = output_mint,
+        associated_token::authority = manager)]
+    pub output_signer_ata: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(
         init_if_needed,
         payer = manager,
         associated_token::mint = output_mint,
         associated_token::authority = treasury)]
-    pub output_ata: Account<'info, TokenAccount>,
+    pub output_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
-    pub input_mint: Account<'info, Mint>,
-    pub output_mint: Account<'info, Mint>,
+    pub input_mint: Box<InterfaceAccount<'info, Mint>>,
+    pub output_mint: Box<InterfaceAccount<'info, Mint>>,
 
-    pub jupiter_program: Program<'info, Jupiter>,
-    pub token_program: Program<'info, Token>,
+    #[account(mut)]
+    pub manager: Signer<'info>,
+
+    // programs
     pub system_program: Program<'info, System>,
+    pub jupiter_program: Program<'info, Jupiter>,
     pub associated_token_program: Program<'info, AssociatedToken>,
+    pub token_program: Program<'info, Token>,
+    pub token_2022_program: Program<'info, Token2022>,
 }
 
 pub fn jupiter_swap(ctx: Context<JupiterSwap>, amount: u64, data: Vec<u8>) -> Result<()> {
@@ -65,6 +79,8 @@ pub fn jupiter_swap(ctx: Context<JupiterSwap>, amount: u64, data: Vec<u8>) -> Re
         );
     }
 
+    let output_amount_before = ctx.accounts.output_signer_ata.amount;
+
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
         "treasury".as_bytes(),
@@ -72,28 +88,29 @@ pub fn jupiter_swap(ctx: Context<JupiterSwap>, amount: u64, data: Vec<u8>) -> Re
         &[ctx.bumps.treasury],
     ];
     let signer_seeds = &[&seeds[..]];
+
     //
-    // Transfer sol from treasury to manager wsol ata
-    // TODO: this only supports SOL transfer, need to support other tokens
+    // Transfer treasury -> signer
     //
-    system_program::transfer(
+    let input_program = if ctx.accounts.input_signer_ata.owner == Token2022::id() {
+        ctx.accounts.token_2022_program.to_account_info()
+    } else {
+        ctx.accounts.token_program.to_account_info()
+    };
+    transfer_checked(
         CpiContext::new_with_signer(
-            ctx.accounts.system_program.to_account_info(),
-            system_program::Transfer {
-                from: ctx.accounts.treasury.to_account_info(),
-                to: ctx.accounts.input_ata.to_account_info(),
+            input_program,
+            TransferChecked {
+                from: ctx.accounts.input_ata.to_account_info(),
+                mint: ctx.accounts.input_mint.to_account_info(),
+                to: ctx.accounts.input_signer_ata.to_account_info(),
+                authority: ctx.accounts.treasury.to_account_info(),
             },
             signer_seeds,
         ),
         amount,
+        ctx.accounts.input_mint.decimals,
     )?;
-    sync_native(CpiContext::new_with_signer(
-        ctx.accounts.token_program.to_account_info(),
-        SyncNative {
-            account: ctx.accounts.input_ata.to_account_info(),
-        },
-        &[],
-    ))?;
 
     //
     // Jupiter swap
@@ -124,8 +141,34 @@ pub fn jupiter_swap(ctx: Context<JupiterSwap>, amount: u64, data: Vec<u8>) -> Re
         &[],
     );
 
-    // TODO: implement swap and transfer which more secure
-    // We shouldn't allow manager to set destination account as we have no way to validate it
+    //
+    // Transfer signer -> treasury
+    //
+
+    // Reload output_signer_ata and check that it actually received something
+    // after the swap. If not, abort.
+    ctx.accounts.output_signer_ata.reload()?;
+    let output_amount = ctx.accounts.output_signer_ata.amount - output_amount_before;
+    require!(output_amount > 0, ManagerError::InvalidSwap);
+
+    let output_program = if ctx.accounts.output_signer_ata.owner == Token2022::id() {
+        ctx.accounts.token_2022_program.to_account_info()
+    } else {
+        ctx.accounts.token_program.to_account_info()
+    };
+    transfer_checked(
+        CpiContext::new(
+            output_program,
+            TransferChecked {
+                from: ctx.accounts.output_signer_ata.to_account_info(),
+                mint: ctx.accounts.output_mint.to_account_info(),
+                to: ctx.accounts.output_ata.to_account_info(),
+                authority: ctx.accounts.manager.to_account_info(),
+            },
+        ),
+        output_amount,
+        ctx.accounts.output_mint.decimals,
+    )?;
 
     Ok(())
 }

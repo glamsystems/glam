@@ -838,22 +838,31 @@ export type Glam = {
       "name": "jupiterSwap",
       "accounts": [
         {
-          "name": "manager",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "inputAta",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "fund",
           "isMut": false,
           "isSigner": false
         },
         {
           "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "inputAta",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "no need to deser because we transfer_checked from input_ata to",
+            "input_signer_ata"
+          ]
+        },
+        {
+          "name": "inputSignerAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "outputSignerAta",
           "isMut": true,
           "isSigner": false
         },
@@ -873,7 +882,22 @@ export type Glam = {
           "isSigner": false
         },
         {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "jupiterProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
           "isMut": false,
           "isSigner": false
         },
@@ -883,12 +907,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "associatedTokenProgram",
+          "name": "token2022Program",
           "isMut": false,
           "isSigner": false
         }
@@ -3082,6 +3101,11 @@ export type Glam = {
       "code": 6007,
       "name": "InvalidAssetForSwap",
       "msg": "Asset cannot be swapped"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidSwap",
+      "msg": "Swap failed"
     }
   ]
 };
@@ -3926,22 +3950,31 @@ export const IDL: Glam = {
       "name": "jupiterSwap",
       "accounts": [
         {
-          "name": "manager",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "inputAta",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "fund",
           "isMut": false,
           "isSigner": false
         },
         {
           "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "inputAta",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "no need to deser because we transfer_checked from input_ata to",
+            "input_signer_ata"
+          ]
+        },
+        {
+          "name": "inputSignerAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "outputSignerAta",
           "isMut": true,
           "isSigner": false
         },
@@ -3961,7 +3994,22 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "jupiterProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
           "isMut": false,
           "isSigner": false
         },
@@ -3971,12 +4019,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "associatedTokenProgram",
+          "name": "token2022Program",
           "isMut": false,
           "isSigner": false
         }
@@ -6170,6 +6213,11 @@ export const IDL: Glam = {
       "code": 6007,
       "name": "InvalidAssetForSwap",
       "msg": "Asset cannot be swapped"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidSwap",
+      "msg": "Swap failed"
     }
   ]
 };
