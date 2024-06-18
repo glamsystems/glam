@@ -36,7 +36,6 @@ deps_to_remove=(
   "@carbon/type"
   "@ibm/plex"
   "@hookform/resolvers"
-  "@solana-developers/helpers"
   "@solana-developers/preset-react"
   "@solana/wallet-adapter-base"
   "@solana/wallet-adapter-react"

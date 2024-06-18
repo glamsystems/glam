@@ -4,20 +4,22 @@ import { VersionedTransaction } from "@solana/web3.js";
 
 const router = Router();
 router.use((req, res, next) => {
-  const signer = validatePubkey(req.body.signer || req.body.manager);
+  if (req.path.startsWith("/tx")) {
+    const signer = validatePubkey(req.body.signer || req.body.manager);
 
-  if (!signer) {
-    return res.status(400).send({ error: "Invalid signer" });
+    if (!signer) {
+      return res.status(400).send({ error: "Invalid signer" });
+    }
+
+    const microLamports = req.body.microLamports;
+    const jitoTipLamports = req.body.jitoTipLamports;
+
+    req.apiOptions = {
+      signer,
+      microLamports,
+      jitoTipLamports,
+    };
   }
-
-  const microLamports = req.body.microLamports;
-  const jitoTipLamports = req.body.jitoTipLamports;
-
-  req.apiOptions = {
-    signer,
-    microLamports,
-    jitoTipLamports,
-  };
 
   next();
 });
