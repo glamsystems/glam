@@ -6,6 +6,7 @@ import {
   Wallet,
 } from "@coral-xyz/anchor";
 import {
+  AddressLookupTableAccount,
   BlockhashWithExpiryBlockHeight,
   ComputeBudgetProgram,
   Connection,
@@ -16,6 +17,7 @@ import {
   TransactionSignature,
   VersionedTransaction,
 } from "@solana/web3.js";
+import { getSimulationComputeUnits } from "@solana-developers/helpers";
 import {
   TOKEN_2022_PROGRAM_ID,
   getAssociatedTokenAddressSync,
@@ -30,6 +32,12 @@ type FundAccount = IdlAccounts<Glam>["fundAccount"];
 type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
 
 export const JUPITER_API_DEFAULT = "https://quote-api.jup.ag/v6";
+
+export type ApiTxOptions = {
+  signer?: PublicKey;
+  microLamports?: number;
+  jitoTipLamports?: number;
+};
 
 export class BaseClient {
   cluster: ClusterOrCustom;
@@ -97,26 +105,63 @@ export class BaseClient {
     return this.latestBlockhash;
   }
 
-  async intoVersionedTransaction(
-    tx: Transaction,
-    payerKey: PublicKey,
-    latestBlockhash?: BlockhashWithExpiryBlockHeight
-  ): Promise<VersionedTransaction> {
+  async intoVersionedTransaction({
+    tx,
+    lookupTables,
+    microLamports, // fee
+    jitoTipLamports,
+    signer,
+    latestBlockhash,
+  }: {
+    tx: Transaction;
+    lookupTables?: Array<AddressLookupTableAccount> | [];
+    microLamports?: number;
+    jitoTipLamports?: number;
+    signer?: PublicKey;
+    latestBlockhash?: BlockhashWithExpiryBlockHeight;
+  }): Promise<VersionedTransaction> {
+    if (lookupTables === undefined) {
+      lookupTables = [];
+    }
+    if (signer === undefined) {
+      signer = this.getManager();
+    }
     if (latestBlockhash === undefined) {
       latestBlockhash = await this.getLatestBlockhash();
     }
+
     const connection = this.provider.connection;
+    const instructions = tx.instructions;
+
+    //TODO: add jito tip BEFORE estimating CUs
+
+    const units = await getSimulationComputeUnits(
+      connection,
+      instructions,
+      signer,
+      lookupTables
+    );
+
+    if (microLamports) {
+      instructions.unshift(
+        ComputeBudgetProgram.setComputeUnitPrice({ microLamports })
+      );
+    }
+    if (units) {
+      instructions.unshift(ComputeBudgetProgram.setComputeUnitLimit({ units }));
+    }
+
     const messageV0 = new TransactionMessage({
-      payerKey,
+      payerKey: signer,
       recentBlockhash: latestBlockhash.blockhash,
-      instructions: tx.instructions,
+      instructions: instructions,
     }).compileToV0Message();
     return new VersionedTransaction(messageV0);
   }
 
   async sendAndConfirm(
     tx: VersionedTransaction,
-    signer: Keypair,
+    signer?: Keypair,
     latestBlockhash?: BlockhashWithExpiryBlockHeight
   ): Promise<TransactionSignature> {
     if (latestBlockhash === undefined) {
@@ -124,7 +169,7 @@ export class BaseClient {
     }
     // Anchor provider.sendAndConfirm forces a signature with the wallet, which we don't want
     // https://github.com/coral-xyz/anchor/blob/v0.30.0/ts/packages/anchor/src/provider.ts#L159
-    tx.sign([signer]);
+    tx.sign([signer || this.getWalletSigner()]);
     const connection = this.provider.connection;
     const signature = await connection.sendTransaction(tx); // can throw
     // await confirmation
@@ -132,7 +177,7 @@ export class BaseClient {
       ...latestBlockhash,
       signature,
     });
-    return signature;
+    return signature; // when confirmed, or throw
   }
 
   getManager(): PublicKey {

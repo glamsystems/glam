@@ -51,6 +51,23 @@ const marinadeDelayedUnstakeClaimTx = async (client, req, res) => {
  * Common
  */
 
+const commonApiOptions = (req, res) => {
+  const signer = validatePubkey(req.body.signer || req.body.manager);
+
+  if (!signer) {
+    return res.sendStatus(400);
+  }
+
+  const microLamports = validatePubkey(req.body.microLamports);
+  const jitoTipLamports = validatePubkey(req.body.microLamports);
+
+  return {
+    signer,
+    microLamports,
+    jitoTipLamports,
+  };
+};
+
 const serializeTx = async (tx: Transaction, manager, client, res) => {
   tx.feePayer = manager;
 
@@ -139,33 +156,31 @@ router.post("/tx/marinade/unstake/claim", async (req, res) => {
 
 router.post("/tx/wsol/wrap", async (req, res) => {
   const fund = validatePubkey(req.body.fund);
-  const manager = validatePubkey(req.body.manager);
   const amount = validateBN(req.body.amount);
 
-  console.log(fund, manager, amount);
-
-  if (!fund || !manager || !amount) {
+  if (!fund || !amount) {
     return res.sendStatus(400);
   }
 
-  res.set("content-type", "application/json");
-  const tx = await req.client.wsol.wrapTx(fund, manager, amount);
+  const apiOptions = commonApiOptions(req, res);
+  const tx = await req.client.wsol.wrapTx(fund, amount, apiOptions);
 
-  return await serializeTx(tx, manager, req.client, res);
+  res.set("content-type", "application/json");
+  return await serializeVersionedTx(tx, res);
 });
 
 router.post("/tx/wsol/unwrap", async (req, res) => {
   const fund = validatePubkey(req.body.fund);
-  const manager = validatePubkey(req.body.manager);
 
-  if (!fund || !manager) {
+  if (!fund) {
     return res.sendStatus(400);
   }
 
-  res.set("content-type", "application/json");
-  const tx = await req.client.wsol.unwrapTx(fund, manager);
+  const apiOptions = commonApiOptions(req, res);
+  const tx = await req.client.wsol.unwrapTx(fund, apiOptions);
 
-  return await serializeTx(tx, manager, req.client, res);
+  res.set("content-type", "application/json");
+  return await serializeVersionedTx(tx, res);
 });
 
 export default router;
