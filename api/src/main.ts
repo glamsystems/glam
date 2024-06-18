@@ -46,7 +46,7 @@ const devnetClient = new GlamClient({
 
 const app: Express = express();
 app.use(cors({ origin: "*", methods: "GET" }));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ type: () => true })); // parse all reqs as json
 app.use(express.static(path.join(__dirname, "assets")));
 app.use((req, res, next) => {
   req.client = defaultClient;
@@ -61,9 +61,11 @@ app.use(miscRouter);
 app.use(imageRouter);
 
 // routers that need to use glam client must be registered after req.client is set
-app.use(txRouter);
 app.use(fundRouter);
 app.use(openfundsRouter);
+
+// tx should be the last router
+app.use(txRouter);
 
 const port = process.env.PORT || 8080;
 const server = app.listen(port, () => {

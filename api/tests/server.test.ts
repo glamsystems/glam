@@ -91,10 +91,19 @@ describe("Test /tx/jupiter/swap", () => {
     server.close();
   });
 
-  it("Invalid manager/fund params", async () => {
+  it("Invalid signer params", async () => {
     const res = await requestWithSupertest.post("/tx/jupiter/swap").send({
       fund: "xyz",
-      manager: "abc",
+      signer: "abc",
+    });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({ error: "Invalid signer" });
+  });
+
+  it("Invalid fund params", async () => {
+    const res = await requestWithSupertest.post("/tx/jupiter/swap").send({
+      fund: "xyz",
+      signer: "11111111111111111111111111111111",
     });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({ error: "Invalid fund" });
@@ -103,7 +112,7 @@ describe("Test /tx/jupiter/swap", () => {
   it("Invalid swap params", async () => {
     const res = await requestWithSupertest.post("/tx/jupiter/swap").send({
       fund: "11111111111111111111111111111111",
-      manager: "11111111111111111111111111111111",
+      signer: "11111111111111111111111111111111",
     });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({

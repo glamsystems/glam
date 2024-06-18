@@ -1,8 +1,26 @@
 import { Router } from "express";
 import { validatePubkey, validateBN } from "../validation";
-import { Transaction, VersionedTransaction } from "@solana/web3.js";
+import { VersionedTransaction } from "@solana/web3.js";
 
 const router = Router();
+router.use((req, res, next) => {
+  const signer = validatePubkey(req.body.signer || req.body.manager);
+
+  if (!signer) {
+    return res.status(400).send({ error: "Invalid signer" });
+  }
+
+  const microLamports = req.body.microLamports;
+  const jitoTipLamports = req.body.jitoTipLamports;
+
+  req.apiOptions = {
+    signer,
+    microLamports,
+    jitoTipLamports,
+  };
+
+  next();
+});
 
 /*
  * wSOL
@@ -16,9 +34,7 @@ router.post("/tx/wsol/wrap", async (req, res) => {
     return res.status(400).send({ error: "Invalid fund or amount" });
   }
 
-  const apiOptions = commonApiOptions(req, res);
-  const tx = await req.client.wsol.wrapTx(fund, amount, apiOptions);
-
+  const tx = await req.client.wsol.wrapTx(fund, amount, req.apiOptions);
   return await serializeTx(tx, res);
 });
 
@@ -29,9 +45,7 @@ router.post("/tx/wsol/unwrap", async (req, res) => {
     return res.status(400).send({ error: "Invalid fund" });
   }
 
-  const apiOptions = commonApiOptions(req, res);
-  const tx = await req.client.wsol.unwrapTx(fund, apiOptions);
-
+  const tx = await req.client.wsol.unwrapTx(fund, req.apiOptions);
   return await serializeTx(tx, res);
 });
 
@@ -53,14 +67,13 @@ router.post("/tx/jupiter/swap", async (req, res) => {
     });
   }
 
-  const apiOptions = commonApiOptions(req, res);
   try {
     const tx = await req.client.jupiter.swapTx(
       fund,
       quoteParams,
       quoteResponse,
       req.body.swapInstructions,
-      apiOptions
+      req.apiOptions
     );
     return serializeTx(tx, res);
   } catch (err) {
@@ -81,9 +94,7 @@ router.post("/tx/marinade/stake", async (req, res) => {
     return res.status(400).send({ error: "Invalid fund or amount" });
   }
 
-  const apiOptions = commonApiOptions(req, res);
-  const tx = await req.client.marinade.stakeTx(fund, amount, apiOptions);
-
+  const tx = await req.client.marinade.stakeTx(fund, amount, req.apiOptions);
   return await serializeTx(tx, res);
 });
 
@@ -95,13 +106,11 @@ router.post("/tx/marinade/unstake", async (req, res) => {
     return res.status(400).send({ error: "Invalid fund or amount" });
   }
 
-  const apiOptions = commonApiOptions(req, res);
   const tx = await req.client.marinade.delayedUnstakeTx(
     fund,
     amount,
-    apiOptions
+    req.apiOptions
   );
-
   return await serializeTx(tx, res);
 });
 
@@ -112,33 +121,16 @@ router.post("/tx/marinade/unstake/claim", async (req, res) => {
     return res.status(400).send({ error: "Invalid fund" });
   }
 
-  const apiOptions = commonApiOptions(req, res);
-  const tx = await req.client.marinade.delayedUnstakeClaimTx(fund, apiOptions);
-
+  const tx = await req.client.marinade.delayedUnstakeClaimTx(
+    fund,
+    req.apiOptions
+  );
   return await serializeTx(tx, res);
 });
 
 /*
  * Common
  */
-
-const commonApiOptions = (req, res) => {
-  const signer = validatePubkey(req.body.signer || req.body.manager);
-
-  //TODO: add test
-  if (!signer) {
-    return res.status(400).send({ error: "Invalid signer" });
-  }
-
-  const microLamports = req.body.microLamports;
-  const jitoTipLamports = req.body.jitoTipLamports;
-
-  return {
-    signer,
-    microLamports,
-    jitoTipLamports,
-  };
-};
 
 const serializeTx = async (tx: VersionedTransaction, res) => {
   try {
