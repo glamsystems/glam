@@ -25,13 +25,10 @@ describe("glam_staking", () => {
     });
   });
 
-  it("Marinade desposit: stake 10 SOLs twice", async () => {
+  it("Marinade desposit: stake 20 SOL", async () => {
     try {
-      let tx = await glamClient.marinade.stake(fundPDA, new anchor.BN(1e10));
-      console.log("Stake #1:", tx);
-
-      tx = await glamClient.marinade.stake(fundPDA, new anchor.BN(1e10));
-      console.log("Stake #2:", tx);
+      const tx = await glamClient.marinade.stake(fundPDA, new anchor.BN(1e10));
+      console.log("Stake 10 SOL:", tx);
     } catch (error) {
       console.log("Error", error);
       throw error;
@@ -51,19 +48,15 @@ describe("glam_staking", () => {
     }
   });
 
-  it("Order unstake 1 mSOL twice", async () => {
+  it("Order unstake 1 mSOL x5", async () => {
     try {
-      let tx = await glamClient.marinade.delayedUnstake(
-        fundPDA,
-        new anchor.BN(1e9)
-      );
-      console.log("Delayed unstake #0:", tx);
-
-      tx = await glamClient.marinade.delayedUnstake(
-        fundPDA,
-        new anchor.BN(1e9)
-      );
-      console.log("Delayed unstake #1:", tx);
+      for (let i = 0; i < 5; i++) {
+        const tx = await glamClient.marinade.delayedUnstake(
+          fundPDA,
+          new anchor.BN(1e9)
+        );
+        console.log(`Delayed unstake #${i}:`, tx);
+      }
     } catch (error) {
       console.log("Error", error);
       throw error;
@@ -72,41 +65,25 @@ describe("glam_staking", () => {
 
   it("Search tickets before claim", async () => {
     const tickets = await glamClient.marinade.getExistingTickets(fundPDA);
-    console.log("Tickets", tickets);
-    expect(tickets.length).toBe(2);
+    console.log("Tickets:", tickets);
+    expect(tickets.length).toBe(5);
   });
 
-  it("Claim ticket #0", async () => {
+  it("Claim tickets", async () => {
     // wait for 30s so that the ticket is ready to be claimed
     await sleep(30_000);
     const tickets = await glamClient.marinade.getExistingTickets(fundPDA);
     try {
       const tx = await glamClient.marinade.delayedUnstakeClaim(
         fundPDA,
-        tickets[0]
+        tickets
       );
-      console.log("Claim delayed unstake:", tx);
+      console.log("Claim tickets:", tx);
     } catch (error) {
       console.log("Error", error);
       throw error;
     }
   }, 35_000);
-
-  it("Claim ticket #1", async () => {
-    const tickets = await glamClient.marinade.getExistingTickets(fundPDA);
-    expect(tickets.length).toBe(1);
-
-    try {
-      const tx = await glamClient.marinade.delayedUnstakeClaim(
-        fundPDA,
-        tickets[0]
-      );
-      console.log("Claim delayed unstake:", tx);
-    } catch (error) {
-      console.log("Error", error);
-      throw error;
-    }
-  }, 15_000);
 
   it("Search tickets after claim", async () => {
     const tickets = await glamClient.marinade.getExistingTickets(fundPDA);

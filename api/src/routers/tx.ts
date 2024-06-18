@@ -116,19 +116,26 @@ router.post("/tx/marinade/unstake", async (req, res) => {
 
 router.post("/tx/marinade/unstake/claim", async (req, res) => {
   const fund = validatePubkey(req.body.fund);
-  const ticket = validatePubkey(req.body.ticket);
-
   if (!fund) {
     return res.status(400).send({ error: "Invalid fund" });
   }
 
-  if (!ticket) {
-    return res.status(400).send({ error: "Invalid ticket" });
+  const tickets = req.body.tickets;
+  if (!Array.isArray(tickets)) {
+    return res.status(400).send({ error: "Invalid tickets" });
   }
+
+  const validatedTickets = tickets.map((ticket) => {
+    const validTicket = validatePubkey(ticket);
+    if (!validTicket) {
+      return res.status(400).send({ error: `Invalid ticket: ${ticket}` });
+    }
+    return validTicket;
+  });
 
   const tx = await req.client.marinade.delayedUnstakeClaimTx(
     fund,
-    ticket,
+    validatedTickets,
     req.apiOptions
   );
   return await serializeTx(tx, res);

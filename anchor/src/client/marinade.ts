@@ -38,9 +38,9 @@ export class MarinadeClient {
 
   public async delayedUnstakeClaim(
     fund: PublicKey,
-    ticket: PublicKey
+    tickets: PublicKey[]
   ): Promise<TransactionSignature> {
-    const tx = await this.delayedUnstakeClaimTx(fund, ticket, {});
+    const tx = await this.delayedUnstakeClaimTx(fund, tickets, {});
     return await this.base.sendAndConfirm(tx);
   }
 
@@ -201,7 +201,7 @@ export class MarinadeClient {
 
   public async delayedUnstakeClaimTx(
     fund: PublicKey,
-    ticket: PublicKey,
+    tickets: PublicKey[],
     apiOptions: ApiTxOptions
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
@@ -214,12 +214,30 @@ export class MarinadeClient {
         fund,
         treasury,
         manager,
-        ticket,
+        ticket: tickets[0],
         marinadeState: marinadeState.marinadeStateAddress,
         reservePda: marinadeState.reserveAddress,
         marinadeProgram,
       })
       .transaction();
+
+    tickets.slice(1).map(async (ticket) => {
+      const ix = await this.base.program.methods
+        .marinadeClaim()
+        .accounts({
+          fund,
+          treasury,
+          manager,
+          ticket,
+          marinadeState: marinadeState.marinadeStateAddress,
+          reservePda: marinadeState.reserveAddress,
+          marinadeProgram,
+        })
+        .instruction();
+      tx.add(ix);
+    });
+
+    console.log("tx instrutions length:", tx.instructions.length);
 
     return await this.base.intoVersionedTransaction({
       tx,
