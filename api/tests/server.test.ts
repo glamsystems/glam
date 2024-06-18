@@ -97,7 +97,7 @@ describe("Test /tx/jupiter/swap", () => {
       manager: "abc",
     });
     expect(res.status).toEqual(400);
-    expect(res.body).toEqual({ error: "Invalid fund or manager" });
+    expect(res.body).toEqual({ error: "Invalid fund" });
   });
 
   it("Invalid swap params", async () => {
