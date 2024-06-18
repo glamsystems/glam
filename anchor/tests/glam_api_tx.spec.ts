@@ -7,25 +7,32 @@ import {
   ConfirmOptions,
 } from "@solana/web3.js";
 import { GlamClient } from "../src/client";
+import { createFundForTest, sleep } from "./setup";
 
 /**
- * This test suite is a demonstration of how to interact with the glam API.
+ * This test suite demonstrates how to interact with the glam API.
  *
- * Before running this test suite, make sure you [provider] is correclty set up in Anchor.toml:
- * 1) cluster: set to "mainnet-beta"
+ * Before running this test suite, make sure [provider] is correclty set up in Anchor.toml:
+ * 1) cluster: set to "mainnet-beta" or "localnet" depending on API environment
  * 2) wallet: set to the path of the manager wallet
  *
- * To run the tests (optional to skip build, must skip deploy):
- *  anchor test --skip-build --skip-deploy
+ * To run the tests:
+ * 1) mainnet: anchor test --skip-build --skip-deploy (optional to skip build, must skip deploy)
+ * 2) localnet: anchor test --detach
  */
 
 const API = "http://localhost:8080";
 // const API = "https://api.glam.systems";
 const wsol = new PublicKey("So11111111111111111111111111111111111111112");
 const msol = new PublicKey("mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So");
-const manager = "gLJHKPrZLGBiBZ33hFgZh6YnsEhTVxuRT17UCqNp6ff";
-const fund = "4gAcSdfSAxVPcxj2Hi3AvKKViGat3iUysDD5ZzbqhDTk";
-const treasuryMSolAta = "GSkYFJBNcnRNgGmC6KgkrGtsy2omk8yf94wTPJtcYNtw";
+
+// default to mainnet demo fund addresses
+let manager = new PublicKey("gLJHKPrZLGBiBZ33hFgZh6YnsEhTVxuRT17UCqNp6ff");
+let fund = new PublicKey("4gAcSdfSAxVPcxj2Hi3AvKKViGat3iUysDD5ZzbqhDTk");
+let treasuryMSolAta = new PublicKey(
+  "GSkYFJBNcnRNgGmC6KgkrGtsy2omk8yf94wTPJtcYNtw"
+);
+
 const confirmOptions: ConfirmOptions = {
   commitment: "confirmed",
   maxRetries: 3,
@@ -33,6 +40,20 @@ const confirmOptions: ConfirmOptions = {
 
 describe("glam_api_tx", () => {
   const glamClient = new GlamClient();
+
+  it("Create fund for local tests", async () => {
+    if (API === "http://localhost:8080") {
+      const fundData = await createFundForTest(glamClient);
+      const airdrop = await glamClient.provider.connection.requestAirdrop(
+        glamClient.getTreasuryPDA(fundData.fundPDA),
+        1_000_000_000
+      );
+      await glamClient.provider.connection.confirmTransaction(airdrop);
+      // override default fund addresses
+      fund = fundData.fundPDA;
+      manager = glamClient.getManager();
+    }
+  });
 
   it("Wrap 0.001 sol", async () => {
     const response = await fetch(`${API}/tx/wsol/wrap`, {
@@ -43,16 +64,14 @@ describe("glam_api_tx", () => {
     const { tx } = await response.json();
     console.log("Wrap tx:", tx);
 
+    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
     try {
-      const txId = await sendAndConfirmTransaction(
-        glamClient.provider.connection,
-        Transaction.from(Buffer.from(tx, "base64")),
-        [glamClient.getWalletSigner()],
-        confirmOptions
-      );
-      console.log("Wrap txId:", txId);
+      const txId = await (
+        glamClient.provider as anchor.AnchorProvider
+      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
+      console.log("jupiter swap txId", txId);
     } catch (error) {
-      console.log("Error", error);
+      console.error("Error", error);
       throw error;
     }
   }, 30_000);
@@ -66,20 +85,88 @@ describe("glam_api_tx", () => {
     const { tx } = await response.json();
     console.log("Unwrap tx", tx);
 
+    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
     try {
-      const txId = await sendAndConfirmTransaction(
-        glamClient.provider.connection,
-        Transaction.from(Buffer.from(tx, "base64")),
-        [glamClient.getWalletSigner()],
-        confirmOptions
-      );
-      console.log("Unwrap txId:", txId);
+      const txId = await (
+        glamClient.provider as anchor.AnchorProvider
+      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
+      console.log("jupiter swap txId", txId);
     } catch (error) {
-      console.log("Error", error);
+      console.error("Error", error);
       throw error;
     }
   }, 30_000);
 
+  it("Stake 0.1 sol", async () => {
+    const response = await fetch(`${API}/tx/marinade/stake`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ manager, fund, amount: 100000000 }),
+    });
+    const { tx } = await response.json();
+    console.log("Stake tx:", tx);
+
+    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
+    try {
+      const txId = await (
+        glamClient.provider as anchor.AnchorProvider
+      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
+      console.log("jupiter swap txId", txId);
+    } catch (error) {
+      console.error("Error", error);
+      throw error;
+    }
+  }, 30_000);
+
+  it("Order unstake 0.01 msol", async () => {
+    const response = await fetch(`${API}/tx/marinade/unstake`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ manager, fund, amount: 10000000 }),
+    });
+    const { tx } = await response.json();
+    console.log("Order unstake tx:", tx);
+
+    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
+    try {
+      const txId = await (
+        glamClient.provider as anchor.AnchorProvider
+      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
+      console.log("jupiter swap txId", txId);
+    } catch (error) {
+      console.error("Error", error);
+      throw error;
+    }
+  }, 30_000);
+
+  it("Claim ticket", async () => {
+    await sleep(30_000);
+
+    const { tickets } = await (
+      await fetch(`${API}/fund/${fund}/tickets`)
+    ).json();
+
+    const response = await fetch(`${API}/tx/marinade/unstake/claim`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ manager, fund, ticket: tickets[0] }),
+    });
+    const { tx } = await response.json();
+    console.log("Claim tx:", tx);
+
+    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
+    try {
+      const txId = await (
+        glamClient.provider as anchor.AnchorProvider
+      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
+      console.log("jupiter swap txId", txId);
+    } catch (error) {
+      console.error("Error", error);
+      throw error;
+    }
+  }, 35_000);
+
+  /*
   it("Jupiter swap with quote params", async () => {
     const response = await fetch(`${API}/tx/jupiter/swap`, {
       method: "POST",
@@ -221,80 +308,5 @@ describe("glam_api_tx", () => {
       throw error;
     }
   }, 60_000);
-
-  it("Stake 0.1 sol", async () => {
-    const response = await fetch(`${API}/tx/marinade/stake`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ manager, fund, amount: 100000000 }),
-    });
-    const { tx } = await response.json();
-    console.log("Stake tx:", tx);
-
-    try {
-      const txId = await sendAndConfirmTransaction(
-        glamClient.provider.connection,
-        Transaction.from(Buffer.from(tx, "base64")),
-        [glamClient.getWalletSigner()],
-        confirmOptions
-      );
-      console.log("Stake txId:", txId);
-    } catch (error) {
-      console.log("Error", error);
-      throw error;
-    }
-  }, 30_000);
-
-  //
-  // Uncomment the following tests if you want to perform delayed unstake in mainnet
-  //
-  /*
-  it("Order unstake 0.01 msol", async () => {
-    const response = await fetch(`${API}/tx/marinade/unstake`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ manager, fund, amount: 10000000 })
-    });
-    const { tx } = await response.json();
-    console.log("Order unstake tx:", tx);
-
-    try {
-      const txId = await sendAndConfirmTransaction(
-        glamClient.provider.connection,
-        Transaction.from(Buffer.from(tx, "base64")),
-        [glamClient.getWalletSigner()],
-        confirmOptions
-      );
-      console.log("Order unstake txId:", txId);
-    } catch (error) {
-      console.log("Error", error);
-      throw error;
-    }
-  }, 30_000);
-
-  it("Claim ticket", async () => {
-    await sleep(30_000);
-
-    const response = await fetch(`${API}/tx/marinade/unstake/claim`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ manager, fund })
-    });
-    const { tx } = await response.json();
-    console.log("Claim tx:", tx);
-
-    try {
-      const txId = await sendAndConfirmTransaction(
-        glamClient.provider.connection,
-        Transaction.from(Buffer.from(tx, "base64")),
-        [glamClient.getWalletSigner()],
-        confirmOptions
-      );
-      console.log("Claim txId:", txId);
-    } catch (error) {
-      console.log("Error", error);
-      throw error;
-    }
-  }, 35_000);
-  */
+ */
 });

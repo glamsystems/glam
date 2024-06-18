@@ -1,9 +1,13 @@
 import * as anchor from "@coral-xyz/anchor";
 import { BN } from "@coral-xyz/anchor";
-import { PublicKey, Transaction, TransactionSignature } from "@solana/web3.js";
+import {
+  PublicKey,
+  VersionedTransaction,
+  TransactionSignature,
+} from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 
-import { BaseClient } from "./base";
+import { BaseClient, ApiTxOptions } from "./base";
 
 const marinadeProgram = new PublicKey(
   "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
@@ -20,44 +24,32 @@ export class MarinadeClient {
     fund: PublicKey,
     amount: BN
   ): Promise<TransactionSignature> {
-    return await this.stakeTxBuilder(
-      fund,
-      this.base.getManager(),
-      amount
-    ).rpc();
+    const tx = await this.stakeTx(fund, amount, {});
+    return await this.base.sendAndConfirm(tx);
   }
 
   public async delayedUnstake(
     fund: PublicKey,
     amount: BN
   ): Promise<TransactionSignature> {
-    return await this.delayedUnstakeTxBuilder(
-      fund,
-      this.base.getManager(),
-      amount
-    ).rpc();
+    const tx = await this.delayedUnstakeTx(fund, amount, {});
+    return await this.base.sendAndConfirm(tx);
   }
 
   public async delayedUnstakeClaim(
     fund: PublicKey,
     ticket: PublicKey
   ): Promise<TransactionSignature> {
-    return await this.delayedUnstakeClaimTxBuilder(
-      fund,
-      this.base.getManager(),
-      ticket
-    ).rpc();
+    const tx = await this.delayedUnstakeClaimTx(fund, ticket, {});
+    return await this.base.sendAndConfirm(tx);
   }
 
   public async liquidUnstake(
     fund: PublicKey,
     amount: BN
   ): Promise<TransactionSignature> {
-    return await this.liquidUnstakeTxBuilder(
-      fund,
-      this.base.getManager(),
-      amount
-    ).rpc();
+    const tx = await this.liquidUnstakeTx(fund, amount, {});
+    return await this.base.sendAndConfirm(tx);
   }
 
   /*
@@ -128,14 +120,15 @@ export class MarinadeClient {
   }
 
   /*
-   * Tx Builders
+   * API methods
    */
 
-  stakeTxBuilder(
+  public async stakeTx(
     fund: PublicKey,
-    manager: PublicKey,
-    amount: BN
-  ): any /* MethodsBuilder<Glam, ?> */ {
+    amount: BN,
+    apiOptions: ApiTxOptions
+  ): Promise<VersionedTransaction> {
+    const manager = apiOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
     const marinadeState = this.getMarinadeState();
     const treasuryMsolAta = getAssociatedTokenAddressSync(
@@ -143,31 +136,39 @@ export class MarinadeClient {
       treasury,
       true
     );
-    return this.base.program.methods.marinadeDeposit(amount).accounts({
-      fund,
-      treasury,
-      manager,
-      reservePda: marinadeState.reserveAddress,
-      marinadeState: marinadeState.marinadeStateAddress,
-      msolMint: marinadeState.msolMintAddress,
-      msolMintAuthority: marinadeState.mSolMintAuthority,
-      liqPoolMsolLeg: marinadeState.msolLeg,
-      liqPoolMsolLegAuthority: marinadeState.msolLegAuthority,
-      liqPoolSolLegPda: marinadeState.solLeg,
-      mintTo: treasuryMsolAta,
-      marinadeProgram,
+
+    const tx = await this.base.program.methods
+      .marinadeDeposit(amount)
+      .accounts({
+        fund,
+        treasury,
+        manager,
+        reservePda: marinadeState.reserveAddress,
+        marinadeState: marinadeState.marinadeStateAddress,
+        msolMint: marinadeState.msolMintAddress,
+        msolMintAuthority: marinadeState.mSolMintAuthority,
+        liqPoolMsolLeg: marinadeState.msolLeg,
+        liqPoolMsolLegAuthority: marinadeState.msolLegAuthority,
+        liqPoolSolLegPda: marinadeState.solLeg,
+        mintTo: treasuryMsolAta,
+        marinadeProgram,
+      })
+      .transaction();
+
+    return await this.base.intoVersionedTransaction({
+      tx,
+      ...apiOptions,
     });
   }
 
-  delayedUnstakeTxBuilder(
+  public async delayedUnstakeTx(
     fund: PublicKey,
-    manager: PublicKey,
-    amount: BN
-  ): any /* MethodsBuilder<Glam, ?> */ {
-    // Use timestamp as ticket ID
+    amount: BN,
+    apiOptions: ApiTxOptions
+  ): Promise<VersionedTransaction> {
+    const manager = apiOptions.signer || this.base.getManager();
     const ticketId = Date.now().toString();
     const [ticket, bump] = this.getMarinadeTicketPDA(fund, ticketId);
-
     const treasury = this.base.getTreasuryPDA(fund);
     const marinadeState = this.getMarinadeState();
     const treasuryMsolAta = this.base.getTreasuryAta(
@@ -177,7 +178,7 @@ export class MarinadeClient {
 
     console.log(`Ticket ${ticketId}`, ticket.toBase58());
 
-    return this.base.program.methods
+    const tx = await this.base.program.methods
       .marinadeDelayedUnstake(amount, bump, ticketId)
       .accounts({
         fund,
@@ -189,32 +190,49 @@ export class MarinadeClient {
         marinadeState: marinadeState.marinadeStateAddress,
         reservePda: marinadeState.reserveAddress,
         marinadeProgram,
-      });
-  }
+      })
+      .transaction();
 
-  delayedUnstakeClaimTxBuilder(
-    fund: PublicKey,
-    manager: PublicKey,
-    ticket: PublicKey
-  ): any /* MethodsBuilder<Glam, ?> */ {
-    const treasury = this.base.getTreasuryPDA(fund);
-    const marinadeState = this.getMarinadeState();
-    return this.base.program.methods.marinadeClaim().accounts({
-      fund,
-      treasury,
-      manager,
-      ticket,
-      marinadeState: marinadeState.marinadeStateAddress,
-      reservePda: marinadeState.reserveAddress,
-      marinadeProgram,
+    return await this.base.intoVersionedTransaction({
+      tx,
+      ...apiOptions,
     });
   }
 
-  liquidUnstakeTxBuilder(
+  public async delayedUnstakeClaimTx(
     fund: PublicKey,
-    manager: PublicKey,
-    amount: BN
-  ): any /* MethodsBuilder<Glam, ?> */ {
+    ticket: PublicKey,
+    apiOptions: ApiTxOptions
+  ): Promise<VersionedTransaction> {
+    const manager = apiOptions.signer || this.base.getManager();
+    const treasury = this.base.getTreasuryPDA(fund);
+    const marinadeState = this.getMarinadeState();
+
+    const tx = await this.base.program.methods
+      .marinadeClaim()
+      .accounts({
+        fund,
+        treasury,
+        manager,
+        ticket,
+        marinadeState: marinadeState.marinadeStateAddress,
+        reservePda: marinadeState.reserveAddress,
+        marinadeProgram,
+      })
+      .transaction();
+
+    return await this.base.intoVersionedTransaction({
+      tx,
+      ...apiOptions,
+    });
+  }
+
+  public async liquidUnstakeTx(
+    fund: PublicKey,
+    amount: BN,
+    apiOptions: ApiTxOptions
+  ): Promise<VersionedTransaction> {
+    const manager = apiOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
     const marinadeState = this.getMarinadeState();
     const treasuryMsolAta = getAssociatedTokenAddressSync(
@@ -222,54 +240,27 @@ export class MarinadeClient {
       treasury,
       true
     );
-    return this.base.program.methods.marinadeLiquidUnstake(amount).accounts({
-      fund,
-      treasury,
-      manager,
-      marinadeState: marinadeState.marinadeStateAddress,
-      msolMint: marinadeState.msolMintAddress,
-      liqPoolSolLegPda: marinadeState.solLeg,
-      liqPoolMsolLeg: marinadeState.msolLeg,
-      getMsolFrom: treasuryMsolAta,
-      getMsolFromAuthority: treasury,
-      treasuryMsolAccount: marinadeState.treasuryMsolAccount,
-      marinadeProgram,
+
+    const tx = await this.base.program.methods
+      .marinadeLiquidUnstake(amount)
+      .accounts({
+        fund,
+        treasury,
+        manager,
+        marinadeState: marinadeState.marinadeStateAddress,
+        msolMint: marinadeState.msolMintAddress,
+        liqPoolSolLegPda: marinadeState.solLeg,
+        liqPoolMsolLeg: marinadeState.msolLeg,
+        getMsolFrom: treasuryMsolAta,
+        getMsolFromAuthority: treasury,
+        treasuryMsolAccount: marinadeState.treasuryMsolAccount,
+        marinadeProgram,
+      })
+      .transaction();
+
+    return await this.base.intoVersionedTransaction({
+      tx,
+      ...apiOptions,
     });
-  }
-
-  /*
-   * API methods
-   */
-
-  public async stakeTx(
-    fund: PublicKey,
-    manager: PublicKey,
-    amount: BN
-  ): Promise<Transaction> {
-    return await this.stakeTxBuilder(fund, manager, amount).transaction();
-  }
-
-  public async delayedUnstakeTx(
-    fund: PublicKey,
-    manager: PublicKey,
-    amount: BN
-  ): Promise<Transaction> {
-    return await this.delayedUnstakeTxBuilder(
-      fund,
-      manager,
-      amount
-    ).transaction();
-  }
-
-  public async delayedUnstakeClaimTx(
-    fund: PublicKey,
-    manager: PublicKey,
-    ticket: PublicKey
-  ): Promise<Transaction> {
-    return await this.delayedUnstakeClaimTxBuilder(
-      fund,
-      manager,
-      ticket
-    ).transaction();
   }
 }

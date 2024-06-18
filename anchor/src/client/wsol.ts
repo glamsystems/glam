@@ -1,8 +1,12 @@
 import * as anchor from "@coral-xyz/anchor";
 import { BN } from "@coral-xyz/anchor";
-import { PublicKey, Transaction, TransactionSignature } from "@solana/web3.js";
+import {
+  PublicKey,
+  VersionedTransaction,
+  TransactionSignature,
+} from "@solana/web3.js";
 
-import { BaseClient } from "./base";
+import { BaseClient, ApiTxOptions } from "./base";
 
 const wsolMint = new PublicKey("So11111111111111111111111111111111111111112");
 
@@ -17,48 +21,13 @@ export class WSolClient {
     fund: PublicKey,
     amount: BN
   ): Promise<TransactionSignature> {
-    return await this.wrapTxBuilder(fund, this.base.getManager(), amount).rpc();
+    const tx = await this.wrapTx(fund, amount, {});
+    return await this.base.sendAndConfirm(tx);
   }
 
   public async unwrap(fund: PublicKey): Promise<TransactionSignature> {
-    return await this.unwrapTxBuilder(fund, this.base.getManager()).rpc();
-  }
-
-  /*
-   * Tx Builders
-   */
-
-  public wrapTxBuilder(
-    fund: PublicKey,
-    manager: PublicKey,
-    amount: BN
-  ): any /* MethodsBuilder<Glam, ?> */ {
-    const treasury = this.base.getTreasuryPDA(fund);
-    const treasuryWsolAta = this.base.getTreasuryAta(fund, wsolMint);
-
-    return this.base.program.methods.wsolWrap(amount).accounts({
-      fund,
-      treasury,
-      treasuryWsolAta,
-      wsolMint,
-      manager,
-    });
-  }
-
-  public unwrapTxBuilder(
-    fund: PublicKey,
-    manager: PublicKey
-  ): any /* MethodsBuilder<Glam, ?> */ {
-    const treasury = this.base.getTreasuryPDA(fund);
-    const treasuryWsolAta = this.base.getTreasuryAta(fund, wsolMint);
-
-    return this.base.program.methods.wsolUnwrap().accounts({
-      fund,
-      treasury,
-      treasuryWsolAta,
-      wsolMint,
-      manager,
-    });
+    const tx = await this.unwrapTx(fund, {});
+    return await this.base.sendAndConfirm(tx);
   }
 
   /*
@@ -67,16 +36,52 @@ export class WSolClient {
 
   public async wrapTx(
     fund: PublicKey,
-    manager: PublicKey,
-    amount: BN
-  ): Promise<Transaction> {
-    return await this.wrapTxBuilder(fund, manager, amount).transaction();
+    amount: BN,
+    apiOptions: ApiTxOptions
+  ): Promise<VersionedTransaction> {
+    const manager = apiOptions.signer || this.base.getManager();
+    const treasury = this.base.getTreasuryPDA(fund);
+    const treasuryWsolAta = this.base.getTreasuryAta(fund, wsolMint);
+
+    const tx = await this.base.program.methods
+      .wsolWrap(amount)
+      .accounts({
+        fund,
+        treasury,
+        treasuryWsolAta,
+        wsolMint,
+        manager,
+      })
+      .transaction();
+
+    return await this.base.intoVersionedTransaction({
+      tx,
+      ...apiOptions,
+    });
   }
 
   public async unwrapTx(
     fund: PublicKey,
-    manager: PublicKey
-  ): Promise<Transaction> {
-    return await this.unwrapTxBuilder(fund, manager).transaction();
+    apiOptions: ApiTxOptions
+  ): Promise<VersionedTransaction> {
+    const manager = apiOptions.signer || this.base.getManager();
+    const treasury = this.base.getTreasuryPDA(fund);
+    const treasuryWsolAta = this.base.getTreasuryAta(fund, wsolMint);
+
+    const tx = await this.base.program.methods
+      .wsolUnwrap()
+      .accounts({
+        fund,
+        treasury,
+        treasuryWsolAta,
+        wsolMint,
+        manager,
+      })
+      .transaction();
+
+    return await this.base.intoVersionedTransaction({
+      tx,
+      ...apiOptions,
+    });
   }
 }

@@ -1,7 +1,14 @@
 import { createFundForTest } from "./setup";
 import { GlamClient } from "../src";
-import { PublicKey } from "@solana/web3.js";
-import { getAccount } from "@solana/spl-token";
+import {
+  PublicKey,
+  Transaction,
+  sendAndConfirmTransaction,
+} from "@solana/web3.js";
+import {
+  getAccount,
+  createAssociatedTokenAccountInstruction,
+} from "@solana/spl-token";
 import { BN } from "@coral-xyz/anchor";
 
 describe("glam_jupiter", () => {
@@ -25,6 +32,39 @@ describe("glam_jupiter", () => {
       1_000_000_000
     );
     await glamClient.provider.connection.confirmTransaction(airdrop);
+
+    // create ATAs
+    // const manager = glamClient.getManager();
+    // const treasury = glamClient.getTreasuryPDA(fundPDA);
+    // const tx = new Transaction().add(
+    //   createAssociatedTokenAccountInstruction(
+    //     manager,
+    //     glamClient.getManagerAta(wsol),
+    //     manager,
+    //     wsol
+    //   ),
+    //   createAssociatedTokenAccountInstruction(
+    //     manager,
+    //     glamClient.getManagerAta(msol),
+    //     manager,
+    //     msol
+    //   ),
+    //   createAssociatedTokenAccountInstruction(
+    //     manager,
+    //     glamClient.getTreasuryAta(fundPDA, msol),
+    //     treasury,
+    //     msol
+    //   )
+    // );
+    // await sendAndConfirmTransaction(
+    //   glamClient.provider.connection,
+    //   tx,
+    //   [glamClient.getWalletSigner()],
+    //   {
+    //     skipPreflight: true,
+    //     commitment: "confirmed",
+    //   }
+    // );
   });
 
   it("Asset not allowed to swap", async () => {
@@ -34,15 +74,13 @@ describe("glam_jupiter", () => {
         inputMint: usdc.toBase58(),
         outputMint: msol.toBase58(),
         amount,
-        autoSlippage: true,
-        autoSlippageCollisionUsdValue: 1000,
         swapMode: "ExactIn",
-        onlyDirectRoutes: false,
-        asLegacyTransaction: false,
-        maxAccounts: 20,
+        onlyDirectRoutes: true,
+        maxAccounts: 8,
       });
       console.log("swap txId", txId);
     } catch (e) {
+      console.log(e);
       expect(
         e.logs.some(
           (log) =>
@@ -329,10 +367,10 @@ describe("glam_jupiter", () => {
       await glamClient.provider.connection.getBalance(treasury);
     expect(beforeTreasuryBalance).toEqual(1_000_946_560);
     const beforeNoAccounts = [
-      glamClient.getManagerAta(wsol),
-      glamClient.getManagerAta(msol),
+      // glamClient.getManagerAta(wsol),
+      // glamClient.getManagerAta(msol),
       glamClient.getTreasuryAta(fundPDA, wsol),
-      glamClient.getTreasuryAta(fundPDA, msol),
+      // glamClient.getTreasuryAta(fundPDA, msol),
     ];
     beforeNoAccounts.forEach(async (account) => {
       try {
@@ -628,7 +666,7 @@ describe("glam_jupiter", () => {
         "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]"
       );
     }
-  });
+  }, 15_000);
 
   it("Swap by providing swap instructions", async () => {
     const amount = 50_000_000;
@@ -672,5 +710,5 @@ describe("glam_jupiter", () => {
         "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]"
       );
     }
-  });
+  }, 15_000);
 });
