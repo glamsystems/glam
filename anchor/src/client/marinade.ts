@@ -38,9 +38,9 @@ export class MarinadeClient {
 
   public async delayedUnstakeClaim(
     fund: PublicKey,
-    ticket: PublicKey
+    tickets: PublicKey[]
   ): Promise<TransactionSignature> {
-    const tx = await this.delayedUnstakeClaimTx(fund, ticket, {});
+    const tx = await this.delayedUnstakeClaimTx(fund, tickets, {});
     return await this.base.sendAndConfirm(tx);
   }
 
@@ -201,7 +201,7 @@ export class MarinadeClient {
 
   public async delayedUnstakeClaimTx(
     fund: PublicKey,
-    ticket: PublicKey,
+    tickets: PublicKey[],
     apiOptions: ApiTxOptions
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
@@ -214,12 +214,30 @@ export class MarinadeClient {
         fund,
         treasury,
         manager,
-        ticket,
+        ticket: tickets[0],
         marinadeState: marinadeState.marinadeStateAddress,
         reservePda: marinadeState.reserveAddress,
         marinadeProgram,
       })
       .transaction();
+
+    // Quick and dirty way to add the rest of the tickets
+    // TODO: refactor program method to accept multiple tickets in remainingAccounts
+    tickets.slice(1).map(async (ticket) => {
+      const ix = await this.base.program.methods
+        .marinadeClaim()
+        .accounts({
+          fund,
+          treasury,
+          manager,
+          ticket,
+          marinadeState: marinadeState.marinadeStateAddress,
+          reservePda: marinadeState.reserveAddress,
+          marinadeProgram,
+        })
+        .instruction();
+      tx.add(ix);
+    });
 
     return await this.base.intoVersionedTransaction({
       tx,

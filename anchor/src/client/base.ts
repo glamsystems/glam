@@ -137,7 +137,7 @@ export class BaseClient {
 
     let units;
     try {
-      const units = await getSimulationComputeUnits(
+      units = await getSimulationComputeUnits(
         connection,
         instructions,
         signer,
