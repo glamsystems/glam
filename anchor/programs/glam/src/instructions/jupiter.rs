@@ -36,24 +36,19 @@ pub struct JupiterSwap<'info> {
     #[account(mut)]
     pub input_treasury_ata: UncheckedAccount<'info>,
     #[account(
-        init_if_needed,
-        payer = manager,
+        mut,
         associated_token::mint = input_mint,
         associated_token::authority = manager)]
-    pub input_signer_ata: InterfaceAccount<'info, TokenAccount>,
+    pub input_signer_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
-        init_if_needed,
-        payer = manager,
+        mut,
         associated_token::mint = output_mint,
         associated_token::authority = manager)]
     pub output_signer_ata: Box<InterfaceAccount<'info, TokenAccount>>,
-    #[account(
-        init_if_needed,
-        payer = manager,
-        associated_token::mint = output_mint,
-        associated_token::authority = treasury)]
-    pub output_treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    /// CHECK: same as above
+    #[account(mut)]
+    pub output_treasury_ata: UncheckedAccount<'info>,
 
     pub input_mint: Box<InterfaceAccount<'info, Mint>>,
     pub output_mint: Box<InterfaceAccount<'info, Mint>>,
