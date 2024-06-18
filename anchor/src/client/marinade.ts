@@ -221,6 +221,8 @@ export class MarinadeClient {
       })
       .transaction();
 
+    // Quick and dirty way to add the rest of the tickets
+    // TODO: refactor program method to accept multiple tickets in remainingAccounts
     tickets.slice(1).map(async (ticket) => {
       const ix = await this.base.program.methods
         .marinadeClaim()
@@ -236,8 +238,6 @@ export class MarinadeClient {
         .instruction();
       tx.add(ix);
     });
-
-    console.log("tx instrutions length:", tx.instructions.length);
 
     return await this.base.intoVersionedTransaction({
       tx,
