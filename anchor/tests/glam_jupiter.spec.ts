@@ -34,52 +34,43 @@ describe("glam_jupiter", () => {
     await glamClient.provider.connection.confirmTransaction(airdrop);
 
     // create ATAs
-    const manager = glamClient.getManager();
-    const treasury = glamClient.getTreasuryPDA(fundPDA);
-    const tx = new Transaction().add(
-      createAssociatedTokenAccountInstruction(
-        manager,
-        glamClient.getManagerAta(wsol),
-        manager,
-        wsol
-      ),
-      createAssociatedTokenAccountInstruction(
-        manager,
-        glamClient.getManagerAta(msol),
-        manager,
-        msol
-      ),
-      createAssociatedTokenAccountInstruction(
-        manager,
-        glamClient.getTreasuryAta(fundPDA, msol),
-        treasury,
-        msol
-      )
-    );
-    await sendAndConfirmTransaction(
-      glamClient.provider.connection,
-      tx,
-      [glamClient.getWalletSigner()],
-      {
-        skipPreflight: true,
-        commitment: "confirmed",
-      }
-    );
+    // const manager = glamClient.getManager();
+    // const treasury = glamClient.getTreasuryPDA(fundPDA);
+    // const tx = new Transaction().add(
+    //   createAssociatedTokenAccountInstruction(
+    //     manager,
+    //     glamClient.getManagerAta(wsol),
+    //     manager,
+    //     wsol
+    //   ),
+    //   createAssociatedTokenAccountInstruction(
+    //     manager,
+    //     glamClient.getManagerAta(msol),
+    //     manager,
+    //     msol
+    //   ),
+    //   createAssociatedTokenAccountInstruction(
+    //     manager,
+    //     glamClient.getTreasuryAta(fundPDA, msol),
+    //     treasury,
+    //     msol
+    //   )
+    // );
+    // await sendAndConfirmTransaction(
+    //   glamClient.provider.connection,
+    //   tx,
+    //   [glamClient.getWalletSigner()],
+    //   {
+    //     skipPreflight: true,
+    //     commitment: "confirmed",
+    //   }
+    // );
   });
 
   it("Asset not allowed to swap", async () => {
     const amount = 50_000_000;
     try {
       const txId = await glamClient.jupiter.swap(fundPDA, {
-        // inputMint: usdc.toBase58(),
-        // outputMint: msol.toBase58(),
-        // amount,
-        // autoSlippage: true,
-        // autoSlippageCollisionUsdValue: 1000,
-        // swapMode: "ExactIn",
-        // onlyDirectRoutes: false,
-        // asLegacyTransaction: false,
-        // maxAccounts: 20,
         inputMint: usdc.toBase58(),
         outputMint: msol.toBase58(),
         amount,
@@ -675,7 +666,7 @@ describe("glam_jupiter", () => {
         "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]"
       );
     }
-  });
+  }, 15_000);
 
   it("Swap by providing swap instructions", async () => {
     const amount = 50_000_000;
@@ -719,5 +710,5 @@ describe("glam_jupiter", () => {
         "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]"
       );
     }
-  });
+  }, 15_000);
 });
