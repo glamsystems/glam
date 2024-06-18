@@ -15,7 +15,7 @@ import {
   createSyncNativeInstruction,
 } from "@solana/spl-token";
 
-import { BaseClient } from "./base";
+import { BaseClient, ApiTxOptions } from "./base";
 
 export class InvestorClient {
   public constructor(readonly base: BaseClient) {}
@@ -41,7 +41,8 @@ export class InvestorClient {
       asset,
       amount,
       shareClassId,
-      skipState
+      skipState,
+      { signer: user.publicKey }
     );
     return await this.base.sendAndConfirm(tx, user);
   }
@@ -63,7 +64,8 @@ export class InvestorClient {
       amount,
       inKind,
       shareClassId,
-      skipState
+      skipState,
+      { signer: user.publicKey }
     );
     return await this.base.sendAndConfirm(tx, user);
   }
@@ -78,7 +80,8 @@ export class InvestorClient {
     asset: PublicKey,
     amount: BN,
     shareClassId: number = 0,
-    skipState: boolean = true
+    skipState: boolean = true,
+    apiOptions: ApiTxOptions
   ): Promise<VersionedTransaction> {
     // share class token to receive
     const shareClass = this.base.getShareClassPDA(fund, shareClassId);
@@ -169,7 +172,7 @@ export class InvestorClient {
       .preInstructions(preInstructions)
       .transaction();
 
-    return await this.base.intoVersionedTransaction(tx, signer);
+    return await this.base.intoVersionedTransaction({ tx, ...apiOptions });
   }
 
   public async redeemTx(
@@ -178,7 +181,8 @@ export class InvestorClient {
     amount: BN,
     inKind: boolean = false,
     shareClassId: number = 0,
-    skipState: boolean = true
+    skipState: boolean = true,
+    apiOptions: ApiTxOptions
   ): Promise<VersionedTransaction> {
     const treasury = this.base.getTreasuryPDA(fund);
 
@@ -264,6 +268,6 @@ export class InvestorClient {
       .preInstructions(preInstructions)
       .transaction();
 
-    return await this.base.intoVersionedTransaction(tx, signer);
+    return await this.base.intoVersionedTransaction({ tx, ...apiOptions });
   }
 }

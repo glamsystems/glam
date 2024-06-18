@@ -135,12 +135,20 @@ export class BaseClient {
 
     //TODO: add jito tip BEFORE estimating CUs
 
-    const units = await getSimulationComputeUnits(
-      connection,
-      instructions,
-      signer,
-      lookupTables
-    );
+    let units;
+    try {
+      const units = await getSimulationComputeUnits(
+        connection,
+        instructions,
+        signer,
+        lookupTables
+      );
+    } catch (e) {
+      // ignore
+      // when we run tests with failure cases, this RPC call fails with
+      // an incorrect error message so we should ignore it
+      // in the regular case, if this errors the tx will have the default CUs
+    }
 
     if (microLamports) {
       instructions.unshift(

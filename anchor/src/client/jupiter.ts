@@ -10,7 +10,7 @@ import {
 } from "@solana/web3.js";
 import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 
-import { BaseClient } from "./base";
+import { BaseClient, ApiTxOptions } from "./base";
 
 const jupiterProgram = new PublicKey(
   "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"
@@ -81,12 +81,12 @@ export class JupiterClient {
   ): Promise<TransactionSignature> {
     const tx = await this.swapTx(
       fund,
-      this.base.getManager(),
       quoteParams,
       quoteResponse,
-      swapInstructions
+      swapInstructions,
+      {}
     );
-    return await this.base.sendAndConfirm(tx, this.base.getWalletSigner());
+    return await this.base.sendAndConfirm(tx);
   }
 
   /*
@@ -95,15 +95,18 @@ export class JupiterClient {
 
   async swapTx(
     fund: PublicKey,
-    manager: PublicKey,
     quoteParams?: QuoteParams,
     quoteResponse?: QuoteResponse,
-    swapInstructions?: SwapInstructions
+    swapInstructions?: SwapInstructions,
+    apiOptions?: ApiTxOptions
   ): Promise<VersionedTransaction> {
-    let computeBudgetInstructions: InstructionFromJupiter[];
+    if (apiOptions === undefined) {
+      apiOptions = {};
+    }
+    const manager = apiOptions.signer || this.base.getManager();
+
     let swapInstruction: InstructionFromJupiter;
     let addressLookupTableAddresses: string[];
-
     const inputMint = new PublicKey(
       quoteParams?.inputMint || quoteResponse!.inputMint
     );
@@ -126,53 +129,44 @@ export class JupiterClient {
       }
 
       const ins = await this.getSwapInstructions(quoteResponse, manager);
-      computeBudgetInstructions = ins.computeBudgetInstructions || [];
       swapInstruction = ins.swapInstruction;
       addressLookupTableAddresses = ins.addressLookupTableAddresses;
     } else {
-      computeBudgetInstructions =
-        swapInstructions.computeBudgetInstructions || [];
       swapInstruction = swapInstructions.swapInstruction;
       addressLookupTableAddresses =
         swapInstructions.addressLookupTableAddresses;
     }
 
-    const swapIx: { data: any; keys: AccountMeta[] } =
-      this.toTransactionInstruction(swapInstruction);
-
-    const instructions = [
-      ...computeBudgetInstructions.map(this.toTransactionInstruction),
-      await this.base.program.methods
-        .jupiterSwap(amount, swapIx.data)
-        .accounts({
-          fund,
-          treasury: this.base.getTreasuryPDA(fund),
-          inputTreasuryAta: this.base.getTreasuryAta(fund, inputMint),
-          outputTreasuryAta: this.base.getTreasuryAta(fund, outputMint),
-          inputSignerAta: this.base.getManagerAta(inputMint, manager),
-          outputSignerAta: this.base.getManagerAta(outputMint, manager),
-          inputMint,
-          outputMint,
-          manager,
-          jupiterProgram,
-          token2022Program: TOKEN_2022_PROGRAM_ID,
-        })
-        .remainingAccounts(swapIx.keys)
-        .instruction(),
-    ];
-    const addressLookupTableAccounts = await this.getAdressLookupTableAccounts(
+    const lookupTables = await this.getAdressLookupTableAccounts(
       addressLookupTableAddresses
     );
 
-    const messageV0 = new TransactionMessage({
-      payerKey: manager,
-      recentBlockhash: (
-        await this.base.provider.connection.getLatestBlockhash()
-      ).blockhash,
-      instructions,
-    }).compileToV0Message(addressLookupTableAccounts);
+    const swapIx: { data: any; keys: AccountMeta[] } =
+      this.toTransactionInstruction(swapInstruction);
 
-    return new VersionedTransaction(messageV0);
+    const tx = await this.base.program.methods
+      .jupiterSwap(amount, swapIx.data)
+      .accounts({
+        fund,
+        treasury: this.base.getTreasuryPDA(fund),
+        inputTreasuryAta: this.base.getTreasuryAta(fund, inputMint),
+        outputTreasuryAta: this.base.getTreasuryAta(fund, outputMint),
+        inputSignerAta: this.base.getManagerAta(inputMint, manager),
+        outputSignerAta: this.base.getManagerAta(outputMint, manager),
+        inputMint,
+        outputMint,
+        manager,
+        jupiterProgram,
+        token2022Program: TOKEN_2022_PROGRAM_ID,
+      })
+      .remainingAccounts(swapIx.keys)
+      .transaction();
+
+    return this.base.intoVersionedTransaction({
+      tx,
+      lookupTables,
+      ...apiOptions,
+    });
   }
 
   /*
