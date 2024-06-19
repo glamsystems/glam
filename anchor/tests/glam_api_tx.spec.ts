@@ -5,7 +5,13 @@ import {
   ConfirmOptions,
 } from "@solana/web3.js";
 import { GlamClient } from "../src/client";
-import { createFundForTest, sleep } from "./setup";
+import {
+  createFundForTest,
+  quoteResponseForTest,
+  swapInstructionsForTest,
+  sleep,
+} from "./setup";
+import { getAccount } from "@solana/spl-token";
 
 /**
  * This test suite demonstrates how to interact with the glam API.
@@ -44,7 +50,7 @@ describe("glam_api_tx", () => {
       const fundData = await createFundForTest(glamClient);
       const airdrop = await glamClient.provider.connection.requestAirdrop(
         glamClient.getTreasuryPDA(fundData.fundPDA),
-        1_000_000_000
+        10_000_000_000
       );
       await glamClient.provider.connection.confirmTransaction(airdrop);
       // override default fund addresses
@@ -53,11 +59,11 @@ describe("glam_api_tx", () => {
     }
   });
 
-  it("Wrap 0.001 sol", async () => {
+  it("Wrap 1 SOL", async () => {
     const response = await fetch(`${API}/tx/wsol/wrap`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ manager, fund, amount: 1000000 }),
+      body: JSON.stringify({ manager, fund, amount: 1e9 }),
     });
     const { tx } = await response.json();
     console.log("Wrap tx:", tx);
@@ -195,63 +201,46 @@ describe("glam_api_tx", () => {
     expect(_tickets.length).toBe(0);
   }, 35_000);
 
-  /*
-  it("Jupiter swap with quote params", async () => {
-    const response = await fetch(`${API}/tx/jupiter/swap`, {
+  it("Wrap 0.05 SOL for Jupiter swap", async () => {
+    const response = await fetch(`${API}/tx/wsol/wrap`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        fund,
-        manager,
-        quote: {
-          inputMint: wsol.toBase58(),
-          outputMint: msol.toBase58(),
-          amount: 10000000,
-          autoSlippage: true,
-          autoSlippageCollisionUsdValue: 1000,
-          swapMode: "ExactIn",
-          onlyDirectRoutes: false,
-          asLegacyTransaction: false,
-          maxAccounts: 20,
-        },
-      }),
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ manager, fund, amount: 50_000_000 }),
     });
     const { tx } = await response.json();
+    console.log("Wrap tx:", tx);
+
     const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
     try {
       const txId = await (
         glamClient.provider as anchor.AnchorProvider
       ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
-      console.log("jupiter swap txId", txId);
+      console.log("Wrap txId", txId);
     } catch (error) {
       console.error("Error", error);
       throw error;
     }
-  }, 60_000);
+  }, 30_000);
 
-  it("Jupiter swap with quote response", async () => {
-    const amount = 1_000_000;
-    const quoteParams: any = {
-      inputMint: wsol.toBase58(),
-      outputMint: msol.toBase58(),
-      amount,
-      autoSlippage: true,
-      autoSlippageCollisionUsdValue: 1000,
-      swapMode: "ExactIn",
-      onlyDirectRoutes: false,
-      asLegacyTransaction: false,
-      maxAccounts: 20,
-    };
-    const quoteResponse = await (
-      await fetch(
-        `${glamClient.jupiterApi}/quote?${new URLSearchParams(
-          Object.entries(quoteParams)
-        )}`
-      )
-    ).json();
+  it("Jupiter swap end to end", async () => {
+    const treasury = glamClient.getTreasuryPDA(fund);
 
-    console.log("quoteResponse", quoteResponse);
+    const manager = glamClient.getManager();
+    const inputSignerAta = glamClient.getManagerAta(wsol);
+    const outputSignerAta = glamClient.getManagerAta(msol);
 
+    const treasuryMsolBefore = await getAccount(
+      glamClient.provider.connection,
+      glamClient.getTreasuryAta(fund, msol)
+    );
+
+    const quoteResponse = quoteResponseForTest;
+    const swapInstructions = swapInstructionsForTest(
+      manager,
+      inputSignerAta,
+      outputSignerAta
+    );
+    // Swap
     const response = await fetch(`${API}/tx/jupiter/swap`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -259,6 +248,7 @@ describe("glam_api_tx", () => {
         fund,
         manager,
         quoteResponse,
+        swapInstructions,
       }),
     });
 
@@ -275,67 +265,32 @@ describe("glam_api_tx", () => {
       console.error("Error", error);
       throw error;
     }
-  }, 60_000);
 
-  it("Jupiter swap with swap instructions", async () => {
-    const amount = 1_000_000;
-    const quoteParams: any = {
-      inputMint: wsol.toBase58(),
-      outputMint: msol.toBase58(),
-      amount,
-      autoSlippage: true,
-      autoSlippageCollisionUsdValue: 1000,
-      swapMode: "ExactIn",
-      onlyDirectRoutes: false,
-      asLegacyTransaction: false,
-      maxAccounts: 20,
-    };
-    const quoteResponse = await (
-      await fetch(
-        `${glamClient.jupiterApi}/quote?${new URLSearchParams(
-          Object.entries(quoteParams)
-        )}`
-      )
-    ).json();
-    const swapInstructions = await (
-      await fetch(`${glamClient.jupiterApi}/swap-instructions`, {
-        method: "POST",
-        body: JSON.stringify({
-          quoteResponse,
-          userPublicKey: manager,
-          destinationTokenAccount: treasuryMSolAta,
-        }),
-      })
-    ).json();
-
-    console.log("swapInstructions", swapInstructions);
-
-    const response = await fetch(`${API}/tx/jupiter/swap/ix`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        fund,
-        manager,
-        amount,
-        inputMint: wsol.toBase58(),
-        outputMint: msol.toBase58(),
-        ...swapInstructions,
-      }),
+    // Post-checks: the following accounts should exist and have 0 balance
+    const afterAccounts = [
+      glamClient.getManagerAta(wsol),
+      glamClient.getManagerAta(msol),
+    ];
+    afterAccounts.forEach(async (account) => {
+      try {
+        const acc = await getAccount(
+          glamClient.provider.connection,
+          account,
+          "confirmed"
+        );
+        expect(acc.amount.toString()).toEqual("0");
+      } catch (e) {
+        throw e;
+      }
     });
 
-    const { tx } = await response.json();
-    console.log("tx", tx);
-
-    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
-    try {
-      const txId = await (
-        glamClient.provider as anchor.AnchorProvider
-      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
-      console.log("jupiter swap txId", txId);
-    } catch (error) {
-      console.error("Error", error);
-      throw error;
-    }
-  }, 60_000);
- */
+    // treasury: more mSOL
+    const treasuryMsolAfter = await getAccount(
+      glamClient.provider.connection,
+      glamClient.getTreasuryAta(fund, msol)
+    );
+    expect(
+      (treasuryMsolAfter.amount - treasuryMsolBefore.amount).toString()
+    ).toEqual("41795954");
+  });
 });
