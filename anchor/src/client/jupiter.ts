@@ -1,4 +1,4 @@
-import * as anchor from "@coral-xyz/anchor";
+import { BN } from "@coral-xyz/anchor";
 import {
   AddressLookupTableAccount,
   PublicKey,
@@ -116,9 +116,7 @@ export class JupiterClient {
     const outputMint = new PublicKey(
       quoteParams?.outputMint || quoteResponse!.outputMint
     );
-    const amount = new anchor.BN(
-      quoteParams?.amount || quoteResponse?.inAmount
-    );
+    const amount = new BN(quoteParams?.amount || quoteResponse?.inAmount);
 
     if (swapInstructions === undefined) {
       // Fetch quoteResponse if not specified - quoteParams must be specified in this case
@@ -151,7 +149,8 @@ export class JupiterClient {
       fund,
       manager,
       inputMint,
-      outputMint
+      outputMint,
+      amount
     );
     const tx = await this.base.program.methods
       .jupiterSwap(amount, swapIx.data)
@@ -188,6 +187,7 @@ export class JupiterClient {
     manager: PublicKey,
     inputMint: PublicKey,
     outputMint: PublicKey,
+    amount: BN,
     inputTokenProgram: PublicKey = TOKEN_PROGRAM_ID,
     outputTokenProgram: PublicKey = TOKEN_PROGRAM_ID
   ): Promise<TransactionInstruction[]> => {
@@ -216,7 +216,6 @@ export class JupiterClient {
         tokenProgram: outputTokenProgram,
       },
     ];
-
     for (const { payer, ata, owner, mint, tokenProgram } of ataParams) {
       const ataAccountInfo = await this.base.provider.connection.getAccountInfo(
         ata
@@ -233,6 +232,47 @@ export class JupiterClient {
           tokenProgram
         )
       );
+    }
+
+    // Transfer SOL to WSOL ATA if needed for the treasury
+    if (
+      inputMint.toBase58() === "So11111111111111111111111111111111111111112"
+    ) {
+      let wsolBalance: BN;
+      const treasuryPda = this.base.getTreasuryPDA(fund);
+      const treasuryWsolAta = this.base.getTreasuryAta(fund, inputMint);
+      try {
+        wsolBalance = new BN(
+          (
+            await this.base.provider.connection.getTokenAccountBalance(
+              treasuryWsolAta
+            )
+          ).value.amount
+        );
+      } catch (err) {
+        wsolBalance = new BN(0);
+      }
+      const solBalance = new BN(
+        await this.base.provider.connection.getBalance(treasuryPda)
+      );
+      const delta = amount - wsolBalance;
+      if (solBalance < delta) {
+        throw new Error("Insufficient balance in treasury for swap");
+      }
+      if (delta > 0 && solBalance > delta) {
+        preInstructions.push(
+          await this.base.program.methods
+            .wsolWrap(new BN(amount))
+            .accounts({
+              fund,
+              treasury: treasuryPda,
+              treasuryWsolAta,
+              wsolMint: inputMint,
+              manager,
+            })
+            .instruction()
+        );
+      }
     }
 
     return preInstructions;
