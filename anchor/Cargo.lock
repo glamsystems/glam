@@ -1157,6 +1157,7 @@ dependencies = [
  "phf",
  "pyth-solana-receiver-sdk",
  "solana-program",
+ "solana-security-txt",
  "spl-stake-pool",
  "spl-tlv-account-resolution 0.6.5",
  "spl-transfer-hook-interface 0.6.5",
