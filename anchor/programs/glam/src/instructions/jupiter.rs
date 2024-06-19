@@ -92,7 +92,6 @@ pub fn jupiter_swap(ctx: Context<JupiterSwap>, amount: u64, data: Vec<u8>) -> Re
     } else {
         ctx.accounts.token_program.to_account_info()
     };
-    msg!("Transfer treasury -> signer: {}", amount);
     transfer_checked(
         CpiContext::new_with_signer(
             input_program,
