@@ -120,16 +120,7 @@ pub fn marinade_delayed_unstake<'c: 'info, 'info>(
     Ok(())
 }
 
-pub fn marinade_claim<'c: 'info, 'info>(ctx: Context<MarinadeClaim>) -> Result<()> {
-    let cpi_program = ctx.accounts.marinade_program.to_account_info();
-    let cpi_accounts = Claim {
-        state: ctx.accounts.marinade_state.to_account_info(),
-        ticket_account: ctx.accounts.ticket.to_account_info(),
-        transfer_sol_to: ctx.accounts.treasury.to_account_info(),
-        reserve_pda: ctx.accounts.reserve_pda.to_account_info(),
-        system_program: ctx.accounts.system_program.to_account_info(),
-        clock: ctx.accounts.clock.to_account_info(),
-    };
+pub fn marinade_claim<'info>(ctx: Context<'_, '_, '_, 'info, MarinadeClaim<'info>>) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
         b"treasury".as_ref(),
@@ -137,8 +128,28 @@ pub fn marinade_claim<'c: 'info, 'info>(ctx: Context<MarinadeClaim>) -> Result<(
         &[ctx.bumps.treasury],
     ];
     let signer_seeds = &[&seeds[..]];
-    let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
-    let _ = claim(cpi_ctx);
+
+    ctx.remaining_accounts
+        .iter()
+        .for_each(|ticket_account_info| {
+            // Call claim for each ticket account
+            let cpi_accounts = Claim {
+                state: ctx.accounts.marinade_state.to_account_info(),
+                ticket_account: ticket_account_info.clone(),
+                transfer_sol_to: ctx.accounts.treasury.to_account_info(),
+                reserve_pda: ctx.accounts.reserve_pda.to_account_info(),
+                system_program: ctx.accounts.system_program.to_account_info(),
+                clock: ctx.accounts.clock.to_account_info(),
+            };
+
+            let cpi_ctx = CpiContext::new_with_signer(
+                ctx.accounts.marinade_program.to_account_info(),
+                cpi_accounts,
+                signer_seeds,
+            );
+            let _ = claim(cpi_ctx);
+        });
+
     Ok(())
 }
 
@@ -275,9 +286,6 @@ pub struct MarinadeClaim<'info> {
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
-
-    #[account(mut, constraint = ticket.beneficiary == treasury.key())]
-    pub ticket: Account<'info, TicketAccountData>,
 
     /// CHECK: skip
     #[account(mut)]

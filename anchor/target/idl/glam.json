@@ -792,11 +792,6 @@
           "isSigner": false
         },
         {
-          "name": "ticket",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "marinadeState",
           "isMut": true,
           "isSigner": false

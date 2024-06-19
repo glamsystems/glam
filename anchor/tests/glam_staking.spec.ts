@@ -27,8 +27,8 @@ describe("glam_staking", () => {
 
   it("Marinade desposit: stake 20 SOL", async () => {
     try {
-      const tx = await glamClient.marinade.stake(fundPDA, new anchor.BN(1e10));
-      console.log("Stake 10 SOL:", tx);
+      const tx = await glamClient.marinade.stake(fundPDA, new anchor.BN(2e10));
+      console.log("Stake 20 SOL:", tx);
     } catch (error) {
       console.log("Error", error);
       throw error;

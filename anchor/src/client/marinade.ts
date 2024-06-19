@@ -214,30 +214,14 @@ export class MarinadeClient {
         fund,
         treasury,
         manager,
-        ticket: tickets[0],
         marinadeState: marinadeState.marinadeStateAddress,
         reservePda: marinadeState.reserveAddress,
         marinadeProgram,
       })
+      .remainingAccounts(
+        tickets.map((t) => ({ pubkey: t, isSigner: false, isWritable: true }))
+      )
       .transaction();
-
-    // Quick and dirty way to add the rest of the tickets
-    // TODO: refactor program method to accept multiple tickets in remainingAccounts
-    tickets.slice(1).map(async (ticket) => {
-      const ix = await this.base.program.methods
-        .marinadeClaim()
-        .accounts({
-          fund,
-          treasury,
-          manager,
-          ticket,
-          marinadeState: marinadeState.marinadeStateAddress,
-          reservePda: marinadeState.reserveAddress,
-          marinadeProgram,
-        })
-        .instruction();
-      tx.add(ix);
-    });
 
     return await this.base.intoVersionedTransaction({
       tx,
