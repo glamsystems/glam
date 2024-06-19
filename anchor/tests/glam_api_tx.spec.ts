@@ -59,151 +59,8 @@ describe("glam_api_tx", () => {
     }
   });
 
-  it("Wrap 1 SOL", async () => {
-    const response = await fetch(`${API}/tx/wsol/wrap`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ manager, fund, amount: 1e9 }),
-    });
-    const { tx } = await response.json();
-    console.log("Wrap tx:", tx);
-
-    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
-    try {
-      const txId = await (
-        glamClient.provider as anchor.AnchorProvider
-      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
-      console.log("Wrap txId", txId);
-    } catch (error) {
-      console.error("Error", error);
-      throw error;
-    }
-  }, 30_000);
-
-  it("Unwrap wsol", async () => {
-    const response = await fetch(`${API}/tx/wsol/unwrap`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ manager, fund }),
-    });
-    const { tx } = await response.json();
-    console.log("Unwrap tx", tx);
-
-    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
-    try {
-      const txId = await (
-        glamClient.provider as anchor.AnchorProvider
-      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
-      console.log("Unwrap txId", txId);
-    } catch (error) {
-      console.error("Error", error);
-      throw error;
-    }
-  }, 30_000);
-
-  it("Stake 0.1 sol", async () => {
-    const response = await fetch(`${API}/tx/marinade/stake`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ manager, fund, amount: 100000000 }),
-    });
-    const { tx } = await response.json();
-    console.log("Stake tx:", tx);
-
-    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
-    try {
-      const txId = await (
-        glamClient.provider as anchor.AnchorProvider
-      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
-      console.log("Stake txId", txId);
-    } catch (error) {
-      console.error("Error", error);
-      throw error;
-    }
-  }, 30_000);
-
-  it("Order unstake #0: 0.01 msol", async () => {
-    const response = await fetch(`${API}/tx/marinade/unstake`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ manager, fund, amount: 20_000_000 }),
-    });
-    const { tx } = await response.json();
-    console.log("Order unstake #0 tx:", tx);
-
-    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
-    try {
-      const txId = await (
-        glamClient.provider as anchor.AnchorProvider
-      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
-      console.log("Order unstake #0 txId", txId);
-    } catch (error) {
-      console.error("Error", error);
-      throw error;
-    }
-  }, 30_000);
-
-  it("Order unstake #1: 0.02 msol", async () => {
-    const response = await fetch(`${API}/tx/marinade/unstake`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ manager, fund, amount: 10_000_000 }),
-    });
-    const { tx } = await response.json();
-    console.log("Order unstake #1 tx:", tx);
-
-    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
-    try {
-      const txId = await (
-        glamClient.provider as anchor.AnchorProvider
-      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
-      console.log("Order unstake #1 txId", txId);
-    } catch (error) {
-      console.error("Error", error);
-      throw error;
-    }
-  }, 30_000);
-
-  it("Claim tickets", async () => {
-    // Before claiming we should have 2 tickets
-    const { tickets } = await (
-      await fetch(`${API}/fund/${fund}/tickets`)
-    ).json();
-    expect(tickets.length).toBe(2);
-
-    // Wait for the next epoch
-    await sleep(30_000);
-
-    // Claim tickets
-    const response = await fetch(`${API}/tx/marinade/unstake/claim`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ manager, fund, tickets }),
-    });
-    const { tx } = await response.json();
-    console.log("Claim tickets tx:", tx);
-
-    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
-    try {
-      const txId = await (
-        glamClient.provider as anchor.AnchorProvider
-      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
-      console.log("Claim tickets txId", txId);
-    } catch (error) {
-      console.error("Error", error);
-      throw error;
-    }
-
-    // After claiming we should have 0 tickets
-    const { tickets: _tickets } = await (
-      await fetch(`${API}/fund/${fund}/tickets`)
-    ).json();
-    expect(_tickets.length).toBe(0);
-  }, 35_000);
-
+  // Run swap test first as we want to start from a clean state: the treasury should have no wSOL or mSOL ATAs
   it("Jupiter swap end to end", async () => {
-    const treasury = glamClient.getTreasuryPDA(fund);
-
     const manager = glamClient.getManager();
     const inputSignerAta = glamClient.getManagerAta(wsol);
     const outputSignerAta = glamClient.getManagerAta(msol);
@@ -215,7 +72,7 @@ describe("glam_api_tx", () => {
         glamClient.getTreasuryAta(fund, msol)
       );
     } catch (e) {
-      treasuryMsolBefore = { amount: new anchor.BN(0) };
+      treasuryMsolBefore = { amount: BigInt(0) };
     }
 
     const quoteResponse = quoteResponseForTest;
@@ -277,4 +134,165 @@ describe("glam_api_tx", () => {
       (treasuryMsolAfter.amount - treasuryMsolBefore.amount).toString()
     ).toEqual("41795954");
   });
+
+  it("Wrap 1 SOL", async () => {
+    let treasuryWsolBefore;
+    try {
+      treasuryWsolBefore = await getAccount(
+        glamClient.provider.connection,
+        glamClient.getTreasuryAta(fund, wsol)
+      );
+    } catch (e) {
+      treasuryWsolBefore = { amount: BigInt(0) };
+    }
+
+    const response = await fetch(`${API}/tx/wsol/wrap`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ manager, fund, amount: 1e9 }),
+    });
+    const { tx } = await response.json();
+    console.log("Wrap tx:", tx);
+
+    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
+    try {
+      const txId = await (
+        glamClient.provider as anchor.AnchorProvider
+      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
+      console.log("Wrap txId", txId);
+    } catch (error) {
+      console.error("Error", error);
+      throw error;
+    }
+
+    // After wrap treasury should have 1 wSOL
+    const treasuryWsolAfter = await getAccount(
+      glamClient.provider.connection,
+      glamClient.getTreasuryAta(fund, wsol)
+    );
+    expect(
+      (treasuryWsolAfter.amount - treasuryWsolBefore.amount).toString()
+    ).toEqual("1000000000");
+  }, 30_000);
+
+  it("Unwrap wsol", async () => {
+    const response = await fetch(`${API}/tx/wsol/unwrap`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ manager, fund }),
+    });
+    const { tx } = await response.json();
+    console.log("Unwrap tx", tx);
+
+    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
+    try {
+      const txId = await (
+        glamClient.provider as anchor.AnchorProvider
+      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
+      console.log("Unwrap txId", txId);
+    } catch (error) {
+      console.error("Error", error);
+      throw error;
+    }
+  }, 30_000);
+
+  it("Stake 0.1 SOL", async () => {
+    const response = await fetch(`${API}/tx/marinade/stake`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ manager, fund, amount: 100000000 }),
+    });
+    const { tx } = await response.json();
+    console.log("Stake tx:", tx);
+
+    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
+    try {
+      const txId = await (
+        glamClient.provider as anchor.AnchorProvider
+      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
+      console.log("Stake txId", txId);
+    } catch (error) {
+      console.error("Error", error);
+      throw error;
+    }
+  }, 30_000);
+
+  it("Order unstake #0: 0.01 mSOL", async () => {
+    const response = await fetch(`${API}/tx/marinade/unstake`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ manager, fund, amount: 20_000_000 }),
+    });
+    const { tx } = await response.json();
+    console.log("Order unstake #0 tx:", tx);
+
+    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
+    try {
+      const txId = await (
+        glamClient.provider as anchor.AnchorProvider
+      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
+      console.log("Order unstake #0 txId", txId);
+    } catch (error) {
+      console.error("Error", error);
+      throw error;
+    }
+  }, 30_000);
+
+  it("Order unstake #1: 0.02 mSOL", async () => {
+    const response = await fetch(`${API}/tx/marinade/unstake`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ manager, fund, amount: 10_000_000 }),
+    });
+    const { tx } = await response.json();
+    console.log("Order unstake #1 tx:", tx);
+
+    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
+    try {
+      const txId = await (
+        glamClient.provider as anchor.AnchorProvider
+      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
+      console.log("Order unstake #1 txId", txId);
+    } catch (error) {
+      console.error("Error", error);
+      throw error;
+    }
+  }, 30_000);
+
+  it("Claim tickets", async () => {
+    // Before claiming we should have 2 tickets
+    const { tickets } = await (
+      await fetch(`${API}/fund/${fund}/tickets`)
+    ).json();
+    expect(tickets.length).toBe(2);
+
+    // Wait for the next epoch
+    await sleep(30_000);
+
+    // Claim tickets
+    const response = await fetch(`${API}/tx/marinade/unstake/claim`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ manager, fund, tickets }),
+    });
+    const { tx } = await response.json();
+    console.log("Claim tickets tx:", tx);
+
+    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
+    try {
+      const txId = await (
+        glamClient.provider as anchor.AnchorProvider
+      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
+      console.log("Claim tickets txId", txId);
+    } catch (error) {
+      console.error("Error", error);
+      throw error;
+    }
+
+    // After claiming we should have 0 tickets
+    const { tickets: _tickets } = await (
+      await fetch(`${API}/fund/${fund}/tickets`)
+    ).json();
+    expect(_tickets.length).toBe(0);
+  }, 35_000);
 });
