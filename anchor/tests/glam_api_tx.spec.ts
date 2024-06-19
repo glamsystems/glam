@@ -201,27 +201,6 @@ describe("glam_api_tx", () => {
     expect(_tickets.length).toBe(0);
   }, 35_000);
 
-  it("Wrap 0.05 SOL for Jupiter swap", async () => {
-    const response = await fetch(`${API}/tx/wsol/wrap`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ manager, fund, amount: 50_000_000 }),
-    });
-    const { tx } = await response.json();
-    console.log("Wrap tx:", tx);
-
-    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
-    try {
-      const txId = await (
-        glamClient.provider as anchor.AnchorProvider
-      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
-      console.log("Wrap txId", txId);
-    } catch (error) {
-      console.error("Error", error);
-      throw error;
-    }
-  }, 30_000);
-
   it("Jupiter swap end to end", async () => {
     const treasury = glamClient.getTreasuryPDA(fund);
 
@@ -229,10 +208,15 @@ describe("glam_api_tx", () => {
     const inputSignerAta = glamClient.getManagerAta(wsol);
     const outputSignerAta = glamClient.getManagerAta(msol);
 
-    const treasuryMsolBefore = await getAccount(
-      glamClient.provider.connection,
-      glamClient.getTreasuryAta(fund, msol)
-    );
+    let treasuryMsolBefore;
+    try {
+      treasuryMsolBefore = await getAccount(
+        glamClient.provider.connection,
+        glamClient.getTreasuryAta(fund, msol)
+      );
+    } catch (e) {
+      treasuryMsolBefore = { amount: new anchor.BN(0) };
+    }
 
     const quoteResponse = quoteResponseForTest;
     const swapInstructions = swapInstructionsForTest(

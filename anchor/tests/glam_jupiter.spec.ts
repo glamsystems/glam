@@ -81,10 +81,10 @@ describe("glam_jupiter", () => {
       await glamClient.provider.connection.getBalance(treasury);
     expect(beforeTreasuryBalance).toEqual(1_000_946_560);
     const beforeNoAccounts = [
-      // glamClient.getManagerAta(wsol),
-      // glamClient.getManagerAta(msol),
+      glamClient.getManagerAta(wsol),
+      glamClient.getManagerAta(msol),
       glamClient.getTreasuryAta(fundPDA, wsol),
-      // glamClient.getTreasuryAta(fundPDA, msol),
+      glamClient.getTreasuryAta(fundPDA, msol),
     ];
     beforeNoAccounts.forEach(async (account) => {
       try {
@@ -98,18 +98,9 @@ describe("glam_jupiter", () => {
     // Swap
     const amount = 50_000_000;
     try {
-      const txId0 = await glamClient.wsol.wrap(fundPDA, new BN(amount));
-
       const txId = await glamClient.jupiter.swap(
         fundPDA,
-        {
-          inputMint: wsol.toBase58(),
-          outputMint: msol.toBase58(),
-          amount,
-          swapMode: "ExactIn",
-          onlyDirectRoutes: true,
-          maxAccounts: 8,
-        },
+        undefined,
         quoteResponse,
         swapInstructions
       );
@@ -124,7 +115,6 @@ describe("glam_jupiter", () => {
       glamClient.getManagerAta(wsol),
       glamClient.getManagerAta(msol),
       glamClient.getTreasuryAta(fundPDA, wsol),
-      // glamClient.getTreasuryAta(fundPDA, msol) - this should exist and contain mSOL
     ];
     afterAccounts.forEach(async (account) => {
       try {
@@ -139,7 +129,7 @@ describe("glam_jupiter", () => {
       }
     });
 
-    // treasury: less wSOL
+    // treasury: less SOL
     const afterTreasuryBalance =
       await glamClient.provider.connection.getBalance(treasury);
     expect(afterTreasuryBalance).toEqual(950_946_560); // minus 50_000_000
