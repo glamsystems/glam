@@ -13,6 +13,8 @@ export const FundModel = class<FundModel> {
       isEnabled: null,
       created: null,
       isRawOpenfunds: null,
+      managers: [],
+      traders: [],
     };
     for (const key in partial) {
       partial[key] = obj[key] || null;

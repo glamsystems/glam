@@ -99,6 +99,12 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
                 val: model.assets_weights,
             },
         },
+        EngineField {
+            name: EngineFieldName::Managers,
+            value: EngineFieldValue::VecPubkey {
+                val: [ctx.accounts.manager.key()].to_vec(),
+            },
+        },
     ]];
 
     //
@@ -294,12 +300,39 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
 
 #[derive(Accounts)]
 pub struct UpdateFund<'info> {
-    #[account(mut, has_one = manager @ ManagerError::NotAuthorizedError)]
+    #[account(mut)]
     fund: Account<'info, FundAccount>,
     #[account(mut)]
     manager: Signer<'info>,
 }
+impl UpdateFund<'_> {
+    pub fn rbac(engine_fields: &Vec<EngineField>, signer: &Pubkey) -> Result<()> {
+        let mut authorized = false;
+        let _ = engine_fields.iter().try_for_each(|field| match field.name {
+            EngineFieldName::Managers => {
+                if let EngineFieldValue::VecPubkey { val } = &field.value {
+                    if val.contains(signer) {
+                        authorized = true;
+                        Ok(())
+                    } else {
+                        Err(())
+                    }
+                } else {
+                    Err(())
+                }
+            }
+            _ => Ok(()),
+        });
 
+        if authorized {
+            Ok(())
+        } else {
+            Err(ManagerError::NotAuthorizedError.into())
+        }
+    }
+}
+
+#[access_control(UpdateFund::rbac(&ctx.accounts.fund.params[0], &ctx.accounts.manager.key))]
 pub fn update_fund_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, UpdateFund<'info>>,
     fund_model: FundModel,
@@ -318,6 +351,37 @@ pub fn update_fund_handler<'c: 'info, 'info>(
     if let Some(manager_model) = fund_model.manager {
         if let Some(manager) = manager_model.pubkey {
             fund.manager = manager
+        }
+    }
+
+    if let Some(managers) = fund_model.managers {
+        for EngineField { name, value } in &mut fund.params[0] {
+            if let EngineFieldName::Managers = name {
+                *value = EngineFieldValue::VecPubkey {
+                    val: managers.clone(),
+                };
+                break;
+            }
+        }
+    }
+
+    if let Some(traders) = fund_model.traders {
+        // Update traders if available in the array; otherwise push it
+        let mut updated = false;
+        for EngineField { name, value } in &mut fund.params[0] {
+            if let EngineFieldName::Traders = name {
+                *value = EngineFieldValue::VecPubkey {
+                    val: traders.clone(),
+                };
+                updated = true;
+                break;
+            }
+        }
+        if !updated {
+            fund.params[0].push(EngineField {
+                name: EngineFieldName::Traders,
+                value: EngineFieldValue::VecPubkey { val: traders },
+            });
         }
     }
 

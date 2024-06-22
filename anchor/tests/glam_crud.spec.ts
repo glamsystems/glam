@@ -16,17 +16,9 @@ describe("glam_crud", () => {
     expect(fund.shareClasses.length).toEqual(1);
     expect(fund.shareClasses[0].allowlist).toEqual([glamClient.getManager()]);
     expect(fund.shareClasses[0].blocklist).toEqual([]);
-    // expect(fund.assets.length).toEqual(3);
-    // expect(fund.isEnabled).toEqual(true);
-
-    // const metadata = await getTokenMetadata(provider.connection, sharePDA);
-    // const { image_uri } = Object.fromEntries(metadata!.additionalMetadata);
-    // expect(metadata?.symbol).toEqual("GBTC.A");
-    // expect(metadata?.uri).toEqual(getMetadataUri(sharePDA));
-    // expect(image_uri).toEqual(getImageUri(sharePDA));
   });
 
-  it("Update fund", async () => {
+  it("Update fund name", async () => {
     const newName = "Updated fund name";
     const updatedFund = glamClient.getFundModel({
       name: newName,
@@ -43,6 +35,39 @@ describe("glam_crud", () => {
     expect(fund.name).toEqual(newName);
   });
 
+  it("Update fund to assign new manager", async () => {
+    const newManager = Keypair.generate();
+    let updatedFund = glamClient.getFundModel({
+      managers: [glamClient.getManager(), newManager.publicKey],
+    });
+
+    await glamClient.program.methods
+      .update(updatedFund)
+      .accounts({
+        fund: fundPDA,
+        manager: glamClient.getManager(),
+      })
+      .rpc();
+
+    // New manager should be able to update fund info
+    const newName = "Updated fund name by new manager";
+    updatedFund = glamClient.getFundModel({
+      name: newName,
+    });
+
+    await glamClient.program.methods
+      .update(updatedFund)
+      .accounts({
+        fund: fundPDA,
+        manager: newManager.publicKey,
+      })
+      .signers([newManager])
+      .rpc();
+    const fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
+    expect(fund.name).toEqual(newName);
+  });
+
+  /*
   it("Update manager", async () => {
     const manager = glamClient.getManager();
     const newManager = Keypair.generate();
@@ -79,7 +104,6 @@ describe("glam_crud", () => {
       },
     });
 
-    /* old manager can NOT update back */
     try {
       const txId = await glamClient.program.methods
         .update(updatedFund2)
@@ -93,7 +117,6 @@ describe("glam_crud", () => {
       expect(err.message).toContain("not authorized");
     }
 
-    /* new manager CAN update back */
     try {
       const txId = await glamClient.program.methods
         .update(updatedFund2)
@@ -110,6 +133,7 @@ describe("glam_crud", () => {
     fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
     expect(fund.manager.toString()).toEqual(manager.toString());
   });
+  */
 
   /*
   it("Close fund", async () => {

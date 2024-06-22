@@ -231,7 +231,7 @@ export class BaseClient {
     const createdKey = fundModel?.created?.key || [
       ...Buffer.from(
         anchor.utils.sha256.hash(this.getFundName(fundModel))
-      ).slice(0, 8),
+      ).subarray(0, 8),
     ];
 
     const manager = this.getManager();
@@ -308,11 +308,14 @@ export class BaseClient {
   enrichFundModelInitialize(fund: FundModel): FundModel {
     let fundModel = this.getFundModel(fund);
 
+    fundModel.managers = [];
+    fundModel.traders = [];
+
     // createdKey = hash fund name and get first 8 bytes
     const createdKey = [
       ...Buffer.from(
         anchor.utils.sha256.hash(this.getFundName(fundModel))
-      ).slice(0, 8),
+      ).subarray(0, 8),
     ];
     fundModel.created = {
       key: createdKey,
@@ -329,9 +332,7 @@ export class BaseClient {
       fundModel.name = fundModel.name || shareClass.name;
 
       fundModel.rawOpenfunds.fundCurrency =
-        fundModel.rawOpenfunds?.fundCurrency ||
-        shareClass.rawOpenfunds?.shareClassCurrency ||
-        null;
+        shareClass.rawOpenfunds?.shareClassCurrency || null;
     } else {
       // fund with multiple share classes
       // TODO
@@ -383,6 +384,8 @@ export class BaseClient {
 
     const shareClasses = fundModel.shareClasses;
     fundModel.shareClasses = [];
+
+    console.log("Creating fund", fundModel);
 
     const txSig = await this.program.methods
       .initialize(fundModel)

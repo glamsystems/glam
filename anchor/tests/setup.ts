@@ -58,6 +58,8 @@ export const fundTestExample = {
   isEnabled: true,
   assets: [wsol, msol],
   assetsWeights: [50, 50],
+  managers: [] as PublicKey[],
+  traders: [] as PublicKey[],
   // Openfunds (Fund)
   fundDomicileAlpha2: "XS",
   legalFundNameIncludingUmbrella: "Glam Fund SOL-mSOL",

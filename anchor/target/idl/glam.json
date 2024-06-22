@@ -1176,6 +1176,22 @@
             }
           },
           {
+            "name": "managers",
+            "type": {
+              "option": {
+                "vec": "publicKey"
+              }
+            }
+          },
+          {
+            "name": "traders",
+            "type": {
+              "option": {
+                "vec": "publicKey"
+              }
+            }
+          },
+          {
             "name": "shareClasses",
             "type": {
               "vec": {
@@ -1805,6 +1821,12 @@
           },
           {
             "name": "AssetsWeights"
+          },
+          {
+            "name": "Managers"
+          },
+          {
+            "name": "Traders"
           },
           {
             "name": "ShareClassAllowlist"
