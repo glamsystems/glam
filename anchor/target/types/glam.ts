@@ -847,7 +847,6 @@ export type Glam = {
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "and no need to deser because we transfer_checked from",
             "input_treasury_ata to input_signer_ata"
           ]
         },
@@ -3954,7 +3953,6 @@ export const IDL: Glam = {
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "and no need to deser because we transfer_checked from",
             "input_treasury_ata to input_signer_ata"
           ]
         },

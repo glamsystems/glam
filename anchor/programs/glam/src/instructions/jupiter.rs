@@ -30,8 +30,7 @@ pub struct JupiterSwap<'info> {
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
 
-    /// CHECK: no need to create because input ata should exist to swap,
-    ///        and no need to deser because we transfer_checked from
+    /// CHECK: no need to deser because we transfer_checked from
     ///        input_treasury_ata to input_signer_ata
     #[account(mut)]
     pub input_treasury_ata: UncheckedAccount<'info>,
@@ -41,11 +40,9 @@ pub struct JupiterSwap<'info> {
         associated_token::authority = manager)]
     pub input_signer_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
-    #[account(
-        mut,
-        associated_token::mint = output_mint,
-        associated_token::authority = manager)]
-    pub output_signer_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    /// CHECK: no need deser, trust Jupiter
+    #[account(mut)]
+    pub output_signer_ata: UncheckedAccount<'info>,
     #[account(
         mut,
         associated_token::mint = output_mint,
@@ -66,6 +63,70 @@ pub struct JupiterSwap<'info> {
     pub token_2022_program: Program<'info, Token2022>,
 }
 
+fn parse_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
+    let mut res = true;
+    res &= ctx.remaining_accounts.len() > 9;
+
+    res &= ctx.remaining_accounts[0].key() == ctx.accounts.token_program.key();
+    res &= ctx.remaining_accounts[1].key() == ctx.accounts.manager.key();
+    res &= ctx.remaining_accounts[2].key() == ctx.accounts.input_signer_ata.key();
+    res &= ctx.remaining_accounts[3].key() == ctx.accounts.output_signer_ata.key();
+    res &= ctx.remaining_accounts[4].key() == Jupiter::id(); // null key - overwritten later
+    res &= ctx.remaining_accounts[5].key() == ctx.accounts.output_mint.key();
+    res &= ctx.remaining_accounts[6].key() == Jupiter::id(); // null key
+
+    // res &= ctx.remaining_accounts[7].key() - eventAuthority ignored
+    res &= ctx.remaining_accounts[8].key() == Jupiter::id();
+
+    (res, 4)
+}
+
+fn parse_exact_out_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
+    let mut res = true;
+    res &= ctx.remaining_accounts.len() > 11;
+
+    res &= ctx.remaining_accounts[0].key() == ctx.accounts.token_program.key();
+    res &= ctx.remaining_accounts[1].key() == ctx.accounts.manager.key();
+    res &= ctx.remaining_accounts[2].key() == ctx.accounts.input_signer_ata.key();
+    res &= ctx.remaining_accounts[3].key() == ctx.accounts.output_signer_ata.key();
+    res &= ctx.remaining_accounts[4].key() == Jupiter::id(); // null key - overwritten later
+    res &= ctx.remaining_accounts[5].key() == ctx.accounts.input_mint.key();
+    res &= ctx.remaining_accounts[6].key() == ctx.accounts.output_mint.key();
+    res &= ctx.remaining_accounts[7].key() == Jupiter::id(); // null key
+    res &= ctx.remaining_accounts[8].key() == ctx.accounts.token_2022_program.key()
+        || ctx.remaining_accounts[8].key() == Jupiter::id(); // token2022 or null key
+
+    // res &= ctx.remaining_accounts[9].key() - eventAuthority ignored
+    res &= ctx.remaining_accounts[10].key() == Jupiter::id();
+
+    (res, 4)
+}
+
+fn parse_shared_accounts_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
+    let mut res = true;
+    res &= ctx.remaining_accounts.len() > 13;
+
+    res &= ctx.remaining_accounts[0].key() == ctx.accounts.token_program.key();
+    // res &= ctx.remaining_accounts[1].key() - programAuthority ignored
+
+    res &= ctx.remaining_accounts[2].key() == ctx.accounts.manager.key();
+    res &= ctx.remaining_accounts[3].key() == ctx.accounts.input_signer_ata.key();
+    // res &= ctx.remaining_accounts[4].key() - programSourceTokenAccount ignored
+    // res &= ctx.remaining_accounts[5].key() - programDestinationTokenAccount ignored
+
+    res &= ctx.remaining_accounts[6].key() == ctx.accounts.output_signer_ata.key();
+    res &= ctx.remaining_accounts[7].key() == ctx.accounts.input_mint.key();
+    res &= ctx.remaining_accounts[8].key() == ctx.accounts.output_mint.key();
+    res &= ctx.remaining_accounts[9].key() == Jupiter::id(); // null key
+    res &= ctx.remaining_accounts[10].key() == ctx.accounts.token_2022_program.key()
+        || ctx.remaining_accounts[10].key() == Jupiter::id(); // token2022 or null key
+
+    // res &= ctx.remaining_accounts[11].key() - eventAuthority ignored
+    res &= ctx.remaining_accounts[12].key() == Jupiter::id();
+
+    (res, 6)
+}
+
 pub fn jupiter_swap<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, JupiterSwap<'info>>,
     amount: u64,
@@ -79,6 +140,17 @@ pub fn jupiter_swap<'c: 'info, 'info>(
             ManagerError::InvalidAssetForSwap
         );
     }
+
+    // Parse Jupiter Swap accounts
+    let ix_disc = u64::from_be_bytes(data[..8].try_into().unwrap());
+    let (parse_result, dst_ata_idx) = match ix_disc {
+        0xe517cb977ae3ad2a => parse_route(&ctx),           // route
+        0xd033ef977b2bed5c => parse_exact_out_route(&ctx), // exactOutRoute
+        0xc1209b3341d69c81 => parse_shared_accounts_route(&ctx), // sharedAccountsRoute
+        0xb0d169a89a7d453e => parse_shared_accounts_route(&ctx), // sharedAccountsExactOutRoute (same)
+        _ => panic!("Jupiter instruction not supported"),
+    };
+    require!(parse_result, ManagerError::InvalidSwap);
 
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
@@ -114,6 +186,8 @@ pub fn jupiter_swap<'c: 'info, 'info>(
     //
     // Jupiter swap
     //
+
+    // Map remaining_accounts -> AccountMeta
     let mut accounts: Vec<AccountMeta> = ctx
         .remaining_accounts
         .iter()
@@ -124,55 +198,28 @@ pub fn jupiter_swap<'c: 'info, 'info>(
         })
         .collect();
 
-    // We now validate the accounts, according to Jupiter v6 route ix.
-    // Note: we assume that Jupiter is doing its own validation, so we
-    // only check the first 9 accounts (skipping eventAuthority)
-    require!(ctx.remaining_accounts.len() > 9, ManagerError::InvalidSwap);
-    // Jupiter uses its own program as null key
-    let null_key = ctx.accounts.jupiter_program.key();
-    let check_accounts = &[
-        ctx.accounts.token_program.key(), // tokenProgram (explicitly checked)
-        ctx.accounts.manager.key(),       // userTransferAuthority
-        ctx.accounts.input_signer_ata.key(), // userSourceTokenAccount
-        ctx.accounts.output_signer_ata.key(), // userDestinationTokenAccount
-        null_key,                         // destinationTokenAccount
-        ctx.accounts.output_mint.key(),   // destinationMint
-        null_key,                         // platformFeeAccount
-                                          // eventAuthority (ignored)
-                                          // program (explicitly checked)
-    ];
-    // program == Jupiter
-    require!(
-        *ctx.remaining_accounts[8].key == ctx.accounts.jupiter_program.key(),
-        ManagerError::InvalidSwap
-    );
-    // tokenProgaram == either token or token2022
-    require!(
-        *ctx.remaining_accounts[0].key == ctx.accounts.token_program.key()
-            || *ctx.remaining_accounts[0].key == ctx.accounts.token_2022_program.key(),
-        ManagerError::InvalidSwap
-    );
-    // check all other accounts
-    for (&expected, to_check) in check_accounts.iter().zip(ctx.remaining_accounts).skip(1) {
-        require!(to_check.key() == expected, ManagerError::InvalidSwap);
-    }
-
-    accounts[4] = AccountMeta {
+    // Override destinationTokenAccount
+    accounts[dst_ata_idx] = AccountMeta {
         pubkey: ctx.accounts.output_treasury_ata.key(),
         is_signer: false,
         is_writable: true,
     };
+
+    // Include output_treasury_ata in accounts_infos (add it to remaining_accounts)
+    let accounts_infos = &[
+        ctx.remaining_accounts,
+        &[ctx.accounts.output_treasury_ata.to_account_info()],
+    ]
+    .concat();
+
+    // Swap
     let _ = invoke_signed(
         &Instruction {
-            program_id: *ctx.accounts.jupiter_program.key,
+            program_id: Jupiter::id(),
             accounts,
             data,
         },
-        &[
-            ctx.remaining_accounts,
-            &[ctx.accounts.output_treasury_ata.to_account_info()],
-        ]
-        .concat(),
+        accounts_infos,
         &[],
     );
 
