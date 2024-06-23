@@ -12,6 +12,7 @@ import {
   Connection,
   Keypair,
   PublicKey,
+  SystemProgram,
   Transaction,
   TransactionMessage,
   TransactionSignature,
@@ -32,10 +33,14 @@ type FundAccount = IdlAccounts<Glam>["fundAccount"];
 type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
 
 export const JUPITER_API_DEFAULT = "https://quote-api.jup.ag/v6";
+export const JITO_TIP_DEFAULT = new PublicKey(
+  "96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5"
+);
 
 export type ApiTxOptions = {
   signer?: PublicKey;
-  microLamports?: number;
+  computeUnitLimit?: number;
+  computeUnitPriceMicroLamports?: number;
   jitoTipLamports?: number;
 };
 
@@ -108,14 +113,16 @@ export class BaseClient {
   async intoVersionedTransaction({
     tx,
     lookupTables,
-    microLamports, // fee
+    computeUnitLimit,
+    computeUnitPriceMicroLamports, // fee
     jitoTipLamports,
     signer,
     latestBlockhash,
   }: {
     tx: Transaction;
     lookupTables?: Array<AddressLookupTableAccount> | [];
-    microLamports?: number;
+    computeUnitLimit?: number;
+    computeUnitPriceMicroLamports?: number;
     jitoTipLamports?: number;
     signer?: PublicKey;
     latestBlockhash?: BlockhashWithExpiryBlockHeight;
@@ -133,27 +140,39 @@ export class BaseClient {
     const connection = this.provider.connection;
     const instructions = tx.instructions;
 
-    //TODO: add jito tip BEFORE estimating CUs
-
-    let units;
-    try {
-      units = await getSimulationComputeUnits(
-        connection,
-        instructions,
-        signer,
-        lookupTables
+    // Set Jito tip or compute unit price (or nothing)
+    if (jitoTipLamports) {
+      instructions.unshift(
+        SystemProgram.transfer({
+          fromPubkey: signer,
+          toPubkey: JITO_TIP_DEFAULT,
+          lamports: jitoTipLamports,
+        })
       );
-    } catch (e) {
-      // ignore
-      // when we run tests with failure cases, this RPC call fails with
-      // an incorrect error message so we should ignore it
-      // in the regular case, if this errors the tx will have the default CUs
+    } else if (computeUnitPriceMicroLamports) {
+      instructions.unshift(
+        ComputeBudgetProgram.setComputeUnitPrice({
+          microLamports: computeUnitPriceMicroLamports,
+        })
+      );
     }
 
-    if (microLamports) {
-      instructions.unshift(
-        ComputeBudgetProgram.setComputeUnitPrice({ microLamports })
-      );
+    // Set compute unit limit or autodetect by simulating the tx
+    let units = computeUnitLimit || null;
+    if (!computeUnitLimit) {
+      try {
+        units = await getSimulationComputeUnits(
+          connection,
+          instructions,
+          signer,
+          lookupTables
+        );
+      } catch (e) {
+        // ignore
+        // when we run tests with failure cases, this RPC call fails with
+        // an incorrect error message so we should ignore it
+        // in the regular case, if this errors the tx will have the default CUs
+      }
     }
     if (units) {
       instructions.unshift(ComputeBudgetProgram.setComputeUnitLimit({ units }));
