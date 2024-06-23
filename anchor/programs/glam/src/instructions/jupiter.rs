@@ -46,9 +46,11 @@ pub struct JupiterSwap<'info> {
         associated_token::mint = output_mint,
         associated_token::authority = manager)]
     pub output_signer_ata: Box<InterfaceAccount<'info, TokenAccount>>,
-    /// CHECK: same as above
-    #[account(mut)]
-    pub output_treasury_ata: UncheckedAccount<'info>,
+    #[account(
+        mut,
+        associated_token::mint = output_mint,
+        associated_token::authority = treasury)]
+    pub output_treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     pub input_mint: Box<InterfaceAccount<'info, Mint>>,
     pub output_mint: Box<InterfaceAccount<'info, Mint>>,
@@ -120,11 +122,38 @@ pub fn jupiter_swap(ctx: Context<JupiterSwap>, amount: u64, data: Vec<u8>) -> Re
         })
         .collect();
 
-    let accounts_infos: Vec<AccountInfo> = ctx
-        .remaining_accounts
-        .iter()
-        .map(|acc| AccountInfo { ..acc.clone() })
-        .collect();
+    // We now validate the accounts, according to Jupiter v6 route ix.
+    // Note: we assume that Jupiter is doing its own validation, so we
+    // only check the first 9 accounts (skipping eventAuthority)
+    require!(ctx.remaining_accounts.len() > 9, ManagerError::InvalidSwap);
+    // Jupiter uses its own program as null key
+    let null_key = ctx.accounts.jupiter_program.key();
+    let check_accounts = &[
+        ctx.accounts.token_program.key(), // tokenProgram (explicitly checked)
+        ctx.accounts.manager.key(),       // userTransferAuthority
+        ctx.accounts.input_signer_ata.key(), // userSourceTokenAccount
+        ctx.accounts.output_signer_ata.key(), // userDestinationTokenAccount
+        null_key,                         // destinationTokenAccount
+        ctx.accounts.output_mint.key(),   // destinationMint
+        null_key,                         // platformFeeAccount
+                                          // eventAuthority (ignored)
+                                          // program (explicitly checked)
+    ];
+    // program == Jupiter
+    require!(
+        *ctx.remaining_accounts[8].key == ctx.accounts.jupiter_program.key(),
+        ManagerError::InvalidSwap
+    );
+    // tokenProgaram == either token or token2022
+    require!(
+        *ctx.remaining_accounts[0].key == ctx.accounts.token_program.key()
+            || *ctx.remaining_accounts[0].key == ctx.accounts.token_2022_program.key(),
+        ManagerError::InvalidSwap
+    );
+    // check all other accounts
+    for (&expected, to_check) in check_accounts.iter().zip(ctx.remaining_accounts).skip(1) {
+        require!(to_check.key() == expected, ManagerError::InvalidSwap);
+    }
 
     let _ = invoke_signed(
         &Instruction {
@@ -132,7 +161,7 @@ pub fn jupiter_swap(ctx: Context<JupiterSwap>, amount: u64, data: Vec<u8>) -> Re
             accounts,
             data,
         },
-        &accounts_infos,
+        &ctx.remaining_accounts,
         &[],
     );
 
