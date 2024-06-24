@@ -119,7 +119,11 @@ pub mod glam {
     }
 
     // Jupiter
-    pub fn jupiter_swap(ctx: Context<JupiterSwap>, amount: u64, data: Vec<u8>) -> Result<()> {
+    pub fn jupiter_swap<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, JupiterSwap<'info>>,
+        amount: u64,
+        data: Vec<u8>,
+    ) -> Result<()> {
         jupiter::jupiter_swap(ctx, amount, data)
     }
 
