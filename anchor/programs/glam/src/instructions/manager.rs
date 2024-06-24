@@ -100,10 +100,8 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
             },
         },
         EngineField {
-            name: EngineFieldName::Managers,
-            value: EngineFieldValue::VecPubkey {
-                val: [ctx.accounts.manager.key()].to_vec(),
-            },
+            name: EngineFieldName::Permissions,
+            value: EngineFieldValue::VecAcl { val: Vec::new() },
         },
     ]];
 
@@ -303,36 +301,12 @@ pub struct UpdateFund<'info> {
     #[account(mut)]
     fund: Account<'info, FundAccount>,
     #[account(mut)]
-    manager: Signer<'info>,
-}
-impl UpdateFund<'_> {
-    pub fn rbac(engine_fields: &Vec<EngineField>, signer: &Pubkey) -> Result<()> {
-        let mut authorized = false;
-        let _ = engine_fields.iter().try_for_each(|field| match field.name {
-            EngineFieldName::Managers => {
-                if let EngineFieldValue::VecPubkey { val } = &field.value {
-                    if val.contains(signer) {
-                        authorized = true;
-                        Ok(())
-                    } else {
-                        Err(())
-                    }
-                } else {
-                    Err(())
-                }
-            }
-            _ => Ok(()),
-        });
-
-        if authorized {
-            Ok(())
-        } else {
-            Err(ManagerError::NotAuthorizedError.into())
-        }
-    }
+    signer: Signer<'info>,
 }
 
-#[access_control(UpdateFund::rbac(&ctx.accounts.fund.params[0], &ctx.accounts.manager.key))]
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::FundUpdate)
+)]
 pub fn update_fund_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, UpdateFund<'info>>,
     fund_model: FundModel,
@@ -354,34 +328,24 @@ pub fn update_fund_handler<'c: 'info, 'info>(
         }
     }
 
-    if let Some(managers) = fund_model.managers {
-        for EngineField { name, value } in &mut fund.params[0] {
-            if let EngineFieldName::Managers = name {
-                *value = EngineFieldValue::VecPubkey {
-                    val: managers.clone(),
-                };
-                break;
-            }
-        }
-    }
+    // fund.params[0][2].value stores the existing acls
+    // fund_model.acls is new acls to be upserted
+    if let Some(acls) = fund_model.acls {
+        for new_acl in acls {
+            let mut found = false;
 
-    if let Some(traders) = fund_model.traders {
-        // Update traders if available in the array; otherwise push it
-        let mut updated = false;
-        for EngineField { name, value } in &mut fund.params[0] {
-            if let EngineFieldName::Traders = name {
-                *value = EngineFieldValue::VecPubkey {
-                    val: traders.clone(),
-                };
-                updated = true;
-                break;
+            if let EngineFieldValue::VecAcl { val } = &mut fund.params[0][2].value {
+                for fund_acl in &mut *val {
+                    if fund_acl.pubkey == new_acl.pubkey {
+                        found = true;
+                        fund_acl.permissions = new_acl.permissions.clone();
+                        break;
+                    }
+                }
+                if !found {
+                    val.push(new_acl);
+                }
             }
-        }
-        if !updated {
-            fund.params[0].push(EngineField {
-                name: EngineFieldName::Traders,
-                value: EngineFieldValue::VecPubkey { val: traders },
-            });
         }
     }
 
@@ -397,8 +361,6 @@ pub fn update_fund_handler<'c: 'info, 'info>(
     //         fund.assets_weights[i] = w;
     //     }
     // }
-
-    msg!("Fund updated: {}", ctx.accounts.fund.key());
     Ok(())
 }
 

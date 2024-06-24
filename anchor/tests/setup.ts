@@ -12,6 +12,13 @@ export const sleep = async (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
+export const str2seed = (str: String) =>
+  Uint8Array.from(
+    Array.from(str)
+      .map((letter) => letter.charCodeAt(0))
+      .concat(new Array(32 - str.length).fill(0))
+  );
+
 export const fundTestExample = {
   shareClasses: [
     {

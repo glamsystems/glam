@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 
+use super::acl::*;
 use super::model::*;
 use super::openfunds::*;
 
@@ -9,8 +10,7 @@ pub enum EngineFieldName {
     IsEnabled,
     Assets,
     AssetsWeights,
-    Managers,
-    Traders,
+    Permissions,
     ShareClassAllowlist,
     ShareClassBlocklist,
 }
@@ -33,6 +33,7 @@ pub enum EngineFieldValue {
     Timestamp { val: i64 },
     VecPubkey { val: Vec<Pubkey> },
     VecU32 { val: Vec<u32> },
+    VecAcl { val: Vec<Acl> },
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]

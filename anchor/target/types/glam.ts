@@ -99,7 +99,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "manager",
+          "name": "signer",
           "isMut": true,
           "isSigner": true
         }
@@ -1129,6 +1129,26 @@ export type Glam = {
       }
     },
     {
+      "name": "Acl",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pubkey",
+            "type": "publicKey"
+          },
+          {
+            "name": "permissions",
+            "type": {
+              "vec": {
+                "defined": "Permission"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "FundModel",
       "type": {
         "kind": "struct",
@@ -1220,6 +1240,16 @@ export type Glam = {
             "type": {
               "option": {
                 "defined": "CreatedModel"
+              }
+            }
+          },
+          {
+            "name": "acls",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "Acl"
+                }
               }
             }
           },
@@ -1823,10 +1853,7 @@ export type Glam = {
             "name": "AssetsWeights"
           },
           {
-            "name": "Managers"
-          },
-          {
-            "name": "Traders"
+            "name": "Permissions"
           },
           {
             "name": "ShareClassAllowlist"
@@ -1971,6 +1998,68 @@ export type Glam = {
                 }
               }
             ]
+          },
+          {
+            "name": "VecAcl",
+            "fields": [
+              {
+                "name": "val",
+                "type": {
+                  "vec": {
+                    "defined": "Acl"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "AccessError",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NotAuthorized"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Permission",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "FundUpdate"
+          },
+          {
+            "name": "DriftDeposit"
+          },
+          {
+            "name": "DriftWithdraw"
+          },
+          {
+            "name": "MarinadeStake"
+          },
+          {
+            "name": "MarinadeUnstake"
+          },
+          {
+            "name": "MarinadeLiquidUnstake"
+          },
+          {
+            "name": "JupiterSwapFundAssets"
+          },
+          {
+            "name": "JupiterSwapAnyAsset"
+          },
+          {
+            "name": "WSolWrap"
+          },
+          {
+            "name": "WSolUnwrap"
           }
         ]
       }
@@ -3227,7 +3316,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "manager",
+          "name": "signer",
           "isMut": true,
           "isSigner": true
         }
@@ -4257,6 +4346,26 @@ export const IDL: Glam = {
       }
     },
     {
+      "name": "Acl",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pubkey",
+            "type": "publicKey"
+          },
+          {
+            "name": "permissions",
+            "type": {
+              "vec": {
+                "defined": "Permission"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "FundModel",
       "type": {
         "kind": "struct",
@@ -4348,6 +4457,16 @@ export const IDL: Glam = {
             "type": {
               "option": {
                 "defined": "CreatedModel"
+              }
+            }
+          },
+          {
+            "name": "acls",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "Acl"
+                }
               }
             }
           },
@@ -4951,10 +5070,7 @@ export const IDL: Glam = {
             "name": "AssetsWeights"
           },
           {
-            "name": "Managers"
-          },
-          {
-            "name": "Traders"
+            "name": "Permissions"
           },
           {
             "name": "ShareClassAllowlist"
@@ -5099,6 +5215,68 @@ export const IDL: Glam = {
                 }
               }
             ]
+          },
+          {
+            "name": "VecAcl",
+            "fields": [
+              {
+                "name": "val",
+                "type": {
+                  "vec": {
+                    "defined": "Acl"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "AccessError",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NotAuthorized"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Permission",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "FundUpdate"
+          },
+          {
+            "name": "DriftDeposit"
+          },
+          {
+            "name": "DriftWithdraw"
+          },
+          {
+            "name": "MarinadeStake"
+          },
+          {
+            "name": "MarinadeUnstake"
+          },
+          {
+            "name": "MarinadeLiquidUnstake"
+          },
+          {
+            "name": "JupiterSwapFundAssets"
+          },
+          {
+            "name": "JupiterSwapAnyAsset"
+          },
+          {
+            "name": "WSolWrap"
+          },
+          {
+            "name": "WSolUnwrap"
           }
         ]
       }

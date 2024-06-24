@@ -99,7 +99,7 @@
           "isSigner": false
         },
         {
-          "name": "manager",
+          "name": "signer",
           "isMut": true,
           "isSigner": true
         }
@@ -1129,6 +1129,26 @@
       }
     },
     {
+      "name": "Acl",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pubkey",
+            "type": "publicKey"
+          },
+          {
+            "name": "permissions",
+            "type": {
+              "vec": {
+                "defined": "Permission"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "FundModel",
       "type": {
         "kind": "struct",
@@ -1220,6 +1240,16 @@
             "type": {
               "option": {
                 "defined": "CreatedModel"
+              }
+            }
+          },
+          {
+            "name": "acls",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "Acl"
+                }
               }
             }
           },
@@ -1823,10 +1853,7 @@
             "name": "AssetsWeights"
           },
           {
-            "name": "Managers"
-          },
-          {
-            "name": "Traders"
+            "name": "Permissions"
           },
           {
             "name": "ShareClassAllowlist"
@@ -1971,6 +1998,68 @@
                 }
               }
             ]
+          },
+          {
+            "name": "VecAcl",
+            "fields": [
+              {
+                "name": "val",
+                "type": {
+                  "vec": {
+                    "defined": "Acl"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "AccessError",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NotAuthorized"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Permission",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "FundUpdate"
+          },
+          {
+            "name": "DriftDeposit"
+          },
+          {
+            "name": "DriftWithdraw"
+          },
+          {
+            "name": "MarinadeStake"
+          },
+          {
+            "name": "MarinadeUnstake"
+          },
+          {
+            "name": "MarinadeLiquidUnstake"
+          },
+          {
+            "name": "JupiterSwapFundAssets"
+          },
+          {
+            "name": "JupiterSwapAnyAsset"
+          },
+          {
+            "name": "WSolWrap"
+          },
+          {
+            "name": "WSolUnwrap"
           }
         ]
       }

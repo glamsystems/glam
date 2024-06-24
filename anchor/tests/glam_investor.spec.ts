@@ -21,15 +21,8 @@ import {
   createTransferCheckedInstruction,
 } from "@solana/spl-token";
 
-import { fundTestExample, createFundForTest } from "./setup";
+import { fundTestExample, createFundForTest, str2seed } from "./setup";
 import { GlamClient } from "../src";
-
-const str2seed = (str: String) =>
-  Uint8Array.from(
-    Array.from(str)
-      .map((letter) => letter.charCodeAt(0))
-      .concat(new Array(32 - str.length).fill(0))
-  );
 
 describe("glam_investor", () => {
   const glamClient = new GlamClient();

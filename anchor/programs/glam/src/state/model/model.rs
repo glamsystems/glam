@@ -1,5 +1,7 @@
 use anchor_lang::prelude::*;
 
+use super::super::acl::*;
+
 // Fund
 //
 // Implemented:
@@ -27,6 +29,9 @@ pub struct FundModel {
     pub company: Option<CompanyModel>,
     pub manager: Option<ManagerModel>,
     pub created: Option<CreatedModel>,
+
+    // ACLs
+    pub acls: Option<Vec<Acl>>,
 
     // Openfunds
     pub is_raw_openfunds: Option<bool>,
