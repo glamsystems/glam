@@ -46,7 +46,7 @@ pub fn check_access(fund: &FundAccount, signer: &Pubkey, permission: Permission)
     let mut authorized = false;
     for EngineField { name, value } in engine_fields {
         match name {
-            EngineFieldName::Permissions => {
+            EngineFieldName::Acls => {
                 if let EngineFieldValue::VecAcl { val } = &value {
                     for acl in val {
                         if acl.pubkey == *signer && acl.permissions.contains(&permission) {

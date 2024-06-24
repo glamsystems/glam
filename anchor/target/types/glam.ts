@@ -1196,22 +1196,6 @@ export type Glam = {
             }
           },
           {
-            "name": "managers",
-            "type": {
-              "option": {
-                "vec": "publicKey"
-              }
-            }
-          },
-          {
-            "name": "traders",
-            "type": {
-              "option": {
-                "vec": "publicKey"
-              }
-            }
-          },
-          {
             "name": "shareClasses",
             "type": {
               "vec": {
@@ -1853,7 +1837,7 @@ export type Glam = {
             "name": "AssetsWeights"
           },
           {
-            "name": "Permissions"
+            "name": "Acls"
           },
           {
             "name": "ShareClassAllowlist"
@@ -4413,22 +4397,6 @@ export const IDL: Glam = {
             }
           },
           {
-            "name": "managers",
-            "type": {
-              "option": {
-                "vec": "publicKey"
-              }
-            }
-          },
-          {
-            "name": "traders",
-            "type": {
-              "option": {
-                "vec": "publicKey"
-              }
-            }
-          },
-          {
             "name": "shareClasses",
             "type": {
               "vec": {
@@ -5070,7 +5038,7 @@ export const IDL: Glam = {
             "name": "AssetsWeights"
           },
           {
-            "name": "Permissions"
+            "name": "Acls"
           },
           {
             "name": "ShareClassAllowlist"

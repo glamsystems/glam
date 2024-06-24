@@ -10,7 +10,7 @@ pub enum EngineFieldName {
     IsEnabled,
     Assets,
     AssetsWeights,
-    Permissions,
+    Acls,
     ShareClassAllowlist,
     ShareClassBlocklist,
 }

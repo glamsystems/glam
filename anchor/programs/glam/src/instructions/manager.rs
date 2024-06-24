@@ -100,7 +100,7 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
             },
         },
         EngineField {
-            name: EngineFieldName::Permissions,
+            name: EngineFieldName::Acls,
             value: EngineFieldValue::VecAcl { val: Vec::new() },
         },
     ]];

@@ -20,10 +20,6 @@ pub struct FundModel {
     pub assets: Vec<Pubkey>,
     pub assets_weights: Vec<u32>,
 
-    // Roles
-    pub managers: Option<Vec<Pubkey>>, // current manager excluded in this list
-    pub traders: Option<Vec<Pubkey>>,
-
     // Relationships
     pub share_classes: Vec<ShareClassModel>,
     pub company: Option<CompanyModel>,

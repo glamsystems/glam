@@ -308,9 +308,6 @@ export class BaseClient {
   enrichFundModelInitialize(fund: FundModel): FundModel {
     let fundModel = this.getFundModel(fund);
 
-    fundModel.managers = [];
-    fundModel.traders = [];
-
     // createdKey = hash fund name and get first 8 bytes
     const createdKey = [
       ...Buffer.from(
@@ -332,7 +329,9 @@ export class BaseClient {
       fundModel.name = fundModel.name || shareClass.name;
 
       fundModel.rawOpenfunds.fundCurrency =
-        shareClass.rawOpenfunds?.shareClassCurrency || null;
+        fundModel.rawOpenfunds?.fundCurrency ||
+        shareClass.rawOpenfunds?.shareClassCurrency ||
+        null;
     } else {
       // fund with multiple share classes
       // TODO
@@ -384,8 +383,6 @@ export class BaseClient {
 
     const shareClasses = fundModel.shareClasses;
     fundModel.shareClasses = [];
-
-    console.log("Creating fund", fundModel);
 
     const txSig = await this.program.methods
       .initialize(fundModel)
