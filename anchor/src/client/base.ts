@@ -477,7 +477,7 @@ export class BaseClient {
       ...this.getOpenfundsFromAccounts(fundAccount, openfundsAccount),
     };
 
-    fund.acls = fundAccount.params[0][2].value.vecAcl.val;
+    fund.acls = fundAccount.params[0][2].value.vecAcl?.val;
 
     // Add data from fund params to share classes
     fund.shareClasses = fund.shareClasses.map((shareClass: any, i: number) => {
