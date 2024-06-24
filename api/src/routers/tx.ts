@@ -11,12 +11,15 @@ router.use((req, res, next) => {
       return res.status(400).send({ error: "Invalid signer" });
     }
 
-    const microLamports = req.body.microLamports;
+    const computeUnitLimit = req.body.computeUnitLimit;
+    const computeUnitPriceMicroLamports =
+      req.body.computeUnitPriceMicroLamports || req.body.microLamports;
     const jitoTipLamports = req.body.jitoTipLamports;
 
     req.apiOptions = {
       signer,
-      microLamports,
+      computeUnitLimit,
+      computeUnitPriceMicroLamports,
       jitoTipLamports,
     };
   }
