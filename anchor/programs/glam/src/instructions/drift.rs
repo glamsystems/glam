@@ -165,7 +165,7 @@ pub fn drift_update_delegated_trader_handler(
 
 #[derive(Accounts)]
 pub struct DriftDeposit<'info> {
-    #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
+    #[account()]
     pub fund: Account<'info, FundAccount>,
 
     #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
@@ -192,6 +192,9 @@ pub struct DriftDeposit<'info> {
     pub token_program: Program<'info, Token>,
 }
 
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftDeposit)
+)]
 pub fn drift_deposit_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftDeposit<'info>>,
     amount: u64,
@@ -265,6 +268,9 @@ pub struct DriftWithdraw<'info> {
     pub token_program: Program<'info, Token>,
 }
 
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftWithdraw)
+)]
 pub fn drift_withdraw_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftWithdraw<'info>>,
     amount: u64,

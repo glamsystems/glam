@@ -25,7 +25,7 @@ impl anchor_lang::Id for Jupiter {
 
 #[derive(Accounts)]
 pub struct JupiterSwap<'info> {
-    #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
+    #[account()]
     pub fund: Box<Account<'info, FundAccount>>,
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
@@ -127,6 +127,9 @@ fn parse_shared_accounts_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
     (res, 6)
 }
 
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::JupiterSwapFundAssets)
+)]
 pub fn jupiter_swap<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, JupiterSwap<'info>>,
     amount: u64,
