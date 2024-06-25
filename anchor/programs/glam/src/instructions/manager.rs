@@ -298,15 +298,12 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
 
 #[derive(Accounts)]
 pub struct UpdateFund<'info> {
-    #[account(mut)]
+    #[account(mut, constraint = fund.manager == signer.key() @ AccessError::NotAuthorized)]
     fund: Account<'info, FundAccount>,
     #[account(mut)]
     signer: Signer<'info>,
 }
 
-#[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::FundUpdate)
-)]
 pub fn update_fund_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, UpdateFund<'info>>,
     fund_model: FundModel,
@@ -330,21 +327,19 @@ pub fn update_fund_handler<'c: 'info, 'info>(
 
     // fund.params[0][2].value stores the existing acls
     // fund_model.acls is new acls to be upserted
-    if let Some(acls) = fund_model.acls {
-        for new_acl in acls {
-            let mut found = false;
+    for new_acl in fund_model.acls {
+        let mut found = false;
 
-            if let EngineFieldValue::VecAcl { val } = &mut fund.params[0][2].value {
-                for fund_acl in &mut *val {
-                    if fund_acl.pubkey == new_acl.pubkey {
-                        found = true;
-                        fund_acl.permissions = new_acl.permissions.clone();
-                        break;
-                    }
+        if let EngineFieldValue::VecAcl { val } = &mut fund.params[0][2].value {
+            for fund_acl in &mut *val {
+                if fund_acl.pubkey == new_acl.pubkey {
+                    found = true;
+                    fund_acl.permissions = new_acl.permissions.clone();
+                    break;
                 }
-                if !found {
-                    val.push(new_acl);
-                }
+            }
+            if !found {
+                val.push(new_acl);
             }
         }
     }

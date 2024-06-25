@@ -1,9 +1,6 @@
 use anchor_lang::prelude::*;
 
-use super::{
-    accounts::{EngineField, EngineFieldName, EngineFieldValue},
-    FundAccount,
-};
+use super::FundAccount;
 
 #[error_code]
 pub enum AccessError {
@@ -13,7 +10,6 @@ pub enum AccessError {
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, PartialEq, Debug)]
 pub enum Permission {
-    FundUpdate,
     DriftDeposit,
     DriftWithdraw,
     MarinadeStake,
@@ -42,26 +38,12 @@ pub fn check_access(fund: &FundAccount, signer: &Pubkey, permission: Permission)
         permission
     );
 
-    let engine_fields = &fund.params[0];
-    let mut authorized = false;
-    for EngineField { name, value } in engine_fields {
-        match name {
-            EngineFieldName::Acls => {
-                if let EngineFieldValue::VecAcl { val } = &value {
-                    for acl in val {
-                        if acl.pubkey == *signer && acl.permissions.contains(&permission) {
-                            authorized = true
-                        }
-                        break;
-                    }
-                }
+    if let Some(acls) = fund.acls() {
+        for acl in acls {
+            if acl.pubkey == *signer && acl.permissions.contains(&permission) {
+                return Ok(());
             }
-            _ => (),
         }
     }
-    if authorized {
-        Ok(())
-    } else {
-        Err(AccessError::NotAuthorized.into())
-    }
+    return Err(AccessError::NotAuthorized.into());
 }

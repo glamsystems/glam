@@ -10,9 +10,9 @@ pub enum EngineFieldName {
     IsEnabled,
     Assets,
     AssetsWeights,
-    Acls,
     ShareClassAllowlist,
     ShareClassBlocklist,
+    Acls,
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
@@ -121,6 +121,21 @@ impl FundAccount {
                 EngineFieldName::AssetsWeights => {
                     return match value {
                         EngineFieldValue::VecU32 { val: v } => Some(v),
+                        _ => None,
+                    };
+                }
+                _ => { /* ignore */ }
+            }
+        }
+        return None;
+    }
+
+    pub fn acls(&self) -> Option<&Vec<Acl>> {
+        for EngineField { name, value } in &self.params[0] {
+            match name {
+                EngineFieldName::Acls => {
+                    return match value {
+                        EngineFieldValue::VecAcl { val: v } => Some(v),
                         _ => None,
                     };
                 }

@@ -1,11 +1,15 @@
-import { Keypair, PublicKey } from "@solana/web3.js";
+import {
+  Keypair,
+  SystemProgram,
+  Transaction,
+  sendAndConfirmTransaction,
+} from "@solana/web3.js";
+import { BN } from "@coral-xyz/anchor";
 
 import { createFundForTest, fundTestExample, str2seed } from "./setup";
 import { GlamClient } from "../src";
-import { AnchorError } from "@coral-xyz/anchor";
 
 const key1 = Keypair.fromSeed(str2seed("acl_test_key1"));
-const key2 = Keypair.fromSeed(str2seed("acl_test_key2"));
 
 describe("glam_crud", () => {
   const glamClient = new GlamClient();
@@ -41,11 +45,34 @@ describe("glam_crud", () => {
   });
 
   it("Update fund acls", async () => {
-    // grant key1 updateFund permission
+    // transfer 1 SOL to treasury
+    const tranferTx = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey: glamClient.getManager(),
+        toPubkey: glamClient.getTreasuryPDA(fundPDA),
+        lamports: 1000_000_000,
+      })
+    );
+    await sendAndConfirmTransaction(glamClient.provider.connection, tranferTx, [
+      glamClient.getWalletSigner(),
+    ]);
+    // transfer 0.1 SOL to key1 as it needs to pay for treasury wsol ata creation
+    const tranferTx2 = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey: glamClient.getManager(),
+        toPubkey: key1.publicKey,
+        lamports: 100_000_000,
+      })
+    );
+    await sendAndConfirmTransaction(
+      glamClient.provider.connection,
+      tranferTx2,
+      [glamClient.getWalletSigner()]
+    );
+    // grant key1 wSolWrap permission
     let updatedFund = glamClient.getFundModel({
-      acls: [{ pubkey: key1.publicKey, permissions: [{ fundUpdate: {} }] }],
+      acls: [{ pubkey: key1.publicKey, permissions: [{ wSolWrap: {} }] }],
     });
-
     try {
       await glamClient.program.methods
         .update(updatedFund)
@@ -62,33 +89,26 @@ describe("glam_crud", () => {
     expect(fundModel.acls?.length).toEqual(1);
     expect(fundModel.acls[0].pubkey).toEqual(key1.publicKey);
 
-    // key1 now has updateFund permission
-    // use key1 to grant key2 WSolWrap and WSolUnwrap permissions
-    updatedFund = glamClient.getFundModel({
-      acls: [
-        {
-          pubkey: key2.publicKey,
-          permissions: [{ wSolWrap: {} }, { wSolUnwrap: {} }],
-        },
-      ],
-    });
-
+    // key1 now has wSolWrap permission, use key1 to wrap some SOL
     try {
-      await glamClient.program.methods
-        .update(updatedFund)
-        .accounts({
-          fund: fundPDA,
-          signer: key1.publicKey,
-        })
-        .signers([key1])
-        .rpc();
+      const tx = await glamClient.wsol.wrap(fundPDA, new BN(30_000_000), key1);
+      console.log("Wrap:", tx);
     } catch (e) {
-      console.error(e);
+      console.log("Error", e);
       throw e;
     }
-    fundModel = await glamClient.fetchFund(fundPDA);
-    expect(fundModel.acls?.length).toEqual(2);
-    expect(fundModel.acls[1].pubkey).toEqual(key2.publicKey);
+
+    // key1 doesn't have wSolUnwrap permission, unwrap should fail
+    try {
+      const tx = await glamClient.wsol.unwrap(fundPDA, key1);
+      console.log("Unwrap:", tx);
+    } catch (e) {
+      console.log("Error", e);
+      const expectedError = e.logs.some((log) =>
+        log.includes("Signer not authorized to perform this action")
+      );
+      expect(expectedError).toBeTruthy();
+    }
   });
 
   it("Update fund unauthorized", async () => {
@@ -98,9 +118,9 @@ describe("glam_crud", () => {
         .update(updatedFund)
         .accounts({
           fund: fundPDA,
-          signer: key2.publicKey,
+          signer: key1.publicKey,
         })
-        .signers([key2])
+        .signers([key1])
         .rpc();
     } catch (e) {
       expect(e.error.errorMessage).toEqual(
@@ -121,7 +141,6 @@ describe("glam_crud", () => {
         // kind: "Wallet"
       },
     });
-    console.log(updatedFund);
     try {
       await glamClient.program.methods
         .update(updatedFund)

@@ -941,7 +941,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "manager",
+          "name": "signer",
           "isMut": true,
           "isSigner": true
         },
@@ -992,7 +992,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "manager",
+          "name": "signer",
           "isMut": true,
           "isSigner": true
         },
@@ -1230,10 +1230,8 @@ export type Glam = {
           {
             "name": "acls",
             "type": {
-              "option": {
-                "vec": {
-                  "defined": "Acl"
-                }
+              "vec": {
+                "defined": "Acl"
               }
             }
           },
@@ -1837,13 +1835,13 @@ export type Glam = {
             "name": "AssetsWeights"
           },
           {
-            "name": "Acls"
-          },
-          {
             "name": "ShareClassAllowlist"
           },
           {
             "name": "ShareClassBlocklist"
+          },
+          {
+            "name": "Acls"
           }
         ]
       }
@@ -2015,9 +2013,6 @@ export type Glam = {
       "type": {
         "kind": "enum",
         "variants": [
-          {
-            "name": "FundUpdate"
-          },
           {
             "name": "DriftDeposit"
           },
@@ -4142,7 +4137,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "manager",
+          "name": "signer",
           "isMut": true,
           "isSigner": true
         },
@@ -4193,7 +4188,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "manager",
+          "name": "signer",
           "isMut": true,
           "isSigner": true
         },
@@ -4431,10 +4426,8 @@ export const IDL: Glam = {
           {
             "name": "acls",
             "type": {
-              "option": {
-                "vec": {
-                  "defined": "Acl"
-                }
+              "vec": {
+                "defined": "Acl"
               }
             }
           },
@@ -5038,13 +5031,13 @@ export const IDL: Glam = {
             "name": "AssetsWeights"
           },
           {
-            "name": "Acls"
-          },
-          {
             "name": "ShareClassAllowlist"
           },
           {
             "name": "ShareClassBlocklist"
+          },
+          {
+            "name": "Acls"
           }
         ]
       }
@@ -5216,9 +5209,6 @@ export const IDL: Glam = {
       "type": {
         "kind": "enum",
         "variants": [
-          {
-            "name": "FundUpdate"
-          },
           {
             "name": "DriftDeposit"
           },
