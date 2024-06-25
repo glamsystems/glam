@@ -11,6 +11,9 @@ use marinade::State as MarinadeState;
 
 use crate::state::*;
 
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::MarinadeStake)
+)]
 pub fn marinade_deposit<'c: 'info, 'info>(
     ctx: Context<MarinadeDeposit>,
     sol_amount: u64,
@@ -55,6 +58,9 @@ pub fn marinade_deposit<'c: 'info, 'info>(
     Ok(())
 }
 
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::MarinadeUnstake)
+)]
 pub fn marinade_delayed_unstake<'c: 'info, 'info>(
     ctx: Context<MarinadeDelayedUnstake>,
     msol_amount: u64,
@@ -120,6 +126,9 @@ pub fn marinade_delayed_unstake<'c: 'info, 'info>(
     Ok(())
 }
 
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::MarinadeUnstake)
+)]
 pub fn marinade_claim<'info>(ctx: Context<'_, '_, '_, 'info, MarinadeClaim<'info>>) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
@@ -153,6 +162,9 @@ pub fn marinade_claim<'info>(ctx: Context<'_, '_, '_, 'info, MarinadeClaim<'info
     Ok(())
 }
 
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::MarinadeLiquidUnstake)
+)]
 pub fn marinade_liquid_unstake<'c: 'info, 'info>(
     ctx: Context<MarinadeLiquidUnstake>,
     msol_amount: u64,
@@ -188,7 +200,7 @@ pub struct MarinadeDeposit<'info> {
     #[account(mut)]
     pub manager: Signer<'info>,
 
-    #[account(has_one = manager, has_one = treasury)]
+    #[account(has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     /// CHECK: skip
@@ -241,7 +253,7 @@ pub struct MarinadeDelayedUnstake<'info> {
     #[account(mut)]
     pub manager: Signer<'info>,
 
-    #[account(has_one = manager, has_one = treasury)]
+    #[account(has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
@@ -281,7 +293,7 @@ pub struct MarinadeClaim<'info> {
     #[account(mut)]
     pub manager: Signer<'info>,
 
-    #[account(has_one = manager, has_one = treasury)]
+    #[account(has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
@@ -306,7 +318,7 @@ pub struct MarinadeClaim<'info> {
 pub struct MarinadeLiquidUnstake<'info> {
     pub manager: Signer<'info>,
 
-    #[account(has_one = manager, has_one = treasury)]
+    #[account(has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
