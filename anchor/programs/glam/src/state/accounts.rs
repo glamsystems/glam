@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 
+use super::acl::*;
 use super::model::*;
 use super::openfunds::*;
 
@@ -11,6 +12,7 @@ pub enum EngineFieldName {
     AssetsWeights,
     ShareClassAllowlist,
     ShareClassBlocklist,
+    Acls,
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
@@ -31,6 +33,7 @@ pub enum EngineFieldValue {
     Timestamp { val: i64 },
     VecPubkey { val: Vec<Pubkey> },
     VecU32 { val: Vec<u32> },
+    VecAcl { val: Vec<Acl> },
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
@@ -118,6 +121,21 @@ impl FundAccount {
                 EngineFieldName::AssetsWeights => {
                     return match value {
                         EngineFieldValue::VecU32 { val: v } => Some(v),
+                        _ => None,
+                    };
+                }
+                _ => { /* ignore */ }
+            }
+        }
+        return None;
+    }
+
+    pub fn acls(&self) -> Option<&Vec<Acl>> {
+        for EngineField { name, value } in &self.params[0] {
+            match name {
+                EngineFieldName::Acls => {
+                    return match value {
+                        EngineFieldValue::VecAcl { val: v } => Some(v),
                         _ => None,
                     };
                 }

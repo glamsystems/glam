@@ -268,7 +268,7 @@ export class JupiterClient {
               treasury: treasuryPda,
               treasuryWsolAta,
               wsolMint: inputMint,
-              manager,
+              signer: manager,
             })
             .instruction()
         );

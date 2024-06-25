@@ -99,6 +99,10 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
                 val: model.assets_weights,
             },
         },
+        EngineField {
+            name: EngineFieldName::Acls,
+            value: EngineFieldValue::VecAcl { val: Vec::new() },
+        },
     ]];
 
     //
@@ -294,10 +298,10 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
 
 #[derive(Accounts)]
 pub struct UpdateFund<'info> {
-    #[account(mut, has_one = manager @ ManagerError::NotAuthorizedError)]
+    #[account(mut, constraint = fund.manager == signer.key() @ AccessError::NotAuthorized)]
     fund: Account<'info, FundAccount>,
     #[account(mut)]
-    manager: Signer<'info>,
+    signer: Signer<'info>,
 }
 
 pub fn update_fund_handler<'c: 'info, 'info>(
@@ -321,6 +325,25 @@ pub fn update_fund_handler<'c: 'info, 'info>(
         }
     }
 
+    // fund.params[0][2].value stores the existing acls
+    // fund_model.acls is new acls to be upserted
+    for new_acl in fund_model.acls {
+        let mut found = false;
+
+        if let EngineFieldValue::VecAcl { val } = &mut fund.params[0][2].value {
+            for fund_acl in &mut *val {
+                if fund_acl.pubkey == new_acl.pubkey {
+                    found = true;
+                    fund_acl.permissions = new_acl.permissions.clone();
+                    break;
+                }
+            }
+            if !found {
+                val.push(new_acl);
+            }
+        }
+    }
+
     // if let Some(activate) = activate {
     //     fund.is_active = activate;
     // }
@@ -333,8 +356,6 @@ pub fn update_fund_handler<'c: 'info, 'info>(
     //         fund.assets_weights[i] = w;
     //     }
     // }
-
-    msg!("Fund updated: {}", ctx.accounts.fund.key());
     Ok(())
 }
 

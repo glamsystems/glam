@@ -5,16 +5,13 @@ use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::{
     close_account, sync_native, CloseAccount, Mint, SyncNative, Token, TokenAccount,
 };
-use solana_program::pubkey;
 
-use crate::error::ManagerError;
+use crate::constants::WSOL;
 use crate::state::*;
-
-pub const WSOL: Pubkey = pubkey!("So11111111111111111111111111111111111111112");
 
 #[derive(Accounts)]
 pub struct WSolWrap<'info> {
-    #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
+    #[account()]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
@@ -22,7 +19,7 @@ pub struct WSolWrap<'info> {
 
     #[account(
         init_if_needed,
-        payer = manager,
+        payer = signer,
         associated_token::mint = wsol_mint,
         associated_token::authority = treasury)]
     pub treasury_wsol_ata: Account<'info, TokenAccount>,
@@ -31,7 +28,7 @@ pub struct WSolWrap<'info> {
     pub wsol_mint: Account<'info, Mint>,
 
     #[account(mut)]
-    pub manager: Signer<'info>,
+    pub signer: Signer<'info>,
 
     // programs
     pub system_program: Program<'info, System>,
@@ -39,6 +36,9 @@ pub struct WSolWrap<'info> {
     pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::WSolWrap)
+)]
 pub fn wsol_wrap(ctx: Context<WSolWrap>, amount: u64) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
@@ -75,7 +75,7 @@ pub fn wsol_wrap(ctx: Context<WSolWrap>, amount: u64) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct WSolUnwrap<'info> {
-    #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
+    #[account()]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
@@ -91,12 +91,15 @@ pub struct WSolUnwrap<'info> {
     pub wsol_mint: Account<'info, Mint>,
 
     #[account(mut)]
-    pub manager: Signer<'info>,
+    pub signer: Signer<'info>,
 
     // programs
     pub token_program: Program<'info, Token>,
 }
 
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::WSolUnwrap)
+)]
 pub fn wsol_unwrap(ctx: Context<WSolUnwrap>) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[

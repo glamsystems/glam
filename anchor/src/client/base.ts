@@ -231,7 +231,7 @@ export class BaseClient {
     const createdKey = fundModel?.created?.key || [
       ...Buffer.from(
         anchor.utils.sha256.hash(this.getFundName(fundModel))
-      ).slice(0, 8),
+      ).subarray(0, 8),
     ];
 
     const manager = this.getManager();
@@ -312,7 +312,7 @@ export class BaseClient {
     const createdKey = [
       ...Buffer.from(
         anchor.utils.sha256.hash(this.getFundName(fundModel))
-      ).slice(0, 8),
+      ).subarray(0, 8),
     ];
     fundModel.created = {
       key: createdKey,
@@ -476,6 +476,8 @@ export class BaseClient {
       ...fundModel,
       ...this.getOpenfundsFromAccounts(fundAccount, openfundsAccount),
     };
+
+    fund.acls = fundAccount.params[0][2].value.vecAcl?.val;
 
     // Add data from fund params to share classes
     fund.shareClasses = fund.shareClasses.map((shareClass: any, i: number) => {
