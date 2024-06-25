@@ -10,6 +10,7 @@ import { createFundForTest, fundTestExample, str2seed } from "./setup";
 import { GlamClient } from "../src";
 
 const key1 = Keypair.fromSeed(str2seed("acl_test_key1"));
+const key2 = Keypair.fromSeed(str2seed("acl_test_key2"));
 
 describe("glam_crud", () => {
   const glamClient = new GlamClient();
@@ -44,7 +45,119 @@ describe("glam_crud", () => {
     expect(fund.name).toEqual(updatedFund.name);
   });
 
-  it("Update fund acls", async () => {
+  it("Fund acls upsert", async () => {
+    // empty acls
+    let fundModel = await glamClient.fetchFund(fundPDA);
+    expect(fundModel.acls.length).toEqual(0);
+
+    // grant key1 wSolWrap permission
+    let updatedFund = glamClient.getFundModel({
+      acls: [{ pubkey: key1.publicKey, permissions: [{ wSolWrap: {} }] }],
+    });
+    try {
+      await glamClient.program.methods
+        .update(updatedFund)
+        .accounts({
+          fund: fundPDA,
+          signer: glamClient.getManager(),
+        })
+        .rpc();
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+    fundModel = await glamClient.fetchFund(fundPDA);
+    expect(fundModel.acls?.length).toEqual(1);
+    expect(fundModel.acls[0].pubkey).toEqual(key1.publicKey);
+    expect(fundModel.acls[0].permissions).toEqual([{ wSolWrap: {} }]);
+
+    // grant key1 wSolWrap and wSolUnwrap permission
+    updatedFund = glamClient.getFundModel({
+      acls: [
+        {
+          pubkey: key1.publicKey,
+          permissions: [{ wSolWrap: {} }, { wSolUnwrap: {} }],
+        },
+      ],
+    });
+    try {
+      await glamClient.program.methods
+        .update(updatedFund)
+        .accounts({
+          fund: fundPDA,
+          signer: glamClient.getManager(),
+        })
+        .rpc();
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+    fundModel = await glamClient.fetchFund(fundPDA);
+    expect(fundModel.acls?.length).toEqual(1);
+    expect(fundModel.acls[0].pubkey).toEqual(key1.publicKey);
+    expect(fundModel.acls[0].permissions).toEqual([
+      { wSolWrap: {} },
+      { wSolUnwrap: {} },
+    ]);
+  });
+
+  it("Fund acls delete", async () => {
+    // remove key1 permissions and add key2 permissions
+    let updatedFund = glamClient.getFundModel({
+      acls: [
+        {
+          pubkey: key1.publicKey,
+          permissions: [],
+        },
+        {
+          pubkey: key2.publicKey,
+          permissions: [{ marinadeStake: {} }],
+        },
+      ],
+    });
+    try {
+      await glamClient.program.methods
+        .update(updatedFund)
+        .accounts({
+          fund: fundPDA,
+          signer: glamClient.getManager(),
+        })
+        .rpc();
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+    let fundModel = await glamClient.fetchFund(fundPDA);
+    expect(fundModel.acls?.length).toEqual(1);
+    expect(fundModel.acls[0].pubkey).toEqual(key2.publicKey);
+    expect(fundModel.acls[0].permissions).toEqual([{ marinadeStake: {} }]);
+
+    // remove key2 permissions
+    updatedFund = glamClient.getFundModel({
+      acls: [
+        {
+          pubkey: key2.publicKey,
+          permissions: [],
+        },
+      ],
+    });
+    try {
+      await glamClient.program.methods
+        .update(updatedFund)
+        .accounts({
+          fund: fundPDA,
+          signer: glamClient.getManager(),
+        })
+        .rpc();
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+    fundModel = await glamClient.fetchFund(fundPDA);
+    expect(fundModel.acls?.length).toEqual(0);
+  });
+
+  it("Update fund acls and test authorization", async () => {
     // transfer 1 SOL to treasury
     const tranferTx = new Transaction().add(
       SystemProgram.transfer({
@@ -162,7 +275,7 @@ describe("glam_crud", () => {
       },
     });
 
-    /* old manager can NOT update back */
+    // old manager can NOT update back
     try {
       const txId = await glamClient.program.methods
         .update(updatedFund2)
@@ -176,7 +289,7 @@ describe("glam_crud", () => {
       expect(err.message).toContain("not authorized");
     }
 
-    /* new manager CAN update back */
+    // new manager CAN update back
     try {
       const txId = await glamClient.program.methods
         .update(updatedFund2)

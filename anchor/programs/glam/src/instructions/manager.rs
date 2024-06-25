@@ -325,21 +325,46 @@ pub fn update_fund_handler<'c: 'info, 'info>(
         }
     }
 
-    // fund.params[0][2].value stores the existing acls
-    // fund_model.acls is new acls to be upserted
-    for new_acl in fund_model.acls {
-        let mut found = false;
-
-        if let EngineFieldValue::VecAcl { val } = &mut fund.params[0][2].value {
-            for fund_acl in &mut *val {
-                if fund_acl.pubkey == new_acl.pubkey {
-                    found = true;
-                    fund_acl.permissions = new_acl.permissions.clone();
-                    break;
-                }
+    // fund.params[0][2].value stores the existing acls of the fund.
+    // fund_model.acls is new acls to be upserted or deleted.
+    //
+    // for each acl in fund_model.acls:
+    // - If a fund acl with same pubkey exists
+    //   * If acl.permissions is not empty, update permissions
+    //   * if acl.permissions is empty, delete the fund acl
+    // - If a fund acl with same pubkey doesn't exist, add it
+    if fund_model.acls.len() > 0 {
+        let to_delete: Vec<Pubkey> = fund_model
+            .acls
+            .clone()
+            .iter()
+            .filter(|acl| acl.permissions.len() == 0)
+            .map(|acl| acl.pubkey)
+            .collect();
+        if to_delete.len() > 0 {
+            if let EngineFieldValue::VecAcl { val } = &mut fund.params[0][2].value {
+                val.retain(|acl| !to_delete.contains(&acl.pubkey));
             }
-            if !found {
-                val.push(new_acl);
+        }
+
+        let to_upsert = fund_model
+            .acls
+            .clone()
+            .into_iter()
+            .filter(|acl| acl.permissions.len() > 0);
+        for new_acl in to_upsert {
+            let mut found = false;
+            if let EngineFieldValue::VecAcl { val } = &mut fund.params[0][2].value {
+                for fund_acl in &mut *val {
+                    if fund_acl.pubkey == new_acl.pubkey {
+                        found = true;
+                        fund_acl.permissions = new_acl.permissions.clone();
+                        break;
+                    }
+                }
+                if !found {
+                    val.push(new_acl);
+                }
             }
         }
     }
