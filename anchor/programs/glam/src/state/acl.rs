@@ -4,7 +4,7 @@ use super::FundAccount;
 
 #[error_code]
 pub enum AccessError {
-    #[msg("Signer not authorized to perform this action")]
+    #[msg("Signer is not authorized")]
     NotAuthorized,
 }
 

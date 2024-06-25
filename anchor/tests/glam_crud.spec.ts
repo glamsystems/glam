@@ -105,7 +105,7 @@ describe("glam_crud", () => {
     } catch (e) {
       console.log("Error", e);
       const expectedError = e.logs.some((log) =>
-        log.includes("Signer not authorized to perform this action")
+        log.includes("Signer is not authorized")
       );
       expect(expectedError).toBeTruthy();
     }
@@ -123,9 +123,7 @@ describe("glam_crud", () => {
         .signers([key1])
         .rpc();
     } catch (e) {
-      expect(e.error.errorMessage).toEqual(
-        "Signer not authorized to perform this action"
-      );
+      expect(e.error.errorMessage).toEqual("Signer is not authorized");
     }
   });
 
