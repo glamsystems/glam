@@ -477,18 +477,57 @@ export class BaseClient {
       ...this.getOpenfundsFromAccounts(fundAccount, openfundsAccount),
     };
 
-    fund.acls = fundAccount.params[0][2].value.vecAcl?.val;
-
-    // Add data from fund params to share classes
-    fund.shareClasses = fund.shareClasses.map((shareClass: any, i: number) => {
-      const fund_param_idx = 1 + i;
-      shareClass.allowlist =
-        fundAccount.params[fund_param_idx][0].value.vecPubkey?.val;
-      shareClass.blocklist =
-        fundAccount.params[fund_param_idx][1].value.vecPubkey?.val;
-      return shareClass;
+    // fund params [1...N] are allowlist and blocklist pairs for share classes [0...N-1]
+    fundAccount.params.slice(1).forEach((param, i) => {
+      fund.shareClasses[i].allowlist = param[0].value.vecPubkey?.val;
+      fund.shareClasses[i].blocklist = param[1].value.vecPubkey?.val;
     });
 
     return fund;
+  }
+
+  public async deleteAcls(
+    fundPDA: PublicKey,
+    keys: PublicKey[]
+  ): Promise<TransactionSignature> {
+    let updatedFund = this.getFundModel({
+      acls: keys.map((key) => ({ pubkey: key, permissions: [] })),
+    });
+    return await this.program.methods
+      .update(updatedFund)
+      .accounts({
+        fund: fundPDA,
+        signer: this.getManager(),
+      })
+      .rpc();
+  }
+
+  public async upsertAcls(
+    fundPDA: PublicKey,
+    acls: any[]
+  ): Promise<TransactionSignature> {
+    let updatedFund = this.getFundModel({ acls });
+    return await this.program.methods
+      .update(updatedFund)
+      .accounts({
+        fund: fundPDA,
+        signer: this.getManager(),
+      })
+      .rpc();
+  }
+
+  public async updateFund(
+    fundPDA: PublicKey,
+    updated: any
+  ): Promise<TransactionSignature> {
+    let updatedFund = this.getFundModel(updated);
+
+    return await this.program.methods
+      .update(updatedFund)
+      .accounts({
+        fund: fundPDA,
+        signer: this.getManager(),
+      })
+      .rpc();
   }
 }

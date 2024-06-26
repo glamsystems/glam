@@ -26,23 +26,6 @@ pub struct Acl {
     pub pubkey: Pubkey,
     pub permissions: Vec<Permission>,
 }
-impl PartialEq for Acl {
-    fn eq(&self, other: &Self) -> bool {
-        if self.pubkey != other.pubkey {
-            return false;
-        }
-        if self.permissions.len() != other.permissions.len() {
-            return false;
-        }
-        let matching = self
-            .permissions
-            .iter()
-            .zip(other.permissions.iter())
-            .filter(|&(a, b)| a == b)
-            .count();
-        return matching == self.permissions.len();
-    }
-}
 
 pub fn check_access(fund: &FundAccount, signer: &Pubkey, permission: Permission) -> Result<()> {
     if fund.manager == *signer {

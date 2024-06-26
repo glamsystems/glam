@@ -51,17 +51,9 @@ describe("glam_crud", () => {
     expect(fundModel.acls.length).toEqual(0);
 
     // grant key1 wSolWrap permission
-    let updatedFund = glamClient.getFundModel({
-      acls: [{ pubkey: key1.publicKey, permissions: [{ wSolWrap: {} }] }],
-    });
+    const acls = [{ pubkey: key1.publicKey, permissions: [{ wSolWrap: {} }] }];
     try {
-      await glamClient.program.methods
-        .update(updatedFund)
-        .accounts({
-          fund: fundPDA,
-          signer: glamClient.getManager(),
-        })
-        .rpc();
+      await glamClient.upsertAcls(fundPDA, acls);
     } catch (e) {
       console.error(e);
       throw e;
@@ -72,22 +64,13 @@ describe("glam_crud", () => {
     expect(fundModel.acls[0].permissions).toEqual([{ wSolWrap: {} }]);
 
     // grant key1 wSolWrap and wSolUnwrap permission
-    updatedFund = glamClient.getFundModel({
-      acls: [
+    try {
+      await glamClient.upsertAcls(fundPDA, [
         {
           pubkey: key1.publicKey,
           permissions: [{ wSolWrap: {} }, { wSolUnwrap: {} }],
         },
-      ],
-    });
-    try {
-      await glamClient.program.methods
-        .update(updatedFund)
-        .accounts({
-          fund: fundPDA,
-          signer: glamClient.getManager(),
-        })
-        .rpc();
+      ]);
     } catch (e) {
       console.error(e);
       throw e;
@@ -102,53 +85,24 @@ describe("glam_crud", () => {
   });
 
   it("Fund acls delete", async () => {
-    // remove key1 permissions and add key2 permissions
-    let updatedFund = glamClient.getFundModel({
-      acls: [
-        {
-          pubkey: key1.publicKey,
-          permissions: [],
-        },
-        {
-          pubkey: key2.publicKey,
-          permissions: [{ marinadeStake: {} }],
-        },
-      ],
-    });
+    // add key2 permissions
+    const acls = [
+      { pubkey: key2.publicKey, permissions: [{ marinadeStake: {} }] },
+    ];
     try {
-      await glamClient.program.methods
-        .update(updatedFund)
-        .accounts({
-          fund: fundPDA,
-          signer: glamClient.getManager(),
-        })
-        .rpc();
+      await glamClient.upsertAcls(fundPDA, acls);
     } catch (e) {
       console.error(e);
       throw e;
     }
     let fundModel = await glamClient.fetchFund(fundPDA);
-    expect(fundModel.acls?.length).toEqual(1);
-    expect(fundModel.acls[0].pubkey).toEqual(key2.publicKey);
-    expect(fundModel.acls[0].permissions).toEqual([{ marinadeStake: {} }]);
+    expect(fundModel.acls?.length).toEqual(2);
+    expect(fundModel.acls[1].pubkey).toEqual(key2.publicKey);
+    expect(fundModel.acls[1].permissions).toEqual([{ marinadeStake: {} }]);
 
-    // remove key2 permissions
-    updatedFund = glamClient.getFundModel({
-      acls: [
-        {
-          pubkey: key2.publicKey,
-          permissions: [],
-        },
-      ],
-    });
+    // remove key1 and key2 permissions
     try {
-      await glamClient.program.methods
-        .update(updatedFund)
-        .accounts({
-          fund: fundPDA,
-          signer: glamClient.getManager(),
-        })
-        .rpc();
+      await glamClient.deleteAcls(fundPDA, [key1.publicKey, key2.publicKey]);
     } catch (e) {
       console.error(e);
       throw e;
