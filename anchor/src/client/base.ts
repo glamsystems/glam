@@ -467,6 +467,7 @@ export class BaseClient {
     fundModel.id = fundPDA;
     fundAccount.params[0].forEach((param) => {
       const name = Object.keys(param.name)[0];
+      //@ts-ignore
       const value = Object.values(param.value)[0].val;
       //@ts-ignore
       fundModel[name] = value;
