@@ -48,19 +48,42 @@
     ],
     "sharedGlobals": []
   },
+  "plugins": [
+    {
+      "plugin": "@nx/next/plugin",
+      "options": {
+        "startTargetName": "start",
+        "buildTargetName": "build",
+        "devTargetName": "dev",
+        "serveStaticTargetName": "serve-static"
+      }
+    },
+    {
+      "plugin": "@nx/eslint/plugin",
+      "options": {
+        "targetName": "eslint:lint"
+      }
+    }
+  ],
   "generators": {
     "@nx/react": {
       "application": {
+        "babel": true,
         "style": "css",
         "linter": "eslint",
-        "bundler": "webpack",
-        "babel": true
+        "bundler": "webpack"
       },
       "component": {
         "style": "css"
       },
       "library": {
         "style": "css",
+        "linter": "eslint"
+      }
+    },
+    "@nx/next": {
+      "application": {
+        "style": "tailwind",
         "linter": "eslint"
       }
     }
