@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
 import {
-    Breadcrumb,
-    BreadcrumbEllipsis,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+  Breadcrumb,
+  BreadcrumbEllipsis,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 export default function Header() {
-    return (
-        <div className="min-h-[56px] h-[56px] flex justify-start items-center p-4">
-            {/*<Breadcrumb>
+  return (
+    <div className="min-h-[56px] h-[56px] flex justify-start items-center p-4">
+      {/*<Breadcrumb>
                 <BreadcrumbList>
                     <BreadcrumbItem>
                         <BreadcrumbLink href="/">Home</BreadcrumbLink>
@@ -28,6 +28,6 @@ export default function Header() {
                     </BreadcrumbItem>
                 </BreadcrumbList>
             </Breadcrumb>*/}
-        </div>
-    )
+    </div>
+  );
 }

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider} from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 import Sidebar from "@/components/Sidebar";
-import {Toaster} from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,12 +19,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={ `${inter.className} flex items-start justify-between`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-            <Sidebar />
-                <main className="flex justify-center items-center p-[56px] ml-[280px] h-fit w-full">
-                    {children}
-                </main>
+      <body className={`${inter.className} flex items-start justify-between`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Sidebar />
+          <main className="flex justify-center items-center p-[56px] ml-[280px] h-fit w-full">
+            {children}
+          </main>
         </ThemeProvider>
         <Toaster />
       </body>

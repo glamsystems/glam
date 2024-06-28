@@ -1,7 +1,5 @@
-'use client';
+"use client";
 
 export default function Policies() {
-    return (
-        <div>Policies</div>
-    )
+  return <div>Policies</div>;
 }

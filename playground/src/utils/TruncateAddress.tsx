@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface TruncateAddressProps {
   address: string;
@@ -10,13 +10,11 @@ const TruncateAddress: React.FC<TruncateAddressProps> = ({ address }) => {
 
   // Determine when to truncate
   const shouldTruncate = address.length > 10;
-  const truncatedAddress = shouldTruncate ? `${firstPart}...${lastPart}` : address;
+  const truncatedAddress = shouldTruncate
+    ? `${firstPart}...${lastPart}`
+    : address;
 
-  return (
-    <div>
-      {truncatedAddress}
-    </div>
-  );
+  return <div>{truncatedAddress}</div>;
 };
 
 export default TruncateAddress;

@@ -1,8 +1,18 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 import {
-  Component1Icon, DashboardIcon, DownloadIcon, ExitIcon, LayersIcon, ListBulletIcon, LoopIcon, MixerHorizontalIcon, MixIcon, PlusIcon, TransformIcon
+  Component1Icon,
+  DashboardIcon,
+  DownloadIcon,
+  ExitIcon,
+  LayersIcon,
+  ListBulletIcon,
+  LoopIcon,
+  MixerHorizontalIcon,
+  MixIcon,
+  PlusIcon,
+  TransformIcon,
 } from "@radix-ui/react-icons";
 import {
   Command,
@@ -15,8 +25,18 @@ import AccountMenu from "./AccountMenu";
 import Link from "next/link";
 import FeedbackInput from "@/components/FeedbackInput";
 
-type IconType = typeof Component1Icon | typeof DashboardIcon | typeof DownloadIcon | typeof ExitIcon | typeof LayersIcon |
-  typeof ListBulletIcon | typeof LoopIcon | typeof MixIcon | typeof  MixerHorizontalIcon | typeof PlusIcon | typeof TransformIcon;
+type IconType =
+  | typeof Component1Icon
+  | typeof DashboardIcon
+  | typeof DownloadIcon
+  | typeof ExitIcon
+  | typeof LayersIcon
+  | typeof ListBulletIcon
+  | typeof LoopIcon
+  | typeof MixIcon
+  | typeof MixerHorizontalIcon
+  | typeof PlusIcon
+  | typeof TransformIcon;
 
 interface SidebarItemProps {
   route: string;
@@ -29,11 +49,11 @@ function SidebarItem({ route, text, shortcut, Icon }: SidebarItemProps) {
   return (
     <CommandItem>
       <Link href={route} className="flex grow items-center">
-          <Icon className="mr-2 h-4 w-4" />
-          {text}
-          <CommandShortcut>{shortcut}</CommandShortcut>
-        </Link>
-      </CommandItem>
+        <Icon className="mr-2 h-4 w-4" />
+        {text}
+        <CommandShortcut>{shortcut}</CommandShortcut>
+      </Link>
+    </CommandItem>
   );
 }
 
@@ -42,13 +62,17 @@ export default function Sidebar() {
     {
       group: "Manager",
       items: [
-        { route: "/holdings", text: "Holdings", shortcut: "⌘H", Icon: ListBulletIcon },
-      /*{ route: "/dashboard", text: "Dashboard", shortcut: "⌘D", Icon: DashboardIcon },
+        {
+          route: "/holdings",
+          text: "Holdings",
+          shortcut: "⌘H",
+          Icon: ListBulletIcon,
+        },
+        /*{ route: "/dashboard", text: "Dashboard", shortcut: "⌘D", Icon: DashboardIcon },
         { route: "/policies", text: "Policies", shortcut: "⌘P", Icon: TransformIcon },
         { route: "/roles", text: "Roles", shortcut: "⌘R", Icon: Component1Icon },
         { route: "/settings", text: "Settings", shortcut: "⌘N", Icon: MixerHorizontalIcon },
         { route: "/create", text: "Create Product", shortcut: "⌘N", Icon: PlusIcon }*/
-
       ],
     },
     {
@@ -56,16 +80,26 @@ export default function Sidebar() {
       items: [
         { route: "/trade", text: "Trade", shortcut: "⌘L", Icon: LoopIcon },
         { route: "/stake", text: "Stake", shortcut: "⌘K", Icon: DownloadIcon },
-        { route: "/transfer", text: "Transfer", shortcut: "⌘J", Icon: ExitIcon },
+        {
+          route: "/transfer",
+          text: "Transfer",
+          shortcut: "⌘J",
+          Icon: ExitIcon,
+        },
       ],
     },
     {
       group: "Investor",
       items: [
-        { route: "/screener", text: "Screener", shortcut: "⌘S", Icon: LayersIcon },
+        {
+          route: "/screener",
+          text: "Screener",
+          shortcut: "⌘S",
+          Icon: LayersIcon,
+        },
         /*{ route: "/portfolio", text: "Portfolio", shortcut: "⌘A", Icon: MixIcon },*/
       ],
-    }
+    },
   ];
 
   return (
@@ -74,8 +108,8 @@ export default function Sidebar() {
         GLAM *.+
       </div>
       <div className="grow">
-        <Command style={{ overflow: 'visible' }}>
-          <CommandList style={{ overflow: 'visible' }}>
+        <Command style={{ overflow: "visible" }}>
+          <CommandList style={{ overflow: "visible" }}>
             {navList.map((nav, index) => (
               <CommandGroup key={index} heading={nav.group}>
                 {nav.items.map((item, itemIndex) => (

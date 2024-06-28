@@ -1,7 +1,5 @@
-'use client';
+"use client";
 
 export default function Roles() {
-    return (
-        <div>Roles</div>
-    )
+  return <div>Roles</div>;
 }

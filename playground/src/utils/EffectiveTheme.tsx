@@ -1,11 +1,11 @@
-import { useTheme } from 'next-themes';
+import { useTheme } from "next-themes";
 
 export const EffectiveTheme = () => {
-    const { theme, resolvedTheme } = useTheme();
+  const { theme, resolvedTheme } = useTheme();
 
-    if (theme === 'system') {
-        return resolvedTheme;
-    }
+  if (theme === "system") {
+    return resolvedTheme;
+  }
 
-    return theme;
+  return theme;
 };
