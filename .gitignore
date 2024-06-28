@@ -10,6 +10,7 @@ tmp
 node_modules
 # IDEs and editors
 /.idea
+playground/.idea/
 .project
 .classpath
 .c9/
@@ -35,7 +36,7 @@ testem.log
 .DS_Store
 Thumbs.db
 # Project specific
-.nx/cache
+.nx
 .anchor
 !anchor/target/deploy/.gitignore
 anchor/target/deploy
@@ -47,3 +48,6 @@ anchor/target/.rustc_info.json
 !anchor/target/types/*.ts
 test-ledger
 .yarn
+
+# Next.js
+.next
