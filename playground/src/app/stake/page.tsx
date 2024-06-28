@@ -28,8 +28,13 @@ import React, { useState, useEffect } from "react";
 import { columns } from "./components/columns";
 import { DataTable } from "./components/data-table";
 
+import { PublicKey } from "@solana/web3.js";
+//import { GlamClient } from "@glam/anchor";
+
 import { testFund } from "../testFund";
 import { testTickets } from "./data/testTickets";
+
+//const glamClient = new GlamClient();
 
 const stakeSchema = z.object({
   service: z.enum(["Marinade", "Jito"]),
@@ -63,8 +68,8 @@ export default function Stake() {
     };
 
     if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") === "submit") {
-      const fundPDA = testFund.fundPDA;
-      console.log(fundPDA);
+      const fundPDA = new PublicKey(testFund.fundPDA);
+      console.log(fundPDA.toBase58());
 
       const updatedValues = {
         ...values,
