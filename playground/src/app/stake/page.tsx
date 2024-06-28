@@ -28,6 +28,8 @@ import React, { useState, useEffect } from "react";
 import { columns } from "./components/columns";
 import { DataTable } from "./components/data-table";
 
+import { testFund } from "../testFund"
+
 const tickets = [
   {
     id: "ABCNN...RdZX5",
@@ -79,7 +81,11 @@ export default function Stake() {
     const nativeEvent = event as unknown as React.BaseSyntheticEvent & {
       nativeEvent: { submitter: HTMLElement };
     };
+
     if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") === "submit") {
+      const fundPDA = testFund.fundPDA;
+      console.log(fundPDA);
+
       const updatedValues = {
         ...values,
         amountInAsset,

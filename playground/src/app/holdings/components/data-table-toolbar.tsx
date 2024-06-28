@@ -26,7 +26,7 @@ export function DataTableToolbar<TData>({
           placeholder="Filter holdings..."
           value={(table.getColumn("asset")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("assset")?.setFilterValue(event.target.value)
+            table.getColumn("asset")?.setFilterValue(event.target.value)
           }
           className="h-8 w-[150px] lg:w-[250px]"
         />

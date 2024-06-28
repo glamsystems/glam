@@ -9,7 +9,13 @@ const holdings = [
     asset: "SOL",
     location: "internal",
     balance: 1234.56789,
-    notional: 14000,
+    notional: 14000.14,
+  },
+  {
+    asset: "wBTC",
+    location: "external",
+    balance: 69.420,
+    notional: 4321000.56789,
   },
 ];
 

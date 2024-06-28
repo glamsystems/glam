@@ -1,7 +1,5 @@
 "use client";
 
-import { EffectiveTheme } from "@/utils/EffectiveTheme";
-
 import { ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
@@ -13,14 +11,19 @@ import { statuses } from "../data/data";
 
 export const columns: ColumnDef<Product>[] = [
   {
-    id: "address",
+    accessorKey: "address",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="" />
+    ),
     cell: ({ row }) => (
       <img
-        src="glam.svg"
+        src={`https://api.glam.systems/image/${row.getValue("address")}.svg`}
         className="min-w-8 min-h-8 max-h-8 max-w-8"
-        alt="Sparkle Icon"
+        alt="Sparkle"
       />
     ),
+  enableSorting: false,
+  enableHiding: false,
   },
   {
     accessorKey: "name",
@@ -62,7 +65,7 @@ export const columns: ColumnDef<Product>[] = [
       <DataTableColumnHeader column={column} title="Inception" />
     ),
     cell: ({ row }) => (
-      <div className="w-[80px]">{row.getValue("inception")}</div>
+      <div className="w-[90px]">{row.getValue("inception")}</div>
     ),
     enableSorting: true,
     enableHiding: true,
@@ -79,9 +82,8 @@ export const columns: ColumnDef<Product>[] = [
 
       return (
         <div className="flex space-x-2">
-          {status?.label}
           <span className="max-w-[500px] truncate font-medium">
-            {row.getValue("title")}
+            {status?.label}
           </span>
         </div>
       );
