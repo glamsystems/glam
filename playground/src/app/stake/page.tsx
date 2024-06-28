@@ -28,28 +28,8 @@ import React, { useState, useEffect } from "react";
 import { columns } from "./components/columns";
 import { DataTable } from "./components/data-table";
 
-import { testFund } from "../testFund"
-
-const tickets = [
-  {
-    id: "ABCNN...RdZX5",
-    service: "Marinade",
-    status: "pending",
-    label: "native",
-  },
-  {
-    id: "EfGBU...TLdQK",
-    service: "Jito",
-    status: "claimable",
-    label: "lst",
-  },
-  {
-    id: "123rm...6TnP6",
-    service: "Sanctum",
-    status: "canceled",
-    label: "lrt",
-  },
-];
+import { testFund } from "../testFund";
+import { testTickets } from "./data/testTickets";
 
 const stakeSchema = z.object({
   service: z.enum(["Marinade", "Jito"]),
@@ -231,7 +211,7 @@ export default function Stake() {
         </FormProvider>
       </div>
       <div className="flex w-1/2 mt-16 self-center">
-        <DataTable data={tickets} columns={columns} />
+        <DataTable data={testTickets} columns={columns} />
       </div>
     </div>
   );
