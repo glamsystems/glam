@@ -2,17 +2,7 @@
 
 import React from "react";
 import {
-  Component1Icon,
-  DashboardIcon,
-  DownloadIcon,
-  ExitIcon,
-  LayersIcon,
-  ListBulletIcon,
-  LoopIcon,
-  MixerHorizontalIcon,
-  MixIcon,
-  PlusIcon,
-  TransformIcon,
+  BoxModelIcon, Component1Icon, Component2Icon, CrumpledPaperIcon, DashboardIcon, DownloadIcon, ExitIcon, LayersIcon, ListBulletIcon, LoopIcon, MixerHorizontalIcon, MixIcon, PlusIcon, TransformIcon
 } from "@radix-ui/react-icons";
 import {
   Command,
@@ -24,12 +14,15 @@ import {
 import AccountMenu from "./AccountMenu";
 import Link from "next/link";
 import FeedbackInput from "@/components/FeedbackInput";
+import { Check, GlobeIcon } from "lucide-react";
 
 type IconType =
+  | typeof BoxModelIcon
   | typeof Component1Icon
   | typeof DashboardIcon
   | typeof DownloadIcon
   | typeof ExitIcon
+  | typeof GlobeIcon
   | typeof LayersIcon
   | typeof ListBulletIcon
   | typeof LoopIcon
@@ -80,12 +73,8 @@ export default function Sidebar() {
       items: [
         { route: "/trade", text: "Trade", shortcut: "⌘L", Icon: LoopIcon },
         { route: "/stake", text: "Stake", shortcut: "⌘K", Icon: DownloadIcon },
-        {
-          route: "/transfer",
-          text: "Transfer",
-          shortcut: "⌘J",
-          Icon: ExitIcon,
-        },
+        { route: "/transfer", text: "Transfer", shortcut: "⌘J", Icon: ExitIcon },
+        { route: "/wrap", text: "Wrap", shortcut: "⌘W", Icon: BoxModelIcon }
       ],
     },
     {
@@ -98,6 +87,17 @@ export default function Sidebar() {
           Icon: LayersIcon,
         },
         /*{ route: "/portfolio", text: "Portfolio", shortcut: "⌘A", Icon: MixIcon },*/
+      ],
+    },
+    {
+      group: "Utilities",
+      items: [
+        {
+          route: "/tokens",
+          text: "Tokens",
+          shortcut: "⌘T",
+          Icon: GlobeIcon,
+        }
       ],
     },
   ];

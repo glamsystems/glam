@@ -28,13 +28,29 @@ import React, { useState, useEffect } from "react";
 import { columns } from "./components/columns";
 import { DataTable } from "./components/data-table";
 
-import { PublicKey } from "@solana/web3.js";
-//import { GlamClient } from "@glam/anchor";
+import { AnchorProvider, BN } from "@coral-xyz/anchor";
+import { clusterApiUrl, Connection, PublicKey } from "@solana/web3.js";
+import { GlamClient } from "@glam/anchor";
 
 import { testFund } from "../testFund";
+import { testGlam } from "../testGlam";
 import { testTickets } from "./data/testTickets";
 
-//const glamClient = new GlamClient();
+const SOLANA_RPC = process.env.SOLANA_RPC || "https://mainnet.helius-rpc.com/?api-key=ef10a26d-cadd-4772-9995-57eda13fe777";
+const SOLANA_CLUSTER = (process.env.SOLANA_CLUSTER || "custom") as any;
+
+// Default client is configured by environment variables
+
+const solanaClient = new Connection("https://mainnet.helius-rpc.com/?api-key=ef10a26d-cadd-4772-9995-57eda13fe777");
+
+const glamClient = new GlamClient({
+  cluster: SOLANA_CLUSTER,
+  provider: new AnchorProvider(
+    new Connection(SOLANA_RPC, "confirmed"),
+    null,
+    {}
+  ),
+});
 
 const stakeSchema = z.object({
   service: z.enum(["Marinade", "Jito"]),
@@ -62,20 +78,35 @@ export default function Stake() {
     },
   });
 
-  const onSubmit: SubmitHandler<StakeSchema> = (values, event) => {
+  const onSubmit: SubmitHandler<StakeSchema> = async (values, event) => {
     const nativeEvent = event as unknown as React.BaseSyntheticEvent & {
       nativeEvent: { submitter: HTMLElement };
     };
 
     if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") === "submit") {
-      const fundPDA = new PublicKey(testFund.fundPDA);
-      console.log(fundPDA.toBase58());
+      const testFundPDA = new PublicKey(testFund.fundPDA);
+      const manager = new PublicKey(testFund.manager);
+      const treasuryPDA =  glamClient.getTreasuryPDA(testFundPDA);
+      console.log(treasuryPDA.toBase58());
+
+      const wrapTx = await glamClient.wsol.wrapTx(
+        testFundPDA, new BN(100000), { signer: manager })
 
       const updatedValues = {
         ...values,
         amountInAsset,
         mode,
       };
+
+      // @ts-ignore
+      const simConfig = {
+        sigVerify: false,
+        replaceRecentBlockhash: true
+      }
+
+      const simResult = await solanaClient.simulateTransaction(wrapTx, simConfig);
+
+      console.log(simResult);
 
       toast({
         title: `You submitted the following ${mode}:`,
