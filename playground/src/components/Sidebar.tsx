@@ -2,7 +2,10 @@
 
 import React from "react";
 import {
+  BoxModelIcon,
   Component1Icon,
+  Component2Icon,
+  CrumpledPaperIcon,
   DashboardIcon,
   DownloadIcon,
   ExitIcon,
@@ -25,12 +28,15 @@ import AccountMenu from "./AccountMenu";
 import Link from "next/link";
 import FeedbackInput from "@/components/FeedbackInput";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { Check, GlobeIcon } from "lucide-react";
 
 type IconType =
+  | typeof BoxModelIcon
   | typeof Component1Icon
   | typeof DashboardIcon
   | typeof DownloadIcon
   | typeof ExitIcon
+  | typeof GlobeIcon
   | typeof LayersIcon
   | typeof ListBulletIcon
   | typeof LoopIcon
@@ -87,6 +93,7 @@ export default function Sidebar() {
           shortcut: "⌘J",
           Icon: ExitIcon,
         },
+        { route: "/wrap", text: "Wrap", shortcut: "⌘W", Icon: BoxModelIcon },
       ],
     },
     {
@@ -99,6 +106,17 @@ export default function Sidebar() {
           Icon: LayersIcon,
         },
         /*{ route: "/portfolio", text: "Portfolio", shortcut: "⌘A", Icon: MixIcon },*/
+      ],
+    },
+    {
+      group: "Utilities",
+      items: [
+        {
+          route: "/tokens",
+          text: "Tokens",
+          shortcut: "⌘T",
+          Icon: GlobeIcon,
+        },
       ],
     },
   ];

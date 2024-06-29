@@ -20,7 +20,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { AnchorProvider, AnchorWallet } from "@coral-xyz/anchor";
+import { AnchorProvider, BN } from "@coral-xyz/anchor";
 import { toast } from "@/components/ui/use-toast";
 import { AssetInput } from "@/components/AssetInput";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -33,6 +33,7 @@ import { PublicKey } from "@solana/web3.js";
 import { GlamClient } from "@glam/anchor";
 
 import { testFund } from "../testFund";
+import { testGlam } from "../testGlam";
 import { testTickets } from "./data/testTickets";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 
@@ -54,9 +55,9 @@ export default function Stake() {
   const [mode, setMode] = useState<string>("stake");
 
   const { connection } = useConnection();
-  const wallet = useWallet();
+  const { wallet } = useWallet();
 
-  const provider = new AnchorProvider(connection, wallet as AnchorWallet, {
+  const provider = new AnchorProvider(connection, wallet, {
     commitment: "confirmed",
   });
   console.log(connection);
@@ -70,20 +71,39 @@ export default function Stake() {
     },
   });
 
-  const onSubmit: SubmitHandler<StakeSchema> = (values, event) => {
+  const onSubmit: SubmitHandler<StakeSchema> = async (values, event) => {
     const nativeEvent = event as unknown as React.BaseSyntheticEvent & {
       nativeEvent: { submitter: HTMLElement };
     };
 
     if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") === "submit") {
-      const fundPDA = new PublicKey(testFund.fundPDA);
-      console.log(fundPDA.toBase58());
+      const testFundPDA = new PublicKey(testFund.fundPDA);
+      const manager = new PublicKey(testFund.manager);
+      const treasuryPDA = glamClient.getTreasuryPDA(testFundPDA);
+      console.log(treasuryPDA.toBase58());
+
+      const wrapTx = await glamClient.wsol.wrapTx(testFundPDA, new BN(100000), {
+        signer: manager,
+      });
 
       const updatedValues = {
         ...values,
         amountInAsset,
         mode,
       };
+
+      // @ts-ignore
+      const simConfig = {
+        sigVerify: false,
+        replaceRecentBlockhash: true,
+      };
+
+      const simResult = await solanaClient.simulateTransaction(
+        wrapTx,
+        simConfig
+      );
+
+      console.log(simResult);
 
       toast({
         title: `You submitted the following ${mode}:`,
