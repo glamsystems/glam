@@ -98,11 +98,13 @@ export default function Trade() {
     },
   });
 
-  const onSubmit: SubmitHandler<TradeSchema> = (values, event) => {
+  const onSubmit: SubmitHandler<TradeSchema> = async (values, event) => {
     const nativeEvent = event as unknown as React.BaseSyntheticEvent & {
       nativeEvent: { submitter: HTMLElement };
     };
+
     if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") === "submit") {
+      console.log("Submit Trade");
       const updatedValues = {
         ...values,
         fromAsset,
@@ -124,9 +126,24 @@ export default function Trade() {
 
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
-    form.reset();
+    form.reset({
+      venue: "Jupiter",
+      type: "Swap",
+      slippage: 0.1,
+      items: ["meteora"],
+      exactMode: "exact-in",
+      maxAccounts: 1,
+      from: 0,
+      to: 0,
+      directRouteOnly: false,
+      useWSOL: false,
+      versionedTransactions: false,
+      fromAsset: "USDC", // Add this line
+      toAsset: "SOL",    // Add this line
+    });
     setFromAsset("USDC");
     setToAsset("SOL");
+    console.log("Form reset:", form.getValues());
   };
 
   const handleFlip = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -142,6 +159,7 @@ export default function Trade() {
   useEffect(() => {
     form.setValue("fromAsset", fromAsset);
     form.setValue("toAsset", toAsset);
+    console.log("Assets updated:", { fromAsset, toAsset });
   }, [fromAsset, toAsset, form]);
 
   const handleExactModeChange = (value: string) => {
@@ -232,7 +250,12 @@ export default function Trade() {
                 <FormItem>
                   <FormLabel>Slippage</FormLabel>
                   <FormControl>
-                    <Input placeholder="Slippage" {...field} />
+                    <Input
+                      placeholder="Slippage"
+                      type="number"
+                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                      value={field.value}
+                    />
                   </FormControl>
                   <FormDescription>&nbsp;</FormDescription>
                   <FormMessage />
@@ -278,7 +301,12 @@ export default function Trade() {
                 <FormItem>
                   <FormLabel>Max. Accounts</FormLabel>
                   <FormControl>
-                    <Input placeholder="Max. Accounts" {...field} />
+                    <Input
+                      placeholder="Max. Accounts"
+                      type="number"
+                      onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
+                      value={field.value}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

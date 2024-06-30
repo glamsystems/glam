@@ -1,7 +1,5 @@
-"use client";
-
 import React, { useState, useEffect, useRef } from "react";
-import { useFormContext, Controller } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -48,7 +46,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
                                                         className,
                                                         disableAssetChange = false,
                                                       }) => {
-  const { control, setValue } = useFormContext();
+  const { control, setValue, reset } = useFormContext();
   const [displayValue, setDisplayValue] = useState<string>("0");
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -63,6 +61,14 @@ export const AssetInput: React.FC<AssetInputProps> = ({
     setDisplayValue(balanceValue);
     setValue(name, balance);
   };
+
+  const resetAssetInput = () => {
+    setDisplayValue("0");
+  };
+
+  useEffect(() => {
+    resetAssetInput();
+  }, [reset]);
 
   useEffect(() => {
     setValue(name, 0);

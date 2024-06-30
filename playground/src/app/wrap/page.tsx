@@ -2,20 +2,11 @@
 
 import {
   Form,
-  FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { AssetInput } from "@/components/AssetInput";
 import { Button } from "@/components/ui/button";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
@@ -77,18 +68,17 @@ export default function Wrap() {
       console.log(treasuryPDA.toBase58());
 
       const wrapTx = await glamClient.wsol.wrapTx(
-        testFundPDA, new BN(values.amount * 1000000000), { signer: manager })
+        testFundPDA, new BN(values.amount * 1000000000), { signer: manager });
 
       const updatedValues = {
         ...values,
         amountAsset,
       };
 
-      // @ts-ignore
       const simConfig = {
         sigVerify: false,
         replaceRecentBlockhash: true
-      }
+      };
 
       const simResult = await solanaClient.simulateTransaction(wrapTx, simConfig);
 
