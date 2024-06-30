@@ -4,11 +4,10 @@ import React from "react";
 import {
   BoxModelIcon,
   Component1Icon,
-  Component2Icon,
-  CrumpledPaperIcon,
   DashboardIcon,
   DownloadIcon,
   ExitIcon,
+  GlobeIcon,
   LayersIcon,
   ListBulletIcon,
   LoopIcon,
@@ -28,7 +27,6 @@ import AccountMenu from "./AccountMenu";
 import Link from "next/link";
 import FeedbackInput from "@/components/FeedbackInput";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { Check, GlobeIcon } from "lucide-react";
 
 type IconType =
   | typeof BoxModelIcon
@@ -112,9 +110,9 @@ export default function Sidebar() {
       group: "Utilities",
       items: [
         {
-          route: "/tokens",
-          text: "Tokens",
-          shortcut: "⌘T",
+          route: "/assets",
+          text: "Assets",
+          shortcut: "⌘A",
           Icon: GlobeIcon,
         },
       ],
