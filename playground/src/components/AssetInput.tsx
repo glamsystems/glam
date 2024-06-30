@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useFormContext, Controller } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,18 +36,22 @@ interface AssetInputProps {
   selectedAsset: string;
   onSelectAsset: (value: string) => void;
   className?: string;
+  disableAssetChange?: boolean;
 }
 
 export const AssetInput: React.FC<AssetInputProps> = ({
-  name,
-  label,
-  balance,
-  selectedAsset,
-  onSelectAsset,
-  className,
-}) => {
+                                                        name,
+                                                        label,
+                                                        balance,
+                                                        selectedAsset,
+                                                        onSelectAsset,
+                                                        className,
+                                                        disableAssetChange = false,
+                                                      }) => {
   const { control, setValue } = useFormContext();
+  const [displayValue, setDisplayValue] = useState<string>("0");
   const [open, setOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSelect = (value: string) => {
     onSelectAsset(value);
@@ -55,17 +59,38 @@ export const AssetInput: React.FC<AssetInputProps> = ({
   };
 
   const handleBalanceClick = () => {
+    const balanceValue = balance.toString();
+    setDisplayValue(balanceValue);
     setValue(name, balance);
   };
 
   useEffect(() => {
     setValue(name, 0);
+    setDisplayValue("0");
   }, [selectedAsset, setValue, name]);
 
   const formattedBalance = new Intl.NumberFormat("en-US").format(balance);
 
-  const formatInputValue = (value: number) => {
-    return new Intl.NumberFormat("en-US").format(value);
+  const handleInputChange = (value: string) => {
+    if (/^\d*\.?\d*$/.test(value)) {
+      setDisplayValue(value);
+      const numericValue = parseFloat(value.replace(/,/g, ""));
+      if (!isNaN(numericValue)) {
+        setValue(name, numericValue);
+      } else {
+        setValue(name, 0);
+      }
+    }
+  };
+
+  const formatDisplayValue = (value: string) => {
+    const [integerPart, decimalPart] = value.split(".");
+    const formattedIntegerPart = new Intl.NumberFormat("en-US").format(
+      parseInt(integerPart || "0")
+    );
+    return decimalPart
+      ? `${formattedIntegerPart}.${decimalPart}`
+      : formattedIntegerPart;
   };
 
   return (
@@ -79,39 +104,65 @@ export const AssetInput: React.FC<AssetInputProps> = ({
             <div className="relative">
               <Input
                 {...field}
-                value={formatInputValue(field.value || 0)}
+                ref={inputRef}
+                value={displayValue}
                 className="pr-20"
-                placeholder={formatInputValue(0)}
+                placeholder="0"
+                onChange={(e) => handleInputChange(e.target.value)}
+                onFocus={(e) => {
+                  if (field.value === 0) {
+                    setDisplayValue("");
+                  }
+                }}
+                onBlur={(e) => {
+                  if (e.target.value === "") {
+                    setDisplayValue("0");
+                    setValue(name, 0);
+                  } else {
+                    setDisplayValue(formatDisplayValue(e.target.value));
+                  }
+                }}
               />
-              <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="secondary"
-                    className="absolute pr-2 pl-2 h-6 inset-y-0 top-2 right-2 border-l-0"
-                  >
-                    {selectedAsset || "Asset"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="p-0" side="right" align="start">
-                  <Command>
-                    <CommandInput placeholder="Search assets..." />
-                    <CommandList>
-                      <CommandEmpty>No results found.</CommandEmpty>
-                      <CommandGroup>
-                        {assets.map((asset) => (
-                          <CommandItem
-                            key={asset}
-                            value={asset}
-                            onSelect={() => handleSelect(asset)}
-                          >
-                            <span>{asset}</span>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              {!disableAssetChange && (
+                <Popover open={open} onOpenChange={setOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="secondary"
+                      className="absolute pr-2 pl-2 h-6 inset-y-0 top-2 right-2 border-l-0"
+                    >
+                      {selectedAsset || "Asset"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="p-0" side="right" align="start">
+                    <Command>
+                      <CommandInput placeholder="Search assets..." />
+                      <CommandList>
+                        <CommandEmpty>No results found.</CommandEmpty>
+                        <CommandGroup>
+                          {assets.map((asset) => (
+                            <CommandItem
+                              key={asset}
+                              value={asset}
+                              onSelect={() => handleSelect(asset)}
+                            >
+                              <span>{asset}</span>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              )}
+              {disableAssetChange && (
+                <Button
+                  variant="secondary"
+                  className="absolute pr-2 pl-2 h-6 inset-y-0 top-2 right-2 border-l-0"
+                  disabled
+                >
+                  {selectedAsset || "Asset"}
+                </Button>
+              )}
             </div>
           </FormControl>
           <div className="flex justify-between text-sm">

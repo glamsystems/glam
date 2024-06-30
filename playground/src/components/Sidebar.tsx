@@ -2,7 +2,7 @@
 
 import React from "react";
 import {
-  BoxModelIcon, Component1Icon, Component2Icon, CrumpledPaperIcon, DashboardIcon, DownloadIcon, ExitIcon, LayersIcon, ListBulletIcon, LoopIcon, MixerHorizontalIcon, MixIcon, PlusIcon, TransformIcon
+  BoxModelIcon, Component1Icon, DashboardIcon, DownloadIcon, ExitIcon, GlobeIcon, LayersIcon, ListBulletIcon, LoopIcon, MixerHorizontalIcon, MixIcon, PlusIcon, TransformIcon
 } from "@radix-ui/react-icons";
 import {
   Command,
@@ -14,7 +14,6 @@ import {
 import AccountMenu from "./AccountMenu";
 import Link from "next/link";
 import FeedbackInput from "@/components/FeedbackInput";
-import { Check, GlobeIcon } from "lucide-react";
 
 type IconType =
   | typeof BoxModelIcon
@@ -93,9 +92,9 @@ export default function Sidebar() {
       group: "Utilities",
       items: [
         {
-          route: "/tokens",
-          text: "Tokens",
-          shortcut: "⌘T",
+          route: "/assets",
+          text: "Assets",
+          shortcut: "⌘A",
           Icon: GlobeIcon,
         }
       ],

@@ -39,8 +39,6 @@ import { testTickets } from "./data/testTickets";
 const SOLANA_RPC = process.env.SOLANA_RPC || "https://mainnet.helius-rpc.com/?api-key=ef10a26d-cadd-4772-9995-57eda13fe777";
 const SOLANA_CLUSTER = (process.env.SOLANA_CLUSTER || "custom") as any;
 
-// Default client is configured by environment variables
-
 const solanaClient = new Connection("https://mainnet.helius-rpc.com/?api-key=ef10a26d-cadd-4772-9995-57eda13fe777");
 
 const glamClient = new GlamClient({
