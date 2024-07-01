@@ -32,7 +32,42 @@ import {
   pack,
 } from "@solana/spl-token-metadata";
 
-import { getKeypairFromFile } from "@solana-developers/helpers";
+const getKeypairFromFile = async (filepath?: string) => {
+  const path = await import("path");
+  // Work out correct file name
+  if (!filepath) {
+    filepath = "~/.config/solana/id.json";
+  }
+  if (filepath[0] === "~") {
+    const home = process.env.HOME || null;
+    if (home) {
+      filepath = path.join(home, filepath.slice(1));
+    }
+  }
+
+  // Get contents of file
+  let fileContents: string;
+  try {
+    const { readFile } = await import("fs/promises");
+    const fileContentsBuffer = await readFile(filepath);
+    fileContents = fileContentsBuffer.toString();
+  } catch (error) {
+    throw new Error(`Could not read keypair from file at '${filepath}'`);
+  }
+
+  // Parse contents of file
+  let parsedFileContents: Uint8Array;
+  try {
+    parsedFileContents = Uint8Array.from(JSON.parse(fileContents));
+  } catch (thrownObject) {
+    const error = thrownObject as Error;
+    if (!error.message.includes("Unexpected token")) {
+      throw error;
+    }
+    throw new Error(`Invalid secret key file at '${filepath}'!`);
+  }
+  return Keypair.fromSecretKey(parsedFileContents);
+};
 
 async function mintShareClass(): Promise<TokenMetadata> {
   const connection = new Connection(clusterApiUrl("devnet"));

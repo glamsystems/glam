@@ -18,7 +18,7 @@ import {
   TransactionSignature,
   VersionedTransaction,
 } from "@solana/web3.js";
-import { getSimulationComputeUnits } from "@solana-developers/helpers";
+import { getSimulationComputeUnits } from "../utils/helpers";
 import {
   TOKEN_2022_PROGRAM_ID,
   getAssociatedTokenAddressSync,
