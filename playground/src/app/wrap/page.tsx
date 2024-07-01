@@ -19,11 +19,12 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { GlamClient } from "@glam/anchor";
 import { AnchorProvider, BN } from "@coral-xyz/anchor";
 import { testFund } from "@/app/testFund";
+import { HELIUS_PRC_URL_MAINNET } from "../../../RPC"
 
-const SOLANA_RPC = process.env.SOLANA_RPC || "https://mainnet.helius-rpc.com/?api-key=ef10a26d-cadd-4772-9995-57eda13fe777";
+const SOLANA_RPC = process.env.SOLANA_RPC || HELIUS_PRC_URL_MAINNET;
 const SOLANA_CLUSTER = (process.env.SOLANA_CLUSTER || "custom") as any;
 
-const solanaClient = new Connection("https://mainnet.helius-rpc.com/?api-key=ef10a26d-cadd-4772-9995-57eda13fe777");
+const solanaClient = new Connection(HELIUS_PRC_URL_MAINNET);
 
 const glamClient = new GlamClient({
   cluster: SOLANA_CLUSTER,
