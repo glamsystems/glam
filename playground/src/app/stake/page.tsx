@@ -29,12 +29,12 @@ import { columns } from "./components/columns";
 import { DataTable } from "./components/data-table";
 
 import { PublicKey } from "@solana/web3.js";
-//import { GlamClient } from "@glam/anchor";
+import { GlamClient } from "@glam/anchor";
 
 import { testFund } from "../testFund";
 import { testTickets } from "./data/testTickets";
 
-//const glamClient = new GlamClient();
+const glamClient = new GlamClient();
 
 const stakeSchema = z.object({
   service: z.enum(["Marinade", "Jito"]),

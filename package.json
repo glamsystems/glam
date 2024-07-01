@@ -47,7 +47,6 @@
     "@radix-ui/react-toggle": "^1.1.0",
     "@radix-ui/react-toggle-group": "^1.1.0",
     "@scure/base": "^1.1.7",
-    "@solana-developers/helpers": "^2.3.0",
     "@solana-developers/preset-react": "^2.2.0",
     "@solana/spl-token": "^0.3.11",
     "@solana/spl-token-metadata": "^0.1.4",
