@@ -51,3 +51,6 @@ test-ledger
 
 # Next.js
 .next
+
+# Solana
+playground/RPC.ts
