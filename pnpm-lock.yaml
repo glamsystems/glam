@@ -98,9 +98,6 @@ importers:
       '@scure/base':
         specifier: ^1.1.7
         version: 1.1.7
-      '@solana-developers/helpers':
-        specifier: ^2.3.0
-        version: 2.3.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@solana-developers/preset-react':
         specifier: ^2.2.0
         version: 2.2.0(@babel/traverse@7.24.7)(@swc-node/register@1.10.0(@swc/core@1.6.5(@swc/helpers@0.5.11))(@swc/types@0.1.9)(typescript@5.5.2))(@swc/core@1.6.5(@swc/helpers@0.5.11))(@types/node@18.19.39)(bufferutil@4.0.8)(eslint@8.57.0)(js-yaml@4.1.0)(nx@19.3.2(@swc-node/register@1.10.0(@swc/core@1.6.5(@swc/helpers@0.5.11))(@swc/types@0.1.9)(typescript@5.5.2))(@swc/core@1.6.5(@swc/helpers@0.5.11)))(ts-node@10.9.2(@swc/core@1.6.5(@swc/helpers@0.5.11))(@types/node@18.19.39)(typescript@5.5.2))(typescript@5.5.2)(utf-8-validate@5.0.10)(webpack@5.92.1(@swc/core@1.6.5(@swc/helpers@0.5.11)))
@@ -2840,9 +2837,6 @@ packages:
 
   '@sinonjs/fake-timers@10.3.0':
     resolution: {integrity: sha512-V4BG07kuYSUkTCSBHG8G8TNhM+F19jXFWnQtzj+we8DrkpSBCee9Z3Ms8yiGer/dlmhe35/Xdgyo3/0rQKg7YA==}
-
-  '@solana-developers/helpers@2.3.0':
-    resolution: {integrity: sha512-OVdm/RJ9OMI23AnBYX/8UWuNtHRUxaXRUzhXo4WRtXYPHdQ+jTFS2TsjKSJ/F3a0kUZ6nN0b5TekFZvqYF0Qdg==}
 
   '@solana-developers/preset-anchor@2.2.0':
     resolution: {integrity: sha512-gdBohG3sxqgWiL1sIosuwKP4IejPylq7Qm08+B3XL6qQXiLCXJu96MjbVP8aeC2tLv0/z7amfhWuHnXlniWUgg==}
@@ -13780,16 +13774,6 @@ snapshots:
   '@sinonjs/fake-timers@10.3.0':
     dependencies:
       '@sinonjs/commons': 3.0.1
-
-  '@solana-developers/helpers@2.3.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@solana/web3.js': 1.93.4(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      bs58: 5.0.0
-      dotenv: 16.4.5
-    transitivePeerDependencies:
-      - bufferutil
-      - encoding
-      - utf-8-validate
 
   '@solana-developers/preset-anchor@2.2.0(@babel/traverse@7.24.7)(@swc-node/register@1.10.0(@swc/core@1.6.5(@swc/helpers@0.5.11))(@swc/types@0.1.9)(typescript@5.5.2))(@swc/core@1.6.5(@swc/helpers@0.5.11))(@types/node@18.19.39)(bufferutil@4.0.8)(nx@19.3.2(@swc-node/register@1.10.0(@swc/core@1.6.5(@swc/helpers@0.5.11))(@swc/types@0.1.9)(typescript@5.5.2))(@swc/core@1.6.5(@swc/helpers@0.5.11)))(ts-node@10.9.2(@swc/core@1.6.5(@swc/helpers@0.5.11))(@types/node@18.19.39)(typescript@5.5.2))(typescript@5.5.2)(utf-8-validate@5.0.10)':
     dependencies:
