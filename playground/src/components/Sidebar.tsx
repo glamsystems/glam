@@ -24,6 +24,7 @@ import {
 import AccountMenu from "./AccountMenu";
 import Link from "next/link";
 import FeedbackInput from "@/components/FeedbackInput";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 
 type IconType =
   | typeof Component1Icon
@@ -123,7 +124,8 @@ export default function Sidebar() {
       <div className="p-4">
         <FeedbackInput />
       </div>
-      <AccountMenu />
+      {/* <AccountMenu /> */}
+      <WalletMultiButton style={{}} />
     </div>
   );
 }
