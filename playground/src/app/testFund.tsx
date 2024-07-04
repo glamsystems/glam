@@ -3,5 +3,5 @@ export const testFund = {
   treasuryPDA: "B6pnanhAQosKjSbWvhvQX3oxZfRJn1jmMpuXYqSrAR3d",
   treasuryMsolATA: "GSkYFJBNcnRNgGmC6KgkrGtsy2omk8yf94wTPJtcYNtw",
   treasuryWsolATA: "7VGH5FtzCcNGEor1Uaa1CA65v6D5xqrUDB7h9VJn8PUy",
-  manager: "gLJHKPrZLGBiBZ33hFgZh6YnsEhTVxuRT17UCqNp6ff"
-}
+  manager: "gLJHKPrZLGBiBZ33hFgZh6YnsEhTVxuRT17UCqNp6ff",
+};

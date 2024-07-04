@@ -14,7 +14,7 @@ const holdings = [
   {
     asset: "wBTC",
     location: "external",
-    balance: 69.420,
+    balance: 69.42,
     notional: 4321000.56789,
   },
 ];

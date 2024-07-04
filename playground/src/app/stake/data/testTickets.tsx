@@ -17,4 +17,4 @@ export const testTickets = [
     status: "canceled",
     label: "lrt",
   },
-]
+];

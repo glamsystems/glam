@@ -2,7 +2,18 @@
 
 import * as React from "react";
 import {
-  ColumnFiltersState, SortingState, VisibilityState, flexRender, getCoreRowModel, getFacetedRowModel, getFacetedUniqueValues, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable, ColumnDef
+  ColumnFiltersState,
+  SortingState,
+  VisibilityState,
+  flexRender,
+  getCoreRowModel,
+  getFacetedRowModel,
+  getFacetedUniqueValues,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+  ColumnDef,
 } from "@tanstack/react-table";
 import { useRouter } from "next/navigation"; // Import useRouter
 
@@ -26,9 +37,9 @@ interface DataTableProps<TData, TValue> {
 }
 
 export function DataTable<TData, TValue>({
-                                           columns = defaultColumns as ColumnDef<TData, TValue>[], // Type cast to match the generic types
-                                           data,
-                                         }: DataTableProps<TData, TValue>) {
+  columns = defaultColumns as ColumnDef<TData, TValue>[], // Type cast to match the generic types
+  data,
+}: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -79,9 +90,9 @@ export function DataTable<TData, TValue>({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                     </TableHead>
                   );
                 })}
@@ -95,7 +106,9 @@ export function DataTable<TData, TValue>({
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className="cursor-pointer" // Make cursor pointer
-                  onClick={() => handleRowClick((row.original as Product).address)} // Add click handler
+                  onClick={() =>
+                    handleRowClick((row.original as Product).address)
+                  } // Add click handler
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

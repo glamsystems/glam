@@ -11,9 +11,7 @@ import { DataTableRowActions } from "./data-table-row-actions";
 export const columns: ColumnDef<Asset>[] = [
   {
     accessorKey: "address",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="" />
-    ),
+    header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: ({ row }) => (
       <img
         src={`https://api.glam.systems/image/${row.getValue("address")}.svg`}
@@ -21,8 +19,8 @@ export const columns: ColumnDef<Asset>[] = [
         alt="Sparkle"
       />
     ),
-  enableSorting: false,
-  enableHiding: false,
+    enableSorting: false,
+    enableHiding: false,
   },
   {
     accessorKey: "name",
@@ -49,7 +47,9 @@ export const columns: ColumnDef<Asset>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Decimals" />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("decimals")}</div>,
+    cell: ({ row }) => (
+      <div className="w-[80px]">{row.getValue("decimals")}</div>
+    ),
     enableSorting: false,
     enableHiding: false,
   },

@@ -24,20 +24,20 @@ export default function Assets() {
         <DataTable data={assets} columns={columns} />
       ) : (
         <div className="flex flex-col w-full">
-          <Skeleton className="w-[150px] lg:w-[250px] h-[36px] mb-6"/>
-          <Skeleton className="w-full h-[48px] mb-2"/>
-          <Skeleton className="w-full h-[48px] mb-2"/>
-          <Skeleton className="w-full h-[48px] mb-2"/>
-          <Skeleton className="w-full h-[48px] mb-2"/>
-          <Skeleton className="w-full h-[48px] mb-2"/>
-          <Skeleton className="w-full h-[48px] mb-2"/>
-          <Skeleton className="w-full h-[48px] mb-2"/>
-          <Skeleton className="w-full h-[48px] mb-2"/>
-          <Skeleton className="w-full h-[48px] mb-2"/>
-          <Skeleton className="w-full h-[48px] mb-2"/>
-          <Skeleton className="w-full h-[48px] mb-2"/>
-          <Skeleton className="w-full h-[48px] mb-6"/>
-          <Skeleton className="w-1/2 h-[36px]"/>
+          <Skeleton className="w-[150px] lg:w-[250px] h-[36px] mb-6" />
+          <Skeleton className="w-full h-[48px] mb-2" />
+          <Skeleton className="w-full h-[48px] mb-2" />
+          <Skeleton className="w-full h-[48px] mb-2" />
+          <Skeleton className="w-full h-[48px] mb-2" />
+          <Skeleton className="w-full h-[48px] mb-2" />
+          <Skeleton className="w-full h-[48px] mb-2" />
+          <Skeleton className="w-full h-[48px] mb-2" />
+          <Skeleton className="w-full h-[48px] mb-2" />
+          <Skeleton className="w-full h-[48px] mb-2" />
+          <Skeleton className="w-full h-[48px] mb-2" />
+          <Skeleton className="w-full h-[48px] mb-2" />
+          <Skeleton className="w-full h-[48px] mb-6" />
+          <Skeleton className="w-1/2 h-[36px]" />
         </div>
       )}
     </div>

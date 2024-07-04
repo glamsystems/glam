@@ -139,7 +139,7 @@ export default function Trade() {
       useWSOL: false,
       versionedTransactions: false,
       fromAsset: "USDC", // Add this line
-      toAsset: "SOL",    // Add this line
+      toAsset: "SOL", // Add this line
     });
     setFromAsset("USDC");
     setToAsset("SOL");
@@ -253,7 +253,9 @@ export default function Trade() {
                     <Input
                       placeholder="Slippage"
                       type="number"
-                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                      onChange={(e) =>
+                        field.onChange(parseFloat(e.target.value))
+                      }
                       value={field.value}
                     />
                   </FormControl>
@@ -304,7 +306,9 @@ export default function Trade() {
                     <Input
                       placeholder="Max. Accounts"
                       type="number"
-                      onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
+                      onChange={(e) =>
+                        field.onChange(parseInt(e.target.value, 10))
+                      }
                       value={field.value}
                     />
                   </FormControl>

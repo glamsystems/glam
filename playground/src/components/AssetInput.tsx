@@ -38,14 +38,14 @@ interface AssetInputProps {
 }
 
 export const AssetInput: React.FC<AssetInputProps> = ({
-                                                        name,
-                                                        label,
-                                                        balance,
-                                                        selectedAsset,
-                                                        onSelectAsset,
-                                                        className,
-                                                        disableAssetChange = false,
-                                                      }) => {
+  name,
+  label,
+  balance,
+  selectedAsset,
+  onSelectAsset,
+  className,
+  disableAssetChange = false,
+}) => {
   const { control, setValue, reset } = useFormContext();
   const [displayValue, setDisplayValue] = useState<string>("0");
   const [open, setOpen] = useState(false);

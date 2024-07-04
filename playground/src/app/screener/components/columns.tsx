@@ -10,9 +10,7 @@ import { statuses } from "../data/data";
 export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "address",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="" />
-    ),
+    header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: ({ row }) => (
       <img
         src={`https://api.glam.systems/image/${row.getValue("address")}.svg`}
