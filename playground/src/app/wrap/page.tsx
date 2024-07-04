@@ -19,21 +19,6 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { GlamClient } from "@glam/anchor";
 import { AnchorProvider, BN } from "@coral-xyz/anchor";
 import { testFund } from "@/app/testFund";
-import { HELIUS_PRC_URL_MAINNET } from "../../../RPC"
-
-const SOLANA_RPC = process.env.SOLANA_RPC || HELIUS_PRC_URL_MAINNET;
-const SOLANA_CLUSTER = (process.env.SOLANA_CLUSTER || "custom") as any;
-
-const solanaClient = new Connection(HELIUS_PRC_URL_MAINNET);
-
-const glamClient = new GlamClient({
-  cluster: SOLANA_CLUSTER,
-  provider: new AnchorProvider(
-    new Connection(SOLANA_RPC, "confirmed"),
-    null,
-    {}
-  ),
-});
 
 const wrapSchema = z.object({
   direction: z.enum(["wrap", "unwrap"]),
@@ -64,12 +49,15 @@ export default function Wrap() {
     if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") === "submit") {
       const testFundPDA = new PublicKey(testFund.fundPDA);
       const manager = new PublicKey(testFund.manager);
-      const treasuryPDA =  glamClient.getTreasuryPDA(testFundPDA);
+      const treasuryPDA = glamClient.getTreasuryPDA(testFundPDA);
 
       console.log(treasuryPDA.toBase58());
 
       const wrapTx = await glamClient.wsol.wrapTx(
-        testFundPDA, new BN(values.amount * 1000000000), { signer: manager });
+        testFundPDA,
+        new BN(values.amount * 1000000000),
+        { signer: manager }
+      );
 
       const updatedValues = {
         ...values,
@@ -78,10 +66,13 @@ export default function Wrap() {
 
       const simConfig = {
         sigVerify: false,
-        replaceRecentBlockhash: true
+        replaceRecentBlockhash: true,
       };
 
-      const simResult = await solanaClient.simulateTransaction(wrapTx, simConfig);
+      const simResult = await solanaClient.simulateTransaction(
+        wrapTx,
+        simConfig
+      );
 
       console.log(simResult);
 
@@ -138,7 +129,7 @@ export default function Wrap() {
               control={form.control}
               name="direction"
               render={({ field }) => (
-                <FormItem  className="w-1/2">
+                <FormItem className="w-1/2">
                   <FormLabel>Direction</FormLabel>
                   <ToggleGroup
                     type="single"

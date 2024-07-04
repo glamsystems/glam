@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/toaster";
-import AppWalletProvider from "@/components/wallet-provider";
 import { ClusterProvider } from "@/components/solana-cluster-provider";
+
+const AppWalletProvider = dynamic(
+  () => import("@/components/wallet-provider"),
+  { ssr: false }
+);
 
 const inter = Inter({ subsets: ["latin"] });
 
