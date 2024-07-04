@@ -4,7 +4,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/toaster";
-import AppWalletProvider from "@/components/AppWalletProvider";
+import AppWalletProvider from "@/components/wallet-provider";
+import { ClusterProvider } from "@/components/solana-cluster-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,12 +28,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AppWalletProvider>
-            <Sidebar />
-            <main className="flex justify-center items-center p-[56px] ml-[280px] h-fit w-full">
-              {children}
-            </main>
-          </AppWalletProvider>
+          <ClusterProvider>
+            <AppWalletProvider>
+              <Sidebar />
+              <main className="flex justify-center items-center p-[56px] ml-[280px] h-fit w-full">
+                {children}
+              </main>
+            </AppWalletProvider>
+          </ClusterProvider>
         </ThemeProvider>
         <Toaster />
       </body>

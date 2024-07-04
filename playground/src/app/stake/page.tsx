@@ -20,6 +20,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+import { AnchorProvider, AnchorWallet } from "@coral-xyz/anchor";
 import { toast } from "@/components/ui/use-toast";
 import { AssetInput } from "@/components/AssetInput";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -33,8 +34,7 @@ import { GlamClient } from "@glam/anchor";
 
 import { testFund } from "../testFund";
 import { testTickets } from "./data/testTickets";
-
-const glamClient = new GlamClient();
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 
 const stakeSchema = z.object({
   service: z.enum(["Marinade", "Jito"]),
@@ -52,6 +52,14 @@ const serviceToAssetMap: { [key in StakeSchema["service"]]: string } = {
 export default function Stake() {
   const [amountInAsset, setAmountInAsset] = useState<string>("SOL");
   const [mode, setMode] = useState<string>("stake");
+
+  const { connection } = useConnection();
+  const wallet = useWallet();
+
+  const provider = new AnchorProvider(connection, wallet as AnchorWallet, {
+    commitment: "confirmed",
+  });
+  console.log(connection);
 
   const form = useForm<StakeSchema>({
     resolver: zodResolver(stakeSchema),
