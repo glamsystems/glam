@@ -21,7 +21,8 @@ cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_crud"
+test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_stakepool"
+#test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_crud"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_investor"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_drift"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_staking"
@@ -206,6 +207,56 @@ filename = "./fixtures/91bUbswo6Di8235jAPwim1At4cPZLbG2pkpneyqKg4NQ.json"
 [[test.validator.account]] # for e2e swap test
 address = "BWdb6kE1yLzSDocaoJ9VWCEHG6fEnfGCUxguJ3VgEjtx"
 filename = "./fixtures/BWdb6kE1yLzSDocaoJ9VWCEHG6fEnfGCUxguJ3VgEjtx.json"
+
+#
+# Stake pool - Spl
+#
+[[test.genesis]]
+address = "SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy"
+program = "./fixtures/spl_stakepool.so"
+
+[[test.validator.account]] # jito stake pool
+address = "Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb"
+filename = "./fixtures/Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb.json"
+
+[[test.validator.account]] # reserve stake account
+address = "BgKUXdS29YcHCFrPm5M8oLHiTzZaMDjsebggjoaQ6KFL"
+filename = "./fixtures/BgKUXdS29YcHCFrPm5M8oLHiTzZaMDjsebggjoaQ6KFL.json"
+
+[[test.validator.account]] # fee account
+address = "feeeFLLsam6xZJFc6UQFrHqkvVt4jfmVvi2BRLkUZ4i"
+filename = "./fixtures/feeeFLLsam6xZJFc6UQFrHqkvVt4jfmVvi2BRLkUZ4i.json"
+
+[[test.validator.account]] # pool token mint
+address = "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn"
+filename = "./fixtures/J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn.json"
+
+#
+# Stake pool - SanctumSpl
+#
+[[test.genesis]]
+address = "SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY"
+program = "./fixtures/sanctum_stakepool.so"
+
+[[test.validator.account]] # bonk stake pool
+address = "ArAQfbzsdotoKB5jJcZa3ajQrrPcWr2YQoDAEAiFxJAC"
+filename = "./fixtures/ArAQfbzsdotoKB5jJcZa3ajQrrPcWr2YQoDAEAiFxJAC.json"
+
+[[test.validator.account]] # reserve stake account
+address = "5htyN73FSd1dvv8LEHrmy4EiDkXtrGn5EXv5ZizqVF3X"
+filename = "./fixtures/5htyN73FSd1dvv8LEHrmy4EiDkXtrGn5EXv5ZizqVF3X.json"
+
+[[test.validator.account]] # fee account
+address = "HY5CeVNq1HhdgBBcu3iUmSMdthP9gmZtoLdfVU2QpoLJ"
+filename = "./fixtures/HY5CeVNq1HhdgBBcu3iUmSMdthP9gmZtoLdfVU2QpoLJ.json"
+
+[[test.validator.account]] # pool token mint
+address = "BonK1YhkXEGLZzwtcvRTip3gAL9nCeQD7ppZBLXhtTs"
+filename = "./fixtures/BonK1YhkXEGLZzwtcvRTip3gAL9nCeQD7ppZBLXhtTs.json"
+
+[[test.validator.account]] # validator list
+address = "Ea2ATXQgQrUXGdMPXUbdNw8SmV3S6RSzsiff8AcBLP2G"
+filename = "./fixtures/Ea2ATXQgQrUXGdMPXUbdNw8SmV3S6RSzsiff8AcBLP2G.json"
 
 #
 # Others

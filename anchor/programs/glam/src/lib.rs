@@ -118,6 +118,11 @@ pub mod glam {
         marinade::marinade_claim(ctx)
     }
 
+    // Stake pool program
+    pub fn stake_pool_deposit(ctx: Context<StakePoolDeposit>, lamports: u64) -> Result<()> {
+        stakepool::stake_pool_deposit(ctx, lamports)
+    }
+
     // Jupiter
     pub fn jupiter_swap<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, JupiterSwap<'info>>,
