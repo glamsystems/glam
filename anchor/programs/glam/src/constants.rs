@@ -11,3 +11,4 @@ pub const MAX_FUND_SYMBOL: usize = 20;
 pub const MAX_FUND_URI: usize = 100;
 
 pub const WSOL: Pubkey = pubkey!("So11111111111111111111111111111111111111112");
+pub const SANCTUM: Pubkey = pubkey!("SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY");

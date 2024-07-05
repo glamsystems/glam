@@ -2,7 +2,7 @@ use anchor_lang::{prelude::*, system_program};
 use anchor_spl::{token_2022, token_interface::Token2022};
 use spl_token_2022::{extension::ExtensionType, state::Mint as StateMint};
 
-use crate::{error::ManagerError, state::*, MAX_FUND_NAME, MAX_FUND_URI};
+use crate::{constants::*, error::ManagerError, state::*};
 
 #[derive(Accounts)]
 #[instruction(fund_model: FundModel)]

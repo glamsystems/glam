@@ -1,4 +1,4 @@
-use crate::state::*;
+use crate::{state::*, constants::*};
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
@@ -6,7 +6,7 @@ use anchor_spl::{
 };
 
 use solana_program::program::invoke_signed;
-use spl_stake_pool::instruction::deposit_sol;
+use spl_stake_pool::{instruction::deposit_sol, ID};
 
 #[derive(Accounts)]
 pub struct StakePoolDeposit<'info> {
@@ -16,9 +16,8 @@ pub struct StakePoolDeposit<'info> {
     #[account(has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
-    /// CHECK: skip
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: AccountInfo<'info>,
+    pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
     pub pool_mint: Account<'info, Mint>,
@@ -47,8 +46,10 @@ pub struct StakePoolDeposit<'info> {
     )]
     pub mint_to: Account<'info, TokenAccount>,
 
-    /// CHECK: skip
-    #[account()]
+    /// CHECK: use constraint
+    #[account(
+        constraint = stake_pool_program.key.to_string() == SANCTUM.to_string() || stake_pool_program.key.to_string() == ID.to_string() 
+    )]
     pub stake_pool_program: AccountInfo<'info>,
 
     pub associated_token_program: Program<'info, AssociatedToken>,
@@ -56,6 +57,9 @@ pub struct StakePoolDeposit<'info> {
     pub token_program: Program<'info, Token>,
 }
 
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::MarinadeStake)
+)]
 pub fn stake_pool_deposit<'c: 'info, 'info>(
     ctx: Context<StakePoolDeposit>,
     lamports: u64,
