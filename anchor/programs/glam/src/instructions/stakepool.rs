@@ -1,4 +1,4 @@
-use crate::{state::*, constants::*};
+use crate::{constants::*, state::*};
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
@@ -6,7 +6,10 @@ use anchor_spl::{
 };
 
 use solana_program::program::invoke_signed;
-use spl_stake_pool::{instruction::deposit_sol, ID};
+use spl_stake_pool::{
+    instruction::{deposit_sol, withdraw_sol},
+    ID,
+};
 
 #[derive(Accounts)]
 pub struct StakePoolDeposit<'info> {
@@ -48,7 +51,7 @@ pub struct StakePoolDeposit<'info> {
 
     /// CHECK: use constraint
     #[account(
-        constraint = stake_pool_program.key.to_string() == SANCTUM.to_string() || stake_pool_program.key.to_string() == ID.to_string() 
+        constraint = stake_pool_program.key == &SANCTUM || stake_pool_program.key == &ID
     )]
     pub stake_pool_program: AccountInfo<'info>,
 
@@ -97,6 +100,109 @@ pub fn stake_pool_deposit<'c: 'info, 'info>(
             ctx.accounts.mint_to.to_account_info(),
             ctx.accounts.pool_mint.to_account_info(),
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.token_program.to_account_info(),
+        ],
+        signer_seeds,
+    );
+
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct StakePoolWithdraw<'info> {
+    #[account(mut)]
+    pub manager: Signer<'info>,
+
+    #[account(has_one = treasury)]
+    pub fund: Box<Account<'info, FundAccount>>,
+
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
+
+    #[account(mut)]
+    pub pool_mint: Account<'info, Mint>,
+
+    /// CHECK: skip
+    #[account(mut)]
+    pub fee_account: AccountInfo<'info>,
+
+    /// CHECK: skip
+    #[account(mut)]
+    pub stake_pool: AccountInfo<'info>,
+
+    /// CHECK: skip
+    #[account(mut)]
+    pub reserve_stake: AccountInfo<'info>,
+
+    /// CHECK: skip
+    #[account()]
+    pub withdraw_authority: AccountInfo<'info>,
+
+    #[account(mut, constraint = pool_token_ata.mint == pool_mint.key())]
+    pub pool_token_ata: Account<'info, TokenAccount>,
+
+    /// CHECK: use constraint
+    #[account(
+        constraint = stake_pool_program.key == &SANCTUM || stake_pool_program.key == &ID
+    )]
+    pub stake_pool_program: AccountInfo<'info>,
+
+    /// CHECK:
+    pub sysvar_clock: AccountInfo<'info>,
+
+    /// CHECK:
+    pub sysvar_stake_history: AccountInfo<'info>,
+
+    /// CHECK:
+    pub native_stake_program: AccountInfo<'info>,
+
+    pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
+}
+
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::MarinadeUnstake)
+)]
+pub fn stake_pool_withdraw<'c: 'info, 'info>(
+    ctx: Context<StakePoolWithdraw>,
+    lamports: u64,
+) -> Result<()> {
+    let fund_key = ctx.accounts.fund.key();
+    let seeds = &[
+        "treasury".as_bytes(),
+        fund_key.as_ref(),
+        &[ctx.bumps.treasury],
+    ];
+    let signer_seeds = &[&seeds[..]];
+
+    let ix = withdraw_sol(
+        ctx.accounts.stake_pool_program.key,
+        ctx.accounts.stake_pool.key,
+        ctx.accounts.withdraw_authority.key,
+        ctx.accounts.treasury.key,
+        &ctx.accounts.pool_token_ata.key(),
+        ctx.accounts.reserve_stake.key,
+        ctx.accounts.treasury.key,
+        ctx.accounts.fee_account.key,
+        &ctx.accounts.pool_mint.key(),
+        ctx.accounts.token_program.key,
+        lamports,
+    );
+
+    let _ = invoke_signed(
+        &ix,
+        &[
+            ctx.accounts.stake_pool_program.clone(),
+            ctx.accounts.stake_pool.clone(),
+            ctx.accounts.withdraw_authority.clone(),
+            ctx.accounts.treasury.to_account_info(),
+            ctx.accounts.pool_token_ata.to_account_info(),
+            ctx.accounts.reserve_stake.clone(),
+            ctx.accounts.fee_account.clone(),
+            ctx.accounts.pool_mint.to_account_info(),
+            ctx.accounts.sysvar_clock.to_account_info(),
+            ctx.accounts.sysvar_stake_history.to_account_info(),
+            ctx.accounts.native_stake_program.clone(),
             ctx.accounts.token_program.to_account_info(),
         ],
         signer_seeds,

@@ -6,7 +6,7 @@ import { PublicKey } from "@solana/web3.js";
 
 const msol = new PublicKey("mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So");
 
-describe("glam_staking", () => {
+describe("glam_marinade", () => {
   const glamClient = new GlamClient();
   let fundPDA;
 

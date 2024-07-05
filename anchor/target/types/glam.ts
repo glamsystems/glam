@@ -906,6 +906,92 @@ export type Glam = {
       ]
     },
     {
+      "name": "stakePoolWithdraw",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "feeAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "reserveStake",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "withdrawAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "poolTokenAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakePoolProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "sysvarClock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "sysvarStakeHistory",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "nativeStakeProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "lamports",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "jupiterSwap",
       "accounts": [
         {
@@ -4156,6 +4242,92 @@ export const IDL: Glam = {
         },
         {
           "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "lamports",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "stakePoolWithdraw",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "feeAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "reserveStake",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "withdrawAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "poolTokenAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakePoolProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "sysvarClock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "sysvarStakeHistory",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "nativeStakeProgram",
           "isMut": false,
           "isSigner": false
         },

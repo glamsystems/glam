@@ -123,6 +123,10 @@ pub mod glam {
         stakepool::stake_pool_deposit(ctx, lamports)
     }
 
+    pub fn stake_pool_withdraw(ctx: Context<StakePoolWithdraw>, lamports: u64) -> Result<()> {
+        stakepool::stake_pool_withdraw(ctx, lamports)
+    }
+
     // Jupiter
     pub fn jupiter_swap<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, JupiterSwap<'info>>,
