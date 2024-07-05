@@ -27,34 +27,6 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     fund_model: FundModel,
 ) -> Result<()> {
     //
-    // Create the treasury account
-    //
-    let rent = Rent::get()?;
-    let lamports = rent.minimum_balance(8);
-    let fund_key = ctx.accounts.fund.key();
-
-    let seeds = &[
-        "treasury".as_bytes(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
-    system_program::create_account(
-        CpiContext::new_with_signer(
-            ctx.accounts.system_program.to_account_info(),
-            system_program::CreateAccount {
-                from: ctx.accounts.manager.to_account_info(),
-                to: ctx.accounts.treasury.to_account_info(),
-            },
-            signer_seeds,
-        ),
-        lamports,
-        0, // we cannot carry any data with this treasury account, otherwise marinade staking will fail
-        &ctx.accounts.system_program.key(),
-    )?;
-
-    //
     // Initialize the fund
     //
     let fund = &mut ctx.accounts.fund;

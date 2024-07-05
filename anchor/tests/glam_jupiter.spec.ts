@@ -79,7 +79,7 @@ describe("glam_jupiter", () => {
     // Pre-checks: the following accounts should not exist
     const beforeTreasuryBalance =
       await glamClient.provider.connection.getBalance(treasury);
-    expect(beforeTreasuryBalance).toEqual(1_000_946_560);
+    expect(beforeTreasuryBalance).toEqual(1_000_000_000);
     const beforeNoAccounts = [
       glamClient.getManagerAta(wsol),
       glamClient.getManagerAta(msol),
@@ -132,7 +132,7 @@ describe("glam_jupiter", () => {
     // treasury: less SOL
     const afterTreasuryBalance =
       await glamClient.provider.connection.getBalance(treasury);
-    expect(afterTreasuryBalance).toEqual(950_946_560); // minus 50_000_000
+    expect(afterTreasuryBalance).toEqual(950_000_000); // minus 50_000_000
 
     // treasury: more mSOL
     const treasuryMsol = await getAccount(
