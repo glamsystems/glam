@@ -30,7 +30,7 @@ import { columns } from "./components/columns";
 import { DataTable } from "./components/data-table";
 
 import { PublicKey } from "@solana/web3.js";
-import { GlamClient } from "@glam/anchor";
+import { useGlamClient } from "@glam/anchor";
 
 import { testFund } from "../testFund";
 import { testGlam } from "../testGlam";
@@ -53,14 +53,7 @@ const serviceToAssetMap: { [key in StakeSchema["service"]]: string } = {
 export default function Stake() {
   const [amountInAsset, setAmountInAsset] = useState<string>("SOL");
   const [mode, setMode] = useState<string>("stake");
-
-  const { connection } = useConnection();
-  const { wallet } = useWallet();
-
-  const provider = new AnchorProvider(connection, wallet, {
-    commitment: "confirmed",
-  });
-  console.log(connection);
+  // const glamClient = useGlamClient();
 
   const form = useForm<StakeSchema>({
     resolver: zodResolver(stakeSchema),
@@ -79,38 +72,15 @@ export default function Stake() {
     if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") === "submit") {
       const testFundPDA = new PublicKey(testFund.fundPDA);
       const manager = new PublicKey(testFund.manager);
-      const treasuryPDA = glamClient.getTreasuryPDA(testFundPDA);
-      console.log(treasuryPDA.toBase58());
-
-      const wrapTx = await glamClient.wsol.wrapTx(testFundPDA, new BN(100000), {
-        signer: manager,
-      });
-
-      const updatedValues = {
-        ...values,
-        amountInAsset,
-        mode,
-      };
-
-      // @ts-ignore
-      const simConfig = {
-        sigVerify: false,
-        replaceRecentBlockhash: true,
-      };
-
-      const simResult = await solanaClient.simulateTransaction(
-        wrapTx,
-        simConfig
-      );
-
-      console.log(simResult);
+      // const treasuryPDA = glamClient.getTreasuryPDA(testFundPDA);
+      // console.log(treasuryPDA.toBase58());
 
       toast({
         title: `You submitted the following ${mode}:`,
         description: (
           <pre className="mt-2 w-[340px] rounded-md bg-zinc-900 p-4">
             <code className="text-white">
-              {JSON.stringify(updatedValues, null, 2)}
+              {/* {JSON.stringify(updatedValues, null, 2)} */}
             </code>
           </pre>
         ),

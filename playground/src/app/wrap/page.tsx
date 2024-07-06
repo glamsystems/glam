@@ -15,9 +15,9 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/use-toast";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Connection, PublicKey } from "@solana/web3.js";
-import { GlamClient } from "@glam/anchor";
-import { AnchorProvider, BN } from "@coral-xyz/anchor";
+import { PublicKey } from "@solana/web3.js";
+import { useGlamClient } from "@glam/anchor";
+import { BN } from "@coral-xyz/anchor";
 import { testFund } from "@/app/testFund";
 
 const wrapSchema = z.object({
@@ -31,6 +31,7 @@ type WrapSchema = z.infer<typeof wrapSchema>;
 export default function Wrap() {
   const [amountAsset, setAmountAsset] = useState<string>("SOL");
   const [direction, setDirection] = useState<string>("wrap");
+  const glamClient = useGlamClient();
 
   const form = useForm<WrapSchema>({
     resolver: zodResolver(wrapSchema),
@@ -48,41 +49,20 @@ export default function Wrap() {
 
     if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") === "submit") {
       const testFundPDA = new PublicKey(testFund.fundPDA);
-      const manager = new PublicKey(testFund.manager);
-      const treasuryPDA = glamClient.getTreasuryPDA(testFundPDA);
 
-      console.log(treasuryPDA.toBase58());
+      console.log(glamClient.provider);
+      console.log(glamClient.getWalletSigner());
 
-      const wrapTx = await glamClient.wsol.wrapTx(
+      const txId = await glamClient.wsol.wrap(
         testFundPDA,
-        new BN(values.amount * 1000000000),
-        { signer: manager }
+        new BN(values.amount * 1000000000)
       );
-
-      const updatedValues = {
-        ...values,
-        amountAsset,
-      };
-
-      const simConfig = {
-        sigVerify: false,
-        replaceRecentBlockhash: true,
-      };
-
-      const simResult = await solanaClient.simulateTransaction(
-        wrapTx,
-        simConfig
-      );
-
-      console.log(simResult);
 
       toast({
         title: "You submitted the following wrap/unwrap:",
         description: (
           <pre className="mt-2 w-[340px] rounded-md bg-zinc-900 p-4">
-            <code className="text-white">
-              {JSON.stringify(updatedValues, null, 2)}
-            </code>
+            <code className="text-white">{JSON.stringify(txId, null, 2)}</code>
           </pre>
         ),
       });

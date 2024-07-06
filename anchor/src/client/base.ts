@@ -37,6 +37,10 @@ export const JITO_TIP_DEFAULT = new PublicKey(
   "96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5"
 );
 
+export const isBrowser =
+  process.env.ANCHOR_BROWSER ||
+  (typeof window !== "undefined" && !window.process?.hasOwnProperty("type"));
+
 export type ApiTxOptions = {
   signer?: PublicKey;
   computeUnitLimit?: number;
@@ -55,13 +59,13 @@ export class BaseClient {
     this.cluster = config?.cluster || "devnet";
     this.programId = getGlamProgramId(this.cluster);
     if (config?.provider) {
-      this.provider = config.provider;
+      this.provider = config?.provider;
       this.program = new Program(
         GlamIDL,
         this.programId,
         this.provider
       ) as GlamProgram;
-    } else {
+    } else if (!isBrowser) {
       const defaultProvider = anchor.AnchorProvider.env();
       const url = defaultProvider.connection.rpcEndpoint;
       const connection = new Connection(url, {
@@ -70,7 +74,7 @@ export class BaseClient {
       });
       this.provider = new anchor.AnchorProvider(
         connection,
-        defaultProvider.wallet,
+        config?.wallet || defaultProvider.wallet,
         {
           ...defaultProvider.opts,
           commitment: "confirmed",
@@ -207,6 +211,15 @@ export class BaseClient {
     return signature; // when confirmed, or throw
   }
 
+  getSigner(): PublicKey {
+    const publicKey = this.provider?.publicKey;
+    if (!publicKey) {
+      throw new Error("Signer public key cannot be retrieved from provider");
+    }
+    return publicKey;
+  }
+
+  //@deprecated
   getManager(): PublicKey {
     const managerPublicKey = this.provider?.publicKey;
     if (!managerPublicKey) {

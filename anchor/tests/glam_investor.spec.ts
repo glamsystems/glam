@@ -1,10 +1,9 @@
 import * as anchor from "@coral-xyz/anchor";
-import { BN, Program } from "@coral-xyz/anchor";
+import { BN, Wallet } from "@coral-xyz/anchor";
 import {
   PublicKey,
   Transaction,
   sendAndConfirmTransaction,
-  ComputeBudgetProgram,
   Keypair,
 } from "@solana/web3.js";
 import {
@@ -37,6 +36,9 @@ describe("glam_investor", () => {
   const alice = userKeypairs[0];
   const bob = userKeypairs[1];
   const eve = userKeypairs[2];
+  const glamClientAlice = new GlamClient({ wallet: new Wallet(alice) });
+  const glamClientBob = new GlamClient({ wallet: new Wallet(bob) });
+  const glamClientEve = new GlamClient({ wallet: new Wallet(eve) });
 
   const tokenKeypairs = [
     Keypair.fromSeed(str2seed("usdc")), // mock token 0
@@ -556,13 +558,12 @@ describe("glam_investor", () => {
   it("Alice subscribes to fund with 250 USDC", async () => {
     const amount = new BN(250 * 10 ** 6); // USDC has 6 decimals
     try {
-      const txId = await glamClient.investor.subscribe(
+      const txId = await glamClientAlice.investor.subscribe(
         fundPDA,
         usdc.publicKey,
         amount,
         0,
-        true,
-        alice
+        true
       );
       console.log("tx:", txId);
     } catch (e) {
@@ -584,13 +585,12 @@ describe("glam_investor", () => {
   it("Bob is not allowed to subscribe", async () => {
     const amount = new BN(250 * 10 ** 6); // USDC has 6 decimals
     try {
-      const txId = await glamClient.investor.subscribe(
+      const txId = await glamClientBob.investor.subscribe(
         fundPDA,
         usdc.publicKey,
         amount,
         0,
-        true,
-        bob
+        true
       );
       console.log("tx:", txId);
       expect(txId).toBeUndefined();
@@ -605,13 +605,12 @@ describe("glam_investor", () => {
   it("Eve is not allowed to subscribe", async () => {
     const amount = new BN(250 * 10 ** 6); // USDC has 6 decimals
     try {
-      const txId = await glamClient.investor.subscribe(
+      const txId = await glamClientEve.investor.subscribe(
         fundPDA,
         usdc.publicKey,
         amount,
         0,
-        true,
-        eve
+        true
       );
       console.log("tx:", txId);
       expect(txId).toBeUndefined();

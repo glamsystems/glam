@@ -6,6 +6,7 @@ import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { ClusterProvider } from "@/components/solana-cluster-provider";
+import { GlamProvider } from "@glam/anchor";
 
 const AppWalletProvider = dynamic(
   () => import("@/components/wallet-provider"),
@@ -35,10 +36,12 @@ export default function RootLayout({
         >
           <ClusterProvider>
             <AppWalletProvider>
-              <Sidebar />
-              <main className="flex justify-center items-center p-[56px] ml-[280px] h-fit w-full">
-                {children}
-              </main>
+              <GlamProvider>
+                <Sidebar />
+                <main className="flex justify-center items-center p-[56px] ml-[280px] h-fit w-full">
+                  {children}
+                </main>
+              </GlamProvider>
             </AppWalletProvider>
           </ClusterProvider>
         </ThemeProvider>

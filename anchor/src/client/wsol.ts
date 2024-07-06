@@ -19,19 +19,15 @@ export class WSolClient {
 
   public async wrap(
     fund: PublicKey,
-    amount: BN,
-    signer?: Keypair
+    amount: BN
   ): Promise<TransactionSignature> {
-    const tx = await this.wrapTx(fund, amount, { signer: signer?.publicKey });
-    return await this.base.sendAndConfirm(tx, signer);
+    const tx = await this.wrapTx(fund, amount, {});
+    return await this.base.sendAndConfirm(tx);
   }
 
-  public async unwrap(
-    fund: PublicKey,
-    signer?: Keypair
-  ): Promise<TransactionSignature> {
-    const tx = await this.unwrapTx(fund, { signer: signer?.publicKey });
-    return await this.base.sendAndConfirm(tx, signer);
+  public async unwrap(fund: PublicKey): Promise<TransactionSignature> {
+    const tx = await this.unwrapTx(fund, {});
+    return await this.base.sendAndConfirm(tx);
   }
 
   /*

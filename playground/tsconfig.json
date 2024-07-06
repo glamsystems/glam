@@ -1,4 +1,5 @@
 {
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
@@ -18,8 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@glam/anchor": ["../anchor/src/index.ts"]
+      "@/*": ["playground/src/*"],
+      "@glam/anchor": ["anchor/src/index.ts"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
