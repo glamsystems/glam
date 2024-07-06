@@ -118,12 +118,11 @@ describe("glam_crud", () => {
       SystemProgram.transfer({
         fromPubkey: glamClient.getManager(),
         toPubkey: glamClient.getTreasuryPDA(fundPDA),
-        lamports: 1000_000_000,
+        lamports: 1_000_000_000,
       })
     );
-    await sendAndConfirmTransaction(glamClient.provider.connection, tranferTx, [
-      glamClient.getWalletSigner(),
-    ]);
+    await glamClient.sendAndConfirm(tranferTx);
+
     // transfer 0.1 SOL to key1 as it needs to pay for treasury wsol ata creation
     const tranferTx2 = new Transaction().add(
       SystemProgram.transfer({
@@ -132,11 +131,8 @@ describe("glam_crud", () => {
         lamports: 100_000_000,
       })
     );
-    await sendAndConfirmTransaction(
-      glamClient.provider.connection,
-      tranferTx2,
-      [glamClient.getWalletSigner()]
-    );
+    await glamClient.sendAndConfirm(tranferTx2);
+
     // grant key1 wSolWrap permission
     let updatedFund = glamClient.getFundModel({
       acls: [{ pubkey: key1.publicKey, permissions: [{ wSolWrap: {} }] }],

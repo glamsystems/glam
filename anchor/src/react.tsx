@@ -1,15 +1,24 @@
 "use client";
 
-import { GlamClient } from "./client";
+import { Connection } from "@solana/web3.js";
+import { AnchorProvider } from "@coral-xyz/anchor";
+
 import { createContext, useContext } from "react";
 import {
   AnchorWallet,
   useConnection,
   useWallet,
 } from "@solana/wallet-adapter-react";
-import { AnchorProvider } from "@coral-xyz/anchor";
 
-const glamClient = new GlamClient();
+import { GlamClient } from "./client";
+
+const provider = new AnchorProvider(
+  new Connection("https://api.devnet.solana.com", "confirmed"),
+  //@ts-ignore
+  null,
+  {}
+);
+const glamClient = new GlamClient({ provider });
 const GlamContext = createContext(glamClient);
 
 export function GlamProvider({

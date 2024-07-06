@@ -15,7 +15,6 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/use-toast";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { PublicKey } from "@solana/web3.js";
 import { useGlamClient } from "@glam/anchor";
 import { BN } from "@coral-xyz/anchor";
 import { testFund } from "@/app/testFund";
@@ -48,13 +47,8 @@ export default function Wrap() {
     };
 
     if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") === "submit") {
-      const testFundPDA = new PublicKey(testFund.fundPDA);
-
-      console.log(glamClient.provider);
-      console.log(glamClient.getWalletSigner());
-
       const txId = await glamClient.wsol.wrap(
-        testFundPDA,
+        testFund.fundPDA,
         new BN(values.amount * 1000000000)
       );
 

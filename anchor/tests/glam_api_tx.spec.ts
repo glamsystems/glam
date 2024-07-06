@@ -98,9 +98,7 @@ describe("glam_api_tx", () => {
 
     const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
     try {
-      const txId = await (
-        glamClient.provider as anchor.AnchorProvider
-      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
+      const txId = await glamClient.sendAndConfirm(vTx);
       console.log("jupiter swap txId", txId);
     } catch (error) {
       console.error("Error", error);
@@ -156,9 +154,7 @@ describe("glam_api_tx", () => {
 
     const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
     try {
-      const txId = await (
-        glamClient.provider as anchor.AnchorProvider
-      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
+      const txId = await glamClient.sendAndConfirm(vTx);
       console.log("Wrap txId", txId);
     } catch (error) {
       console.error("Error", error);
@@ -186,9 +182,7 @@ describe("glam_api_tx", () => {
 
     const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
     try {
-      const txId = await (
-        glamClient.provider as anchor.AnchorProvider
-      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
+      const txId = await glamClient.sendAndConfirm(vTx);
       console.log("Unwrap txId", txId);
     } catch (error) {
       console.error("Error", error);
@@ -200,16 +194,14 @@ describe("glam_api_tx", () => {
     const response = await fetch(`${API}/tx/marinade/stake`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ manager, fund, amount: 100000000 }),
+      body: JSON.stringify({ manager, fund, amount: 100_000_000 }),
     });
     const { tx } = await response.json();
     console.log("Stake tx:", tx);
 
     const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
     try {
-      const txId = await (
-        glamClient.provider as anchor.AnchorProvider
-      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
+      const txId = await glamClient.sendAndConfirm(vTx);
       console.log("Stake txId", txId);
     } catch (error) {
       console.error("Error", error);
@@ -228,9 +220,7 @@ describe("glam_api_tx", () => {
 
     const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
     try {
-      const txId = await (
-        glamClient.provider as anchor.AnchorProvider
-      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
+      const txId = await glamClient.sendAndConfirm(vTx);
       console.log("Order unstake #0 txId", txId);
     } catch (error) {
       console.error("Error", error);
@@ -249,9 +239,7 @@ describe("glam_api_tx", () => {
 
     const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
     try {
-      const txId = await (
-        glamClient.provider as anchor.AnchorProvider
-      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
+      const txId = await glamClient.sendAndConfirm(vTx);
       console.log("Order unstake #1 txId", txId);
     } catch (error) {
       console.error("Error", error);
@@ -280,9 +268,7 @@ describe("glam_api_tx", () => {
 
     const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
     try {
-      const txId = await (
-        glamClient.provider as anchor.AnchorProvider
-      ).sendAndConfirm(vTx, [glamClient.getWalletSigner()], confirmOptions);
+      const txId = await glamClient.sendAndConfirm(vTx);
       console.log("Claim tickets txId", txId);
     } catch (error) {
       console.error("Error", error);
