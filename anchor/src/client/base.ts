@@ -228,9 +228,10 @@ export class BaseClient {
       const errTx = await connection.getTransaction(signature, {
         maxSupportedTransactionVersion: 0,
       });
-      const err = errTx.meta.err;
-      //@ts-ignore
-      err.logs = errTx.meta.logMessages;
+      const err = {
+        err: errTx?.meta?.err,
+        logs: errTx?.meta?.logMessages,
+      };
       throw err;
     }
     return signature; // when confirmed, or throw
