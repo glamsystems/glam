@@ -16,6 +16,7 @@ cpi = ["no-entrypoint"]
 default = []
 mainnet = []
 devnet = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
 
 [dependencies]
 anchor-lang = { workspace = true }
@@ -32,4 +33,4 @@ strum = { workspace = true }
 phf = { workspace = true }
 
 drift = { workspace = true }
-marinade = { workspace = true }
+#marinade = { workspace = true }

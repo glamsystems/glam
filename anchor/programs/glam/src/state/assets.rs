@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_lang::AccountDeserialize;
 use phf::phf_map;
 
-use marinade::State as MarinadeState;
+// use marinade::State as MarinadeState;
 use pyth_sdk_solana::state::SolanaPriceAccount;
 use pyth_sdk_solana::Price;
 
@@ -65,18 +65,18 @@ impl<'a> AssetMeta<'a> {
         let one = 10u64.pow(self.decimals as u32);
 
         // Marinade
-        if self.staking_state == "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC" {
-            // Deserialize account
-            let mut buf = &pricing_account.try_borrow_mut_data()?[..];
-            let state = MarinadeState::try_deserialize(&mut buf)?;
-            // Use Marinade `msol_to_sol` fn for pricing
-            let p = state.msol_to_sol(one).unwrap();
-            // Return Price with correct number of decimals
-            let mut price = Price::default();
-            price.expo = -(self.decimals as i32);
-            price.price = p as i64;
-            return Ok(price);
-        }
+        // if self.staking_state == "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC" {
+        //     // Deserialize account
+        //     let mut buf = &pricing_account.try_borrow_mut_data()?[..];
+        //     let state = MarinadeState::try_deserialize(&mut buf)?;
+        //     // Use Marinade `msol_to_sol` fn for pricing
+        //     let p = state.msol_to_sol(one).unwrap();
+        //     // Return Price with correct number of decimals
+        //     let mut price = Price::default();
+        //     price.expo = -(self.decimals as i32);
+        //     price.price = p as i64;
+        //     return Ok(price);
+        // }
 
         Err(InvestorError::InvalidAssetSubscribe.into())
     }

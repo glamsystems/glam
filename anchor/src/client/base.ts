@@ -60,11 +60,7 @@ export class BaseClient {
     this.programId = getGlamProgramId(this.cluster);
     if (config?.provider) {
       this.provider = config?.provider;
-      this.program = new Program(
-        GlamIDL,
-        this.programId,
-        this.provider
-      ) as GlamProgram;
+      this.program = new Program(GlamIDL, this.provider) as GlamProgram;
     } else {
       const defaultProvider = anchor.AnchorProvider.env();
       const url = defaultProvider.connection.rpcEndpoint;

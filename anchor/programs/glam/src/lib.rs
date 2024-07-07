@@ -92,31 +92,31 @@ pub mod glam {
     }
 
     // Marinade
-    pub fn marinade_deposit(ctx: Context<MarinadeDeposit>, sol_amount: u64) -> Result<()> {
-        marinade::marinade_deposit(ctx, sol_amount)
-    }
+    // pub fn marinade_deposit(ctx: Context<MarinadeDeposit>, sol_amount: u64) -> Result<()> {
+    //     marinade::marinade_deposit(ctx, sol_amount)
+    // }
 
-    pub fn marinade_liquid_unstake(
-        ctx: Context<MarinadeLiquidUnstake>,
-        sol_amount: u64,
-    ) -> Result<()> {
-        marinade::marinade_liquid_unstake(ctx, sol_amount)
-    }
+    // pub fn marinade_liquid_unstake(
+    //     ctx: Context<MarinadeLiquidUnstake>,
+    //     sol_amount: u64,
+    // ) -> Result<()> {
+    //     marinade::marinade_liquid_unstake(ctx, sol_amount)
+    // }
 
-    pub fn marinade_delayed_unstake(
-        ctx: Context<MarinadeDelayedUnstake>,
-        amount: u64,
-        bump: u8,
-        ticket_id: String,
-    ) -> Result<()> {
-        marinade::marinade_delayed_unstake(ctx, amount, bump, ticket_id)
-    }
+    // pub fn marinade_delayed_unstake(
+    //     ctx: Context<MarinadeDelayedUnstake>,
+    //     amount: u64,
+    //     bump: u8,
+    //     ticket_id: String,
+    // ) -> Result<()> {
+    //     marinade::marinade_delayed_unstake(ctx, amount, bump, ticket_id)
+    // }
 
-    pub fn marinade_claim<'info>(
-        ctx: Context<'_, '_, '_, 'info, MarinadeClaim<'info>>,
-    ) -> Result<()> {
-        marinade::marinade_claim(ctx)
-    }
+    // pub fn marinade_claim<'info>(
+    //     ctx: Context<'_, '_, '_, 'info, MarinadeClaim<'info>>,
+    // ) -> Result<()> {
+    //     marinade::marinade_claim(ctx)
+    // }
 
     // Jupiter
     pub fn jupiter_swap<'c: 'info, 'info>(
