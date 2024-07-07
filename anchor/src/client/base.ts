@@ -179,6 +179,7 @@ export class BaseClient {
       }
     }
     if (units) {
+      units += 150; // ComputeBudgetProgram.setComputeUnitLimit costs 150 CUs
       instructions.unshift(ComputeBudgetProgram.setComputeUnitLimit({ units }));
     }
 
@@ -211,7 +212,9 @@ export class BaseClient {
     const signedTx = await wallet.signTransaction(tx);
     const connection = this.provider.connection;
     const serializedTx = signedTx.serialize();
-    const signature = await connection.sendRawTransaction(serializedTx); // can throw
+    const signature = await connection.sendRawTransaction(serializedTx, {
+      skipPreflight: true, // we did this already to compute CUs
+    }); // can throw
     // await confirmation
     await connection.confirmTransaction({
       ...latestBlockhash,

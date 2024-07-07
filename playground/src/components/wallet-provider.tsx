@@ -20,8 +20,10 @@ export default function AppWalletProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const network = WalletAdapterNetwork.Devnet;
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+  const network = WalletAdapterNetwork.Mainnet;
+  // const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+  const apiKey = process.env.NEXT_PUBLIC_SOLANA_KEY;
+  const endpoint = `https://mainnet.helius-rpc.com/?api-key=${apiKey}`;
   const wallets = useMemo(
     () => [
       // manually add any legacy wallet adapters here

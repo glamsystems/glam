@@ -12,13 +12,7 @@ import {
 
 import { GlamClient } from "./client";
 
-const provider = new AnchorProvider(
-  new Connection("https://api.devnet.solana.com", "confirmed"),
-  //@ts-ignore
-  null,
-  {}
-);
-const glamClient = new GlamClient({ provider });
+const glamClient = new GlamClient({ provider: {} as AnchorProvider });
 const GlamContext = createContext(glamClient);
 
 export function GlamProvider({

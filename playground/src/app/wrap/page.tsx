@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { AssetInput } from "@/components/AssetInput";
 import { Button } from "@/components/ui/button";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
@@ -18,6 +12,8 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useGlamClient } from "@glam/anchor";
 import { BN } from "@coral-xyz/anchor";
 import { testFund } from "@/app/testFund";
+import { ExplorerLink } from "@/components/ExplorerLink";
+import { useCluster } from "@/components/solana-cluster-provider";
 
 const wrapSchema = z.object({
   direction: z.enum(["wrap", "unwrap"]),
@@ -28,9 +24,11 @@ const wrapSchema = z.object({
 type WrapSchema = z.infer<typeof wrapSchema>;
 
 export default function Wrap() {
+  const glamClient = useGlamClient();
+  const cluster = useCluster();
+  console.log(cluster);
   const [amountAsset, setAmountAsset] = useState<string>("SOL");
   const [direction, setDirection] = useState<string>("wrap");
-  const glamClient = useGlamClient();
 
   const form = useForm<WrapSchema>({
     resolver: zodResolver(wrapSchema),
@@ -41,26 +39,22 @@ export default function Wrap() {
     },
   });
 
-  const onSubmit: SubmitHandler<WrapSchema> = async (values, event) => {
-    const nativeEvent = event as unknown as React.BaseSyntheticEvent & {
-      nativeEvent: { submitter: HTMLElement };
-    };
-
-    if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") === "submit") {
-      const txId = await glamClient.wsol.wrap(
+  const onSubmit: SubmitHandler<WrapSchema> = async (values, _event) => {
+    let txId;
+    if (direction === "wrap") {
+      txId = await glamClient.wsol.wrap(
         testFund.fundPDA,
-        new BN(values.amount * 1000000000)
+        new BN(values.amount * 1_000_000_000)
       );
-
-      toast({
-        title: "You submitted the following wrap/unwrap:",
-        description: (
-          <pre className="mt-2 w-[340px] rounded-md bg-zinc-900 p-4">
-            <code className="text-white">{JSON.stringify(txId, null, 2)}</code>
-          </pre>
-        ),
-      });
+    } else {
+      // Unwrap means unwrap all, there's no amount
+      txId = await glamClient.wsol.unwrap(testFund.fundPDA);
     }
+
+    toast({
+      title: `Successful ${direction}`,
+      description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+    });
   };
 
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {

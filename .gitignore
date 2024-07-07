@@ -54,3 +54,5 @@ test-ledger
 
 # Solana
 playground/RPC.ts
+
+*/.env.local

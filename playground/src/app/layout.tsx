@@ -41,11 +41,11 @@ export default function RootLayout({
                 <main className="flex justify-center items-center p-[56px] ml-[280px] h-fit w-full">
                   {children}
                 </main>
+                <Toaster />
               </GlamProvider>
             </AppWalletProvider>
           </ClusterProvider>
         </ThemeProvider>
-        <Toaster />
       </body>
     </html>
   );
