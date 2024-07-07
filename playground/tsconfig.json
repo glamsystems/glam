@@ -1,7 +1,11 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -19,10 +23,26 @@
       }
     ],
     "paths": {
-      "@/*": ["playground/src/*"],
-      "@glam/anchor": ["anchor/src/index.ts"]
+      "@/*": [
+        "playground/src/*"
+      ],
+      "@glam/anchor": [
+        "anchor/src/index.ts"
+      ]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "playground/next-env.d.ts",
+    "playground/**/*.ts",
+    "playground/**/*.tsx",
+    "playground/.next/types/**/*.ts",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "anchor",
+    "api",
+    "dist",
+    ".*"
+  ]
 }
