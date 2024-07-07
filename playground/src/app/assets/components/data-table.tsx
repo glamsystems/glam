@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import {
+  ColumnDef,
   ColumnFiltersState,
   SortingState,
   VisibilityState,
@@ -13,9 +14,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-  ColumnDef,
 } from "@tanstack/react-table";
-import { useRouter } from "next/navigation"; // Import useRouter
 
 import {
   Table,
@@ -28,16 +27,14 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
-import { columns as defaultColumns } from "./columns"; // Import columns from columns.tsx
-import { Product } from "../data/productSchema"; // Import the Product type
 
 interface DataTableProps<TData, TValue> {
-  columns?: ColumnDef<TData, TValue>[];
+  columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
 export function DataTable<TData, TValue>({
-  columns = defaultColumns as ColumnDef<TData, TValue>[], // Type cast to match the generic types
+  columns,
   data,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
@@ -70,12 +67,6 @@ export function DataTable<TData, TValue>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 
-  const router = useRouter(); // Initialize useRouter
-
-  const handleRowClick = (address: string) => {
-    router.push(`/screener/${address}`);
-  };
-
   return (
     <div className="space-y-4 w-full">
       <DataTableToolbar table={table} />
@@ -105,10 +96,6 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="cursor-pointer" // Make cursor pointer
-                  onClick={() =>
-                    handleRowClick((row.original as Product).address)
-                  } // Add click handler
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

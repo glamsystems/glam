@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/toaster";
-import AppWalletProvider from "@/components/wallet-provider";
 import { ClusterProvider } from "@/components/solana-cluster-provider";
+import { GlamProvider } from "@glam/anchor";
+
+const AppWalletProvider = dynamic(
+  () => import("@/components/wallet-provider"),
+  { ssr: false }
+);
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,14 +36,16 @@ export default function RootLayout({
         >
           <ClusterProvider>
             <AppWalletProvider>
-              <Sidebar />
-              <main className="flex justify-center items-center p-[56px] ml-[280px] h-fit w-full">
-                {children}
-              </main>
+              <GlamProvider>
+                <Sidebar />
+                <main className="flex justify-center items-center p-[56px] ml-[280px] h-fit w-full">
+                  {children}
+                </main>
+                <Toaster />
+              </GlamProvider>
             </AppWalletProvider>
           </ClusterProvider>
         </ThemeProvider>
-        <Toaster />
       </body>
     </html>
   );

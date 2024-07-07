@@ -3,7 +3,7 @@
 import { DataTable } from "./components/data-table";
 import { columns } from "./components/columns";
 import React from "react";
-import { testProducts } from "./data/testProducts"
+import { testProducts } from "./data/testProducts";
 
 export default function Products() {
   return (

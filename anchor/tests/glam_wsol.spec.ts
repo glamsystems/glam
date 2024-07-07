@@ -25,9 +25,7 @@ describe("glam_wsol", () => {
         lamports: 100_000_000,
       })
     );
-    await sendAndConfirmTransaction(connection, tranferTx, [
-      glamClient.getWalletSigner(),
-    ]);
+    await glamClient.sendAndConfirm(tranferTx);
   });
 
   it("wSOL wrap", async () => {

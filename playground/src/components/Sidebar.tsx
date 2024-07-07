@@ -2,10 +2,12 @@
 
 import React from "react";
 import {
+  BoxModelIcon,
   Component1Icon,
   DashboardIcon,
   DownloadIcon,
   ExitIcon,
+  GlobeIcon,
   LayersIcon,
   ListBulletIcon,
   LoopIcon,
@@ -27,10 +29,12 @@ import FeedbackInput from "@/components/FeedbackInput";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 
 type IconType =
+  | typeof BoxModelIcon
   | typeof Component1Icon
   | typeof DashboardIcon
   | typeof DownloadIcon
   | typeof ExitIcon
+  | typeof GlobeIcon
   | typeof LayersIcon
   | typeof ListBulletIcon
   | typeof LoopIcon
@@ -87,6 +91,7 @@ export default function Sidebar() {
           shortcut: "⌘J",
           Icon: ExitIcon,
         },
+        { route: "/wrap", text: "Wrap", shortcut: "⌘W", Icon: BoxModelIcon },
       ],
     },
     {
@@ -99,6 +104,17 @@ export default function Sidebar() {
           Icon: LayersIcon,
         },
         /*{ route: "/portfolio", text: "Portfolio", shortcut: "⌘A", Icon: MixIcon },*/
+      ],
+    },
+    {
+      group: "Utilities",
+      items: [
+        {
+          route: "/assets",
+          text: "Assets",
+          shortcut: "⌘A",
+          Icon: GlobeIcon,
+        },
       ],
     },
   ];

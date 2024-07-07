@@ -20,7 +20,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { AnchorProvider, AnchorWallet } from "@coral-xyz/anchor";
+import { AnchorProvider, BN } from "@coral-xyz/anchor";
 import { toast } from "@/components/ui/use-toast";
 import { AssetInput } from "@/components/AssetInput";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -30,9 +30,10 @@ import { columns } from "./components/columns";
 import { DataTable } from "./components/data-table";
 
 import { PublicKey } from "@solana/web3.js";
-import { GlamClient } from "@glam/anchor";
+import { useGlamClient } from "@glam/anchor";
 
 import { testFund } from "../testFund";
+import { testGlam } from "../testGlam";
 import { testTickets } from "./data/testTickets";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 
@@ -52,14 +53,7 @@ const serviceToAssetMap: { [key in StakeSchema["service"]]: string } = {
 export default function Stake() {
   const [amountInAsset, setAmountInAsset] = useState<string>("SOL");
   const [mode, setMode] = useState<string>("stake");
-
-  const { connection } = useConnection();
-  const wallet = useWallet();
-
-  const provider = new AnchorProvider(connection, wallet as AnchorWallet, {
-    commitment: "confirmed",
-  });
-  console.log(connection);
+  // const glamClient = useGlamClient();
 
   const form = useForm<StakeSchema>({
     resolver: zodResolver(stakeSchema),
@@ -70,27 +64,23 @@ export default function Stake() {
     },
   });
 
-  const onSubmit: SubmitHandler<StakeSchema> = (values, event) => {
+  const onSubmit: SubmitHandler<StakeSchema> = async (values, event) => {
     const nativeEvent = event as unknown as React.BaseSyntheticEvent & {
       nativeEvent: { submitter: HTMLElement };
     };
 
     if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") === "submit") {
-      const fundPDA = new PublicKey(testFund.fundPDA);
-      console.log(fundPDA.toBase58());
-
-      const updatedValues = {
-        ...values,
-        amountInAsset,
-        mode,
-      };
+      const testFundPDA = new PublicKey(testFund.fundPDA);
+      const manager = new PublicKey(testFund.manager);
+      // const treasuryPDA = glamClient.getTreasuryPDA(testFundPDA);
+      // console.log(treasuryPDA.toBase58());
 
       toast({
         title: `You submitted the following ${mode}:`,
         description: (
           <pre className="mt-2 w-[340px] rounded-md bg-zinc-900 p-4">
             <code className="text-white">
-              {JSON.stringify(updatedValues, null, 2)}
+              {/* {JSON.stringify(updatedValues, null, 2)} */}
             </code>
           </pre>
         ),

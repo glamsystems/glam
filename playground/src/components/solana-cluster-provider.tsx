@@ -7,7 +7,7 @@ import { atomWithStorage } from "jotai/utils";
 import { createContext, ReactNode, useContext } from "react";
 import toast from "react-hot-toast";
 
-export interface Cluster {
+interface Cluster {
   name: string;
   endpoint: string;
   network?: ClusterNetwork;
@@ -20,7 +20,7 @@ export enum ClusterNetwork {
   Devnet = "devnet",
   Custom = "custom",
 }
-export function toWalletAdapterNetwork(
+function toWalletAdapterNetwork(
   cluster?: ClusterNetwork
 ): WalletAdapterNetwork | undefined {
   switch (cluster) {
@@ -35,7 +35,12 @@ export function toWalletAdapterNetwork(
   }
 }
 
-export const defaultClusters: Cluster[] = [
+const defaultClusters: Cluster[] = [
+  {
+    name: "mainnet-beta",
+    endpoint: clusterApiUrl("mainnet-beta"),
+    network: ClusterNetwork.Mainnet,
+  },
   {
     name: "devnet",
     endpoint: clusterApiUrl("devnet"),
@@ -73,7 +78,7 @@ const activeClusterAtom = atom<Cluster>((get) => {
   return clusters.find((item) => item.active) || clusters[0];
 });
 
-export interface ClusterProviderContext {
+interface ClusterProviderContext {
   cluster: Cluster;
   clusters: Cluster[];
   addCluster: (cluster: Cluster) => void;

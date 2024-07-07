@@ -1,10 +1,8 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-
 import { Badge } from "@/components/ui/badge";
-
-import { Product } from "../data/productSchema";
+import { Product } from "../data/productSchema"; // Ensure correct import path
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
 import { statuses } from "../data/data";
@@ -12,9 +10,7 @@ import { statuses } from "../data/data";
 export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "address",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="" />
-    ),
+    header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: ({ row }) => (
       <img
         src={`https://api.glam.systems/image/${row.getValue("address")}.svg`}
@@ -22,8 +18,8 @@ export const columns: ColumnDef<Product>[] = [
         alt="Sparkle"
       />
     ),
-  enableSorting: false,
-  enableHiding: false,
+    enableSorting: false,
+    enableHiding: false,
   },
   {
     accessorKey: "name",

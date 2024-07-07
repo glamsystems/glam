@@ -4,7 +4,7 @@ import {
   Transaction,
   sendAndConfirmTransaction,
 } from "@solana/web3.js";
-import { BN } from "@coral-xyz/anchor";
+import { AnchorProvider, BN, Wallet } from "@coral-xyz/anchor";
 
 import { createFundForTest, fundTestExample, str2seed } from "./setup";
 import { GlamClient } from "../src";
@@ -14,6 +14,7 @@ const key2 = Keypair.fromSeed(str2seed("acl_test_key2"));
 
 describe("glam_crud", () => {
   const glamClient = new GlamClient();
+  const glamClientCustomWallet = new GlamClient({ wallet: new Wallet(key1) });
   let fundPDA;
 
   it("Initialize fund", async () => {
@@ -117,12 +118,11 @@ describe("glam_crud", () => {
       SystemProgram.transfer({
         fromPubkey: glamClient.getManager(),
         toPubkey: glamClient.getTreasuryPDA(fundPDA),
-        lamports: 1000_000_000,
+        lamports: 1_000_000_000,
       })
     );
-    await sendAndConfirmTransaction(glamClient.provider.connection, tranferTx, [
-      glamClient.getWalletSigner(),
-    ]);
+    await glamClient.sendAndConfirm(tranferTx);
+
     // transfer 0.1 SOL to key1 as it needs to pay for treasury wsol ata creation
     const tranferTx2 = new Transaction().add(
       SystemProgram.transfer({
@@ -131,11 +131,8 @@ describe("glam_crud", () => {
         lamports: 100_000_000,
       })
     );
-    await sendAndConfirmTransaction(
-      glamClient.provider.connection,
-      tranferTx2,
-      [glamClient.getWalletSigner()]
-    );
+    await glamClient.sendAndConfirm(tranferTx2);
+
     // grant key1 wSolWrap permission
     let updatedFund = glamClient.getFundModel({
       acls: [{ pubkey: key1.publicKey, permissions: [{ wSolWrap: {} }] }],
@@ -158,7 +155,10 @@ describe("glam_crud", () => {
 
     // key1 now has wSolWrap permission, use key1 to wrap some SOL
     try {
-      const tx = await glamClient.wsol.wrap(fundPDA, new BN(30_000_000), key1);
+      const tx = await glamClientCustomWallet.wsol.wrap(
+        fundPDA,
+        new BN(30_000_000)
+      );
       console.log("Wrap:", tx);
     } catch (e) {
       console.log("Error", e);
@@ -167,10 +167,11 @@ describe("glam_crud", () => {
 
     // key1 doesn't have wSolUnwrap permission, unwrap should fail
     try {
-      const tx = await glamClient.wsol.unwrap(fundPDA, key1);
-      console.log("Unwrap:", tx);
+      const txId = await glamClientCustomWallet.wsol.unwrap(fundPDA);
+      console.log("Unwrap:", txId);
+      expect(txId).toBeUndefined();
     } catch (e) {
-      console.log("Error", e);
+      // console.log("Error", e);
       const expectedError = e.logs.some((log) =>
         log.includes("Signer is not authorized")
       );
@@ -181,7 +182,7 @@ describe("glam_crud", () => {
   it("Update fund unauthorized", async () => {
     const updatedFund = glamClient.getFundModel({ name: "Updated fund name" });
     try {
-      await glamClient.program.methods
+      const txId = await glamClient.program.methods
         .update(updatedFund)
         .accounts({
           fund: fundPDA,
@@ -189,6 +190,7 @@ describe("glam_crud", () => {
         })
         .signers([key1])
         .rpc();
+      expect(txId).toBeUndefined();
     } catch (e) {
       expect(e.error.errorMessage).toEqual("Signer is not authorized");
     }
@@ -214,9 +216,9 @@ describe("glam_crud", () => {
           signer: manager,
         })
         .rpc();
-    } catch (err) {
-      console.error(err);
-      throw err;
+    } catch (e) {
+      console.error(e);
+      throw e;
     }
     let fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
     expect(fund.manager.toString()).toEqual(newManager.publicKey.toString());
@@ -239,8 +241,8 @@ describe("glam_crud", () => {
         })
         .rpc();
       expect(txId).toBeUndefined();
-    } catch (err) {
-      expect(err.message).toContain("not authorized");
+    } catch (e) {
+      expect(e.message).toContain("not authorized");
     }
 
     // new manager CAN update back
@@ -253,9 +255,9 @@ describe("glam_crud", () => {
         })
         .signers([newManager])
         .rpc();
-    } catch (err) {
-      console.error(err);
-      throw err;
+    } catch (e) {
+      console.error(e);
+      throw e;
     }
     fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
     expect(fund.manager.toString()).toEqual(manager.toString());
@@ -268,15 +270,16 @@ describe("glam_crud", () => {
     expect(fund).not.toBeNull();
 
     try {
-      await glamClient.program.methods
+      const txId = await glamClient.program.methods
         .close()
         .accounts({
           fund: fundPDA,
           manager: glamClient.getManager(),
         })
         .rpc();
-    } catch (err) {
-      const notImplemented = (err.logs as string[]).some((log: string) =>
+      expect(txId).toBeUndefined();
+    } catch (e) {
+      const notImplemented = (e.logs as string[]).some((log: string) =>
         log.includes("Not implemented")
       );
       expect(notImplemented).toBeTruthy();

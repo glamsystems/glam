@@ -10,13 +10,13 @@ import {
   BlockhashWithExpiryBlockHeight,
   ComputeBudgetProgram,
   Connection,
-  Keypair,
   PublicKey,
   SystemProgram,
   Transaction,
   TransactionMessage,
   TransactionSignature,
   VersionedTransaction,
+  sendAndConfirmTransaction,
 } from "@solana/web3.js";
 import { getSimulationComputeUnits } from "../utils/helpers";
 import {
@@ -37,6 +37,10 @@ export const JITO_TIP_DEFAULT = new PublicKey(
   "96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5"
 );
 
+export const isBrowser =
+  process.env.ANCHOR_BROWSER ||
+  (typeof window !== "undefined" && !window.process?.hasOwnProperty("type"));
+
 export type ApiTxOptions = {
   signer?: PublicKey;
   computeUnitLimit?: number;
@@ -55,7 +59,7 @@ export class BaseClient {
     this.cluster = config?.cluster || "devnet";
     this.programId = getGlamProgramId(this.cluster);
     if (config?.provider) {
-      this.provider = config.provider;
+      this.provider = config?.provider;
       this.program = new Program(
         GlamIDL,
         this.programId,
@@ -70,7 +74,7 @@ export class BaseClient {
       });
       this.provider = new anchor.AnchorProvider(
         connection,
-        defaultProvider.wallet,
+        config?.wallet || defaultProvider.wallet,
         {
           ...defaultProvider.opts,
           commitment: "confirmed",
@@ -175,6 +179,7 @@ export class BaseClient {
       }
     }
     if (units) {
+      units += 150; // ComputeBudgetProgram.setComputeUnitLimit costs 150 CUs
       instructions.unshift(ComputeBudgetProgram.setComputeUnitLimit({ units }));
     }
 
@@ -187,18 +192,29 @@ export class BaseClient {
   }
 
   async sendAndConfirm(
-    tx: VersionedTransaction,
-    signer?: Keypair,
+    tx: VersionedTransaction | Transaction,
     latestBlockhash?: BlockhashWithExpiryBlockHeight
   ): Promise<TransactionSignature> {
+    // This is just a convenient method so that in tests we can send legacy
+    // txs, for example transfer SOL, create ATA, etc.
+    if (tx instanceof Transaction) {
+      return await sendAndConfirmTransaction(this.provider.connection, tx, [
+        this.getWallet().payer,
+      ]);
+    }
+
     if (latestBlockhash === undefined) {
       latestBlockhash = await this.getLatestBlockhash();
     }
     // Anchor provider.sendAndConfirm forces a signature with the wallet, which we don't want
     // https://github.com/coral-xyz/anchor/blob/v0.30.0/ts/packages/anchor/src/provider.ts#L159
-    tx.sign([signer || this.getWalletSigner()]);
+    const wallet = this.getWallet();
+    const signedTx = await wallet.signTransaction(tx);
     const connection = this.provider.connection;
-    const signature = await connection.sendTransaction(tx); // can throw
+    const serializedTx = signedTx.serialize();
+    const signature = await connection.sendRawTransaction(serializedTx, {
+      skipPreflight: true, // we did this already to compute CUs
+    }); // can throw
     // await confirmation
     await connection.confirmTransaction({
       ...latestBlockhash,
@@ -207,6 +223,19 @@ export class BaseClient {
     return signature; // when confirmed, or throw
   }
 
+  getWallet(): Wallet {
+    return (this.provider as AnchorProvider).wallet as Wallet;
+  }
+
+  getSigner(): PublicKey {
+    const publicKey = this.provider?.publicKey;
+    if (!publicKey) {
+      throw new Error("Signer public key cannot be retrieved from provider");
+    }
+    return publicKey;
+  }
+
+  //@deprecated
   getManager(): PublicKey {
     const managerPublicKey = this.provider?.publicKey;
     if (!managerPublicKey) {
@@ -217,10 +246,6 @@ export class BaseClient {
 
   getManagerAta(mint: PublicKey, manager?: PublicKey): PublicKey {
     return getAssociatedTokenAddressSync(mint, manager || this.getManager());
-  }
-
-  getWalletSigner(): Keypair {
-    return ((this.provider as AnchorProvider).wallet as Wallet).payer;
   }
 
   getFundModel(fund: any): FundModel {

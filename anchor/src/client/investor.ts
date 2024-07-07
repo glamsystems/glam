@@ -29,22 +29,17 @@ export class InvestorClient {
     asset: PublicKey,
     amount: BN,
     shareClassId: number = 0,
-    skipState: boolean = true,
-    user?: Keypair
+    skipState: boolean = true
   ): Promise<TransactionSignature> {
-    if (user === undefined) {
-      user = this.base.getWalletSigner();
-    }
     const tx = await this.subscribeTx(
       fund,
-      user.publicKey,
       asset,
       amount,
       shareClassId,
       skipState,
-      { signer: user.publicKey }
+      {}
     );
-    return await this.base.sendAndConfirm(tx, user);
+    return await this.base.sendAndConfirm(tx);
   }
 
   public async redeem(
@@ -52,22 +47,17 @@ export class InvestorClient {
     amount: BN,
     inKind: boolean = false,
     shareClassId: number = 0,
-    skipState: boolean = true,
-    user?: Keypair
+    skipState: boolean = true
   ): Promise<TransactionSignature> {
-    if (user === undefined) {
-      user = this.base.getWalletSigner();
-    }
     const tx = await this.redeemTx(
       fund,
-      user.publicKey,
       amount,
       inKind,
       shareClassId,
       skipState,
-      { signer: user.publicKey }
+      {}
     );
-    return await this.base.sendAndConfirm(tx, user);
+    return await this.base.sendAndConfirm(tx);
   }
 
   /*
@@ -76,13 +66,14 @@ export class InvestorClient {
 
   public async subscribeTx(
     fund: PublicKey,
-    signer: PublicKey,
     asset: PublicKey,
     amount: BN,
     shareClassId: number = 0,
     skipState: boolean = true,
     apiOptions: ApiTxOptions
   ): Promise<VersionedTransaction> {
+    const signer = apiOptions.signer || this.base.getSigner();
+
     // share class token to receive
     const shareClass = this.base.getShareClassPDA(fund, shareClassId);
     const signerShareAta = this.base.getShareClassAta(signer, shareClass);
@@ -177,7 +168,6 @@ export class InvestorClient {
 
   public async redeemTx(
     fund: PublicKey,
-    signer: PublicKey,
     amount: BN,
     inKind: boolean = false,
     shareClassId: number = 0,
@@ -185,6 +175,7 @@ export class InvestorClient {
     apiOptions: ApiTxOptions
   ): Promise<VersionedTransaction> {
     const treasury = this.base.getTreasuryPDA(fund);
+    const signer = apiOptions.signer || this.base.getSigner();
 
     // share class token to receive
     const shareClass = this.base.getShareClassPDA(fund, shareClassId);
