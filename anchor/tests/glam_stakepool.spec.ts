@@ -4,6 +4,7 @@ import { createFundForTest, sleep } from "./setup";
 import { GlamClient } from "../src";
 import {
   PublicKey,
+  sendAndConfirmTransaction,
   SYSVAR_CLOCK_PUBKEY,
   SYSVAR_STAKE_HISTORY_PUBKEY,
   TransactionInstruction,
@@ -149,15 +150,20 @@ describe("glam_stakepool", () => {
           tokenProgram: TOKEN_PROGRAM_ID,
           stakePoolProgram: STAKE_POOL_PROGRAM_ID,
         })
-        .rpc();
-      // .transaction();
-      // const stakeAccountRentExemption =
-      //   await connection.getMinimumBalanceForRentExemption(200);
-      // newStakeAccount(
-      //   glamClient.getManager(),
-      //   tx.instructions,
-      //   stakeAccountRentExemption
-      // );
+        .transaction();
+      const stakeAccountRentExemption =
+        await connection.getMinimumBalanceForRentExemption(200);
+      const stakeKeypair = newStakeAccount(
+        glamClient.getManager(),
+        tx.instructions,
+        stakeAccountRentExemption
+      );
+      txSig = await sendAndConfirmTransaction(
+        glamClient.provider.connection,
+        tx,
+        [glamClient.getWallet().payer, stakeKeypair]
+      );
+      console.log("stakePoolWithdrawStake tx:", txSig);
     } catch (e) {
       console.error(e);
       throw e;
