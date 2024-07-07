@@ -11,24 +11,6 @@ importers:
 
   .:
     dependencies:
-      '@carbon/charts-react':
-        specifier: ^1.17.2
-        version: 1.17.2(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      '@carbon/colors':
-        specifier: ^11.23.1
-        version: 11.23.1
-      '@carbon/icons-react':
-        specifier: ^11.44.1
-        version: 11.44.1(react@18.2.0)
-      '@carbon/react':
-        specifier: ^1.60.3
-        version: 1.60.3(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.77.6)
-      '@carbon/styles':
-        specifier: ^1.60.1
-        version: 1.60.1(sass@1.77.6)
-      '@carbon/type':
-        specifier: ^11.28.1
-        version: 11.28.1
       '@coral-xyz/anchor':
         specifier: ^0.29.0
         version: 0.29.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
@@ -44,9 +26,6 @@ importers:
       '@hookform/resolvers':
         specifier: ^3.6.0
         version: 3.6.0(react-hook-form@7.52.0(react@18.2.0))
-      '@ibm/plex':
-        specifier: ^6.4.1
-        version: 6.4.1
       '@marinade.finance/marinade-ts-sdk':
         specifier: ^5.0.12
         version: 5.0.12(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(bn.js@5.2.1)(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(jsbi@4.3.0)(utf-8-validate@5.0.10)
@@ -1185,15 +1164,6 @@ packages:
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
 
-  '@carbon/charts-react@1.17.2':
-    resolution: {integrity: sha512-YO4IZk9VXQzXcdpi23RlPwQQFx1QcOsFMzqjqnPpeV8/GkDgepc/FNQxhWz1nRQSN3OOn2tEPanIj7NiKyEBNw==}
-    peerDependencies:
-      react: ^16.8.6 || ^17.0.1 || ^18.2.0
-      react-dom: ^16.8.6 || ^17.0.1 || ^18.2.0
-
-  '@carbon/charts@1.17.2':
-    resolution: {integrity: sha512-R2kTBf3nKMjMF/IY222W5SUjp0tuHpWDTQUrd0+ZaxL1oMjPxaRCFh5CB7msuw8eUOPFl6nVMXJwyjZkpm5giw==}
-
   '@carbon/colors@11.23.1':
     resolution: {integrity: sha512-pFi52Xy8Z+YBio9/dI7TBL6fF+0SyeXRwu5PMvSk0RzSaaJFNl5norrsBQFlM90PYjVFhD/tTZb6Oxe/CyMOJQ==}
 
@@ -1241,9 +1211,6 @@ packages:
 
   '@carbon/type@11.28.1':
     resolution: {integrity: sha512-AarpSSe3Y//xwHnxcOP0gFmOrOyUz5AtF0XHnSVgb8QmbqIQsTCFSpZoORBR5+4MJ0Ynp8UZSVfI579yyWt6rw==}
-
-  '@carbon/utils-position@1.3.0':
-    resolution: {integrity: sha512-bfar2dV+fQ15syIrH3n9ujY4PXd1Q+AF2VcTLJIC04IDe2f80zOnJlLNPc/RktHcWTZ7WSQm80cQo3abGcsfTA==}
 
   '@coral-xyz/anchor@0.27.0':
     resolution: {integrity: sha512-+P/vPdORawvg3A9Wj02iquxb4T0C5m4P6aZBVYysKl4Amk+r6aMPZkUhilBkD6E4Nuxnoajv3CFykUfkGE0n5g==}
@@ -1422,9 +1389,6 @@ packages:
   '@ibm/plex@6.0.0-next.6':
     resolution: {integrity: sha512-B3uGruTn2rS5gweynLmfSe7yCawSRsJguJJQHVQiqf4rh2RNgJFu8YLE2Zd/JHV0ZXoVMOslcXP2k3hMkxKEyA==}
     engines: {node: '>=14'}
-
-  '@ibm/plex@6.4.1':
-    resolution: {integrity: sha512-fnsipQywHt3zWvsnlyYKMikcVI7E2fEwpiPnIHFqlbByXVfQfANAAeJk1IV4mNnxhppUIDlhU0TzwYwL++Rn2g==}
 
   '@ibm/telemetry-js@1.5.2':
     resolution: {integrity: sha512-KyvaHbiNMDtz2k/9DltkK3YkWTyvz8y7Pq1sQ4cnXDMzHiEatOyxw3zZgK9li80tgUOYMQLck9DLewEuhvtg7w==}
@@ -5118,9 +5082,6 @@ packages:
   carbon-components@10.58.12:
     resolution: {integrity: sha512-Ep1aXo6JUCrI5QA/Wa0EFXdxx5EoJIg84pXExp3ieUO5gi7NaCeMBqjAhI1RHpjAEw8gPTUWzPGKayHU80hJlA==}
 
-  carbon-components@10.58.15:
-    resolution: {integrity: sha512-w1ubGzeH+HdJotD+B2UgW8hUeTtp1CcXDcki20Il3er6BfLjEhQL5/XlXnJiDzRmB6NgozxOQEbjLPXbZSfiqA==}
-
   carbon-icons@7.0.7:
     resolution: {integrity: sha512-3vgkdXJRgCViCrH3fLUdyAXo0I8wmohO6QETv7vWFx6yc7s+SirWFBSFL38zUx4MHtR8iTxIlLEzkeU6FlFtXg==}
 
@@ -6052,9 +6013,6 @@ packages:
     resolution: {integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==}
     engines: {node: '>= 4'}
 
-  dompurify@3.1.5:
-    resolution: {integrity: sha512-lwG+n5h8QNpxtyrJW/gJWckL+1/DQiYMX8f7t8Z2AZTPw1esVrqjI63i7Zc2Gz0aKzLVMYC1V1PL/ky+aY/NgA==}
-
   domutils@2.8.0:
     resolution: {integrity: sha512-w96Cjofp72M5IIhpjgobBimYEfoPjx1Vx0BSX9P30WBdZW2WIKU0T1Bd0kz2eNZ9ikjKgHbEyKx8BB6H1L3h3A==}
 
@@ -6962,9 +6920,6 @@ packages:
 
   html-escaper@2.0.2:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
-
-  html-to-image@1.11.11:
-    resolution: {integrity: sha512-9gux8QhvjRO/erSnDPv28noDZcPZmYE7e1vFsBLKLlRlKDSqNJYebj6Qz1TGd5lsRV+X+xYyjCKjuZdABinWjA==}
 
   http-cache-semantics@4.1.1:
     resolution: {integrity: sha512-er295DKPVsV82j5kw1Gjt+ADA/XYHsajl82cGNQG2eyoPkvgUhX+nDIyelzhIWbbsXP39EHcI6l5tYs2FYqYXQ==}
@@ -10435,10 +10390,6 @@ packages:
   toml@3.0.0:
     resolution: {integrity: sha512-y/mWCZinnvxjTKYhJ+pYxwD0mRLVvOtdS2Awbgxln6iEnt4rk0yBxeSBHkGJcPucRiG0e55mwWp+g/05rsrd6w==}
 
-  topojson-client@3.1.0:
-    resolution: {integrity: sha512-605uxS6bcYxGXw9qi62XyrV6Q3xwbndjachmNxu8HWTtVPxZfEJN9fd/SZS1Q54Sn2y0TMyMxFj/cJINqGHrKw==}
-    hasBin: true
-
   tough-cookie@4.1.4:
     resolution: {integrity: sha512-Loo5UUvLD9ScZ6jh8beX1T6sO1w2/MpCRpEP7V280GKMVUQ0Jzar2U3UJPsrdbziLEMMhu3Ujnq//rhiFuIeag==}
     engines: {node: '>=6'}
@@ -12153,30 +12104,6 @@ snapshots:
 
   '@bcoe/v8-coverage@0.2.3': {}
 
-  '@carbon/charts-react@1.17.2(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
-    dependencies:
-      '@carbon/charts': 1.17.2
-      '@carbon/icons-react': 11.44.1(react@18.2.0)
-      '@ibm/telemetry-js': 1.5.2
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-
-  '@carbon/charts@1.17.2':
-    dependencies:
-      '@carbon/colors': 11.23.1
-      '@carbon/utils-position': 1.3.0
-      '@ibm/telemetry-js': 1.5.2
-      carbon-components: 10.58.15
-      d3: 7.9.0
-      d3-cloud: 1.2.7
-      d3-sankey: 0.12.3
-      date-fns: 3.6.0
-      dompurify: 3.1.5
-      html-to-image: 1.11.11
-      lodash-es: 4.17.21
-      topojson-client: 3.1.0
-      tslib: 2.6.3
-
   '@carbon/colors@11.23.1':
     dependencies:
       '@ibm/telemetry-js': 1.5.2
@@ -12270,10 +12197,6 @@ snapshots:
     dependencies:
       '@carbon/grid': 11.24.1
       '@carbon/layout': 11.23.1
-      '@ibm/telemetry-js': 1.5.2
-
-  '@carbon/utils-position@1.3.0':
-    dependencies:
       '@ibm/telemetry-js': 1.5.2
 
   '@coral-xyz/anchor@0.27.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)':
@@ -12609,10 +12532,6 @@ snapshots:
   '@humanwhocodes/object-schema@2.0.3': {}
 
   '@ibm/plex@6.0.0-next.6': {}
-
-  '@ibm/plex@6.4.1':
-    dependencies:
-      '@ibm/telemetry-js': 1.5.2
 
   '@ibm/telemetry-js@1.5.2': {}
 
@@ -18562,13 +18481,6 @@ snapshots:
       lodash.debounce: 4.0.8
       warning: 3.0.0
 
-  carbon-components@10.58.15:
-    dependencies:
-      '@carbon/telemetry': 0.1.0
-      flatpickr: 4.6.1
-      lodash.debounce: 4.0.8
-      warning: 3.0.0
-
   carbon-icons@7.0.7: {}
 
   cashaddrjs@0.4.4:
@@ -19597,8 +19509,6 @@ snapshots:
   domhandler@5.0.3:
     dependencies:
       domelementtype: 2.3.0
-
-  dompurify@3.1.5: {}
 
   domutils@2.8.0:
     dependencies:
@@ -20810,8 +20720,6 @@ snapshots:
   html-entities@2.5.2: {}
 
   html-escaper@2.0.2: {}
-
-  html-to-image@1.11.11: {}
 
   http-cache-semantics@4.1.1: {}
 
@@ -24862,10 +24770,6 @@ snapshots:
       ieee754: 1.2.1
 
   toml@3.0.0: {}
-
-  topojson-client@3.1.0:
-    dependencies:
-      commander: 2.20.3
 
   tough-cookie@4.1.4:
     dependencies:
