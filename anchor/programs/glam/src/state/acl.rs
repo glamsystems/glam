@@ -12,9 +12,9 @@ pub enum AccessError {
 pub enum Permission {
     DriftDeposit,
     DriftWithdraw,
-    MarinadeStake,
-    MarinadeUnstake, // Order delayed unstake + claim ticket
-    MarinadeLiquidUnstake,
+    Stake,
+    Unstake, // Initialize delayed unstake + claim ticket
+    LiquidUnstake,
     JupiterSwapFundAssets,
     JupiterSwapAnyAsset,
     WSolWrap,

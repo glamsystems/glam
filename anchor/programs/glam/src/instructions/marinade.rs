@@ -12,7 +12,7 @@ use marinade::State as MarinadeState;
 use crate::state::*;
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::MarinadeStake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
 )]
 pub fn marinade_deposit<'c: 'info, 'info>(
     ctx: Context<MarinadeDeposit>,
@@ -59,7 +59,7 @@ pub fn marinade_deposit<'c: 'info, 'info>(
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::MarinadeUnstake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Unstake)
 )]
 pub fn marinade_delayed_unstake<'c: 'info, 'info>(
     ctx: Context<MarinadeDelayedUnstake>,
@@ -127,7 +127,7 @@ pub fn marinade_delayed_unstake<'c: 'info, 'info>(
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::MarinadeUnstake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Unstake)
 )]
 pub fn marinade_claim<'info>(ctx: Context<'_, '_, '_, 'info, MarinadeClaim<'info>>) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
@@ -163,7 +163,7 @@ pub fn marinade_claim<'info>(ctx: Context<'_, '_, '_, 'info, MarinadeClaim<'info
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::MarinadeLiquidUnstake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::LiquidUnstake)
 )]
 pub fn marinade_liquid_unstake<'c: 'info, 'info>(
     ctx: Context<MarinadeLiquidUnstake>,
