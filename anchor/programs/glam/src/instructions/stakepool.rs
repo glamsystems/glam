@@ -1,14 +1,15 @@
 use crate::{constants::*, state::*};
-use anchor_lang::prelude::*;
+use anchor_lang::{prelude::*, system_program};
 use anchor_spl::{
     associated_token::AssociatedToken,
+    stake::StakeAccount,
     token::{Mint, Token, TokenAccount},
 };
 
 use solana_program::program::invoke_signed;
 use spl_stake_pool::{
-    instruction::{deposit_sol, withdraw_sol},
-    ID,
+    instruction::{deposit_sol, withdraw_sol, withdraw_stake},
+    ID as SPL_STAKE_POOL_PROGRAM_ID,
 };
 
 #[derive(Accounts)]
@@ -51,7 +52,7 @@ pub struct StakePoolDeposit<'info> {
 
     /// CHECK: use constraint
     #[account(
-        constraint = stake_pool_program.key == &SANCTUM || stake_pool_program.key == &ID
+        constraint = stake_pool_program.key == &SANCTUM || stake_pool_program.key == &SPL_STAKE_POOL_PROGRAM_ID
     )]
     pub stake_pool_program: AccountInfo<'info>,
 
@@ -61,7 +62,7 @@ pub struct StakePoolDeposit<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::MarinadeStake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
 )]
 pub fn stake_pool_deposit<'c: 'info, 'info>(
     ctx: Context<StakePoolDeposit>,
@@ -109,7 +110,7 @@ pub fn stake_pool_deposit<'c: 'info, 'info>(
 }
 
 #[derive(Accounts)]
-pub struct StakePoolWithdraw<'info> {
+pub struct StakePoolWithdrawSol<'info> {
     #[account(mut)]
     pub manager: Signer<'info>,
 
@@ -143,7 +144,7 @@ pub struct StakePoolWithdraw<'info> {
 
     /// CHECK: use constraint
     #[account(
-        constraint = stake_pool_program.key == &SANCTUM || stake_pool_program.key == &ID
+        constraint = stake_pool_program.key == &SANCTUM || stake_pool_program.key == &SPL_STAKE_POOL_PROGRAM_ID
     )]
     pub stake_pool_program: AccountInfo<'info>,
 
@@ -161,10 +162,10 @@ pub struct StakePoolWithdraw<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::MarinadeUnstake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Unstake)
 )]
-pub fn stake_pool_withdraw<'c: 'info, 'info>(
-    ctx: Context<StakePoolWithdraw>,
+pub fn stake_pool_withdraw_sol<'c: 'info, 'info>(
+    ctx: Context<StakePoolWithdrawSol>,
     lamports: u64,
 ) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
@@ -207,6 +208,148 @@ pub fn stake_pool_withdraw<'c: 'info, 'info>(
         ],
         signer_seeds,
     );
+
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct StakePoolWithdrawStake<'info> {
+    #[account(mut)]
+    pub manager: Signer<'info>,
+
+    #[account(has_one = treasury)]
+    pub fund: Box<Account<'info, FundAccount>>,
+
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
+
+    /// CHECK: will be initialized in the instruction
+    #[account(mut)]
+    pub stake_account: AccountInfo<'info>,
+
+    #[account(mut)]
+    pub pool_mint: Account<'info, Mint>,
+
+    /// CHECK: skip
+    #[account(mut)]
+    pub fee_account: AccountInfo<'info>,
+
+    /// CHECK: skip
+    #[account(mut)]
+    pub stake_pool: AccountInfo<'info>,
+
+    /// CHECK: skip
+    #[account()]
+    pub withdraw_authority: AccountInfo<'info>,
+
+    /// CHECK: skip
+    #[account(mut)]
+    pub validator_list: AccountInfo<'info>,
+
+    /// CHECK: skip
+    #[account(mut)]
+    pub validator_account: AccountInfo<'info>,
+
+    #[account(mut, constraint = pool_token_ata.mint == pool_mint.key())]
+    pub pool_token_ata: Account<'info, TokenAccount>,
+
+    /// CHECK: use constraint
+    #[account(
+        constraint = stake_pool_program.key == &SANCTUM || stake_pool_program.key == &SPL_STAKE_POOL_PROGRAM_ID
+    )]
+    pub stake_pool_program: AccountInfo<'info>,
+
+    /// CHECK:
+    pub sysvar_clock: AccountInfo<'info>,
+
+    /// CHECK:
+    pub native_stake_program: AccountInfo<'info>,
+
+    pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
+}
+
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Unstake)
+)]
+pub fn stake_pool_withdraw_stake<'c: 'info, 'info>(
+    ctx: Context<StakePoolWithdrawStake>,
+    withdraw_lamports: u64,
+    stake_account_bump: u8,
+) -> Result<()> {
+    let fund_key = ctx.accounts.fund.key();
+
+    // Create stake account and leave it uninitialized
+    let rent = Rent::get()?;
+    let lamports = rent.minimum_balance(200); // Minimum balance to make the account rent-exempt
+    msg!(
+        "Creating ticket account with address {}",
+        ctx.accounts.stake_account.key()
+    );
+    let seeds = &[
+        b"stake_account".as_ref(),
+        fund_key.as_ref(),
+        &[stake_account_bump],
+    ];
+    let signer_seeds = &[&seeds[..]];
+    system_program::create_account(
+        CpiContext::new_with_signer(
+            ctx.accounts.system_program.to_account_info(),
+            system_program::CreateAccount {
+                from: ctx.accounts.manager.to_account_info(),
+                to: ctx.accounts.stake_account.to_account_info().clone(),
+            },
+            signer_seeds,
+        ),
+        lamports,
+        std::mem::size_of::<StakeAccount>() as u64, // no +8
+        &ctx.accounts.native_stake_program.key(),
+    )?;
+
+    let seeds = &[
+        "treasury".as_bytes(),
+        fund_key.as_ref(),
+        &[ctx.bumps.treasury],
+    ];
+    let signer_seeds = &[&seeds[..]];
+    let ix = withdraw_stake(
+        ctx.accounts.stake_pool_program.key,
+        ctx.accounts.stake_pool.key,
+        ctx.accounts.validator_list.key,
+        ctx.accounts.withdraw_authority.key,
+        ctx.accounts.validator_account.key,
+        ctx.accounts.stake_account.key,
+        ctx.accounts.treasury.key,
+        ctx.accounts.treasury.key,
+        &ctx.accounts.pool_token_ata.key(),
+        ctx.accounts.fee_account.key,
+        &ctx.accounts.pool_mint.key(),
+        ctx.accounts.token_program.key,
+        withdraw_lamports,
+    );
+
+    msg!("Withdraw lamports: {}", withdraw_lamports);
+
+    let _ = invoke_signed(
+        &ix,
+        &[
+            ctx.accounts.stake_pool_program.clone(),
+            ctx.accounts.stake_pool.clone(),
+            ctx.accounts.validator_list.clone(),
+            ctx.accounts.withdraw_authority.clone(),
+            ctx.accounts.validator_account.clone(),
+            ctx.accounts.stake_account.to_account_info(),
+            ctx.accounts.treasury.to_account_info(),
+            ctx.accounts.treasury.to_account_info(), // pool token authority
+            ctx.accounts.pool_token_ata.to_account_info(),
+            ctx.accounts.fee_account.clone(),
+            ctx.accounts.pool_mint.to_account_info(),
+            ctx.accounts.sysvar_clock.clone(),
+            ctx.accounts.token_program.to_account_info(),
+            ctx.accounts.native_stake_program.clone(),
+        ],
+        signer_seeds,
+    )?;
 
     Ok(())
 }

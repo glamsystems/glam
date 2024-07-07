@@ -231,6 +231,14 @@ filename = "./fixtures/feeeFLLsam6xZJFc6UQFrHqkvVt4jfmVvi2BRLkUZ4i.json"
 address = "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn"
 filename = "./fixtures/J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn.json"
 
+[[test.validator.account]] # validator list
+address = "3R3nGZpQs2aZo5FDQvd2MUQ6R7KhAPainds6uT6uE2mn"
+filename = "./fixtures/3R3nGZpQs2aZo5FDQvd2MUQ6R7KhAPainds6uT6uE2mn.json"
+
+[[test.validator.account]] # validator account 
+address = "HUQEx8TDgEnhtuq6iXj9Rg3yVyX4tF85kS1k7jTnAaqR"
+filename = "./fixtures/HUQEx8TDgEnhtuq6iXj9Rg3yVyX4tF85kS1k7jTnAaqR.json"
+
 #
 # Stake pool - SanctumSpl
 #

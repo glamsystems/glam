@@ -906,7 +906,7 @@ export type Glam = {
       ]
     },
     {
-      "name": "stakePoolWithdraw",
+      "name": "stakePoolWithdrawSol",
       "accounts": [
         {
           "name": "manager",
@@ -988,6 +988,101 @@ export type Glam = {
         {
           "name": "lamports",
           "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "stakePoolWithdrawStake",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakeAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "feeAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "withdrawAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "validatorList",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "validatorAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolTokenAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakePoolProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "sysvarClock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "nativeStakeProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "lamports",
+          "type": "u64"
+        },
+        {
+          "name": "stakeAccountBump",
+          "type": "u8"
         }
       ]
     },
@@ -2182,13 +2277,13 @@ export type Glam = {
             "name": "DriftWithdraw"
           },
           {
-            "name": "MarinadeStake"
+            "name": "Stake"
           },
           {
-            "name": "MarinadeUnstake"
+            "name": "Unstake"
           },
           {
-            "name": "MarinadeLiquidUnstake"
+            "name": "LiquidUnstake"
           },
           {
             "name": "JupiterSwapFundAssets"
@@ -4264,7 +4359,7 @@ export const IDL: Glam = {
       ]
     },
     {
-      "name": "stakePoolWithdraw",
+      "name": "stakePoolWithdrawSol",
       "accounts": [
         {
           "name": "manager",
@@ -4346,6 +4441,101 @@ export const IDL: Glam = {
         {
           "name": "lamports",
           "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "stakePoolWithdrawStake",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakeAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "feeAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "withdrawAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "validatorList",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "validatorAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolTokenAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakePoolProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "sysvarClock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "nativeStakeProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "lamports",
+          "type": "u64"
+        },
+        {
+          "name": "stakeAccountBump",
+          "type": "u8"
         }
       ]
     },
@@ -5540,13 +5730,13 @@ export const IDL: Glam = {
             "name": "DriftWithdraw"
           },
           {
-            "name": "MarinadeStake"
+            "name": "Stake"
           },
           {
-            "name": "MarinadeUnstake"
+            "name": "Unstake"
           },
           {
-            "name": "MarinadeLiquidUnstake"
+            "name": "LiquidUnstake"
           },
           {
             "name": "JupiterSwapFundAssets"
