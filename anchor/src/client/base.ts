@@ -213,13 +213,27 @@ export class BaseClient {
     const connection = this.provider.connection;
     const serializedTx = signedTx.serialize();
     const signature = await connection.sendRawTransaction(serializedTx, {
-      skipPreflight: true, // we did this already to compute CUs
-    }); // can throw
+      // skip simulation since we just did it to compute CUs
+      // however this means that we need to reconstruct the error, if
+      // the tx fails on chain execution.
+      skipPreflight: true,
+    });
     // await confirmation
-    await connection.confirmTransaction({
+    const res = await connection.confirmTransaction({
       ...latestBlockhash,
       signature,
     });
+    // if the tx fails, throw an error including logs
+    if (res.value.err) {
+      const errTx = await connection.getTransaction(signature, {
+        maxSupportedTransactionVersion: 0,
+      });
+      const err = {
+        err: errTx?.meta?.err,
+        logs: errTx?.meta?.logMessages,
+      };
+      throw err;
+    }
     return signature; // when confirmed, or throw
   }
 
