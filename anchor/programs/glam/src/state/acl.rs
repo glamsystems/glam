@@ -12,8 +12,8 @@ pub enum AccessError {
 pub enum Permission {
     DriftDeposit,
     DriftWithdraw,
-    Stake,
-    Unstake, // Initialize delayed unstake + claim ticket
+    Stake, // Stake with marinade or spl/sanctum stake pool programs
+    Unstake,
     LiquidUnstake,
     JupiterSwapFundAssets,
     JupiterSwapAnyAsset,

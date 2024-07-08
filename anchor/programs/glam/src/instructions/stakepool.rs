@@ -157,7 +157,7 @@ pub struct StakePoolWithdrawSol<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Unstake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::LiquidUnstake)
 )]
 pub fn stake_pool_withdraw_sol<'c: 'info, 'info>(
     ctx: Context<StakePoolWithdrawSol>,
