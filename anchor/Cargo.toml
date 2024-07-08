@@ -16,6 +16,7 @@ anchor-lang = { version = "0.29.0", features = ["init-if-needed"] }
 anchor-spl = { version = "0.29.0", features = ["stake"] }
 solana-program = "=1.18.17"
 
+spl-stake-pool = { version = "1.0.0", features = ["no-entrypoint"] }
 anchor-gen = "0.3.1"
 spl-token = "=4.0.1"
 spl-token-2022 = "3.0.2"

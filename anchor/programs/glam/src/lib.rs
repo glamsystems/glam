@@ -118,6 +118,32 @@ pub mod glam {
         marinade::marinade_claim(ctx)
     }
 
+    // Stake pool
+    pub fn stake_pool_deposit(ctx: Context<StakePoolDeposit>, lamports: u64) -> Result<()> {
+        stakepool::stake_pool_deposit(ctx, lamports)
+    }
+
+    pub fn stake_pool_withdraw_sol(
+        ctx: Context<StakePoolWithdrawSol>,
+        lamports: u64,
+    ) -> Result<()> {
+        stakepool::stake_pool_withdraw_sol(ctx, lamports)
+    }
+
+    pub fn stake_pool_withdraw_stake(
+        ctx: Context<StakePoolWithdrawStake>,
+        pool_token_amount: u64,
+        stake_account_bump: u8,
+        stake_account_id: String,
+    ) -> Result<()> {
+        stakepool::stake_pool_withdraw_stake(
+            ctx,
+            pool_token_amount,
+            stake_account_bump,
+            stake_account_id,
+        )
+    }
+
     // Jupiter
     pub fn jupiter_swap<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, JupiterSwap<'info>>,

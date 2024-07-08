@@ -87,9 +87,7 @@ describe("glam_crud", () => {
 
   it("Fund acls delete", async () => {
     // add key2 permissions
-    const acls = [
-      { pubkey: key2.publicKey, permissions: [{ marinadeStake: {} }] },
-    ];
+    const acls = [{ pubkey: key2.publicKey, permissions: [{ stake: {} }] }];
     try {
       await glamClient.upsertAcls(fundPDA, acls);
     } catch (e) {
@@ -99,7 +97,7 @@ describe("glam_crud", () => {
     let fundModel = await glamClient.fetchFund(fundPDA);
     expect(fundModel.acls?.length).toEqual(2);
     expect(fundModel.acls[1].pubkey).toEqual(key2.publicKey);
-    expect(fundModel.acls[1].permissions).toEqual([{ marinadeStake: {} }]);
+    expect(fundModel.acls[1].permissions).toEqual([{ stake: {} }]);
 
     // remove key1 and key2 permissions
     try {
