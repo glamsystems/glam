@@ -235,7 +235,7 @@ filename = "./fixtures/J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn.json"
 address = "3R3nGZpQs2aZo5FDQvd2MUQ6R7KhAPainds6uT6uE2mn"
 filename = "./fixtures/3R3nGZpQs2aZo5FDQvd2MUQ6R7KhAPainds6uT6uE2mn.json"
 
-[[test.validator.account]] # validator account 
+[[test.validator.account]] # validator stakeaccount 
 address = "HUQEx8TDgEnhtuq6iXj9Rg3yVyX4tF85kS1k7jTnAaqR"
 filename = "./fixtures/HUQEx8TDgEnhtuq6iXj9Rg3yVyX4tF85kS1k7jTnAaqR.json"
 
@@ -265,6 +265,10 @@ filename = "./fixtures/BonK1YhkXEGLZzwtcvRTip3gAL9nCeQD7ppZBLXhtTs.json"
 [[test.validator.account]] # validator list
 address = "Ea2ATXQgQrUXGdMPXUbdNw8SmV3S6RSzsiff8AcBLP2G"
 filename = "./fixtures/Ea2ATXQgQrUXGdMPXUbdNw8SmV3S6RSzsiff8AcBLP2G.json"
+
+[[test.validator.account]] # validator stakeaccount 
+address = "H1VS48K94cgK7sAHbQiCCmL1qqV5ry6vTyZ9r12VSqsV"
+filename = "./fixtures/H1VS48K94cgK7sAHbQiCCmL1qqV5ry6vTyZ9r12VSqsV.json"
 
 #
 # Others

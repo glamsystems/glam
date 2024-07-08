@@ -848,6 +848,26 @@ export type Glam = {
           "isSigner": false
         },
         {
+          "name": "stakePoolProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "withdrawAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "reserveStake",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "poolMint",
           "isMut": true,
           "isSigner": false
@@ -858,28 +878,8 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "stakePool",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "reserveStake",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "withdrawAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "mintTo",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "stakePoolProgram",
-          "isMut": false,
           "isSigner": false
         },
         {
@@ -924,6 +924,26 @@ export type Glam = {
           "isSigner": false
         },
         {
+          "name": "stakePoolProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "withdrawAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "reserveStake",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "poolMint",
           "isMut": true,
           "isSigner": false
@@ -934,28 +954,8 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "stakePool",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "reserveStake",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "withdrawAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "poolTokenAta",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "stakePoolProgram",
-          "isMut": false,
           "isSigner": false
         },
         {
@@ -969,17 +969,17 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "nativeStakeProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
         },
         {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "nativeStakeProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -1010,7 +1010,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "stakeAccount",
+          "name": "treasuryStakeAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -1040,7 +1040,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "validatorAccount",
+          "name": "validatorStakeAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -1060,11 +1060,6 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "nativeStakeProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
@@ -1073,16 +1068,25 @@ export type Glam = {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "nativeStakeProgram",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
         {
-          "name": "lamports",
+          "name": "poolTokenAmount",
           "type": "u64"
         },
         {
           "name": "stakeAccountBump",
           "type": "u8"
+        },
+        {
+          "name": "stakeAccountId",
+          "type": "string"
         }
       ]
     },
@@ -4301,6 +4305,26 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
+          "name": "stakePoolProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "withdrawAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "reserveStake",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "poolMint",
           "isMut": true,
           "isSigner": false
@@ -4311,28 +4335,8 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "stakePool",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "reserveStake",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "withdrawAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "mintTo",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "stakePoolProgram",
-          "isMut": false,
           "isSigner": false
         },
         {
@@ -4377,6 +4381,26 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
+          "name": "stakePoolProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "withdrawAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "reserveStake",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "poolMint",
           "isMut": true,
           "isSigner": false
@@ -4387,28 +4411,8 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "stakePool",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "reserveStake",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "withdrawAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "poolTokenAta",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "stakePoolProgram",
-          "isMut": false,
           "isSigner": false
         },
         {
@@ -4422,17 +4426,17 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "nativeStakeProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
         },
         {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "nativeStakeProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -4463,7 +4467,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "stakeAccount",
+          "name": "treasuryStakeAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -4493,7 +4497,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "validatorAccount",
+          "name": "validatorStakeAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -4513,11 +4517,6 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "nativeStakeProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
@@ -4526,16 +4525,25 @@ export const IDL: Glam = {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "nativeStakeProgram",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
         {
-          "name": "lamports",
+          "name": "poolTokenAmount",
           "type": "u64"
         },
         {
           "name": "stakeAccountBump",
           "type": "u8"
+        },
+        {
+          "name": "stakeAccountId",
+          "type": "string"
         }
       ]
     },

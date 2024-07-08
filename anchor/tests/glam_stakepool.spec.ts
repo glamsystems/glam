@@ -1,13 +1,13 @@
-import * as anchor from "@coral-xyz/anchor";
+import { BN } from "@coral-xyz/anchor";
 
-import { createFundForTest, sleep } from "./setup";
+import { createFundForTest } from "./setup";
 import { GlamClient } from "../src";
 import {
   PublicKey,
   sendAndConfirmTransaction,
+  StakeProgram,
   SYSVAR_CLOCK_PUBKEY,
   SYSVAR_STAKE_HISTORY_PUBKEY,
-  TransactionInstruction,
 } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
@@ -15,7 +15,6 @@ import {
   getStakePoolAccount,
   STAKE_POOL_PROGRAM_ID,
 } from "@solana/spl-stake-pool";
-import { newStakeAccount } from "@solana/spl-stake-pool/dist/utils";
 
 const SANCTUM_STAKE_POOL_PROGRAM_ID = new PublicKey(
   "SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY"
@@ -26,10 +25,6 @@ const JITO_STAKE_POOL = new PublicKey(
 );
 const BONK_STAKE_POOL = new PublicKey(
   "ArAQfbzsdotoKB5jJcZa3ajQrrPcWr2YQoDAEAiFxJAC"
-);
-
-const STAKE_PROGRAM_ID = new PublicKey(
-  "Stake11111111111111111111111111111111111111"
 );
 
 const findWithdrawAuthorityProgramAddress = (
@@ -73,7 +68,7 @@ describe("glam_stakepool", () => {
       STAKE_POOL_PROGRAM_ID,
       JITO_STAKE_POOL
     );
-    const validatorAccount = new PublicKey(
+    const validatorStakeAccount = new PublicKey(
       "HUQEx8TDgEnhtuq6iXj9Rg3yVyX4tF85kS1k7jTnAaqR"
     );
 
@@ -81,25 +76,25 @@ describe("glam_stakepool", () => {
 
     try {
       let txSig = await glamClient.program.methods
-        .stakePoolDeposit(new anchor.BN(1000_000_000))
+        .stakePoolDeposit(new BN(10_000_000_000))
         .accounts({
+          manager: glamClient.getManager(),
           fund: fundPDA,
           treasury: glamClient.getTreasuryPDA(fundPDA),
-          manager: glamClient.getManager(),
-          poolMint: stakePoolData.poolMint,
           mintTo: glamClient.getTreasuryAta(fundPDA, stakePoolData.poolMint),
-          feeAccount: stakePoolData.managerFeeAccount,
+          stakePoolProgram: STAKE_POOL_PROGRAM_ID,
           stakePool: JITO_STAKE_POOL,
+          poolMint: stakePoolData.poolMint,
           reserveStake: stakePoolData.reserveStake,
           withdrawAuthority,
+          feeAccount: stakePoolData.managerFeeAccount,
           tokenProgram: TOKEN_PROGRAM_ID,
-          stakePoolProgram: STAKE_POOL_PROGRAM_ID,
         })
         .rpc();
       console.log("stakePoolDeposit tx:", txSig);
 
       txSig = await glamClient.program.methods
-        .stakePoolWithdrawSol(new anchor.BN(500_000_000))
+        .stakePoolWithdrawSol(new BN(1_000_000_000))
         .accounts({
           fund: fundPDA,
           treasury: glamClient.getTreasuryPDA(fundPDA),
@@ -115,60 +110,60 @@ describe("glam_stakepool", () => {
           withdrawAuthority,
           sysvarClock: SYSVAR_CLOCK_PUBKEY,
           sysvarStakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
-          nativeStakeProgram: STAKE_PROGRAM_ID,
+          nativeStakeProgram: StakeProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
           stakePoolProgram: STAKE_POOL_PROGRAM_ID,
         })
         .rpc();
-      console.log("stakePoolWithdraw tx:", txSig);
+      console.log("stakePoolWithdrawSol tx:", txSig);
 
+      const stakeAccountId = Date.now().toString();
       const [stakeAccountPda, bump] = PublicKey.findProgramAddressSync(
-        [Buffer.from("stake_account"), fundPDA.toBuffer()],
+        [
+          Buffer.from("stake_account"),
+          Buffer.from(stakeAccountId),
+          fundPDA.toBuffer(),
+        ],
         glamClient.program.programId
       );
       console.log("stakeAccountPda:", stakeAccountPda.toBase58());
 
       const tx = await glamClient.program.methods
-        .stakePoolWithdrawStake(new anchor.BN(100_000_000), bump)
+        .stakePoolWithdrawStake(new BN(1_000_000_000), bump, stakeAccountId)
         .accounts({
+          manager: glamClient.getManager(),
           fund: fundPDA,
           treasury: glamClient.getTreasuryPDA(fundPDA),
-          manager: glamClient.getManager(),
+          treasuryStakeAccount: stakeAccountPda,
+          stakePoolProgram: STAKE_POOL_PROGRAM_ID,
+          stakePool: JITO_STAKE_POOL,
           poolMint: stakePoolData.poolMint,
           poolTokenAta: glamClient.getTreasuryAta(
             fundPDA,
             stakePoolData.poolMint
           ),
-          stakeAccount: stakeAccountPda,
-          feeAccount: stakePoolData.managerFeeAccount,
-          stakePool: JITO_STAKE_POOL,
           validatorList: stakePoolData.validatorList,
-          validatorAccount,
+          validatorStakeAccount,
           withdrawAuthority,
+          feeAccount: stakePoolData.managerFeeAccount,
           sysvarClock: SYSVAR_CLOCK_PUBKEY,
-          nativeStakeProgram: STAKE_PROGRAM_ID,
+          nativeStakeProgram: StakeProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
-          stakePoolProgram: STAKE_POOL_PROGRAM_ID,
         })
         .transaction();
-      const stakeAccountRentExemption =
-        await connection.getMinimumBalanceForRentExemption(200);
-      const stakeKeypair = newStakeAccount(
-        glamClient.getManager(),
-        tx.instructions,
-        stakeAccountRentExemption
-      );
+
       txSig = await sendAndConfirmTransaction(
         glamClient.provider.connection,
         tx,
-        [glamClient.getWallet().payer, stakeKeypair]
+        [glamClient.getWallet().payer],
+        { skipPreflight: true }
       );
       console.log("stakePoolWithdrawStake tx:", txSig);
     } catch (e) {
       console.error(e);
       throw e;
     }
-  });
+  }, 30_000);
 
   it("Deposit SOL to bonk stake pool", async () => {
     const stakePoolAccount = await getStakePoolAccount(
@@ -181,10 +176,15 @@ describe("glam_stakepool", () => {
       SANCTUM_STAKE_POOL_PROGRAM_ID,
       BONK_STAKE_POOL
     );
+    console.log("bonkSol stake pool withdraw authority:", withdrawAuthority);
+
+    const validatorStakeAccount = new PublicKey(
+      "H1VS48K94cgK7sAHbQiCCmL1qqV5ry6vTyZ9r12VSqsV"
+    );
 
     try {
       let txSig = await glamClient.program.methods
-        .stakePoolDeposit(new anchor.BN(10_000_000))
+        .stakePoolDeposit(new BN(10_000_000_000))
         .accounts({
           fund: fundPDA,
           treasury: glamClient.getTreasuryPDA(fundPDA),
@@ -203,9 +203,43 @@ describe("glam_stakepool", () => {
 
       // Sanctum stake pool program may not support withdraw SOL?
       // TODO: check if it's possible to withdraw SOL from sanctum stake pool
-      /*
-      txSig = await glamClient.program.methods
-        .stakePoolWithdrawSol(new anchor.BN(5_000_000))
+      // txSig = await glamClient.program.methods
+      //   .stakePoolWithdrawSol(new BN(5_000_000))
+      //   .accounts({
+      //     fund: fundPDA,
+      //     treasury: glamClient.getTreasuryPDA(fundPDA),
+      //     manager: glamClient.getManager(),
+      //     poolMint: stakePoolData.poolMint,
+      //     poolTokenAta: glamClient.getTreasuryAta(
+      //       fundPDA,
+      //       stakePoolData.poolMint
+      //     ),
+      //     feeAccount: stakePoolData.managerFeeAccount,
+      //     stakePool: BONK_STAKE_POOL,
+      //     reserveStake: stakePoolData.reserveStake,
+      //     withdrawAuthority,
+      //     sysvarClock: SYSVAR_CLOCK_PUBKEY,
+      //     sysvarStakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
+      //     nativeStakeProgram: StakeProgram.programId,
+      //     tokenProgram: TOKEN_PROGRAM_ID,
+      //     stakePoolProgram: SANCTUM_STAKE_POOL_PROGRAM_ID,
+      //   })
+      //   .rpc();
+      // console.log("stakePoolWithdraw tx:", txSig);
+
+      const stakeAccountId = Date.now().toString();
+      const [stakeAccountPda, bump] = PublicKey.findProgramAddressSync(
+        [
+          Buffer.from("stake_account"),
+          Buffer.from(stakeAccountId),
+          fundPDA.toBuffer(),
+        ],
+        glamClient.program.programId
+      );
+      console.log("stakeAccountPda:", stakeAccountPda.toBase58());
+
+      const tx = await glamClient.program.methods
+        .stakePoolWithdrawStake(new BN(1_000_000_000), bump, stakeAccountId)
         .accounts({
           fund: fundPDA,
           treasury: glamClient.getTreasuryPDA(fundPDA),
@@ -215,19 +249,26 @@ describe("glam_stakepool", () => {
             fundPDA,
             stakePoolData.poolMint
           ),
+          treasuryStakeAccount: stakeAccountPda,
           feeAccount: stakePoolData.managerFeeAccount,
           stakePool: BONK_STAKE_POOL,
-          reserveStake: stakePoolData.reserveStake,
+          validatorList: stakePoolData.validatorList,
+          validatorStakeAccount,
           withdrawAuthority,
           sysvarClock: SYSVAR_CLOCK_PUBKEY,
-          sysvarStakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
-          nativeStakeProgram: STAKE_PROGRAM_ID,
+          nativeStakeProgram: StakeProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
           stakePoolProgram: SANCTUM_STAKE_POOL_PROGRAM_ID,
         })
-        .rpc();
-      console.log("stakePoolWithdraw tx:", txSig);
-      */
+        .transaction();
+
+      txSig = await sendAndConfirmTransaction(
+        glamClient.provider.connection,
+        tx,
+        [glamClient.getWallet().payer],
+        { skipPreflight: true }
+      );
+      console.log("stakePoolWithdrawStake tx:", txSig);
     } catch (e) {
       console.error(e);
       throw e;

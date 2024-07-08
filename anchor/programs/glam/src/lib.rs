@@ -132,10 +132,16 @@ pub mod glam {
 
     pub fn stake_pool_withdraw_stake(
         ctx: Context<StakePoolWithdrawStake>,
-        lamports: u64,
+        pool_token_amount: u64,
         stake_account_bump: u8,
+        stake_account_id: String,
     ) -> Result<()> {
-        stakepool::stake_pool_withdraw_stake(ctx, lamports, stake_account_bump)
+        stakepool::stake_pool_withdraw_stake(
+            ctx,
+            pool_token_amount,
+            stake_account_bump,
+            stake_account_id,
+        )
     }
 
     // Jupiter

@@ -38,7 +38,7 @@
     "@radix-ui/react-toggle": "^1.1.0",
     "@radix-ui/react-toggle-group": "^1.1.0",
     "@scure/base": "^1.1.7",
-    "@solana-developers/preset-react": "^2.2.0",
+    "@solana-developers/preset-react": "^3.0.1",
     "@solana/spl-stake-pool": "^1.1.5",
     "@solana/spl-token": "^0.4.7",
     "@solana/spl-token-metadata": "^0.1.4",
@@ -141,9 +141,7 @@
   },
   "pnpm": {
     "overrides": {
-      "@solana/web3.js@<1.94.0": "^1.94.0",
-      "bs58@>=4.0.1": "^5.0.0",
-      "nx@>= 16 <= 18": "^19.3.2"
+      "@solana/web3.js@>=1.73.0 <1.73.5": ">=1.73.5"
     }
   },
   "packageManager": "pnpm@9.1.2+sha512.127dc83b9ea10c32be65d22a8efb4a65fb952e8fefbdfded39bdc3c97efc32d31b48b00420df2c1187ace28c921c902f0cb5a134a4d032b8b5295cbfa2c681e2"
