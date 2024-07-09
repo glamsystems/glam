@@ -111,6 +111,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.50.1
         version: 5.50.1(react@18.2.0)
+      '@tanstack/react-query-next-experimental':
+        specifier: ^5.50.1
+        version: 5.50.1(@tanstack/react-query@5.50.1(react@18.2.0))(next@14.2.4(@babel/core@7.24.7)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.77.6))(react@18.2.0)
       '@tanstack/react-table':
         specifier: ^8.19.2
         version: 8.19.2(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -3766,6 +3769,13 @@ packages:
 
   '@tanstack/query-core@5.50.1':
     resolution: {integrity: sha512-lpfhKPrJlyV2DSVcQb/HuozH3Av3kws4ge22agx+lNGpFkS4vLZ7St0l3GLwlAD+bqB+qXGex3JdRKUNtMviEQ==}
+
+  '@tanstack/react-query-next-experimental@5.50.1':
+    resolution: {integrity: sha512-AgMhRPYbNRvol44orcKcf1KToGJcHTNDcKp7RRkEZ7FBNQZoQeNnWmKQBjaEgrC52mbj6rf5QOy1B2FqFZzQDw==}
+    peerDependencies:
+      '@tanstack/react-query': ^5.50.1
+      next: ^13 || ^14 || ^15
+      react: ^18 || ^19
 
   '@tanstack/react-query@5.50.1':
     resolution: {integrity: sha512-s0DW3rVBDPReDDovUjVqItVa3R2nPfUANK9nqGvarO2DwTiY9U4EBTsqizMxItRCoGgK5apeM7D3mxlHrSKpdQ==}
@@ -16582,6 +16592,12 @@ snapshots:
       tailwindcss: 3.4.4(ts-node@10.9.2(@swc/core@1.6.13(@swc/helpers@0.5.11))(@types/node@18.19.39)(typescript@5.5.3))
 
   '@tanstack/query-core@5.50.1': {}
+
+  '@tanstack/react-query-next-experimental@5.50.1(@tanstack/react-query@5.50.1(react@18.2.0))(next@14.2.4(@babel/core@7.24.7)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.77.6))(react@18.2.0)':
+    dependencies:
+      '@tanstack/react-query': 5.50.1(react@18.2.0)
+      next: 14.2.4(@babel/core@7.24.7)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.77.6)
+      react: 18.2.0
 
   '@tanstack/react-query@5.50.1(react@18.2.0)':
     dependencies:

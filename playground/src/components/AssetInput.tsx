@@ -17,15 +17,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
+  Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandShortcut,
 } from "@/components/ui/command";
 
 import JupiterStrict from "../app/assets/data/jupiterStrict"
+import TruncateAddress from "../utils/TruncateAddress";
 
 interface AssetInputProps {
   name: string;
@@ -181,7 +177,9 @@ export const AssetInput: React.FC<AssetInputProps> = ({
                               value={asset.symbol}
                               onSelect={() => handleSelect(asset.symbol)}
                             >
-                              <span>{asset.symbol}</span>
+                              <span className="font-medium">{asset.symbol}</span>
+                              <span className="ml-1.5 truncate text-muted-foreground text-xs">{asset.name}</span>
+                              <CommandShortcut><TruncateAddress address={asset.address}/></CommandShortcut>
                             </CommandItem>
                           ))}
                         </CommandGroup>
