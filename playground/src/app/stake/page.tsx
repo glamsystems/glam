@@ -194,6 +194,7 @@ export default function Stake() {
                   balance={100}
                   selectedAsset={amountInAsset}
                   onSelectAsset={setAmountInAsset}
+                  disableAssetChange={true}
                 />
               </div>
 
