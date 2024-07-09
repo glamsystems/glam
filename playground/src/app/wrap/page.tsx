@@ -92,6 +92,8 @@ export default function Wrap() {
               selectedAsset={amountAsset}
               onSelectAsset={setAmountAsset}
               disableAssetChange={true}
+              disableAmountInput={direction === "unwrap"}
+              useMaxAmount={direction === "unwrap"}
             />
             <FormField
               control={form.control}
