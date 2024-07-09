@@ -1,7 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import { BN, Wallet } from "@coral-xyz/anchor";
 import {
-  PublicKey,
   Transaction,
   sendAndConfirmTransaction,
   Keypair,
@@ -21,7 +20,7 @@ import {
 } from "@solana/spl-token";
 
 import { fundTestExample, createFundForTest, str2seed } from "./setup";
-import { GlamClient } from "../src";
+import { GlamClient, WSOL } from "../src";
 
 describe("glam_investor", () => {
   const glamClient = new GlamClient();
@@ -49,8 +48,7 @@ describe("glam_investor", () => {
   const eth = tokenKeypairs[1]; // 8 decimals
   const btc = tokenKeypairs[2]; // 8 decimals, token2022
   const BTC_TOKEN_PROGRAM_ID = TOKEN_2022_PROGRAM_ID;
-  const wsol = new PublicKey("So11111111111111111111111111111111111111112");
-  const ethOrWsol = useWsolInsteadOfEth ? wsol : eth.publicKey;
+  const ethOrWsol = useWsolInsteadOfEth ? WSOL : eth.publicKey;
 
   // console.log("USDC", usdc.publicKey);
   // console.log("ETH", eth.publicKey);

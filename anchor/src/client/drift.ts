@@ -1,12 +1,7 @@
-import * as anchor from "@coral-xyz/anchor";
 import { BN } from "@coral-xyz/anchor";
 import { PublicKey, Transaction, TransactionSignature } from "@solana/web3.js";
 
 import { BaseClient } from "./base";
-
-const driftProgram = new PublicKey(
-  "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
-);
 
 export class DriftClient {
   public constructor(readonly base: BaseClient) {}

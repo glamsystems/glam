@@ -1,0 +1,39 @@
+import { PublicKey } from "@solana/web3.js";
+
+/**
+ * Token mints
+ */
+export const WSOL = new PublicKey(
+  "So11111111111111111111111111111111111111112"
+);
+export const MSOL = new PublicKey(
+  "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So"
+);
+export const USDC = new PublicKey(
+  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+);
+export const USDC_DEVNET = new PublicKey(
+  "8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2"
+);
+export const WBTC = new PublicKey(
+  "3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh"
+);
+export const WBTC_DEVNET = new PublicKey(
+  "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv"
+);
+
+/**
+ * Program IDs
+ */
+export const MARINADE_PROGRAM_ID = new PublicKey(
+  "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
+);
+export const DRIFT_PROGRAM_ID = new PublicKey(
+  "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+);
+export const JUPITER_PROGRAM_ID = new PublicKey(
+  "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"
+);
+export const SANCTUM_STAKE_POOL_PROGRAM_ID = new PublicKey(
+  "SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY"
+);

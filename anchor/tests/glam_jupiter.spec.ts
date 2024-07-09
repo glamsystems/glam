@@ -4,22 +4,12 @@ import {
   swapInstructionsForTest,
 } from "./setup";
 import { GlamClient } from "../src";
-import {
-  PublicKey,
-  Transaction,
-  sendAndConfirmTransaction,
-} from "@solana/web3.js";
-import {
-  getAccount,
-  createAssociatedTokenAccountInstruction,
-} from "@solana/spl-token";
+import { PublicKey } from "@solana/web3.js";
+import { getAccount } from "@solana/spl-token";
 import { BN } from "@coral-xyz/anchor";
+import { MSOL, WSOL, USDC } from "../src";
 
 describe("glam_jupiter", () => {
-  const wsol = new PublicKey("So11111111111111111111111111111111111111112");
-  const msol = new PublicKey("mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So");
-  const usdc = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
-
   const glamClient = new GlamClient();
   let fundPDA;
 
@@ -42,8 +32,8 @@ describe("glam_jupiter", () => {
     const amount = 50_000_000;
     try {
       const txId = await glamClient.jupiter.swap(fundPDA, {
-        inputMint: usdc.toBase58(),
-        outputMint: msol.toBase58(),
+        inputMint: USDC.toBase58(),
+        outputMint: MSOL.toBase58(),
         amount,
         swapMode: "ExactIn",
         onlyDirectRoutes: true,
@@ -66,8 +56,8 @@ describe("glam_jupiter", () => {
     const treasury = glamClient.getTreasuryPDA(fundPDA);
 
     const manager = glamClient.getManager();
-    const inputSignerAta = glamClient.getManagerAta(wsol);
-    const outputSignerAta = glamClient.getManagerAta(msol);
+    const inputSignerAta = glamClient.getManagerAta(WSOL);
+    const outputSignerAta = glamClient.getManagerAta(MSOL);
 
     const quoteResponse = quoteResponseForTest;
     const swapInstructions = swapInstructionsForTest(
@@ -81,10 +71,10 @@ describe("glam_jupiter", () => {
       await glamClient.provider.connection.getBalance(treasury);
     expect(beforeTreasuryBalance).toEqual(1_000_000_000);
     const beforeNoAccounts = [
-      glamClient.getManagerAta(wsol),
-      glamClient.getManagerAta(msol),
-      glamClient.getTreasuryAta(fundPDA, wsol),
-      glamClient.getTreasuryAta(fundPDA, msol),
+      glamClient.getManagerAta(WSOL),
+      glamClient.getManagerAta(MSOL),
+      glamClient.getTreasuryAta(fundPDA, WSOL),
+      glamClient.getTreasuryAta(fundPDA, MSOL),
     ];
     beforeNoAccounts.forEach(async (account) => {
       try {
@@ -112,9 +102,9 @@ describe("glam_jupiter", () => {
 
     // Post-checks: the following accounts should exist and have 0 balance
     const afterAccounts = [
-      glamClient.getManagerAta(wsol),
-      glamClient.getManagerAta(msol),
-      glamClient.getTreasuryAta(fundPDA, wsol),
+      glamClient.getManagerAta(WSOL),
+      glamClient.getManagerAta(MSOL),
+      glamClient.getTreasuryAta(fundPDA, WSOL),
     ];
     afterAccounts.forEach(async (account) => {
       try {
@@ -137,15 +127,15 @@ describe("glam_jupiter", () => {
     // treasury: more mSOL
     const treasuryMsol = await getAccount(
       glamClient.provider.connection,
-      glamClient.getTreasuryAta(fundPDA, msol)
+      glamClient.getTreasuryAta(fundPDA, MSOL)
     );
     expect(treasuryMsol.amount.toString()).toEqual("41795954");
   });
 
   it("Swap back end to end", async () => {
     const manager = glamClient.getManager();
-    const inputSignerAta = glamClient.getManagerAta(msol);
-    const outputSignerAta = glamClient.getManagerAta(wsol);
+    const inputSignerAta = glamClient.getManagerAta(MSOL);
+    const outputSignerAta = glamClient.getManagerAta(WSOL);
 
     const swapInstructions = {
       tokenLedgerInstruction: null,
@@ -324,8 +314,8 @@ describe("glam_jupiter", () => {
       const txId = await glamClient.jupiter.swap(
         fundPDA,
         {
-          inputMint: msol.toBase58(),
-          outputMint: wsol.toBase58(),
+          inputMint: MSOL.toBase58(),
+          outputMint: WSOL.toBase58(),
           amount,
           swapMode: "ExactIn",
           onlyDirectRoutes: true,
@@ -343,7 +333,7 @@ describe("glam_jupiter", () => {
     // treasury: more mSOL
     const treasuryMsol = await getAccount(
       glamClient.provider.connection,
-      glamClient.getTreasuryAta(fundPDA, msol)
+      glamClient.getTreasuryAta(fundPDA, MSOL)
     );
     expect(treasuryMsol.amount.toString()).toEqual("795954");
   });
@@ -353,8 +343,8 @@ describe("glam_jupiter", () => {
     try {
       const txId0 = await glamClient.wsol.wrap(fundPDA, new BN(amount));
       const txId = await glamClient.jupiter.swap(fundPDA, {
-        inputMint: wsol.toBase58(),
-        outputMint: msol.toBase58(),
+        inputMint: WSOL.toBase58(),
+        outputMint: MSOL.toBase58(),
         amount,
         autoSlippage: true,
         autoSlippageCollisionUsdValue: 1000,
@@ -376,8 +366,8 @@ describe("glam_jupiter", () => {
     const amount = 50_000_000;
 
     const quoteParams: any = {
-      inputMint: wsol.toBase58(),
-      outputMint: msol.toBase58(),
+      inputMint: WSOL.toBase58(),
+      outputMint: MSOL.toBase58(),
       amount,
       autoSlippage: true,
       autoSlippageCollisionUsdValue: 1000,

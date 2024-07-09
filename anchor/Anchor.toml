@@ -274,6 +274,6 @@ filename = "./fixtures/accounts/H1VS48K94cgK7sAHbQiCCmL1qqV5ry6vTyZ9r12VSqsV.jso
 # Others
 #
 
-[[test.validator.account]] # USDC
+[[test.validator.account]] # USDC mainnet
 address = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 filename = "./fixtures/accounts/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v.json"

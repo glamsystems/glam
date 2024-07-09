@@ -1,6 +1,5 @@
 "use client";
 
-import { Connection } from "@solana/web3.js";
 import { AnchorProvider } from "@coral-xyz/anchor";
 
 import { createContext, useContext } from "react";

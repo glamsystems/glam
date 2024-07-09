@@ -14,10 +14,7 @@ import {
 } from "@solana/spl-token";
 
 import { BaseClient, ApiTxOptions } from "./base";
-
-const jupiterProgram = new PublicKey(
-  "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"
-);
+import { JUPITER_PROGRAM_ID } from "../constants";
 
 type QuoteParams = {
   inputMint: string;
@@ -164,7 +161,7 @@ export class JupiterClient {
         inputMint,
         outputMint,
         manager,
-        jupiterProgram,
+        jupiterProgram: JUPITER_PROGRAM_ID,
         token2022Program: TOKEN_2022_PROGRAM_ID,
       })
       .remainingAccounts(swapIx.keys)

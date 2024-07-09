@@ -2,9 +2,6 @@ import * as anchor from "@coral-xyz/anchor";
 
 import { createFundForTest, sleep } from "./setup";
 import { GlamClient } from "../src";
-import { PublicKey } from "@solana/web3.js";
-
-const msol = new PublicKey("mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So");
 
 describe("glam_marinade", () => {
   const glamClient = new GlamClient();
