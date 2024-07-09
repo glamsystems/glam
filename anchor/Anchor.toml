@@ -108,7 +108,7 @@ address = "CWb949XA3vrdiEp2BFtjr9MbUonHke8CVdTb8Cr7Hctd"
 #
 [[test.genesis]]
 address = "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
-program = "fixtures/drift.so"
+program = "fixtures/programs/drift.so"
 
 # Drift state account
 [[test.validator.clone]]
@@ -135,140 +135,140 @@ address = "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv"
 #
 [[test.genesis]]
 address = "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
-program = "./fixtures/marinade.so"
+program = "./fixtures/programs/marinade.so"
 
 [[test.validator.account]] # marinade state account
 address = "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC"
-filename = "./fixtures/8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC.json"
+filename = "./fixtures/accounts/8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC.json"
 
 [[test.validator.account]] # mSOL token mint + authority (PDA)
 address = "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So"
-filename = "./fixtures/mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So.json"
+filename = "./fixtures/accounts/mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So.json"
 
 [[test.validator.account]] # Reserve SOL account (PDA)
 address = "Du3Ysj1wKbxPKkuPPnvzQLQh8oMSVifs3jGZjJWXFmHN"
-filename = "./fixtures/Du3Ysj1wKbxPKkuPPnvzQLQh8oMSVifs3jGZjJWXFmHN.json"
+filename = "./fixtures/accounts/Du3Ysj1wKbxPKkuPPnvzQLQh8oMSVifs3jGZjJWXFmHN.json"
 
 [[test.validator.account]] # Treasury mSOL account
 address = "B1aLzaNMeFVAyQ6f3XbbUyKcH2YPHu2fqiEagmiF23VR"
-filename = "./fixtures/B1aLzaNMeFVAyQ6f3XbbUyKcH2YPHu2fqiEagmiF23VR.json"
+filename = "./fixtures/accounts/B1aLzaNMeFVAyQ6f3XbbUyKcH2YPHu2fqiEagmiF23VR.json"
 
 [[test.validator.account]] # mSOL-SOL-LP mint
 address = "LPmSozJJ8Jh69ut2WP3XmVohTjL4ipR18yiCzxrUmVj"
-filename = "./fixtures/LPmSozJJ8Jh69ut2WP3XmVohTjL4ipR18yiCzxrUmVj.json"
+filename = "./fixtures/accounts/LPmSozJJ8Jh69ut2WP3XmVohTjL4ipR18yiCzxrUmVj.json"
 
 [[test.validator.account]] # mSOL leg account
 address = "7GgPYjS5Dza89wV6FpZ23kUJRG5vbQ1GM25ezspYFSoE"
-filename = "./fixtures/7GgPYjS5Dza89wV6FpZ23kUJRG5vbQ1GM25ezspYFSoE.json"
+filename = "./fixtures/accounts/7GgPYjS5Dza89wV6FpZ23kUJRG5vbQ1GM25ezspYFSoE.json"
 
 [[test.validator.account]] # mSOL leg authority
 address = "EyaSjUtSgo9aRD1f8LWXwdvkpDTmXAW54yoSHZRF14WL"
-filename = "./fixtures/EyaSjUtSgo9aRD1f8LWXwdvkpDTmXAW54yoSHZRF14WL.json"
+filename = "./fixtures/accounts/EyaSjUtSgo9aRD1f8LWXwdvkpDTmXAW54yoSHZRF14WL.json"
 
 [[test.validator.account]] # SOL leg account
 address = "UefNb6z6yvArqe4cJHTXCqStRsKmWhGxnZzuHbikP5Q"
-filename = "./fixtures/UefNb6z6yvArqe4cJHTXCqStRsKmWhGxnZzuHbikP5Q.json"
+filename = "./fixtures/accounts/UefNb6z6yvArqe4cJHTXCqStRsKmWhGxnZzuHbikP5Q.json"
 
 #
 # Jupiter
 #
 [[test.genesis]]
 address = "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"
-program = "./fixtures/jupiter.so"
+program = "./fixtures/programs/jupiter.so"
 
 [[test.genesis]] # Mercurial - for e2e swap test
 address = "MERLuDFBMmsHnsBPZw2sDQZHvXFMwp8EdjudcU2HKky"
-program = "./fixtures/mercurial.so"
+program = "./fixtures/programs/mercurial.so"
 
 [[test.validator.account]] # Mercurial AMM - for e2e swap test
 address = "MAR1zHjHaQcniE2gXsDptkyKUnNfMEsLBVcfP7vLyv7"
-filename = "./fixtures/MAR1zHjHaQcniE2gXsDptkyKUnNfMEsLBVcfP7vLyv7.json"
+filename = "./fixtures/accounts/MAR1zHjHaQcniE2gXsDptkyKUnNfMEsLBVcfP7vLyv7.json"
 
 [[test.validator.account]] # Address Lookup - for e2e swap test
 address = "6TSS8bTxDjGitZgtTc7gdVWkzKdpGLb9QDi7kXAQQXXp"
-filename = "./fixtures/6TSS8bTxDjGitZgtTc7gdVWkzKdpGLb9QDi7kXAQQXXp.json"
+filename = "./fixtures/accounts/6TSS8bTxDjGitZgtTc7gdVWkzKdpGLb9QDi7kXAQQXXp.json"
 
 [[test.validator.account]] # for e2e swap test
 address = "EWy2hPdVT4uGrYokx65nAyn2GFBv7bUYA2pFPY96pw7Y"
-filename = "./fixtures/EWy2hPdVT4uGrYokx65nAyn2GFBv7bUYA2pFPY96pw7Y.json"
+filename = "./fixtures/accounts/EWy2hPdVT4uGrYokx65nAyn2GFBv7bUYA2pFPY96pw7Y.json"
 
 [[test.validator.account]] # for e2e swap test
 address = "GM48qFn8rnqhyNMrBHyPJgUVwXQ1JvMbcu3b9zkThW9L"
-filename = "./fixtures/GM48qFn8rnqhyNMrBHyPJgUVwXQ1JvMbcu3b9zkThW9L.json"
+filename = "./fixtures/accounts/GM48qFn8rnqhyNMrBHyPJgUVwXQ1JvMbcu3b9zkThW9L.json"
 
 [[test.validator.account]] # for e2e swap test
 address = "CapuXNQoDviLvU1PxFiizLgPNQCxrsag1uMeyk6zLVps"
-filename = "./fixtures/CapuXNQoDviLvU1PxFiizLgPNQCxrsag1uMeyk6zLVps.json"
+filename = "./fixtures/accounts/CapuXNQoDviLvU1PxFiizLgPNQCxrsag1uMeyk6zLVps.json"
 
 [[test.validator.account]] # for e2e swap test
 address = "91bUbswo6Di8235jAPwim1At4cPZLbG2pkpneyqKg4NQ"
-filename = "./fixtures/91bUbswo6Di8235jAPwim1At4cPZLbG2pkpneyqKg4NQ.json"
+filename = "./fixtures/accounts/91bUbswo6Di8235jAPwim1At4cPZLbG2pkpneyqKg4NQ.json"
 
 [[test.validator.account]] # for e2e swap test
 address = "BWdb6kE1yLzSDocaoJ9VWCEHG6fEnfGCUxguJ3VgEjtx"
-filename = "./fixtures/BWdb6kE1yLzSDocaoJ9VWCEHG6fEnfGCUxguJ3VgEjtx.json"
+filename = "./fixtures/accounts/BWdb6kE1yLzSDocaoJ9VWCEHG6fEnfGCUxguJ3VgEjtx.json"
 
 #
 # Stake pool - Spl
 #
 [[test.genesis]]
 address = "SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy"
-program = "./fixtures/spl_stakepool.so"
+program = "./fixtures/programs/spl_stakepool.so"
 
 [[test.validator.account]] # jito stake pool
 address = "Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb"
-filename = "./fixtures/Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb.json"
+filename = "./fixtures/accounts/Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb.json"
 
 [[test.validator.account]] # reserve stake account
 address = "BgKUXdS29YcHCFrPm5M8oLHiTzZaMDjsebggjoaQ6KFL"
-filename = "./fixtures/BgKUXdS29YcHCFrPm5M8oLHiTzZaMDjsebggjoaQ6KFL.json"
+filename = "./fixtures/accounts/BgKUXdS29YcHCFrPm5M8oLHiTzZaMDjsebggjoaQ6KFL.json"
 
 [[test.validator.account]] # fee account
 address = "feeeFLLsam6xZJFc6UQFrHqkvVt4jfmVvi2BRLkUZ4i"
-filename = "./fixtures/feeeFLLsam6xZJFc6UQFrHqkvVt4jfmVvi2BRLkUZ4i.json"
+filename = "./fixtures/accounts/feeeFLLsam6xZJFc6UQFrHqkvVt4jfmVvi2BRLkUZ4i.json"
 
 [[test.validator.account]] # pool token mint
 address = "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn"
-filename = "./fixtures/J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn.json"
+filename = "./fixtures/accounts/J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn.json"
 
 [[test.validator.account]] # validator list
 address = "3R3nGZpQs2aZo5FDQvd2MUQ6R7KhAPainds6uT6uE2mn"
-filename = "./fixtures/3R3nGZpQs2aZo5FDQvd2MUQ6R7KhAPainds6uT6uE2mn.json"
+filename = "./fixtures/accounts/3R3nGZpQs2aZo5FDQvd2MUQ6R7KhAPainds6uT6uE2mn.json"
 
 [[test.validator.account]] # validator stake account
 address = "HUQEx8TDgEnhtuq6iXj9Rg3yVyX4tF85kS1k7jTnAaqR"
-filename = "./fixtures/HUQEx8TDgEnhtuq6iXj9Rg3yVyX4tF85kS1k7jTnAaqR.json"
+filename = "./fixtures/accounts/HUQEx8TDgEnhtuq6iXj9Rg3yVyX4tF85kS1k7jTnAaqR.json"
 
 #
 # Stake pool - SanctumSpl
 #
 [[test.genesis]]
 address = "SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY"
-program = "./fixtures/sanctum_stakepool.so"
+program = "./fixtures/programs/sanctum_stakepool.so"
 
 [[test.validator.account]] # bonk stake pool
 address = "ArAQfbzsdotoKB5jJcZa3ajQrrPcWr2YQoDAEAiFxJAC"
-filename = "./fixtures/ArAQfbzsdotoKB5jJcZa3ajQrrPcWr2YQoDAEAiFxJAC.json"
+filename = "./fixtures/accounts/ArAQfbzsdotoKB5jJcZa3ajQrrPcWr2YQoDAEAiFxJAC.json"
 
 [[test.validator.account]] # reserve stake account
 address = "5htyN73FSd1dvv8LEHrmy4EiDkXtrGn5EXv5ZizqVF3X"
-filename = "./fixtures/5htyN73FSd1dvv8LEHrmy4EiDkXtrGn5EXv5ZizqVF3X.json"
+filename = "./fixtures/accounts/5htyN73FSd1dvv8LEHrmy4EiDkXtrGn5EXv5ZizqVF3X.json"
 
 [[test.validator.account]] # fee account
 address = "HY5CeVNq1HhdgBBcu3iUmSMdthP9gmZtoLdfVU2QpoLJ"
-filename = "./fixtures/HY5CeVNq1HhdgBBcu3iUmSMdthP9gmZtoLdfVU2QpoLJ.json"
+filename = "./fixtures/accounts/HY5CeVNq1HhdgBBcu3iUmSMdthP9gmZtoLdfVU2QpoLJ.json"
 
 [[test.validator.account]] # pool token mint
 address = "BonK1YhkXEGLZzwtcvRTip3gAL9nCeQD7ppZBLXhtTs"
-filename = "./fixtures/BonK1YhkXEGLZzwtcvRTip3gAL9nCeQD7ppZBLXhtTs.json"
+filename = "./fixtures/accounts/BonK1YhkXEGLZzwtcvRTip3gAL9nCeQD7ppZBLXhtTs.json"
 
 [[test.validator.account]] # validator list
 address = "Ea2ATXQgQrUXGdMPXUbdNw8SmV3S6RSzsiff8AcBLP2G"
-filename = "./fixtures/Ea2ATXQgQrUXGdMPXUbdNw8SmV3S6RSzsiff8AcBLP2G.json"
+filename = "./fixtures/accounts/Ea2ATXQgQrUXGdMPXUbdNw8SmV3S6RSzsiff8AcBLP2G.json"
 
 [[test.validator.account]] # validator stake account
 address = "H1VS48K94cgK7sAHbQiCCmL1qqV5ry6vTyZ9r12VSqsV"
-filename = "./fixtures/H1VS48K94cgK7sAHbQiCCmL1qqV5ry6vTyZ9r12VSqsV.json"
+filename = "./fixtures/accounts/H1VS48K94cgK7sAHbQiCCmL1qqV5ry6vTyZ9r12VSqsV.json"
 
 #
 # Others
@@ -276,4 +276,4 @@ filename = "./fixtures/H1VS48K94cgK7sAHbQiCCmL1qqV5ry6vTyZ9r12VSqsV.json"
 
 [[test.validator.account]] # USDC
 address = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
-filename = "./fixtures/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v.json"
+filename = "./fixtures/accounts/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v.json"
