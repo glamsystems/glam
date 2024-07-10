@@ -8,33 +8,44 @@ import { Holding } from "../data/holdingSchema";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
 import { locations } from "../data/data";
+import TruncateAddress from "../../../utils/TruncateAddress";
 
 export const columns: ColumnDef<Holding>[] = [
   {
-    accessorKey: "asset",
+    accessorKey: "name",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Asset" />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("asset")}</div>,
+    cell: ({ row }) => <div className="w-[100px] truncate">{row.getValue("name")}</div>,
     enableSorting: false,
     enableHiding: false,
   },
   {
-    accessorKey: "location",
+    accessorKey: "symbol",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Location" />
+      <DataTableColumnHeader column={column} title="Symbol" />
     ),
-    cell: ({ row }) => {
-      const location = locations.find(
-        (location) => location.value === row.original.location
-      );
-
-      return (
-        <div className="flex space-x-2">
-          {location && <Badge variant="outline">{location.label}</Badge>}
-        </div>
-      );
-    },
+    cell: ({ row }) => <div className="w-[80px]">{row.getValue("symbol")}</div>,
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "mint",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Mint" />
+    ),
+    cell: ({ row }) => <div className="w-[80px]"><TruncateAddress address={row.getValue("mint")}/></div>,
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "ata",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="ATA" />
+    ),
+    cell: ({ row }) => <div className="w-[80px]"><TruncateAddress address={row.getValue("ata")}/></div>,
+    enableSorting: false,
+    enableHiding: false,
   },
   {
     accessorKey: "balance",

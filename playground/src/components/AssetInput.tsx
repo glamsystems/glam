@@ -177,7 +177,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
                               value={asset.symbol}
                               onSelect={() => handleSelect(asset.symbol)}
                             >
-                              <span className="font-medium">{asset.symbol}</span>
+                              <span className="font-medium text-nowrap">{asset.symbol}</span>
                               <span className="ml-1.5 truncate text-muted-foreground text-xs">{asset.name}</span>
                               <CommandShortcut><TruncateAddress address={asset.address}/></CommandShortcut>
                             </CommandItem>
