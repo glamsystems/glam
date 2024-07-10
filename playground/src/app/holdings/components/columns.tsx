@@ -2,19 +2,16 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 
-import { Badge } from "@/components/ui/badge";
-
 import { Holding } from "../data/holdingSchema";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
-import { locations } from "../data/data";
 import TruncateAddress from "../../../utils/TruncateAddress";
 
 export const columns: ColumnDef<Holding>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Asset" />
+      <DataTableColumnHeader column={column} title="Name" />
     ),
     cell: ({ row }) => <div className="w-[100px] truncate">{row.getValue("name")}</div>,
     enableSorting: false,

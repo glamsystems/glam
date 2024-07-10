@@ -2,19 +2,7 @@
 
 import React from "react";
 import {
-  BoxModelIcon,
-  Component1Icon,
-  DashboardIcon,
-  DownloadIcon,
-  ExitIcon,
-  GlobeIcon,
-  LayersIcon,
-  ListBulletIcon,
-  LoopIcon,
-  MixerHorizontalIcon,
-  MixIcon,
-  PlusIcon,
-  TransformIcon,
+  BoxModelIcon, CardStackIcon, Component1Icon, Crosshair2Icon, DashboardIcon, DownloadIcon, ExitIcon, GlobeIcon, LayersIcon, ListBulletIcon, LoopIcon, MixerHorizontalIcon, MixIcon, PlusIcon, TransformIcon,
 } from "@radix-ui/react-icons";
 import {
   Command,
@@ -76,8 +64,8 @@ export default function Sidebar() {
         /*{ route: "/dashboard", text: "Dashboard", shortcut: "⌘D", Icon: DashboardIcon },
         { route: "/policies", text: "Policies", shortcut: "⌘P", Icon: TransformIcon },
         { route: "/roles", text: "Roles", shortcut: "⌘R", Icon: Component1Icon },
-        { route: "/settings", text: "Settings", shortcut: "⌘N", Icon: MixerHorizontalIcon },
-        { route: "/create", text: "Create Product", shortcut: "⌘N", Icon: PlusIcon }*/
+        { route: "/settings", text: "Settings", shortcut: "⌘N", Icon: MixerHorizontalIcon },*/
+        { route: "/create", text: "Create", shortcut: "⌘N", Icon: PlusIcon }
       ],
     },
     {
@@ -116,7 +104,7 @@ export default function Sidebar() {
           Icon: GlobeIcon,
         },
       ],
-    },
+    }
   ];
 
   return (
