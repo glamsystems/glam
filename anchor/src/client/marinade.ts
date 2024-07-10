@@ -8,10 +8,7 @@ import {
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 
 import { BaseClient, ApiTxOptions } from "./base";
-
-const marinadeProgram = new PublicKey(
-  "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
-);
+import { MARINADE_PROGRAM_ID, MSOL } from "../constants";
 
 export class MarinadeClient {
   public constructor(readonly base: BaseClient) {}
@@ -73,7 +70,7 @@ export class MarinadeClient {
   async getExistingTickets(fundPDA: PublicKey): Promise<PublicKey[]> {
     const accounts =
       await this.base.provider.connection.getParsedProgramAccounts(
-        marinadeProgram,
+        MARINADE_PROGRAM_ID,
         {
           filters: [
             {
@@ -99,9 +96,7 @@ export class MarinadeClient {
       marinadeStateAddress: new PublicKey(
         "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC"
       ),
-      msolMintAddress: new PublicKey(
-        "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So"
-      ),
+      msolMintAddress: MSOL,
       treasuryMsolAccount: new PublicKey(
         "B1aLzaNMeFVAyQ6f3XbbUyKcH2YPHu2fqiEagmiF23VR"
       ),
@@ -151,7 +146,7 @@ export class MarinadeClient {
         liqPoolMsolLegAuthority: marinadeState.msolLegAuthority,
         liqPoolSolLegPda: marinadeState.solLeg,
         mintTo: treasuryMsolAta,
-        marinadeProgram,
+        marinadeProgram: MARINADE_PROGRAM_ID,
       })
       .transaction();
 
@@ -189,7 +184,7 @@ export class MarinadeClient {
         burnMsolFrom: treasuryMsolAta,
         marinadeState: marinadeState.marinadeStateAddress,
         reservePda: marinadeState.reserveAddress,
-        marinadeProgram,
+        marinadeProgram: MARINADE_PROGRAM_ID,
       })
       .transaction();
 
@@ -216,7 +211,7 @@ export class MarinadeClient {
         manager,
         marinadeState: marinadeState.marinadeStateAddress,
         reservePda: marinadeState.reserveAddress,
-        marinadeProgram,
+        marinadeProgram: MARINADE_PROGRAM_ID,
       })
       .remainingAccounts(
         tickets.map((t) => ({ pubkey: t, isSigner: false, isWritable: true }))
@@ -256,7 +251,7 @@ export class MarinadeClient {
         getMsolFrom: treasuryMsolAta,
         getMsolFromAuthority: treasury,
         treasuryMsolAccount: marinadeState.treasuryMsolAccount,
-        marinadeProgram,
+        marinadeProgram: MARINADE_PROGRAM_ID,
       })
       .transaction();
 

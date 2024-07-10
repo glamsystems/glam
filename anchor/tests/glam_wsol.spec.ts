@@ -1,11 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
-import {
-  Transaction,
-  SystemProgram,
-  sendAndConfirmTransaction,
-} from "@solana/web3.js";
+import { Transaction, SystemProgram } from "@solana/web3.js";
 
-import { createFundForTest, sleep } from "./setup";
+import { createFundForTest } from "./setup";
 import { GlamClient } from "../src";
 
 describe("glam_wsol", () => {

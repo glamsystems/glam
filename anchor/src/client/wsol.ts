@@ -3,12 +3,10 @@ import {
   PublicKey,
   VersionedTransaction,
   TransactionSignature,
-  Keypair,
 } from "@solana/web3.js";
 
 import { BaseClient, ApiTxOptions } from "./base";
-
-const wsolMint = new PublicKey("So11111111111111111111111111111111111111112");
+import { WSOL } from "../constants";
 
 export class WSolClient {
   public constructor(readonly base: BaseClient) {}
@@ -41,7 +39,7 @@ export class WSolClient {
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
-    const treasuryWsolAta = this.base.getTreasuryAta(fund, wsolMint);
+    const treasuryWsolAta = this.base.getTreasuryAta(fund, WSOL);
 
     const tx = await this.base.program.methods
       .wsolWrap(amount)
@@ -49,7 +47,7 @@ export class WSolClient {
         fund,
         treasury,
         treasuryWsolAta,
-        wsolMint,
+        wsolMint: WSOL,
         signer: manager,
       })
       .transaction();
@@ -66,7 +64,7 @@ export class WSolClient {
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
-    const treasuryWsolAta = this.base.getTreasuryAta(fund, wsolMint);
+    const treasuryWsolAta = this.base.getTreasuryAta(fund, WSOL);
 
     const tx = await this.base.program.methods
       .wsolUnwrap()
@@ -74,7 +72,7 @@ export class WSolClient {
         fund,
         treasury,
         treasuryWsolAta,
-        wsolMint,
+        wsolMint: WSOL,
         signer: manager,
       })
       .transaction();

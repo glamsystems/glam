@@ -1,15 +1,9 @@
-import * as anchor from "@coral-xyz/anchor";
-import { PublicKey } from "@solana/web3.js";
-import { GlamClient } from "../src";
+import { GlamClient, USDC, WBTC, WSOL } from "../src";
 
 describe("glam_openfunds", () => {
   const client = new GlamClient();
 
   const manager = client.getManager();
-
-  const usdc = new PublicKey("8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2");
-  const wsol = new PublicKey("So11111111111111111111111111111111111111112");
-  const btc = new PublicKey("3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv");
 
   // fund1: 1 share class + implicit fields
   const fund1 = {
@@ -18,7 +12,7 @@ describe("glam_openfunds", () => {
         // Glam Token
         name: "Glam Investment Fund BTC-SOL",
         symbol: "GBS",
-        asset: usdc,
+        asset: USDC,
         // Glam
         permanentDelegate: manager,
         lockUpTime: 40 * 24 * 60 * 60,
@@ -55,7 +49,7 @@ describe("glam_openfunds", () => {
     ],
     // Glam
     isEnabled: true,
-    assets: [usdc, btc, wsol],
+    assets: [USDC, WBTC, WSOL],
     assetsWeights: [0, 60, 40],
     // Openfunds (Fund)
     fundDomicileAlpha2: "XS",
@@ -87,7 +81,7 @@ describe("glam_openfunds", () => {
         // Glam Token
         name: "Glam Investment Fund BTC-SOL",
         symbol: "GBS",
-        asset: usdc,
+        asset: USDC,
         // Glam
         permanentDelegate: manager,
         lockUpTime: 40 * 24 * 60 * 60,
@@ -124,7 +118,7 @@ describe("glam_openfunds", () => {
     ],
     // Glam
     isEnabled: true,
-    assets: [usdc, btc, wsol],
+    assets: [USDC, WBTC, WSOL],
     assetsWeights: [0, 60, 40],
     // Openfunds (Fund)
     fundDomicileAlpha2: "XS",

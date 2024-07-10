@@ -1,7 +1,7 @@
 import { BN } from "@coral-xyz/anchor";
 
 import { createFundForTest } from "./setup";
-import { GlamClient } from "../src";
+import { GlamClient, SANCTUM_STAKE_POOL_PROGRAM_ID } from "../src";
 import {
   PublicKey,
   sendAndConfirmTransaction,
@@ -15,10 +15,6 @@ import {
   getStakePoolAccount,
   STAKE_POOL_PROGRAM_ID,
 } from "@solana/spl-stake-pool";
-
-const SANCTUM_STAKE_POOL_PROGRAM_ID = new PublicKey(
-  "SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY"
-);
 
 const JITO_STAKE_POOL = new PublicKey(
   "Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb"

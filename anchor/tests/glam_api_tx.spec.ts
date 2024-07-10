@@ -1,4 +1,3 @@
-import anchor from "@coral-xyz/anchor";
 import {
   PublicKey,
   VersionedTransaction,
@@ -12,6 +11,7 @@ import {
   sleep,
 } from "./setup";
 import { getAccount } from "@solana/spl-token";
+import { WSOL, MSOL } from "../src/";
 
 /**
  * This test suite demonstrates how to interact with the glam API.
@@ -27,8 +27,6 @@ import { getAccount } from "@solana/spl-token";
 
 // const API = "https://api.glam.systems";
 const API = "http://localhost:8080";
-const wsol = new PublicKey("So11111111111111111111111111111111111111112");
-const msol = new PublicKey("mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So");
 
 // default to mainnet demo fund addresses
 let manager = new PublicKey("gLJHKPrZLGBiBZ33hFgZh6YnsEhTVxuRT17UCqNp6ff");
@@ -62,14 +60,14 @@ describe("glam_api_tx", () => {
   // Run swap test first as we want to start from a clean state: the treasury should have no wSOL or mSOL ATAs
   it("Jupiter swap end to end", async () => {
     const manager = glamClient.getManager();
-    const inputSignerAta = glamClient.getManagerAta(wsol);
-    const outputSignerAta = glamClient.getManagerAta(msol);
+    const inputSignerAta = glamClient.getManagerAta(WSOL);
+    const outputSignerAta = glamClient.getManagerAta(MSOL);
 
     let treasuryMsolBefore;
     try {
       treasuryMsolBefore = await getAccount(
         glamClient.provider.connection,
-        glamClient.getTreasuryAta(fund, msol)
+        glamClient.getTreasuryAta(fund, MSOL)
       );
     } catch (e) {
       treasuryMsolBefore = { amount: BigInt(0) };
@@ -107,8 +105,8 @@ describe("glam_api_tx", () => {
 
     // Post-checks: the following accounts should exist and have 0 balance
     const afterAccounts = [
-      glamClient.getManagerAta(wsol),
-      glamClient.getManagerAta(msol),
+      glamClient.getManagerAta(WSOL),
+      glamClient.getManagerAta(MSOL),
     ];
     afterAccounts.forEach(async (account) => {
       try {
@@ -126,7 +124,7 @@ describe("glam_api_tx", () => {
     // treasury: more mSOL
     const treasuryMsolAfter = await getAccount(
       glamClient.provider.connection,
-      glamClient.getTreasuryAta(fund, msol)
+      glamClient.getTreasuryAta(fund, MSOL)
     );
     expect(
       (treasuryMsolAfter.amount - treasuryMsolBefore.amount).toString()
@@ -138,7 +136,7 @@ describe("glam_api_tx", () => {
     try {
       treasuryWsolBefore = await getAccount(
         glamClient.provider.connection,
-        glamClient.getTreasuryAta(fund, wsol)
+        glamClient.getTreasuryAta(fund, WSOL)
       );
     } catch (e) {
       treasuryWsolBefore = { amount: BigInt(0) };
@@ -164,7 +162,7 @@ describe("glam_api_tx", () => {
     // After wrap treasury should have 1 wSOL
     const treasuryWsolAfter = await getAccount(
       glamClient.provider.connection,
-      glamClient.getTreasuryAta(fund, wsol)
+      glamClient.getTreasuryAta(fund, WSOL)
     );
     expect(
       (treasuryWsolAfter.amount - treasuryWsolBefore.amount).toString()

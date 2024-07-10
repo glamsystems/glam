@@ -1,12 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
-import { GlamClient } from "../src";
-
-const usdc = new PublicKey("8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2"); // 6 decimals
-const eth = new PublicKey("So11111111111111111111111111111111111111112"); // 6 decimals
-const btc = new PublicKey("3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv"); // 9 decimals
-
-const wsol = new PublicKey("So11111111111111111111111111111111111111112"); // 9 decimals
-const msol = new PublicKey("mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So"); // 9 decimals
+import { GlamClient, WSOL, MSOL, USDC } from "../src";
 
 export const sleep = async (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -25,7 +18,7 @@ export const fundTestExample = {
       // Glam Token
       name: "Glam Fund SOL-mSOL",
       symbol: "GBS",
-      asset: usdc,
+      asset: USDC,
       allowlist: [] as PublicKey[],
       blocklist: [] as PublicKey[],
       // Glam
@@ -63,7 +56,7 @@ export const fundTestExample = {
   ],
   // Glam
   isEnabled: true,
-  assets: [wsol, msol],
+  assets: [WSOL, MSOL],
   assetsWeights: [50, 50],
   // Openfunds (Fund)
   fundDomicileAlpha2: "XS",
