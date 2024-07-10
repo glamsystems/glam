@@ -5,6 +5,7 @@ use phf::phf_map;
 use marinade::State as MarinadeState;
 use pyth_sdk_solana::state::SolanaPriceAccount;
 use pyth_sdk_solana::Price;
+use spl_stake_pool::state::StakePool;
 
 use crate::error::InvestorError;
 
@@ -36,7 +37,7 @@ impl<'a> AssetMeta<'a> {
 
     pub fn get_price(&self, pricing_account: &AccountInfo, timestamp: i64) -> Result<Price> {
         if self.staking_state != "" {
-            return self.get_stl_price(pricing_account, timestamp);
+            return self.get_lst_price(pricing_account, timestamp);
         }
         self.get_pyth_price(pricing_account, timestamp)
     }
@@ -61,24 +62,26 @@ impl<'a> AssetMeta<'a> {
         Ok(asset_price)
     }
 
-    pub fn get_stl_price(&self, pricing_account: &AccountInfo, _timestamp: i64) -> Result<Price> {
+    pub fn get_lst_price(&self, pricing_account: &AccountInfo, _timestamp: i64) -> Result<Price> {
         let one = 10u64.pow(self.decimals as u32);
 
-        // Marinade
-        if self.staking_state == "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC" {
-            // Deserialize account
+        let price_u64 = if self.staking_state == "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC" {
+            // Marinade
             let mut buf = &pricing_account.try_borrow_mut_data()?[..];
             let state = MarinadeState::try_deserialize(&mut buf)?;
-            // Use Marinade `msol_to_sol` fn for pricing
-            let p = state.msol_to_sol(one).unwrap();
-            // Return Price with correct number of decimals
-            let mut price = Price::default();
-            price.expo = -(self.decimals as i32);
-            price.price = p as i64;
-            return Ok(price);
-        }
+            state.msol_to_sol(one).unwrap()
+        } else {
+            // SPL, Sanctum
+            let mut buf = &pricing_account.try_borrow_mut_data()?[..];
+            let state = StakePool::try_from_slice(&mut buf)?;
+            state.calc_lamports_withdraw_amount(one).unwrap()
+        };
 
-        Err(InvestorError::InvalidAssetSubscribe.into())
+        let mut price = Price::default();
+        price.expo = -(self.decimals as i32);
+        price.price = price_u64 as i64;
+
+        return Ok(price);
     }
 }
 
