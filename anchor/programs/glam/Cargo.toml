@@ -15,7 +15,6 @@ no-log-ix-name = []
 cpi = ["no-entrypoint"]
 default = []
 mainnet = []
-devnet = []
 
 [dependencies]
 anchor-lang = { workspace = true }
