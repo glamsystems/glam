@@ -306,6 +306,14 @@ pub fn update_fund_handler<'c: 'info, 'info>(
     //   * if acl.permissions is empty, delete the fund acl
     // - If a fund acl with same pubkey doesn't exist, add it
     if fund_model.acls.len() > 0 {
+        // For legacy funds, add the acls field if it doesn't exist
+        if fund.params[0].len() == 2 {
+            fund.params[0].push(EngineField {
+                name: EngineFieldName::Acls,
+                value: EngineFieldValue::VecAcl { val: Vec::new() },
+            });
+        }
+
         let to_delete: Vec<Pubkey> = fund_model
             .acls
             .clone()
