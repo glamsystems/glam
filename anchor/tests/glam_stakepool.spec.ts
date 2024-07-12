@@ -87,10 +87,10 @@ describe("glam_stakepool", () => {
       );
       console.log("stakePoolWithdrawStake tx:", txSig);
 
+      // Now we should have 2 stake accounts: 1 from jito and 1 from bonk
       const stakeAccounts = await glamClient.stakePool.getStakeAccounts(
         glamClient.getTreasuryPDA(fundPDA)
       );
-      // Now we should have 2 stake accounts: 1 from jito and 1 from bonk
       expect(stakeAccounts.length).toEqual(2);
     } catch (e) {
       console.error(e);
@@ -117,6 +117,17 @@ describe("glam_stakepool", () => {
     const stakeAccounts = await glamClient.stakePool.getStakeAccounts(
       glamClient.getTreasuryPDA(fundPDA)
     );
+
+    let lamportsInStakeAccounts = 0;
+    for (const account of stakeAccounts) {
+      lamportsInStakeAccounts += (await connection.getAccountInfo(account))!
+        .lamports;
+    }
+
+    const treasuryLamportsBefore = (await connection.getAccountInfo(
+      glamClient.getTreasuryPDA(fundPDA)
+    ))!.lamports;
+
     try {
       const txSig = await glamClient.stakePool.withdrawFromStakeAccounts(
         fundPDA,
@@ -127,6 +138,13 @@ describe("glam_stakepool", () => {
       console.error(e);
       throw e;
     }
+
+    const treasuryLamportsAfter = (await connection.getAccountInfo(
+      glamClient.getTreasuryPDA(fundPDA)
+    ))!.lamports;
+    expect(treasuryLamportsAfter).toEqual(
+      treasuryLamportsBefore + lamportsInStakeAccounts
+    );
 
     const stakeAccountsAfter = await glamClient.stakePool.getStakeAccounts(
       glamClient.getTreasuryPDA(fundPDA)
