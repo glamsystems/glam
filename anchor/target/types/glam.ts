@@ -979,7 +979,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "nativeStakeProgram",
+          "name": "stakeProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -1070,7 +1070,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "nativeStakeProgram",
+          "name": "stakeProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -1114,7 +1114,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "nativeStakeProgram",
+          "name": "stakeProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -1150,7 +1150,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "nativeStakeProgram",
+          "name": "stakeProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -4503,7 +4503,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "nativeStakeProgram",
+          "name": "stakeProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -4594,7 +4594,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "nativeStakeProgram",
+          "name": "stakeProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -4638,7 +4638,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "nativeStakeProgram",
+          "name": "stakeProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -4674,7 +4674,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "nativeStakeProgram",
+          "name": "stakeProgram",
           "isMut": false,
           "isSigner": false
         }

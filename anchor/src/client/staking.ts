@@ -235,7 +235,7 @@ export class StakingClient {
         withdrawAuthority,
         feeAccount,
         clock: SYSVAR_CLOCK_PUBKEY,
-        nativeStakeProgram: StakeProgram.programId,
+        stakeProgram: StakeProgram.programId,
         tokenProgram,
       })
       .transaction();
@@ -259,7 +259,7 @@ export class StakingClient {
         fund,
         treasury,
         clock: SYSVAR_CLOCK_PUBKEY,
-        nativeStakeProgram: StakeProgram.programId,
+        stakeProgram: StakeProgram.programId,
       })
       .remainingAccounts(
         stakeAccounts.map((a) => ({
@@ -291,7 +291,7 @@ export class StakingClient {
         treasury,
         clock: SYSVAR_CLOCK_PUBKEY,
         stakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
-        nativeStakeProgram: StakeProgram.programId,
+        stakeProgram: StakeProgram.programId,
       })
       .remainingAccounts(
         stakeAccounts.map((a) => ({

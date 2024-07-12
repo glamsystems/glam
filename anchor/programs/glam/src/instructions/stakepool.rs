@@ -153,7 +153,7 @@ pub struct StakePoolWithdrawSol<'info> {
 
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
-    pub native_stake_program: Program<'info, Stake>,
+    pub stake_program: Program<'info, Stake>,
 }
 
 #[access_control(
@@ -198,7 +198,7 @@ pub fn stake_pool_withdraw_sol<'c: 'info, 'info>(
             ctx.accounts.pool_mint.to_account_info(),
             ctx.accounts.clock.to_account_info(),
             ctx.accounts.stake_history.to_account_info(),
-            ctx.accounts.native_stake_program.to_account_info(),
+            ctx.accounts.stake_program.to_account_info(),
             ctx.accounts.token_program.to_account_info(),
         ],
         signer_seeds,
@@ -257,7 +257,7 @@ pub struct StakePoolWithdrawStake<'info> {
 
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
-    pub native_stake_program: Program<'info, Stake>,
+    pub stake_program: Program<'info, Stake>,
 }
 
 #[access_control(
@@ -298,7 +298,7 @@ pub fn stake_pool_withdraw_stake<'c: 'info, 'info>(
         ),
         Rent::get()?.minimum_balance(200),
         std::mem::size_of::<StakeAccount>() as u64, // no +8
-        &ctx.accounts.native_stake_program.key(),
+        &ctx.accounts.stake_program.key(),
     )?;
 
     let seeds = &[
@@ -341,7 +341,7 @@ pub fn stake_pool_withdraw_stake<'c: 'info, 'info>(
             ctx.accounts.pool_mint.to_account_info(),
             ctx.accounts.clock.to_account_info(),
             ctx.accounts.token_program.to_account_info(),
-            ctx.accounts.native_stake_program.to_account_info(),
+            ctx.accounts.stake_program.to_account_info(),
         ],
         signer_seeds,
     )?;
@@ -361,7 +361,7 @@ pub struct DeactivateStakeAccounts<'info> {
     pub treasury: SystemAccount<'info>,
 
     pub clock: Sysvar<'info, Clock>,
-    pub native_stake_program: Program<'info, Stake>,
+    pub stake_program: Program<'info, Stake>,
 }
 
 #[access_control(
@@ -380,7 +380,7 @@ pub fn deactivate_stake_accounts<'info>(
 
     ctx.remaining_accounts.iter().for_each(|stake_account| {
         let cpi_ctx = CpiContext::new_with_signer(
-            ctx.accounts.native_stake_program.to_account_info(),
+            ctx.accounts.stake_program.to_account_info(),
             DeactivateStake {
                 stake: stake_account.clone(),
                 staker: ctx.accounts.treasury.to_account_info(),
@@ -406,7 +406,7 @@ pub struct WithdrawFromStakeAccounts<'info> {
 
     pub clock: Sysvar<'info, Clock>,
     pub stake_history: Sysvar<'info, StakeHistory>,
-    pub native_stake_program: Program<'info, Stake>,
+    pub stake_program: Program<'info, Stake>,
 }
 
 #[access_control(
@@ -426,7 +426,7 @@ pub fn withdraw_from_stake_accounts<'info>(
     ctx.remaining_accounts.iter().for_each(|stake_account| {
         let lamports = stake_account.get_lamports();
         let cpi_ctx = CpiContext::new_with_signer(
-            ctx.accounts.native_stake_program.to_account_info(),
+            ctx.accounts.stake_program.to_account_info(),
             Withdraw {
                 stake: stake_account.clone(),
                 withdrawer: ctx.accounts.treasury.to_account_info(),
