@@ -97,28 +97,40 @@ describe("glam_stakepool", () => {
       throw e;
     }
   });
-});
+  it("Deactivate stake accounts", async () => {
+    const stakeAccounts = await glamClient.stakePool.getStakeAccounts(
+      glamClient.getTreasuryPDA(fundPDA)
+    );
+    try {
+      const txSig = await glamClient.stakePool.deactivateStakeAccounts(
+        fundPDA,
+        stakeAccounts
+      );
+      console.log("deactivateStakeAccounts tx:", txSig);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  });
 
-// let txSig = await glamClient.program.methods
-//   .stakePoolWithdrawSol(new BN(1_000_000_000))
-//   .accounts({
-//     fund: fundPDA,
-//     treasury: glamClient.getTreasuryPDA(fundPDA),
-//     manager: glamClient.getManager(),
-//     poolMint: stakePoolData.poolMint,
-//     poolTokenAta: glamClient.getTreasuryAta(
-//       fundPDA,
-//       stakePoolData.poolMint
-//     ),
-//     feeAccount: stakePoolData.managerFeeAccount,
-//     stakePool: JITO_STAKE_POOL,
-//     reserveStake: stakePoolData.reserveStake,
-//     withdrawAuthority,
-//     sysvarClock: SYSVAR_CLOCK_PUBKEY,
-//     sysvarStakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
-//     nativeStakeProgram: StakeProgram.programId,
-//     tokenProgram: TOKEN_PROGRAM_ID,
-//     stakePoolProgram: STAKE_POOL_PROGRAM_ID,
-//   })
-//   .rpc();
-// console.log("stakePoolWithdrawSol tx:", txSig);
+  it("Withdraw from stake accounts", async () => {
+    const stakeAccounts = await glamClient.stakePool.getStakeAccounts(
+      glamClient.getTreasuryPDA(fundPDA)
+    );
+    try {
+      const txSig = await glamClient.stakePool.withdrawFromStakeAccounts(
+        fundPDA,
+        stakeAccounts
+      );
+      console.log("withdrawFromStakeAccounts tx:", txSig);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+
+    const stakeAccountsAfter = await glamClient.stakePool.getStakeAccounts(
+      glamClient.getTreasuryPDA(fundPDA)
+    );
+    expect(stakeAccountsAfter.length).toEqual(0);
+  });
+});

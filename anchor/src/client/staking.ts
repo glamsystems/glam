@@ -5,13 +5,11 @@ import {
   TransactionSignature,
   StakeProgram,
   SYSVAR_CLOCK_PUBKEY,
+  SYSVAR_STAKE_HISTORY_PUBKEY,
 } from "@solana/web3.js";
 
 import { BaseClient, ApiTxOptions } from "./base";
-import {
-  getStakePoolAccount,
-  STAKE_POOL_PROGRAM_ID,
-} from "@solana/spl-stake-pool";
+import { getStakePoolAccount } from "@solana/spl-stake-pool";
 
 interface StakePoolAccountData {
   programId: PublicKey;
@@ -35,7 +33,7 @@ export class StakingClient {
     stakePool: PublicKey,
     amount: BN
   ): Promise<TransactionSignature> {
-    const tx = await this.depositSolTx(fund, stakePool, amount, {});
+    const tx = await this.depositSolTx(fund, stakePool, amount);
     return await this.base.sendAndConfirm(tx);
   }
 
@@ -44,25 +42,25 @@ export class StakingClient {
     stakePool: PublicKey,
     amount: BN
   ): Promise<TransactionSignature> {
-    const tx = await this.withdrawStakeTx(fund, stakePool, amount, {});
+    const tx = await this.withdrawStakeTx(fund, stakePool, amount);
     return await this.base.sendAndConfirm(tx);
   }
 
-  // public async deactivateStakeAccounts(
-  //   fund: PublicKey,
-  //   stakeAccounts: PublicKey[]
-  // ): Promise<TransactionSignature> {
-  //   const tx = await this.delayedUnstakeClaimTx(fund, stakeAccounts, {});
-  //   return await this.base.sendAndConfirm(tx);
-  // }
+  public async deactivateStakeAccounts(
+    fund: PublicKey,
+    stakeAccounts: PublicKey[]
+  ): Promise<TransactionSignature> {
+    const tx = await this.deactivateStakeAccountsTx(fund, stakeAccounts);
+    return await this.base.sendAndConfirm(tx);
+  }
 
-  // public async withdrawFromStakeAccounts(
-  //   fund: PublicKey,
-  //   stakeAccounts: PublicKey[]
-  // ): Promise<TransactionSignature> {
-  //   const tx = await this.liquidUnstakeTx(fund, amount, {});
-  //   return await this.base.sendAndConfirm(tx);
-  // }
+  public async withdrawFromStakeAccounts(
+    fund: PublicKey,
+    stakeAccounts: PublicKey[]
+  ): Promise<TransactionSignature> {
+    const tx = await this.withdrawFromStakeAccountsTx(fund, stakeAccounts);
+    return await this.base.sendAndConfirm(tx);
+  }
 
   /*
    * Utils
@@ -151,7 +149,7 @@ export class StakingClient {
     fund: PublicKey,
     stakePool: PublicKey,
     amount: BN,
-    apiOptions: ApiTxOptions
+    apiOptions: ApiTxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
@@ -193,7 +191,7 @@ export class StakingClient {
     fund: PublicKey,
     stakePool: PublicKey,
     amount: BN,
-    apiOptions: ApiTxOptions
+    apiOptions: ApiTxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
@@ -236,7 +234,7 @@ export class StakingClient {
         validatorStakeAccount: validatorStakeAccounts[0],
         withdrawAuthority,
         feeAccount,
-        sysvarClock: SYSVAR_CLOCK_PUBKEY,
+        clock: SYSVAR_CLOCK_PUBKEY,
         nativeStakeProgram: StakeProgram.programId,
         tokenProgram,
       })
@@ -247,5 +245,65 @@ export class StakingClient {
     });
   }
 
-  public async withdrawSolTx() {}
+  public async deactivateStakeAccountsTx(
+    fund: PublicKey,
+    stakeAccounts: PublicKey[],
+    apiOptions: ApiTxOptions = {}
+  ): Promise<VersionedTransaction> {
+    const manager = apiOptions.signer || this.base.getManager();
+    const treasury = this.base.getTreasuryPDA(fund);
+    const tx = await this.base.program.methods
+      .deactivateStakeAccounts()
+      .accounts({
+        manager,
+        fund,
+        treasury,
+        clock: SYSVAR_CLOCK_PUBKEY,
+        nativeStakeProgram: StakeProgram.programId,
+      })
+      .remainingAccounts(
+        stakeAccounts.map((a) => ({
+          pubkey: a,
+          isSigner: false,
+          isWritable: true,
+        }))
+      )
+      .transaction();
+    return await this.base.intoVersionedTransaction({
+      tx,
+      ...apiOptions,
+    });
+  }
+
+  public async withdrawFromStakeAccountsTx(
+    fund: PublicKey,
+    stakeAccounts: PublicKey[],
+    apiOptions: ApiTxOptions = {}
+  ): Promise<VersionedTransaction> {
+    const manager = apiOptions.signer || this.base.getManager();
+    const treasury = this.base.getTreasuryPDA(fund);
+    console.log("withdraw from stakeAccounts:", stakeAccounts);
+    const tx = await this.base.program.methods
+      .withdrawFromStakeAccounts()
+      .accounts({
+        manager,
+        fund,
+        treasury,
+        clock: SYSVAR_CLOCK_PUBKEY,
+        stakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
+        nativeStakeProgram: StakeProgram.programId,
+      })
+      .remainingAccounts(
+        stakeAccounts.map((a) => ({
+          pubkey: a,
+          isSigner: false,
+          isWritable: true,
+        }))
+      )
+      .transaction();
+    return await this.base.intoVersionedTransaction({
+      tx,
+      ...apiOptions,
+    });
+  }
 }
