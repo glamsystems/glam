@@ -33,7 +33,7 @@ pub fn check_access(fund: &FundAccount, signer: &Pubkey, permission: Permission)
     }
 
     msg!(
-        "Checking access for signer {:?} on permission {:?}",
+        "Checking signer {:?} has permission {:?}",
         signer,
         permission
     );
@@ -42,6 +42,33 @@ pub fn check_access(fund: &FundAccount, signer: &Pubkey, permission: Permission)
         for acl in acls {
             if acl.pubkey == *signer && acl.permissions.contains(&permission) {
                 return Ok(());
+            }
+        }
+    }
+    return Err(AccessError::NotAuthorized.into());
+}
+
+pub fn check_access_any(
+    fund: &FundAccount,
+    signer: &Pubkey,
+    allowed_permissions: Vec<Permission>,
+) -> Result<()> {
+    if fund.manager == *signer {
+        return Ok(());
+    }
+
+    msg!(
+        "Checking signer {:?} has any of {:?}",
+        signer,
+        allowed_permissions
+    );
+
+    if let Some(acls) = fund.acls() {
+        for acl in acls {
+            for permission in &allowed_permissions {
+                if acl.pubkey == *signer && acl.permissions.contains(permission) {
+                    return Ok(());
+                }
             }
         }
     }

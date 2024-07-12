@@ -128,20 +128,34 @@ fn parse_shared_accounts_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::JupiterSwapFundAssets)
+    acl::check_access_any(
+        &ctx.accounts.fund,
+        &ctx.accounts.manager.key,
+        vec![Permission::JupiterSwapFundAssets, Permission::JupiterSwapAnyAsset]
+    )
 )]
 pub fn jupiter_swap<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, JupiterSwap<'info>>,
     amount: u64,
     data: Vec<u8>,
 ) -> Result<()> {
-    // Check if the input and output mint are allowed
-    if let Some(assets) = ctx.accounts.fund.assets() {
-        require!(
-            assets.iter().any(|&k| k == ctx.accounts.input_mint.key())
-                && assets.iter().any(|&k| k == ctx.accounts.output_mint.key()),
-            ManagerError::InvalidAssetForSwap
-        );
+    if let Some(acls) = ctx.accounts.fund.acls() {
+        // Check if the signer is allowed to swap any asset
+        let can_swap_any_asset = acls.iter().any(|acl| {
+            acl.pubkey == *ctx.accounts.manager.key
+                && acl.permissions.contains(&Permission::JupiterSwapAnyAsset)
+        });
+
+        // If the signer doesn't have permission to swap any asset, check the input and output mints
+        if !can_swap_any_asset {
+            if let Some(assets) = ctx.accounts.fund.assets() {
+                require!(
+                    assets.contains(&ctx.accounts.input_mint.key())
+                        && assets.contains(&ctx.accounts.output_mint.key()),
+                    ManagerError::InvalidAssetForSwap
+                );
+            }
+        }
     }
 
     // Parse Jupiter Swap accounts
