@@ -127,23 +127,11 @@ fn parse_shared_accounts_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
     (res, 6)
 }
 
-#[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::JupiterSwapFundAssets)
-)]
-pub fn jupiter_swap<'c: 'info, 'info>(
+fn do_swap<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, JupiterSwap<'info>>,
     amount: u64,
     data: Vec<u8>,
 ) -> Result<()> {
-    // Check if the input and output mint are allowed
-    if let Some(assets) = ctx.accounts.fund.assets() {
-        require!(
-            assets.iter().any(|&k| k == ctx.accounts.input_mint.key())
-                && assets.iter().any(|&k| k == ctx.accounts.output_mint.key()),
-            ManagerError::InvalidAssetForSwap
-        );
-    }
-
     // Parse Jupiter Swap accounts
     let ix_disc = u64::from_be_bytes(data[..8].try_into().unwrap());
     let (parse_result, dst_ata_idx) = match ix_disc {
@@ -227,4 +215,35 @@ pub fn jupiter_swap<'c: 'info, 'info>(
     );
 
     Ok(())
+}
+
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::JupiterSwapAnyAsset)
+)]
+pub fn jupiter_swap_any<'c: 'info, 'info>(
+    ctx: Context<'_, '_, 'c, 'info, JupiterSwap<'info>>,
+    amount: u64,
+    data: Vec<u8>,
+) -> Result<()> {
+    do_swap(ctx, amount, data)
+}
+
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::JupiterSwapFundAssets)
+)]
+pub fn jupiter_swap<'c: 'info, 'info>(
+    ctx: Context<'_, '_, 'c, 'info, JupiterSwap<'info>>,
+    amount: u64,
+    data: Vec<u8>,
+) -> Result<()> {
+    // Check if the input and output mint are allowed
+    if let Some(assets) = ctx.accounts.fund.assets() {
+        require!(
+            assets.iter().any(|&k| k == ctx.accounts.input_mint.key())
+                && assets.iter().any(|&k| k == ctx.accounts.output_mint.key()),
+            ManagerError::InvalidAssetForSwap
+        );
+    }
+
+    do_swap(ctx, amount, data)
 }
