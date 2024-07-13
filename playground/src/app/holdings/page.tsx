@@ -56,7 +56,7 @@ export default function Holdings() {
       mint: mintAddress,
       ata: pubkey.toString(),
       balance: account.data.parsed.info.tokenAmount.uiAmount,
-      notional: 123
+      notional: 1234.56
     };
   }), [items, jupiterData]);
 

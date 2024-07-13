@@ -50,14 +50,11 @@ export const columns: ColumnDef<Holding>[] = [
   {
     accessorKey: "notional",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Notional" />
+      <DataTableColumnHeader column={column} title="USD" />
     ),
     cell: ({ row }) => {
       const notional = parseFloat(row.getValue("notional"));
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(notional);
+      const formatted = new Intl.NumberFormat("en-US"/*, { style: "currency", currency: "USD" }*/).format(notional);
       return <div className="w-[80px]">{formatted}</div>;
     },
     enableSorting: true,
