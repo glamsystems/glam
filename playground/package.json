@@ -1,5 +1,7 @@
 {
   "name": "@glam/playground",
   "version": "0.0.1",
-  "dependencies": {}
+  "dependencies": {
+    "@radix-ui/react-tooltip": "^1.1.2"
+  }
 }

@@ -1,46 +1,36 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
+import {ColumnDef, Row} from "@tanstack/react-table";
 
-import { Holding } from "../data/holdingSchema";
+import {Holding, holdingSchema} from "../data/holdingSchema";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
-import TruncateAddress from "../../../utils/TruncateAddress";
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "../../../components/ui/tooltip";
+
+interface DataTableRowActionsProps<TData> {
+  row: Row<TData>;
+}
 
 export const columns: ColumnDef<Holding>[] = [
-  {
-    accessorKey: "name",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Name" />
-    ),
-    cell: ({ row }) => <div className="w-[100px] truncate">{row.getValue("name")}</div>,
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
+{
     accessorKey: "symbol",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Symbol" />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("symbol")}</div>,
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "mint",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Mint" />
-    ),
-    cell: ({ row }) => <div className="w-[80px]"><TruncateAddress address={row.getValue("mint")}/></div>,
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "ata",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="ATA" />
-    ),
-    cell: ({ row }) => <div className="w-[80px]"><TruncateAddress address={row.getValue("ata")}/></div>,
+    cell: ({ row }) => {
+      const holding = holdingSchema.parse(row.original);
+
+      return  <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="truncate cursor-default">{row.getValue("symbol")}</div>
+          </TooltipTrigger>
+          <TooltipContent side={"bottom"}>
+            <p>{holding.name}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>;
+    },
     enableSorting: false,
     enableHiding: false,
   },

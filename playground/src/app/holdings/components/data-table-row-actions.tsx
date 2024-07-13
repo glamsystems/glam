@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { holdingSchema } from "../data/holdingSchema";
+import TruncateAddress from "../../../utils/TruncateAddress";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -38,14 +39,14 @@ export function DataTableRowActions<TData>({
           <span className="sr-only">Open menu</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[160px]">
-        <DropdownMenuItem>Edit</DropdownMenuItem>
-        <DropdownMenuItem>Make a copy</DropdownMenuItem>
-        <DropdownMenuItem>Favorite</DropdownMenuItem>
-        <DropdownMenuSeparator />
+      <DropdownMenuContent align="end" className="w-[180px]">
         <DropdownMenuItem>
-          Delete
-          <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
+          <TruncateAddress address={holding.mint}/>
+          <DropdownMenuShortcut>Mint</DropdownMenuShortcut>
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <TruncateAddress address={holding.ata}/>
+          <DropdownMenuShortcut>ATA</DropdownMenuShortcut>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
