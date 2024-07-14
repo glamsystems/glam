@@ -5,7 +5,7 @@ import { columns } from "./components/columns";
 import React, { useMemo, useState, useEffect } from "react";
 
 import { testFund } from "@/app/testFund";
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { useConnection } from "@solana/wallet-adapter-react";
@@ -31,9 +31,24 @@ export function useGetTokenAccounts({ address }: { address: PublicKey }) {
   });
 }
 
+export function useGetSolBalance({ address }: { address: PublicKey }) {
+  const { connection } = useConnection();
+
+  return useQuery({
+    queryKey: ['get-balance', { endpoint: connection.rpcEndpoint, address }],
+    queryFn: async () => {
+      const balance = await connection.getBalance(address);
+      return balance;
+    },
+  });
+}
+
 export default function Holdings() {
   const glamClient = useGlamClient();
-  const query = useGetTokenAccounts({ address: glamClient.getTreasuryPDA(new PublicKey(testFund.fundPDA)) });
+  const fundPDA = new PublicKey(testFund.fundPDA);
+  const treasuryPDA = glamClient.getTreasuryPDA(fundPDA);
+  const query = useGetTokenAccounts({ address: treasuryPDA });
+  const solBalanceQuery = useGetSolBalance({ address: treasuryPDA });
   const [jupiterData, setJupiterData] = useState([]);
 
   useEffect(() => {
@@ -46,19 +61,33 @@ export default function Holdings() {
 
   const items = useMemo(() => query.data ?? [], [query.data]);
 
-  const data = useMemo(() => items.map(({ account, pubkey }) => {
-    const mintAddress = account.data.parsed.info.mint.toString();
-    const jupiterAsset = jupiterData.find(asset => asset.address === mintAddress) || {};
+  //TODO: improve default SOL Balance value, we don't want to show -1/0 while/if loading/unvailable
+  const solBalance = useMemo(() => solBalanceQuery.data ?? -1, [solBalanceQuery.data]);
 
-    return {
-      name: jupiterAsset.name || "Placeholder Name",
-      symbol: jupiterAsset.symbol || "Placeholder Symbol",
-      mint: mintAddress,
-      ata: pubkey.toString(),
-      balance: account.data.parsed.info.tokenAmount.uiAmount,
-      notional: 1234.56
-    };
-  }), [items, jupiterData]);
+  const data = useMemo(() => {
+    const tokenAccounts = items.map(({account, pubkey}) => {
+      const mintAddress = account.data.parsed.info.mint.toString();
+      const jupiterAsset = jupiterData.find(asset => asset.address === mintAddress) || {};
+
+      return {
+        name: jupiterAsset.name || "Placeholder Name", symbol: jupiterAsset.symbol === 'SOL' ? 'wSOL' : jupiterAsset.symbol || "Placeholder Symbol", mint: mintAddress, ata: pubkey.toString(), balance: account.data.parsed.info.tokenAmount.uiAmount, notional: 1234.56,
+      };
+    });
+
+    console.log("SolBalance: " + solBalance);
+
+    tokenAccounts.push({
+      name: "Solana",
+      symbol: "SOL",
+      mint: "",
+      ata: "",
+      balance: solBalance / LAMPORTS_PER_SOL,
+      notional: 1234.56,
+    });
+
+    return tokenAccounts;
+
+  }, [items, jupiterData, solBalance]);
 
   return (
     <div className="flex w-2/3 mt-16 self-center">

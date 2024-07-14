@@ -13,7 +13,7 @@ import { useGlamClient } from "@glam/anchor";
 import { BN } from "@coral-xyz/anchor";
 import { testFund } from "@/app/testFund";
 import { ExplorerLink } from "@/components/ExplorerLink";
-import { useCluster } from "@/components/solana-cluster-provider";
+import {LAMPORTS_PER_SOL} from "@solana/web3.js";
 
 const wrapSchema = z.object({
   direction: z.enum(["wrap", "unwrap"]),
@@ -25,8 +25,6 @@ type WrapSchema = z.infer<typeof wrapSchema>;
 
 export default function Wrap() {
   const glamClient = useGlamClient();
-  const cluster = useCluster();
-  console.log(cluster);
   const [amountAsset, setAmountAsset] = useState<string>("SOL");
   const [direction, setDirection] = useState<string>("wrap");
 
@@ -44,7 +42,7 @@ export default function Wrap() {
     if (direction === "wrap") {
       txId = await glamClient.wsol.wrap(
         testFund.fundPDA,
-        new BN(values.amount * 1_000_000_000)
+        new BN(values.amount * LAMPORTS_PER_SOL)
       );
     } else {
       // Unwrap means unwrap all, there's no amount

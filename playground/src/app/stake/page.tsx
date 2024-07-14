@@ -20,7 +20,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { AnchorProvider, BN } from "@coral-xyz/anchor";
+import { BN } from "@coral-xyz/anchor";
 import { toast } from "@/components/ui/use-toast";
 import { AssetInput } from "@/components/AssetInput";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -29,13 +29,11 @@ import React, { useState, useEffect } from "react";
 import { columns } from "./components/columns";
 import { DataTable } from "./components/data-table";
 
-import { PublicKey } from "@solana/web3.js";
 import { useGlamClient } from "@glam/anchor";
 
 import { testFund } from "../testFund";
-import { testGlam } from "../testGlam";
-import { testTickets } from "./data/testTickets";
 import { ExplorerLink } from "@/components/ExplorerLink";
+import {LAMPORTS_PER_SOL} from "@solana/web3.js";
 
 const stakeSchema = z.object({
   service: z.enum(["Marinade"]),
@@ -73,7 +71,7 @@ export default function Stake() {
         const transformedTickets = tickets.map(ticket => ({
           publicKey: ticket.toBase58(),
           service: "marinade",
-          status: "pending",
+          status: "claimable",
           label: "lst",
         }));
         setMarinadeTicket(transformedTickets);
@@ -112,7 +110,7 @@ export default function Stake() {
             title: "Please enter an amount greater than 0.", variant: "destructive",
           })
         } else {
-          txId = await glamClient[stakingService].stake(testFund.fundPDA, new BN(values.amountIn * 1_000_000_000));
+          txId = await glamClient[stakingService].stake(testFund.fundPDA, new BN(values.amountIn * LAMPORTS_PER_SOL));
 
           toast({
             title: `${mode.charAt(0).toUpperCase() + mode.slice(1)} ${values.amountIn} ${values.amountInAsset}`, description: <ExplorerLink path={`tx/${txId}`} label={txId}/>,
@@ -124,7 +122,7 @@ export default function Stake() {
             title: "Please enter an amount greater than 0.", variant: "destructive",
           })
         } else {
-          txId = await glamClient[stakingService].delayedUnstake(testFund.fundPDA, new BN(values.amountIn * 1_000_000_000));
+          txId = await glamClient[stakingService].delayedUnstake(testFund.fundPDA, new BN(values.amountIn * LAMPORTS_PER_SOL));
 
           toast({
             title: `${mode.charAt(0).toUpperCase() + mode.slice(1)} ${values.amountIn} ${values.amountInAsset}`, description: <ExplorerLink path={`tx/${txId}`} label={txId}/>,
