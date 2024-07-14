@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, SubmitHandler, FormProvider } from "react-hook-form";
+import {useForm, SubmitHandler, FormProvider, get} from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -35,10 +35,10 @@ import { useGlamClient } from "@glam/anchor";
 import { testFund } from "../testFund";
 import { testGlam } from "../testGlam";
 import { testTickets } from "./data/testTickets";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { ExplorerLink } from "@/components/ExplorerLink";
 
 const stakeSchema = z.object({
-  service: z.enum(["Marinade", "Jito"]),
+  service: z.enum(["Marinade"]),
   amountIn: z.number().nonnegative(),
   amountInAsset: z.string(),
 });
@@ -47,13 +47,14 @@ type StakeSchema = z.infer<typeof stakeSchema>;
 
 const serviceToAssetMap: { [key in StakeSchema["service"]]: string } = {
   Marinade: "mSOL",
-  Jito: "jitoSOL",
+  //Jito: "jitoSOL",
 };
 
 export default function Stake() {
+  const glamClient = useGlamClient();
+
   const [amountInAsset, setAmountInAsset] = useState<string>("SOL");
   const [mode, setMode] = useState<string>("stake");
-  // const glamClient = useGlamClient();
 
   const form = useForm<StakeSchema>({
     resolver: zodResolver(stakeSchema),
@@ -70,21 +71,34 @@ export default function Stake() {
     };
 
     if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") === "submit") {
-      const testFundPDA = new PublicKey(testFund.fundPDA);
-      const manager = new PublicKey(testFund.manager);
-      // const treasuryPDA = glamClient.getTreasuryPDA(testFundPDA);
-      // console.log(treasuryPDA.toBase58());
+      const stakingService = values.service.toLowerCase();
+      let txId;
 
-      toast({
-        title: `You submitted the following ${mode}:`,
-        description: (
-          <pre className="mt-2 w-[340px] rounded-md bg-zinc-900 p-4">
-            <code className="text-white">
-              {/* {JSON.stringify(updatedValues, null, 2)} */}
-            </code>
-          </pre>
-        ),
-      });
+      if (mode === "stake") {
+        if (values.amountIn === 0) {
+          toast({
+            title: "Please enter an amount greater than 0.", variant: "destructive",
+          })
+        } else {
+          txId = await glamClient[stakingService].stake(testFund.fundPDA, new BN(values.amountIn * 1_000_000_000));
+
+          toast({
+            title: `${mode.charAt(0).toUpperCase() + mode.slice(1)} ${values.amountIn} ${values.amountInAsset}`, description: <ExplorerLink path={`tx/${txId}`} label={txId}/>,
+          });
+        }
+      } else {
+        if (values.amountIn === 0) {
+          toast({
+            title: "Please enter an amount greater than 0.", variant: "destructive",
+          })
+        } else {
+          txId = await glamClient[stakingService].delayedUnstake(testFund.fundPDA, new BN(values.amountIn * 1_000_000_000));
+
+          toast({
+            title: `${mode.charAt(0).toUpperCase() + mode.slice(1)} ${values.amountIn} ${values.amountInAsset}`, description: <ExplorerLink path={`tx/${txId}`} label={txId}/>,
+          });
+        }
+      }
     }
   };
 
