@@ -103,7 +103,7 @@ export class JupiterClient {
     if (apiOptions === undefined) {
       apiOptions = {};
     }
-    const manager = apiOptions.signer || this.base.getManager();
+    const signer = apiOptions.signer || this.base.getManager();
 
     let swapInstruction: InstructionFromJupiter;
     let addressLookupTableAddresses: string[];
@@ -126,7 +126,7 @@ export class JupiterClient {
         quoteResponse = await this.getQuoteResponse(quoteParams);
       }
 
-      const ins = await this.getSwapInstructions(quoteResponse, manager);
+      const ins = await this.getSwapInstructions(quoteResponse, signer);
       swapInstruction = ins.swapInstruction;
       addressLookupTableAddresses = ins.addressLookupTableAddresses;
     } else {
@@ -144,7 +144,7 @@ export class JupiterClient {
 
     const preInstructions = await this.getPreInstructions(
       fund,
-      manager,
+      signer,
       inputMint,
       outputMint,
       amount
@@ -156,11 +156,11 @@ export class JupiterClient {
         treasury: this.base.getTreasuryPDA(fund),
         inputTreasuryAta: this.base.getTreasuryAta(fund, inputMint),
         outputTreasuryAta: this.base.getTreasuryAta(fund, outputMint),
-        inputSignerAta: this.base.getManagerAta(inputMint, manager),
-        outputSignerAta: this.base.getManagerAta(outputMint, manager),
+        inputSignerAta: this.base.getManagerAta(inputMint, signer),
+        outputSignerAta: this.base.getManagerAta(outputMint, signer),
         inputMint,
         outputMint,
-        manager,
+        signer,
         jupiterProgram: JUPITER_PROGRAM_ID,
         token2022Program: TOKEN_2022_PROGRAM_ID,
       })

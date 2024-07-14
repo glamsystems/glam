@@ -1204,7 +1204,7 @@
           "isSigner": false
         },
         {
-          "name": "manager",
+          "name": "signer",
           "isMut": true,
           "isSigner": true
         },
