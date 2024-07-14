@@ -37,7 +37,7 @@ pub struct JupiterSwap<'info> {
     #[account(
         mut,
         associated_token::mint = input_mint,
-        associated_token::authority = manager)]
+        associated_token::authority = signer)]
     pub input_signer_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     /// CHECK: no need deser, trust Jupiter
@@ -53,7 +53,7 @@ pub struct JupiterSwap<'info> {
     pub output_mint: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(mut)]
-    pub manager: Signer<'info>,
+    pub signer: Signer<'info>,
 
     // programs
     pub system_program: Program<'info, System>,
@@ -68,7 +68,7 @@ fn parse_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
     res &= ctx.remaining_accounts.len() > 9;
 
     res &= ctx.remaining_accounts[0].key() == ctx.accounts.token_program.key();
-    res &= ctx.remaining_accounts[1].key() == ctx.accounts.manager.key();
+    res &= ctx.remaining_accounts[1].key() == ctx.accounts.signer.key();
     res &= ctx.remaining_accounts[2].key() == ctx.accounts.input_signer_ata.key();
     res &= ctx.remaining_accounts[3].key() == ctx.accounts.output_signer_ata.key();
     res &= ctx.remaining_accounts[4].key() == Jupiter::id(); // null key - overwritten later
@@ -86,7 +86,7 @@ fn parse_exact_out_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
     res &= ctx.remaining_accounts.len() > 11;
 
     res &= ctx.remaining_accounts[0].key() == ctx.accounts.token_program.key();
-    res &= ctx.remaining_accounts[1].key() == ctx.accounts.manager.key();
+    res &= ctx.remaining_accounts[1].key() == ctx.accounts.signer.key();
     res &= ctx.remaining_accounts[2].key() == ctx.accounts.input_signer_ata.key();
     res &= ctx.remaining_accounts[3].key() == ctx.accounts.output_signer_ata.key();
     res &= ctx.remaining_accounts[4].key() == Jupiter::id(); // null key - overwritten later
@@ -109,7 +109,7 @@ fn parse_shared_accounts_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
     res &= ctx.remaining_accounts[0].key() == ctx.accounts.token_program.key();
     // res &= ctx.remaining_accounts[1].key() - programAuthority ignored
 
-    res &= ctx.remaining_accounts[2].key() == ctx.accounts.manager.key();
+    res &= ctx.remaining_accounts[2].key() == ctx.accounts.signer.key();
     res &= ctx.remaining_accounts[3].key() == ctx.accounts.input_signer_ata.key();
     // res &= ctx.remaining_accounts[4].key() - programSourceTokenAccount ignored
     // res &= ctx.remaining_accounts[5].key() - programDestinationTokenAccount ignored
@@ -128,20 +128,34 @@ fn parse_shared_accounts_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::JupiterSwapFundAssets)
+    acl::check_access_any(
+        &ctx.accounts.fund,
+        &ctx.accounts.signer.key,
+        vec![Permission::JupiterSwapFundAssets, Permission::JupiterSwapAnyAsset]
+    )
 )]
 pub fn jupiter_swap<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, JupiterSwap<'info>>,
     amount: u64,
     data: Vec<u8>,
 ) -> Result<()> {
-    // Check if the input and output mint are allowed
-    if let Some(assets) = ctx.accounts.fund.assets() {
-        require!(
-            assets.iter().any(|&k| k == ctx.accounts.input_mint.key())
-                && assets.iter().any(|&k| k == ctx.accounts.output_mint.key()),
-            ManagerError::InvalidAssetForSwap
-        );
+    if let Some(acls) = ctx.accounts.fund.acls() {
+        // Check if the signer is allowed to swap any asset
+        let can_swap_any_asset = acls.iter().any(|acl| {
+            acl.pubkey == *ctx.accounts.signer.key
+                && acl.permissions.contains(&Permission::JupiterSwapAnyAsset)
+        });
+
+        // If the signer doesn't have permission to swap any asset, check the input and output mints
+        if !can_swap_any_asset {
+            if let Some(assets) = ctx.accounts.fund.assets() {
+                require!(
+                    assets.contains(&ctx.accounts.input_mint.key())
+                        && assets.contains(&ctx.accounts.output_mint.key()),
+                    ManagerError::InvalidAssetForSwap
+                );
+            }
+        }
     }
 
     // Parse Jupiter Swap accounts

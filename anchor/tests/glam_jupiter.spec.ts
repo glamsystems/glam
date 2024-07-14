@@ -1,10 +1,11 @@
 import {
   createFundForTest,
   quoteResponseForTest,
+  str2seed,
   swapInstructionsForTest,
 } from "./setup";
 import { GlamClient } from "../src";
-import { PublicKey } from "@solana/web3.js";
+import { Keypair } from "@solana/web3.js";
 import { getAccount } from "@solana/spl-token";
 import { BN } from "@coral-xyz/anchor";
 import { MSOL, WSOL, USDC } from "../src";
@@ -26,30 +27,6 @@ describe("glam_jupiter", () => {
       1_000_000_000
     );
     await glamClient.provider.connection.confirmTransaction(airdrop);
-  });
-
-  it("Asset not allowed to swap", async () => {
-    const amount = 50_000_000;
-    try {
-      const txId = await glamClient.jupiter.swap(fundPDA, {
-        inputMint: USDC.toBase58(),
-        outputMint: MSOL.toBase58(),
-        amount,
-        swapMode: "ExactIn",
-        onlyDirectRoutes: true,
-        maxAccounts: 8,
-      });
-      console.log("swap txId", txId);
-    } catch (e) {
-      console.log(e);
-      expect(
-        e.logs.some(
-          (log) =>
-            log.includes("Error Code: InvalidAssetForSwap") &&
-            log.includes("Asset cannot be swapped.")
-        )
-      ).toBeTruthy();
-    }
   });
 
   it("Swap end to end", async () => {
@@ -131,6 +108,84 @@ describe("glam_jupiter", () => {
     );
     expect(treasuryMsol.amount.toString()).toEqual("41795954");
   });
+
+  it("Swap access control", async () => {
+    // set up a test signer
+    const testSigner = Keypair.fromSeed(str2seed("test_signer"));
+    const airdrop = await glamClient.provider.connection.requestAirdrop(
+      testSigner.publicKey,
+      100_000_000
+    );
+    await glamClient.provider.connection.confirmTransaction(airdrop);
+
+    // testSigner is only allowed to swap fund assets
+    let acls = [
+      {
+        pubkey: testSigner.publicKey,
+        permissions: [{ jupiterSwapFundAssets: {} }, { wSolWrap: {} }],
+      },
+    ];
+    try {
+      await glamClient.upsertAcls(fundPDA, acls);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+    let fundModel = await glamClient.fetchFund(fundPDA);
+    expect(fundModel.acls.length).toEqual(1);
+
+    // Swap tx
+    const tx = await glamClient.jupiter.swapTx(
+      fundPDA,
+      {
+        inputMint: WSOL.toBase58(),
+        outputMint: USDC.toBase58(),
+        amount: 50_000_000,
+        swapMode: "ExactIn",
+        onlyDirectRoutes: true,
+        maxAccounts: 8,
+      },
+      undefined,
+      undefined,
+      { signer: testSigner.publicKey }
+    );
+    tx.sign([testSigner]);
+
+    // 1st attempt, should fail due to InvalidAssetForSwap.
+    try {
+      await glamClient.provider.connection.sendTransaction(tx, {
+        skipPreflight: true,
+      });
+    } catch (e) {
+      console.error(e);
+      expect(e.error.errorCode).toEqual({
+        code: "InvalidAssetForSwap",
+        number: 6007,
+      });
+    }
+
+    // allow testSigner to swap any assets
+    acls[0].permissions = [{ jupiterSwapAnyAsset: {} }, { wSolWrap: {} }];
+    try {
+      await glamClient.upsertAcls(fundPDA, acls);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+    fundModel = await glamClient.fetchFund(fundPDA);
+    expect(fundModel.acls.length).toEqual(1);
+
+    // 1st attempt, should reach jupiter
+    try {
+      await glamClient.provider.connection.sendTransaction(tx, {
+        skipPreflight: true,
+      });
+    } catch (e) {
+      expect(e.logs).toContain(
+        "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]"
+      );
+    }
+  }, 15_000);
 
   it("Swap back end to end", async () => {
     const manager = glamClient.getManager();
@@ -349,13 +404,14 @@ describe("glam_jupiter", () => {
         autoSlippage: true,
         autoSlippageCollisionUsdValue: 1000,
         swapMode: "ExactIn",
-        onlyDirectRoutes: false,
+        onlyDirectRoutes: true,
         asLegacyTransaction: false,
-        maxAccounts: 20,
+        maxAccounts: 18,
       });
       console.log("swap txId", txId);
     } catch (e) {
       // make sure program has reached jupiter
+      console.error(e);
       expect(e.logs).toContain(
         "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]"
       );

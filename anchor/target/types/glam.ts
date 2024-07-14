@@ -1204,7 +1204,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "manager",
+          "name": "signer",
           "isMut": true,
           "isSigner": true
         },
@@ -4728,7 +4728,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "manager",
+          "name": "signer",
           "isMut": true,
           "isSigner": true
         },
