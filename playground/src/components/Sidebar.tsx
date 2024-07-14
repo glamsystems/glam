@@ -71,15 +71,10 @@ export default function Sidebar() {
     {
       group: "Trader",
       items: [
-        { route: "/trade", text: "Trade", shortcut: "⌘L", Icon: LoopIcon },
-        { route: "/stake", text: "Stake", shortcut: "⌘K", Icon: DownloadIcon },
-        {
-          route: "/transfer",
-          text: "Transfer",
-          shortcut: "⌘J",
-          Icon: ExitIcon,
-        },
         { route: "/wrap", text: "Wrap", shortcut: "⌘W", Icon: BoxModelIcon },
+        { route: "/stake", text: "Stake", shortcut: "⌘K", Icon: DownloadIcon },
+        { route: "/trade", text: "Trade", shortcut: "⌘L", Icon: LoopIcon },
+        { route: "/transfer", text: "Transfer", shortcut: "⌘J", Icon: ExitIcon },
       ],
     },
     {

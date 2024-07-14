@@ -50,11 +50,43 @@ const serviceToAssetMap: { [key in StakeSchema["service"]]: string } = {
   //Jito: "jitoSOL",
 };
 
-export default function Stake() {
-  const glamClient = useGlamClient();
+export const ticketSchema = z.object({
+  publicKey: z.string(),
+  service: z.string(),
+  status: z.string(),
+  label: z.string(),
+});
 
+export type Ticket = z.infer<typeof ticketSchema>;
+
+export default function Stake() {
+  const [marinadeTicket, setMarinadeTicket] = useState<Ticket[]>([]);
   const [amountInAsset, setAmountInAsset] = useState<string>("SOL");
   const [mode, setMode] = useState<string>("stake");
+  const [loading, setLoading] = useState<boolean>(true); // New loading state
+  const glamClient = useGlamClient();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const tickets = await glamClient.marinade.getExistingTickets(testFund.fundPDA);
+        const transformedTickets = tickets.map(ticket => ({
+          publicKey: ticket.toBase58(),
+          service: "marinade",
+          status: "pending",
+          label: "lst",
+        }));
+        setMarinadeTicket(transformedTickets);
+        console.log(transformedTickets);
+      } catch (error) {
+        console.error('Error fetching marinade tickets:', error);
+      } finally {
+        setLoading(false); // Update loading state
+      }
+    };
+
+    fetchData();
+  }, [glamClient, testFund.fundPDA]);
 
   const form = useForm<StakeSchema>({
     resolver: zodResolver(stakeSchema),
@@ -134,14 +166,11 @@ export default function Stake() {
   };
 
   return (
-    <div className="flex flex-col justify-center w-full  mt-16">
+    <div className="flex flex-col justify-center w-full mt-16">
       <div className="w-1/2 self-center">
         <FormProvider {...form}>
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4 w-full"
-            >
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
               <div>
                 <FormItem>
                   <FormLabel>Mode</FormLabel>
@@ -179,21 +208,17 @@ export default function Stake() {
                       <FormControl>
                         <Select
                           value={field.value}
-                          onValueChange={(value) =>
-                            handleServiceChange(value as StakeSchema["service"])
-                          }
+                          onValueChange={(value) => handleServiceChange(value as StakeSchema["service"])}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Service" />
                           </SelectTrigger>
                           <SelectContent>
-                            {stakeSchema.shape.service._def.values.map(
-                              (option) => (
-                                <SelectItem key={option} value={option}>
-                                  {option}
-                                </SelectItem>
-                              )
-                            )}
+                            {stakeSchema.shape.service._def.values.map((option) => (
+                              <SelectItem key={option} value={option}>
+                                {option}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </FormControl>
@@ -229,8 +254,11 @@ export default function Stake() {
         </FormProvider>
       </div>
       <div className="flex w-1/2 mt-16 self-center">
-        <DataTable data={testTickets} columns={columns} />
+        {loading ? (
+          <p>Loading Tickets...</p>
+        ) : (<div className="w-full">
+            <DataTable data={marinadeTicket} columns={columns}/>
+          </div>)}
       </div>
-    </div>
-  );
+    </div>);
 }
