@@ -959,12 +959,12 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "sysvarClock",
+          "name": "clock",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "sysvarStakeHistory",
+          "name": "stakeHistory",
           "isMut": false,
           "isSigner": false
         },
@@ -979,7 +979,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "nativeStakeProgram",
+          "name": "stakeProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -1055,7 +1055,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "sysvarClock",
+          "name": "clock",
           "isMut": false,
           "isSigner": false
         },
@@ -1070,7 +1070,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "nativeStakeProgram",
+          "name": "stakeProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -1089,6 +1089,73 @@ export type Glam = {
           "type": "string"
         }
       ]
+    },
+    {
+      "name": "deactivateStakeAccounts",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "withdrawFromStakeAccounts",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeHistory",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     },
     {
       "name": "jupiterSwap",
@@ -4416,12 +4483,12 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "sysvarClock",
+          "name": "clock",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "sysvarStakeHistory",
+          "name": "stakeHistory",
           "isMut": false,
           "isSigner": false
         },
@@ -4436,7 +4503,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "nativeStakeProgram",
+          "name": "stakeProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -4512,7 +4579,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "sysvarClock",
+          "name": "clock",
           "isMut": false,
           "isSigner": false
         },
@@ -4527,7 +4594,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "nativeStakeProgram",
+          "name": "stakeProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -4546,6 +4613,73 @@ export const IDL: Glam = {
           "type": "string"
         }
       ]
+    },
+    {
+      "name": "deactivateStakeAccounts",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "withdrawFromStakeAccounts",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeHistory",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     },
     {
       "name": "jupiterSwap",

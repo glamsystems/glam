@@ -144,6 +144,18 @@ pub mod glam {
         )
     }
 
+    pub fn deactivate_stake_accounts<'info>(
+        ctx: Context<'_, '_, '_, 'info, DeactivateStakeAccounts<'info>>,
+    ) -> Result<()> {
+        stakepool::deactivate_stake_accounts(ctx)
+    }
+
+    pub fn withdraw_from_stake_accounts<'info>(
+        ctx: Context<'_, '_, '_, 'info, WithdrawFromStakeAccounts<'info>>,
+    ) -> Result<()> {
+        stakepool::withdraw_from_stake_accounts(ctx)
+    }
+
     // Jupiter
     pub fn jupiter_swap<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, JupiterSwap<'info>>,
