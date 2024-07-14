@@ -1,11 +1,16 @@
 import {
   createFundForTest,
   quoteResponseForTest,
+  str2seed,
   swapInstructionsForTest,
 } from "./setup";
-import { GlamClient } from "../src";
-import { PublicKey } from "@solana/web3.js";
-import { getAccount } from "@solana/spl-token";
+import { GlamClient, JUPITER_PROGRAM_ID } from "../src";
+import { Keypair } from "@solana/web3.js";
+import {
+  getAccount,
+  getAssociatedTokenAddressSync,
+  TOKEN_2022_PROGRAM_ID,
+} from "@solana/spl-token";
 import { BN } from "@coral-xyz/anchor";
 import { MSOL, WSOL, USDC } from "../src";
 
@@ -130,6 +135,75 @@ describe("glam_jupiter", () => {
       glamClient.getTreasuryAta(fundPDA, MSOL)
     );
     expect(treasuryMsol.amount.toString()).toEqual("41795954");
+  });
+
+  it("Swap access control", async () => {
+    const keyRestrictdSwap = Keypair.fromSeed(str2seed("key_restricted_swap"));
+    const keySwapAny = Keypair.fromSeed(str2seed("key_swap_any"));
+
+    const acls = [
+      {
+        pubkey: keyRestrictdSwap.publicKey,
+        permissions: [{ jupiterSwapAnyAsset: {} }, { wSolWrap: {} }],
+      },
+      {
+        pubkey: keySwapAny.publicKey,
+        permissions: [{ jupiterSwapAnyAsset: {} }, { wSolWrap: {} }],
+      },
+    ];
+    try {
+      await glamClient.upsertAcls(fundPDA, acls);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+    const fundModel = await glamClient.fetchFund(fundPDA);
+    expect(fundModel.acls.length).toEqual(2);
+
+    const airdrop = await glamClient.provider.connection.requestAirdrop(
+      keyRestrictdSwap.publicKey,
+      100_000_000
+    );
+    await glamClient.provider.connection.confirmTransaction(airdrop);
+
+    // Swap
+    const signer = keyRestrictdSwap.publicKey;
+    const inputSignerAta = getAssociatedTokenAddressSync(WSOL, signer);
+    const outputSignerAta = getAssociatedTokenAddressSync(USDC, signer);
+
+    const preInstructions = await glamClient.jupiter.getPreInstructions(
+      fundPDA,
+      signer,
+      WSOL,
+      USDC,
+      new BN(50_000_000)
+    );
+
+    try {
+      const txSig = await glamClient.program.methods
+        .jupiterSwap(new BN(50_000_000), Buffer.from("placeholder"))
+        .accounts({
+          fund: fundPDA,
+          treasury: glamClient.getTreasuryPDA(fundPDA),
+          inputTreasuryAta: glamClient.getTreasuryAta(fundPDA, WSOL),
+          outputTreasuryAta: glamClient.getTreasuryAta(fundPDA, USDC),
+          inputSignerAta,
+          outputSignerAta,
+          inputMint: WSOL,
+          outputMint: USDC,
+          manager: signer,
+          jupiterProgram: JUPITER_PROGRAM_ID,
+          token2022Program: TOKEN_2022_PROGRAM_ID,
+        })
+        .preInstructions(preInstructions)
+        .signers([keyRestrictdSwap])
+        .rpc();
+
+      console.log("swap by keyRestrictdSwap txSig", txSig);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
   });
 
   it("Swap back end to end", async () => {
