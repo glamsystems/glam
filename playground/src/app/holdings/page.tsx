@@ -6,13 +6,13 @@ import React, { useMemo, useState, useEffect } from "react";
 
 import { testFund } from "@/app/testFund";
 import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { useConnection } from "@solana/wallet-adapter-react";
 import JupiterStrict from "../assets/data/jupiterStrict";
 import { useGlamClient } from "@glam/anchor";
 
-export function useGetTokenAccounts({ address }: { address: PublicKey }) {
+export function useGetTokenAccounts({ address }) {
   const { connection } = useConnection();
 
   return useQuery({
@@ -31,7 +31,7 @@ export function useGetTokenAccounts({ address }: { address: PublicKey }) {
   });
 }
 
-export function useGetSolBalance({ address }: { address: PublicKey }) {
+export function useGetSolBalance({ address }) {
   const { connection } = useConnection();
 
   return useQuery({
@@ -61,29 +61,36 @@ export default function Holdings() {
 
   const items = useMemo(() => query.data ?? [], [query.data]);
 
-  //TODO: improve default SOL Balance value, we don't want to show -1/0 while/if loading/unvailable
   const solBalance = useMemo(() => solBalanceQuery.data ?? -1, [solBalanceQuery.data]);
 
   const data = useMemo(() => {
-    const tokenAccounts = items.map(({account, pubkey}) => {
+    const tokenAccounts = items.map(({ account, pubkey }) => {
       const mintAddress = account.data.parsed.info.mint.toString();
       const jupiterAsset = jupiterData.find(asset => asset.address === mintAddress) || {};
 
       return {
-        name: jupiterAsset.name || "Placeholder Name", symbol: jupiterAsset.symbol === 'SOL' ? 'wSOL' : jupiterAsset.symbol || "Placeholder Symbol", mint: mintAddress, ata: pubkey.toString(), balance: account.data.parsed.info.tokenAmount.uiAmount, notional: 1234.56,
+        name: jupiterAsset.name || "Placeholder Name",
+        symbol: jupiterAsset.symbol === 'SOL' ? 'wSOL' : jupiterAsset.symbol || "Placeholder Symbol",
+        mint: mintAddress,
+        ata: pubkey.toString(),
+        balance: account.data.parsed.info.tokenAmount.uiAmount,
+        notional: 1234.56,
       };
     });
 
-    console.log("SolBalance: " + solBalance);
+    if (solBalance !== -1) {
+      tokenAccounts.push({
+        name: "Solana",
+        symbol: "SOL",
+        mint: "",
+        ata: "",
+        balance: solBalance / LAMPORTS_PER_SOL,
+        notional: 1234.56,
+      });
+    }
 
-    tokenAccounts.push({
-      name: "Solana",
-      symbol: "SOL",
-      mint: "",
-      ata: "",
-      balance: solBalance / LAMPORTS_PER_SOL,
-      notional: 1234.56,
-    });
+    // Sort the tokenAccounts by balance in descending order
+    tokenAccounts.sort((a, b) => b.balance - a.balance);
 
     return tokenAccounts;
 
