@@ -1,4 +1,5 @@
 import {PublicKey} from "@solana/web3.js";
+const crypto = require("crypto");
 import React from "react";
 
 interface SparkleProps {
@@ -7,23 +8,32 @@ interface SparkleProps {
 }
 
 const defaultSparkleProps: SparkleProps = {
-  address: "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2",
+  address: "So11111111111111111111111111111111111111111",
   size: 32
 }
 
 const Sparkle: React.FC<SparkleProps> = ({ address, size }) => {
   const pubKey = new PublicKey(address);
   const keyBytes = pubKey.toBytes();
-  const attributes: any = {};
+  const hash = crypto.createHash("sha256").update(keyBytes).digest("hex");
 
-  // Color
-  const r = parseInt(keyBytes.slice(0,7).toString())  % 256;
-  const g = parseInt(keyBytes.slice(7,14).toString())  % 256;
-  const b = parseInt(keyBytes.slice(14,21).toString())  % 256;
-  const angle = parseInt(keyBytes.slice(21,32).toString())  % 360;
-  attributes[`color${1}`] = `rgb(${r},${g},${b})`;
+  // 6,039,797,760 Unique Combinations
 
-  const conicGradient = "conic-gradient(from " + angle + "deg at 50% 50%, " + attributes.color1 + ", rgba(0,0,0,0))"
+  // Color New
+  // const r = parseInt(keyBytes.slice(0,7).toString())  % 256;
+  // const g = parseInt(keyBytes.slice(7,14).toString())  % 256;
+  // const b = parseInt(keyBytes.slice(14,21).toString())  % 256;
+  // const angle = parseInt(keyBytes.slice(21,32).toString())  % 360;
+
+  // Color Legacy
+  const r = parseInt(hash.substring(0, 4), 16) % 256;
+  const g = parseInt(hash.substring(4, 8), 16) % 256;
+  const b = parseInt(hash.substring(8, 12), 16) % 256;
+  const angle = parseInt(hash.substring(12, 18), 16) % 360;
+
+  const color = `rgb(${r},${g},${b})`;
+
+  const conicGradient = "conic-gradient(from " + angle + "deg at 50% 50%, " + color + ", rgba(0,0,0,0))"
   const svgViewBox = "0 0 " + String(size) + " " + String(size)
 
   return (
@@ -33,12 +43,6 @@ const Sparkle: React.FC<SparkleProps> = ({ address, size }) => {
           <div></div>
         </foreignObject>
       </svg>
-      <div>r: {r} </div>
-      <div>g: {g}</div>
-      <div>b: {b}</div>
-      <div>angle: {angle}</div>
-      <div>Pub Key: {pubKey.toBase58()}</div>
-      <div>Key Bytes: {keyBytes}</div>
     </div>);
 }
 

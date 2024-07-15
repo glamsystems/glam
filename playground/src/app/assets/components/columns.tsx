@@ -7,17 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { Asset } from "../data/assetSchema";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
+import Sparkle from "../../../utils/Sparkle";
 
 export const columns: ColumnDef<Asset>[] = [
   {
     accessorKey: "address",
     header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: ({ row }) => (
-      <img
-        src={`https://api.glam.systems/image/${row.getValue("address")}.svg`}
-        className="min-w-8 min-h-8 max-h-8 max-w-8"
-        alt="Sparkle"
-      />
+      <Sparkle address={row.getValue('address')} size={32}/>
     ),
     enableSorting: false,
     enableHiding: false,

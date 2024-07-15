@@ -6,17 +6,21 @@ import { Product } from "../data/productSchema"; // Ensure correct import path
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
 import { statuses } from "../data/data";
+import Sparkle from "../../../utils/Sparkle";
 
 export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "address",
     header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: ({ row }) => (
-      <img
-        src={`https://api.glam.systems/image/${row.getValue("address")}.svg`}
-        className="min-w-8 min-h-8 max-h-8 max-w-8"
-        alt="Sparkle"
-      />
+      <div>
+  <Sparkle address={row.getValue('address')} size={32}/>
+  {/*<img*/}
+  {/*      src={`https://api.glam.systems/image/${row.getValue("address")}.svg`}*/}
+  {/*      className="min-w-8 min-h-8 max-h-8 max-w-8"*/}
+  {/*      alt="Sparkle"*/}
+  {/*    />*/}
+      </div>
     ),
     enableSorting: false,
     enableHiding: false,
