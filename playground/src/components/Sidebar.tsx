@@ -61,15 +61,15 @@ export default function Sidebar() {
           shortcut: "⌘H",
           Icon: ListBulletIcon,
         },
-        /*{ route: "/dashboard", text: "Dashboard", shortcut: "⌘D", Icon: DashboardIcon },
         { route: "/policies", text: "Policies", shortcut: "⌘P", Icon: TransformIcon },
+        /*{ route: "/dashboard", text: "Dashboard", shortcut: "⌘D", Icon: DashboardIcon },
         { route: "/roles", text: "Roles", shortcut: "⌘R", Icon: Component1Icon },
         { route: "/settings", text: "Settings", shortcut: "⌘N", Icon: MixerHorizontalIcon },*/
         { route: "/create", text: "Create", shortcut: "⌘N", Icon: PlusIcon }
       ],
     },
     {
-      group: "Trader",
+      group: "Actions",
       items: [
         { route: "/wrap", text: "Wrap", shortcut: "⌘W", Icon: BoxModelIcon },
         { route: "/stake", text: "Stake", shortcut: "⌘K", Icon: DownloadIcon },

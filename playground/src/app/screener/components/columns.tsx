@@ -53,7 +53,7 @@ export const columns: ColumnDef<Product>[] = [
     cell: ({ row }) => {
       return (
         <div className="flex space-x-2">
-          <Badge variant="outline">{row.getValue("baseAsset")}</Badge>
+          <Badge variant="outline" className="rounded-none">{row.getValue("baseAsset")}</Badge>
           <span className="max-w-[500px] truncate font-medium"></span>
         </div>
       );

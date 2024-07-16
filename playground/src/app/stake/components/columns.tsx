@@ -58,7 +58,7 @@ export const columns: ColumnDef<Ticket>[] = [
 
       return (
         <div className="flex space-x-2">
-          {type && <Badge variant="outline">{type.label}</Badge>}
+          {type && <Badge variant="outline" className="rounded-none">{type.label}</Badge>}
           <span className="max-w-[500px] truncate font-medium">
         </span>
         </div>
