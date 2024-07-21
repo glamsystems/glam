@@ -147,6 +147,117 @@ router.post("/tx/marinade/unstake/claim", async (req, res) => {
 });
 
 /*
+ * Stake pools
+ */
+router.post("/tx/stakepool/stake", async (req, res) => {
+  const fund = validatePubkey(req.body.fund);
+  const stakePool = validatePubkey(req.body.stake_pool);
+  const amount = validateBN(req.body.amount);
+
+  if (!fund || !stakePool || !amount) {
+    return res
+      .status(400)
+      .send({ error: "Invalid input of fund, stakePool, or amount" });
+  }
+
+  const tx = await req.client.stakePool.depositSolTx(
+    fund,
+    stakePool,
+    amount,
+    req.apiOptions
+  );
+  return await serializeTx(tx, res);
+});
+
+router.post("/tx/stakepool/withdraw", async (req, res) => {
+  const fund = validatePubkey(req.body.fund);
+  const stakePool = validatePubkey(req.body.stake_pool);
+  const amount = validateBN(req.body.amount);
+
+  if (!fund || !stakePool || !amount) {
+    return res
+      .status(400)
+      .send({ error: "Invalid input of fund, stakePool, or amount" });
+  }
+
+  const tx = await req.client.stakePool.withdrawStakeTx(
+    fund,
+    stakePool,
+    amount,
+    req.apiOptions
+  );
+  return await serializeTx(tx, res);
+});
+
+/*
+ * Stake program (aka native staking)
+ */
+
+router.post("/tx/stake/deactivate", async (req, res) => {
+  const fund = validatePubkey(req.body.fund);
+  const stake_accounts = req.body.stake_accounts;
+  if (!Array.isArray(stake_accounts)) {
+    return res
+      .status(400)
+      .send({ error: "Invalid stake_accounts, must be an array" });
+  }
+  if (!fund || !stake_accounts) {
+    return res
+      .status(400)
+      .send({ error: "Invalid input of fund or deactivateStakeAccountsTx" });
+  }
+
+  const validatedStakeAccounts = stake_accounts.map((stake_account) => {
+    const validStakeAccount = validatePubkey(stake_account);
+    if (!validStakeAccount) {
+      return res
+        .status(400)
+        .send({ error: `Invalid stake account: ${validStakeAccount}` });
+    }
+    return validStakeAccount;
+  });
+
+  const tx = await req.client.stakePool.deactivateStakeAccountsTx(
+    fund,
+    validatedStakeAccounts,
+    req.apiOptions
+  );
+  return await serializeTx(tx, res);
+});
+
+router.post("/tx/stake/withdraw", async (req, res) => {
+  const fund = validatePubkey(req.body.fund);
+  const stake_accounts = req.body.stake_accounts;
+  if (!Array.isArray(stake_accounts)) {
+    return res
+      .status(400)
+      .send({ error: "Invalid stake_accounts, must be an array" });
+  }
+  if (!fund || !stake_accounts) {
+    return res
+      .status(400)
+      .send({ error: "Invalid input of fund or deactivateStakeAccountsTx" });
+  }
+
+  const validatedStakeAccounts = stake_accounts.map((stake_account) => {
+    const validStakeAccount = validatePubkey(stake_account);
+    if (!validStakeAccount) {
+      return res
+        .status(400)
+        .send({ error: `Invalid stake account: ${validStakeAccount}` });
+    }
+    return validStakeAccount;
+  });
+
+  const tx = await req.client.stakePool.withdrawFromStakeAccountsTx(
+    fund,
+    validatedStakeAccounts,
+    req.apiOptions
+  );
+  return await serializeTx(tx, res);
+});
+
+/*
  * Common
  */
 
