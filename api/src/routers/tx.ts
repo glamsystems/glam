@@ -204,7 +204,7 @@ router.post("/tx/stake/deactivate", async (req, res) => {
   if (!fund || !stake_accounts) {
     return res
       .status(400)
-      .send({ error: "Invalid input of fund or deactivateStakeAccountsTx" });
+      .send({ error: "Invalid input of fund or stake_accounts" });
   }
 
   const validatedStakeAccounts = stake_accounts.map((stake_account) => {
@@ -236,7 +236,7 @@ router.post("/tx/stake/withdraw", async (req, res) => {
   if (!fund || !stake_accounts) {
     return res
       .status(400)
-      .send({ error: "Invalid input of fund or deactivateStakeAccountsTx" });
+      .send({ error: "Invalid input of fund or stake_accounts" });
   }
 
   const validatedStakeAccounts = stake_accounts.map((stake_account) => {
