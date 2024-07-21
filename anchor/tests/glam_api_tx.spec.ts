@@ -7,8 +7,8 @@ import { GlamClient } from "../src/client";
 import {
   createFundForTest,
   quoteResponseForTest,
-  swapInstructionsForTest,
   sleep,
+  swapInstructionsForTest,
 } from "./setup";
 import { getAccount } from "@solana/spl-token";
 import { WSOL, MSOL } from "../src/";
@@ -31,9 +31,7 @@ const API = "http://localhost:8080";
 // default to mainnet demo fund addresses
 let manager = new PublicKey("gLJHKPrZLGBiBZ33hFgZh6YnsEhTVxuRT17UCqNp6ff");
 let fund = new PublicKey("4gAcSdfSAxVPcxj2Hi3AvKKViGat3iUysDD5ZzbqhDTk");
-let treasuryMSolAta = new PublicKey(
-  "GSkYFJBNcnRNgGmC6KgkrGtsy2omk8yf94wTPJtcYNtw"
-);
+let treasury = new PublicKey("B6pnanhAQosKjSbWvhvQX3oxZfRJn1jmMpuXYqSrAR3d");
 
 const confirmOptions: ConfirmOptions = {
   commitment: "confirmed",
@@ -54,6 +52,7 @@ describe("glam_api_tx", () => {
       // override default fund addresses
       fund = fundData.fundPDA;
       manager = glamClient.getManager();
+      treasury = glamClient.getTreasuryPDA(fund);
     }
   });
 
@@ -188,7 +187,112 @@ describe("glam_api_tx", () => {
     }
   }, 30_000);
 
-  it("Stake 0.1 SOL", async () => {
+  it("Stake 2 SOL to jito", async () => {
+    const response = await fetch(`${API}/tx/stakepool/stake`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        fund,
+        signer: manager,
+        stake_pool: "Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb",
+        amount: 2_000_000_000,
+      }),
+    });
+    const { tx } = await response.json();
+    console.log("Stake to jitoSOL tx:", tx);
+
+    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
+    try {
+      const txId = await glamClient.sendAndConfirm(vTx);
+      console.log("Stake to jitoSOL txId", txId);
+    } catch (error) {
+      console.error("Error", error);
+      throw error;
+    }
+  });
+
+  it("Withdraw 1 jitoSOL to a stake account", async () => {
+    const response = await fetch(`${API}/tx/stakepool/withdraw`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        fund,
+        signer: manager,
+        stake_pool: "Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb",
+        amount: 1_000_000_000,
+      }),
+    });
+    const { tx } = await response.json();
+    console.log("Withdraw stake tx:", tx);
+
+    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
+    try {
+      const txId = await glamClient.sendAndConfirm(vTx);
+      console.log("Withdraw stake txId", txId);
+    } catch (error) {
+      console.error("Error", error);
+      throw error;
+    }
+  });
+
+  it("Deactivate stake accounts", async () => {
+    const stakeAccounts = await glamClient.stakePool.getStakeAccounts(treasury);
+    expect(stakeAccounts.length).toBe(1);
+
+    const response = await fetch(`${API}/tx/stake/deactivate`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        fund,
+        signer: manager,
+        stake_accounts: stakeAccounts,
+      }),
+    });
+    expect(response.status).toBe(200);
+    const { tx } = await response.json();
+    console.log("Deactivate stake account tx:", tx);
+
+    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
+    try {
+      const txId = await glamClient.sendAndConfirm(vTx);
+      console.log("Deactivate stake account txId", txId);
+    } catch (error) {
+      console.error("Error", error);
+      throw error;
+    }
+  });
+
+  it("Withdraw from stake accounts", async () => {
+    let stakeAccounts = await glamClient.stakePool.getStakeAccounts(treasury);
+    expect(stakeAccounts.length).toBe(1);
+
+    const response = await fetch(`${API}/tx/stake/withdraw`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        fund,
+        signer: manager,
+        stake_accounts: stakeAccounts,
+      }),
+    });
+    expect(response.status).toBe(200);
+    const { tx } = await response.json();
+    console.log("Withdraw stake account tx:", tx);
+
+    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
+    try {
+      const txId = await glamClient.sendAndConfirm(vTx);
+      console.log("Withdraw stake account txId", txId);
+    } catch (error) {
+      console.error("Error", error);
+      throw error;
+    }
+
+    stakeAccounts = await glamClient.stakePool.getStakeAccounts(treasury);
+    expect(stakeAccounts.length).toBe(0);
+  });
+
+  it("Stake 0.1 SOL to marinade", async () => {
     const response = await fetch(`${API}/tx/marinade/stake`, {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -245,7 +349,7 @@ describe("glam_api_tx", () => {
     }
   }, 30_000);
 
-  it("Claim tickets", async () => {
+  it("Claim marinade tickets", async () => {
     // Before claiming we should have 2 tickets
     const { tickets } = await (
       await fetch(`${API}/fund/${fund}/tickets`)
