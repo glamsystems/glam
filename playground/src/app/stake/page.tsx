@@ -36,7 +36,7 @@ import { ExplorerLink } from "@/components/ExplorerLink";
 import {LAMPORTS_PER_SOL} from "@solana/web3.js";
 
 const stakeSchema = z.object({
-  service: z.enum(["Marinade"]),
+  service: z.enum(["Marinade","Native"]),
   amountIn: z.number().nonnegative(),
   amountInAsset: z.string(),
 });
@@ -45,6 +45,7 @@ type StakeSchema = z.infer<typeof stakeSchema>;
 
 const serviceToAssetMap: { [key in StakeSchema["service"]]: string } = {
   Marinade: "mSOL",
+  Native: "SOL"
   //Jito: "jitoSOL",
 };
 
@@ -72,7 +73,7 @@ export default function Stake() {
           publicKey: ticket.toBase58(),
           service: "marinade",
           status: "claimable",
-          label: "lst",
+          label: "liquid",
         }));
         setMarinadeTicket(transformedTickets);
         console.log(transformedTickets);

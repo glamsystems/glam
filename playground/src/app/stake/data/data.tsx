@@ -10,13 +10,9 @@ export const types = [
     label: "Native",
   },
   {
-    value: "lst",
-    label: "LST",
-  },
-  {
-    value: "lrt",
-    label: "LRT",
-  },
+    value: "liquid",
+    label: "Liquid",
+  }
 ];
 
 export const statuses = [
@@ -31,8 +27,43 @@ export const statuses = [
     icon: CheckCircledIcon,
   },
   {
-    value: "canceled",
-    label: "Canceled",
+    value: "active",
+    label: "Active",
     icon: CrossCircledIcon,
   },
+  {
+    value: "deactivating",
+    label: "Deactivating",
+    icon: StopwatchIcon,
+  },
+  {
+    value: "inactive",
+    label: "Inactive",
+    icon: CheckCircledIcon,
+  },
 ];
+
+/*
+Differences Marinade vs Native/Liquid
+
+Stake Account: Active, Deactivating, Inactive
+Ticket: Pending, Claimable
+
+Stake:
+* Service:
+ 1 Native
+ * long-term: provide validator selection interface (list validator) -> promote glam validator
+ * short-term: input field for pub key
+
+ 2 Marinade - ok
+ Marinade Native - same as native
+
+3 all below -> select LST in question,
+ Solana single-validator
+ Solana multi-validator
+ Sanctum single-validator
+ Sanctum multi-validator
+
+ change service to have Native, Native Marinade, Liquid Marinade, Liquid -> liquid expand to LST search command box (same as asset input)
+
+ */
