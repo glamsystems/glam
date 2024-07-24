@@ -120,23 +120,23 @@ pub mod glam {
 
     // Stake pool
     pub fn stake_pool_deposit(ctx: Context<StakePoolDeposit>, lamports: u64) -> Result<()> {
-        stakepool::stake_pool_deposit(ctx, lamports)
+        staking::stake_pool_deposit(ctx, lamports)
     }
 
     pub fn stake_pool_withdraw_sol(
         ctx: Context<StakePoolWithdrawSol>,
         lamports: u64,
     ) -> Result<()> {
-        stakepool::stake_pool_withdraw_sol(ctx, lamports)
+        staking::stake_pool_withdraw_sol(ctx, lamports)
     }
 
     pub fn stake_pool_withdraw_stake(
         ctx: Context<StakePoolWithdrawStake>,
         pool_token_amount: u64,
-        stake_account_bump: u8,
         stake_account_id: String,
+        stake_account_bump: u8,
     ) -> Result<()> {
-        stakepool::stake_pool_withdraw_stake(
+        staking::stake_pool_withdraw_stake(
             ctx,
             pool_token_amount,
             stake_account_bump,
@@ -144,16 +144,25 @@ pub mod glam {
         )
     }
 
+    pub fn native_stake<'info>(
+        ctx: Context<'_, '_, '_, 'info, NativeStake<'info>>,
+        lamports: u64,
+        stake_account_id: String,
+        stake_account_bump: u8,
+    ) -> Result<()> {
+        staking::native_stake(ctx, lamports, stake_account_id, stake_account_bump)
+    }
+
     pub fn deactivate_stake_accounts<'info>(
         ctx: Context<'_, '_, '_, 'info, DeactivateStakeAccounts<'info>>,
     ) -> Result<()> {
-        stakepool::deactivate_stake_accounts(ctx)
+        staking::deactivate_stake_accounts(ctx)
     }
 
     pub fn withdraw_from_stake_accounts<'info>(
         ctx: Context<'_, '_, '_, 'info, WithdrawFromStakeAccounts<'info>>,
     ) -> Result<()> {
-        stakepool::withdraw_from_stake_accounts(ctx)
+        staking::withdraw_from_stake_accounts(ctx)
     }
 
     // Jupiter
