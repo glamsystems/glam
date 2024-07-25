@@ -12,6 +12,10 @@ use spl_stake_pool::{
     ID as SPL_STAKE_POOL_PROGRAM_ID,
 };
 
+fn check_stake_pool_program(key: &Pubkey) -> bool {
+    [SANCTUM_STAKE_POOL_PROGRAM_ID, SPL_STAKE_POOL_PROGRAM_ID].contains(key)
+}
+
 #[derive(Accounts)]
 pub struct StakePoolDeposit<'info> {
     #[account(mut)]
@@ -25,7 +29,7 @@ pub struct StakePoolDeposit<'info> {
 
     /// CHECK: use constraint
     #[account(
-        constraint = stake_pool_program.key == &SANCTUM_STAKE_POOL_PROGRAM_ID || stake_pool_program.key == &SPL_STAKE_POOL_PROGRAM_ID
+        constraint = check_stake_pool_program(stake_pool_program.key)
     )]
     pub stake_pool_program: AccountInfo<'info>,
 
@@ -122,7 +126,7 @@ pub struct StakePoolWithdrawSol<'info> {
 
     /// CHECK: use constraint
     #[account(
-        constraint = stake_pool_program.key == &SANCTUM_STAKE_POOL_PROGRAM_ID || stake_pool_program.key == &SPL_STAKE_POOL_PROGRAM_ID
+        constraint = check_stake_pool_program(stake_pool_program.key)
     )]
     pub stake_pool_program: AccountInfo<'info>,
 
@@ -249,7 +253,7 @@ pub struct StakePoolWithdrawStake<'info> {
 
     /// CHECK: use constraint
     #[account(
-        constraint = stake_pool_program.key == &SANCTUM_STAKE_POOL_PROGRAM_ID || stake_pool_program.key == &SPL_STAKE_POOL_PROGRAM_ID
+        constraint = check_stake_pool_program(stake_pool_program.key)
     )]
     pub stake_pool_program: AccountInfo<'info>,
 
@@ -270,24 +274,25 @@ pub fn stake_pool_withdraw_stake<'c: 'info, 'info>(
     stake_account_id: String,
 ) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
-
-    // Create stake account and leave it uninitialized
-    msg!(
-        "Stake account address {}",
-        ctx.accounts.treasury_stake_account.key()
-    );
-    let seeds = &[
+    let stake_account_seeds = &[
         b"stake_account".as_ref(),
         stake_account_id.as_bytes(),
         fund_key.as_ref(),
         &[stake_account_bump],
     ];
-    let signer_seeds = &[&seeds[..]];
+    let treasury_seeds = &[
+        b"treasury".as_ref(),
+        fund_key.as_ref(),
+        &[ctx.bumps.treasury],
+    ];
+    let signer_seeds = &[&stake_account_seeds[..], &treasury_seeds[..]];
+
+    // Create stake account and leave it uninitialized
     system_program::create_account(
         CpiContext::new_with_signer(
             ctx.accounts.system_program.to_account_info(),
             system_program::CreateAccount {
-                from: ctx.accounts.manager.to_account_info(),
+                from: ctx.accounts.treasury.to_account_info(),
                 to: ctx
                     .accounts
                     .treasury_stake_account
@@ -301,12 +306,6 @@ pub fn stake_pool_withdraw_stake<'c: 'info, 'info>(
         &ctx.accounts.stake_program.key(),
     )?;
 
-    let seeds = &[
-        "treasury".as_bytes(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
     let ix = withdraw_stake(
         ctx.accounts.stake_pool_program.key,
         ctx.accounts.stake_pool.key,
@@ -322,9 +321,6 @@ pub fn stake_pool_withdraw_stake<'c: 'info, 'info>(
         ctx.accounts.token_program.key,
         pool_token_amount,
     );
-
-    msg!("Withdraw lamports: {}", pool_token_amount);
-
     let _ = invoke_signed(
         &ix,
         &[
@@ -343,7 +339,7 @@ pub fn stake_pool_withdraw_stake<'c: 'info, 'info>(
             ctx.accounts.token_program.to_account_info(),
             ctx.accounts.stake_program.to_account_info(),
         ],
-        signer_seeds,
+        &[&treasury_seeds[..]],
     )?;
 
     Ok(())

@@ -43,19 +43,20 @@ pub fn native_stake_deposit<'c: 'info, 'info>(
     stake_account_bump: u8,
 ) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
-
-    let seeds0 = &[
+    let stake_account_seeds = &[
         b"stake_account".as_ref(),
         stake_account_id.as_bytes(),
         fund_key.as_ref(),
         &[stake_account_bump],
     ];
-    let seeds = &[
+    let treasury_seeds = &[
         b"treasury".as_ref(),
         fund_key.as_ref(),
         &[ctx.bumps.treasury],
     ];
-    let signer_seeds = &[&seeds0[..], &seeds[..]];
+    let signer_seeds = &[&stake_account_seeds[..], &treasury_seeds[..]];
+
+    // Create the stake account
     system_program::create_account(
         CpiContext::new_with_signer(
             ctx.accounts.system_program.to_account_info(),
@@ -73,11 +74,8 @@ pub fn native_stake_deposit<'c: 'info, 'info>(
         std::mem::size_of::<StakeAccount>() as u64, // no +8
         &ctx.accounts.stake_program.key(),
     )?;
-    msg!(
-        "Stake account created: {}",
-        ctx.accounts.treasury_stake_account.key()
-    );
 
+    // Initialize the stake account
     let init_stake_ix = solana_program::stake::instruction::initialize(
         ctx.accounts.treasury_stake_account.key,
         &solana_program::stake::state::Authorized {
@@ -99,12 +97,7 @@ pub fn native_stake_deposit<'c: 'info, 'info>(
         signer_seeds,
     )?;
 
-    let seeds = &[
-        b"treasury".as_ref(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
+    // Delegate the stake account
     let delegate_stake_ix = solana_program::stake::instruction::delegate_stake(
         ctx.accounts.treasury_stake_account.key,
         ctx.accounts.treasury.key,
@@ -120,7 +113,7 @@ pub fn native_stake_deposit<'c: 'info, 'info>(
             ctx.accounts.stake_config.clone(),
             ctx.accounts.treasury.to_account_info(),
         ],
-        signer_seeds,
+        &[&treasury_seeds[..]],
     )?;
 
     Ok(())
