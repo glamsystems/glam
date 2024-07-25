@@ -15,7 +15,7 @@ export class GlamClient extends BaseClient {
   jupiter: JupiterClient;
   marinade: MarinadeClient;
   wsol: WSolClient;
-  stakePool: StakingClient;
+  staking: StakingClient;
 
   public constructor(config?: GlamClientConfig) {
     super(config);
@@ -24,6 +24,6 @@ export class GlamClient extends BaseClient {
     this.jupiter = new JupiterClient(this);
     this.marinade = new MarinadeClient(this);
     this.wsol = new WSolClient(this);
-    this.stakePool = new StakingClient(this);
+    this.staking = new StakingClient(this);
   }
 }

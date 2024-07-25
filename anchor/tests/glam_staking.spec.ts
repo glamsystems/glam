@@ -11,7 +11,7 @@ const BONK_STAKE_POOL = new PublicKey(
   "ArAQfbzsdotoKB5jJcZa3ajQrrPcWr2YQoDAEAiFxJAC"
 );
 
-describe("glam_stakepool", () => {
+describe("glam_staking", () => {
   const glamClient = new GlamClient();
   const connection = glamClient.provider.connection;
 
@@ -31,9 +31,28 @@ describe("glam_stakepool", () => {
     });
   });
 
+  it("Natively stake 10 SOL to a validator", async () => {
+    try {
+      const txSig = await glamClient.staking.nativeStakeDeposit(
+        fundPDA,
+        new PublicKey("J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp"),
+        new BN(10_000_000_000)
+      );
+      console.log("nativeStakeDeposit tx:", txSig);
+
+      const stakeAccounts = await glamClient.staking.getStakeAccounts(
+        glamClient.getTreasuryPDA(fundPDA)
+      );
+      expect(stakeAccounts.length).toEqual(1);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  });
+
   it("Deposit 10 SOL to jito stake pool", async () => {
     try {
-      const txSig = await glamClient.stakePool.depositSol(
+      const txSig = await glamClient.staking.stakePoolDepositSol(
         fundPDA,
         JITO_STAKE_POOL,
         new BN(10_000_000_000)
@@ -47,17 +66,17 @@ describe("glam_stakepool", () => {
 
   it("Withdraw 1 jitoSOL to stake account", async () => {
     try {
-      const txSig = await glamClient.stakePool.withdrawStake(
+      const txSig = await glamClient.staking.stakePoolWithdrawStake(
         fundPDA,
         JITO_STAKE_POOL,
         new BN(1_000_000_000)
       );
       console.log("stakePoolWithdrawStake tx:", txSig);
 
-      const stakeAccounts = await glamClient.stakePool.getStakeAccounts(
+      const stakeAccounts = await glamClient.staking.getStakeAccounts(
         glamClient.getTreasuryPDA(fundPDA)
       );
-      expect(stakeAccounts.length).toEqual(1);
+      expect(stakeAccounts.length).toEqual(2);
     } catch (e) {
       console.error(e);
       throw e;
@@ -66,7 +85,7 @@ describe("glam_stakepool", () => {
 
   it("Deposit 10 SOL to bonk stake pool", async () => {
     try {
-      const txSig = await glamClient.stakePool.depositSol(
+      const txSig = await glamClient.staking.stakePoolDepositSol(
         fundPDA,
         BONK_STAKE_POOL,
         new BN(10_000_000_000)
@@ -80,7 +99,7 @@ describe("glam_stakepool", () => {
 
   it("Withdraw 1 bonkSOL to stake account", async () => {
     try {
-      const txSig = await glamClient.stakePool.withdrawStake(
+      const txSig = await glamClient.staking.stakePoolWithdrawStake(
         fundPDA,
         BONK_STAKE_POOL,
         new BN(1_000_000_000)
@@ -88,21 +107,22 @@ describe("glam_stakepool", () => {
       console.log("stakePoolWithdrawStake tx:", txSig);
 
       // Now we should have 2 stake accounts: 1 from jito and 1 from bonk
-      const stakeAccounts = await glamClient.stakePool.getStakeAccounts(
+      const stakeAccounts = await glamClient.staking.getStakeAccounts(
         glamClient.getTreasuryPDA(fundPDA)
       );
-      expect(stakeAccounts.length).toEqual(2);
+      expect(stakeAccounts.length).toEqual(3);
     } catch (e) {
       console.error(e);
       throw e;
     }
   });
+
   it("Deactivate stake accounts", async () => {
-    const stakeAccounts = await glamClient.stakePool.getStakeAccounts(
+    const stakeAccounts = await glamClient.staking.getStakeAccounts(
       glamClient.getTreasuryPDA(fundPDA)
     );
     try {
-      const txSig = await glamClient.stakePool.deactivateStakeAccounts(
+      const txSig = await glamClient.staking.deactivateStakeAccounts(
         fundPDA,
         stakeAccounts
       );
@@ -114,7 +134,7 @@ describe("glam_stakepool", () => {
   });
 
   it("Withdraw from stake accounts", async () => {
-    const stakeAccounts = await glamClient.stakePool.getStakeAccounts(
+    const stakeAccounts = await glamClient.staking.getStakeAccounts(
       glamClient.getTreasuryPDA(fundPDA)
     );
 
@@ -129,7 +149,7 @@ describe("glam_stakepool", () => {
     ))!.lamports;
 
     try {
-      const txSig = await glamClient.stakePool.withdrawFromStakeAccounts(
+      const txSig = await glamClient.staking.withdrawFromStakeAccounts(
         fundPDA,
         stakeAccounts
       );
@@ -146,7 +166,7 @@ describe("glam_stakepool", () => {
       treasuryLamportsBefore + lamportsInStakeAccounts
     );
 
-    const stakeAccountsAfter = await glamClient.stakePool.getStakeAccounts(
+    const stakeAccountsAfter = await glamClient.staking.getStakeAccounts(
       glamClient.getTreasuryPDA(fundPDA)
     );
     expect(stakeAccountsAfter.length).toEqual(0);
