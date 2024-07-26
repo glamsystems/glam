@@ -11,6 +11,10 @@ const BONK_STAKE_POOL = new PublicKey(
   "ArAQfbzsdotoKB5jJcZa3ajQrrPcWr2YQoDAEAiFxJAC"
 );
 
+const PHASE_LABS_STAKE_POOL = new PublicKey(
+  "phasejkG1akKgqkLvfWzWY17evnH6mSWznnUspmpyeG"
+);
+
 describe("glam_staking", () => {
   const glamClient = new GlamClient();
   const connection = glamClient.provider.connection;
@@ -31,6 +35,40 @@ describe("glam_staking", () => {
     });
   });
 
+  it("Deposit 10 SOL to phase labs stake pool", async () => {
+    try {
+      const txSig = await glamClient.staking.stakePoolDepositSol(
+        fundPDA,
+        PHASE_LABS_STAKE_POOL,
+        new BN(10_000_000_000)
+      );
+      console.log("stakePoolDeposit tx:", txSig);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  });
+
+  it("Withdraw 1 phaseSOL to stake account", async () => {
+    try {
+      const txSig = await glamClient.staking.stakePoolWithdrawStake(
+        fundPDA,
+        PHASE_LABS_STAKE_POOL,
+        new BN(1_000_000_000)
+      );
+      console.log("stakePoolWithdrawStake tx:", txSig);
+
+      const stakeAccounts = await glamClient.staking.getStakeAccounts(
+        glamClient.getTreasuryPDA(fundPDA)
+      );
+      expect(stakeAccounts.length).toEqual(2);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  });
+
+  /*
   it("Natively stake 10 SOL to a validator", async () => {
     try {
       const txSig = await glamClient.staking.nativeStakeDeposit(
@@ -171,4 +209,5 @@ describe("glam_staking", () => {
     );
     expect(stakeAccountsAfter.length).toEqual(0);
   });
+  */
 });

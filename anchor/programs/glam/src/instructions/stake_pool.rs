@@ -13,7 +13,12 @@ use spl_stake_pool::{
 };
 
 fn check_stake_pool_program(key: &Pubkey) -> bool {
-    [SANCTUM_STAKE_POOL_PROGRAM_ID, SPL_STAKE_POOL_PROGRAM_ID].contains(key)
+    [
+        SANCTUM_SINGLE_VALIDATOR,
+        SANCTUM_MULTI_VALIDATOR,
+        SPL_STAKE_POOL_PROGRAM_ID,
+    ]
+    .contains(key)
 }
 
 #[derive(Accounts)]
