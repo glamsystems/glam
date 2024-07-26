@@ -34,7 +34,7 @@ export class StakingClient {
     stakePool: PublicKey,
     amount: BN
   ): Promise<TransactionSignature> {
-    const tx = await this.depositSolTx(fund, stakePool, amount);
+    const tx = await this.stakePoolDepositSolTx(fund, stakePool, amount);
     return await this.base.sendAndConfirm(tx);
   }
 
@@ -43,16 +43,16 @@ export class StakingClient {
     stakePool: PublicKey,
     amount: BN
   ): Promise<TransactionSignature> {
-    const tx = await this.withdrawStakeTx(fund, stakePool, amount);
+    const tx = await this.stakePoolWithdrawStakeTx(fund, stakePool, amount);
     return await this.base.sendAndConfirm(tx);
   }
 
   public async nativeStakeDeposit(
     fund: PublicKey,
-    stakePool: PublicKey,
+    vote: PublicKey,
     amount: BN
   ): Promise<TransactionSignature> {
-    const tx = await this.nativeStakeDepositTx(fund, stakePool, amount);
+    const tx = await this.nativeStakeDepositTx(fund, vote, amount);
     return await this.base.sendAndConfirm(tx);
   }
 
@@ -153,7 +153,7 @@ export class StakingClient {
    * API methods
    */
 
-  public async depositSolTx(
+  public async stakePoolDepositSolTx(
     fund: PublicKey,
     stakePool: PublicKey,
     amount: BN,
@@ -195,7 +195,7 @@ export class StakingClient {
     });
   }
 
-  public async withdrawStakeTx(
+  public async stakePoolWithdrawStakeTx(
     fund: PublicKey,
     stakePool: PublicKey,
     amount: BN,
