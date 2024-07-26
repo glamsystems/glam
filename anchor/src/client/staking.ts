@@ -6,6 +6,7 @@ import {
   StakeProgram,
   SYSVAR_CLOCK_PUBKEY,
   SYSVAR_STAKE_HISTORY_PUBKEY,
+  STAKE_CONFIG_ID,
 } from "@solana/web3.js";
 
 import { BaseClient, ApiTxOptions } from "./base";
@@ -28,7 +29,7 @@ export class StakingClient {
    * Client methods
    */
 
-  public async depositSol(
+  public async stakePoolDepositSol(
     fund: PublicKey,
     stakePool: PublicKey,
     amount: BN
@@ -37,12 +38,21 @@ export class StakingClient {
     return await this.base.sendAndConfirm(tx);
   }
 
-  public async withdrawStake(
+  public async stakePoolWithdrawStake(
     fund: PublicKey,
     stakePool: PublicKey,
     amount: BN
   ): Promise<TransactionSignature> {
     const tx = await this.withdrawStakeTx(fund, stakePool, amount);
+    return await this.base.sendAndConfirm(tx);
+  }
+
+  public async nativeStakeDeposit(
+    fund: PublicKey,
+    stakePool: PublicKey,
+    amount: BN
+  ): Promise<TransactionSignature> {
+    const tx = await this.nativeStakeDepositTx(fund, stakePool, amount);
     return await this.base.sendAndConfirm(tx);
   }
 
@@ -80,14 +90,23 @@ export class StakingClient {
     );
   }
 
+  getStakePoolWithdrawAuthority(programId: PublicKey, stakePool: PublicKey) {
+    const [publicKey] = PublicKey.findProgramAddressSync(
+      [stakePool.toBuffer(), Buffer.from("withdraw")],
+      programId
+    );
+    return publicKey;
+  }
+
   async getStakeAccounts(withdrawAuthority: PublicKey): Promise<PublicKey[]> {
+    const STAKE_ACCOUNT_SIZE = 200;
     const accounts =
       await this.base.provider.connection.getParsedProgramAccounts(
         StakeProgram.programId,
         {
           filters: [
             {
-              dataSize: 200,
+              dataSize: STAKE_ACCOUNT_SIZE,
             },
             {
               memcmp: {
@@ -114,7 +133,7 @@ export class StakingClient {
     );
     const stakePoolAccountData = stakePoolAccount.account.data;
     const stakePoolProgramId = stakePoolAccount.account.owner;
-    const stakePoolWithdrawAuthority = this.getStakePoolWithdrawAuthorityPDA(
+    const stakePoolWithdrawAuthority = this.getStakePoolWithdrawAuthority(
       stakePoolProgramId,
       stakePool
     );
@@ -128,17 +147,6 @@ export class StakingClient {
       tokenProgramId: stakePoolAccountData.tokenProgramId,
       validatorList: stakePoolAccountData.validatorList,
     };
-  }
-
-  getStakePoolWithdrawAuthorityPDA(
-    programId: PublicKey,
-    stakePoolAddress: PublicKey
-  ) {
-    const [publicKey] = PublicKey.findProgramAddressSync(
-      [stakePoolAddress.toBuffer(), Buffer.from("withdraw")],
-      programId
-    );
-    return publicKey;
   }
 
   /*
@@ -211,16 +219,12 @@ export class StakingClient {
     console.log("validatorStakeAccounts:", validatorStakeAccounts);
 
     const stakeAccountId = Date.now().toString();
-    const [stakeAccountPda, bump] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("stake_account"),
-        Buffer.from(stakeAccountId),
-        fund.toBuffer(),
-      ],
-      this.base.program.programId
+    const [stakeAccountPda, bump] = this.getStakeAccountPDA(
+      fund,
+      stakeAccountId
     );
     const tx = await this.base.program.methods
-      .stakePoolWithdrawStake(amount, bump, stakeAccountId)
+      .stakePoolWithdrawStake(amount, stakeAccountId, bump)
       .accounts({
         manager,
         fund,
@@ -239,6 +243,39 @@ export class StakingClient {
         tokenProgram,
       })
       .transaction();
+    return await this.base.intoVersionedTransaction({
+      tx,
+      ...apiOptions,
+    });
+  }
+
+  public async nativeStakeDepositTx(
+    fund: PublicKey,
+    vote: PublicKey,
+    amount: BN,
+    apiOptions: ApiTxOptions = {}
+  ): Promise<VersionedTransaction> {
+    const manager = apiOptions.signer || this.base.getManager();
+    const treasury = this.base.getTreasuryPDA(fund);
+    const stakeAccountId = Date.now().toString();
+    const [stakeAccountPda, bump] = this.getStakeAccountPDA(
+      fund,
+      stakeAccountId
+    );
+    const tx = await this.base.program.methods
+      .nativeStakeDeposit(amount, stakeAccountId, bump)
+      .accounts({
+        manager,
+        fund,
+        treasury,
+        treasuryStakeAccount: stakeAccountPda,
+        vote,
+        stakeConfig: STAKE_CONFIG_ID,
+        stakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
+        stakeProgram: StakeProgram.programId,
+      })
+      .transaction();
+
     return await this.base.intoVersionedTransaction({
       tx,
       ...apiOptions,
@@ -282,7 +319,6 @@ export class StakingClient {
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
-    console.log("withdraw from stakeAccounts:", stakeAccounts);
     const tx = await this.base.program.methods
       .withdrawFromStakeAccounts()
       .accounts({

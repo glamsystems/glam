@@ -1081,12 +1081,86 @@
           "type": "u64"
         },
         {
+          "name": "stakeAccountId",
+          "type": "string"
+        },
+        {
           "name": "stakeAccountBump",
           "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "nativeStakeDeposit",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryStakeAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vote",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeHistory",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "lamports",
+          "type": "u64"
         },
         {
           "name": "stakeAccountId",
           "type": "string"
+        },
+        {
+          "name": "stakeAccountBump",
+          "type": "u8"
         }
       ]
     },

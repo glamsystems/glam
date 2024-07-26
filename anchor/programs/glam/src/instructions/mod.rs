@@ -3,7 +3,8 @@ pub mod investor;
 pub mod jupiter;
 pub mod manager;
 pub mod marinade;
-pub mod stakepool;
+pub mod stake;
+pub mod stake_pool;
 pub mod wsol;
 
 pub use drift::*;
@@ -11,5 +12,6 @@ pub use investor::*;
 pub use jupiter::*;
 pub use manager::*;
 pub use marinade::*;
-pub use stakepool::*;
+pub use stake::*;
+pub use stake_pool::*;
 pub use wsol::*;

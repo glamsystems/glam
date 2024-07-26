@@ -2,7 +2,7 @@ use crate::{constants::*, state::*};
 use anchor_lang::{prelude::*, system_program};
 use anchor_spl::{
     associated_token::AssociatedToken,
-    stake::{deactivate_stake, withdraw, DeactivateStake, Stake, StakeAccount, Withdraw},
+    stake::{Stake, StakeAccount},
     token::{Mint, Token, TokenAccount},
 };
 
@@ -11,6 +11,10 @@ use spl_stake_pool::{
     instruction::{deposit_sol, withdraw_sol, withdraw_stake},
     ID as SPL_STAKE_POOL_PROGRAM_ID,
 };
+
+fn check_stake_pool_program(key: &Pubkey) -> bool {
+    [SANCTUM_STAKE_POOL_PROGRAM_ID, SPL_STAKE_POOL_PROGRAM_ID].contains(key)
+}
 
 #[derive(Accounts)]
 pub struct StakePoolDeposit<'info> {
@@ -25,7 +29,7 @@ pub struct StakePoolDeposit<'info> {
 
     /// CHECK: use constraint
     #[account(
-        constraint = stake_pool_program.key == &SANCTUM_STAKE_POOL_PROGRAM_ID || stake_pool_program.key == &SPL_STAKE_POOL_PROGRAM_ID
+        constraint = check_stake_pool_program(stake_pool_program.key)
     )]
     pub stake_pool_program: AccountInfo<'info>,
 
@@ -122,7 +126,7 @@ pub struct StakePoolWithdrawSol<'info> {
 
     /// CHECK: use constraint
     #[account(
-        constraint = stake_pool_program.key == &SANCTUM_STAKE_POOL_PROGRAM_ID || stake_pool_program.key == &SPL_STAKE_POOL_PROGRAM_ID
+        constraint = check_stake_pool_program(stake_pool_program.key)
     )]
     pub stake_pool_program: AccountInfo<'info>,
 
@@ -249,7 +253,7 @@ pub struct StakePoolWithdrawStake<'info> {
 
     /// CHECK: use constraint
     #[account(
-        constraint = stake_pool_program.key == &SANCTUM_STAKE_POOL_PROGRAM_ID || stake_pool_program.key == &SPL_STAKE_POOL_PROGRAM_ID
+        constraint = check_stake_pool_program(stake_pool_program.key)
     )]
     pub stake_pool_program: AccountInfo<'info>,
 
@@ -270,24 +274,25 @@ pub fn stake_pool_withdraw_stake<'c: 'info, 'info>(
     stake_account_id: String,
 ) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
-
-    // Create stake account and leave it uninitialized
-    msg!(
-        "Stake account address {}",
-        ctx.accounts.treasury_stake_account.key()
-    );
-    let seeds = &[
+    let stake_account_seeds = &[
         b"stake_account".as_ref(),
         stake_account_id.as_bytes(),
         fund_key.as_ref(),
         &[stake_account_bump],
     ];
-    let signer_seeds = &[&seeds[..]];
+    let treasury_seeds = &[
+        b"treasury".as_ref(),
+        fund_key.as_ref(),
+        &[ctx.bumps.treasury],
+    ];
+    let signer_seeds = &[&stake_account_seeds[..], &treasury_seeds[..]];
+
+    // Create stake account and leave it uninitialized
     system_program::create_account(
         CpiContext::new_with_signer(
             ctx.accounts.system_program.to_account_info(),
             system_program::CreateAccount {
-                from: ctx.accounts.manager.to_account_info(),
+                from: ctx.accounts.treasury.to_account_info(),
                 to: ctx
                     .accounts
                     .treasury_stake_account
@@ -301,12 +306,6 @@ pub fn stake_pool_withdraw_stake<'c: 'info, 'info>(
         &ctx.accounts.stake_program.key(),
     )?;
 
-    let seeds = &[
-        "treasury".as_bytes(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
     let ix = withdraw_stake(
         ctx.accounts.stake_pool_program.key,
         ctx.accounts.stake_pool.key,
@@ -322,9 +321,6 @@ pub fn stake_pool_withdraw_stake<'c: 'info, 'info>(
         ctx.accounts.token_program.key,
         pool_token_amount,
     );
-
-    msg!("Withdraw lamports: {}", pool_token_amount);
-
     let _ = invoke_signed(
         &ix,
         &[
@@ -343,102 +339,8 @@ pub fn stake_pool_withdraw_stake<'c: 'info, 'info>(
             ctx.accounts.token_program.to_account_info(),
             ctx.accounts.stake_program.to_account_info(),
         ],
-        signer_seeds,
+        &[&treasury_seeds[..]],
     )?;
-
-    Ok(())
-}
-
-#[derive(Accounts)]
-pub struct DeactivateStakeAccounts<'info> {
-    #[account(mut)]
-    pub manager: Signer<'info>,
-
-    #[account(has_one = treasury)]
-    pub fund: Box<Account<'info, FundAccount>>,
-
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
-
-    pub clock: Sysvar<'info, Clock>,
-    pub stake_program: Program<'info, Stake>,
-}
-
-#[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Unstake)
-)]
-pub fn deactivate_stake_accounts<'info>(
-    ctx: Context<'_, '_, '_, 'info, DeactivateStakeAccounts<'info>>,
-) -> Result<()> {
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        b"treasury".as_ref(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
-    ctx.remaining_accounts.iter().for_each(|stake_account| {
-        let cpi_ctx = CpiContext::new_with_signer(
-            ctx.accounts.stake_program.to_account_info(),
-            DeactivateStake {
-                stake: stake_account.clone(),
-                staker: ctx.accounts.treasury.to_account_info(),
-                clock: ctx.accounts.clock.to_account_info(),
-            },
-            signer_seeds,
-        );
-        let _ = deactivate_stake(cpi_ctx);
-    });
-    Ok(())
-}
-
-#[derive(Accounts)]
-pub struct WithdrawFromStakeAccounts<'info> {
-    #[account(mut)]
-    pub manager: Signer<'info>,
-
-    #[account(has_one = treasury)]
-    pub fund: Box<Account<'info, FundAccount>>,
-
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
-
-    pub clock: Sysvar<'info, Clock>,
-    pub stake_history: Sysvar<'info, StakeHistory>,
-    pub stake_program: Program<'info, Stake>,
-}
-
-#[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Unstake)
-)]
-pub fn withdraw_from_stake_accounts<'info>(
-    ctx: Context<'_, '_, '_, 'info, WithdrawFromStakeAccounts<'info>>,
-) -> Result<()> {
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        b"treasury".as_ref(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
-    ctx.remaining_accounts.iter().for_each(|stake_account| {
-        let lamports = stake_account.get_lamports();
-        let cpi_ctx = CpiContext::new_with_signer(
-            ctx.accounts.stake_program.to_account_info(),
-            Withdraw {
-                stake: stake_account.clone(),
-                withdrawer: ctx.accounts.treasury.to_account_info(),
-                to: ctx.accounts.treasury.to_account_info(),
-                clock: ctx.accounts.clock.to_account_info(),
-                stake_history: ctx.accounts.stake_history.to_account_info(),
-            },
-            signer_seeds,
-        );
-
-        let _ = withdraw(cpi_ctx, lamports, None);
-    });
 
     Ok(())
 }
