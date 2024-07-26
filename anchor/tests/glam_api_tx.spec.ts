@@ -187,8 +187,32 @@ describe("glam_api_tx", () => {
     }
   }, 30_000);
 
+  it("Natively stake 2 SOL to a validator", async () => {
+    const response = await fetch(`${API}/tx/stake/deposit`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        fund,
+        signer: manager,
+        validator_vote: "J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp",
+        amount: 2_000_000_000,
+      }),
+    });
+    const { tx } = await response.json();
+    console.log("Native stake tx:", tx);
+
+    const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
+    try {
+      const txId = await glamClient.sendAndConfirm(vTx);
+      console.log("Native stake txId", txId);
+    } catch (error) {
+      console.error("Error", error);
+      throw error;
+    }
+  });
+
   it("Stake 2 SOL to jito", async () => {
-    const response = await fetch(`${API}/tx/stakepool/stake`, {
+    const response = await fetch(`${API}/tx/stakepool/deposit`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
@@ -236,8 +260,8 @@ describe("glam_api_tx", () => {
   });
 
   it("Deactivate stake accounts", async () => {
-    const stakeAccounts = await glamClient.stakePool.getStakeAccounts(treasury);
-    expect(stakeAccounts.length).toBe(1);
+    const stakeAccounts = await glamClient.staking.getStakeAccounts(treasury);
+    expect(stakeAccounts.length).toBe(2);
 
     const response = await fetch(`${API}/tx/stake/deactivate`, {
       method: "POST",
@@ -263,8 +287,8 @@ describe("glam_api_tx", () => {
   });
 
   it("Withdraw from stake accounts", async () => {
-    let stakeAccounts = await glamClient.stakePool.getStakeAccounts(treasury);
-    expect(stakeAccounts.length).toBe(1);
+    let stakeAccounts = await glamClient.staking.getStakeAccounts(treasury);
+    expect(stakeAccounts.length).toBe(2);
 
     const response = await fetch(`${API}/tx/stake/withdraw`, {
       method: "POST",
@@ -288,7 +312,7 @@ describe("glam_api_tx", () => {
       throw error;
     }
 
-    stakeAccounts = await glamClient.stakePool.getStakeAccounts(treasury);
+    stakeAccounts = await glamClient.staking.getStakeAccounts(treasury);
     expect(stakeAccounts.length).toBe(0);
   });
 

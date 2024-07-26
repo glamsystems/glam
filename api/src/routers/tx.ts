@@ -149,7 +149,7 @@ router.post("/tx/marinade/unstake/claim", async (req, res) => {
 /*
  * Stake pools
  */
-router.post("/tx/stakepool/stake", async (req, res) => {
+router.post("/tx/stakepool/deposit", async (req, res) => {
   const fund = validatePubkey(req.body.fund);
   const stakePool = validatePubkey(req.body.stake_pool);
   const amount = validateBN(req.body.amount);
@@ -160,7 +160,7 @@ router.post("/tx/stakepool/stake", async (req, res) => {
       .send({ error: "Invalid input of fund, stakePool, or amount" });
   }
 
-  const tx = await req.client.stakePool.depositSolTx(
+  const tx = await req.client.staking.stakePoolDepositSolTx(
     fund,
     stakePool,
     amount,
@@ -180,7 +180,7 @@ router.post("/tx/stakepool/withdraw", async (req, res) => {
       .send({ error: "Invalid input of fund, stakePool, or amount" });
   }
 
-  const tx = await req.client.stakePool.withdrawStakeTx(
+  const tx = await req.client.staking.stakePoolWithdrawStakeTx(
     fund,
     stakePool,
     amount,
@@ -192,6 +192,26 @@ router.post("/tx/stakepool/withdraw", async (req, res) => {
 /*
  * Stake program (aka native staking)
  */
+
+router.post("/tx/stake/deposit", async (req, res) => {
+  const fund = validatePubkey(req.body.fund);
+  const vote = validatePubkey(req.body.validator_vote);
+  const amount = validateBN(req.body.amount);
+
+  if (!fund || !vote || !amount) {
+    return res
+      .status(400)
+      .send({ error: "Invalid input of fund, stakePool, or amount" });
+  }
+
+  const tx = await req.client.staking.nativeStakeDepositTx(
+    fund,
+    vote,
+    amount,
+    req.apiOptions
+  );
+  return await serializeTx(tx, res);
+});
 
 router.post("/tx/stake/deactivate", async (req, res) => {
   const fund = validatePubkey(req.body.fund);
@@ -217,7 +237,7 @@ router.post("/tx/stake/deactivate", async (req, res) => {
     return validStakeAccount;
   });
 
-  const tx = await req.client.stakePool.deactivateStakeAccountsTx(
+  const tx = await req.client.staking.deactivateStakeAccountsTx(
     fund,
     validatedStakeAccounts,
     req.apiOptions
@@ -249,7 +269,7 @@ router.post("/tx/stake/withdraw", async (req, res) => {
     return validStakeAccount;
   });
 
-  const tx = await req.client.stakePool.withdrawFromStakeAccountsTx(
+  const tx = await req.client.staking.withdrawFromStakeAccountsTx(
     fund,
     validatedStakeAccounts,
     req.apiOptions
