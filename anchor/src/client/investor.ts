@@ -146,6 +146,24 @@ export class InvestorClient {
       }
     }
 
+    // Treasury ATA
+    // If the treasury ATA doesn't exist, create it.
+    // This is unlikely, but especially with wSOL may happen.
+    const accountInfo = await this.base.provider.connection.getAccountInfo(
+      treasuryAta
+    );
+    if (!accountInfo) {
+      preInstructions = preInstructions.concat([
+        createAssociatedTokenAccountInstruction(
+          signer,
+          treasuryAta,
+          treasury,
+          asset,
+          assetMeta?.programId
+        ),
+      ]);
+    }
+
     const tx = await this.base.program.methods
       .subscribe(amount, skipState)
       .accounts({

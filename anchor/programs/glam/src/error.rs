@@ -38,6 +38,8 @@ pub enum InvestorError {
     InvalidTreasuryAccount,
     #[msg("Invalid asset price")]
     InvalidAssetPrice,
+    #[msg("Subscription not allowed: invalid stable coin price")]
+    InvalidStableCoinPriceForSubscribe,
 }
 
 #[error_code]
