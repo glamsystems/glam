@@ -27,7 +27,7 @@ import {
 import { Glam, GlamIDL, GlamProgram, getGlamProgramId } from "../glamExports";
 import { ClusterOrCustom, GlamClientConfig } from "../clientConfig";
 import { FundModel, FundOpenfundsModel } from "../models";
-import { AssetMeta, ASSETS_DEVNET, ASSETS_MAINNET } from "./assets";
+import { AssetMeta, ASSETS_TESTS, ASSETS_MAINNET } from "./assets";
 
 type FundAccount = IdlAccounts<Glam>["fundAccount"];
 type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
@@ -96,7 +96,8 @@ export class BaseClient {
     return (
       (this.isMainnet()
         ? ASSETS_MAINNET.get(asset)
-        : ASSETS_DEVNET.get(asset)) || new AssetMeta()
+        : ASSETS_MAINNET.get(asset) || ASSETS_TESTS.get(asset)) ||
+      new AssetMeta()
     );
   }
 
