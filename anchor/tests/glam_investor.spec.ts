@@ -236,45 +236,6 @@ describe("glam_investor", () => {
     }
   });
 
-  it("Create treasury ATAs", async () => {
-    // TODO: can we automatically create treasury ATAs?
-    try {
-      const tx = new Transaction().add(
-        createAssociatedTokenAccountInstruction(
-          manager.publicKey,
-          treasuryUsdcAta,
-          treasuryPDA,
-          usdc.publicKey,
-          TOKEN_PROGRAM_ID,
-          ASSOCIATED_TOKEN_PROGRAM_ID
-        ),
-        createAssociatedTokenAccountInstruction(
-          manager.publicKey,
-          treasuryEthAta,
-          treasuryPDA,
-          ethOrWsol,
-          TOKEN_PROGRAM_ID,
-          ASSOCIATED_TOKEN_PROGRAM_ID
-        ),
-        createAssociatedTokenAccountInstruction(
-          manager.publicKey,
-          treasuryBtcAta,
-          treasuryPDA,
-          btc.publicKey,
-          BTC_TOKEN_PROGRAM_ID,
-          ASSOCIATED_TOKEN_PROGRAM_ID
-        )
-      );
-      await sendAndConfirmTransaction(connection, tx, [manager.payer], {
-        skipPreflight: true,
-        commitment,
-      });
-    } catch (e) {
-      console.error(e);
-      throw e;
-    }
-  });
-
   it("Manager tests subscribe ETH to fund", async () => {
     const amount = useWsolInsteadOfEth
       ? new BN(500 * 10 ** 9)
@@ -338,8 +299,8 @@ describe("glam_investor", () => {
           shareClass: invalidShareClass,
           signerShareAta: shareAta,
           asset: btc.publicKey,
-          treasuryAta: treasuryBtcAta,
-          signerAssetAta: managerBtcAta,
+          treasuryAta: treasuryEthAta,
+          signerAssetAta: managerEthAta,
           signer: manager.publicKey,
           tokenProgram: TOKEN_PROGRAM_ID,
           token2022Program: TOKEN_2022_PROGRAM_ID,
@@ -425,6 +386,12 @@ describe("glam_investor", () => {
     const amountExt = new BN(250_000_000);
     try {
       const tx1 = new Transaction().add(
+        createAssociatedTokenAccountInstruction(
+          manager.publicKey,
+          treasuryUsdcAta,
+          treasuryPDA,
+          usdc.publicKey
+        ),
         createTransferCheckedInstruction(
           managerUsdcAta,
           usdc.publicKey,

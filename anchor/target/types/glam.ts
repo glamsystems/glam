@@ -2400,6 +2400,9 @@ export type Glam = {
           },
           {
             "name": "InvalidAssetPrice"
+          },
+          {
+            "name": "InvalidStableCoinPriceForSubscribe"
           }
         ]
       }
@@ -2654,6 +2657,20 @@ export type Glam = {
           },
           {
             "name": "WSolUnwrap"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Action",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Subscribe"
+          },
+          {
+            "name": "Redeem"
           }
         ]
       }
@@ -6211,6 +6228,9 @@ export const IDL: Glam = {
           },
           {
             "name": "InvalidAssetPrice"
+          },
+          {
+            "name": "InvalidStableCoinPriceForSubscribe"
           }
         ]
       }
@@ -6465,6 +6485,20 @@ export const IDL: Glam = {
           },
           {
             "name": "WSolUnwrap"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Action",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Subscribe"
+          },
+          {
+            "name": "Redeem"
           }
         ]
       }

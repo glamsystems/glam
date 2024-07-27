@@ -2400,6 +2400,9 @@
           },
           {
             "name": "InvalidAssetPrice"
+          },
+          {
+            "name": "InvalidStableCoinPriceForSubscribe"
           }
         ]
       }
@@ -2654,6 +2657,20 @@
           },
           {
             "name": "WSolUnwrap"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Action",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Subscribe"
+          },
+          {
+            "name": "Redeem"
           }
         ]
       }

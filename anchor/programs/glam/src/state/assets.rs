@@ -13,9 +13,16 @@ use crate::error::InvestorError;
 //     price.price as f64 * 10f64.powf(price.expo as f64)
 // }
 
+#[derive(PartialEq)]
+pub enum Action {
+    Subscribe,
+    Redeem,
+}
+
 pub struct AssetMeta<'a> {
     pub decimals: u8,
     pub is_stable_coin: bool,
+    pub is_token_2022: bool,
     pub pyth_account: &'a str,
     pub staking_state: &'a str,
 }
@@ -43,14 +50,24 @@ impl<'a> AssetMeta<'a> {
         return self.pyth_account;
     }
 
-    pub fn get_price(&self, pricing_account: &AccountInfo, timestamp: i64) -> Result<Price> {
+    pub fn get_price(
+        &self,
+        pricing_account: &AccountInfo,
+        timestamp: i64,
+        action: Action,
+    ) -> Result<Price> {
         if self.staking_state != "" {
-            return self.get_lst_price(pricing_account, timestamp);
+            return self.get_lst_price(pricing_account);
         }
-        self.get_pyth_price(pricing_account, timestamp)
+        self.get_pyth_price(pricing_account, timestamp, action)
     }
 
-    pub fn get_pyth_price(&self, pricing_account: &AccountInfo, _timestamp: i64) -> Result<Price> {
+    pub fn get_pyth_price(
+        &self,
+        pricing_account: &AccountInfo,
+        _timestamp: i64,
+        action: Action,
+    ) -> Result<Price> {
         // Retrieve Pyth price
         let price_feed: pyth_sdk_solana::PriceFeed =
             SolanaPriceAccount::account_info_to_feed(pricing_account).unwrap();
@@ -70,14 +87,18 @@ impl<'a> AssetMeta<'a> {
         // Stable coin: return 1.0 if price is in (0.99..1.01)
         let one = 10i64.pow(self.decimals as u32);
         let one_percent = 10u64.pow((self.decimals - 2) as u32);
-        if self.is_stable_coin && one.abs_diff(asset_price.price) < one_percent {
-            asset_price.price = one;
+        if self.is_stable_coin {
+            if one.abs_diff(asset_price.price) < one_percent {
+                asset_price.price = one;
+            } else if action == Action::Subscribe {
+                return Err(InvestorError::InvalidStableCoinPriceForSubscribe.into());
+            }
         }
 
         Ok(asset_price)
     }
 
-    pub fn get_lst_price(&self, pricing_account: &AccountInfo, _timestamp: i64) -> Result<Price> {
+    pub fn get_lst_price(&self, pricing_account: &AccountInfo) -> Result<Price> {
         let one = 10u64.pow(self.decimals as u32);
 
         let price_u64 = if self.staking_state == "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC" {
@@ -112,6 +133,7 @@ static ASSETS_TESTS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 8,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "Eavb8FKNoYPbHnSS8kMi4tnUh8qK8bqxTjCojer4pZrr",
         staking_state: "",
     },
@@ -121,6 +143,7 @@ static ASSETS_TESTS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 8,
         is_stable_coin: false,
+        is_token_2022: true,
         pyth_account: "Eavb8FKNoYPbHnSS8kMi4tnUh8qK8bqxTjCojer4pZrr",
         staking_state: "",
     },
@@ -130,6 +153,7 @@ static ASSETS_TESTS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 6,
         is_stable_coin: true,
+        is_token_2022: false,
         pyth_account: "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD",
         staking_state: "",
     },
@@ -139,6 +163,7 @@ static ASSETS_TESTS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 8,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB",
         staking_state: "",
     },
@@ -154,6 +179,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG",
         staking_state: "",
     },
@@ -162,6 +188,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 6,
         is_stable_coin: true,
+        is_token_2022: false,
         pyth_account: "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD",
         staking_state: "",
     },
@@ -170,6 +197,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 6,
         is_stable_coin: true,
+        is_token_2022: false,
         pyth_account: "3vxLXJqLqF3JG5TCbYycbKWRBbCJQLxQmBGCkyqEEefL",
         staking_state: "",
     },
@@ -178,6 +206,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 6,
         is_stable_coin: true,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "",
     },
@@ -186,6 +215,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 8,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "Eavb8FKNoYPbHnSS8kMi4tnUh8qK8bqxTjCojer4pZrr",
         staking_state: "",
     },
@@ -194,6 +224,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 8,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "6qCHPXxQiCiM3dEE4W6fpZk17uSZW9WBpD7cyN8Tg2Ac",
         staking_state: "",
     },
@@ -202,6 +233,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 8,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB",
         staking_state: "",
     },
@@ -210,6 +242,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 6,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "nrYkQQQur7z8rYTST3G9GqATviK5SxTDkrqd21MW6Ue",
         staking_state: "",
     },
@@ -218,6 +251,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 5,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "8ihFLu5FimgTQ1Unh4dVyEHUGodJ5gJQCrQf4KUVB9bN",
         staking_state: "",
     },
@@ -231,6 +265,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "E4v1BBgoso9s64TQvmyownAVJbhbEPGyzA3qn4n46qj9",
         staking_state: "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC",
     },
@@ -244,6 +279,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "GutG5bcmEZw15WmPHNVMWHU77c6t8CEinUEdPLYz3doa",
     },
@@ -253,6 +289,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "9Z8yimuc3bQCWLDyMhe6jfWqNk9EggyJZUo8TLnYsqhN",
     },
@@ -262,6 +299,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "GM7TwD34n8HmDP9XcT6bD3JJuNniKJkrKQinHqmqHarz",
     },
@@ -271,6 +309,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "8VpRhuxa7sUUepdY3kQiTmX9rS5vx4WgaXiAnXq4KCtr",
     },
@@ -280,6 +319,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "4mBwcXKJN2vz6MJikNTgVBSY5vYnyjZk7txd8j3K46Ei",
     },
@@ -289,6 +329,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "phasejkG1akKgqkLvfWzWY17evnH6mSWznnUspmpyeG",
     },
@@ -298,6 +339,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "4fdMvFuyNboQ5Kr93X16f1tFcTeEkvfNwNAeSrzY3afb",
     },
@@ -307,6 +349,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "EVXQHaLSJyUNrnBGfXUnvEi4DvVz4UJ3GnoKGVQVxrjr",
     },
@@ -316,6 +359,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "5FYTvZgc7QEGZSDmbJn5hrtjtRtyFZo5vR7gL1jJYanE",
     },
@@ -325,6 +369,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "CAEsfzw43mvaVauCxXCSJh8DvnFsTMiTyeL1kjs6UwaT",
     },
@@ -334,6 +379,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "7thbAQrn9oRJsbz2CchoPSujGYpu4hCHnVrniBHupQsx",
     },
@@ -343,6 +389,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "DfiQgSvpW3Dy4gKfhtdHnWGHwFUrE8exvaxqjtMtAVxk",
     },
@@ -352,6 +399,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "4dZDUL3BFJUFeqS3Y3cwkc84Rs6mgVHRYGt1LJvhooW4",
     },
@@ -361,6 +409,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "AZGSr2fUyKkPLMhAW6WUEKEsQiRMAFKf8Fjnt4MFFaGv",
     },
@@ -370,6 +419,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "ArAQfbzsdotoKB5jJcZa3ajQrrPcWr2YQoDAEAiFxJAC",
     },
@@ -379,6 +429,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "9mhGNSPArRMHpLDMSmxAvuoizBqtBGqYdT8WGuqgxNdn",
     },
@@ -388,6 +439,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "AwDeTcW6BovNYR34Df1TPm4bFwswa4CJY4YPye2LXtPS",
     },
@@ -397,6 +449,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "8Dv3hNYcEWEaa4qVx9BTN1Wfvtha1z8cWDUXb7KVACVe",
     },
@@ -406,6 +459,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "6e2LpgytfG3RqMdYuPr3dnedv6bmHQUk9hH9h2fzVk9o",
     },
@@ -415,6 +469,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "ECRqn7gaNASuvTyC5xfCUjehWZCSowMXstZiM5DNweyB",
     },
@@ -424,6 +479,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "GZDX5JYXDzCEDL3kybhjN7PSixL4ams3M2G4CvWmMmm5",
     },
@@ -433,6 +489,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "LW3qEdGWdVrxNgxSXW8vZri7Jifg4HuKEQ1UABLxs3C",
     },
@@ -442,6 +499,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "2jjK1MsLgsPgVjnp97HUJeovNj3jp4XgyQ3nuiWMwiS8",
     },
@@ -451,6 +509,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "8WHCJsUduwDBhPL9uVADQSdWkUi2LPZNFAMyX1n2HGMD",
     },
@@ -460,6 +519,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "3wK2g8ZdzAH8FJ7PKr2RcvGh7V9VYson5hrVsJM5Lmws",
     },
@@ -469,6 +529,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "HSDnqBq7EnfcKpnw52DTAZrP38tf8rdWLiRhQo4qGTUa",
     },
@@ -478,6 +539,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "CgntPoLka5pD5fesJYhGmUCF8KU1QS1ZmZiuAuMZr2az",
     },
@@ -487,6 +549,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "2qyEeSAWKfU18AFthrF7JA8z8ZCi1yt76Tqs917vwQTV",
     },
@@ -496,6 +559,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "Fu9BYC6tWBo1KMKaP3CFoKfRhqv9akmy3DuYwnCyWiyC",
     },
@@ -505,6 +569,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "stk9ApL5HeVAwPLr3TLhDXdZS8ptVu7zp6ov8HFDuMi",
     },
@@ -514,6 +579,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "7ge2xKsZXmqPxa3YmXxXmzCp9Hc2ezrTxh6PECaxCwrL",
     },
@@ -523,6 +589,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb",
     },
@@ -532,6 +599,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "CtMyWsrUtAwXWiGr9WjHT5fC3p3fgV8cyGpLTo2LJzG1",
     },
@@ -541,6 +609,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "DqhH94PjkZsjAqEze2BEkWhFQJ6EyU6MdtMphMgnXqeK",
     },
@@ -550,6 +619,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "DxRFpqBQBC2nKcvh14gD1eizCj9Xi7ruMR3nCR3Hvw8f",
     },
@@ -559,6 +629,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "edgejNWAqkePLpi5sHRxT9vHi7u3kSHP9cocABPKiWZ",
     },
@@ -568,6 +639,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "G9WdMBxWSo1X3fKxbuyGrv1nGXrVqGg5zBKAkBFkb37g",
     },
@@ -577,6 +649,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "CWM1VcNPd2A5WF2x2mmEUCgA1PGSKNZCGAH5GsoQw7h8",
     },
@@ -586,6 +659,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "2RUTyfN8iq7Hsd2s9rLgrRT9VhHLuqkx2mGNgbuzbhTc",
     },
@@ -595,6 +669,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "7qJ34Vq7nGZvk5YExkJsDZB6to6vz9RpcPmNEK84HjrV",
     },
@@ -604,6 +679,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "4qYufFsPQETukkXd5z9fxDsdwm8AEaSqzYpuzmZzCJxR",
     },
@@ -613,6 +689,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "Fwy2jGmRCDjKpWTacMVvnLp66Fg4L5yhVCfahHsbjMGf",
     },
@@ -622,6 +699,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "9pffpv2w65TSeZpD988hAjvvzUiF1KZN1Swx5j2zPCdy",
     },
@@ -631,6 +709,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "BmEgS5XpWJJDqT3FVfB6ZmoELQrWkJxDXo3cNoJVsNFK",
     },
@@ -640,6 +719,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "9ovWYMZp18Qn7UVbyUvwqLSBBSEPDDA5q9pUgDFy6R23",
     },
@@ -649,6 +729,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "5bzgfi7nidWWrp3DCwPwLzepw7PGgawRmMH9tqqXMZRj",
     },
@@ -658,6 +739,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "Fvy5L7f3rduuYfRf9GR9fDqEgmJkYagDPh3Ddkp5jcoP",
     },
@@ -667,6 +749,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "9dP2MvpoFuVgW31NbwyRJzybcjH2gMZS5YkSWEC7NDhD",
     },
@@ -676,6 +759,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "GrrASJmjz19gHDsUUGv9y3gtRAwYJcdrtFESCRAosd44",
     },
@@ -685,6 +769,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "EYwMHf8Ajnpvy3PqMMkq1MPkTyhCsBEesXFgnK9BZfmu",
     },
@@ -694,6 +779,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "6LXCxeyQZqdAL4yLCtgATFYF6dcayWvsiwjtBFYVfb1N",
     },
@@ -703,6 +789,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "4gT1GaFtJK5pnX3CnjnSYwy8VUV9UdmozoQV9GCNk9RQ",
     },
@@ -712,6 +799,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "GEGRQNw17Y5s44dRH69sk8bvhyj3i6VwgqGmN1MBHKHp",
     },
@@ -721,6 +809,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "9j2mFdABTCCnWnzLtpMjp86AEcm4e3XistVeuujds7Au",
     },
@@ -730,6 +819,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "DYuSikgwzHidFo2b8jqrViW1psAb7hpawJnszBothRzp",
     },
@@ -739,6 +829,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "pjwKqvtt4ij6VJW4HxNxSaufSrkWHRc6iCTHoC4gFs4",
     },
@@ -748,6 +839,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "9jWbABPXfc75wseAbLEkBCb1NRaX9EbJZJTDQnbtpzc1",
     },
@@ -757,6 +849,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
+        is_token_2022: false,
         pyth_account: "",
         staking_state: "FxhzbU8rn4MhZxmeH2u7M18qkvFH3LjkWk8z9686TE45",
     },
