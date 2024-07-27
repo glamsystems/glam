@@ -271,6 +271,37 @@ address = "H1VS48K94cgK7sAHbQiCCmL1qqV5ry6vTyZ9r12VSqsV"
 filename = "./fixtures/accounts/H1VS48K94cgK7sAHbQiCCmL1qqV5ry6vTyZ9r12VSqsV.json"
 
 #
+# Stake pool - SanctumSplMulti
+#
+[[test.genesis]]
+address = "SPMBzsVUuoHA4Jm6KunbsotaahvVikZs1JyTW6iJvbn"
+program = "./fixtures/programs/sanctum_stakepool_multi_validator.so"
+
+[[test.validator.account]] # phase labs stake pool
+address = "phasejkG1akKgqkLvfWzWY17evnH6mSWznnUspmpyeG"
+filename = "./fixtures/accounts/phasejkG1akKgqkLvfWzWY17evnH6mSWznnUspmpyeG.json"
+
+[[test.validator.account]] # reserve stake account
+address = "phaseECAeXantYWXvRGkmeh7ddQsUJTf7DcywquY9Z2"
+filename = "./fixtures/accounts/phaseECAeXantYWXvRGkmeh7ddQsUJTf7DcywquY9Z2.json"
+
+[[test.validator.account]] # fee account
+address = "3Y3bNqaRLFiG8w3wUUE82oEsbMwc8NjnJ5QLyn39APPU"
+filename = "./fixtures/accounts/3Y3bNqaRLFiG8w3wUUE82oEsbMwc8NjnJ5QLyn39APPU.json"
+
+[[test.validator.account]] # pool token mint
+address = "phaseZSfPxTDBpiVb96H4XFSD8xHeHxZre5HerehBJG"
+filename = "./fixtures/accounts/phaseZSfPxTDBpiVb96H4XFSD8xHeHxZre5HerehBJG.json"
+
+[[test.validator.account]] # validator list
+address = "phaseeExd43yGjjad2FZSigdG9UTRpMdxS4aMerx821"
+filename = "./fixtures/accounts/phaseeExd43yGjjad2FZSigdG9UTRpMdxS4aMerx821.json"
+
+[[test.validator.account]] # validator stake account
+address = "Enh5W2UMiUc8ANgjwQMuKXNQLnAEddwjBsSPibddtN7R"
+filename = "./fixtures/accounts/Enh5W2UMiUc8ANgjwQMuKXNQLnAEddwjBsSPibddtN7R.json"
+
+#
 # Others
 #
 

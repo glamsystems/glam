@@ -11,6 +11,10 @@ const BONK_STAKE_POOL = new PublicKey(
   "ArAQfbzsdotoKB5jJcZa3ajQrrPcWr2YQoDAEAiFxJAC"
 );
 
+const PHASE_LABS_STAKE_POOL = new PublicKey(
+  "phasejkG1akKgqkLvfWzWY17evnH6mSWznnUspmpyeG"
+);
+
 describe("glam_staking", () => {
   const glamClient = new GlamClient();
   const connection = glamClient.provider.connection;
@@ -50,7 +54,7 @@ describe("glam_staking", () => {
     }
   });
 
-  it("Deposit 10 SOL to jito stake pool", async () => {
+  it("[spl-stake-pool] Deposit 10 SOL to jito stake pool", async () => {
     try {
       const txSig = await glamClient.staking.stakePoolDepositSol(
         fundPDA,
@@ -64,7 +68,7 @@ describe("glam_staking", () => {
     }
   });
 
-  it("Withdraw 1 jitoSOL to stake account", async () => {
+  it("[spl-stake-pool] Withdraw 1 jitoSOL to stake account", async () => {
     try {
       const txSig = await glamClient.staking.stakePoolWithdrawStake(
         fundPDA,
@@ -83,7 +87,7 @@ describe("glam_staking", () => {
     }
   });
 
-  it("Deposit 10 SOL to bonk stake pool", async () => {
+  it("[sanctum-single-valiator] Deposit 10 SOL to bonk stake pool", async () => {
     try {
       const txSig = await glamClient.staking.stakePoolDepositSol(
         fundPDA,
@@ -97,7 +101,7 @@ describe("glam_staking", () => {
     }
   });
 
-  it("Withdraw 1 bonkSOL to stake account", async () => {
+  it("[sanctum-single-valiator] Withdraw 1 bonkSOL to stake account", async () => {
     try {
       const txSig = await glamClient.staking.stakePoolWithdrawStake(
         fundPDA,
@@ -111,6 +115,39 @@ describe("glam_staking", () => {
         glamClient.getTreasuryPDA(fundPDA)
       );
       expect(stakeAccounts.length).toEqual(3);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  });
+
+  it("[sanctum-multi-valiator] Deposit 10 SOL to phase labs stake pool", async () => {
+    try {
+      const txSig = await glamClient.staking.stakePoolDepositSol(
+        fundPDA,
+        PHASE_LABS_STAKE_POOL,
+        new BN(10_000_000_000)
+      );
+      console.log("stakePoolDeposit tx:", txSig);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  });
+
+  it("[sanctum-multi-valiator] Withdraw 1 phaseSOL to stake account", async () => {
+    try {
+      const txSig = await glamClient.staking.stakePoolWithdrawStake(
+        fundPDA,
+        PHASE_LABS_STAKE_POOL,
+        new BN(1_000_000_000)
+      );
+      console.log("stakePoolWithdrawStake tx:", txSig);
+
+      const stakeAccounts = await glamClient.staking.getStakeAccounts(
+        glamClient.getTreasuryPDA(fundPDA)
+      );
+      expect(stakeAccounts.length).toEqual(4);
     } catch (e) {
       console.error(e);
       throw e;
