@@ -21,11 +21,19 @@ pub struct AssetMeta<'a> {
 }
 impl<'a> AssetMeta<'a> {
     pub fn get(name: &str) -> Result<&AssetMeta> {
-        ASSETS
-            .get(name)
-            .map_or(Err(InvestorError::InvalidAssetSubscribe.into()), |asset| {
-                Ok(asset)
-            })
+        ASSETS.get(name).map_or(
+            // On mainnet, return error
+            #[cfg(feature = "mainnet")]
+            Err(InvestorError::InvalidAssetSubscribe.into()),
+            // In tests, check if the asset is in ASSETS_TESTS, or return error
+            #[cfg(not(feature = "mainnet"))]
+            ASSETS_TESTS
+                .get(name)
+                .map_or(Err(InvestorError::InvalidAssetSubscribe.into()), |asset| {
+                    Ok(asset)
+                }),
+            |asset| Ok(asset),
+        )
     }
 
     pub fn get_pricing_account(&self) -> &str {
@@ -42,11 +50,18 @@ impl<'a> AssetMeta<'a> {
         self.get_pyth_price(pricing_account, timestamp)
     }
 
-    pub fn get_pyth_price(&self, pricing_account: &AccountInfo, timestamp: i64) -> Result<Price> {
+    pub fn get_pyth_price(&self, pricing_account: &AccountInfo, _timestamp: i64) -> Result<Price> {
         // Retrieve Pyth price
         let price_feed: pyth_sdk_solana::PriceFeed =
             SolanaPriceAccount::account_info_to_feed(pricing_account).unwrap();
-        let mut asset_price = price_feed.get_price_no_older_than(timestamp, 60).unwrap();
+
+        let mut asset_price = price_feed.get_price_unchecked();
+        // On mainnet, enforce that the price is newer than 30s ago
+        // In tests, ignore this check
+        #[cfg(feature = "mainnet")]
+        if (asset_price.publish_time - _timestamp).abs() > 30 {
+            return Err(InvestorError::InvalidAssetPrice.into());
+        };
 
         // Scale price to expected decimals
         let asset_expo = -(self.decimals as i32);
@@ -85,73 +100,55 @@ impl<'a> AssetMeta<'a> {
     }
 }
 
+// We need a few assets for tests
 #[cfg(not(feature = "mainnet"))]
-static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
-    // wSOL
-    "So11111111111111111111111111111111111111112" =>
-    AssetMeta {
-        decimals: 9,
-        is_stable_coin: false,
-        pyth_account: "J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix",
-        staking_state: "",
-    },
-    // USDC
-    "8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2" =>
-    AssetMeta {
-        decimals: 6,
-        is_stable_coin: true,
-        pyth_account: "5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7",
-        staking_state: "",
-    },
+static ASSETS_TESTS: phf::Map<&'static str, AssetMeta> = phf_map! {
+    //
+    // FOR TESTS
+    //
+
     // BTC (Drift)
     "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv" =>
     AssetMeta {
         decimals: 8,
         is_stable_coin: false,
-        pyth_account: "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J",
+        pyth_account: "Eavb8FKNoYPbHnSS8kMi4tnUh8qK8bqxTjCojer4pZrr",
         staking_state: "",
     },
-    // Marinade staked SOL (mSOL)
-    "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So" =>
-    AssetMeta {
-        decimals: 9,
-        is_stable_coin: false,
-        pyth_account: "E4v1BBgoso9s64TQvmyownAVJbhbEPGyzA3qn4n46qj9",
-        staking_state: "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC",
-    },
 
-    //
-    // LOCALNET
-    //
-
-    // USDC
-    "AwRP1kuJbykXeF4hcLzfMDMY2ZTGN3cx8ErCWxVYekef" =>
-    AssetMeta {
-        decimals: 6,
-        is_stable_coin: true,
-        pyth_account: "5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7",
-        staking_state: "",
-    },
-    // BTC
+    // BTC (custom)
     "7Pz5yQdyQm64WtzxvpQZi3nD1q5mbxj4Hhcjy2kmZ7Zd" =>
     AssetMeta {
         decimals: 8,
         is_stable_coin: false,
-        pyth_account: "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J",
+        pyth_account: "Eavb8FKNoYPbHnSS8kMi4tnUh8qK8bqxTjCojer4pZrr",
         staking_state: "",
     },
-    // ETH
+
+    // USDC (custom)
+    "AwRP1kuJbykXeF4hcLzfMDMY2ZTGN3cx8ErCWxVYekef" =>
+    AssetMeta {
+        decimals: 6,
+        is_stable_coin: true,
+        pyth_account: "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD",
+        staking_state: "",
+    },
+
+    // ETH (custom)
     "GRxagtBNxzjwxkKdEgW7P1oqU57Amai6ha5F3UBJzU1m" =>
     AssetMeta {
         decimals: 8,
         is_stable_coin: false,
-        pyth_account: "EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw",
+        pyth_account: "JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB",
         staking_state: "",
     },
 };
 
-#[cfg(feature = "mainnet")]
 static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
+    //
+    // MAINNET
+    //
+
     // wSOL
     "So11111111111111111111111111111111111111112" =>
     AssetMeta {
@@ -763,5 +760,4 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
         pyth_account: "",
         staking_state: "FxhzbU8rn4MhZxmeH2u7M18qkvFH3LjkWk8z9686TE45",
     },
-
 };

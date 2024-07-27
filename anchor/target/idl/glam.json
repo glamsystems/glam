@@ -2397,6 +2397,9 @@
           },
           {
             "name": "InvalidTreasuryAccount"
+          },
+          {
+            "name": "InvalidAssetPrice"
           }
         ]
       }

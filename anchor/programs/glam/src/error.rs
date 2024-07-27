@@ -36,6 +36,8 @@ pub enum InvestorError {
     InvalidAssetsRedeem,
     #[msg("Invalid treasury account")]
     InvalidTreasuryAccount,
+    #[msg("Invalid asset price")]
+    InvalidAssetPrice,
 }
 
 #[error_code]

@@ -2397,6 +2397,9 @@ export type Glam = {
           },
           {
             "name": "InvalidTreasuryAccount"
+          },
+          {
+            "name": "InvalidAssetPrice"
           }
         ]
       }
@@ -6205,6 +6208,9 @@ export const IDL: Glam = {
           },
           {
             "name": "InvalidTreasuryAccount"
+          },
+          {
+            "name": "InvalidAssetPrice"
           }
         ]
       }

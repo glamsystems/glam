@@ -351,7 +351,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
             InvestorError::InvalidAssetsRedeem
         );
 
-        let timestamp = Clock::get()?.unix_timestamp;
+        let _timestamp = Clock::get()?.unix_timestamp;
         let mut assets_to_transfer: Vec<AssetToTransfer> = Vec::new();
         for (i, accounts) in ctx.remaining_accounts.chunks(4).enumerate() {
             let cur_asset = assets[i];
@@ -382,7 +382,8 @@ pub fn redeem_handler<'c: 'info, 'info>(
 
             let price_feed: pyth_sdk_solana::PriceFeed =
                 SolanaPriceAccount::account_info_to_feed(pricing_account).unwrap();
-            let mut asset_price = price_feed.get_price_no_older_than(timestamp, 60).unwrap();
+            //TODO
+            let mut asset_price = price_feed.get_price_unchecked();
 
             let asset_decimals = cur_asset_meta.decimals;
             let asset_expo = -(asset_decimals as i32);

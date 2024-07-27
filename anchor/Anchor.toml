@@ -21,8 +21,8 @@ cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_crud"
-#test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_investor"
+#test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_crud"
+test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_investor"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_drift"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_marinade"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_staking"
@@ -47,61 +47,27 @@ url = "https://api.devnet.solana.com"
 #
 # Pricing
 #
-[[test.validator.clone]]
+[[test.validator.account]]
 # Pyth SOL/USD
-address = "J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"
-[[test.validator.clone]]
+address = "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG"
+filename = "./fixtures/accounts/H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG.json"
+[[test.validator.account]]
 # Pyth USDC/USD
-address = "5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7"
-[[test.validator.clone]]
+address = "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD"
+filename = "./fixtures/accounts/Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD.json"
+[[test.validator.account]]
 # Pyth BTC/USD
-address = "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J"
-[[test.validator.clone]]
+address = "Eavb8FKNoYPbHnSS8kMi4tnUh8qK8bqxTjCojer4pZrr"
+filename = "./fixtures/accounts/Eavb8FKNoYPbHnSS8kMi4tnUh8qK8bqxTjCojer4pZrr.json"
+[[test.validator.account]]
 # Pyth ETH/USD
-address = "EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw"
+address = "JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB"
+filename = "./fixtures/accounts/JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB.json"
 
-# Marinade Staking state for pricing
-# do NOT clone or staking tests will fail
-
-[[test.validator.clone]]
+[[test.validator.account]]
 # WSOL
 address = "So11111111111111111111111111111111111111112"
-
-#
-# Funds
-#
-
-# Fund GBS AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2
-# fund + share class + treasury + treasury ATAs
-[[test.validator.clone]]
-address = "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2"
-[[test.validator.clone]]
-address = "Cprd9VcMpAuGAonDEsHpxiuzLG6dzt5xR6mpyeq2EiN1"
-[[test.validator.clone]]
-address = "7Eo2DEFc9bbFxH3s7Vu3JbnawgGRcHuJ5qfCJEmfMJrP"
-[[test.validator.clone]]
-address = "3pDeR4NEiD2dNmY1ty7W526Z5qVnBUPVA62i5RjFDcCU"
-[[test.validator.clone]]
-address = "3gkfwhdYFymrTD1YotVHHsWAXArSwRkcaTPNyuSQk6zf"
-[[test.validator.clone]]
-address = "BwFBtjotUxPqDUa49tkGmsURduAAhToA46TY9heEm8LF"
-
-# Fund LFG Dt4uayF35AKhhgaPNxdVRh4khNaGAih8L9SMSs9Wr6CP
-# (only fund + share class)
-[[test.validator.clone]]
-address = "Dt4uayF35AKhhgaPNxdVRh4khNaGAih8L9SMSs9Wr6CP"
-[[test.validator.clone]]
-address = "AdXkDnJpFKqZeoUygLvm5dp2b5JGVPz3rEWfGCtB5Kc2"
-
-# Fund CAF 6ZBb3LRddLtBq6DeNtSaUrMipieaFJgTETgTBoiAGBCC
-# (only fund)
-[[test.validator.clone]]
-address = "6ZBb3LRddLtBq6DeNtSaUrMipieaFJgTETgTBoiAGBCC"
-
-# Fund RHW CWb949XA3vrdiEp2BFtjr9MbUonHke8CVdTb8Cr7Hctd
-# (only fund)
-[[test.validator.clone]]
-address = "CWb949XA3vrdiEp2BFtjr9MbUonHke8CVdTb8Cr7Hctd"
+filename = "./fixtures/accounts/So11111111111111111111111111111111111111112.json"
 
 #
 # Drift
