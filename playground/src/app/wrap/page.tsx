@@ -13,7 +13,7 @@ import { useGlamClient } from "@glam/anchor";
 import { BN } from "@coral-xyz/anchor";
 import { testFund } from "@/app/testFund";
 import { ExplorerLink } from "@/components/ExplorerLink";
-import {LAMPORTS_PER_SOL} from "@solana/web3.js";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 const wrapSchema = z.object({
   direction: z.enum(["wrap", "unwrap"]),
@@ -56,7 +56,7 @@ export default function Wrap() {
   };
 
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
+    event.preventDefault();
     form.reset();
     setAmountAsset("SOL");
     setDirection("wrap");
