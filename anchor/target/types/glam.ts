@@ -2393,10 +2393,13 @@ export type Glam = {
             "name": "InvalidPricingOracle"
           },
           {
-            "name": "InvalidAssetsRedeem"
+            "name": "InvalidRemainingAccounts"
           },
           {
             "name": "InvalidTreasuryAccount"
+          },
+          {
+            "name": "InvalidSignerAccount"
           },
           {
             "name": "InvalidAssetPrice"
@@ -6221,10 +6224,13 @@ export const IDL: Glam = {
             "name": "InvalidPricingOracle"
           },
           {
-            "name": "InvalidAssetsRedeem"
+            "name": "InvalidRemainingAccounts"
           },
           {
             "name": "InvalidTreasuryAccount"
+          },
+          {
+            "name": "InvalidSignerAccount"
           },
           {
             "name": "InvalidAssetPrice"

@@ -32,10 +32,12 @@ pub enum InvestorError {
     InvalidAssetSubscribe,
     #[msg("Invalid oracle for asset price")]
     InvalidPricingOracle,
-    #[msg("Invalid assets in redeem")]
-    InvalidAssetsRedeem,
-    #[msg("Invalid treasury account")]
+    #[msg("Invalid accounts: the transaction is malformed")]
+    InvalidRemainingAccounts,
+    #[msg("Invalid treasury ata")]
     InvalidTreasuryAccount,
+    #[msg("Invalid signer ata")]
+    InvalidSignerAccount,
     #[msg("Invalid asset price")]
     InvalidAssetPrice,
     #[msg("Subscription not allowed: invalid stable coin price")]
