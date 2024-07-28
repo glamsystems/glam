@@ -216,14 +216,14 @@ export class InvestorClient {
       );
 
       return [
-        { pubkey: asset, isSigner: false, isWritable: false },
-        { pubkey: signerAta, isSigner: false, isWritable: true },
         { pubkey: treasuryAta, isSigner: false, isWritable: true },
         {
           pubkey: assetMeta.pricingAccount,
           isSigner: false,
           isWritable: false,
         },
+        { pubkey: asset, isSigner: false, isWritable: false },
+        { pubkey: signerAta, isSigner: false, isWritable: true },
       ];
     });
 

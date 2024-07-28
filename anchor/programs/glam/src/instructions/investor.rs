@@ -5,7 +5,6 @@ use anchor_spl::token::Token;
 use anchor_spl::token_interface::{
     burn, mint_to, transfer_checked, Burn, Mint, MintTo, Token2022, TokenAccount, TransferChecked,
 };
-use pyth_sdk_solana::state::SolanaPriceAccount;
 use pyth_sdk_solana::Price;
 
 use spl_associated_token_account::get_associated_token_address_with_program_id;
@@ -73,9 +72,6 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     skip_state: bool,
 ) -> Result<()> {
     let fund = &ctx.accounts.fund;
-    let treasury = &ctx.accounts.treasury;
-    let token_program = &ctx.accounts.token_program;
-    let token_2022_program: &Program<'info, Token2022> = &ctx.accounts.token_2022_program;
     require!(fund.is_enabled(), InvestorError::FundNotActive);
 
     if fund.share_classes.len() > 1 {
@@ -133,87 +129,24 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         publish_time: 0,
     };
 
-    // ctx.remaining_accounts must contain tuples of (treasury_ata, pricing).
-    // including the base asset, and in the correct order.
-    require!(
-        ctx.remaining_accounts.len() == 2 * assets.len(),
-        InvestorError::InvalidAssetSubscribe
-    );
+    let aum_components = get_aum_components(
+        Action::Subscribe,
+        assets,
+        ctx.remaining_accounts,
+        &ctx.accounts.treasury,
+        &ctx.accounts.signer,
+        &ctx.accounts.token_program,
+        &ctx.accounts.token_2022_program,
+        false,     // only for redeem
+        asset_idx, // only for subscribe
+    )?;
 
-    let timestamp = Clock::get()?.unix_timestamp;
-    let mut subscribe_asset_price = total_value;
-    for (i, accounts) in ctx.remaining_accounts.chunks(2).enumerate() {
-        let cur_asset = assets[i];
-        let cur_asset_str = cur_asset.to_string();
-        let cur_asset_meta = AssetMeta::get(cur_asset_str.as_str())?;
-
-        let treasury_ata_account: &AccountInfo<'info> = &accounts[0];
-        let pricing_account = &accounts[1];
-
-        let cur_token_program_key = if cur_asset_meta.is_token_2022 {
-            token_2022_program.key()
-        } else {
-            token_program.key()
-        };
-        let expected_treasury_ata = get_associated_token_address_with_program_id(
-            &treasury.key(),
-            &cur_asset,
-            &cur_token_program_key,
-        );
-        let expected_pricing_account = cur_asset_meta.get_pricing_account();
-        require!(
-            treasury_ata_account.key() == expected_treasury_ata,
-            InvestorError::InvalidTreasuryAccount
-        );
-        require!(
-            pricing_account.key().to_string().as_str() == expected_pricing_account,
-            InvestorError::InvalidPricingOracle
-        );
-
-        let maybe_treasury_ata = InterfaceAccount::<TokenAccount>::try_from(treasury_ata_account);
-        let asset_amount = if let Ok(treasury_ata) = maybe_treasury_ata {
-            require!(
-                treasury_ata.mint == cur_asset,
-                InvestorError::InvalidTreasuryAccount
-            );
-            require!(
-                treasury_ata.owner == treasury.key(),
-                InvestorError::InvalidTreasuryAccount
-            );
-            treasury_ata.amount
-        } else {
-            0
-        };
-
-        let mut asset_value = Price::default();
-        let need_price = asset_amount > 0 || i == asset_idx;
-        if need_price {
-            let asset_price =
-                cur_asset_meta.get_price(pricing_account, timestamp, Action::Subscribe)?;
-            asset_value = asset_price
-                .cmul(asset_amount.try_into().unwrap(), asset_price.expo)
-                .unwrap();
-            /*
-            msg!(
-                "- asset {}: amount={:.2} decimals={} price={:.2} value={:.2}",
-                i,
-                log_decimal(asset_amount, asset_expo),
-                asset_decimals,
-                log_price(asset_price),
-                log_price(asset_value),
-            );
-            */
-
-            if i == asset_idx {
-                subscribe_asset_price = asset_price;
-            }
-        }
-
+    let subscribe_asset_price = aum_components[asset_idx].asset_price;
+    for att in aum_components {
         total_value = total_value
-            .add(&asset_value.scale_to_exponent(share_expo).unwrap())
+            .add(&att.asset_value.scale_to_exponent(share_expo).unwrap())
             .unwrap();
     }
-    // now we have AUM and subscribe_asset_price
 
     let asset_value = subscribe_asset_price
         .cmul(amount.try_into().unwrap(), subscribe_asset_price.expo)
@@ -322,15 +255,150 @@ pub struct Redeem<'info> {
     pub token_2022_program: Program<'info, Token2022>,
 }
 
-pub struct AssetToTransfer<'info> {
-    pub asset: InterfaceAccount<'info, Mint>,
-    pub treasury_ata: InterfaceAccount<'info, TokenAccount>,
-    pub signer_asset_ata: InterfaceAccount<'info, TokenAccount>,
-    /// CHECK: We will manually check this against the Pubkey of the price feed
-    pub pricing_account: AccountInfo<'info>,
-    pub asset_price: Price,
+pub struct AumComponent<'info> {
+    pub treasury_ata: Option<InterfaceAccount<'info, TokenAccount>>,
+    pub signer_asset_ata: Option<InterfaceAccount<'info, TokenAccount>>,
+    pub asset: Option<InterfaceAccount<'info, Mint>>,
     pub asset_amount: u64,
+    pub asset_price: Price,
     pub asset_value: Price,
+}
+
+pub fn get_aum_components<'info>(
+    action: Action,
+    assets: &[Pubkey],
+    remaining_accounts: &'info [AccountInfo<'info>],
+    treasury: &SystemAccount<'info>,
+    signer: &Signer<'info>,
+    token_program: &Program<'info, Token>,
+    token_2022_program: &Program<'info, Token2022>,
+    skip_prices: bool,            // only for redeem
+    force_price_asset_idx: usize, // only for subscribe
+) -> Result<Vec<AumComponent<'info>>> {
+    let mut aum_components: Vec<AumComponent> = Vec::new();
+
+    let num_accounts = if action == Action::Subscribe { 2 } else { 4 };
+    require!(
+        remaining_accounts.len() == num_accounts * assets.len(),
+        InvestorError::InvalidRemainingAccounts
+    );
+
+    let timestamp = Clock::get()?.unix_timestamp;
+    for (i, accounts) in remaining_accounts.chunks(num_accounts).enumerate() {
+        let cur_asset = assets[i];
+        let cur_asset_str = cur_asset.to_string();
+        let cur_asset_meta = AssetMeta::get(cur_asset_str.as_str())?;
+
+        // Parse treasury account
+        let treasury_ata_account = &accounts[0];
+        let cur_token_program_key = if cur_asset_meta.is_token_2022 {
+            token_2022_program.key()
+        } else {
+            token_program.key()
+        };
+        let expected_treasury_ata = get_associated_token_address_with_program_id(
+            &treasury.key(),
+            &cur_asset,
+            &cur_token_program_key,
+        );
+        msg!("asset={} = {}", i, cur_asset);
+        require_eq!(
+            treasury_ata_account.key(),
+            expected_treasury_ata,
+            // InvestorError::InvalidTreasuryAccount
+        );
+
+        // Parse pricing account
+        let pricing_account = &accounts[1];
+        let expected_pricing_account = cur_asset_meta.get_pricing_account();
+        require!(
+            pricing_account.key().to_string().as_str() == expected_pricing_account,
+            InvestorError::InvalidPricingOracle
+        );
+
+        let (asset, signer_asset_ata) = if action == Action::Redeem {
+            // Parse and deser asset mint account
+            let asset_account = &accounts[2];
+            require!(
+                asset_account.key() == assets[i],
+                InvestorError::InvalidRemainingAccounts
+            );
+            let asset = InterfaceAccount::<Mint>::try_from(asset_account).expect("invalid asset");
+
+            // Parse and deser signer ata account
+            let signer_ata_account = &accounts[3];
+            let signer_asset_ata: InterfaceAccount<'_, TokenAccount> =
+                InterfaceAccount::<TokenAccount>::try_from(signer_ata_account)
+                    .expect("invalid user account");
+            require!(
+                signer_asset_ata.mint == cur_asset,
+                InvestorError::InvalidSignerAccount
+            );
+            require!(
+                signer_asset_ata.owner == signer.key(),
+                InvestorError::InvalidSignerAccount
+            );
+
+            (Some(asset), Some(signer_asset_ata))
+        } else {
+            (None, None)
+        };
+
+        // Calculate asset_amount in treasury
+        // Deser treasury_ata, if it fails (account doesn't exist) then amount=0
+        let maybe_treasury_ata = InterfaceAccount::<TokenAccount>::try_from(treasury_ata_account);
+        let asset_amount = if let Ok(treasury_ata) = &maybe_treasury_ata {
+            require!(
+                treasury_ata.mint == cur_asset,
+                InvestorError::InvalidTreasuryAccount
+            );
+            require!(
+                treasury_ata.owner == treasury.key(),
+                InvestorError::InvalidTreasuryAccount
+            );
+            treasury_ata.amount
+        } else {
+            0
+        };
+
+        let treasury_ata = if asset_amount > 0 {
+            Some(maybe_treasury_ata?)
+        } else {
+            None
+        };
+
+        let need_price = !skip_prices && (asset_amount > 0 || i == force_price_asset_idx);
+        let asset_price = if need_price {
+            cur_asset_meta.get_price(pricing_account, timestamp, action)?
+        } else {
+            // not used
+            Price::default()
+        };
+        let asset_value = asset_price
+            .cmul(asset_amount.try_into().unwrap(), asset_price.expo)
+            .unwrap();
+
+        aum_components.push(AumComponent {
+            treasury_ata,
+            signer_asset_ata,
+            asset,
+            asset_amount,
+            asset_price,
+            asset_value,
+        });
+        // msg!(
+        //     "- asset {}: price={:.2} (={}e{}) value={:.2} ({}e{})",
+        //     i,
+        //     _log_price(asset_price),
+        //     asset_price.price,
+        //     asset_price.expo,
+        //     _log_price(asset_value),
+        //     asset_value.price,
+        //     asset_value.expo
+        // );
+    }
+
+    Ok(aum_components)
 }
 
 pub fn redeem_handler<'c: 'info, 'info>(
@@ -343,10 +411,6 @@ pub fn redeem_handler<'c: 'info, 'info>(
         // we need to define how to split the total amount into share classes
         panic!("not implemented")
     }
-
-    let treasury = &ctx.accounts.treasury;
-    let token_program = &ctx.accounts.token_program;
-    let token_2022_program: &Program<'info, Token2022> = &ctx.accounts.token_2022_program;
 
     let share_class = &ctx.accounts.share_class;
     let share_expo = -(share_class.decimals as i32);
@@ -363,124 +427,22 @@ pub fn redeem_handler<'c: 'info, 'info>(
 
     if skip_state {
         let fund = &ctx.accounts.fund;
-        let signer = &ctx.accounts.signer;
-        let treasury = &ctx.accounts.treasury;
-
         let assets = fund.assets().unwrap();
-        let assets_weights = fund.assets_weights().unwrap();
 
-        // if we skip the redeem state, we attempt to do in_kind redeem,
-        // i.e. transfer to the user a % of each asset in the fund (assuming
-        // the fund is balanced, if it's not the redeem may fail).
-        // ctx.remaining_accounts must contain tuples of (asset, signer_ata, treasury_ata, pricing).
-        // the assets should be the fund.assets, including the base asset,
-        // and in the correct order.
-        require!(
-            ctx.remaining_accounts.len() == 4 * assets.len(),
-            InvestorError::InvalidAssetsRedeem
-        );
+        let skip_prices = should_transfer_everything || in_kind;
 
-        let timestamp = Clock::get()?.unix_timestamp;
-        let mut assets_to_transfer: Vec<AssetToTransfer> = Vec::new();
-        for (i, accounts) in ctx.remaining_accounts.chunks(4).enumerate() {
-            let cur_asset = assets[i];
-            let cur_asset_str = cur_asset.to_string();
-            let cur_asset_meta = AssetMeta::get(cur_asset_str.as_str())?;
+        let assets_to_transfer = get_aum_components(
+            Action::Redeem,
+            assets,
+            ctx.remaining_accounts,
+            &ctx.accounts.treasury,
+            &ctx.accounts.signer,
+            &ctx.accounts.token_program,
+            &ctx.accounts.token_2022_program,
+            skip_prices, // only for redeem
+            usize::MAX,  // only for subscribe
+        )?;
 
-            let asset_account = &accounts[0];
-            let signer_ata_account = &accounts[1];
-            let treasury_ata_account: &AccountInfo<'info> = &accounts[2];
-            let pricing_account = &accounts[3];
-
-            require!(
-                asset_account.key() == assets[i],
-                InvestorError::InvalidAssetsRedeem
-            );
-            let asset = InterfaceAccount::<Mint>::try_from(asset_account).expect("invalid asset");
-            let signer_asset_ata: InterfaceAccount<'_, TokenAccount> =
-                InterfaceAccount::<TokenAccount>::try_from(signer_ata_account)
-                    .expect("invalid user account");
-            require!(
-                signer_asset_ata.mint == cur_asset,
-                InvestorError::InvalidTreasuryAccount
-            );
-            require!(
-                signer_asset_ata.owner == signer.key(),
-                InvestorError::InvalidTreasuryAccount
-            );
-
-            let cur_token_program_key = if cur_asset_meta.is_token_2022 {
-                token_2022_program.key()
-            } else {
-                token_program.key()
-            };
-            let expected_treasury_ata = get_associated_token_address_with_program_id(
-                &treasury.key(),
-                &cur_asset,
-                &cur_token_program_key,
-            );
-            let expected_pricing_account = cur_asset_meta.get_pricing_account();
-            require!(
-                treasury_ata_account.key() == expected_treasury_ata,
-                InvestorError::InvalidTreasuryAccount
-            );
-            require!(
-                pricing_account.key().to_string().as_str() == expected_pricing_account,
-                InvestorError::InvalidPricingOracle
-            );
-
-            let maybe_treasury_ata =
-                InterfaceAccount::<TokenAccount>::try_from(treasury_ata_account);
-            let asset_amount = if let Ok(treasury_ata) = &maybe_treasury_ata {
-                require!(
-                    treasury_ata.mint == cur_asset,
-                    InvestorError::InvalidTreasuryAccount
-                );
-                require!(
-                    treasury_ata.owner == treasury.key(),
-                    InvestorError::InvalidTreasuryAccount
-                );
-                treasury_ata.amount
-            } else {
-                0
-            };
-
-            if asset_amount == 0 {
-                continue;
-            }
-
-            let treasury_ata = maybe_treasury_ata?;
-
-            let asset_price =
-                cur_asset_meta.get_price(pricing_account, timestamp, Action::Redeem)?;
-            let asset_value = asset_price
-                .cmul(asset_amount.try_into().unwrap(), asset_price.expo)
-                .unwrap();
-
-            assets_to_transfer.push(AssetToTransfer {
-                asset,
-                treasury_ata,
-                signer_asset_ata,
-                pricing_account: pricing_account.clone(),
-                asset_price,
-                asset_amount,
-                asset_value,
-            });
-            // msg!(
-            //     "- asset {}: amount={:.2} decimals={} price={:.2} (={}e{}) value={:.2} ({}e{})",
-            //     i,
-            //     asset_amount as f64 / 10f64.powf(asset_decimals as f64),
-            //     asset_decimals,
-            //     log_price(asset_price),
-            //     asset_price.price,
-            //     asset_price.expo,
-            //     log_price(asset_value),
-            //     asset_value.price,
-            //     asset_value.expo
-            // );
-        }
-
-        //TODO: use Price::price_basket?
         let mut total_value = Price {
             price: 0,
             conf: 0,
@@ -499,19 +461,12 @@ pub fn redeem_handler<'c: 'info, 'info>(
         //     total_value.expo
         // );
 
-        let value_to_redeem = Price {
-            price: ((total_value.price as u128 * amount as u128) / total_shares as u128) as i64,
-            conf: 0,
-            expo: share_expo,
-            publish_time: 0,
-        };
         // msg!(
         //     "= value_red={:.2} ({}e{})",
         //     log_price(value_to_redeem),
         //     value_to_redeem.price,
         //     value_to_redeem.expo
         // );
-        let total_weight: u32 = assets_weights.iter().sum();
 
         burn(
             CpiContext::new(
@@ -526,40 +481,44 @@ pub fn redeem_handler<'c: 'info, 'info>(
         )?;
 
         for (i, att) in assets_to_transfer.iter().enumerate() {
+            if att.asset_amount == 0 {
+                continue;
+            }
+            let asset = att.asset.clone().unwrap();
+            let signer_asset_ata = att.signer_asset_ata.clone().unwrap();
+            let treasury_ata = att.treasury_ata.clone().unwrap();
             let amount_asset = if should_transfer_everything {
-                att.treasury_ata.amount
-            } else if !in_kind {
+                treasury_ata.amount
+            } else if in_kind {
+                //TODO do not compute pricing
+                ((att.asset_amount as u128 * amount as u128) / total_shares as u128) as u64
+            } else {
                 if i > 0 {
                     continue;
                 }
+                let value_to_redeem = Price {
+                    price: ((total_value.price as u128 * amount as u128) / total_shares as u128)
+                        as i64,
+                    conf: 0,
+                    expo: share_expo,
+                    publish_time: 0,
+                };
                 let value = value_to_redeem
                     .scale_to_exponent(att.asset_price.expo)
                     .unwrap();
-                ((value.price as u128 * 10u128.pow(att.asset.decimals as u32))
-                    / att.asset_price.price as u128) as u64
-            } else {
-                let weight: u32 = assets_weights[i];
-                if weight == 0 {
-                    continue;
-                }
-
-                let value = value_to_redeem
-                    .scale_to_exponent(att.asset_price.expo)
-                    .unwrap();
-                ((((value.price as u128 * weight as u128) / total_weight as u128)
-                    * 10u128.pow(att.asset.decimals as u32))
+                ((value.price as u128 * 10u128.pow(asset.decimals as u32))
                     / att.asset_price.price as u128) as u64
             };
             msg!(
                 "- asset {}: amount={} total={}",
                 i,
                 amount_asset,
-                att.treasury_ata.amount
+                treasury_ata.amount
             );
 
             // transfer asset from user to treasury
             // note: we detect the token program to use from the asset
-            let asset_info = att.asset.to_account_info();
+            let asset_info = asset.to_account_info();
             let asset_program = if *asset_info.owner == Token2022::id() {
                 ctx.accounts.token_2022_program.to_account_info()
             } else {
@@ -583,15 +542,15 @@ pub fn redeem_handler<'c: 'info, 'info>(
                 CpiContext::new_with_signer(
                     asset_program,
                     TransferChecked {
-                        from: att.treasury_ata.to_account_info(),
+                        from: treasury_ata.to_account_info(),
                         mint: asset_info,
-                        to: att.signer_asset_ata.to_account_info(),
-                        authority: treasury.to_account_info(),
+                        to: signer_asset_ata.to_account_info(),
+                        authority: ctx.accounts.treasury.to_account_info(),
                     },
                     signer_seeds,
                 ),
                 amount_asset,
-                att.asset.decimals,
+                asset.decimals,
             )?;
         }
     } else {

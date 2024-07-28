@@ -2183,10 +2183,13 @@
             "name": "InvalidPricingOracle"
           },
           {
-            "name": "InvalidAssetsRedeem"
+            "name": "InvalidRemainingAccounts"
           },
           {
             "name": "InvalidTreasuryAccount"
+          },
+          {
+            "name": "InvalidSignerAccount"
           },
           {
             "name": "InvalidAssetPrice"

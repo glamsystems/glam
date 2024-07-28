@@ -13,7 +13,7 @@ use crate::error::InvestorError;
 //     price.price as f64 * 10f64.powf(price.expo as f64)
 // }
 
-#[derive(PartialEq)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum Action {
     Subscribe,
     Redeem,
