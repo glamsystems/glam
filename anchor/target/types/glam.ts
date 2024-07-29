@@ -154,7 +154,7 @@ export type Glam = {
         },
         {
           "name": "asset",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -229,6 +229,11 @@ export type Glam = {
         },
         {
           "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
           "isMut": false,
           "isSigner": false
         },
@@ -3775,7 +3780,7 @@ export const IDL: Glam = {
         },
         {
           "name": "asset",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -3850,6 +3855,11 @@ export const IDL: Glam = {
         },
         {
           "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
           "isMut": false,
           "isSigner": false
         },

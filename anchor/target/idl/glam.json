@@ -154,7 +154,7 @@
         },
         {
           "name": "asset",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -229,6 +229,11 @@
         },
         {
           "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
           "isMut": false,
           "isSigner": false
         },
