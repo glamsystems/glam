@@ -19,6 +19,14 @@ pub enum Action {
     Redeem,
 }
 
+#[derive(Clone, Copy, PartialEq)]
+pub enum PriceDenom {
+    Asset, // not impl
+    SOL,
+    USD,
+    EUR, // not impl
+}
+
 pub struct AssetMeta<'a> {
     pub decimals: u8,
     pub is_stable_coin: bool,
@@ -48,6 +56,13 @@ impl<'a> AssetMeta<'a> {
             return self.staking_state;
         }
         return self.pyth_account;
+    }
+
+    pub fn get_price_denom(&self) -> PriceDenom {
+        if self.staking_state != "" {
+            return PriceDenom::SOL;
+        }
+        return PriceDenom::USD;
     }
 
     pub fn get_price(

@@ -9,7 +9,7 @@ use pyth_sdk_solana::Price;
 
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 
-use crate::constants::WSOL;
+use crate::constants::{self, WSOL};
 use crate::error::{FundError, InvestorError};
 use crate::state::*;
 
@@ -254,15 +254,6 @@ pub struct Redeem<'info> {
     pub token_2022_program: Program<'info, Token2022>,
 }
 
-pub struct AumComponent<'info> {
-    pub treasury_ata: Option<InterfaceAccount<'info, TokenAccount>>,
-    pub signer_asset_ata: Option<InterfaceAccount<'info, TokenAccount>>,
-    pub asset: Option<InterfaceAccount<'info, Mint>>,
-    pub asset_amount: u64,
-    pub asset_price: Price,
-    pub asset_value: Price,
-}
-
 pub fn redeem_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, Redeem<'info>>,
     amount: u64,
@@ -348,7 +339,11 @@ pub fn redeem_handler<'c: 'info, 'info>(
             let asset = att.asset.clone().unwrap();
 
             let amount_asset = if should_transfer_everything {
-                att.asset_amount
+                if let Some(treasury_ata) = &att.treasury_ata {
+                    treasury_ata.amount
+                } else {
+                    0
+                }
             } else if in_kind {
                 //TODO do not compute pricing
                 ((att.asset_amount as u128 * amount as u128) / total_shares as u128) as u64
@@ -444,6 +439,16 @@ pub fn redeem_handler<'c: 'info, 'info>(
     Ok(())
 }
 
+pub struct AumComponent<'info> {
+    pub treasury_ata: Option<InterfaceAccount<'info, TokenAccount>>,
+    pub signer_asset_ata: Option<InterfaceAccount<'info, TokenAccount>>,
+    pub asset: Option<InterfaceAccount<'info, Mint>>,
+    pub asset_amount: u64,
+    pub asset_price: Price,
+    pub asset_value: Price,
+    pub price_type: PriceDenom,
+}
+
 pub fn get_aum_components<'info>(
     action: Action,
     assets: &[Pubkey],
@@ -464,10 +469,27 @@ pub fn get_aum_components<'info>(
     );
 
     let timestamp = Clock::get()?.unix_timestamp;
+    let mut price_sol_usd = Price::default();
+    let mut price_type = PriceDenom::USD;
     for (i, accounts) in remaining_accounts.chunks(num_accounts).enumerate() {
         let cur_asset = assets[i];
         let cur_asset_str = cur_asset.to_string();
         let cur_asset_meta = AssetMeta::get(cur_asset_str.as_str())?;
+
+        let is_wsol = cur_asset == constants::WSOL;
+        if i == 0 {
+            if is_wsol {
+                // Fund denominated in SOL
+                price_type = PriceDenom::SOL;
+            } else if cur_asset_meta.is_stable_coin {
+                // Fund denominated in USD
+                price_type = PriceDenom::USD;
+            } else {
+                // Fund denominated in another asset
+                // price_type = PriceDenom::Asset;
+                panic!("not implemented");
+            }
+        }
 
         // Parse treasury account
         let treasury_ata_account = &accounts[0];
@@ -527,7 +549,7 @@ pub fn get_aum_components<'info>(
         // Calculate asset_amount in treasury
         // Deser treasury_ata, if it fails (account doesn't exist) then amount=0
         let maybe_treasury_ata = InterfaceAccount::<TokenAccount>::try_from(treasury_ata_account);
-        let asset_amount = if let Ok(treasury_ata) = &maybe_treasury_ata {
+        let mut asset_amount = if let Ok(treasury_ata) = &maybe_treasury_ata {
             require!(
                 treasury_ata.mint == cur_asset,
                 InvestorError::InvalidTreasuryAccount
@@ -540,6 +562,9 @@ pub fn get_aum_components<'info>(
         } else {
             0
         };
+        if is_wsol {
+            asset_amount += treasury.lamports();
+        }
 
         let treasury_ata = if asset_amount > 0 {
             Some(maybe_treasury_ata?)
@@ -547,13 +572,27 @@ pub fn get_aum_components<'info>(
             None
         };
 
-        let need_price = !skip_prices && (asset_amount > 0 || i == force_price_asset_idx);
-        let asset_price = if need_price {
+        let need_price =
+            !skip_prices && (asset_amount > 0 || i == force_price_asset_idx || is_wsol);
+        let mut asset_price = if need_price {
             cur_asset_meta.get_price(pricing_account, timestamp, action)?
         } else {
             // not used
             Price::default()
         };
+        if is_wsol {
+            price_sol_usd = asset_price;
+
+            if price_type == PriceDenom::SOL {
+                asset_price = Price {
+                    price: 1,
+                    conf: 0,
+                    expo: -9,
+                    publish_time: 0,
+                };
+            }
+        }
+
         let asset_value = asset_price
             .cmul(asset_amount.try_into().unwrap(), asset_price.expo)
             .unwrap();
@@ -565,6 +604,7 @@ pub fn get_aum_components<'info>(
             asset_amount,
             asset_price,
             asset_value,
+            price_type: cur_asset_meta.get_price_denom(),
         });
         // msg!(
         //     "- asset {}: price={:.2} (={}e{}) value={:.2} ({}e{})",
@@ -576,6 +616,34 @@ pub fn get_aum_components<'info>(
         //     asset_value.price,
         //     asset_value.expo
         // );
+    }
+
+    for att in &mut aum_components {
+        if price_type == PriceDenom::SOL {
+            // Any asset priced in USD, should be converted in SOL
+            // by divinging by the SOL price.
+            // Note: wSOL price is already in SOL
+            if att.price_type == PriceDenom::USD {
+                att.asset_price = att.asset_price.div(&price_sol_usd).unwrap();
+                att.asset_value = att
+                    .asset_price
+                    .cmul(att.asset_amount.try_into().unwrap(), att.asset_price.expo)
+                    .unwrap();
+            }
+        }
+
+        if price_type == PriceDenom::USD {
+            // LST (or any asset with price in SOL) should be converted to USD
+            // by multiplying their price time SOL price
+            // Note: wSOL price is already in USD
+            if att.price_type == PriceDenom::SOL {
+                att.asset_price = att.asset_price.mul(&price_sol_usd).unwrap();
+                att.asset_value = att
+                    .asset_price
+                    .cmul(att.asset_amount.try_into().unwrap(), att.asset_price.expo)
+                    .unwrap();
+            }
+        }
     }
 
     Ok(aum_components)
