@@ -2684,6 +2684,26 @@ export type Glam = {
       }
     },
     {
+      "name": "PriceDenom",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Asset"
+          },
+          {
+            "name": "SOL"
+          },
+          {
+            "name": "USD"
+          },
+          {
+            "name": "EUR"
+          }
+        ]
+      }
+    },
+    {
       "name": "ManagerKind",
       "type": {
         "kind": "enum",
@@ -6515,6 +6535,26 @@ export const IDL: Glam = {
           },
           {
             "name": "Redeem"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PriceDenom",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Asset"
+          },
+          {
+            "name": "SOL"
+          },
+          {
+            "name": "USD"
+          },
+          {
+            "name": "EUR"
           }
         ]
       }
