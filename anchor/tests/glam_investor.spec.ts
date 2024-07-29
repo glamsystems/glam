@@ -4,6 +4,7 @@ import {
   Transaction,
   sendAndConfirmTransaction,
   Keypair,
+  SystemProgram,
 } from "@solana/web3.js";
 import {
   createMint,
@@ -401,7 +402,12 @@ describe("glam_investor", () => {
           6,
           [],
           TOKEN_PROGRAM_ID
-        )
+        ),
+        SystemProgram.transfer({
+          fromPubkey: manager.publicKey,
+          toPubkey: treasuryPDA,
+          lamports: 1_000_000_000,
+        })
       );
       await sendAndConfirmTransaction(connection, tx1, [manager.payer], {
         skipPreflight: true,
@@ -430,6 +436,12 @@ describe("glam_investor", () => {
     );
     const oldAmountBtc = treasuryBtc.amount;
 
+    let treasuryAccountInfo = await connection.getAccountInfo(
+      treasuryPDA,
+      commitment
+    );
+    const oldAmountSol = treasuryAccountInfo?.lamports;
+
     const amount = new BN(500_000_000);
     try {
       const txId = await glamClient.investor.redeem(fundPDA, amount, false);
@@ -456,10 +468,18 @@ describe("glam_investor", () => {
     );
     const newAmountBtc = treasuryBtc.amount;
 
+    treasuryAccountInfo = await connection.getAccountInfo(
+      treasuryPDA,
+      commitment
+    );
+    const newAmountSol = treasuryAccountInfo?.lamports;
+
     // new usdc amount should be less than old amount
     expect(oldAmountUsdc).toBeGreaterThan(newAmountUsdc);
     // no change in btc amount
     expect(oldAmountBtc).toEqual(newAmountBtc);
+    // no change in sol amount
+    expect(oldAmountSol).toEqual(newAmountSol);
   });
 
   it("Manager redeems 100% of fund", async () => {
@@ -518,6 +538,13 @@ describe("glam_investor", () => {
       BTC_TOKEN_PROGRAM_ID
     );
     expect(treasuryBtc.amount).toEqual(shares.supply); // 0
+
+    // All lamports are sent to signer => treasury account no longer exists
+    const treasuryAccountInfo = await connection.getAccountInfo(
+      treasuryPDA,
+      commitment
+    );
+    expect(treasuryAccountInfo).toBeNull();
   });
 
   it("Alice subscribes to fund with 250 USDC", async () => {

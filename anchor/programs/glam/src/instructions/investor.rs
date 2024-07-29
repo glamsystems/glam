@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-
+use anchor_lang::system_program::{transfer, Transfer};
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::Token;
 use anchor_spl::token_interface::{
@@ -48,7 +48,6 @@ pub struct Subscribe<'info> {
     pub signer_share_ata: Box<InterfaceAccount<'info, TokenAccount>>, // user account
 
     // the asset to transfer
-    #[account(mut)]
     pub asset: Box<InterfaceAccount<'info, Mint>>,
     #[account(mut)]
     pub treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
@@ -118,16 +117,9 @@ pub fn subscribe_handler<'c: 'info, 'info>(
 
     // compute amount of shares
     let share_class = &ctx.accounts.share_class;
+    let share_expo = -(share_class.decimals as i32);
     let total_shares = share_class.supply;
     let use_fixed_price = total_shares == 0;
-
-    let share_expo = -(share_class.decimals as i32);
-    let mut total_value = Price {
-        price: 0,
-        conf: 0,
-        expo: share_expo,
-        publish_time: 0,
-    };
 
     let aum_components = get_aum_components(
         Action::Subscribe,
@@ -142,6 +134,12 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     )?;
 
     let subscribe_asset_price = aum_components[asset_idx].asset_price;
+    let mut total_value = Price {
+        price: 0,
+        conf: 0,
+        expo: share_expo,
+        publish_time: 0,
+    };
     for att in aum_components {
         total_value = total_value
             .add(&att.asset_value.scale_to_exponent(share_expo).unwrap())
@@ -247,10 +245,11 @@ pub struct Redeem<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
 
     // programs
+    pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
     pub token_2022_program: Program<'info, Token2022>,
 }
@@ -262,6 +261,187 @@ pub struct AumComponent<'info> {
     pub asset_amount: u64,
     pub asset_price: Price,
     pub asset_value: Price,
+}
+
+pub fn redeem_handler<'c: 'info, 'info>(
+    ctx: Context<'_, '_, 'c, 'info, Redeem<'info>>,
+    amount: u64,
+    in_kind: bool,
+    skip_state: bool,
+) -> Result<()> {
+    let fund = &ctx.accounts.fund;
+
+    if ctx.accounts.fund.share_classes.len() > 1 {
+        // we need to define how to split the total amount into share classes
+        panic!("not implemented")
+    }
+    require!(fund.share_classes.len() > 0, FundError::NoShareClassInFund);
+    require!(
+        fund.share_classes[0] == ctx.accounts.share_class.key(),
+        InvestorError::InvalidShareClass
+    );
+
+    let fund_key = ctx.accounts.fund.key();
+    let seeds = &[
+        "treasury".as_bytes(),
+        fund_key.as_ref(),
+        &[ctx.bumps.treasury],
+    ];
+    let signer_seeds = &[&seeds[..]];
+    let treasury = &ctx.accounts.treasury;
+
+    let share_class = &ctx.accounts.share_class;
+    let share_expo = -(share_class.decimals as i32);
+    let total_shares = share_class.supply;
+    let should_transfer_everything = amount == total_shares;
+
+    msg!(
+        "Redeem: amount={:.2} total_shares={:.2} ({}e{})",
+        log_decimal(amount, share_expo),
+        log_decimal(total_shares, share_expo),
+        total_shares,
+        share_expo,
+    );
+
+    let assets = fund.assets().unwrap();
+    let skip_prices = should_transfer_everything || in_kind;
+    let aum_components = get_aum_components(
+        Action::Redeem,
+        assets,
+        ctx.remaining_accounts,
+        treasury,
+        &ctx.accounts.signer,
+        &ctx.accounts.token_program,
+        &ctx.accounts.token_2022_program,
+        skip_prices, // only for redeem
+        usize::MAX,  // only for subscribe
+    )?;
+
+    burn(
+        CpiContext::new(
+            ctx.accounts.token_2022_program.to_account_info(),
+            Burn {
+                mint: ctx.accounts.share_class.to_account_info(),
+                from: ctx.accounts.signer_share_ata.to_account_info(),
+                authority: ctx.accounts.signer.to_account_info(),
+            },
+        ),
+        amount,
+    )?;
+
+    if skip_state {
+        // msg!(
+        //     "= tot_value={:.2} ({}e{})",
+        //     log_price(total_value),
+        //     total_value.price,
+        //     total_value.expo
+        // );
+
+        // msg!(
+        //     "= value_red={:.2} ({}e{})",
+        //     log_price(value_to_redeem),
+        //     value_to_redeem.price,
+        //     value_to_redeem.expo
+        // );
+
+        for (i, att) in aum_components.iter().enumerate() {
+            let asset = att.asset.clone().unwrap();
+
+            let amount_asset = if should_transfer_everything {
+                att.asset_amount
+            } else if in_kind {
+                //TODO do not compute pricing
+                ((att.asset_amount as u128 * amount as u128) / total_shares as u128) as u64
+            } else {
+                if i > 0 {
+                    break;
+                }
+
+                let mut total_value = Price {
+                    price: 0,
+                    conf: 0,
+                    expo: share_expo,
+                    publish_time: 0,
+                };
+                for att in &aum_components {
+                    total_value = total_value
+                        .add(&att.asset_value.scale_to_exponent(share_expo).unwrap())
+                        .unwrap();
+                }
+
+                let value_to_redeem = Price {
+                    price: ((total_value.price as u128 * amount as u128) / total_shares as u128)
+                        as i64,
+                    conf: 0,
+                    expo: share_expo,
+                    publish_time: 0,
+                };
+                let value = value_to_redeem
+                    .scale_to_exponent(att.asset_price.expo)
+                    .unwrap();
+                ((value.price as u128 * 10u128.pow(asset.decimals as u32))
+                    / att.asset_price.price as u128) as u64
+            };
+
+            if amount_asset == 0 {
+                continue;
+            }
+
+            // transfer asset from user to treasury
+            // note: we detect the token program to use from the asset
+            let asset_info = asset.to_account_info();
+            let asset_program = if *asset_info.owner == Token2022::id() {
+                ctx.accounts.token_2022_program.to_account_info()
+            } else {
+                ctx.accounts.token_program.to_account_info()
+            };
+
+            // msg!(
+            //     "- {}e-{} {}",
+            //     amount_asset,
+            //     att.asset_decimals,
+            //     asset_info.key()
+            // );
+            let signer_asset_ata = att.signer_asset_ata.clone().unwrap();
+            let treasury_ata: InterfaceAccount<TokenAccount> = att.treasury_ata.clone().unwrap();
+            transfer_checked(
+                CpiContext::new_with_signer(
+                    asset_program,
+                    TransferChecked {
+                        from: treasury_ata.to_account_info(),
+                        mint: asset_info,
+                        to: signer_asset_ata.to_account_info(),
+                        authority: ctx.accounts.treasury.to_account_info(),
+                    },
+                    signer_seeds,
+                ),
+                amount_asset,
+                asset.decimals,
+            )?;
+        }
+
+        if should_transfer_everything {
+            let lamports = treasury.lamports();
+            if lamports > 0 {
+                transfer(
+                    CpiContext::new_with_signer(
+                        ctx.accounts.system_program.to_account_info(),
+                        Transfer {
+                            from: ctx.accounts.treasury.to_account_info(),
+                            to: ctx.accounts.signer.to_account_info(),
+                        },
+                        signer_seeds,
+                    ),
+                    lamports,
+                )?;
+            }
+        }
+    } else {
+        //TODO: create redeem state
+        panic!("not implemented")
+    }
+
+    Ok(())
 }
 
 pub fn get_aum_components<'info>(
@@ -301,7 +481,7 @@ pub fn get_aum_components<'info>(
             &cur_asset,
             &cur_token_program_key,
         );
-        msg!("asset={} = {}", i, cur_asset);
+        // msg!("asset={} = {}", i, cur_asset);
         require_eq!(
             treasury_ata_account.key(),
             expected_treasury_ata,
@@ -399,164 +579,4 @@ pub fn get_aum_components<'info>(
     }
 
     Ok(aum_components)
-}
-
-pub fn redeem_handler<'c: 'info, 'info>(
-    ctx: Context<'_, '_, 'c, 'info, Redeem<'info>>,
-    amount: u64,
-    in_kind: bool,
-    skip_state: bool,
-) -> Result<()> {
-    if ctx.accounts.fund.share_classes.len() > 1 {
-        // we need to define how to split the total amount into share classes
-        panic!("not implemented")
-    }
-
-    let share_class = &ctx.accounts.share_class;
-    let share_expo = -(share_class.decimals as i32);
-    let total_shares = share_class.supply;
-    let should_transfer_everything = amount == total_shares;
-
-    msg!(
-        "Redeem: amount={:.2} total_shares={:.2} ({}e{})",
-        log_decimal(amount, share_expo),
-        log_decimal(total_shares, share_expo),
-        total_shares,
-        share_expo,
-    );
-
-    if skip_state {
-        let fund = &ctx.accounts.fund;
-        let assets = fund.assets().unwrap();
-
-        let skip_prices = should_transfer_everything || in_kind;
-
-        let assets_to_transfer = get_aum_components(
-            Action::Redeem,
-            assets,
-            ctx.remaining_accounts,
-            &ctx.accounts.treasury,
-            &ctx.accounts.signer,
-            &ctx.accounts.token_program,
-            &ctx.accounts.token_2022_program,
-            skip_prices, // only for redeem
-            usize::MAX,  // only for subscribe
-        )?;
-
-        let mut total_value = Price {
-            price: 0,
-            conf: 0,
-            expo: share_expo,
-            publish_time: 0,
-        };
-        for att in &assets_to_transfer {
-            total_value = total_value
-                .add(&att.asset_value.scale_to_exponent(share_expo).unwrap())
-                .unwrap();
-        }
-        // msg!(
-        //     "= tot_value={:.2} ({}e{})",
-        //     log_price(total_value),
-        //     total_value.price,
-        //     total_value.expo
-        // );
-
-        // msg!(
-        //     "= value_red={:.2} ({}e{})",
-        //     log_price(value_to_redeem),
-        //     value_to_redeem.price,
-        //     value_to_redeem.expo
-        // );
-
-        burn(
-            CpiContext::new(
-                ctx.accounts.token_2022_program.to_account_info(),
-                Burn {
-                    mint: ctx.accounts.share_class.to_account_info(),
-                    from: ctx.accounts.signer_share_ata.to_account_info(),
-                    authority: ctx.accounts.signer.to_account_info(),
-                },
-            ),
-            amount,
-        )?;
-
-        for (i, att) in assets_to_transfer.iter().enumerate() {
-            if att.asset_amount == 0 {
-                continue;
-            }
-            let asset = att.asset.clone().unwrap();
-            let signer_asset_ata = att.signer_asset_ata.clone().unwrap();
-            let treasury_ata = att.treasury_ata.clone().unwrap();
-            let amount_asset = if should_transfer_everything {
-                treasury_ata.amount
-            } else if in_kind {
-                //TODO do not compute pricing
-                ((att.asset_amount as u128 * amount as u128) / total_shares as u128) as u64
-            } else {
-                if i > 0 {
-                    continue;
-                }
-                let value_to_redeem = Price {
-                    price: ((total_value.price as u128 * amount as u128) / total_shares as u128)
-                        as i64,
-                    conf: 0,
-                    expo: share_expo,
-                    publish_time: 0,
-                };
-                let value = value_to_redeem
-                    .scale_to_exponent(att.asset_price.expo)
-                    .unwrap();
-                ((value.price as u128 * 10u128.pow(asset.decimals as u32))
-                    / att.asset_price.price as u128) as u64
-            };
-            msg!(
-                "- asset {}: amount={} total={}",
-                i,
-                amount_asset,
-                treasury_ata.amount
-            );
-
-            // transfer asset from user to treasury
-            // note: we detect the token program to use from the asset
-            let asset_info = asset.to_account_info();
-            let asset_program = if *asset_info.owner == Token2022::id() {
-                ctx.accounts.token_2022_program.to_account_info()
-            } else {
-                ctx.accounts.token_program.to_account_info()
-            };
-
-            let fund_key = ctx.accounts.fund.key();
-            let seeds = &[
-                "treasury".as_bytes(),
-                fund_key.as_ref(),
-                &[ctx.bumps.treasury],
-            ];
-            let signer_seeds = &[&seeds[..]];
-            // msg!(
-            //     "- {}e-{} {}",
-            //     amount_asset,
-            //     att.asset_decimals,
-            //     asset_info.key()
-            // );
-            transfer_checked(
-                CpiContext::new_with_signer(
-                    asset_program,
-                    TransferChecked {
-                        from: treasury_ata.to_account_info(),
-                        mint: asset_info,
-                        to: signer_asset_ata.to_account_info(),
-                        authority: ctx.accounts.treasury.to_account_info(),
-                    },
-                    signer_seeds,
-                ),
-                amount_asset,
-                asset.decimals,
-            )?;
-        }
-    } else {
-        //TODO: create redeem state
-        panic!("not implemented")
-    }
-
-    Ok(())
 }
