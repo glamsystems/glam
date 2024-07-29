@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import {useForm, SubmitHandler, FormProvider, get} from "react-hook-form";
+import { useForm, SubmitHandler, FormProvider, get } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -29,14 +29,14 @@ import React, { useState, useEffect } from "react";
 import { columns } from "./components/columns";
 import { DataTable } from "./components/data-table";
 
-import { useGlamClient } from "@glam/anchor";
+import { useGlamClient, JITO_STAKE_POOL } from "@glam/anchor";
 
 import { testFund } from "../testFund";
 import { ExplorerLink } from "@/components/ExplorerLink";
-import {LAMPORTS_PER_SOL} from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 
 const stakeSchema = z.object({
-  service: z.enum(["Marinade","Native"]),
+  service: z.enum(["Marinade", "Native", "Jito"]),
   amountIn: z.number().nonnegative(),
   amountInAsset: z.string(),
 });
@@ -45,8 +45,8 @@ type StakeSchema = z.infer<typeof stakeSchema>;
 
 const serviceToAssetMap: { [key in StakeSchema["service"]]: string } = {
   Marinade: "mSOL",
-  Native: "SOL"
-  //Jito: "jitoSOL",
+  Native: "SOL",
+  Jito: "jitoSOL",
 };
 
 export const ticketSchema = z.object({
@@ -68,8 +68,11 @@ export default function Stake() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const tickets = await glamClient.marinade.getExistingTickets(testFund.fundPDA);
-        const transformedTickets = tickets.map(ticket => ({
+        // TODO: fetch stake accounts
+        const tickets = await glamClient.marinade.getExistingTickets(
+          testFund.fundPDA
+        );
+        const transformedTickets = tickets.map((ticket) => ({
           publicKey: ticket.toBase58(),
           service: "marinade",
           status: "claimable",
@@ -78,7 +81,7 @@ export default function Stake() {
         setMarinadeTicket(transformedTickets);
         console.log(transformedTickets);
       } catch (error) {
-        console.error('Error fetching marinade tickets:', error);
+        console.error("Error fetching marinade tickets:", error);
       } finally {
         setLoading(false); // Update loading state
       }
@@ -96,45 +99,103 @@ export default function Stake() {
     },
   });
 
-  const onSubmit: SubmitHandler<StakeSchema> = async (values, event) => {
-    const nativeEvent = event as unknown as React.BaseSyntheticEvent & {
+  const onSubmit: SubmitHandler<StakeSchema> = async (
+    values: StakeSchema,
+    event
+  ) => {
+    const nativeEvent = event as React.BaseSyntheticEvent & {
       nativeEvent: { submitter: HTMLElement };
     };
 
-    if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") === "submit") {
-      const stakingService = values.service.toLowerCase();
-      let txId;
+    if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") !== "submit") {
+      return;
+    }
 
-      if (mode === "stake") {
-        if (values.amountIn === 0) {
-          toast({
-            title: "Please enter an amount greater than 0.", variant: "destructive",
-          })
-        } else {
-          txId = await glamClient[stakingService].stake(testFund.fundPDA, new BN(values.amountIn * LAMPORTS_PER_SOL));
+    if (values.amountIn === 0) {
+      toast({
+        title: "Please enter an amount greater than 0.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-          toast({
-            title: `${mode.charAt(0).toUpperCase() + mode.slice(1)} ${values.amountIn} ${values.amountInAsset}`, description: <ExplorerLink path={`tx/${txId}`} label={txId}/>,
-          });
-        }
-      } else {
-        if (values.amountIn === 0) {
-          toast({
-            title: "Please enter an amount greater than 0.", variant: "destructive",
-          })
-        } else {
-          txId = await glamClient[stakingService].delayedUnstake(testFund.fundPDA, new BN(values.amountIn * LAMPORTS_PER_SOL));
-
-          toast({
-            title: `${mode.charAt(0).toUpperCase() + mode.slice(1)} ${values.amountIn} ${values.amountInAsset}`, description: <ExplorerLink path={`tx/${txId}`} label={txId}/>,
-          });
-        }
+    // Handle stake
+    if (mode === "stake") {
+      const stakeFnMap = {
+        Marinade: async () => {
+          return await glamClient.marinade.stake(
+            testFund.fundPDA,
+            new BN(values.amountIn * LAMPORTS_PER_SOL)
+          );
+        },
+        Jito: async () => {
+          return await glamClient.staking.stakePoolDepositSol(
+            testFund.fundPDA,
+            JITO_STAKE_POOL,
+            new BN(values.amountIn * LAMPORTS_PER_SOL)
+          );
+        },
+        Native: async () => {
+          return await glamClient.staking.nativeStakeDeposit(
+            testFund.fundPDA,
+            new PublicKey("J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp"), // phantom validator
+            new BN(values.amountIn * LAMPORTS_PER_SOL)
+          );
+        },
+      };
+      try {
+        const txId = await stakeFnMap[values.service]();
+        toast({
+          title: `${mode.charAt(0).toUpperCase() + mode.slice(1)} ${
+            values.amountIn
+          } ${values.amountInAsset}`,
+          description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+        });
+      } catch (error) {
+        console.error(`Error staking with ${values.service}:`, error);
+        toast({
+          title: `Failed to ${mode} ${values.amountIn} ${values.amountInAsset}`,
+          variant: "destructive",
+        });
       }
+
+      return;
+    }
+
+    // Handle unstake
+    const unstakeFnMap = {
+      Marinade: async () => {
+        return await glamClient.marinade.delayedUnstake(
+          testFund.fundPDA,
+          new BN(values.amountIn * LAMPORTS_PER_SOL)
+        );
+      },
+      Jito: async () => {
+        return await glamClient.staking.stakePoolWithdrawStake(
+          testFund.fundPDA,
+          JITO_STAKE_POOL,
+          new BN(values.amountIn * LAMPORTS_PER_SOL)
+        );
+      },
+      Native: async () => {
+        throw new Error("Native unstake not needed");
+      },
+    };
+    try {
+      const txId = await unstakeFnMap[values.service]();
+      toast({
+        title: `${mode.charAt(0).toUpperCase() + mode.slice(1)} ${
+          values.amountIn
+        } ${values.amountInAsset}`,
+        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+      });
+    } catch (error) {
+      console.error(`Error unstaking with ${values.service}:`, error);
     }
   };
 
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
+    event.preventDefault();
     form.reset();
     setAmountInAsset("SOL");
     setMode("stake");
@@ -169,7 +230,10 @@ export default function Stake() {
       <div className="w-1/2 self-center">
         <FormProvider {...form}>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4 w-full"
+            >
               <div>
                 <FormItem>
                   <FormLabel>Mode</FormLabel>
@@ -207,17 +271,21 @@ export default function Stake() {
                       <FormControl>
                         <Select
                           value={field.value}
-                          onValueChange={(value) => handleServiceChange(value as StakeSchema["service"])}
+                          onValueChange={(value) =>
+                            handleServiceChange(value as StakeSchema["service"])
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Service" />
                           </SelectTrigger>
                           <SelectContent>
-                            {stakeSchema.shape.service._def.values.map((option) => (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
+                            {stakeSchema.shape.service._def.values.map(
+                              (option) => (
+                                <SelectItem key={option} value={option}>
+                                  {option}
+                                </SelectItem>
+                              )
+                            )}
                           </SelectContent>
                         </Select>
                       </FormControl>
@@ -255,9 +323,12 @@ export default function Stake() {
       <div className="flex w-1/2 mt-16 self-center">
         {loading ? (
           <p>Loading Tickets...</p>
-        ) : (<div className="w-full">
-            <DataTable data={marinadeTicket} columns={columns}/>
-          </div>)}
+        ) : (
+          <div className="w-full">
+            <DataTable data={marinadeTicket} columns={columns} />
+          </div>
+        )}
       </div>
-    </div>);
+    </div>
+  );
 }

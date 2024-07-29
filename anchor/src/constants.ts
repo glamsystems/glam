@@ -45,3 +45,10 @@ export const JUPITER_PROGRAM_ID = new PublicKey(
 export const SANCTUM_STAKE_POOL_PROGRAM_ID = new PublicKey(
   "SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY"
 );
+
+/**
+ * Stake pools
+ */
+export const JITO_STAKE_POOL = new PublicKey(
+  "Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb"
+);

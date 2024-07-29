@@ -17,10 +17,16 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandShortcut,
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandShortcut,
 } from "@/components/ui/command";
 
-import JupiterStrict from "../app/assets/data/jupiterStrict"
+import JupiterStrict from "../app/assets/data/jupiterStrict";
 import TruncateAddress from "../utils/TruncateAddress";
 
 interface AssetInputProps {
@@ -31,8 +37,8 @@ interface AssetInputProps {
   onSelectAsset: (value: string) => void;
   className?: string;
   disableAssetChange?: boolean;
-  disableAmountInput? : boolean;
-  useMaxAmount: boolean;
+  disableAmountInput?: boolean;
+  useMaxAmount?: boolean;
 }
 
 export const AssetInput: React.FC<AssetInputProps> = ({
@@ -56,7 +62,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
     const fetchAssets = async () => {
       const data = await JupiterStrict();
       if (data) {
-        const updatedAssets = data.map(asset =>
+        const updatedAssets = data.map((asset) =>
           asset.symbol === "SOL" ? { ...asset, symbol: "wSOL" } : asset
         );
         updatedAssets.unshift({ name: "Solana", symbol: "SOL", address: "" });
@@ -181,9 +187,15 @@ export const AssetInput: React.FC<AssetInputProps> = ({
                               value={asset.symbol}
                               onSelect={() => handleSelect(asset.symbol)}
                             >
-                              <span className="font-medium text-nowrap">{asset.symbol}</span>
-                              <span className="ml-1.5 truncate text-muted-foreground text-xs">{asset.name}</span>
-                              <CommandShortcut><TruncateAddress address={asset.address}/></CommandShortcut>
+                              <span className="font-medium text-nowrap">
+                                {asset.symbol}
+                              </span>
+                              <span className="ml-1.5 truncate text-muted-foreground text-xs">
+                                {asset.name}
+                              </span>
+                              <CommandShortcut>
+                                <TruncateAddress address={asset.address} />
+                              </CommandShortcut>
                             </CommandItem>
                           ))}
                         </CommandGroup>
@@ -206,7 +218,9 @@ export const AssetInput: React.FC<AssetInputProps> = ({
           <div className="flex justify-between text-sm">
             <FormDescription>Balance</FormDescription>
             <FormDescription
-              className={`select-none cursor-pointer ${disableAmountInput ? "pointer-events-none text-gray-400" : ""}`}
+              className={`select-none cursor-pointer ${
+                disableAmountInput ? "pointer-events-none text-gray-400" : ""
+              }`}
               onClick={!disableAmountInput ? handleBalanceClick : undefined}
             >
               {formattedBalance}
