@@ -4,6 +4,7 @@ import {
   Transaction,
   sendAndConfirmTransaction,
   Keypair,
+  SystemProgram,
 } from "@solana/web3.js";
 import {
   createMint,
@@ -236,45 +237,6 @@ describe("glam_investor", () => {
     }
   });
 
-  it("Create treasury ATAs", async () => {
-    // TODO: can we automatically create treasury ATAs?
-    try {
-      const tx = new Transaction().add(
-        createAssociatedTokenAccountInstruction(
-          manager.publicKey,
-          treasuryUsdcAta,
-          treasuryPDA,
-          usdc.publicKey,
-          TOKEN_PROGRAM_ID,
-          ASSOCIATED_TOKEN_PROGRAM_ID
-        ),
-        createAssociatedTokenAccountInstruction(
-          manager.publicKey,
-          treasuryEthAta,
-          treasuryPDA,
-          ethOrWsol,
-          TOKEN_PROGRAM_ID,
-          ASSOCIATED_TOKEN_PROGRAM_ID
-        ),
-        createAssociatedTokenAccountInstruction(
-          manager.publicKey,
-          treasuryBtcAta,
-          treasuryPDA,
-          btc.publicKey,
-          BTC_TOKEN_PROGRAM_ID,
-          ASSOCIATED_TOKEN_PROGRAM_ID
-        )
-      );
-      await sendAndConfirmTransaction(connection, tx, [manager.payer], {
-        skipPreflight: true,
-        commitment,
-      });
-    } catch (e) {
-      console.error(e);
-      throw e;
-    }
-  });
-
   it("Manager tests subscribe ETH to fund", async () => {
     const amount = useWsolInsteadOfEth
       ? new BN(500 * 10 ** 9)
@@ -338,8 +300,8 @@ describe("glam_investor", () => {
           shareClass: invalidShareClass,
           signerShareAta: shareAta,
           asset: btc.publicKey,
-          treasuryAta: treasuryBtcAta,
-          signerAssetAta: managerBtcAta,
+          treasuryAta: treasuryEthAta,
+          signerAssetAta: managerEthAta,
           signer: manager.publicKey,
           tokenProgram: TOKEN_PROGRAM_ID,
           token2022Program: TOKEN_2022_PROGRAM_ID,
@@ -425,6 +387,12 @@ describe("glam_investor", () => {
     const amountExt = new BN(250_000_000);
     try {
       const tx1 = new Transaction().add(
+        createAssociatedTokenAccountInstruction(
+          manager.publicKey,
+          treasuryUsdcAta,
+          treasuryPDA,
+          usdc.publicKey
+        ),
         createTransferCheckedInstruction(
           managerUsdcAta,
           usdc.publicKey,
@@ -434,7 +402,12 @@ describe("glam_investor", () => {
           6,
           [],
           TOKEN_PROGRAM_ID
-        )
+        ),
+        SystemProgram.transfer({
+          fromPubkey: manager.publicKey,
+          toPubkey: treasuryPDA,
+          lamports: 1_000_000_000,
+        })
       );
       await sendAndConfirmTransaction(connection, tx1, [manager.payer], {
         skipPreflight: true,
@@ -463,6 +436,12 @@ describe("glam_investor", () => {
     );
     const oldAmountBtc = treasuryBtc.amount;
 
+    let treasuryAccountInfo = await connection.getAccountInfo(
+      treasuryPDA,
+      commitment
+    );
+    const oldAmountSol = treasuryAccountInfo?.lamports;
+
     const amount = new BN(500_000_000);
     try {
       const txId = await glamClient.investor.redeem(fundPDA, amount, false);
@@ -489,10 +468,18 @@ describe("glam_investor", () => {
     );
     const newAmountBtc = treasuryBtc.amount;
 
+    treasuryAccountInfo = await connection.getAccountInfo(
+      treasuryPDA,
+      commitment
+    );
+    const newAmountSol = treasuryAccountInfo?.lamports;
+
     // new usdc amount should be less than old amount
     expect(oldAmountUsdc).toBeGreaterThan(newAmountUsdc);
     // no change in btc amount
     expect(oldAmountBtc).toEqual(newAmountBtc);
+    // no change in sol amount
+    expect(oldAmountSol).toEqual(newAmountSol);
   });
 
   it("Manager redeems 100% of fund", async () => {
@@ -551,6 +538,13 @@ describe("glam_investor", () => {
       BTC_TOKEN_PROGRAM_ID
     );
     expect(treasuryBtc.amount).toEqual(shares.supply); // 0
+
+    // All lamports are sent to signer => treasury account no longer exists
+    const treasuryAccountInfo = await connection.getAccountInfo(
+      treasuryPDA,
+      commitment
+    );
+    expect(treasuryAccountInfo).toBeNull();
   });
 
   it("Alice subscribes to fund with 250 USDC", async () => {

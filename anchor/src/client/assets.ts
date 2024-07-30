@@ -623,22 +623,13 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
   ],
 ]);
 
-export const ASSETS_DEVNET: Map<string, AssetMeta> = new Map([
-  [
-    // wSOL
-    "So11111111111111111111111111111111111111112",
-    {
-      pricingAccount: new PublicKey(
-        "J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix" // pyth
-      ),
-    },
-  ],
+export const ASSETS_TESTS: Map<string, AssetMeta> = new Map([
   [
     // USDC (Drift)
     "8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2",
     {
       pricingAccount: new PublicKey(
-        "5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7" // pyth
+        "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD" // pyth
       ),
     },
   ],
@@ -647,16 +638,7 @@ export const ASSETS_DEVNET: Map<string, AssetMeta> = new Map([
     "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv",
     {
       pricingAccount: new PublicKey(
-        "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J" // pyth
-      ),
-    },
-  ],
-  [
-    // mSOL
-    "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So",
-    {
-      pricingAccount: new PublicKey(
-        "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC" // state
+        "Eavb8FKNoYPbHnSS8kMi4tnUh8qK8bqxTjCojer4pZrr" // pyth
       ),
     },
   ],
@@ -670,7 +652,7 @@ export const ASSETS_DEVNET: Map<string, AssetMeta> = new Map([
     "AwRP1kuJbykXeF4hcLzfMDMY2ZTGN3cx8ErCWxVYekef",
     {
       pricingAccount: new PublicKey(
-        "5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7" // pyth
+        "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD" // pyth
       ),
     },
   ],
@@ -679,7 +661,7 @@ export const ASSETS_DEVNET: Map<string, AssetMeta> = new Map([
     "7Pz5yQdyQm64WtzxvpQZi3nD1q5mbxj4Hhcjy2kmZ7Zd",
     {
       pricingAccount: new PublicKey(
-        "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J" // pyth
+        "Eavb8FKNoYPbHnSS8kMi4tnUh8qK8bqxTjCojer4pZrr" // pyth
       ),
       programId: TOKEN_2022_PROGRAM_ID,
     },
@@ -689,7 +671,7 @@ export const ASSETS_DEVNET: Map<string, AssetMeta> = new Map([
     "GRxagtBNxzjwxkKdEgW7P1oqU57Amai6ha5F3UBJzU1m",
     {
       pricingAccount: new PublicKey(
-        "EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw" // pyth
+        "JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB" // pyth
       ),
     },
   ],
