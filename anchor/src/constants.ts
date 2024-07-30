@@ -11,6 +11,9 @@ export const WSOL = new PublicKey(
 export const MSOL = new PublicKey(
   "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So"
 );
+export const JITOSOL = new PublicKey(
+  "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn"
+);
 // USDC, 6 decimals
 export const USDC = new PublicKey(
   "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"

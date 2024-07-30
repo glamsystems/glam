@@ -29,7 +29,7 @@ import React, { useState, useEffect } from "react";
 import { columns } from "./components/columns";
 import { DataTable } from "./components/data-table";
 
-import { useGlamClient, JITO_STAKE_POOL } from "@glam/anchor";
+import { useGlamClient, JITO_STAKE_POOL, MSOL, JITOSOL } from "@glam/anchor";
 
 import { testFund } from "../testFund";
 import { ExplorerLink } from "@/components/ExplorerLink";
@@ -58,11 +58,17 @@ export const ticketSchema = z.object({
 
 export type Ticket = z.infer<typeof ticketSchema>;
 
+export type assetBalancesMap = {
+  [key: string]: number;
+};
+
 export default function Stake() {
   const [marinadeTicket, setMarinadeTicket] = useState<Ticket[]>([]);
   const [amountInAsset, setAmountInAsset] = useState<string>("SOL");
   const [mode, setMode] = useState<string>("stake");
   const [loading, setLoading] = useState<boolean>(true); // New loading state
+  const [balance, setBalance] = useState<number>(NaN);
+  const [assetBalances, setAssetBalances] = useState<assetBalancesMap>({});
   const glamClient = useGlamClient();
 
   useEffect(() => {
@@ -84,6 +90,23 @@ export default function Stake() {
         console.error("Error fetching marinade tickets:", error);
       } finally {
         setLoading(false); // Update loading state
+      }
+
+      if (Object.keys(assetBalances).length === 0) {
+        const assetBalances = {
+          SOL: await glamClient.getTreasuryBalance(testFund.fundPDA),
+          mSOL: await glamClient.getTreasuryTokenBalance(
+            testFund.fundPDA,
+            MSOL
+          ),
+          jitoSOL: await glamClient.getTreasuryTokenBalance(
+            testFund.fundPDA,
+            JITOSOL
+          ),
+        };
+
+        setBalance(assetBalances["SOL"]);
+        setAssetBalances(assetBalances);
       }
     };
 
@@ -204,24 +227,27 @@ export default function Stake() {
   const handleServiceChange = (service: StakeSchema["service"]) => {
     form.setValue("service", service);
     if (mode === "unstake") {
-      const correspondingAsset = serviceToAssetMap[service];
-      setAmountInAsset(correspondingAsset);
+      const asset = serviceToAssetMap[service];
+      setAmountInAsset(asset);
+      setBalance(assetBalances[asset]);
+    } else {
+      setBalance(assetBalances["SOL"]);
     }
   };
 
-  useEffect(() => {
-    if (mode === "stake") {
-      setAmountInAsset("SOL");
-    } else {
-      const service = form.getValues("service");
-      const correspondingAsset = serviceToAssetMap[service];
-      setAmountInAsset(correspondingAsset);
-    }
-  }, [mode, form]);
-
   const handleModeChange = (value: string) => {
-    if (value) {
-      setMode(value);
+    if (!value) {
+      return;
+    }
+    setMode(value);
+    if (value == "stake") {
+      setAmountInAsset("SOL");
+      setBalance(assetBalances["SOL"]);
+    } else if (value === "unstake") {
+      const service = form.getValues("service");
+      const asset = serviceToAssetMap[service];
+      setAmountInAsset(asset);
+      setBalance(assetBalances[asset]);
     }
   };
 
@@ -297,7 +323,7 @@ export default function Stake() {
                   className="min-w-1/2 w-1/2"
                   name="amountIn"
                   label="Amount"
-                  balance={100}
+                  balance={balance}
                   selectedAsset={amountInAsset}
                   onSelectAsset={setAmountInAsset}
                   disableAssetChange={true}
