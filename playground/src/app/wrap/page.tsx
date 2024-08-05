@@ -4,16 +4,16 @@ import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { AssetInput } from "@/components/AssetInput";
 import { Button } from "@/components/ui/button";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/use-toast";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useGlamClient } from "@glam/anchor";
+import { useGlamClient, WSOL } from "@glam/anchor";
 import { BN } from "@coral-xyz/anchor";
 import { testFund } from "@/app/testFund";
 import { ExplorerLink } from "@/components/ExplorerLink";
-import { useCluster } from "@/components/solana-cluster-provider";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 const wrapSchema = z.object({
   direction: z.enum(["wrap", "unwrap"]),
@@ -25,10 +25,11 @@ type WrapSchema = z.infer<typeof wrapSchema>;
 
 export default function Wrap() {
   const glamClient = useGlamClient();
-  const cluster = useCluster();
-  console.log(cluster);
   const [amountAsset, setAmountAsset] = useState<string>("SOL");
   const [direction, setDirection] = useState<string>("wrap");
+  const [balance, setBalance] = useState<number>(NaN);
+  const [solBalance, setSolBalance] = useState<number>(NaN);
+  const [wSolBalance, setWSolBalance] = useState<number>(NaN);
 
   const form = useForm<WrapSchema>({
     resolver: zodResolver(wrapSchema),
@@ -40,11 +41,19 @@ export default function Wrap() {
   });
 
   const onSubmit: SubmitHandler<WrapSchema> = async (values, _event) => {
+    if (values.amount === 0) {
+      toast({
+        title: "Please enter an amount greater than 0.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     let txId;
     if (direction === "wrap") {
       txId = await glamClient.wsol.wrap(
         testFund.fundPDA,
-        new BN(values.amount * 1_000_000_000)
+        new BN(values.amount * LAMPORTS_PER_SOL)
       );
     } else {
       // Unwrap means unwrap all, there's no amount
@@ -58,23 +67,45 @@ export default function Wrap() {
   };
 
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
+    event.preventDefault();
     form.reset();
     setAmountAsset("SOL");
     setDirection("wrap");
   };
 
-  const handleDirectionChange = (value: string) => {
-    if (value) {
-      form.setValue("direction", value as "wrap" | "unwrap");
-      setDirection(value);
-      setAmountAsset(value === "wrap" ? "SOL" : "wSOL");
+  const handleDirectionChange = async (value: string) => {
+    if (!value) {
+      return;
     }
+    const direction = value as "wrap" | "unwrap";
+    form.setValue("direction", direction);
+    let balance = undefined;
+    if (direction === "wrap") {
+      setAmountAsset("SOL");
+      setBalance(solBalance);
+    } else {
+      setAmountAsset("wSOL");
+      setBalance(wSolBalance);
+    }
+    setDirection(direction);
+  };
+
+  const fetchBalances = async () => {
+    const solBalance = await glamClient.getTreasuryBalance(testFund.fundPDA);
+    const wSolBalance = await glamClient.getTreasuryTokenBalance(
+      testFund.fundPDA,
+      WSOL
+    );
+    setSolBalance(solBalance);
+    setWSolBalance(wSolBalance);
+    setBalance(solBalance);
   };
 
   useEffect(() => {
-    form.setValue("amountAsset", amountAsset);
-  }, [amountAsset, form]);
+    if (!(solBalance && wSolBalance)) {
+      fetchBalances();
+    }
+  }, []);
 
   return (
     <FormProvider {...form}>
@@ -88,10 +119,12 @@ export default function Wrap() {
               className="min-w-1/2 w-1/2"
               name="amount"
               label="Amount"
-              balance={100}
+              balance={balance}
               selectedAsset={amountAsset}
               onSelectAsset={setAmountAsset}
               disableAssetChange={true}
+              disableAmountInput={direction === "unwrap"}
+              useMaxAmount={direction === "unwrap"}
             />
             <FormField
               control={form.control}

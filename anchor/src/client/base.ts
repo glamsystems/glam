@@ -10,6 +10,7 @@ import {
   BlockhashWithExpiryBlockHeight,
   ComputeBudgetProgram,
   Connection,
+  LAMPORTS_PER_SOL,
   PublicKey,
   SystemProgram,
   Transaction,
@@ -21,7 +22,9 @@ import {
 import { getSimulationComputeUnits } from "../utils/helpers";
 import {
   TOKEN_2022_PROGRAM_ID,
+  getAccount,
   getAssociatedTokenAddressSync,
+  getMint,
 } from "@solana/spl-token";
 
 import { Glam, GlamIDL, GlamProgram, getGlamProgramId } from "../glamExports";
@@ -304,6 +307,23 @@ export class BaseClient {
       true,
       programId
     );
+  }
+
+  async getTreasuryBalance(fundPDA: PublicKey): Promise<number> {
+    const treasury = this.getTreasuryPDA(fundPDA);
+    const lamports = await this.provider.connection.getBalance(treasury);
+    return lamports / LAMPORTS_PER_SOL;
+  }
+
+  async getTreasuryTokenBalance(
+    fundPDA: PublicKey,
+    mint: PublicKey,
+    programId?: PublicKey
+  ): Promise<number> {
+    const ata = this.getTreasuryAta(fundPDA, mint);
+    const _mint = await getMint(this.provider.connection, mint);
+    const account = await getAccount(this.provider.connection, ata);
+    return Number(account.amount) / Math.pow(10, _mint.decimals);
   }
 
   getOpenfundsPDA(fundPDA: PublicKey): PublicKey {

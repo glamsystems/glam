@@ -1,8 +1,10 @@
 import { z } from "zod";
 
 export const holdingSchema = z.object({
-  asset: z.string(),
-  location: z.string(),
+  name: z.string(),
+  symbol: z.string(),
+  mint: z.string(),
+  ata: z.string(),
   balance: z.number(),
   notional: z.number(),
 });

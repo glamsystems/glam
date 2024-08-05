@@ -1,9 +1,16 @@
 import { PublicKey } from "@solana/web3.js";
 
+// Only need to provide fund and manager addresses. All other addresses can be derived from them.
 export const testFund = {
   fundPDA: new PublicKey("4gAcSdfSAxVPcxj2Hi3AvKKViGat3iUysDD5ZzbqhDTk"),
-  treasuryPDA: "B6pnanhAQosKjSbWvhvQX3oxZfRJn1jmMpuXYqSrAR3d",
-  treasuryMsolATA: "GSkYFJBNcnRNgGmC6KgkrGtsy2omk8yf94wTPJtcYNtw",
-  treasuryWsolATA: "7VGH5FtzCcNGEor1Uaa1CA65v6D5xqrUDB7h9VJn8PUy",
-  manager: "gLJHKPrZLGBiBZ33hFgZh6YnsEhTVxuRT17UCqNp6ff",
+  manager: new PublicKey("gLJHKPrZLGBiBZ33hFgZh6YnsEhTVxuRT17UCqNp6ff"),
 };
+
+// Override test fund and manager if environment variables are set
+if (
+  process.env.NEXT_PUBLIC_TEST_FUND_PDA &&
+  process.env.NEXT_PUBLIC_TEST_FUND_MANAGER
+) {
+  testFund.fundPDA = new PublicKey(process.env.NEXT_PUBLIC_TEST_FUND_PDA);
+  testFund.manager = new PublicKey(process.env.NEXT_PUBLIC_TEST_FUND_MANAGER);
+}

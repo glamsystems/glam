@@ -6,17 +6,21 @@ import { Product } from "../data/productSchema"; // Ensure correct import path
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
 import { statuses } from "../data/data";
+import Sparkle from "../../../utils/Sparkle";
 
 export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "address",
     header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: ({ row }) => (
-      <img
-        src={`https://api.glam.systems/image/${row.getValue("address")}.svg`}
-        className="min-w-8 min-h-8 max-h-8 max-w-8"
-        alt="Sparkle"
-      />
+      <div>
+  <Sparkle address={row.getValue('address')} size={32}/>
+  {/*<img*/}
+  {/*      src={`https://api.glam.systems/image/${row.getValue("address")}.svg`}*/}
+  {/*      className="min-w-8 min-h-8 max-h-8 max-w-8"*/}
+  {/*      alt="Sparkle"*/}
+  {/*    />*/}
+      </div>
     ),
     enableSorting: false,
     enableHiding: false,
@@ -49,7 +53,7 @@ export const columns: ColumnDef<Product>[] = [
     cell: ({ row }) => {
       return (
         <div className="flex space-x-2">
-          <Badge variant="outline">{row.getValue("baseAsset")}</Badge>
+          <Badge variant="outline" className="rounded-none">{row.getValue("baseAsset")}</Badge>
           <span className="max-w-[500px] truncate font-medium"></span>
         </div>
       );

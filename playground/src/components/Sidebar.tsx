@@ -2,19 +2,7 @@
 
 import React from "react";
 import {
-  BoxModelIcon,
-  Component1Icon,
-  DashboardIcon,
-  DownloadIcon,
-  ExitIcon,
-  GlobeIcon,
-  LayersIcon,
-  ListBulletIcon,
-  LoopIcon,
-  MixerHorizontalIcon,
-  MixIcon,
-  PlusIcon,
-  TransformIcon,
+  BoxModelIcon, CardStackIcon, Component1Icon, Crosshair2Icon, DashboardIcon, DownloadIcon, ExitIcon, GlobeIcon, LayersIcon, ListBulletIcon, LoopIcon, MixerHorizontalIcon, MixIcon, PlusIcon, TransformIcon,
 } from "@radix-ui/react-icons";
 import {
   Command,
@@ -73,25 +61,20 @@ export default function Sidebar() {
           shortcut: "⌘H",
           Icon: ListBulletIcon,
         },
-        /*{ route: "/dashboard", text: "Dashboard", shortcut: "⌘D", Icon: DashboardIcon },
         { route: "/policies", text: "Policies", shortcut: "⌘P", Icon: TransformIcon },
+        /*{ route: "/dashboard", text: "Dashboard", shortcut: "⌘D", Icon: DashboardIcon },
         { route: "/roles", text: "Roles", shortcut: "⌘R", Icon: Component1Icon },
-        { route: "/settings", text: "Settings", shortcut: "⌘N", Icon: MixerHorizontalIcon },
-        { route: "/create", text: "Create Product", shortcut: "⌘N", Icon: PlusIcon }*/
+        { route: "/settings", text: "Settings", shortcut: "⌘N", Icon: MixerHorizontalIcon },*/
+        { route: "/create", text: "Create", shortcut: "⌘N", Icon: PlusIcon }
       ],
     },
     {
-      group: "Trader",
+      group: "Actions",
       items: [
-        { route: "/trade", text: "Trade", shortcut: "⌘L", Icon: LoopIcon },
-        { route: "/stake", text: "Stake", shortcut: "⌘K", Icon: DownloadIcon },
-        {
-          route: "/transfer",
-          text: "Transfer",
-          shortcut: "⌘J",
-          Icon: ExitIcon,
-        },
         { route: "/wrap", text: "Wrap", shortcut: "⌘W", Icon: BoxModelIcon },
+        { route: "/stake", text: "Stake", shortcut: "⌘K", Icon: DownloadIcon },
+        { route: "/trade", text: "Trade", shortcut: "⌘L", Icon: LoopIcon },
+        { route: "/transfer", text: "Transfer", shortcut: "⌘J", Icon: ExitIcon },
       ],
     },
     {
@@ -116,7 +99,7 @@ export default function Sidebar() {
           Icon: GlobeIcon,
         },
       ],
-    },
+    }
   ];
 
   return (

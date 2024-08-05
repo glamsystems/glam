@@ -1,40 +1,38 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
+import {ColumnDef, Row} from "@tanstack/react-table";
 
-import { Badge } from "@/components/ui/badge";
-
-import { Holding } from "../data/holdingSchema";
+import {Holding, holdingSchema} from "../data/holdingSchema";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
-import { locations } from "../data/data";
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "../../../components/ui/tooltip";
+
+interface DataTableRowActionsProps<TData> {
+  row: Row<TData>;
+}
 
 export const columns: ColumnDef<Holding>[] = [
-  {
-    accessorKey: "asset",
+{
+    accessorKey: "symbol",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Asset" />
-    ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("asset")}</div>,
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "location",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Location" />
+      <DataTableColumnHeader column={column} title="Symbol" />
     ),
     cell: ({ row }) => {
-      const location = locations.find(
-        (location) => location.value === row.original.location
-      );
+      const holding = holdingSchema.parse(row.original);
 
-      return (
-        <div className="flex space-x-2">
-          {location && <Badge variant="outline">{location.label}</Badge>}
-        </div>
-      );
+      return  <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="truncate cursor-default">{row.getValue("symbol")}</div>
+          </TooltipTrigger>
+          <TooltipContent side={"bottom"}>
+            <p>{holding.name}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>;
     },
+    enableSorting: false,
+    enableHiding: false,
   },
   {
     accessorKey: "balance",
@@ -52,14 +50,11 @@ export const columns: ColumnDef<Holding>[] = [
   {
     accessorKey: "notional",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Notional" />
+      <DataTableColumnHeader column={column} title="USD" />
     ),
     cell: ({ row }) => {
       const notional = parseFloat(row.getValue("notional"));
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(notional);
+      const formatted = new Intl.NumberFormat("en-US"/*, { style: "currency", currency: "USD" }*/).format(notional);
       return <div className="w-[80px]">{formatted}</div>;
     },
     enableSorting: true,

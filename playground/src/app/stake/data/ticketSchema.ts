@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const ticketSchema = z.object({
-  id: z.string(),
+  publicKey: z.string(),
   service: z.string(),
   status: z.string(),
   label: z.string(),

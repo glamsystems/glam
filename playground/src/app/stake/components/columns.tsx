@@ -10,6 +10,8 @@ import { Ticket } from "../data/ticketSchema";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
 
+import TruncateAddress from "../../../utils/TruncateAddress";
+
 export const columns: ColumnDef<Ticket>[] = [
   {
     id: "select",
@@ -36,28 +38,29 @@ export const columns: ColumnDef<Ticket>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "id",
+    accessorKey: "publicKey",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Ticket" />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("id")}</div>,
+    cell: ({ row }) => {
+      return <TruncateAddress address={row.getValue("publicKey")}/>
+    },
     enableSorting: false,
     enableHiding: false,
   },
   {
-    accessorKey: "type",
+    accessorKey: "label",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Type" />
     ),
     cell: ({ row }) => {
-      const type = types.find((type) => type.value === row.original.label);
+      const type = types.find((type) => type.value === row.getValue("label"));
 
       return (
         <div className="flex space-x-2">
-          {type && <Badge variant="outline">{type.label}</Badge>}
+          {type && <Badge variant="outline" className="rounded-none">{type.label}</Badge>}
           <span className="max-w-[500px] truncate font-medium">
-            {row.getValue("type")}
-          </span>
+        </span>
         </div>
       );
     },

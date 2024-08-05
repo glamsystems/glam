@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, SubmitHandler, FormProvider } from "react-hook-form";
+import { useForm, SubmitHandler, FormProvider, get } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { AnchorProvider, BN } from "@coral-xyz/anchor";
+import { BN } from "@coral-xyz/anchor";
 import { toast } from "@/components/ui/use-toast";
 import { AssetInput } from "@/components/AssetInput";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -29,16 +29,14 @@ import React, { useState, useEffect } from "react";
 import { columns } from "./components/columns";
 import { DataTable } from "./components/data-table";
 
-import { PublicKey } from "@solana/web3.js";
-import { useGlamClient } from "@glam/anchor";
+import { useGlamClient, JITO_STAKE_POOL, MSOL, JITOSOL } from "@glam/anchor";
 
 import { testFund } from "../testFund";
-import { testGlam } from "../testGlam";
-import { testTickets } from "./data/testTickets";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { ExplorerLink } from "@/components/ExplorerLink";
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 
 const stakeSchema = z.object({
-  service: z.enum(["Marinade", "Jito"]),
+  service: z.enum(["Marinade", "Native", "Jito"]),
   amountIn: z.number().nonnegative(),
   amountInAsset: z.string(),
 });
@@ -47,13 +45,73 @@ type StakeSchema = z.infer<typeof stakeSchema>;
 
 const serviceToAssetMap: { [key in StakeSchema["service"]]: string } = {
   Marinade: "mSOL",
+  Native: "SOL",
   Jito: "jitoSOL",
 };
 
+export const ticketSchema = z.object({
+  publicKey: z.string(),
+  service: z.string(),
+  status: z.string(),
+  label: z.string(),
+});
+
+export type Ticket = z.infer<typeof ticketSchema>;
+
+export type assetBalancesMap = {
+  [key: string]: number;
+};
+
 export default function Stake() {
+  const [marinadeTicket, setMarinadeTicket] = useState<Ticket[]>([]);
   const [amountInAsset, setAmountInAsset] = useState<string>("SOL");
   const [mode, setMode] = useState<string>("stake");
-  // const glamClient = useGlamClient();
+  const [loading, setLoading] = useState<boolean>(true); // New loading state
+  const [balance, setBalance] = useState<number>(NaN);
+  const [assetBalances, setAssetBalances] = useState<assetBalancesMap>({});
+  const glamClient = useGlamClient();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // TODO: fetch stake accounts
+        const tickets = await glamClient.marinade.getExistingTickets(
+          testFund.fundPDA
+        );
+        const transformedTickets = tickets.map((ticket) => ({
+          publicKey: ticket.toBase58(),
+          service: "marinade",
+          status: "claimable",
+          label: "liquid",
+        }));
+        setMarinadeTicket(transformedTickets);
+        console.log(transformedTickets);
+      } catch (error) {
+        console.error("Error fetching marinade tickets:", error);
+      } finally {
+        setLoading(false); // Update loading state
+      }
+
+      if (Object.keys(assetBalances).length === 0) {
+        const assetBalances = {
+          SOL: await glamClient.getTreasuryBalance(testFund.fundPDA),
+          mSOL: await glamClient.getTreasuryTokenBalance(
+            testFund.fundPDA,
+            MSOL
+          ),
+          jitoSOL: await glamClient.getTreasuryTokenBalance(
+            testFund.fundPDA,
+            JITOSOL
+          ),
+        };
+
+        setBalance(assetBalances["SOL"]);
+        setAssetBalances(assetBalances);
+      }
+    };
+
+    fetchData();
+  }, [glamClient, testFund.fundPDA]);
 
   const form = useForm<StakeSchema>({
     resolver: zodResolver(stakeSchema),
@@ -64,32 +122,103 @@ export default function Stake() {
     },
   });
 
-  const onSubmit: SubmitHandler<StakeSchema> = async (values, event) => {
-    const nativeEvent = event as unknown as React.BaseSyntheticEvent & {
+  const onSubmit: SubmitHandler<StakeSchema> = async (
+    values: StakeSchema,
+    event
+  ) => {
+    const nativeEvent = event as React.BaseSyntheticEvent & {
       nativeEvent: { submitter: HTMLElement };
     };
 
-    if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") === "submit") {
-      const testFundPDA = new PublicKey(testFund.fundPDA);
-      const manager = new PublicKey(testFund.manager);
-      // const treasuryPDA = glamClient.getTreasuryPDA(testFundPDA);
-      // console.log(treasuryPDA.toBase58());
+    if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") !== "submit") {
+      return;
+    }
 
+    if (values.amountIn === 0) {
       toast({
-        title: `You submitted the following ${mode}:`,
-        description: (
-          <pre className="mt-2 w-[340px] rounded-md bg-zinc-900 p-4">
-            <code className="text-white">
-              {/* {JSON.stringify(updatedValues, null, 2)} */}
-            </code>
-          </pre>
-        ),
+        title: "Please enter an amount greater than 0.",
+        variant: "destructive",
       });
+      return;
+    }
+
+    // Handle stake
+    if (mode === "stake") {
+      const stakeFnMap = {
+        Marinade: async () => {
+          return await glamClient.marinade.stake(
+            testFund.fundPDA,
+            new BN(values.amountIn * LAMPORTS_PER_SOL)
+          );
+        },
+        Jito: async () => {
+          return await glamClient.staking.stakePoolDepositSol(
+            testFund.fundPDA,
+            JITO_STAKE_POOL,
+            new BN(values.amountIn * LAMPORTS_PER_SOL)
+          );
+        },
+        Native: async () => {
+          return await glamClient.staking.nativeStakeDeposit(
+            testFund.fundPDA,
+            new PublicKey("J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp"), // phantom validator
+            new BN(values.amountIn * LAMPORTS_PER_SOL)
+          );
+        },
+      };
+      try {
+        const txId = await stakeFnMap[values.service]();
+        toast({
+          title: `${mode.charAt(0).toUpperCase() + mode.slice(1)} ${
+            values.amountIn
+          } ${values.amountInAsset}`,
+          description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+        });
+      } catch (error) {
+        console.error(`Error staking with ${values.service}:`, error);
+        toast({
+          title: `Failed to ${mode} ${values.amountIn} ${values.amountInAsset}`,
+          variant: "destructive",
+        });
+      }
+
+      return;
+    }
+
+    // Handle unstake
+    const unstakeFnMap = {
+      Marinade: async () => {
+        return await glamClient.marinade.delayedUnstake(
+          testFund.fundPDA,
+          new BN(values.amountIn * LAMPORTS_PER_SOL)
+        );
+      },
+      Jito: async () => {
+        return await glamClient.staking.stakePoolWithdrawStake(
+          testFund.fundPDA,
+          JITO_STAKE_POOL,
+          new BN(values.amountIn * LAMPORTS_PER_SOL)
+        );
+      },
+      Native: async () => {
+        throw new Error("Native unstake not needed");
+      },
+    };
+    try {
+      const txId = await unstakeFnMap[values.service]();
+      toast({
+        title: `${mode.charAt(0).toUpperCase() + mode.slice(1)} ${
+          values.amountIn
+        } ${values.amountInAsset}`,
+        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+      });
+    } catch (error) {
+      console.error(`Error unstaking with ${values.service}:`, error);
     }
   };
 
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
+    event.preventDefault();
     form.reset();
     setAmountInAsset("SOL");
     setMode("stake");
@@ -98,29 +227,32 @@ export default function Stake() {
   const handleServiceChange = (service: StakeSchema["service"]) => {
     form.setValue("service", service);
     if (mode === "unstake") {
-      const correspondingAsset = serviceToAssetMap[service];
-      setAmountInAsset(correspondingAsset);
+      const asset = serviceToAssetMap[service];
+      setAmountInAsset(asset);
+      setBalance(assetBalances[asset]);
+    } else {
+      setBalance(assetBalances["SOL"]);
     }
   };
 
-  useEffect(() => {
-    if (mode === "stake") {
-      setAmountInAsset("SOL");
-    } else {
-      const service = form.getValues("service");
-      const correspondingAsset = serviceToAssetMap[service];
-      setAmountInAsset(correspondingAsset);
-    }
-  }, [mode, form]);
-
   const handleModeChange = (value: string) => {
-    if (value) {
-      setMode(value);
+    if (!value) {
+      return;
+    }
+    setMode(value);
+    if (value == "stake") {
+      setAmountInAsset("SOL");
+      setBalance(assetBalances["SOL"]);
+    } else if (value === "unstake") {
+      const service = form.getValues("service");
+      const asset = serviceToAssetMap[service];
+      setAmountInAsset(asset);
+      setBalance(assetBalances[asset]);
     }
   };
 
   return (
-    <div className="flex flex-col justify-center w-full  mt-16">
+    <div className="flex flex-col justify-center w-full mt-16">
       <div className="w-1/2 self-center">
         <FormProvider {...form}>
           <Form {...form}>
@@ -191,9 +323,10 @@ export default function Stake() {
                   className="min-w-1/2 w-1/2"
                   name="amountIn"
                   label="Amount"
-                  balance={100}
+                  balance={balance}
                   selectedAsset={amountInAsset}
                   onSelectAsset={setAmountInAsset}
+                  disableAssetChange={true}
                 />
               </div>
 
@@ -214,7 +347,13 @@ export default function Stake() {
         </FormProvider>
       </div>
       <div className="flex w-1/2 mt-16 self-center">
-        <DataTable data={testTickets} columns={columns} />
+        {loading ? (
+          <p>Loading Tickets...</p>
+        ) : (
+          <div className="w-full">
+            <DataTable data={marinadeTicket} columns={columns} />
+          </div>
+        )}
       </div>
     </div>
   );

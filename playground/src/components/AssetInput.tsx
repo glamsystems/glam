@@ -23,9 +23,11 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandShortcut,
 } from "@/components/ui/command";
 
-const assets = ["SOL", "mSOL", "USDC"];
+import JupiterStrict from "../app/assets/data/jupiterStrict";
+import TruncateAddress from "../utils/TruncateAddress";
 
 interface AssetInputProps {
   name: string;
@@ -35,6 +37,8 @@ interface AssetInputProps {
   onSelectAsset: (value: string) => void;
   className?: string;
   disableAssetChange?: boolean;
+  disableAmountInput?: boolean;
+  useMaxAmount?: boolean;
 }
 
 export const AssetInput: React.FC<AssetInputProps> = ({
@@ -45,11 +49,29 @@ export const AssetInput: React.FC<AssetInputProps> = ({
   onSelectAsset,
   className,
   disableAssetChange = false,
+  disableAmountInput = false,
+  useMaxAmount = false,
 }) => {
   const { control, setValue, reset } = useFormContext();
   const [displayValue, setDisplayValue] = useState<string>("0");
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [assets, setAssets] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchAssets = async () => {
+      const data = await JupiterStrict();
+      if (data) {
+        const updatedAssets = data.map((asset: any) =>
+          asset.symbol === "SOL" ? { ...asset, symbol: "wSOL" } : asset
+        );
+        updatedAssets.unshift({ name: "Solana", symbol: "SOL", address: "" });
+        setAssets(updatedAssets);
+      }
+    };
+
+    fetchAssets();
+  }, []);
 
   const handleSelect = (value: string) => {
     onSelectAsset(value);
@@ -71,9 +93,22 @@ export const AssetInput: React.FC<AssetInputProps> = ({
   }, [reset]);
 
   useEffect(() => {
-    setValue(name, 0);
-    setDisplayValue("0");
-  }, [selectedAsset, setValue, name]);
+    if (useMaxAmount) {
+      const balanceValue = balance.toString();
+      setDisplayValue(balanceValue);
+      setValue(name, balance);
+    } else {
+      setValue(name, 0);
+      setDisplayValue("0");
+    }
+  }, [useMaxAmount, balance, name, setValue]);
+
+  useEffect(() => {
+    if (!useMaxAmount) {
+      setValue(name, 0);
+      setDisplayValue("0");
+    }
+  }, [selectedAsset, setValue, name, useMaxAmount]);
 
   const formattedBalance = new Intl.NumberFormat("en-US").format(balance);
 
@@ -128,6 +163,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
                     setDisplayValue(formatDisplayValue(e.target.value));
                   }
                 }}
+                disabled={disableAmountInput}
               />
               {!disableAssetChange && (
                 <Popover open={open} onOpenChange={setOpen}>
@@ -147,11 +183,19 @@ export const AssetInput: React.FC<AssetInputProps> = ({
                         <CommandGroup>
                           {assets.map((asset) => (
                             <CommandItem
-                              key={asset}
-                              value={asset}
-                              onSelect={() => handleSelect(asset)}
+                              key={asset.address}
+                              value={asset.symbol}
+                              onSelect={() => handleSelect(asset.symbol)}
                             >
-                              <span>{asset}</span>
+                              <span className="font-medium text-nowrap">
+                                {asset.symbol}
+                              </span>
+                              <span className="ml-1.5 truncate text-muted-foreground text-xs">
+                                {asset.name}
+                              </span>
+                              <CommandShortcut>
+                                <TruncateAddress address={asset.address} />
+                              </CommandShortcut>
                             </CommandItem>
                           ))}
                         </CommandGroup>
@@ -174,8 +218,10 @@ export const AssetInput: React.FC<AssetInputProps> = ({
           <div className="flex justify-between text-sm">
             <FormDescription>Balance</FormDescription>
             <FormDescription
-              className="cursor-pointer"
-              onClick={handleBalanceClick}
+              className={`select-none cursor-pointer ${
+                disableAmountInput ? "pointer-events-none text-gray-400" : ""
+              }`}
+              onClick={!disableAmountInput ? handleBalanceClick : undefined}
             >
               {formattedBalance}
             </FormDescription>

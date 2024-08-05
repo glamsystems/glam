@@ -22,8 +22,8 @@ export default function AppWalletProvider({
 }) {
   const network = WalletAdapterNetwork.Mainnet;
   // const endpoint = useMemo(() => clusterApiUrl(network), [network]);
-  const apiKey = process.env.NEXT_PUBLIC_SOLANA_KEY;
-  const endpoint = `https://mainnet.helius-rpc.com/?api-key=${apiKey}`;
+  const endpoint =
+    process.env.NEXT_PUBLIC_SOLANA_RPC || "http://localhost:8899";
   const wallets = useMemo(
     () => [
       // manually add any legacy wallet adapters here
