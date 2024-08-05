@@ -62,7 +62,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
     const fetchAssets = async () => {
       const data = await JupiterStrict();
       if (data) {
-        const updatedAssets = data.map((asset) =>
+        const updatedAssets = data.map((asset: any) =>
           asset.symbol === "SOL" ? { ...asset, symbol: "wSOL" } : asset
         );
         updatedAssets.unshift({ name: "Solana", symbol: "SOL", address: "" });

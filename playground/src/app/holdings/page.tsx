@@ -12,11 +12,14 @@ import { useConnection } from "@solana/wallet-adapter-react";
 import JupiterStrict from "../assets/data/jupiterStrict";
 import { useGlamClient } from "@glam/anchor";
 
-export function useGetTokenAccounts({ address }) {
+export function useGetTokenAccounts({ address }: { address: PublicKey }) {
   const { connection } = useConnection();
 
   return useQuery({
-    queryKey: ['get-token-accounts', { endpoint: connection.rpcEndpoint, address }],
+    queryKey: [
+      "get-token-accounts",
+      { endpoint: connection.rpcEndpoint, address },
+    ],
     queryFn: async () => {
       const [tokenAccounts, token2022Accounts] = await Promise.all([
         connection.getParsedTokenAccountsByOwner(address, {
@@ -31,11 +34,11 @@ export function useGetTokenAccounts({ address }) {
   });
 }
 
-export function useGetSolBalance({ address }) {
+export function useGetSolBalance({ address }: { address: PublicKey }) {
   const { connection } = useConnection();
 
   return useQuery({
-    queryKey: ['get-balance', { endpoint: connection.rpcEndpoint, address }],
+    queryKey: ["get-balance", { endpoint: connection.rpcEndpoint, address }],
     queryFn: async () => {
       const balance = await connection.getBalance(address);
       return balance;
@@ -61,16 +64,24 @@ export default function Holdings() {
 
   const items = useMemo(() => query.data ?? [], [query.data]);
 
-  const solBalance = useMemo(() => solBalanceQuery.data ?? -1, [solBalanceQuery.data]);
+  const solBalance = useMemo(
+    () => solBalanceQuery.data ?? -1,
+    [solBalanceQuery.data]
+  );
 
   const data = useMemo(() => {
     const tokenAccounts = items.map(({ account, pubkey }) => {
       const mintAddress = account.data.parsed.info.mint.toString();
-      const jupiterAsset = jupiterData.find(asset => asset.address === mintAddress) || {};
+      const jupiterAsset =
+        jupiterData.find((asset: any) => asset.address === mintAddress) ||
+        ({} as any);
 
       return {
         name: jupiterAsset.name || "Placeholder Name",
-        symbol: jupiterAsset.symbol === 'SOL' ? 'wSOL' : jupiterAsset.symbol || "Placeholder Symbol",
+        symbol:
+          jupiterAsset.symbol === "SOL"
+            ? "wSOL"
+            : jupiterAsset.symbol || "Placeholder Symbol",
         mint: mintAddress,
         ata: pubkey.toString(),
         balance: account.data.parsed.info.tokenAmount.uiAmount,
@@ -93,7 +104,6 @@ export default function Holdings() {
     tokenAccounts.sort((a, b) => b.balance - a.balance);
 
     return tokenAccounts;
-
   }, [items, jupiterData, solBalance]);
 
   return (
