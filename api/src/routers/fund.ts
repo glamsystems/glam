@@ -31,6 +31,62 @@ router.get("/prices", async (req, res) => {
   );
 });
 
+/**
+ * Fetch all glam funds
+ */
+router.get("/funds", async (req, res) => {
+  const funds = await req.client.listFunds();
+  res.set("content-type", "application/json");
+  res.send(JSON.stringify(funds));
+});
+
+/**
+ * Fetch glam funds the pubkey has access to
+ */
+router.get("/funds/:pubkey", async (req, res) => {
+  const pubkey = validatePubkey(req.params.pubkey);
+  if (!pubkey) {
+    return res.status(400).send({ error: "Invalid input pubkey" });
+  }
+
+  const funds = await req.client.listFunds();
+  const fundAccounts = await Promise.all(
+    funds.map(async (k, i) => {
+      return {
+        fundPubkey: funds[i],
+        fundAccount: await req.client.fetchFundAccount(k),
+      };
+    })
+  );
+
+  const fundsByPubkey = fundAccounts.map(({ fundPubkey, fundAccount }) => {
+    if (fundAccount.manager.equals(pubkey)) {
+      return { fund: fundPubkey, role: "manager", permissions: [] };
+    }
+    const vecAcl = fundAccount.params[0].find(
+      (param) => param.name.acls !== undefined
+    )?.value.vecAcl.val;
+
+    if (vecAcl && vecAcl.some((acl) => acl.pubkey.equals(pubkey))) {
+      const permissions = vecAcl[0].permissions.map(
+        (obj) => Object.keys(obj)[0]
+      );
+      return {
+        fund: fundPubkey,
+        role: "delegate",
+        permissions,
+      };
+    }
+
+    // Checking if the pubkey exists in the vecAcl list
+    return undefined;
+  });
+  const ret = fundsByPubkey.filter((fund) => fund !== undefined);
+
+  res.set("content-type", "application/json");
+  res.send(JSON.stringify(ret));
+});
+
 router.get("/fund/:pubkey/perf", async (req, res) => {
   const { w_btc = 0.4, w_eth = 0, w_sol = 0.6 } = req.query;
   // TODO: validate input

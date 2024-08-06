@@ -31,6 +31,7 @@ import { Glam, GlamIDL, GlamProgram, getGlamProgramId } from "../glamExports";
 import { ClusterOrCustom, GlamClientConfig } from "../clientConfig";
 import { FundModel, FundOpenfundsModel } from "../models";
 import { AssetMeta, ASSETS_DEVNET, ASSETS_MAINNET } from "./assets";
+import base58 from "bs58";
 
 type FundAccount = IdlAccounts<Glam>["fundAccount"];
 type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
@@ -515,6 +516,19 @@ export class BaseClient {
     };
 
     return openfund;
+  }
+
+  public async listFunds(): Promise<PublicKey[]> {
+    const bytes = Uint8Array.from([
+      0x31, 0x68, 0xa8, 0xd6, 0x86, 0xb4, 0xad, 0x9a,
+    ]);
+    const accounts = await this.provider.connection.getParsedProgramAccounts(
+      this.programId,
+      {
+        filters: [{ memcmp: { offset: 0, bytes: base58.encode(bytes) } }],
+      }
+    );
+    return accounts.map((a) => a.pubkey);
   }
 
   public async fetchFund(fundPDA: PublicKey): Promise<FundModel> {
