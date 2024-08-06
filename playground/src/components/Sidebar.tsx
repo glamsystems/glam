@@ -2,7 +2,7 @@
 
 import React from "react";
 import {
-  BoxModelIcon, CardStackIcon, Component1Icon, Crosshair2Icon, DashboardIcon, DownloadIcon, ExitIcon, GlobeIcon, LayersIcon, ListBulletIcon, LoopIcon, MixerHorizontalIcon, MixIcon, PlusIcon, TransformIcon,
+  BoxModelIcon, CardStackIcon, Component1Icon, Crosshair2Icon, DashboardIcon, DownloadIcon, ExitIcon, FilePlusIcon, GlobeIcon, LayersIcon, ListBulletIcon, LoopIcon, MarginIcon, MixerHorizontalIcon, MixIcon, PersonIcon, PlusIcon, StackIcon, TargetIcon, TokensIcon, TransformIcon,
 } from "@radix-ui/react-icons";
 import {
   Command,
@@ -22,14 +22,20 @@ type IconType =
   | typeof DashboardIcon
   | typeof DownloadIcon
   | typeof ExitIcon
+  | typeof FilePlusIcon
   | typeof GlobeIcon
   | typeof LayersIcon
   | typeof ListBulletIcon
   | typeof LoopIcon
+  | typeof MarginIcon
   | typeof MixIcon
   | typeof MixerHorizontalIcon
   | typeof PlusIcon
-  | typeof TransformIcon;
+  | typeof StackIcon
+  | typeof TargetIcon
+  | typeof TransformIcon
+  | typeof TokensIcon
+  ;
 
 interface SidebarItemProps {
   route: string;
@@ -53,49 +59,39 @@ function SidebarItem({ route, text, shortcut, Icon }: SidebarItemProps) {
 export default function Sidebar() {
   const navList = [
     {
-      group: "Manager",
+      //group: "Investor",
       items: [
-        {
-          route: "/holdings",
-          text: "Holdings",
-          shortcut: "⌘H",
-          Icon: ListBulletIcon,
-        },
-        { route: "/policies", text: "Policies", shortcut: "⌘P", Icon: TransformIcon },
-        /*{ route: "/dashboard", text: "Dashboard", shortcut: "⌘D", Icon: DashboardIcon },
-        { route: "/roles", text: "Roles", shortcut: "⌘R", Icon: Component1Icon },
-        { route: "/settings", text: "Settings", shortcut: "⌘N", Icon: MixerHorizontalIcon },*/
-        { route: "/create", text: "Create", shortcut: "⌘N", Icon: PlusIcon }
+        { route: "/screener", text: "Screener", shortcut: "⌘R", Icon: LayersIcon },
+      ],
+    },
+    {
+      group: "Manage",
+      items: [
+        { route: "/create", text: "Create", shortcut: "⌘N", Icon: PlusIcon },
+        { route: "/products", text: "Products", shortcut: "⌘F", Icon: StackIcon },
+        { route: "/shareclasses", text: "Share Classes", shortcut: "⌘S", Icon: TokensIcon },
+        { route: "/policies", text: "Investment Policies", shortcut: "⌘P", Icon: BoxModelIcon },
+        { route: "/integrations", text: "Venues & Integrations", shortcut: "⌘I", Icon: TransformIcon },
+        { route: "/access", text: "Access Management", shortcut: "⌘A", Icon: TargetIcon },
       ],
     },
     {
       group: "Actions",
       items: [
-        { route: "/wrap", text: "Wrap", shortcut: "⌘W", Icon: BoxModelIcon },
+        { route: "/holdings", text: "Holdings", shortcut: "⌘H", Icon: ListBulletIcon},
+        { route: "/wrap", text: "Wrap", shortcut: "⌘W", Icon: MarginIcon },
         { route: "/stake", text: "Stake", shortcut: "⌘K", Icon: DownloadIcon },
         { route: "/trade", text: "Trade", shortcut: "⌘L", Icon: LoopIcon },
         { route: "/transfer", text: "Transfer", shortcut: "⌘J", Icon: ExitIcon },
       ],
     },
     {
-      group: "Investor",
-      items: [
-        {
-          route: "/screener",
-          text: "Screener",
-          shortcut: "⌘S",
-          Icon: LayersIcon,
-        },
-        /*{ route: "/portfolio", text: "Portfolio", shortcut: "⌘A", Icon: MixIcon },*/
-      ],
-    },
-    {
       group: "Utilities",
       items: [
         {
-          route: "/assets",
-          text: "Assets",
-          shortcut: "⌘A",
+          route: "/jupiter",
+          text: "Jupiter Token List",
+          shortcut: "⌘T",
           Icon: GlobeIcon,
         },
       ],
