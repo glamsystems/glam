@@ -24,6 +24,8 @@ export function GlamProvider({
   const provider = new AnchorProvider(connection, wallet as AnchorWallet, {
     commitment: "confirmed",
   });
+  // even more changes here
+
   // TODO:
   // Store selectd fund the user is operating on
   // Fetch token balances and store as global state
