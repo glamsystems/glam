@@ -35,59 +35,64 @@ router.get("/prices", async (req, res) => {
  * Fetch all glam funds
  */
 router.get("/funds", async (req, res) => {
-  const funds = await req.client.listFunds();
-  res.set("content-type", "application/json");
-  res.send(JSON.stringify(funds));
-});
+  const glamFunds = await req.client.listFunds();
+  const subject = validatePubkey(req.query.subject);
 
-/**
- * Fetch glam funds the pubkey has access to
- */
-router.get("/funds/:pubkey", async (req, res) => {
-  const pubkey = validatePubkey(req.params.pubkey);
-  if (!pubkey) {
-    return res.status(400).send({ error: "Invalid input pubkey" });
+  res.set("content-type", "application/json");
+
+  // If no pubkey is provided, return all funds
+  if (!subject) {
+    res.send(
+      JSON.stringify(
+        glamFunds.map((fund) => {
+          return { fund };
+        })
+      )
+    );
+    return;
   }
 
-  const funds = await req.client.listFunds();
+  // A subject pubkey is provided, only return funds the subject is granted access to
   const fundAccounts = await Promise.all(
-    funds.map(async (k, i) => {
+    glamFunds.map(async (k, i) => {
       return {
-        fundPubkey: funds[i],
+        fundPubkey: glamFunds[i],
         fundAccount: await req.client.fetchFundAccount(k),
       };
     })
   );
 
-  const fundsByPubkey = fundAccounts.map(({ fundPubkey, fundAccount }) => {
-    if (fundAccount.manager.equals(pubkey)) {
-      return { fund: fundPubkey, role: "manager", permissions: [] };
+  const fundsBySubject = fundAccounts.map(({ fundPubkey, fundAccount }) => {
+    if (fundAccount.manager.equals(subject)) {
+      return { subject, fund: fundPubkey, role: "manager", permissions: [] };
     }
     const vecAcl = fundAccount.params[0].find(
       (param) => param.name.acls !== undefined
     )?.value.vecAcl.val;
 
-    if (vecAcl && vecAcl.some((acl) => acl.pubkey.equals(pubkey))) {
+    if (vecAcl && vecAcl.some((acl) => acl.pubkey.equals(subject))) {
       const permissions = vecAcl[0].permissions.map(
         (obj) => Object.keys(obj)[0]
       );
       return {
+        subject,
         fund: fundPubkey,
         role: "delegate",
         permissions,
       };
     }
 
-    // Checking if the pubkey exists in the vecAcl list
-    return undefined;
+    return;
   });
-  const ret = fundsByPubkey.filter((fund) => fund !== undefined);
 
-  res.set("content-type", "application/json");
-  res.send(JSON.stringify(ret));
+  // Filter out undefined values
+  const fundsBySubjectFiltered = fundsBySubject.filter(
+    (fund) => fund !== undefined
+  );
+  res.send(JSON.stringify(fundsBySubjectFiltered));
 });
 
-router.get("/fund/:pubkey/perf", async (req, res) => {
+router.get("/funds/:pubkey/perf", async (req, res) => {
   const { w_btc = 0.4, w_eth = 0, w_sol = 0.6 } = req.query;
   // TODO: validate input
   // TODO: Should we fetch weights from blockchain, or let client side pass them in?
@@ -127,14 +132,14 @@ router.get("/fund/:pubkey/perf", async (req, res) => {
   );
 });
 
-router.get("/fund/:pubkey/tickets", async (req, res) => {
+router.get("/funds/:pubkey/tickets", async (req, res) => {
   const fund = validatePubkey(req.params.pubkey);
   const tickets = await req.client.marinade.getExistingTickets(fund);
   res.set("content-type", "application/json");
   res.send({ tickets });
 });
 
-router.get("/metadata/:pubkey", async (req, res) => {
+router.get("/funds/:pubkey/metadata", async (req, res) => {
   const pubkey = validatePubkey(req.params.pubkey);
   if (!pubkey) {
     return res.sendStatus(404);
