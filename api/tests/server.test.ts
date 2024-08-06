@@ -45,18 +45,18 @@ describe("Test /metadata/:pubkey", () => {
   });
 
   it("Invalid pubkey", async () => {
-    const res = await requestWithSupertest.get("/metadata/xyz");
+    const res = await requestWithSupertest.get("/funds/xyz/metadata");
     expect(res.status).toEqual(404);
   });
 });
 
-describe("Test /fund/:pubkey/perf", () => {
+describe("Test /funds/:pubkey/perf", () => {
   afterAll(() => {
     server.close();
   });
 
   it("Expected response", async () => {
-    const res = await requestWithSupertest.get("/fund/xyz/perf");
+    const res = await requestWithSupertest.get("/funds/xyz/perf");
     expect(res.status).toEqual(200);
     expect(res.body).toEqual({
       timestamps: expect.any(Array),
