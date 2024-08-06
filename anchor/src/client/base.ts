@@ -104,18 +104,36 @@ export class BaseClient {
     );
   }
 
-  latestBlockhash?: BlockhashWithExpiryBlockHeight;
   async getLatestBlockhash(): Promise<BlockhashWithExpiryBlockHeight> {
-    if (this.latestBlockhash !== undefined) {
-      //TODO: better caching
-      // right now we cache for 1 call, this is sufficient to create and send
-      // one versioned transaction
-      const latestBlockhash = this.latestBlockhash;
-      this.latestBlockhash = undefined;
-      return latestBlockhash;
+    if (isBrowser) {
+      const CACHE_KEY = "/glam/blockhash/get";
+      const glamCache = await window.caches.open("glam");
+      const response = await glamCache.match(CACHE_KEY);
+      if (response) {
+        const { blockhash, expiresAt } = await response.json();
+        console.log(`blockhash ${blockhash} expires at`, expiresAt);
+        if (expiresAt > Date.now()) {
+          console.log("blockhash cache hit");
+          return blockhash;
+        }
+      }
+
+      const blockhash = await this.provider.connection.getLatestBlockhash();
+      console.log("blockhash cache miss, fetched from blockchain:", blockhash);
+      // The maximum age of a transaction's blockhash is 150 blocks (~1 minute assuming 400ms block times).
+      // We cache it for 15 seconds to be safe.
+      await glamCache.put(
+        CACHE_KEY,
+        new Response(
+          JSON.stringify({ blockhash, expiresAt: Date.now() + 1000 * 15 }),
+          { headers: { "Content-Type": "application/json" } }
+        )
+      );
+      return blockhash;
     }
-    this.latestBlockhash = await this.provider.connection.getLatestBlockhash();
-    return this.latestBlockhash;
+
+    // Cache not needed in nodejs environment
+    return await this.provider.connection.getLatestBlockhash();
   }
 
   async intoVersionedTransaction({
@@ -141,9 +159,7 @@ export class BaseClient {
     if (signer === undefined) {
       signer = this.getManager();
     }
-    if (latestBlockhash === undefined) {
-      latestBlockhash = await this.getLatestBlockhash();
-    }
+    latestBlockhash = await this.getLatestBlockhash();
 
     const connection = this.provider.connection;
     const instructions = tx.instructions;
@@ -207,9 +223,7 @@ export class BaseClient {
       ]);
     }
 
-    if (latestBlockhash === undefined) {
-      latestBlockhash = await this.getLatestBlockhash();
-    }
+    latestBlockhash = await this.getLatestBlockhash();
     // Anchor provider.sendAndConfirm forces a signature with the wallet, which we don't want
     // https://github.com/coral-xyz/anchor/blob/v0.30.0/ts/packages/anchor/src/provider.ts#L159
     const wallet = this.getWallet();
