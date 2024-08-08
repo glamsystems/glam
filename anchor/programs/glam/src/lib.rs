@@ -16,9 +16,11 @@ pub mod glam {
 
     use super::*;
 
+    //
     // Manager
+    //
 
-    pub fn initialize<'c: 'info, 'info>(
+    pub fn initialize_fund<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, InitializeFund<'info>>,
         fund: FundModel,
     ) -> Result<()> {
@@ -32,17 +34,19 @@ pub mod glam {
         manager::add_share_class_handler(ctx, share_class_metadata)
     }
 
-    pub fn update<'c: 'info, 'info>(
+    pub fn update_fund<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, UpdateFund<'info>>,
         fund: FundModel,
     ) -> Result<()> {
         manager::update_fund_handler(ctx, fund)
     }
-    pub fn close(ctx: Context<CloseFund>) -> Result<()> {
+    pub fn close_fund(ctx: Context<CloseFund>) -> Result<()> {
         manager::close_handler(ctx)
     }
 
+    //
     // Investor
+    //
 
     pub fn subscribe<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, Subscribe<'info>>,
@@ -60,7 +64,9 @@ pub mod glam {
         investor::redeem_handler(ctx, amount, in_kind, skip_state)
     }
 
+    //
     // Drift
+    //
 
     pub fn drift_initialize(ctx: Context<DriftInitialize>, trader: Option<Pubkey>) -> Result<()> {
         drift::drift_initialize_handler(ctx, trader)
@@ -91,43 +97,57 @@ pub mod glam {
         drift::drift_close_handler(ctx)
     }
 
+    //
     // Marinade
-    pub fn marinade_deposit(ctx: Context<MarinadeDeposit>, sol_amount: u64) -> Result<()> {
-        marinade::marinade_deposit(ctx, sol_amount)
+    //
+
+    pub fn marinade_deposit_sol(ctx: Context<MarinadeDepositSol>, lamports: u64) -> Result<()> {
+        marinade::marinade_deposit_sol(ctx, lamports)
+    }
+
+    pub fn marinade_deposit_stake(ctx: Context<MarinadeDepositStake>) -> Result<()> {
+        marinade::marinade_deposit_stake(ctx)
     }
 
     pub fn marinade_liquid_unstake(
         ctx: Context<MarinadeLiquidUnstake>,
-        sol_amount: u64,
+        msol_amount: u64,
     ) -> Result<()> {
-        marinade::marinade_liquid_unstake(ctx, sol_amount)
+        marinade::marinade_liquid_unstake(ctx, msol_amount)
     }
 
     pub fn marinade_delayed_unstake(
         ctx: Context<MarinadeDelayedUnstake>,
-        amount: u64,
-        bump: u8,
+        msol_amount: u64,
         ticket_id: String,
+        bump: u8,
     ) -> Result<()> {
-        marinade::marinade_delayed_unstake(ctx, amount, bump, ticket_id)
+        marinade::marinade_delayed_unstake(ctx, msol_amount, ticket_id, bump)
     }
 
-    pub fn marinade_claim<'info>(
-        ctx: Context<'_, '_, '_, 'info, MarinadeClaim<'info>>,
+    pub fn marinade_claim_tickets<'info>(
+        ctx: Context<'_, '_, '_, 'info, MarinadeClaimTickets<'info>>,
     ) -> Result<()> {
-        marinade::marinade_claim(ctx)
+        marinade::marinade_claim_tickets(ctx)
     }
 
+    //
     // Stake pool
-    pub fn stake_pool_deposit(ctx: Context<StakePoolDeposit>, lamports: u64) -> Result<()> {
-        stake_pool::stake_pool_deposit(ctx, lamports)
+    //
+
+    pub fn stake_pool_deposit_sol(ctx: Context<StakePoolDepositSol>, lamports: u64) -> Result<()> {
+        stake_pool::stake_pool_deposit_sol(ctx, lamports)
+    }
+
+    pub fn stake_pool_deposit_stake(ctx: Context<StakePoolDepositStake>) -> Result<()> {
+        stake_pool::stake_pool_deposit_stake(ctx)
     }
 
     pub fn stake_pool_withdraw_sol(
         ctx: Context<StakePoolWithdrawSol>,
-        lamports: u64,
+        pool_token_amount: u64,
     ) -> Result<()> {
-        stake_pool::stake_pool_withdraw_sol(ctx, lamports)
+        stake_pool::stake_pool_withdraw_sol(ctx, pool_token_amount)
     }
 
     pub fn stake_pool_withdraw_stake(
@@ -144,14 +164,17 @@ pub mod glam {
         )
     }
 
+    //
     // Native staking
-    pub fn native_stake_deposit<'info>(
-        ctx: Context<'_, '_, '_, 'info, NativeStakeDeposit<'info>>,
+    //
+
+    pub fn initialize_and_delegate_stake<'info>(
+        ctx: Context<'_, '_, '_, 'info, InitializeAndDelegateStake<'info>>,
         lamports: u64,
         stake_account_id: String,
         stake_account_bump: u8,
     ) -> Result<()> {
-        stake::native_stake_deposit(ctx, lamports, stake_account_id, stake_account_bump)
+        stake::initialize_and_delegate_stake(ctx, lamports, stake_account_id, stake_account_bump)
     }
 
     pub fn deactivate_stake_accounts<'info>(
@@ -166,7 +189,10 @@ pub mod glam {
         stake::withdraw_from_stake_accounts(ctx)
     }
 
+    //
     // Jupiter
+    //
+
     pub fn jupiter_swap<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, JupiterSwap<'info>>,
         amount: u64,
@@ -175,9 +201,12 @@ pub mod glam {
         jupiter::jupiter_swap(ctx, amount, data)
     }
 
+    //
     // wSOL
-    pub fn wsol_wrap(ctx: Context<WSolWrap>, amount: u64) -> Result<()> {
-        wsol::wsol_wrap(ctx, amount)
+    //
+
+    pub fn wsol_wrap(ctx: Context<WSolWrap>, lamports: u64) -> Result<()> {
+        wsol::wsol_wrap(ctx, lamports)
     }
 
     pub fn wsol_unwrap(ctx: Context<WSolUnwrap>) -> Result<()> {

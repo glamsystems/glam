@@ -33,7 +33,7 @@ export class DriftClient {
     const treasury = this.base.getTreasuryPDA(fund);
 
     return this.base.program.methods
-      .initialize(this.base.getFundModel({})) //TODO: replace with method
+      .initializeFund(this.base.getFundModel({})) //TODO: replace with method
       .accounts({
         fund,
         treasury,

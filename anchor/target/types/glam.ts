@@ -10,7 +10,7 @@ export type Glam = {
   ],
   "instructions": [
     {
-      "name": "initialize",
+      "name": "initializeFund",
       "accounts": [
         {
           "name": "fund",
@@ -91,7 +91,7 @@ export type Glam = {
       ]
     },
     {
-      "name": "update",
+      "name": "updateFund",
       "accounts": [
         {
           "name": "fund",
@@ -114,7 +114,7 @@ export type Glam = {
       ]
     },
     {
-      "name": "close",
+      "name": "closeFund",
       "accounts": [
         {
           "name": "fund",
@@ -528,7 +528,7 @@ export type Glam = {
       "args": []
     },
     {
-      "name": "marinadeDeposit",
+      "name": "marinadeDepositSol",
       "accounts": [
         {
           "name": "manager",
@@ -608,10 +608,91 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "solAmount",
+          "name": "lamports",
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "marinadeDepositStake",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marinadeState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "reservePda",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "msolMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "msolMintAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liqPoolMsolLeg",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liqPoolMsolLegAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liqPoolSolLegPda",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mintTo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marinadeProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     },
     {
       "name": "marinadeLiquidUnstake",
@@ -684,7 +765,7 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "solAmount",
+          "name": "msolAmount",
           "type": "u64"
         }
       ]
@@ -760,21 +841,21 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "amount",
+          "name": "msolAmount",
           "type": "u64"
-        },
-        {
-          "name": "bump",
-          "type": "u8"
         },
         {
           "name": "ticketId",
           "type": "string"
+        },
+        {
+          "name": "bump",
+          "type": "u8"
         }
       ]
     },
     {
-      "name": "marinadeClaim",
+      "name": "marinadeClaimTickets",
       "accounts": [
         {
           "name": "manager",
@@ -830,7 +911,7 @@ export type Glam = {
       "args": []
     },
     {
-      "name": "stakePoolDeposit",
+      "name": "stakePoolDepositSol",
       "accounts": [
         {
           "name": "manager",
@@ -904,6 +985,77 @@ export type Glam = {
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "stakePoolDepositStake",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakePoolProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "withdrawAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "reserveStake",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "feeAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mintTo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     },
     {
       "name": "stakePoolWithdrawSol",
@@ -986,7 +1138,7 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "lamports",
+          "name": "poolTokenAmount",
           "type": "u64"
         }
       ]
@@ -1091,7 +1243,7 @@ export type Glam = {
       ]
     },
     {
-      "name": "nativeStakeDeposit",
+      "name": "initializeAndDelegateStake",
       "accounts": [
         {
           "name": "manager",
@@ -1365,7 +1517,7 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "amount",
+          "name": "lamports",
           "type": "u64"
         }
       ]
@@ -3608,7 +3760,7 @@ export const IDL: Glam = {
   ],
   "instructions": [
     {
-      "name": "initialize",
+      "name": "initializeFund",
       "accounts": [
         {
           "name": "fund",
@@ -3689,7 +3841,7 @@ export const IDL: Glam = {
       ]
     },
     {
-      "name": "update",
+      "name": "updateFund",
       "accounts": [
         {
           "name": "fund",
@@ -3712,7 +3864,7 @@ export const IDL: Glam = {
       ]
     },
     {
-      "name": "close",
+      "name": "closeFund",
       "accounts": [
         {
           "name": "fund",
@@ -4126,7 +4278,7 @@ export const IDL: Glam = {
       "args": []
     },
     {
-      "name": "marinadeDeposit",
+      "name": "marinadeDepositSol",
       "accounts": [
         {
           "name": "manager",
@@ -4206,10 +4358,91 @@ export const IDL: Glam = {
       ],
       "args": [
         {
-          "name": "solAmount",
+          "name": "lamports",
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "marinadeDepositStake",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marinadeState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "reservePda",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "msolMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "msolMintAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liqPoolMsolLeg",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liqPoolMsolLegAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liqPoolSolLegPda",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mintTo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marinadeProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     },
     {
       "name": "marinadeLiquidUnstake",
@@ -4282,7 +4515,7 @@ export const IDL: Glam = {
       ],
       "args": [
         {
-          "name": "solAmount",
+          "name": "msolAmount",
           "type": "u64"
         }
       ]
@@ -4358,21 +4591,21 @@ export const IDL: Glam = {
       ],
       "args": [
         {
-          "name": "amount",
+          "name": "msolAmount",
           "type": "u64"
-        },
-        {
-          "name": "bump",
-          "type": "u8"
         },
         {
           "name": "ticketId",
           "type": "string"
+        },
+        {
+          "name": "bump",
+          "type": "u8"
         }
       ]
     },
     {
-      "name": "marinadeClaim",
+      "name": "marinadeClaimTickets",
       "accounts": [
         {
           "name": "manager",
@@ -4428,7 +4661,7 @@ export const IDL: Glam = {
       "args": []
     },
     {
-      "name": "stakePoolDeposit",
+      "name": "stakePoolDepositSol",
       "accounts": [
         {
           "name": "manager",
@@ -4502,6 +4735,77 @@ export const IDL: Glam = {
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "stakePoolDepositStake",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakePoolProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "withdrawAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "reserveStake",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "feeAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mintTo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     },
     {
       "name": "stakePoolWithdrawSol",
@@ -4584,7 +4888,7 @@ export const IDL: Glam = {
       ],
       "args": [
         {
-          "name": "lamports",
+          "name": "poolTokenAmount",
           "type": "u64"
         }
       ]
@@ -4689,7 +4993,7 @@ export const IDL: Glam = {
       ]
     },
     {
-      "name": "nativeStakeDeposit",
+      "name": "initializeAndDelegateStake",
       "accounts": [
         {
           "name": "manager",
@@ -4963,7 +5267,7 @@ export const IDL: Glam = {
       ],
       "args": [
         {
-          "name": "amount",
+          "name": "lamports",
           "type": "u64"
         }
       ]

@@ -459,7 +459,7 @@ export class BaseClient {
     fundModel.shareClasses = [];
 
     const txSig = await this.program.methods
-      .initialize(fundModel)
+      .initializeFund(fundModel)
       .accounts({
         fund: fundPDA,
         treasury,
@@ -582,7 +582,7 @@ export class BaseClient {
       acls: keys.map((key) => ({ pubkey: key, permissions: [] })),
     });
     return await this.program.methods
-      .update(updatedFund)
+      .updateFund(updatedFund)
       .accounts({
         fund: fundPDA,
         signer: this.getManager(),
@@ -596,7 +596,7 @@ export class BaseClient {
   ): Promise<TransactionSignature> {
     let updatedFund = this.getFundModel({ acls });
     return await this.program.methods
-      .update(updatedFund)
+      .updateFund(updatedFund)
       .accounts({
         fund: fundPDA,
         signer: this.getManager(),
@@ -611,7 +611,7 @@ export class BaseClient {
     let updatedFund = this.getFundModel(updated);
 
     return await this.program.methods
-      .update(updatedFund)
+      .updateFund(updatedFund)
       .accounts({
         fund: fundPDA,
         signer: this.getManager(),

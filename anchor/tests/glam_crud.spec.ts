@@ -32,7 +32,7 @@ describe("glam_crud", () => {
     const updatedFund = glamClient.getFundModel({ name: "Updated fund name" });
     try {
       await glamClient.program.methods
-        .update(updatedFund)
+        .updateFund(updatedFund)
         .accounts({
           fund: fundPDA,
           signer: glamClient.getManager(),
@@ -137,7 +137,7 @@ describe("glam_crud", () => {
     });
     try {
       await glamClient.program.methods
-        .update(updatedFund)
+        .updateFund(updatedFund)
         .accounts({
           fund: fundPDA,
           signer: glamClient.getManager(),
@@ -181,7 +181,7 @@ describe("glam_crud", () => {
     const updatedFund = glamClient.getFundModel({ name: "Updated fund name" });
     try {
       const txId = await glamClient.program.methods
-        .update(updatedFund)
+        .updateFund(updatedFund)
         .accounts({
           fund: fundPDA,
           signer: key1.publicKey,
@@ -208,7 +208,7 @@ describe("glam_crud", () => {
     });
     try {
       await glamClient.program.methods
-        .update(updatedFund)
+        .updateFund(updatedFund)
         .accounts({
           fund: fundPDA,
           signer: manager,
@@ -232,7 +232,7 @@ describe("glam_crud", () => {
     // old manager can NOT update back
     try {
       const txId = await glamClient.program.methods
-        .update(updatedFund2)
+        .updateFund(updatedFund2)
         .accounts({
           fund: fundPDA,
           signer: manager,
@@ -246,7 +246,7 @@ describe("glam_crud", () => {
     // new manager CAN update back
     try {
       const txId = await glamClient.program.methods
-        .update(updatedFund2)
+        .updateFund(updatedFund2)
         .accounts({
           fund: fundPDA,
           signer: newManager.publicKey,
@@ -269,7 +269,7 @@ describe("glam_crud", () => {
 
     try {
       const txId = await glamClient.program.methods
-        .close()
+        .closeFund()
         .accounts({
           fund: fundPDA,
           manager: glamClient.getManager(),

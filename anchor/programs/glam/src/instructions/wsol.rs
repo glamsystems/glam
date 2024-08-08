@@ -39,7 +39,7 @@ pub struct WSolWrap<'info> {
 #[access_control(
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::WSolWrap)
 )]
-pub fn wsol_wrap(ctx: Context<WSolWrap>, amount: u64) -> Result<()> {
+pub fn wsol_wrap(ctx: Context<WSolWrap>, lamports: u64) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
         "treasury".as_bytes(),
@@ -58,7 +58,7 @@ pub fn wsol_wrap(ctx: Context<WSolWrap>, amount: u64) -> Result<()> {
             },
             signer_seeds,
         ),
-        amount,
+        lamports,
     )?;
 
     // Sync the native token to reflect the new SOL balance as wSOL

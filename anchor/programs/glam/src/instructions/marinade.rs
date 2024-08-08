@@ -14,22 +14,11 @@ use crate::state::*;
 #[access_control(
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
 )]
-pub fn marinade_deposit<'c: 'info, 'info>(
-    ctx: Context<MarinadeDeposit>,
-    sol_amount: u64,
+pub fn marinade_deposit_sol<'c: 'info, 'info>(
+    ctx: Context<MarinadeDepositSol>,
+    lamports: u64,
 ) -> Result<()> {
-    msg!(
-        "mSol will be mint to ATA: {:?} owned by {:?}",
-        ctx.accounts.mint_to.key(),
-        ctx.accounts.treasury.key()
-    );
-
-    msg!(
-        "transfer_from lamports: {:?}",
-        ctx.accounts.treasury.lamports()
-    );
-
-    require_gte!(ctx.accounts.treasury.lamports(), sol_amount);
+    require_gte!(ctx.accounts.treasury.lamports(), lamports);
 
     let cpi_program = ctx.accounts.marinade_program.to_account_info();
     let cpi_accounts = Deposit {
@@ -54,7 +43,14 @@ pub fn marinade_deposit<'c: 'info, 'info>(
     ];
     let signer_seeds = &[&seeds[..]];
     let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
-    let _ = deposit(cpi_ctx, sol_amount);
+    let _ = deposit(cpi_ctx, lamports);
+    Ok(())
+}
+
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
+)]
+pub fn marinade_deposit_stake<'c: 'info, 'info>(ctx: Context<MarinadeDepositStake>) -> Result<()> {
     Ok(())
 }
 
@@ -64,14 +60,10 @@ pub fn marinade_deposit<'c: 'info, 'info>(
 pub fn marinade_delayed_unstake<'c: 'info, 'info>(
     ctx: Context<MarinadeDelayedUnstake>,
     msol_amount: u64,
-    ticket_bump: u8,
     ticket_id: String,
+    ticket_bump: u8,
 ) -> Result<()> {
-    let rent = Rent::get()?;
-    let lamports = rent.minimum_balance(500); // Minimum balance to make the account rent-exempt
-
-    msg!("ticket id: {}, ticket bump: {}", ticket_id, ticket_bump);
-
+    // Create ticket account
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
         b"ticket".as_ref(),
@@ -81,11 +73,8 @@ pub fn marinade_delayed_unstake<'c: 'info, 'info>(
     ];
     let signer_seeds = &[&seeds[..]];
     let space = std::mem::size_of::<TicketAccountData>() as u64 + 8;
-
-    msg!(
-        "Creating ticket account with address {}",
-        ctx.accounts.ticket.key()
-    );
+    let rent = Rent::get()?;
+    let lamports = rent.minimum_balance(space as usize);
 
     system_program::create_account(
         CpiContext::new_with_signer(
@@ -101,6 +90,7 @@ pub fn marinade_delayed_unstake<'c: 'info, 'info>(
         &ctx.accounts.marinade_program.key(),
     )?;
 
+    // Order unstake
     let cpi_program = ctx.accounts.marinade_program.to_account_info();
     let cpi_accounts = OrderUnstake {
         state: ctx.accounts.marinade_state.to_account_info(),
@@ -129,7 +119,9 @@ pub fn marinade_delayed_unstake<'c: 'info, 'info>(
 #[access_control(
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Unstake)
 )]
-pub fn marinade_claim<'info>(ctx: Context<'_, '_, '_, 'info, MarinadeClaim<'info>>) -> Result<()> {
+pub fn marinade_claim_tickets<'info>(
+    ctx: Context<'_, '_, '_, 'info, MarinadeClaimTickets<'info>>,
+) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
         b"treasury".as_ref(),
@@ -196,7 +188,7 @@ pub fn marinade_liquid_unstake<'c: 'info, 'info>(
 }
 
 #[derive(Accounts)]
-pub struct MarinadeDeposit<'info> {
+pub struct MarinadeDepositSol<'info> {
     #[account(mut)]
     pub manager: Signer<'info>,
 
@@ -248,6 +240,24 @@ pub struct MarinadeDeposit<'info> {
 }
 
 #[derive(Accounts)]
+pub struct MarinadeDepositStake<'info> {
+    #[account(mut)]
+    pub manager: Signer<'info>,
+
+    #[account(has_one = treasury)]
+    pub fund: Box<Account<'info, FundAccount>>,
+
+    /// CHECK: skip
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: AccountInfo<'info>,
+
+    pub marinade_program: Program<'info, MarinadeFinance>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
+    pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
+}
+
+#[derive(Accounts)]
 // #[instruction(ticket_id: String)]
 pub struct MarinadeDelayedUnstake<'info> {
     #[account(mut)]
@@ -289,7 +299,7 @@ pub struct MarinadeDelayedUnstake<'info> {
 }
 
 #[derive(Accounts)]
-pub struct MarinadeClaim<'info> {
+pub struct MarinadeClaimTickets<'info> {
     #[account(mut)]
     pub manager: Signer<'info>,
 

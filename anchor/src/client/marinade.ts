@@ -133,7 +133,7 @@ export class MarinadeClient {
     );
 
     const tx = await this.base.program.methods
-      .marinadeDeposit(amount)
+      .marinadeDepositSol(amount)
       .accounts({
         fund,
         treasury,
@@ -174,7 +174,7 @@ export class MarinadeClient {
     console.log(`Ticket ${ticketId}`, ticket.toBase58());
 
     const tx = await this.base.program.methods
-      .marinadeDelayedUnstake(amount, bump, ticketId)
+      .marinadeDelayedUnstake(amount, ticketId, bump)
       .accounts({
         fund,
         treasury,
@@ -204,7 +204,7 @@ export class MarinadeClient {
     const marinadeState = this.getMarinadeState();
 
     const tx = await this.base.program.methods
-      .marinadeClaim()
+      .marinadeClaimTickets()
       .accounts({
         fund,
         treasury,
