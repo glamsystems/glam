@@ -251,40 +251,6 @@ pub struct MarinadeDepositStake<'info> {
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: AccountInfo<'info>,
 
-    #[account(mut)]
-    pub marinade_state: Account<'info, MarinadeState>,
-
-    /// CHECK: skip
-    #[account(mut)]
-    pub reserve_pda: AccountInfo<'info>,
-
-    #[account(mut)]
-    pub msol_mint: Account<'info, Mint>,
-
-    /// CHECK: skip
-    #[account(mut)]
-    pub msol_mint_authority: AccountInfo<'info>,
-
-    /// CHECK: skip
-    #[account(mut)]
-    pub liq_pool_msol_leg: AccountInfo<'info>,
-
-    /// CHECK: skip
-    #[account(mut)]
-    pub liq_pool_msol_leg_authority: AccountInfo<'info>,
-
-    /// CHECK: skip
-    #[account(mut)]
-    pub liq_pool_sol_leg_pda: AccountInfo<'info>,
-
-    #[account(
-        init_if_needed,
-        payer = manager,
-        associated_token::mint = msol_mint,
-        associated_token::authority = treasury,
-    )]
-    pub mint_to: Account<'info, TokenAccount>,
-
     pub marinade_program: Program<'info, MarinadeFinance>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
