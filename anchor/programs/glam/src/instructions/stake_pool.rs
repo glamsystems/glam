@@ -22,7 +22,7 @@ fn check_stake_pool_program(key: &Pubkey) -> bool {
 }
 
 #[derive(Accounts)]
-pub struct StakePoolDeposit<'info> {
+pub struct StakePoolDepositSol<'info> {
     #[account(mut)]
     pub manager: Signer<'info>,
 
@@ -73,8 +73,8 @@ pub struct StakePoolDeposit<'info> {
 #[access_control(
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
 )]
-pub fn stake_pool_deposit<'c: 'info, 'info>(
-    ctx: Context<StakePoolDeposit>,
+pub fn stake_pool_deposit_sol<'c: 'info, 'info>(
+    ctx: Context<StakePoolDepositSol>,
     lamports: u64,
 ) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
@@ -115,6 +115,64 @@ pub fn stake_pool_deposit<'c: 'info, 'info>(
         signer_seeds,
     );
 
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct StakePoolDepositStake<'info> {
+    #[account(mut)]
+    pub manager: Signer<'info>,
+
+    #[account(has_one = treasury)]
+    pub fund: Box<Account<'info, FundAccount>>,
+
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
+
+    /// CHECK: use constraint
+    #[account(
+        constraint = check_stake_pool_program(stake_pool_program.key)
+    )]
+    pub stake_pool_program: AccountInfo<'info>,
+
+    /// CHECK: checked by stake pool program
+    #[account(mut)]
+    pub stake_pool: AccountInfo<'info>,
+
+    /// CHECK: checked by stake pool program
+    #[account()]
+    pub withdraw_authority: AccountInfo<'info>,
+
+    /// CHECK: checked by stake pool program
+    #[account(mut)]
+    pub reserve_stake: AccountInfo<'info>,
+
+    #[account(mut)]
+    pub pool_mint: Account<'info, Mint>,
+
+    /// CHECK: checked by stake pool program
+    #[account(mut)]
+    pub fee_account: AccountInfo<'info>,
+
+    #[account(
+        init_if_needed,
+        payer = manager,
+        associated_token::mint = pool_mint,
+        associated_token::authority = treasury,
+    )]
+    pub mint_to: Account<'info, TokenAccount>,
+
+    pub associated_token_program: Program<'info, AssociatedToken>,
+    pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
+}
+
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
+)]
+pub fn stake_pool_deposit_stake<'c: 'info, 'info>(
+    ctx: Context<StakePoolDepositStake>,
+) -> Result<()> {
     Ok(())
 }
 
@@ -170,7 +228,7 @@ pub struct StakePoolWithdrawSol<'info> {
 )]
 pub fn stake_pool_withdraw_sol<'c: 'info, 'info>(
     ctx: Context<StakePoolWithdrawSol>,
-    lamports: u64,
+    pool_token_amount: u64,
 ) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
@@ -191,7 +249,7 @@ pub fn stake_pool_withdraw_sol<'c: 'info, 'info>(
         ctx.accounts.fee_account.key,
         &ctx.accounts.pool_mint.key(),
         ctx.accounts.token_program.key,
-        lamports,
+        pool_token_amount,
     );
 
     let _ = invoke_signed(

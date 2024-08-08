@@ -5,7 +5,7 @@ use anchor_spl::stake::{
 };
 
 #[derive(Accounts)]
-pub struct NativeStakeDeposit<'info> {
+pub struct InitializeAndDelegateStake<'info> {
     #[account(mut)]
     pub manager: Signer<'info>,
 
@@ -36,8 +36,8 @@ pub struct NativeStakeDeposit<'info> {
 #[access_control(
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
 )]
-pub fn native_stake_deposit<'c: 'info, 'info>(
-    ctx: Context<NativeStakeDeposit>,
+pub fn initialize_and_delegate_stake<'c: 'info, 'info>(
+    ctx: Context<InitializeAndDelegateStake>,
     lamports: u64,
     stake_account_id: String,
     stake_account_bump: u8,

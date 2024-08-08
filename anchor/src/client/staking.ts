@@ -173,7 +173,7 @@ export class StakingClient {
     console.log(`stakePool ${stakePool}, programId: ${stakePoolProgram}`);
 
     const tx = await this.base.program.methods
-      .stakePoolDeposit(amount)
+      .stakePoolDepositSol(amount)
       .accounts({
         manager,
         fund,
@@ -264,7 +264,7 @@ export class StakingClient {
       stakeAccountId
     );
     const tx = await this.base.program.methods
-      .nativeStakeDeposit(amount, stakeAccountId, bump)
+      .initializeAndDelegateStake(amount, stakeAccountId, bump)
       .accounts({
         manager,
         fund,
