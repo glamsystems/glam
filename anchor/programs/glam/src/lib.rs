@@ -105,8 +105,11 @@ pub mod glam {
         marinade::marinade_deposit_sol(ctx, lamports)
     }
 
-    pub fn marinade_deposit_stake(ctx: Context<MarinadeDepositStake>) -> Result<()> {
-        marinade::marinade_deposit_stake(ctx)
+    pub fn marinade_deposit_stake(
+        ctx: Context<MarinadeDepositStake>,
+        validator_idx: u32,
+    ) -> Result<()> {
+        marinade::marinade_deposit_stake(ctx, validator_idx)
     }
 
     pub fn marinade_liquid_unstake(
