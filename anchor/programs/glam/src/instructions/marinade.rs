@@ -300,14 +300,7 @@ pub struct MarinadeDepositStake<'info> {
     #[account(mut)]
     pub msol_mint: Account<'info, Mint>,
 
-    /// CHECK: PDA
-    // #[account(
-    //     seeds = [
-    //         &marinade_state.key().to_bytes(),
-    //         MarinadeState::MSOL_MINT_AUTHORITY_SEED
-    //     ],
-    //     bump = marinade_state.msol_mint_authority_bump_seed
-    // )]
+    /// CHECK: marinade checks it
     pub msol_mint_authority: AccountInfo<'info>,
 
     #[account(
