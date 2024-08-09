@@ -21,11 +21,11 @@ cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_crud"
+# test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_crud"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_investor"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_drift"
-#test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_marinade"
-#test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_staking"
+test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_marinade"
+# test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_staking"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_jupiter"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_openfunds"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_wsol"
@@ -169,6 +169,18 @@ filename = "./fixtures/accounts/EyaSjUtSgo9aRD1f8LWXwdvkpDTmXAW54yoSHZRF14WL.jso
 address = "UefNb6z6yvArqe4cJHTXCqStRsKmWhGxnZzuHbikP5Q"
 filename = "./fixtures/accounts/UefNb6z6yvArqe4cJHTXCqStRsKmWhGxnZzuHbikP5Q.json"
 
+[[test.validator.account]] # validatorList
+address = "DwFYJNnhLmw19FBTrVaLWZ8SZJpxdPoSYVSJaio9tjbY"
+filename = "./fixtures/accounts/DwFYJNnhLmw19FBTrVaLWZ8SZJpxdPoSYVSJaio9tjbY.json"
+
+[[test.validator.account]] # stakeList
+address = "Anv3XE7e5saNdm16MU6bniYS59Mpv7DzQXHAhxJUmAKW"
+filename = "./fixtures/accounts/Anv3XE7e5saNdm16MU6bniYS59Mpv7DzQXHAhxJUmAKW.json"
+
+[[test.validator.account]] # Validator vote account for creating and depositing stake account
+address = "GJQjnyhSG9jN1AdMHTSyTxUR44hJHEGCmNzkidw9z3y8"
+filename = "./fixtures/accounts/GJQjnyhSG9jN1AdMHTSyTxUR44hJHEGCmNzkidw9z3y8.json"
+
 #
 # Jupiter
 #
@@ -308,7 +320,3 @@ filename = "./fixtures/accounts/Enh5W2UMiUc8ANgjwQMuKXNQLnAEddwjBsSPibddtN7R.jso
 [[test.validator.account]] # USDC mainnet
 address = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 filename = "./fixtures/accounts/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v.json"
-
-[[test.validator.account]] # Validator vote account for native staking test
-address = "J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp"
-filename = "./fixtures/accounts/J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp.json"

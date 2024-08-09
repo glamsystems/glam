@@ -637,7 +637,22 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "reservePda",
+          "name": "validatorList",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakeList",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryStakeAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "duplicationFlag",
           "isMut": true,
           "isSigner": false
         },
@@ -648,27 +663,22 @@ export type Glam = {
         },
         {
           "name": "msolMintAuthority",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "liqPoolMsolLeg",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "liqPoolMsolLegAuthority",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "liqPoolSolLegPda",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
           "name": "mintTo",
           "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -690,9 +700,19 @@ export type Glam = {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "stakeProgram",
+          "isMut": false,
+          "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "validatorIdx",
+          "type": "u32"
+        }
+      ]
     },
     {
       "name": "marinadeLiquidUnstake",
@@ -1001,41 +1021,6 @@ export type Glam = {
         },
         {
           "name": "treasury",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "stakePoolProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "stakePool",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "withdrawAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "reserveStake",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "poolMint",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "feeAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "mintTo",
           "isMut": true,
           "isSigner": false
         },
@@ -4387,7 +4372,22 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "reservePda",
+          "name": "validatorList",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakeList",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryStakeAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "duplicationFlag",
           "isMut": true,
           "isSigner": false
         },
@@ -4398,27 +4398,22 @@ export const IDL: Glam = {
         },
         {
           "name": "msolMintAuthority",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "liqPoolMsolLeg",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "liqPoolMsolLegAuthority",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "liqPoolSolLegPda",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
           "name": "mintTo",
           "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -4440,9 +4435,19 @@ export const IDL: Glam = {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "stakeProgram",
+          "isMut": false,
+          "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "validatorIdx",
+          "type": "u32"
+        }
+      ]
     },
     {
       "name": "marinadeLiquidUnstake",
@@ -4751,41 +4756,6 @@ export const IDL: Glam = {
         },
         {
           "name": "treasury",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "stakePoolProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "stakePool",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "withdrawAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "reserveStake",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "poolMint",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "feeAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "mintTo",
           "isMut": true,
           "isSigner": false
         },

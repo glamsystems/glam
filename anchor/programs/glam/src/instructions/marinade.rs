@@ -1,15 +1,15 @@
+use crate::state::*;
 use anchor_lang::{prelude::*, system_program};
 use anchor_spl::{
     associated_token::AssociatedToken,
+    stake::{Stake, StakeAccount},
     token::{Mint, Token, TokenAccount},
 };
-use marinade::cpi::accounts::{Claim, Deposit, LiquidUnstake, OrderUnstake};
-use marinade::cpi::{claim, deposit, liquid_unstake, order_unstake};
+use marinade::cpi::accounts::{Claim, Deposit, DepositStakeAccount, LiquidUnstake, OrderUnstake};
+use marinade::cpi::{claim, deposit, deposit_stake_account, liquid_unstake, order_unstake};
 use marinade::program::MarinadeFinance;
 use marinade::state::delayed_unstake_ticket::TicketAccountData;
 use marinade::State as MarinadeState;
-
-use crate::state::*;
 
 #[access_control(
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
@@ -50,7 +50,37 @@ pub fn marinade_deposit_sol<'c: 'info, 'info>(
 #[access_control(
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
 )]
-pub fn marinade_deposit_stake<'c: 'info, 'info>(ctx: Context<MarinadeDepositStake>) -> Result<()> {
+pub fn marinade_deposit_stake<'c: 'info, 'info>(
+    ctx: Context<MarinadeDepositStake>,
+    validator_idx: u32,
+) -> Result<()> {
+    let cpi_program = ctx.accounts.marinade_program.to_account_info();
+    let cpi_accounts = DepositStakeAccount {
+        state: ctx.accounts.marinade_state.to_account_info(),
+        validator_list: ctx.accounts.validator_list.to_account_info(),
+        stake_list: ctx.accounts.stake_list.to_account_info(),
+        stake_account: ctx.accounts.treasury_stake_account.to_account_info(),
+        stake_authority: ctx.accounts.treasury.to_account_info(),
+        duplication_flag: ctx.accounts.duplication_flag.to_account_info(),
+        rent_payer: ctx.accounts.treasury.to_account_info(),
+        msol_mint: ctx.accounts.msol_mint.to_account_info(),
+        mint_to: ctx.accounts.mint_to.to_account_info(),
+        msol_mint_authority: ctx.accounts.msol_mint_authority.to_account_info(),
+        clock: ctx.accounts.clock.to_account_info(),
+        rent: ctx.accounts.rent.to_account_info(),
+        system_program: ctx.accounts.system_program.to_account_info(),
+        token_program: ctx.accounts.token_program.to_account_info(),
+        stake_program: ctx.accounts.stake_program.to_account_info(),
+    };
+    let fund_key = ctx.accounts.fund.key();
+    let seeds = &[
+        b"treasury".as_ref(),
+        fund_key.as_ref(),
+        &[ctx.bumps.treasury],
+    ];
+    let signer_seeds = &[&seeds[..]];
+    let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
+    let _ = deposit_stake_account(cpi_ctx, validator_idx);
     Ok(())
 }
 
@@ -195,9 +225,8 @@ pub struct MarinadeDepositSol<'info> {
     #[account(has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
-    /// CHECK: skip
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: AccountInfo<'info>,
+    pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
     pub marinade_state: Account<'info, MarinadeState>,
@@ -247,14 +276,56 @@ pub struct MarinadeDepositStake<'info> {
     #[account(has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
-    /// CHECK: skip
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: AccountInfo<'info>,
+    pub treasury: SystemAccount<'info>,
+
+    #[account(mut)]
+    pub marinade_state: Box<Account<'info, MarinadeState>>,
+
+    /// CHECK: skip
+    #[account(mut)]
+    pub validator_list: AccountInfo<'info>,
+
+    /// CHECK: skip
+    #[account(mut)]
+    pub stake_list: AccountInfo<'info>,
+
+    #[account(mut)]
+    pub treasury_stake_account: Box<Account<'info, StakeAccount>>,
+
+    /// CHECK: skip
+    #[account(mut)]
+    pub duplication_flag: UncheckedAccount<'info>,
+
+    #[account(mut)]
+    pub msol_mint: Account<'info, Mint>,
+
+    /// CHECK: PDA
+    // #[account(
+    //     seeds = [
+    //         &marinade_state.key().to_bytes(),
+    //         MarinadeState::MSOL_MINT_AUTHORITY_SEED
+    //     ],
+    //     bump = marinade_state.msol_mint_authority_bump_seed
+    // )]
+    pub msol_mint_authority: AccountInfo<'info>,
+
+    #[account(
+        init_if_needed,
+        payer = manager,
+        associated_token::mint = msol_mint,
+        associated_token::authority = treasury,
+    )]
+    pub mint_to: Box<Account<'info, TokenAccount>>,
+
+    pub clock: Sysvar<'info, Clock>,
+    pub rent: Sysvar<'info, Rent>,
 
     pub marinade_program: Program<'info, MarinadeFinance>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
+    pub stake_program: Program<'info, Stake>,
 }
 
 #[derive(Accounts)]

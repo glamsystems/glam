@@ -7,6 +7,8 @@ settings:
 overrides:
   '@solana/web3.js@>=1.73.0 <1.73.5': '>=1.73.5'
   bs58@>=4.0.1: ^5.0.0
+  jsbi@>=3.2.5: ^4.3.0
+  '@solana/spl-token@>=0.0.1': ^0.3.9
 
 importers:
 
@@ -24,6 +26,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^3.9.0
         version: 3.9.0(react-hook-form@7.52.1(react@18.2.0))
+      '@marinade.finance/marinade-ts-sdk':
+        specifier: ^5.0.13
+        version: 5.0.13(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(bn.js@5.2.1)(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(jsbi@4.3.0)(utf-8-validate@5.0.10)
       '@pythnetwork/client':
         specifier: ^2.21.1
         version: 2.21.1(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(bufferutil@4.0.8)(utf-8-validate@5.0.10)
@@ -1162,6 +1167,14 @@ packages:
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
 
+  '@coral-xyz/anchor@0.27.0':
+    resolution: {integrity: sha512-+P/vPdORawvg3A9Wj02iquxb4T0C5m4P6aZBVYysKl4Amk+r6aMPZkUhilBkD6E4Nuxnoajv3CFykUfkGE0n5g==}
+    engines: {node: '>=11'}
+
+  '@coral-xyz/anchor@0.28.0':
+    resolution: {integrity: sha512-kQ02Hv2ZqxtWP30WN1d4xxT4QqlOXYDxmEd3k/bbneqhV3X5QMO4LAtoUFs7otxyivOgoqam5Il5qx81FuI4vw==}
+    engines: {node: '>=11'}
+
   '@coral-xyz/anchor@0.28.1-beta.2':
     resolution: {integrity: sha512-xreUcOFF8+IQKWOBUrDKJbIw2ftpRVybFlEPVrbSlOBCbreCWrQ5754Gt9cHIcuBDAzearCDiBqzsGQdNgPJiw==}
     engines: {node: '>=11'}
@@ -1169,6 +1182,12 @@ packages:
   '@coral-xyz/anchor@0.29.0':
     resolution: {integrity: sha512-eny6QNG0WOwqV0zQ7cs/b1tIuzZGmP7U7EcH+ogt4Gdbl8HDmIYVMh/9aTmYZPaFWjtUaI8qSn73uYEXWfATdA==}
     engines: {node: '>=11'}
+
+  '@coral-xyz/borsh@0.27.0':
+    resolution: {integrity: sha512-tJKzhLukghTWPLy+n8K8iJKgBq1yLT/AxaNd10yJrX8mI56ao5+OFAKAqW/h0i79KCvb4BK0VGO5ECmmolFz9A==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      '@solana/web3.js': '>=1.73.5'
 
   '@coral-xyz/borsh@0.28.0':
     resolution: {integrity: sha512-/u1VTzw7XooK7rqeD7JLUSwOyRSesPUk0U37BV9zK0axJc1q0nRbKFGFLYCQ16OtdOJTTwGfGp11Lx9B45bRCQ==}
@@ -1472,6 +1491,21 @@ packages:
 
   '@leichtgewicht/ip-codec@2.0.5':
     resolution: {integrity: sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw==}
+
+  '@marinade.finance/directed-stake-sdk@0.1.0':
+    resolution: {integrity: sha512-jpdz5XYMa/5tTe5W2isUWT8P38X49KeFNrqYlzPouhYPxqjdt4a/aSzuMqhP5s1xILFxRmqpZIv02iYeH0xjiA==}
+    engines: {node: '>10'}
+    peerDependencies:
+      '@solana/web3.js': ^1.74.0
+      bn.js: ^5.2.1
+      jsbi: ^4.3.0
+
+  '@marinade.finance/marinade-ts-sdk@5.0.13':
+    resolution: {integrity: sha512-n2SKyKB7J3ljfoOJz+X5u9E3MFocmgVIM8M9GtBKOleKAAjLg2YP10tBPKkUB0MUvB6CHRFS+f5OUGeq/u3CpQ==}
+    engines: {anchor: '>=0.28.0', node: '>=16.0.0'}
+
+  '@marinade.finance/native-staking-sdk@1.1.0':
+    resolution: {integrity: sha512-+iuJLEBIcBgYETkshEGIhwQqUvbjCJ0rHV6BHNOiJur2ppMbswaaCsj3DPu0yJiB2PWvzItZGZMo+BSWUxvJvg==}
 
   '@metamask/rpc-errors@5.1.1':
     resolution: {integrity: sha512-JjZnDi2y2CfvbohhBl+FOQRzmFlJpybcQlIk37zEX8B96eVSPbH/T8S0p7cSF8IE33IWx6JkD8Ycsd+2TXFxCw==}
@@ -3227,14 +3261,17 @@ packages:
   '@solana/options@2.0.0-preview.2':
     resolution: {integrity: sha512-FAHqEeH0cVsUOTzjl5OfUBw2cyT8d5Oekx4xcn5hn+NyPAfQJgM3CEThzgRD6Q/4mM5pVUnND3oK/Mt1RzSE/w==}
 
-  '@solana/spl-stake-pool@1.1.5':
-    resolution: {integrity: sha512-fiZ7XRbtk4G4aDRdAFu+3rs0kNFv55dzfLd78HoADhrVNQT8B+vby7L02Zhp1f2DR8GPWqTQkBh5BdyAKrICBQ==}
-
-  '@solana/spl-token-group@0.0.4':
-    resolution: {integrity: sha512-7+80nrEMdUKlK37V6kOe024+T7J4nNss0F8LQ9OOPYdWCCfJmsGUzVx2W3oeizZR4IHM6N4yC9v1Xqwc3BTPWw==}
+  '@solana/spl-memo@0.2.5':
+    resolution: {integrity: sha512-0Zx5t3gAdcHlRTt2O3RgGlni1x7vV7Xq7j4z9q8kKOMgU03PyoTbFQ/BSYCcICHzkaqD7ZxAiaJ6dlXolg01oA==}
     engines: {node: '>=16'}
     peerDependencies:
       '@solana/web3.js': ^1.91.6
+
+  '@solana/spl-stake-pool@0.6.5':
+    resolution: {integrity: sha512-gAYjX4LlRem3Bje1csZOOBStX8wAH8b8tu4sublUTIoJxLMdEbXqnwc8RJ2lAsmFkjxxomEM9Hk65F8jcvv15A==}
+
+  '@solana/spl-stake-pool@1.1.5':
+    resolution: {integrity: sha512-fiZ7XRbtk4G4aDRdAFu+3rs0kNFv55dzfLd78HoADhrVNQT8B+vby7L02Zhp1f2DR8GPWqTQkBh5BdyAKrICBQ==}
 
   '@solana/spl-token-metadata@0.1.4':
     resolution: {integrity: sha512-N3gZ8DlW6NWDV28+vCCDJoTqaCZiF/jDUnk3o8GRkAFzHObiR60Bs1gXHBa8zCPdvOwiG6Z3dg5pg7+RW6XNsQ==}
@@ -3242,21 +3279,11 @@ packages:
     peerDependencies:
       '@solana/web3.js': ^1.91.6
 
-  '@solana/spl-token@0.1.8':
-    resolution: {integrity: sha512-LZmYCKcPQDtJgecvWOgT/cnoIQPWjdH+QVyzPcFvyDUiT0DiRjZaam4aqNUyvchLFhzgunv3d9xOoyE34ofdoQ==}
-    engines: {node: '>= 10'}
-
   '@solana/spl-token@0.3.11':
     resolution: {integrity: sha512-bvohO3rIMSVL24Pb+I4EYTJ6cL82eFpInEXD/I8K8upOGjpqHsKUoAempR/RnUlI1qSFNyFlWJfu6MNUgfbCQQ==}
     engines: {node: '>=16'}
     peerDependencies:
       '@solana/web3.js': ^1.88.0
-
-  '@solana/spl-token@0.4.6':
-    resolution: {integrity: sha512-1nCnUqfHVtdguFciVWaY/RKcQz1IF4b31jnKgAmjU9QVN1q7dRUkTEWJZgTYIEtsULjVnC9jRqlhgGN39WbKKA==}
-    engines: {node: '>=16'}
-    peerDependencies:
-      '@solana/web3.js': ^1.91.6
 
   '@solana/spl-type-length-value@0.1.0':
     resolution: {integrity: sha512-JBMGB0oR4lPttOZ5XiUGyvylwLQjt1CPJa6qQ5oM+MBCndfjz2TKKkw0eATlLLcYmq1jBVsNlJ2cD6ns2GR7lA==}
@@ -6075,10 +6102,6 @@ packages:
     resolution: {integrity: sha512-8NHi73otpWsZGBSZwwknTXS5pqMOrk9+Ssrna8xCaxkzEpU9OTf9R5ArQGVw03//Zmk9MOwLPng9WwndvpAJ5g==}
     engines: {node: '>=12'}
 
-  dotenv@10.0.0:
-    resolution: {integrity: sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==}
-    engines: {node: '>=10'}
-
   dotenv@16.3.2:
     resolution: {integrity: sha512-HTlk5nmhkm8F6JcdXvHIzaorzCoziNQT9mGxLPVXW8wJF1TiGSL60ZGB4gHWabHOaMmWmhvk2/lPHfnBiT78AQ==}
     engines: {node: '>=12'}
@@ -7585,8 +7608,8 @@ packages:
     resolution: {integrity: sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==}
     hasBin: true
 
-  jsbi@3.2.5:
-    resolution: {integrity: sha512-aBE4n43IPvjaddScbvWRA2YlTzKEynHzu7MqOyTipdHucf/VxS63ViCjxYRg86M8Rxwbt/GfzHl1kKERkt45fQ==}
+  jsbi@4.3.0:
+    resolution: {integrity: sha512-SnZNcinB4RIcnEyZqFPdGPVgrg2AcnykiBy0sHVJQKHYeaLUvi3Exj+iaPpLnFVkDPZIV4U0yvgC9/R4uEAZ9g==}
 
   jsbn@1.1.0:
     resolution: {integrity: sha512-4bYVV3aAMtDTTu4+xsDYa6sy9GyJ69/amsu9sYF2zqjiEoZA5xJi3BrfX3uY+/IekIu7MwdObdbDWpoZdBv3/A==}
@@ -12063,6 +12086,50 @@ snapshots:
 
   '@bcoe/v8-coverage@0.2.3': {}
 
+  '@coral-xyz/anchor@0.27.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@coral-xyz/borsh': 0.27.0(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      '@solana/web3.js': 1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      base64-js: 1.5.1
+      bn.js: 5.2.1
+      bs58: 5.0.0
+      buffer-layout: 1.2.2
+      camelcase: 6.3.0
+      cross-fetch: 3.1.8
+      crypto-hash: 1.3.0
+      eventemitter3: 4.0.7
+      js-sha256: 0.9.0
+      pako: 2.1.0
+      snake-case: 3.0.4
+      superstruct: 0.15.5
+      toml: 3.0.0
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - utf-8-validate
+
+  '@coral-xyz/anchor@0.28.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@coral-xyz/borsh': 0.28.0(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      '@solana/web3.js': 1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      base64-js: 1.5.1
+      bn.js: 5.2.1
+      bs58: 5.0.0
+      buffer-layout: 1.2.2
+      camelcase: 6.3.0
+      cross-fetch: 3.1.8
+      crypto-hash: 1.3.0
+      eventemitter3: 4.0.7
+      js-sha256: 0.9.0
+      pako: 2.1.0
+      snake-case: 3.0.4
+      superstruct: 0.15.5
+      toml: 3.0.0
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - utf-8-validate
+
   '@coral-xyz/anchor@0.28.1-beta.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)':
     dependencies:
       '@coral-xyz/borsh': 0.28.0(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
@@ -12106,6 +12173,12 @@ snapshots:
       - encoding
       - utf-8-validate
 
+  '@coral-xyz/borsh@0.27.0(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
+    dependencies:
+      '@solana/web3.js': 1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      bn.js: 5.2.1
+      buffer-layout: 1.2.2
+
   '@coral-xyz/borsh@0.28.0(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
     dependencies:
       '@solana/web3.js': 1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
@@ -12126,7 +12199,7 @@ snapshots:
     dependencies:
       '@coral-xyz/anchor': 0.28.1-beta.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@ellipsis-labs/phoenix-sdk': 1.4.5(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)
-      '@project-serum/serum': 0.13.65(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      '@project-serum/serum': 0.13.65(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)
       '@pythnetwork/client': 2.5.3(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@solana/spl-token': 0.3.11(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)
       '@solana/web3.js': 1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
@@ -12645,6 +12718,46 @@ snapshots:
 
   '@leichtgewicht/ip-codec@2.0.5': {}
 
+  '@marinade.finance/directed-stake-sdk@0.1.0(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(bn.js@5.2.1)(bufferutil@4.0.8)(jsbi@4.3.0)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@coral-xyz/anchor': 0.27.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      '@solana/web3.js': 1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      bn.js: 5.2.1
+      bs58: 5.0.0
+      jsbi: 4.3.0
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - utf-8-validate
+
+  '@marinade.finance/marinade-ts-sdk@5.0.13(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(bn.js@5.2.1)(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(jsbi@4.3.0)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@coral-xyz/anchor': 0.28.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      '@marinade.finance/directed-stake-sdk': 0.1.0(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(bn.js@5.2.1)(bufferutil@4.0.8)(jsbi@4.3.0)(utf-8-validate@5.0.10)
+      '@marinade.finance/native-staking-sdk': 1.1.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      '@solana/spl-stake-pool': 0.6.5(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)
+      '@solana/spl-token-3.x': '@solana/spl-token@0.3.11(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)'
+      borsh: 0.7.0
+      bs58: 5.0.0
+    transitivePeerDependencies:
+      - '@solana/web3.js'
+      - bn.js
+      - bufferutil
+      - encoding
+      - fastestsmallesttextencoderdecoder
+      - jsbi
+      - utf-8-validate
+
+  '@marinade.finance/native-staking-sdk@1.1.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@solana/spl-memo': 0.2.5(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      '@solana/web3.js': 1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      bn.js: 5.2.1
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - utf-8-validate
+
   '@metamask/rpc-errors@5.1.1':
     dependencies:
       '@metamask/utils': 5.0.2
@@ -12778,7 +12891,7 @@ snapshots:
       bignumber.js: 9.1.2
       cbor-sync: 1.0.4
       crc: 3.8.0
-      jsbi: 3.2.5
+      jsbi: 4.3.0
       sha.js: 2.4.11
 
   '@noble/curves@1.4.0':
@@ -14529,16 +14642,17 @@ snapshots:
       bn.js: 5.2.1
       buffer-layout: 1.2.2
 
-  '@project-serum/serum@0.13.65(bufferutil@4.0.8)(utf-8-validate@5.0.10)':
+  '@project-serum/serum@0.13.65(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)':
     dependencies:
       '@project-serum/anchor': 0.11.1(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      '@solana/spl-token': 0.1.8(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      '@solana/spl-token': 0.3.11(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)
       '@solana/web3.js': 1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       bn.js: 5.2.1
       buffer-layout: 1.2.2
     transitivePeerDependencies:
       - bufferutil
       - encoding
+      - fastestsmallesttextencoderdecoder
       - utf-8-validate
 
   '@project-serum/sol-wallet-adapter@0.2.6(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
@@ -15874,10 +15988,29 @@ snapshots:
       '@solana/codecs-core': 2.0.0-preview.2
       '@solana/codecs-numbers': 2.0.0-preview.2
 
+  '@solana/spl-memo@0.2.5(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
+    dependencies:
+      '@solana/web3.js': 1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      buffer: 6.0.3
+
+  '@solana/spl-stake-pool@0.6.5(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@project-serum/borsh': 0.2.5(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      '@solana/buffer-layout': 4.0.1
+      '@solana/spl-token': 0.3.11(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)
+      '@solana/web3.js': 1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      bn.js: 5.2.1
+      buffer: 6.0.3
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - fastestsmallesttextencoderdecoder
+      - utf-8-validate
+
   '@solana/spl-stake-pool@1.1.5(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)':
     dependencies:
       '@solana/buffer-layout': 4.0.1
-      '@solana/spl-token': 0.4.6(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)
+      '@solana/spl-token': 0.3.11(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)
       '@solana/web3.js': 1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       bn.js: 5.2.1
       buffer: 6.0.3
@@ -15889,14 +16022,6 @@ snapshots:
       - fastestsmallesttextencoderdecoder
       - utf-8-validate
 
-  '@solana/spl-token-group@0.0.4(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(fastestsmallesttextencoderdecoder@1.0.22)':
-    dependencies:
-      '@solana/codecs': 2.0.0-preview.2(fastestsmallesttextencoderdecoder@1.0.22)
-      '@solana/spl-type-length-value': 0.1.0
-      '@solana/web3.js': 1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-    transitivePeerDependencies:
-      - fastestsmallesttextencoderdecoder
-
   '@solana/spl-token-metadata@0.1.4(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(fastestsmallesttextencoderdecoder@1.0.22)':
     dependencies:
       '@solana/codecs': 2.0.0-preview.2(fastestsmallesttextencoderdecoder@1.0.22)
@@ -15905,37 +16030,10 @@ snapshots:
     transitivePeerDependencies:
       - fastestsmallesttextencoderdecoder
 
-  '@solana/spl-token@0.1.8(bufferutil@4.0.8)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@babel/runtime': 7.24.7
-      '@solana/web3.js': 1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      bn.js: 5.2.1
-      buffer: 6.0.3
-      buffer-layout: 1.2.2
-      dotenv: 10.0.0
-    transitivePeerDependencies:
-      - bufferutil
-      - encoding
-      - utf-8-validate
-
   '@solana/spl-token@0.3.11(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)':
     dependencies:
       '@solana/buffer-layout': 4.0.1
       '@solana/buffer-layout-utils': 0.2.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      '@solana/spl-token-metadata': 0.1.4(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(fastestsmallesttextencoderdecoder@1.0.22)
-      '@solana/web3.js': 1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      buffer: 6.0.3
-    transitivePeerDependencies:
-      - bufferutil
-      - encoding
-      - fastestsmallesttextencoderdecoder
-      - utf-8-validate
-
-  '@solana/spl-token@0.4.6(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@solana/buffer-layout': 4.0.1
-      '@solana/buffer-layout-utils': 0.2.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      '@solana/spl-token-group': 0.0.4(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(fastestsmallesttextencoderdecoder@1.0.22)
       '@solana/spl-token-metadata': 0.1.4(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(fastestsmallesttextencoderdecoder@1.0.22)
       '@solana/web3.js': 1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       buffer: 6.0.3
@@ -19621,8 +19719,6 @@ snapshots:
     dependencies:
       dotenv: 16.4.5
 
-  dotenv@10.0.0: {}
-
   dotenv@16.3.2: {}
 
   dotenv@16.4.5: {}
@@ -21610,7 +21706,7 @@ snapshots:
     dependencies:
       argparse: 2.0.1
 
-  jsbi@3.2.5: {}
+  jsbi@4.3.0: {}
 
   jsbn@1.1.0: {}
 
