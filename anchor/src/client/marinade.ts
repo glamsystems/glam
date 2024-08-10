@@ -12,7 +12,7 @@ import {
   getAssociatedTokenAddressSync,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import { Marinade, MarinadeState } from "@marinade.finance/marinade-ts-sdk";
+import { Marinade } from "@marinade.finance/marinade-ts-sdk";
 
 import { BaseClient, ApiTxOptions } from "./base";
 import { MARINADE_PROGRAM_ID, MSOL } from "../constants";

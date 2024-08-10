@@ -146,7 +146,7 @@ export default function Stake() {
     if (mode === "stake") {
       const stakeFnMap = {
         Marinade: async () => {
-          return await glamClient.marinade.stake(
+          return await glamClient.marinade.depositSol(
             testFund.fundPDA,
             new BN(values.amountIn * LAMPORTS_PER_SOL)
           );
@@ -159,7 +159,7 @@ export default function Stake() {
           );
         },
         Native: async () => {
-          return await glamClient.staking.nativeStakeDeposit(
+          return await glamClient.staking.initializeAndDelegateStake(
             testFund.fundPDA,
             new PublicKey("J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp"), // phantom validator
             new BN(values.amountIn * LAMPORTS_PER_SOL)

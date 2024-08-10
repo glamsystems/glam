@@ -91,7 +91,7 @@ describe("glam_marinade", () => {
     expect(tickets.length).toBe(0);
   });
 
-  // For some reason, depositStake test must be run after the claimTickets test
+  // FIXME: For some reason, depositStake test must be run after the claimTickets test
   // Otherwise, cliamTickets test hangs forever
   it("Natively stake 10 SOL to a validator", async () => {
     try {

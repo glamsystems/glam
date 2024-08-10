@@ -9,6 +9,7 @@ overrides:
   bs58@>=4.0.1: ^5.0.0
   jsbi@>=3.2.5: ^4.3.0
   '@solana/spl-token@>=0.0.1': ^0.3.9
+  '@solana/spl-stake-pool@>=0.0.1': ^1.1.5
 
 importers:
 
@@ -3266,9 +3267,6 @@ packages:
     engines: {node: '>=16'}
     peerDependencies:
       '@solana/web3.js': ^1.91.6
-
-  '@solana/spl-stake-pool@0.6.5':
-    resolution: {integrity: sha512-gAYjX4LlRem3Bje1csZOOBStX8wAH8b8tu4sublUTIoJxLMdEbXqnwc8RJ2lAsmFkjxxomEM9Hk65F8jcvv15A==}
 
   '@solana/spl-stake-pool@1.1.5':
     resolution: {integrity: sha512-fiZ7XRbtk4G4aDRdAFu+3rs0kNFv55dzfLd78HoADhrVNQT8B+vby7L02Zhp1f2DR8GPWqTQkBh5BdyAKrICBQ==}
@@ -12735,7 +12733,7 @@ snapshots:
       '@coral-xyz/anchor': 0.28.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@marinade.finance/directed-stake-sdk': 0.1.0(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(bn.js@5.2.1)(bufferutil@4.0.8)(jsbi@4.3.0)(utf-8-validate@5.0.10)
       '@marinade.finance/native-staking-sdk': 1.1.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      '@solana/spl-stake-pool': 0.6.5(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)
+      '@solana/spl-stake-pool': 1.1.5(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)
       '@solana/spl-token-3.x': '@solana/spl-token@0.3.11(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)'
       borsh: 0.7.0
       bs58: 5.0.0
@@ -15992,20 +15990,6 @@ snapshots:
     dependencies:
       '@solana/web3.js': 1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       buffer: 6.0.3
-
-  '@solana/spl-stake-pool@0.6.5(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@project-serum/borsh': 0.2.5(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
-      '@solana/buffer-layout': 4.0.1
-      '@solana/spl-token': 0.3.11(@solana/web3.js@1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)
-      '@solana/web3.js': 1.94.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      bn.js: 5.2.1
-      buffer: 6.0.3
-    transitivePeerDependencies:
-      - bufferutil
-      - encoding
-      - fastestsmallesttextencoderdecoder
-      - utf-8-validate
 
   '@solana/spl-stake-pool@1.1.5(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)':
     dependencies:
