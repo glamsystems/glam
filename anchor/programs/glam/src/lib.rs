@@ -142,6 +142,7 @@ pub mod glam {
         stake_pool::stake_pool_deposit_sol(ctx, lamports)
     }
 
+    #[doc = "Deposit a stake account into the stake pool and receive pool token"]
     pub fn stake_pool_deposit_stake(ctx: Context<StakePoolDepositStake>) -> Result<()> {
         stake_pool::stake_pool_deposit_stake(ctx)
     }

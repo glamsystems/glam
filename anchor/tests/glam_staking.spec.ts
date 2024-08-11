@@ -35,19 +35,43 @@ describe("glam_staking", () => {
     });
   });
 
-  it("Natively stake 10 SOL to a validator", async () => {
+  it("Stake 10 SOL to a validator", async () => {
     try {
+      // The same stake account will be used later on for depositing stake to jito
+      // So the vote account must match jito validator stake account's vote
       const txSig = await glamClient.staking.initializeAndDelegateStake(
         fundPDA,
-        new PublicKey("GJQjnyhSG9jN1AdMHTSyTxUR44hJHEGCmNzkidw9z3y8"),
+        new PublicKey("StepeLdhJ2znRjHcZdjwMWsC4nTRURNKQY8Nca82LJp"),
         new BN(10_000_000_000)
       );
-      console.log("nativeStakeDeposit tx:", txSig);
+      console.log("initializeAndDelegateStake tx:", txSig);
 
       const stakeAccounts = await glamClient.staking.getStakeAccounts(
         glamClient.getTreasuryPDA(fundPDA)
       );
       expect(stakeAccounts.length).toEqual(1);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  });
+
+  it("[spl-stake-pool] Deposit stake account to jito stake pool", async () => {
+    try {
+      let stakeAccounts = await glamClient.staking.getStakeAccounts(
+        glamClient.getTreasuryPDA(fundPDA)
+      );
+      const txSig = await glamClient.staking.stakePoolDepositStake(
+        fundPDA,
+        JITO_STAKE_POOL,
+        stakeAccounts[0]
+      );
+      console.log("stakePoolDepositStake tx:", txSig);
+
+      stakeAccounts = await glamClient.staking.getStakeAccounts(
+        glamClient.getTreasuryPDA(fundPDA)
+      );
+      expect(stakeAccounts.length).toEqual(0);
     } catch (e) {
       console.error(e);
       throw e;
@@ -61,7 +85,7 @@ describe("glam_staking", () => {
         JITO_STAKE_POOL,
         new BN(10_000_000_000)
       );
-      console.log("stakePoolDeposit tx:", txSig);
+      console.log("stakePoolDepositSol tx:", txSig);
     } catch (e) {
       console.error(e);
       throw e;
@@ -80,7 +104,7 @@ describe("glam_staking", () => {
       const stakeAccounts = await glamClient.staking.getStakeAccounts(
         glamClient.getTreasuryPDA(fundPDA)
       );
-      expect(stakeAccounts.length).toEqual(2);
+      expect(stakeAccounts.length).toEqual(1);
     } catch (e) {
       console.error(e);
       throw e;
@@ -94,7 +118,7 @@ describe("glam_staking", () => {
         BONK_STAKE_POOL,
         new BN(10_000_000_000)
       );
-      console.log("stakePoolDeposit tx:", txSig);
+      console.log("stakePoolDepositSol tx:", txSig);
     } catch (e) {
       console.error(e);
       throw e;
@@ -114,7 +138,7 @@ describe("glam_staking", () => {
       const stakeAccounts = await glamClient.staking.getStakeAccounts(
         glamClient.getTreasuryPDA(fundPDA)
       );
-      expect(stakeAccounts.length).toEqual(3);
+      expect(stakeAccounts.length).toEqual(2);
     } catch (e) {
       console.error(e);
       throw e;
@@ -128,7 +152,7 @@ describe("glam_staking", () => {
         PHASE_LABS_STAKE_POOL,
         new BN(10_000_000_000)
       );
-      console.log("stakePoolDeposit tx:", txSig);
+      console.log("stakePoolDepositSol tx:", txSig);
     } catch (e) {
       console.error(e);
       throw e;
@@ -147,7 +171,7 @@ describe("glam_staking", () => {
       const stakeAccounts = await glamClient.staking.getStakeAccounts(
         glamClient.getTreasuryPDA(fundPDA)
       );
-      expect(stakeAccounts.length).toEqual(4);
+      expect(stakeAccounts.length).toEqual(3);
     } catch (e) {
       console.error(e);
       throw e;
