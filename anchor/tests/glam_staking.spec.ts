@@ -66,7 +66,7 @@ describe("glam_staking", () => {
         JITO_STAKE_POOL,
         stakeAccounts[0]
       );
-      console.log("stakePoolDeposit tx:", txSig);
+      console.log("stakePoolDepositStake tx:", txSig);
 
       stakeAccounts = await glamClient.staking.getStakeAccounts(
         glamClient.getTreasuryPDA(fundPDA)
@@ -85,7 +85,7 @@ describe("glam_staking", () => {
         JITO_STAKE_POOL,
         new BN(10_000_000_000)
       );
-      console.log("stakePoolDeposit tx:", txSig);
+      console.log("stakePoolDepositSol tx:", txSig);
     } catch (e) {
       console.error(e);
       throw e;
@@ -118,7 +118,7 @@ describe("glam_staking", () => {
         BONK_STAKE_POOL,
         new BN(10_000_000_000)
       );
-      console.log("stakePoolDeposit tx:", txSig);
+      console.log("stakePoolDepositSol tx:", txSig);
     } catch (e) {
       console.error(e);
       throw e;
@@ -152,7 +152,7 @@ describe("glam_staking", () => {
         PHASE_LABS_STAKE_POOL,
         new BN(10_000_000_000)
       );
-      console.log("stakePoolDeposit tx:", txSig);
+      console.log("stakePoolDepositSol tx:", txSig);
     } catch (e) {
       console.error(e);
       throw e;

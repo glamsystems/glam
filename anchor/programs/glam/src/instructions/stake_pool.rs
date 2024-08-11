@@ -2,11 +2,11 @@ use crate::{constants::*, state::*};
 use anchor_lang::{prelude::*, system_program};
 use anchor_spl::{
     associated_token::AssociatedToken,
-    stake::{authorize, Authorize, Stake, StakeAccount},
+    stake::{Stake, StakeAccount},
     token::{Mint, Token, TokenAccount},
 };
 
-use solana_program::{program::invoke_signed, stake::state::StakeAuthorize};
+use solana_program::program::invoke_signed;
 use spl_stake_pool::{
     instruction::{deposit_sol, deposit_stake, withdraw_sol, withdraw_stake},
     ID as SPL_STAKE_POOL_PROGRAM_ID,
@@ -197,33 +197,6 @@ pub fn stake_pool_deposit_stake<'c: 'info, 'info>(
         &[ctx.bumps.treasury],
     ];
     let signer_seeds = &[&seeds[..]];
-
-    let cpi_ctx_authorize_stake = CpiContext::new_with_signer(
-        ctx.accounts.stake_program.to_account_info(),
-        Authorize {
-            stake: ctx.accounts.treasury_stake_account.to_account_info(),
-            authorized: ctx.accounts.treasury.to_account_info(),
-            new_authorized: ctx.accounts.treasury.to_account_info(),
-            clock: ctx.accounts.clock.to_account_info(),
-        },
-        signer_seeds,
-    );
-
-    let _ = authorize(cpi_ctx_authorize_stake, StakeAuthorize::Staker, None);
-
-    let cpi_ctx_authorize_withdraw = CpiContext::new_with_signer(
-        ctx.accounts.stake_program.to_account_info(),
-        Authorize {
-            stake: ctx.accounts.treasury_stake_account.to_account_info(),
-            authorized: ctx.accounts.treasury.to_account_info(),
-            new_authorized: ctx.accounts.treasury.to_account_info(),
-            clock: ctx.accounts.clock.to_account_info(),
-        },
-        signer_seeds,
-    );
-    let _ = authorize(cpi_ctx_authorize_withdraw, StakeAuthorize::Withdrawer, None);
-
-    msg!("Stake account authority updated");
 
     let vec_ix = deposit_stake(
         ctx.accounts.stake_pool_program.key,
