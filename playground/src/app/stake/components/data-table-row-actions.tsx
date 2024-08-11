@@ -15,8 +15,8 @@ interface DataTableRowActionsProps<TData> {
 }
 
 export function DataTableRowActions<TData>({
-                                             row,
-                                           }: DataTableRowActionsProps<TData>) {
+  row,
+}: DataTableRowActionsProps<TData>) {
   const ticket = ticketSchema.parse(row.original);
   const isClaimable = ticket.status === "claimable";
 
@@ -27,7 +27,9 @@ export function DataTableRowActions<TData>({
       const ticketPublicKey = new PublicKey(ticket.publicKey);
       console.log("Test Claim Button");
 
-      const txId = await glamClient.marinade.delayedUnstakeClaim(testFund.fundPDA, [ticketPublicKey]);
+      const txId = await glamClient.marinade.claimTickets(testFund.fundPDA, [
+        ticketPublicKey,
+      ]);
       console.log("Claim successful");
 
       toast({

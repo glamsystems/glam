@@ -254,7 +254,9 @@ export class JupiterClient {
       );
       const delta = amount - wsolBalance;
       if (solBalance < delta) {
-        throw new Error("Insufficient balance in treasury for swap");
+        throw new Error(
+          `Insufficient balance in treasury (${treasuryPda.toBase58()}) for swap. solBalance: ${solBalance}, lamports needed: ${delta}`
+        );
       }
       if (delta > 0 && solBalance > delta) {
         preInstructions.push(

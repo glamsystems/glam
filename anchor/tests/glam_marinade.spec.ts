@@ -2,6 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 
 import { createFundForTest, sleep } from "./setup";
 import { GlamClient } from "../src";
+import { PublicKey } from "@solana/web3.js";
 
 describe("glam_marinade", () => {
   const glamClient = new GlamClient();
@@ -24,7 +25,10 @@ describe("glam_marinade", () => {
 
   it("Marinade desposit: stake 20 SOL", async () => {
     try {
-      const tx = await glamClient.marinade.stake(fundPDA, new anchor.BN(2e10));
+      const tx = await glamClient.marinade.depositSol(
+        fundPDA,
+        new anchor.BN(2e10)
+      );
       console.log("Stake 20 SOL:", tx);
     } catch (error) {
       console.log("Error", error);
@@ -62,7 +66,10 @@ describe("glam_marinade", () => {
 
   it("Search tickets before claim", async () => {
     const tickets = await glamClient.marinade.getExistingTickets(fundPDA);
-    console.log("Tickets:", tickets);
+    console.log(
+      "Tickets:",
+      tickets.map((t) => t.toBase58())
+    );
     expect(tickets.length).toBe(5);
   });
 
@@ -71,19 +78,46 @@ describe("glam_marinade", () => {
     await sleep(30_000);
     const tickets = await glamClient.marinade.getExistingTickets(fundPDA);
     try {
-      const tx = await glamClient.marinade.delayedUnstakeClaim(
-        fundPDA,
-        tickets
-      );
+      const tx = await glamClient.marinade.claimTickets(fundPDA, tickets);
       console.log("Claim tickets:", tx);
     } catch (error) {
       console.log("Error", error);
       throw error;
     }
-  }, 35_000);
+  }, 45_000);
 
   it("Search tickets after claim", async () => {
     const tickets = await glamClient.marinade.getExistingTickets(fundPDA);
     expect(tickets.length).toBe(0);
+  });
+
+  // FIXME: For some reason, depositStake test must be run after the claimTickets test
+  // Otherwise, cliamTickets test hangs forever
+  it("Natively stake 10 SOL to a validator", async () => {
+    try {
+      const txSig = await glamClient.staking.initializeAndDelegateStake(
+        fundPDA,
+        new PublicKey("GJQjnyhSG9jN1AdMHTSyTxUR44hJHEGCmNzkidw9z3y8"),
+        new anchor.BN(10_000_000_000)
+      );
+      console.log("nativeStakeDeposit tx:", txSig);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  });
+
+  it("Desposit stake account", async () => {
+    const stakeAccounts = await glamClient.staking.getStakeAccounts(
+      glamClient.getTreasuryPDA(fundPDA)
+    );
+    expect(stakeAccounts.length).toEqual(1);
+
+    try {
+      await glamClient.marinade.depositStake(fundPDA, stakeAccounts[0]);
+    } catch (error) {
+      console.log("Error", error);
+      throw error;
+    }
   });
 });

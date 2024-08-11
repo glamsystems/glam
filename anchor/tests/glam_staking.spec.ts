@@ -37,9 +37,9 @@ describe("glam_staking", () => {
 
   it("Natively stake 10 SOL to a validator", async () => {
     try {
-      const txSig = await glamClient.staking.nativeStakeDeposit(
+      const txSig = await glamClient.staking.initializeAndDelegateStake(
         fundPDA,
-        new PublicKey("J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp"),
+        new PublicKey("GJQjnyhSG9jN1AdMHTSyTxUR44hJHEGCmNzkidw9z3y8"),
         new BN(10_000_000_000)
       );
       console.log("nativeStakeDeposit tx:", txSig);

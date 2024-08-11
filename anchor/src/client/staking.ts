@@ -47,12 +47,12 @@ export class StakingClient {
     return await this.base.sendAndConfirm(tx);
   }
 
-  public async nativeStakeDeposit(
+  public async initializeAndDelegateStake(
     fund: PublicKey,
     vote: PublicKey,
     amount: BN
   ): Promise<TransactionSignature> {
-    const tx = await this.nativeStakeDepositTx(fund, vote, amount);
+    const tx = await this.initializeAndDelegateStakeTx(fund, vote, amount);
     return await this.base.sendAndConfirm(tx);
   }
 
@@ -216,9 +216,6 @@ export class StakingClient {
       withdrawAuthority
     );
 
-    console.log("withdrawAuthority:", withdrawAuthority);
-    console.log("validatorStakeAccounts:", validatorStakeAccounts);
-
     const stakeAccountId = Date.now().toString();
     const [stakeAccountPda, bump] = this.getStakeAccountPDA(
       fund,
@@ -250,7 +247,7 @@ export class StakingClient {
     });
   }
 
-  public async nativeStakeDepositTx(
+  public async initializeAndDelegateStakeTx(
     fund: PublicKey,
     vote: PublicKey,
     amount: BN,

@@ -91,7 +91,7 @@ router.post("/tx/jupiter/swap", async (req, res) => {
  * Marinade
  */
 
-router.post("/tx/marinade/stake", async (req, res) => {
+router.post("/tx/marinade/deposit_sol", async (req, res) => {
   const fund = validatePubkey(req.body.fund);
   const amount = validateBN(req.body.amount);
 
@@ -99,11 +99,15 @@ router.post("/tx/marinade/stake", async (req, res) => {
     return res.status(400).send({ error: "Invalid fund or amount" });
   }
 
-  const tx = await req.client.marinade.stakeTx(fund, amount, req.apiOptions);
+  const tx = await req.client.marinade.depositSolTx(
+    fund,
+    amount,
+    req.apiOptions
+  );
   return await serializeTx(tx, res);
 });
 
-router.post("/tx/marinade/unstake", async (req, res) => {
+router.post("/tx/marinade/delayed_unstake", async (req, res) => {
   const fund = validatePubkey(req.body.fund);
   const amount = validateBN(req.body.amount);
 
@@ -119,7 +123,7 @@ router.post("/tx/marinade/unstake", async (req, res) => {
   return await serializeTx(tx, res);
 });
 
-router.post("/tx/marinade/unstake/claim", async (req, res) => {
+router.post("/tx/marinade/claim_tickets", async (req, res) => {
   const fund = validatePubkey(req.body.fund);
   if (!fund) {
     return res.status(400).send({ error: "Invalid fund" });
@@ -138,7 +142,7 @@ router.post("/tx/marinade/unstake/claim", async (req, res) => {
     return validTicket;
   });
 
-  const tx = await req.client.marinade.delayedUnstakeClaimTx(
+  const tx = await req.client.marinade.claimTicketsTx(
     fund,
     validatedTickets,
     req.apiOptions
@@ -149,7 +153,7 @@ router.post("/tx/marinade/unstake/claim", async (req, res) => {
 /*
  * Stake pools
  */
-router.post("/tx/stakepool/deposit", async (req, res) => {
+router.post("/tx/stakepool/deposit_sol", async (req, res) => {
   const fund = validatePubkey(req.body.fund);
   const stakePool = validatePubkey(req.body.stake_pool);
   const amount = validateBN(req.body.amount);
@@ -169,7 +173,7 @@ router.post("/tx/stakepool/deposit", async (req, res) => {
   return await serializeTx(tx, res);
 });
 
-router.post("/tx/stakepool/withdraw", async (req, res) => {
+router.post("/tx/stakepool/withdraw_stake", async (req, res) => {
   const fund = validatePubkey(req.body.fund);
   const stakePool = validatePubkey(req.body.stake_pool);
   const amount = validateBN(req.body.amount);
@@ -193,7 +197,7 @@ router.post("/tx/stakepool/withdraw", async (req, res) => {
  * Stake program (aka native staking)
  */
 
-router.post("/tx/stake/deposit", async (req, res) => {
+router.post("/tx/stake/delegate", async (req, res) => {
   const fund = validatePubkey(req.body.fund);
   const vote = validatePubkey(req.body.validator_vote);
   const amount = validateBN(req.body.amount);
@@ -204,7 +208,7 @@ router.post("/tx/stake/deposit", async (req, res) => {
       .send({ error: "Invalid input of fund, stakePool, or amount" });
   }
 
-  const tx = await req.client.staking.nativeStakeDepositTx(
+  const tx = await req.client.staking.initializeAndDelegateStakeTx(
     fund,
     vote,
     amount,

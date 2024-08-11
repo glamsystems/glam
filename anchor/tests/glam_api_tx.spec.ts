@@ -188,13 +188,13 @@ describe("glam_api_tx", () => {
   }, 30_000);
 
   it("Natively stake 2 SOL to a validator", async () => {
-    const response = await fetch(`${API}/tx/stake/deposit`, {
+    const response = await fetch(`${API}/tx/stake/delegate`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         fund,
         signer: manager,
-        validator_vote: "J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp",
+        validator_vote: "GJQjnyhSG9jN1AdMHTSyTxUR44hJHEGCmNzkidw9z3y8",
         amount: 2_000_000_000,
       }),
     });
@@ -212,7 +212,7 @@ describe("glam_api_tx", () => {
   });
 
   it("Stake 2 SOL to jito", async () => {
-    const response = await fetch(`${API}/tx/stakepool/deposit`, {
+    const response = await fetch(`${API}/tx/stakepool/deposit_sol`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
@@ -236,7 +236,7 @@ describe("glam_api_tx", () => {
   });
 
   it("Withdraw 1 jitoSOL to a stake account", async () => {
-    const response = await fetch(`${API}/tx/stakepool/withdraw`, {
+    const response = await fetch(`${API}/tx/stakepool/withdraw_stake`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
@@ -317,7 +317,7 @@ describe("glam_api_tx", () => {
   });
 
   it("Stake 0.1 SOL to marinade", async () => {
-    const response = await fetch(`${API}/tx/marinade/stake`, {
+    const response = await fetch(`${API}/tx/marinade/deposit_sol`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ manager, fund, amount: 100_000_000 }),
@@ -336,7 +336,7 @@ describe("glam_api_tx", () => {
   }, 30_000);
 
   it("Order unstake #0: 0.01 mSOL", async () => {
-    const response = await fetch(`${API}/tx/marinade/unstake`, {
+    const response = await fetch(`${API}/tx/marinade/delayed_unstake`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ manager, fund, amount: 20_000_000 }),
@@ -355,7 +355,7 @@ describe("glam_api_tx", () => {
   }, 30_000);
 
   it("Order unstake #1: 0.02 mSOL", async () => {
-    const response = await fetch(`${API}/tx/marinade/unstake`, {
+    const response = await fetch(`${API}/tx/marinade/delayed_unstake`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ manager, fund, amount: 10_000_000 }),
@@ -376,7 +376,7 @@ describe("glam_api_tx", () => {
   it("Claim marinade tickets", async () => {
     // Before claiming we should have 2 tickets
     const { tickets } = await (
-      await fetch(`${API}/fund/${fund}/tickets`)
+      await fetch(`${API}/funds/${fund}/tickets`)
     ).json();
     expect(tickets.length).toBe(2);
 
@@ -384,7 +384,7 @@ describe("glam_api_tx", () => {
     await sleep(30_000);
 
     // Claim tickets
-    const response = await fetch(`${API}/tx/marinade/unstake/claim`, {
+    const response = await fetch(`${API}/tx/marinade/claim_tickets`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ manager, fund, tickets }),
@@ -403,7 +403,7 @@ describe("glam_api_tx", () => {
 
     // After claiming we should have 0 tickets
     const { tickets: _tickets } = await (
-      await fetch(`${API}/fund/${fund}/tickets`)
+      await fetch(`${API}/funds/${fund}/tickets`)
     ).json();
     expect(_tickets.length).toBe(0);
   }, 35_000);

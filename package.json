@@ -22,6 +22,7 @@
     "@fast-csv/format": "^5.0.0",
     "@fast-csv/parse": "^5.0.0",
     "@hookform/resolvers": "^3.9.0",
+    "@marinade.finance/marinade-ts-sdk": "^5.0.13",
     "@pythnetwork/client": "^2.21.1",
     "@radix-ui/react-checkbox": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.1",
@@ -147,7 +148,15 @@
   "pnpm": {
     "overrides": {
       "@solana/web3.js@>=1.73.0 <1.73.5": ">=1.73.5",
-      "bs58@>=4.0.1": "^5.0.0"
+      "bs58@>=4.0.1": "^5.0.0",
+      "jsbi@>=3.2.5": "^4.3.0",
+      "@solana/spl-token@>=0.0.1": "^0.3.9",
+      "@solana/spl-stake-pool@>=0.0.1": "^1.1.5"
+    },
+    "overridesComments": {
+      "jsbi@>=3.2.5": "Marinade SDK introduces a dependency conflict. This override is necessary to ensure the correct version is installed",
+      "@solana/spl-token@>=0.0.1": "Same as above",
+      "@solana/spl-stake-pool@>=0.0.1": "Same as above"
     }
   },
   "packageManager": "pnpm@9.1.2+sha512.127dc83b9ea10c32be65d22a8efb4a65fb952e8fefbdfded39bdc3c97efc32d31b48b00420df2c1187ace28c921c902f0cb5a134a4d032b8b5295cbfa2c681e2"
