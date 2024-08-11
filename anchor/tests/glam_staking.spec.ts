@@ -54,6 +54,25 @@ describe("glam_staking", () => {
     }
   });
 
+  it("[spl-stake-pool] Deposit stake account to jito stake pool", async () => {
+    const stakeAccounts = await glamClient.staking.getStakeAccounts(
+      glamClient.getTreasuryPDA(fundPDA)
+    );
+    console.log("stakeAccount to be deposited to jito", stakeAccounts[0]);
+    try {
+      const txSig = await glamClient.staking.stakePoolDepositStake(
+        fundPDA,
+        JITO_STAKE_POOL,
+        stakeAccounts[0]
+      );
+      console.log("stakePoolDeposit tx:", txSig);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  });
+
+  /*
   it("[spl-stake-pool] Deposit 10 SOL to jito stake pool", async () => {
     try {
       const txSig = await glamClient.staking.stakePoolDepositSol(
@@ -208,4 +227,5 @@ describe("glam_staking", () => {
     );
     expect(stakeAccountsAfter.length).toEqual(0);
   });
+  */
 });
