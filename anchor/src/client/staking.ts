@@ -216,9 +216,6 @@ export class StakingClient {
       withdrawAuthority
     );
 
-    console.log("withdrawAuthority:", withdrawAuthority);
-    console.log("validatorStakeAccounts:", validatorStakeAccounts);
-
     const stakeAccountId = Date.now().toString();
     const [stakeAccountPda, bump] = this.getStakeAccountPDA(
       fund,
