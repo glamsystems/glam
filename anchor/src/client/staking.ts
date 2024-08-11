@@ -245,9 +245,6 @@ export class StakingClient {
       withdrawAuthority
     );
 
-    console.log("depositAuthority", depositAuthority.toBase58());
-    console.log("withdrawAuthority", withdrawAuthority.toBase58());
-
     const tx = await this.base.program.methods
       .stakePoolDepositStake()
       .accounts({
@@ -268,6 +265,7 @@ export class StakingClient {
         clock: SYSVAR_CLOCK_PUBKEY,
         stakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
         tokenProgram,
+        stakeProgram: StakeProgram.programId,
       })
       .transaction();
     return await this.base.intoVersionedTransaction({

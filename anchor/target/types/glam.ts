@@ -1106,6 +1106,11 @@ export type Glam = {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "stakeProgram",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": []
@@ -4907,6 +4912,11 @@ export const IDL: Glam = {
         },
         {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeProgram",
           "isMut": false,
           "isSigner": false
         }
