@@ -19,7 +19,7 @@ pub enum Action {
     Redeem,
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum PriceDenom {
     Asset, // not impl
     SOL,

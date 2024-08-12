@@ -16,6 +16,7 @@ import {
 } from "@solana/spl-token";
 
 import { BaseClient, ApiTxOptions } from "./base";
+import { WSOL } from "../constants";
 
 export class InvestorClient {
   public constructor(readonly base: BaseClient) {}
@@ -116,26 +117,32 @@ export class InvestorClient {
     // SOL -> wSOL
     // If the user doesn't have enough wSOL but does have SOL, we auto wrap
     let preInstructions: TransactionInstruction[] = [];
-    if (asset.toBase58() === "So11111111111111111111111111111111111111112") {
+    if (asset == WSOL) {
       const connection = this.base.provider.connection;
       let wsolBalance = new BN(0);
+      let signerAssetAtaExists = true;
       try {
         wsolBalance = new BN(
           (await connection.getTokenAccountBalance(signerAssetAta)).value.amount
         );
       } catch (err) {
         // ignore
+        signerAssetAtaExists = false;
       }
       const solBalance = new BN(String(await connection.getBalance(signer)));
       const delta = amount - wsolBalance;
       if (delta > 0 && solBalance > delta) {
+        if (!signerAssetAtaExists) {
+          preInstructions = preInstructions.concat([
+            createAssociatedTokenAccountInstruction(
+              signer,
+              signerAssetAta,
+              signer,
+              asset
+            ),
+          ]);
+        }
         preInstructions = preInstructions.concat([
-          createAssociatedTokenAccountInstruction(
-            signer,
-            signerAssetAta,
-            signer,
-            asset
-          ),
           SystemProgram.transfer({
             fromPubkey: signer,
             toPubkey: signerAssetAta,

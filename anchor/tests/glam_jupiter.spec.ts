@@ -153,9 +153,11 @@ describe("glam_jupiter", () => {
 
     // 1st attempt, should fail due to InvalidAssetForSwap.
     try {
-      await glamClient.provider.connection.sendTransaction(tx, {
+      const txId = await glamClient.provider.connection.sendTransaction(tx, {
         skipPreflight: true,
       });
+      // TODO: this doesn't seem to be failing...
+      // expect(txId).toBeUndefined();
     } catch (e) {
       console.error(e);
       expect(e.error.errorCode).toEqual({
@@ -177,9 +179,11 @@ describe("glam_jupiter", () => {
 
     // 1st attempt, should reach jupiter
     try {
-      await glamClient.provider.connection.sendTransaction(tx, {
+      const txId = await glamClient.provider.connection.sendTransaction(tx, {
         skipPreflight: true,
       });
+      // TODO: this doesn't seem to be failing...
+      // expect(txId).toBeUndefined();
     } catch (e) {
       expect(e.logs).toContain(
         "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]"
@@ -409,9 +413,10 @@ describe("glam_jupiter", () => {
         maxAccounts: 18,
       });
       console.log("swap txId", txId);
+      expect(txId).toBeUndefined();
     } catch (e) {
       // make sure program has reached jupiter
-      console.error(e);
+      // console.error(e);
       expect(e.logs).toContain(
         "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]"
       );
@@ -454,6 +459,7 @@ describe("glam_jupiter", () => {
         swapInstructions
       );
       console.log("swap txId", txId);
+      expect(txId).toBeUndefined();
     } catch (e) {
       // make sure program has reached jupiter
       expect(e.logs).toContain(
