@@ -22,6 +22,7 @@ import {
 import { getSimulationComputeUnits } from "../utils/helpers";
 import {
   TOKEN_2022_PROGRAM_ID,
+  TokenAccountNotFoundError,
   getAccount,
   getAssociatedTokenAddressSync,
   getMint,
@@ -337,8 +338,15 @@ export class BaseClient {
   ): Promise<number> {
     const ata = this.getTreasuryAta(fundPDA, mint);
     const _mint = await getMint(this.provider.connection, mint);
-    const account = await getAccount(this.provider.connection, ata);
-    return Number(account.amount) / Math.pow(10, _mint.decimals);
+    try {
+      const account = await getAccount(this.provider.connection, ata);
+      return Number(account.amount) / Math.pow(10, _mint.decimals);
+    } catch (e) {
+      if (e instanceof TokenAccountNotFoundError) {
+        return 0;
+      }
+      throw e;
+    }
   }
 
   getOpenfundsPDA(fundPDA: PublicKey): PublicKey {

@@ -5,7 +5,7 @@ import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { PublicKey } from "@solana/web3.js";
 import { ticketSchema } from "../data/ticketSchema";
-import { useGlamClient } from "@glam/anchor";
+import { useGlam } from "@glam/anchor";
 import { testFund } from "../../testFund";
 import { toast } from "@/components/ui/use-toast";
 import { ExplorerLink } from "@/components/ExplorerLink";
@@ -20,7 +20,7 @@ export function DataTableRowActions<TData>({
   const ticket = ticketSchema.parse(row.original);
   const isClaimable = ticket.status === "claimable";
 
-  const glamClient = useGlamClient();
+  const { glamClient } = useGlam();
 
   const handleClaim = async () => {
     try {

@@ -29,7 +29,7 @@ import React, { useState, useEffect } from "react";
 import { columns } from "./components/columns";
 import { DataTable } from "./components/data-table";
 
-import { useGlamClient, JITO_STAKE_POOL, MSOL, JITOSOL } from "@glam/anchor";
+import { useGlam, JITO_STAKE_POOL, MSOL, JITOSOL } from "@glam/anchor";
 
 import { testFund } from "../testFund";
 import { ExplorerLink } from "@/components/ExplorerLink";
@@ -69,7 +69,7 @@ export default function Stake() {
   const [loading, setLoading] = useState<boolean>(true); // New loading state
   const [balance, setBalance] = useState<number>(NaN);
   const [assetBalances, setAssetBalances] = useState<assetBalancesMap>({});
-  const glamClient = useGlamClient();
+  const { glamClient } = useGlam();
 
   useEffect(() => {
     const fetchData = async () => {

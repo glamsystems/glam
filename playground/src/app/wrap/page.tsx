@@ -9,11 +9,10 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/use-toast";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useGlamClient, WSOL } from "@glam/anchor";
+import { useGlam, WSOL } from "@glam/anchor";
 import { BN } from "@coral-xyz/anchor";
-import { testFund } from "@/app/testFund";
 import { ExplorerLink } from "@/components/ExplorerLink";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 
 const wrapSchema = z.object({
   direction: z.enum(["wrap", "unwrap"]),
@@ -24,7 +23,13 @@ const wrapSchema = z.object({
 type WrapSchema = z.infer<typeof wrapSchema>;
 
 export default function Wrap() {
-  const glamClient = useGlamClient();
+  const { fund, glamClient } = useGlam();
+  if (!fund) {
+    // TODO: use a loading spinner
+    return <p>Loading ...</p>;
+  }
+  const fundPDA = new PublicKey(fund);
+
   const [amountAsset, setAmountAsset] = useState<string>("SOL");
   const [direction, setDirection] = useState<string>("wrap");
   const [balance, setBalance] = useState<number>(NaN);
@@ -52,12 +57,12 @@ export default function Wrap() {
     let txId;
     if (direction === "wrap") {
       txId = await glamClient.wsol.wrap(
-        testFund.fundPDA,
+        fundPDA,
         new BN(values.amount * LAMPORTS_PER_SOL)
       );
     } else {
       // Unwrap means unwrap all, there's no amount
-      txId = await glamClient.wsol.unwrap(testFund.fundPDA);
+      txId = await glamClient.wsol.unwrap(fundPDA);
     }
 
     toast({
@@ -91,11 +96,8 @@ export default function Wrap() {
   };
 
   const fetchBalances = async () => {
-    const solBalance = await glamClient.getTreasuryBalance(testFund.fundPDA);
-    const wSolBalance = await glamClient.getTreasuryTokenBalance(
-      testFund.fundPDA,
-      WSOL
-    );
+    const solBalance = await glamClient.getTreasuryBalance(fundPDA);
+    const wSolBalance = await glamClient.getTreasuryTokenBalance(fundPDA, WSOL);
     setSolBalance(solBalance);
     setWSolBalance(wSolBalance);
     setBalance(solBalance);

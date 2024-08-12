@@ -10,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { useConnection } from "@solana/wallet-adapter-react";
 import JupiterStrict from "../assets/data/jupiterStrict";
-import { useGlamClient } from "@glam/anchor";
+import { useGlam } from "@glam/anchor";
 
 export function useGetTokenAccounts({ address }: { address: PublicKey }) {
   const { connection } = useConnection();
@@ -47,7 +47,7 @@ export function useGetSolBalance({ address }: { address: PublicKey }) {
 }
 
 export default function Holdings() {
-  const glamClient = useGlamClient();
+  const { glamClient } = useGlam();
   const fundPDA = new PublicKey(testFund.fundPDA);
   const treasuryPDA = glamClient.getTreasuryPDA(fundPDA);
   const query = useGetTokenAccounts({ address: treasuryPDA });
