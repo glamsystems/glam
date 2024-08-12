@@ -19,6 +19,7 @@ export function GlamProvider({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // TODO: saves selected fund the user is currently working on
   const { connection } = useConnection();
   const wallet = useWallet();
   const provider = new AnchorProvider(connection, wallet as AnchorWallet, {

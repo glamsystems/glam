@@ -7,29 +7,46 @@ import {
 } from "@solana/wallet-adapter-react";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
-import { clusterApiUrl } from "@solana/web3.js";
-// import { UnsafeBurnerWalletAdapter } from "@solana/wallet-adapter-wallets";
+
+import {
+  ClusterNetwork,
+  useCluster,
+} from "@/components/solana-cluster-provider";
 
 // To use default styles:
 // import "@solana/wallet-adapter-react-ui/styles.css";
-
 import "./wallet-styles.css";
+
+function toWalletAdapterNetwork(
+  cluster?: ClusterNetwork
+): WalletAdapterNetwork | undefined {
+  switch (cluster) {
+    case ClusterNetwork.Mainnet:
+      return WalletAdapterNetwork.Mainnet;
+    case ClusterNetwork.Testnet:
+      return WalletAdapterNetwork.Testnet;
+    case ClusterNetwork.Devnet:
+      return WalletAdapterNetwork.Devnet;
+    default:
+      return undefined;
+  }
+}
 
 export default function AppWalletProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const network = WalletAdapterNetwork.Mainnet;
-  // const endpoint = useMemo(() => clusterApiUrl(network), [network]);
-  const endpoint =
-    process.env.NEXT_PUBLIC_SOLANA_RPC || "http://localhost:8899";
+  const { cluster } = useCluster();
+  const { endpoint, network } = cluster;
+
+  const walletAdapterNetwork = toWalletAdapterNetwork(network);
   const wallets = useMemo(
     () => [
       // manually add any legacy wallet adapters here
       // new UnsafeBurnerWalletAdapter(),
     ],
-    [network]
+    [walletAdapterNetwork]
   );
 
   return (
