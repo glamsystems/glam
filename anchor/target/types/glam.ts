@@ -154,7 +154,7 @@ export type Glam = {
         },
         {
           "name": "asset",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -229,6 +229,11 @@ export type Glam = {
         },
         {
           "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
           "isMut": false,
           "isSigner": false
         },
@@ -2393,10 +2398,19 @@ export type Glam = {
             "name": "InvalidPricingOracle"
           },
           {
-            "name": "InvalidAssetsRedeem"
+            "name": "InvalidRemainingAccounts"
           },
           {
             "name": "InvalidTreasuryAccount"
+          },
+          {
+            "name": "InvalidSignerAccount"
+          },
+          {
+            "name": "InvalidAssetPrice"
+          },
+          {
+            "name": "InvalidStableCoinPriceForSubscribe"
           }
         ]
       }
@@ -2651,6 +2665,40 @@ export type Glam = {
           },
           {
             "name": "WSolUnwrap"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Action",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Subscribe"
+          },
+          {
+            "name": "Redeem"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PriceDenom",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Asset"
+          },
+          {
+            "name": "SOL"
+          },
+          {
+            "name": "USD"
+          },
+          {
+            "name": "EUR"
           }
         ]
       }
@@ -3962,7 +4010,7 @@ export const IDL: Glam = {
         },
         {
           "name": "asset",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -4037,6 +4085,11 @@ export const IDL: Glam = {
         },
         {
           "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
           "isMut": false,
           "isSigner": false
         },
@@ -6201,10 +6254,19 @@ export const IDL: Glam = {
             "name": "InvalidPricingOracle"
           },
           {
-            "name": "InvalidAssetsRedeem"
+            "name": "InvalidRemainingAccounts"
           },
           {
             "name": "InvalidTreasuryAccount"
+          },
+          {
+            "name": "InvalidSignerAccount"
+          },
+          {
+            "name": "InvalidAssetPrice"
+          },
+          {
+            "name": "InvalidStableCoinPriceForSubscribe"
           }
         ]
       }
@@ -6459,6 +6521,40 @@ export const IDL: Glam = {
           },
           {
             "name": "WSolUnwrap"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Action",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Subscribe"
+          },
+          {
+            "name": "Redeem"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PriceDenom",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Asset"
+          },
+          {
+            "name": "SOL"
+          },
+          {
+            "name": "USD"
+          },
+          {
+            "name": "EUR"
           }
         ]
       }
