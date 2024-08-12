@@ -1,13 +1,24 @@
 "use client";
 
-import { z } from "zod"
+import React, { useState } from 'react';
+import ProductFormSchema from './data/productFormSchema.json'
+import {JsonForms} from "@jsonforms/react";
+import { vanillaCells, vanillaRenderers } from '@jsonforms/vanilla-renderers';
 
-const testSchema = z.object({ "x-id": z.any().optional(), "title": z.any().optional(), "description": z.any().optional(), "type": z.any().optional(), "x-component": z.any().optional() });
+const initialData = {};
 
 export default function Products() {
+    const [data, setData] = useState(initialData);
+
     return (
         <div>
             <p>Products</p>
+            <JsonForms
+                schema={ProductFormSchema}
+                data={initialData}
+                renderers={vanillaRenderers}
+                cells={vanillaCells}
+            />
         </div>
     );
 }
