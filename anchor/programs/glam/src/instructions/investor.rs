@@ -154,8 +154,8 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         .price as u128;
     // msg!(
     //     "- total_value={:.2} asset_value={}",
-    //     log_price(total_value),
-    //     log_price(asset_value),
+    //     _log_price(total_value),
+    //     log_decimal(asset_value as u64, share_expo),
     // );
 
     // amount_shares = asset_value / nav = asset_value * total_shares / aum
@@ -439,6 +439,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
     Ok(())
 }
 
+#[derive(Debug)]
 pub struct AumComponent<'info> {
     pub treasury_ata: Option<InterfaceAccount<'info, TokenAccount>>,
     pub signer_asset_ata: Option<InterfaceAccount<'info, TokenAccount>>,
@@ -580,16 +581,18 @@ pub fn get_aum_components<'info>(
             // not used
             Price::default()
         };
+        let mut asset_price_type = cur_asset_meta.get_price_denom();
         if is_wsol {
             price_sol_usd = asset_price;
 
             if price_type == PriceDenom::SOL {
                 asset_price = Price {
-                    price: 1,
+                    price: 1_000_000_000,
                     conf: 0,
                     expo: -9,
                     publish_time: 0,
                 };
+                asset_price_type = PriceDenom::SOL;
             }
         }
 
@@ -604,18 +607,9 @@ pub fn get_aum_components<'info>(
             asset_amount,
             asset_price,
             asset_value,
-            price_type: cur_asset_meta.get_price_denom(),
+            price_type: asset_price_type,
         });
-        // msg!(
-        //     "- asset {}: price={:.2} (={}e{}) value={:.2} ({}e{})",
-        //     i,
-        //     _log_price(asset_price),
-        //     asset_price.price,
-        //     asset_price.expo,
-        //     _log_price(asset_value),
-        //     asset_value.price,
-        //     asset_value.expo
-        // );
+        // msg!("{:?}", aum_components);
     }
 
     for att in &mut aum_components {
@@ -624,11 +618,14 @@ pub fn get_aum_components<'info>(
             // by divinging by the SOL price.
             // Note: wSOL price is already in SOL
             if att.price_type == PriceDenom::USD {
+                let expo = att.asset_price.expo;
                 att.asset_price = att.asset_price.div(&price_sol_usd).unwrap();
                 att.asset_value = att
                     .asset_price
-                    .cmul(att.asset_amount.try_into().unwrap(), att.asset_price.expo)
-                    .unwrap();
+                    .cmul(att.asset_amount.try_into().unwrap(), expo)
+                    .unwrap()
+                    .scale_to_exponent(expo)
+                    .unwrap()
             }
         }
 
@@ -637,11 +634,14 @@ pub fn get_aum_components<'info>(
             // by multiplying their price time SOL price
             // Note: wSOL price is already in USD
             if att.price_type == PriceDenom::SOL {
+                let expo = att.asset_price.expo;
                 att.asset_price = att.asset_price.mul(&price_sol_usd).unwrap();
                 att.asset_value = att
                     .asset_price
-                    .cmul(att.asset_amount.try_into().unwrap(), att.asset_price.expo)
-                    .unwrap();
+                    .cmul(att.asset_amount.try_into().unwrap(), expo)
+                    .unwrap()
+                    .scale_to_exponent(expo)
+                    .unwrap()
             }
         }
     }
