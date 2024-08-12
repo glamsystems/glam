@@ -68,13 +68,13 @@
       "x-component": "select",
       "readOnly": false,
       "enum": [
-        "\"projected\"",
-        "\"toBeLaunched\"",
-        "\"offeringPeriod\"",
-        "\"active\"",
-        "\"dormant\"",
-        "\"inLiquidation\"",
-        "\"terminated\""
+        "projected",
+        "toBeLaunched",
+        "offeringPeriod",
+        "active",
+        "dormant",
+        "inLiquidation",
+        "terminated"
       ],
       "x-enumSource": "utils/openfundsConstants.tsx",
       "x-enumValues": "shareClassLifecycle",
@@ -90,11 +90,11 @@
       "x-component": "select",
       "readOnly": false,
       "enum": [
-        "\"open\"",
-        "\"softClosed\"",
-        "\"hardClosed\"",
-        "\"closedForRedemption\"",
-        "\"closedForSubscriptionAndRedemption\""
+        "open",
+        "softClosed",
+        "hardClosed",
+        "closedForRedemption",
+        "closedForSubscriptionAndRedemption"
       ],
       "x-enumSource": "utils/openfundsConstants.tsx",
       "x-enumValues": "investmentStatus",
@@ -110,9 +110,9 @@
       "x-component": "select",
       "readOnly": false,
       "enum": [
-        "\"accumulating\"",
-        "\"accumulatingAndDistributing\"",
-        "\"distributing\""
+        "accumulating",
+        "accumulatingAndDistributing",
+        "distributing"
       ],
       "x-enumSource": "utils/openfundsConstants.tsx",
       "x-enumValues": "distributionPolicy",
@@ -138,9 +138,9 @@
       "x-component": "select",
       "readOnly": false,
       "enum": [
-        "\"shares\"",
-        "\"amount\"",
-        "\"sharesAndAmount\""
+        "shares",
+        "amount",
+        "sharesAndAmount"
       ],
       "x-enumSource": "utils/openfundsConstants.tsx",
       "x-enumValues": "minimalInitialCategory",
@@ -183,9 +183,9 @@
       "x-component": "select",
       "readOnly": false,
       "enum": [
-        "\"shares\"",
-        "\"amount\"",
-        "\"sharesAndAmount\""
+        "shares",
+        "amount",
+        "sharesAndAmount"
       ],
       "x-enumSource": "utils/openfundsConstants.tsx",
       "x-enumValues": "minimalInitialCategory",
@@ -246,9 +246,9 @@
       "x-component": "select",
       "readOnly": false,
       "enum": [
-        "\"shares\"",
-        "\"cash\"",
-        "\"both\""
+        "shares",
+        "cash",
+        "both"
       ],
       "x-enumSource": "utils/openfundsConstants.tsx",
       "x-enumValues": "dividendType",
