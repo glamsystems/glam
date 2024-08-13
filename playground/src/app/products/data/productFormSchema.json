@@ -89,7 +89,7 @@
       "x-id": "OFST010440",
       "title": "Fiscal Year End",
       "description": "End date of the Fund's fiscal year",
-      "default": "2024-12-30T23:00:00.000Z",
+      "default": "12-31",
       "x-tag": "core",
       "x-component": "select",
       "readOnly": false,
