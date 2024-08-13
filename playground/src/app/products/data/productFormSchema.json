@@ -64,7 +64,7 @@
       "title": "Fund Currency",
       "description": "Base currency of the Fund (ISO 4217 code)",
       "x-tag": "core",
-      "x-component": "assetinput",
+      "x-component": "combobox",
       "readOnly": false
     },
     "openEndedOrClosedEndedFundStructure": {
@@ -89,6 +89,7 @@
       "x-id": "OFST010440",
       "title": "Fiscal Year End",
       "description": "End date of the Fund's fiscal year",
+      "default": "2024-12-30T23:00:00.000Z",
       "x-tag": "core",
       "x-component": "select",
       "readOnly": false,
@@ -196,6 +197,5 @@
       "maxLength": 64,
       "format": "uri"
     }
-  },
-  "required": ["fiscalYearEnd"]
+  }
 }
