@@ -13,12 +13,14 @@ import { atomWithStorage } from "jotai/utils";
 
 import { GlamClient } from "./client";
 import { useAtomValue, useSetAtom } from "jotai/react";
+import { PublicKey } from "@solana/web3.js";
 
 // TODO: implement a fund selector which calls setFund to set the active fund
 interface GlamProviderContext {
   glamClient: GlamClient;
-  fund: string;
-  setFund: (fund: string) => void;
+  wallet?: PublicKey;
+  fund?: PublicKey;
+  setFund?: (fund: string) => void;
 }
 
 const GlamContext = createContext<GlamProviderContext>(
@@ -38,12 +40,21 @@ export function GlamProvider({
   const { data } = useQuery({
     queryKey: ["fund"],
     queryFn: () =>
-      fetch(`https://api.glam.systems/funds?subject=${wallet.publicKey}`).then(
-        (res) => res.json()
-      ),
+      // When wallet is not connected, use a dummy public key so the fetch request returns empty data
+      fetch(
+        `https://api.glam.systems/funds?subject=${(
+          wallet.publicKey || new PublicKey(0)
+        ).toBase58()}`
+      ).then((res) => res.json()),
+    staleTime: 1000 * 60 * 5,
   });
-  if (data && data.length > 0 && data[0].fund) {
-    setFund(data[0].fund);
+  // If data is an empty array, set the fund to an empty string
+  if (data) {
+    if (data.length > 0 && data[0].fund) {
+      setFund(data[0].fund);
+    } else if (data.length === 0) {
+      setFund("");
+    }
   }
 
   const { connection } = useConnection();
@@ -51,9 +62,11 @@ export function GlamProvider({
     commitment: "confirmed",
   });
 
+  const fundAddress = useAtomValue(fundAtom);
   const value: GlamProviderContext = {
     glamClient: new GlamClient({ provider, cluster: "mainnet-beta" }),
-    fund: useAtomValue(fundAtom),
+    wallet: (wallet && wallet.publicKey) || undefined,
+    fund: (fundAddress && new PublicKey(fundAddress)) || undefined,
     setFund,
   };
 
