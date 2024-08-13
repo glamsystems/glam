@@ -1,5 +1,5 @@
 export type Glam = {
-  "version": "0.2.5",
+  "version": "0.2.6",
   "name": "glam",
   "constants": [
     {
@@ -3855,7 +3855,7 @@ export type Glam = {
 };
 
 export const IDL: Glam = {
-  "version": "0.2.5",
+  "version": "0.2.6",
   "name": "glam",
   "constants": [
     {
