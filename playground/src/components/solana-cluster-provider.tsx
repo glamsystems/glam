@@ -1,6 +1,5 @@
 "use client";
 
-import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { clusterApiUrl, Connection } from "@solana/web3.js";
 import { atom, useAtomValue, useSetAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
@@ -20,25 +19,12 @@ export enum ClusterNetwork {
   Devnet = "devnet",
   Custom = "custom",
 }
-function toWalletAdapterNetwork(
-  cluster?: ClusterNetwork
-): WalletAdapterNetwork | undefined {
-  switch (cluster) {
-    case ClusterNetwork.Mainnet:
-      return WalletAdapterNetwork.Mainnet;
-    case ClusterNetwork.Testnet:
-      return WalletAdapterNetwork.Testnet;
-    case ClusterNetwork.Devnet:
-      return WalletAdapterNetwork.Devnet;
-    default:
-      return undefined;
-  }
-}
 
 const defaultClusters: Cluster[] = [
   {
     name: "mainnet-beta",
-    endpoint: clusterApiUrl("mainnet-beta"),
+    endpoint:
+      process.env.NEXT_PUBLIC_SOLANA_RPC || clusterApiUrl("mainnet-beta"),
     network: ClusterNetwork.Mainnet,
   },
   {
@@ -46,7 +32,11 @@ const defaultClusters: Cluster[] = [
     endpoint: clusterApiUrl("devnet"),
     network: ClusterNetwork.Devnet,
   },
-  { name: "local", endpoint: "http://localhost:8899" },
+  {
+    name: "localnet",
+    endpoint: "http://localhost:8899",
+    network: ClusterNetwork.Custom,
+  },
   {
     name: "testnet",
     endpoint: clusterApiUrl("testnet"),

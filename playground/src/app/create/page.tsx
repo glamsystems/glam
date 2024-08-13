@@ -8,22 +8,22 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/use-toast";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useGlamClient } from "@glam/anchor";
+import { useGlam } from "@glam/anchor";
 
 const createSchema = z.object({
-  productType: z.enum(["treasury", "onchain", "tokenized"])
+  productType: z.enum(["treasury", "onchain", "tokenized"]),
 });
 
 type CreateSchema = z.infer<typeof createSchema>;
 
 export default function Create() {
-  const glamClient = useGlamClient();
+  const { glamClient } = useGlam();
   const [productType, setProductType] = useState<string>("treasury");
 
   const form = useForm<CreateSchema>({
     resolver: zodResolver(createSchema),
     defaultValues: {
-      productType: "treasury"
+      productType: "treasury",
     },
   });
 
@@ -44,7 +44,10 @@ export default function Create() {
 
   const handleDirectionChange = (value: string) => {
     if (value) {
-      form.setValue("productType", value as "treasury" | "onchain" | "tokenized");
+      form.setValue(
+        "productType",
+        value as "treasury" | "onchain" | "tokenized"
+      );
       setProductType(value);
     }
   };
