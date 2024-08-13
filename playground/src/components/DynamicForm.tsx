@@ -55,15 +55,15 @@ addFormats(ajv);
 
 interface Schema {
   type: string;
-  title: string;
+  title?: string;
   properties: { [key: string]: SchemaField };
-  required?: string[]; // Add this line to include the 'required' field in the Schema type
-  [key: string]: any;  // To handle any other properties that might exist on the schema
+  required?: string[];
+  [key: string]: any;
 }
 
 interface SchemaField {
   type: string;
-  title: string;
+  title?: string;
   description?: string;
   default?: string;
   'x-component': string;
@@ -73,13 +73,13 @@ interface SchemaField {
   'x-enumValues'?: string;
   'x-enumValuesLabel'?: string;
   'x-enumValuesValue'?: string;
-  'x-error'?: string; // Add this line
-  'x-placeholder'?: string; // Add this line
+  'x-error'?: string;
+  'x-placeholder'?: string;
   enum?: string[];
   format?: string;
   minLength?: number;
   maxLength?: number;
-  [key: string]: any;  // To handle any other custom properties
+  [key: string]: any;
 }
 
 interface DynamicFormProps {
@@ -318,36 +318,36 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema }) => {
           />
         );
       case 'datePicker':
-        const date = field.value ? new Date(field.value) : (schemaField.default ? new Date(schemaField.default) : null);
+        const date = field.value ? new Date(field.value) : (schemaField.default ? new Date(schemaField.default) : undefined);
         return (
-          <FormItem className="flex flex-col">
-            <Popover>
-              <PopoverTrigger asChild>
-                <FormControl>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full pl-3 text-left font-normal",
-                      !date && "text-muted-foreground"
-                    )}
-                  >
-                    {date ? format(date, "PPP") : (placeholder || "Pick a date")} {/* Use placeholder */}
-                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                  </Button>
-                </FormControl>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={(newDate) => {
-                    field.onChange(newDate ? newDate.toISOString() : null);
-                  }}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </FormItem>
+            <FormItem className="flex flex-col">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                        variant={"outline"}
+                        className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !date && "text-muted-foreground"
+                        )}
+                    >
+                      {date ? format(date, "PPP") : (placeholder || "Pick a date")}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                      mode="single"
+                      selected={date ? date : undefined} // Handle null by using undefined
+                      onSelect={(newDate) => {
+                        field.onChange(newDate ? newDate.toISOString() : null);
+                      }}
+                      initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </FormItem>
         );
       case 'combobox':
         return (

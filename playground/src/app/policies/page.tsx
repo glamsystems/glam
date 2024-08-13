@@ -42,7 +42,7 @@ export default function Policies() {
             <PoliciesList items={policies} />
           </TabsContent>
           <TabsContent value="active" className="m-0">
-            <PoliciesList items={policies.filter((item) => !item.active)} />
+            <PoliciesList items={policies.filter((item) => item.active)} />
           </TabsContent>
         </Tabs>
       </ResizablePanel>
