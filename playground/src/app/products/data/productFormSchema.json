@@ -64,7 +64,7 @@
       "title": "Fund Currency",
       "description": "Base currency of the Fund (ISO 4217 code)",
       "x-tag": "core",
-      "x-component": "combobox",
+      "x-component": "assetinput",
       "readOnly": false
     },
     "openEndedOrClosedEndedFundStructure": {
@@ -90,9 +90,12 @@
       "title": "Fiscal Year End",
       "description": "End date of the Fund's fiscal year",
       "x-tag": "core",
-      "x-component": "datePicker",
+      "x-component": "select",
       "readOnly": false,
-      "format": "date"
+      "x-enumSource": "utils/openfundsConstants.tsx",
+      "x-enumValues": "fiscalYearEnd",
+      "x-enumValuesLabel": "label",
+      "x-enumValuesValue": "value"
     },
     "legalForm": {
       "type": "string",
@@ -193,5 +196,6 @@
       "maxLength": 64,
       "format": "uri"
     }
-  }
+  },
+  "required": ["fiscalYearEnd"]
 }

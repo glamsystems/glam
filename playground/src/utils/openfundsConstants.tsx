@@ -3450,3 +3450,54 @@ export const dividendType: { [key: string]: string }[] = [
     value: "both",
   },
 ];
+
+export const fiscalYearEnd: { [key: string]: string }[] = [
+  {
+    "value": "12-31",
+    "label": "December"
+  },
+  {
+    "value": "11-30",
+    "label": "November"
+  },
+  {
+    "value": "10-31",
+    "label": "October"
+  },
+  {
+    "value": "09-30",
+    "label": "September"
+  },
+  {
+    "value": "08-31",
+    "label": "August"
+  },
+  {
+    "value": "07-31",
+    "label": "July"
+  },
+  {
+    "value": "06-30",
+    "label": "June"
+  },
+  {
+    "value": "05-31",
+    "label": "May"
+  },
+  {
+    "value": "04-30",
+    "label": "April"
+  },
+  {
+    "value": "03-31",
+    "label": "March"
+  },
+  {
+    "value": "02-28",
+    "label": "February"
+  },
+  {
+    "value": "01-31",
+    "label": "January"
+  }
+];
