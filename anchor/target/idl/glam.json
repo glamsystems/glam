@@ -1868,6 +1868,14 @@
             }
           },
           {
+            "name": "integrations",
+            "type": {
+              "vec": {
+                "defined": "Integration"
+              }
+            }
+          },
+          {
             "name": "isRawOpenfunds",
             "type": {
               "option": "bool"
@@ -2483,6 +2491,9 @@
           },
           {
             "name": "Acls"
+          },
+          {
+            "name": "Integrations"
           }
         ]
       }
@@ -2634,6 +2645,19 @@
                 }
               }
             ]
+          },
+          {
+            "name": "VecIntegrations",
+            "fields": [
+              {
+                "name": "val",
+                "type": {
+                  "vec": {
+                    "defined": "Integration"
+                  }
+                }
+              }
+            ]
           }
         ]
       }
@@ -2714,6 +2738,26 @@
           },
           {
             "name": "EUR"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Integration",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Drift"
+          },
+          {
+            "name": "StakePool"
+          },
+          {
+            "name": "Marinade"
+          },
+          {
+            "name": "Jupiter"
           }
         ]
       }

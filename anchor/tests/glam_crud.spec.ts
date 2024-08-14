@@ -28,7 +28,7 @@ describe("glam_crud", () => {
     expect(fund.shareClasses[0].blocklist).toEqual([]);
   });
 
-  it("Update fund", async () => {
+  it("Update fund name", async () => {
     const updatedFund = glamClient.getFundModel({ name: "Updated fund name" });
     try {
       await glamClient.program.methods
@@ -44,6 +44,51 @@ describe("glam_crud", () => {
     }
     const fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
     expect(fund.name).toEqual(updatedFund.name);
+  });
+
+  it("Update enabled integrations #1", async () => {
+    const updatedFund1 = glamClient.getFundModel({
+      integrations: [{ drift: {} }],
+    });
+    try {
+      const tx = await glamClient.program.methods
+        .updateFund(updatedFund1)
+        .accounts({
+          fund: fundPDA,
+          signer: glamClient.getManager(),
+        })
+        .rpc();
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+    const fundModel1 = await glamClient.fetchFund(fundPDA);
+    expect(fundModel1.integrations.length).toEqual(1);
+    expect(fundModel1.integrations[0]).toEqual({ drift: {} });
+
+    const updatedFund2 = glamClient.getFundModel({
+      integrations: [
+        { drift: {} },
+        { jupiter: {} },
+        { marinade: {} },
+        { stakePool: {} },
+      ],
+    });
+    try {
+      const tx = await glamClient.program.methods
+        .updateFund(updatedFund2)
+        .accounts({
+          fund: fundPDA,
+          signer: glamClient.getManager(),
+        })
+        .rpc();
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+    const fundModel2 = await glamClient.fetchFund(fundPDA);
+    expect(fundModel2.integrations.length).toEqual(4);
+    expect(fundModel2.integrations).toEqual(updatedFund2?.integrations);
   });
 
   it("Fund acls upsert", async () => {

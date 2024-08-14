@@ -1868,6 +1868,14 @@ export type Glam = {
             }
           },
           {
+            "name": "integrations",
+            "type": {
+              "vec": {
+                "defined": "Integration"
+              }
+            }
+          },
+          {
             "name": "isRawOpenfunds",
             "type": {
               "option": "bool"
@@ -2483,6 +2491,9 @@ export type Glam = {
           },
           {
             "name": "Acls"
+          },
+          {
+            "name": "Integrations"
           }
         ]
       }
@@ -2634,6 +2645,19 @@ export type Glam = {
                 }
               }
             ]
+          },
+          {
+            "name": "VecIntegrations",
+            "fields": [
+              {
+                "name": "val",
+                "type": {
+                  "vec": {
+                    "defined": "Integration"
+                  }
+                }
+              }
+            ]
           }
         ]
       }
@@ -2714,6 +2738,26 @@ export type Glam = {
           },
           {
             "name": "EUR"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Integration",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Drift"
+          },
+          {
+            "name": "StakePool"
+          },
+          {
+            "name": "Marinade"
+          },
+          {
+            "name": "Jupiter"
           }
         ]
       }
@@ -5739,6 +5783,14 @@ export const IDL: Glam = {
             }
           },
           {
+            "name": "integrations",
+            "type": {
+              "vec": {
+                "defined": "Integration"
+              }
+            }
+          },
+          {
             "name": "isRawOpenfunds",
             "type": {
               "option": "bool"
@@ -6354,6 +6406,9 @@ export const IDL: Glam = {
           },
           {
             "name": "Acls"
+          },
+          {
+            "name": "Integrations"
           }
         ]
       }
@@ -6505,6 +6560,19 @@ export const IDL: Glam = {
                 }
               }
             ]
+          },
+          {
+            "name": "VecIntegrations",
+            "fields": [
+              {
+                "name": "val",
+                "type": {
+                  "vec": {
+                    "defined": "Integration"
+                  }
+                }
+              }
+            ]
           }
         ]
       }
@@ -6585,6 +6653,26 @@ export const IDL: Glam = {
           },
           {
             "name": "EUR"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Integration",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Drift"
+          },
+          {
+            "name": "StakePool"
+          },
+          {
+            "name": "Marinade"
+          },
+          {
+            "name": "Jupiter"
           }
         ]
       }

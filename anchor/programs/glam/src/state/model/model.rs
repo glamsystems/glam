@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 
 use super::super::acl::*;
+use super::super::integrations::*;
 
 // Fund
 //
@@ -28,6 +29,9 @@ pub struct FundModel {
 
     // ACLs
     pub acls: Vec<Acl>,
+
+    // Enabled integrations
+    pub integrations: Vec<Integration>,
 
     // Openfunds
     pub is_raw_openfunds: Option<bool>,

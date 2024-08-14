@@ -1,10 +1,11 @@
 use anchor_lang::prelude::*;
 
 use super::acl::*;
+use super::integrations::*;
 use super::model::*;
 use super::openfunds::*;
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
+#[derive(AnchorDeserialize, AnchorSerialize, PartialEq, Clone, Debug)]
 pub enum EngineFieldName {
     TimeCreated,
     IsEnabled,
@@ -13,6 +14,7 @@ pub enum EngineFieldName {
     ShareClassAllowlist,
     ShareClassBlocklist,
     Acls,
+    Integrations,
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
@@ -34,6 +36,7 @@ pub enum EngineFieldValue {
     VecPubkey { val: Vec<Pubkey> },
     VecU32 { val: Vec<u32> },
     VecAcl { val: Vec<Acl> },
+    VecIntegrations { val: Vec<Integration> },
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
