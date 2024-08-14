@@ -1,6 +1,7 @@
 import { IdlTypes } from "@coral-xyz/anchor";
 import { Glam } from "./glamExports";
 
+// @ts-ignore
 export type FundModel = IdlTypes<Glam>["FundModel"];
 export const FundModel = class<FundModel> {
   constructor(obj: any) {
