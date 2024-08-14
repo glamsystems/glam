@@ -31,9 +31,9 @@ import { DataTable } from "./components/data-table";
 
 import { useGlam, JITO_STAKE_POOL, MSOL, JITOSOL } from "@glam/anchor";
 
-import { testFund } from "../testFund";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import WalletOrFundAlert from "@/components/WalletOrFundAlert";
 
 const stakeSchema = z.object({
   service: z.enum(["Marinade", "Native", "Jito"]),
@@ -49,7 +49,7 @@ const serviceToAssetMap: { [key in StakeSchema["service"]]: string } = {
   Jito: "jitoSOL",
 };
 
-export const ticketSchema = z.object({
+const ticketSchema = z.object({
   publicKey: z.string(),
   service: z.string(),
   status: z.string(),
@@ -63,21 +63,23 @@ export type assetBalancesMap = {
 };
 
 export default function Stake() {
+  const { fund: fundPDA, wallet, glamClient } = useGlam();
+
   const [marinadeTicket, setMarinadeTicket] = useState<Ticket[]>([]);
   const [amountInAsset, setAmountInAsset] = useState<string>("SOL");
   const [mode, setMode] = useState<string>("stake");
   const [loading, setLoading] = useState<boolean>(true); // New loading state
   const [balance, setBalance] = useState<number>(NaN);
   const [assetBalances, setAssetBalances] = useState<assetBalancesMap>({});
-  const { glamClient } = useGlam();
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!fundPDA) {
+        return;
+      }
       try {
         // TODO: fetch stake accounts
-        const tickets = await glamClient.marinade.getExistingTickets(
-          testFund.fundPDA
-        );
+        const tickets = await glamClient.marinade.getExistingTickets(fundPDA);
         const transformedTickets = tickets.map((ticket) => ({
           publicKey: ticket.toBase58(),
           service: "marinade",
@@ -94,15 +96,9 @@ export default function Stake() {
 
       if (Object.keys(assetBalances).length === 0) {
         const assetBalances = {
-          SOL: await glamClient.getTreasuryBalance(testFund.fundPDA),
-          mSOL: await glamClient.getTreasuryTokenBalance(
-            testFund.fundPDA,
-            MSOL
-          ),
-          jitoSOL: await glamClient.getTreasuryTokenBalance(
-            testFund.fundPDA,
-            JITOSOL
-          ),
+          SOL: await glamClient.getTreasuryBalance(fundPDA),
+          mSOL: await glamClient.getTreasuryTokenBalance(fundPDA, MSOL),
+          jitoSOL: await glamClient.getTreasuryTokenBalance(fundPDA, JITOSOL),
         };
 
         setBalance(assetBalances["SOL"]);
@@ -111,7 +107,7 @@ export default function Stake() {
     };
 
     fetchData();
-  }, [glamClient, testFund.fundPDA]);
+  }, [glamClient, fundPDA]);
 
   const form = useForm<StakeSchema>({
     resolver: zodResolver(stakeSchema),
@@ -142,25 +138,33 @@ export default function Stake() {
       return;
     }
 
+    if (!fundPDA) {
+      toast({
+        title: "Fund address unavailable.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Handle stake
     if (mode === "stake") {
       const stakeFnMap = {
         Marinade: async () => {
           return await glamClient.marinade.depositSol(
-            testFund.fundPDA,
+            fundPDA,
             new BN(values.amountIn * LAMPORTS_PER_SOL)
           );
         },
         Jito: async () => {
           return await glamClient.staking.stakePoolDepositSol(
-            testFund.fundPDA,
+            fundPDA,
             JITO_STAKE_POOL,
             new BN(values.amountIn * LAMPORTS_PER_SOL)
           );
         },
         Native: async () => {
           return await glamClient.staking.initializeAndDelegateStake(
-            testFund.fundPDA,
+            fundPDA,
             new PublicKey("J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp"), // phantom validator
             new BN(values.amountIn * LAMPORTS_PER_SOL)
           );
@@ -189,13 +193,13 @@ export default function Stake() {
     const unstakeFnMap = {
       Marinade: async () => {
         return await glamClient.marinade.delayedUnstake(
-          testFund.fundPDA,
+          fundPDA,
           new BN(values.amountIn * LAMPORTS_PER_SOL)
         );
       },
       Jito: async () => {
         return await glamClient.staking.stakePoolWithdrawStake(
-          testFund.fundPDA,
+          fundPDA,
           JITO_STAKE_POOL,
           new BN(values.amountIn * LAMPORTS_PER_SOL)
         );
@@ -250,6 +254,10 @@ export default function Stake() {
       setBalance(assetBalances[asset]);
     }
   };
+
+  if (!wallet || !fundPDA) {
+    return <WalletOrFundAlert wallet={wallet} fundPDA={fundPDA} />;
+  }
 
   return (
     <div className="flex flex-col justify-center w-full mt-16">

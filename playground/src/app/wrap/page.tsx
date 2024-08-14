@@ -12,7 +12,8 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useGlam, WSOL } from "@glam/anchor";
 import { BN } from "@coral-xyz/anchor";
 import { ExplorerLink } from "@/components/ExplorerLink";
-import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import WalletOrFundAlert from "@/components/WalletOrFundAlert";
 
 const wrapSchema = z.object({
   direction: z.enum(["wrap", "unwrap"]),
@@ -23,12 +24,7 @@ const wrapSchema = z.object({
 type WrapSchema = z.infer<typeof wrapSchema>;
 
 export default function Wrap() {
-  const { fund, glamClient } = useGlam();
-  if (!fund) {
-    // TODO: use a loading spinner
-    return <p>Loading ...</p>;
-  }
-  const fundPDA = new PublicKey(fund);
+  const { fund: fundPDA, wallet, glamClient } = useGlam();
 
   const [amountAsset, setAmountAsset] = useState<string>("SOL");
   const [direction, setDirection] = useState<string>("wrap");
@@ -45,10 +41,35 @@ export default function Wrap() {
     },
   });
 
+  useEffect(() => {
+    if (fundPDA) {
+      const fetchBalances = async () => {
+        const solBalance = await glamClient.getTreasuryBalance(fundPDA);
+        const wSolBalance = await glamClient.getTreasuryTokenBalance(
+          fundPDA,
+          WSOL
+        );
+        setSolBalance(solBalance);
+        setWSolBalance(wSolBalance);
+        setBalance(solBalance);
+      };
+
+      fetchBalances();
+    }
+  }, [fundPDA, glamClient]);
+
   const onSubmit: SubmitHandler<WrapSchema> = async (values, _event) => {
     if (values.amount === 0) {
       toast({
         title: "Please enter an amount greater than 0.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!fundPDA) {
+      toast({
+        title: "Fund not found for the connected wallet.",
         variant: "destructive",
       });
       return;
@@ -84,7 +105,6 @@ export default function Wrap() {
     }
     const direction = value as "wrap" | "unwrap";
     form.setValue("direction", direction);
-    let balance = undefined;
     if (direction === "wrap") {
       setAmountAsset("SOL");
       setBalance(solBalance);
@@ -95,19 +115,9 @@ export default function Wrap() {
     setDirection(direction);
   };
 
-  const fetchBalances = async () => {
-    const solBalance = await glamClient.getTreasuryBalance(fundPDA);
-    const wSolBalance = await glamClient.getTreasuryTokenBalance(fundPDA, WSOL);
-    setSolBalance(solBalance);
-    setWSolBalance(wSolBalance);
-    setBalance(solBalance);
-  };
-
-  useEffect(() => {
-    if (!(solBalance && wSolBalance)) {
-      fetchBalances();
-    }
-  }, []);
+  if (!wallet || !fundPDA) {
+    return <WalletOrFundAlert wallet={wallet} fundPDA={fundPDA} />;
+  }
 
   return (
     <FormProvider {...form}>
