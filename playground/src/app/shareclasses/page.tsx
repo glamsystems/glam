@@ -7,6 +7,8 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Input} from "@/components/ui/input";
 import {ShareClassesList} from "./components/shareClasses-list"
 import {shareClasses} from "./data";
+import {Button} from "@/components/ui/button";
+import {FilePlusIcon, PlusIcon} from "@radix-ui/react-icons";
 
 export default function Products() {
   return <div className="w-full flex">
@@ -38,6 +40,9 @@ export default function Products() {
                 <Input placeholder="Search" className="pl-8" />
               </div>
             </form>
+            <Button variant="ghost" className="mt-4">
+              <PlusIcon className="h-4 w-4 mr-2"/> Add Share Class
+            </Button>
           </div>
           <TabsContent value="all" className="m-0">
             <ShareClassesList items={shareClasses} />

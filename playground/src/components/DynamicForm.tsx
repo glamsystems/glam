@@ -372,7 +372,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema }) => {
                   </Button>
                 </FormControl>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
+              <PopoverContent className="w-full p-0" align="start">
                 <Command>
                   <CommandInput placeholder={`Search...`} /> {/* Use placeholder */}
                   <CommandList>
