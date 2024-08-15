@@ -20,6 +20,7 @@ pub struct WSolWrap<'info> {
     #[account(
         init_if_needed,
         payer = signer,
+        rent_exempt = skip,
         associated_token::mint = wsol_mint,
         associated_token::authority = treasury)]
     pub treasury_wsol_ata: Account<'info, TokenAccount>,
