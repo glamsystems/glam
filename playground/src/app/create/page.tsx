@@ -8,7 +8,7 @@ import React, {useEffect, useState} from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/use-toast";
-import { useGlamClient } from "@glam/anchor";
+import { useGlam } from "@glam/anchor";
 import { ProductNameGen } from "@/utils/ProductNameGen";
 import {UpdateIcon} from "@radix-ui/react-icons";
 
@@ -40,7 +40,7 @@ export default function Create() {
     };
 
     if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") === "submit") {
-      console.log("Submit Trade");
+      console.log("Create product");
       const updatedValues = {
         ...values,
       };
