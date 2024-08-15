@@ -10,6 +10,8 @@
       "x-tag": "essential",
       "x-component": "input",
       "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false,
       "minLength": 3,
       "maxLength": 64
     },
@@ -24,7 +26,9 @@
       "x-enumSource": "utils/openfundsConstants.tsx",
       "x-enumValues": "countries",
       "x-enumValuesLabel": "name_pretty",
-      "x-enumValuesValue": "code_alpha_2"
+      "x-enumValuesValue": "code_alpha_2",
+      "x-hidden": false,
+      "x-enforced": false
     },
     "legalFundNameIncludingUmbrella": {
       "type": "string",
@@ -34,6 +38,8 @@
       "x-tag": "essential",
       "x-component": "input",
       "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false,
       "minLength": 3,
       "maxLength": 64
     },
@@ -45,6 +51,8 @@
       "x-tag": "core",
       "x-component": "datePicker",
       "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false,
       "format": "date"
     },
     "investmentObjective": {
@@ -55,6 +63,8 @@
       "x-tag": "core",
       "x-component": "textarea",
       "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false,
       "minLength": 3,
       "maxLength": 256
     },
@@ -65,7 +75,9 @@
       "description": "Base currency of the Fund (ISO 4217 code)",
       "x-tag": "core",
       "x-component": "combobox",
-      "readOnly": false
+      "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false
     },
     "openEndedOrClosedEndedFundStructure": {
       "type": "string",
@@ -82,7 +94,9 @@
       "x-enumSource": "utils/openfundsConstants.tsx",
       "x-enumValues": "fundStructures",
       "x-enumValuesLabel": "label",
-      "x-enumValuesValue": "value"
+      "x-enumValuesValue": "value",
+      "x-hidden": false,
+      "x-enforced": false
     },
     "fiscalYearEnd": {
       "type": "string",
@@ -96,7 +110,9 @@
       "x-enumSource": "utils/openfundsConstants.tsx",
       "x-enumValues": "fiscalYearEnd",
       "x-enumValuesLabel": "label",
-      "x-enumValuesValue": "value"
+      "x-enumValuesValue": "value",
+      "x-hidden": false,
+      "x-enforced": false
     },
     "legalForm": {
       "type": "string",
@@ -136,7 +152,9 @@
       "x-enumSource": "utils/openfundsConstants.tsx",
       "x-enumValues": "legalForms",
       "x-enumValuesLabel": "label",
-      "x-enumValuesValue": "value"
+      "x-enumValuesValue": "value",
+      "x-hidden": false,
+      "x-enforced": false
     },
     "portfolioManagerName": {
       "type": "string",
@@ -146,6 +164,8 @@
       "x-tag": "portfoliomanager",
       "x-component": "input",
       "readOnly": false,
+      "x-hidden": true,
+      "x-enforced": false,
       "minLength": 3,
       "maxLength": 64
     },
@@ -157,6 +177,8 @@
       "x-tag": "core",
       "x-component": "input",
       "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false,
       "minLength": 3,
       "maxLength": 64
     },
@@ -171,7 +193,9 @@
       "x-enumSource": "utils/openfundsConstants.tsx",
       "x-enumValues": "countries",
       "x-enumValuesLabel": "name_pretty",
-      "x-enumValuesValue": "code_alpha_2"
+      "x-enumValuesValue": "code_alpha_2",
+      "x-hidden": false,
+      "x-enforced": false
     },
     "emailAddressOfManCo": {
       "type": "string",
@@ -181,6 +205,8 @@
       "x-tag": "full",
       "x-component": "input",
       "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false,
       "minLength": 3,
       "maxLength": 64,
       "format": "email"
@@ -193,6 +219,8 @@
       "x-tag": "full",
       "x-component": "input",
       "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false,
       "minLength": 3,
       "maxLength": 64,
       "format": "uri"
