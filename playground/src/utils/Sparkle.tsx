@@ -1,18 +1,19 @@
 import {PublicKey} from "@solana/web3.js";
 const crypto = require("crypto");
-import React from "react";
+import React, { useEffect } from "react";
 
 interface SparkleProps {
   address: string;
   size: number;
+  onColorGenerated?: (color: string) => void; // Optional prop
 }
 
 const defaultSparkleProps: SparkleProps = {
   address: "So11111111111111111111111111111111111111111",
-  size: 32
-}
+  size: 32,
+};
 
-const Sparkle: React.FC<SparkleProps> = ({ address, size }) => {
+const Sparkle: React.FC<SparkleProps> = ({ address, size, onColorGenerated }) => {
   const pubKey = new PublicKey(address);
   const keyBytes = pubKey.toBytes();
   const hash = crypto.createHash("sha256").update(keyBytes).digest("hex");
@@ -35,6 +36,12 @@ const Sparkle: React.FC<SparkleProps> = ({ address, size }) => {
 
   const conicGradient = "conic-gradient(from " + angle + "deg at 50% 50%, " + color + ", rgba(0,0,0,0))"
   const svgViewBox = "0 0 " + String(size) + " " + String(size)
+
+  useEffect(() => {
+    if (onColorGenerated) {
+      onColorGenerated(color); // Only call if the prop is provided
+    }
+  }, [color, onColorGenerated]);
 
   return (
     <div>

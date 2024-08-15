@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import { CheckIcon, CaretSortIcon, CalendarIcon } from "@radix-ui/react-icons";
+import { CheckIcon, CaretSortIcon, CalendarIcon, LockClosedIcon, InfoCircledIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -43,13 +43,14 @@ import {
 import { format } from 'date-fns';
 import { cn } from "@/lib/utils";
 import * as openfundsConstants from '@/utils/openfundsConstants';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Configure AJV
 const ajv = new Ajv({
   allErrors: true,
   useDefaults: true,
   strict: false,
-  keywords: ['x-component', 'x-id', 'x-tag', 'x-enumSource', 'x-enumValues', 'x-enumValuesLabel', 'x-enumValuesValue'],
+  keywords: ['x-component', 'x-id', 'x-tag', 'x-enumSource', 'x-enumValues', 'x-enumValuesLabel', 'x-enumValuesValue', 'x-hidden', 'x-enforced',	'x-error'],
 });
 addFormats(ajv);
 
@@ -73,6 +74,8 @@ interface SchemaField {
   'x-enumValues'?: string;
   'x-enumValuesLabel'?: string;
   'x-enumValuesValue'?: string;
+  'x-hidden'?: boolean;
+  'x-enforced'?: boolean;
   'x-error'?: string;
   'x-placeholder'?: string;
   enum?: string[];
@@ -168,6 +171,11 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema }) => {
   const renderField = (key: string, field: SchemaField) => {
     const isRequired = schema.required?.includes(key);
 
+    // Skip rendering if x-hidden is true
+    if (field['x-hidden']) {
+      return null;
+    }
+
     return (
       <Controller
         key={key}
@@ -221,9 +229,21 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema }) => {
 
           return (
             <FormItem className="flex flex-col">
-              <FormLabel>
+              <FormLabel className="flex items-center">
                 {field.title}
                 {isRequired && <span className="text-red-500 ml-1">*</span>}
+                {field['x-enforced'] && (
+                  <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <CheckIcon className="ml-2 h-4 w-4" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Enforced Onchain</p> {/* Tooltip content for enforced field */}
+                        </TooltipContent>
+                      </Tooltip>
+                  </TooltipProvider>
+                )}
               </FormLabel>
               <FormControl>
                 {renderComponent(key, field, formField)}
