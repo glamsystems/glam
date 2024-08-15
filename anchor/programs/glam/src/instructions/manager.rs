@@ -351,14 +351,21 @@ pub fn update_fund_handler<'c: 'info, 'info>(
 pub struct CloseFund<'info> {
     #[account(mut, close = manager, has_one = manager @ ManagerError::NotAuthorizedError)]
     fund: Account<'info, FundAccount>,
+
+    #[account(mut, close = manager)]
+    openfund: Account<'info, FundAccount>,
+
+    #[account(mut, close = manager)]
+    treasury: Account<'info, FundAccount>,
+
     #[account(mut)]
     manager: Signer<'info>,
 }
 
-pub fn close_handler(_ctx: Context<CloseFund>) -> Result<()> {
-    panic!("Not implemented");
+pub fn close_handler(ctx: Context<CloseFund>) -> Result<()> {
+    // panic!("Not implemented");
     //TODO: check that all share classes have 0 supply
     //TODO: close treasury (checkin that it's empty)
-    // msg!("Fund closed: {}", ctx.accounts.fund.key());
-    // Ok(())
+    msg!("Fund closed: {}", ctx.accounts.fund.key());
+    Ok(())
 }

@@ -9,6 +9,10 @@ use crate::instructions::*;
 pub use constants::*;
 pub use state::model::*;
 
+#[cfg(feature = "mainnet")]
+declare_id!("GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP");
+
+#[cfg(not(feature = "mainnet"))]
 declare_id!("Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc");
 
 #[program]
