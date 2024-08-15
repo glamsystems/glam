@@ -10,6 +10,8 @@
       "x-tag": "core",
       "x-component": "input",
       "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false,
       "minLength": 3,
       "maxLength": 64
     },
@@ -21,6 +23,8 @@
       "x-tag": "essential",
       "x-component": "input",
       "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false,
       "minLength": 12,
       "maxLength": 12,
       "pattern": "^[A-Z]{2}[A-Z0-9]{9}[0-9]$"
@@ -33,6 +37,8 @@
       "x-tag": "full",
       "x-component": "input",
       "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false,
       "minLength": 9,
       "maxLength": 9,
       "pattern": "^[0-9A-Z]{9}$"
@@ -45,6 +51,8 @@
       "x-tag": "full",
       "x-component": "input",
       "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false,
       "minLength": 6,
       "maxLength": 9,
       "pattern": "^[0-9]{6}$"
@@ -56,7 +64,9 @@
       "description": "Reference currency of the share class (ISO 4217)",
       "x-tag": "essential",
       "x-component": "combobox",
-      "readOnly": false
+      "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false
     },
     "shareClassLifecycle": {
       "type": "string",
@@ -78,7 +88,9 @@
       "x-enumSource": "utils/openfundsConstants.tsx",
       "x-enumValues": "shareClassLifecycle",
       "x-enumValuesLabel": "label",
-      "x-enumValuesValue": "value"
+      "x-enumValuesValue": "value",
+      "x-hidden": false,
+      "x-enforced": false
     },
     "investmentStatus": {
       "type": "string",
@@ -98,7 +110,9 @@
       "x-enumSource": "utils/openfundsConstants.tsx",
       "x-enumValues": "investmentStatus",
       "x-enumValuesLabel": "label",
-      "x-enumValuesValue": "value"
+      "x-enumValuesValue": "value",
+      "x-hidden": false,
+      "x-enforced": false
     },
     "shareClassDistributionPolicy": {
       "type": "string",
@@ -116,7 +130,9 @@
       "x-enumSource": "utils/openfundsConstants.tsx",
       "x-enumValues": "distributionPolicy",
       "x-enumValuesLabel": "label",
-      "x-enumValuesValue": "value"
+      "x-enumValuesValue": "value",
+      "x-hidden": false,
+      "x-enforced": false
     },
     "shareClassLaunchDate": {
       "type": "string",
@@ -126,6 +142,8 @@
       "x-tag": "core",
       "x-component": "datePicker",
       "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false,
       "format": "date"
     },
     "minimalInitialSubscriptionCategory": {
@@ -144,7 +162,9 @@
       "x-enumSource": "utils/openfundsConstants.tsx",
       "x-enumValues": "minimalInitialCategory",
       "x-enumValuesLabel": "label",
-      "x-enumValuesValue": "value"
+      "x-enumValuesValue": "value",
+      "x-hidden": false,
+      "x-enforced": false
     },
     "minimalInitialSubscriptionInShares": {
       "type": "number",
@@ -153,7 +173,9 @@
       "description": "Minimum number of shares required for new investments",
       "x-tag": "core",
       "x-component": "input",
-      "readOnly": false
+      "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false
     },
     "minimalInitialSubscriptionInAmount": {
       "type": "number",
@@ -162,7 +184,9 @@
       "description": "Minimum amount required for an initial investment",
       "x-tag": "core",
       "x-component": "input",
-      "readOnly": false
+      "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false
     },
     "currencyOfMinimalSubscription": {
       "type": "string",
@@ -171,7 +195,9 @@
       "description": "Currency used for minimal subscription amounts",
       "x-tag": "core",
       "x-component": "combobox",
-      "readOnly": false
+      "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false
     },
     "minimalRedemptionCategory": {
       "type": "string",
@@ -189,7 +215,9 @@
       "x-enumSource": "utils/openfundsConstants.tsx",
       "x-enumValues": "minimalInitialCategory",
       "x-enumValuesLabel": "label",
-      "x-enumValuesValue": "value"
+      "x-enumValuesValue": "value",
+      "x-hidden": false,
+      "x-enforced": false
     },
     "minimalInitialRedemptionInShares": {
       "type": "number",
@@ -198,7 +226,9 @@
       "description": "Minimum number of shares for redemption",
       "x-tag": "full",
       "x-component": "input",
-      "readOnly": false
+      "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false
     },
     "maximumInitialRedemptionInShares": {
       "type": "number",
@@ -207,7 +237,9 @@
       "description": "Maximum number of shares allowed for initial redemption",
       "x-tag": "full",
       "x-component": "input",
-      "readOnly": false
+      "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false
     },
     "minimalInitialRedemptionInAmount": {
       "type": "number",
@@ -216,7 +248,9 @@
       "description": "Minimum amount for initial redemptions",
       "x-tag": "full",
       "x-component": "input",
-      "readOnly": false
+      "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false
     },
     "maximumInitialRedemptionInAmount": {
       "type": "number",
@@ -225,7 +259,9 @@
       "description": "Maximum amount allowed for initial redemptions",
       "x-tag": "full",
       "x-component": "input",
-      "readOnly": false
+      "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false
     },
     "currencyOfMinimalOrMaximumRedemption": {
       "type": "string",
@@ -234,7 +270,9 @@
       "description": "Currency used for redemption amounts",
       "x-tag": "full",
       "x-component": "combobox",
-      "readOnly": false
+      "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false
     },
     "shareClassDividendType": {
       "type": "string",
@@ -252,7 +290,9 @@
       "x-enumSource": "utils/openfundsConstants.tsx",
       "x-enumValues": "dividendType",
       "x-enumValuesLabel": "label",
-      "x-enumValuesValue": "value"
+      "x-enumValuesValue": "value",
+      "x-hidden": false,
+      "x-enforced": false
     },
     "sRRI": {
       "type": "number",
@@ -262,15 +302,8 @@
       "x-tag": "core",
       "x-component": "select",
       "readOnly": false,
-      "enum": [
-        "1",
-        "2",
-        "3",
-        "4",
-        "5",
-        "6",
-        "7"
-      ],
+      "x-hidden": false,
+      "x-enforced": false,
       "minValue": 1,
       "maxValue": 7
     },
@@ -281,7 +314,9 @@
       "description": "Indicates presence of a lock-up period for early redemption",
       "x-tag": "full",
       "x-component": "select",
-      "readOnly": false
+      "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false
     },
     "lockUpComment": {
       "type": "string",
@@ -291,6 +326,8 @@
       "x-tag": "full",
       "x-component": "textarea",
       "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false,
       "minLength": 3,
       "maxLength": 256
     },
@@ -301,7 +338,9 @@
       "description": "Duration of the lock-up period in days",
       "x-tag": "full",
       "x-component": "input",
-      "readOnly": false
+      "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false
     },
     "launchPrice": {
       "type": "number",
@@ -310,7 +349,9 @@
       "description": "Initial purchase price for fund units during the subscription period",
       "x-tag": "additional",
       "x-component": "input",
-      "readOnly": false
+      "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false
     },
     "launchPriceCurrency": {
       "type": "string",
@@ -319,7 +360,9 @@
       "description": "Currency of the launch price",
       "x-tag": "additional",
       "x-component": "combobox",
-      "readOnly": false
+      "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false
     },
     "launchPriceDate": {
       "type": "string",
@@ -329,6 +372,53 @@
       "x-tag": "additional",
       "x-component": "datePicker",
       "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false,
+      "format": "date"
+    },
+    "managementFeeMaximum": {
+      "type": "number",
+      "x-id": "OFST452010",
+      "title": "Management Fee Maximum",
+      "description": "Maximum management fee as mentioned in prospectus",
+      "x-tag": "coreFees",
+      "x-component": "input",
+      "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false
+    },
+    "hasPerformanceFee": {
+      "type": "boolean",
+      "x-id": "OFST451027",
+      "title": "Has Performance Fee",
+      "description": "Indicates if the prospectus facilitates a performance fee",
+      "x-tag": "coreFees",
+      "x-component": "select",
+      "readOnly": false,
+      "x-hidden": true,
+      "x-enforced": false
+    },
+    "performanceFeeInProspectus": {
+      "type": "number",
+      "x-id": "OFST451030",
+      "title": "Performance Fee in Prospectus",
+      "description": "Maximum performance fee as mentioned in the prospectus",
+      "x-tag": "coreFees",
+      "x-component": "input",
+      "readOnly": false,
+      "x-hidden": false,
+      "x-enforced": false
+    },
+    "performanceFeeInProspectusReferenceDate": {
+      "type": "string",
+      "x-id": "OFST451035",
+      "title": "Performance Fee in Prospectus Reference Date",
+      "description": "Reference date of the performance fee in the prospectus",
+      "x-tag": "coreFees",
+      "x-component": "datePicker",
+      "readOnly": false,
+      "x-hidden": true,
+      "x-enforced": false,
       "format": "date"
     }
   }
