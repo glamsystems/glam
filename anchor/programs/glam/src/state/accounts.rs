@@ -44,14 +44,14 @@ pub struct EngineField {
 
 #[account]
 pub struct FundAccount {
+    pub manager: Pubkey,
+    pub treasury: Pubkey,
+    pub openfunds: Pubkey,
+    pub engine: Pubkey,
+    pub share_classes: Vec<Pubkey>,
     pub name: String,
     pub uri: String,
-    pub treasury: Pubkey,
-    pub share_classes: Vec<Pubkey>,
-    pub openfunds: Pubkey,
     pub openfunds_uri: String,
-    pub manager: Pubkey,
-    pub engine: Pubkey,
     pub params: Vec<Vec<EngineField>>, // params[0]: EngineFundParams, ...
                                        // params[1]: EngineShareClass0Params, ...
 }

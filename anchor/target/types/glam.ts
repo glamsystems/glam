@@ -122,6 +122,16 @@ export type Glam = {
           "isSigner": false
         },
         {
+          "name": "openfund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "manager",
           "isMut": true,
           "isSigner": true
@@ -1629,15 +1639,19 @@ export type Glam = {
         "kind": "struct",
         "fields": [
           {
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "name": "uri",
-            "type": "string"
+            "name": "manager",
+            "type": "publicKey"
           },
           {
             "name": "treasury",
+            "type": "publicKey"
+          },
+          {
+            "name": "openfunds",
+            "type": "publicKey"
+          },
+          {
+            "name": "engine",
             "type": "publicKey"
           },
           {
@@ -1647,20 +1661,16 @@ export type Glam = {
             }
           },
           {
-            "name": "openfunds",
-            "type": "publicKey"
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
           },
           {
             "name": "openfundsUri",
             "type": "string"
-          },
-          {
-            "name": "manager",
-            "type": "publicKey"
-          },
-          {
-            "name": "engine",
-            "type": "publicKey"
           },
           {
             "name": "params",
@@ -3978,6 +3988,16 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
+          "name": "openfund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "manager",
           "isMut": true,
           "isSigner": true
@@ -5485,15 +5505,19 @@ export const IDL: Glam = {
         "kind": "struct",
         "fields": [
           {
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "name": "uri",
-            "type": "string"
+            "name": "manager",
+            "type": "publicKey"
           },
           {
             "name": "treasury",
+            "type": "publicKey"
+          },
+          {
+            "name": "openfunds",
+            "type": "publicKey"
+          },
+          {
+            "name": "engine",
             "type": "publicKey"
           },
           {
@@ -5503,20 +5527,16 @@ export const IDL: Glam = {
             }
           },
           {
-            "name": "openfunds",
-            "type": "publicKey"
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
           },
           {
             "name": "openfundsUri",
             "type": "string"
-          },
-          {
-            "name": "manager",
-            "type": "publicKey"
-          },
-          {
-            "name": "engine",
-            "type": "publicKey"
           },
           {
             "name": "params",
