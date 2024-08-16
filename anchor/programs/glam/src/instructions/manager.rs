@@ -353,19 +353,44 @@ pub struct CloseFund<'info> {
     fund: Account<'info, FundAccount>,
 
     #[account(mut, close = manager)]
-    openfund: Account<'info, FundAccount>,
+    openfunds: Account<'info, FundMetadataAccount>,
 
-    #[account(mut, close = manager)]
-    treasury: Account<'info, FundAccount>,
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    treasury: SystemAccount<'info>,
 
     #[account(mut)]
     manager: Signer<'info>,
+
+    system_program: Program<'info, System>,
 }
 
 pub fn close_handler(ctx: Context<CloseFund>) -> Result<()> {
-    // panic!("Not implemented");
     //TODO: check that all share classes have 0 supply
     //TODO: close treasury (checkin that it's empty)
+
+    let fund_key = ctx.accounts.fund.key();
+    let seeds = &[
+        "treasury".as_bytes(),
+        fund_key.as_ref(),
+        &[ctx.bumps.treasury],
+    ];
+    let signer_seeds = &[&seeds[..]];
+
+    if ctx.accounts.treasury.lamports() > 0 {
+        solana_program::program::invoke_signed(
+            &solana_program::system_instruction::transfer(
+                ctx.accounts.treasury.key,
+                ctx.accounts.manager.key,
+                ctx.accounts.treasury.lamports(),
+            ),
+            &[
+                ctx.accounts.treasury.to_account_info(),
+                ctx.accounts.manager.to_account_info(),
+            ],
+            signer_seeds,
+        )?;
+    }
+
     msg!("Fund closed: {}", ctx.accounts.fund.key());
     Ok(())
 }

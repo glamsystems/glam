@@ -122,7 +122,7 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "openfund",
+          "name": "openfunds",
           "isMut": true,
           "isSigner": false
         },
@@ -135,6 +135,11 @@ export type Glam = {
           "name": "manager",
           "isMut": true,
           "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": []
@@ -3988,7 +3993,7 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "openfund",
+          "name": "openfunds",
           "isMut": true,
           "isSigner": false
         },
@@ -4001,6 +4006,11 @@ export const IDL: Glam = {
           "name": "manager",
           "isMut": true,
           "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": []
