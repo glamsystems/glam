@@ -52,24 +52,24 @@ function SidebarItem({ route, text, shortcut, Icon }: SidebarItemProps) {
 export default function Sidebar() {
   const navList = [{
     // Adding the Screener link back
-    items: [{ route: "/screener", text: "Screener", shortcut: "⌘R", Icon: LayersIcon },],
+    items: [{ route: "/screener", text: "Screener", shortcut: "", Icon: LayersIcon },],
   }, {
-    group: "Manage", items: [{ route: "/create", text: "Create", shortcut: "⌘N", Icon: PlusIcon },
-        { route: "/products", text: "Products", shortcut: "⌘F", Icon: StackIcon },
-        { route: "/shareclasses", text: "Share Classes", shortcut: "⌘S", Icon: TokensIcon },
-        { route: "/policies", text: "Policies", shortcut: "⌘P", Icon: BoxModelIcon },
-        { route: "/integrations", text: "Integrations", shortcut: "⌘I", Icon: TransformIcon },
-        { route: "/access", text: "Access Control", shortcut: "⌘A", Icon: TargetIcon },
+    group: "Manage", items: [{ route: "/create", text: "Create", shortcut: "", Icon: PlusIcon },
+        { route: "/products", text: "Products", shortcut: "", Icon: StackIcon },
+        { route: "/shareclasses", text: "Share Classes", shortcut: "", Icon: TokensIcon },
+        { route: "/policies", text: "Policies", shortcut: "", Icon: BoxModelIcon },
+        { route: "/integrations", text: "Integrations", shortcut: "", Icon: TransformIcon },
+        { route: "/access", text: "Access Control", shortcut: "", Icon: TargetIcon },
       ],
     },
     {
       group: "Actions",
       items: [
-        { route: "/holdings", text: "Holdings", shortcut: "⌘H", Icon: ListBulletIcon},
-        { route: "/wrap", text: "Wrap", shortcut: "⌘W", Icon: MarginIcon },
-        { route: "/stake", text: "Stake", shortcut: "⌘K", Icon: DownloadIcon },
-        { route: "/trade", text: "Trade", shortcut: "⌘L", Icon: LoopIcon },
-        { route: "/transfer", text: "Transfer", shortcut: "⌘J", Icon: ExitIcon },
+        { route: "/holdings", text: "Holdings", shortcut: "", Icon: ListBulletIcon},
+        { route: "/wrap", text: "Wrap", shortcut: "", Icon: MarginIcon },
+        { route: "/stake", text: "Stake", shortcut: "", Icon: DownloadIcon },
+        { route: "/trade", text: "Trade", shortcut: "", Icon: LoopIcon },
+        { route: "/transfer", text: "Transfer", shortcut: "", Icon: ExitIcon },
       ],
     },
     {
@@ -78,7 +78,7 @@ export default function Sidebar() {
         {
           route: "/jupiter",
           text: "Jupiter Token List",
-          shortcut: "⌘T",
+          shortcut: "",
           Icon: GlobeIcon,
         },
       ],
