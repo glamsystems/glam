@@ -2754,6 +2754,9 @@ export type Glam = {
             "name": "StakePool"
           },
           {
+            "name": "NativeStaking"
+          },
+          {
             "name": "Marinade"
           },
           {
@@ -6667,6 +6670,9 @@ export const IDL: Glam = {
           },
           {
             "name": "StakePool"
+          },
+          {
+            "name": "NativeStaking"
           },
           {
             "name": "Marinade"
