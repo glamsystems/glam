@@ -57,9 +57,9 @@ export default function Sidebar() {
     group: "Manage", items: [{ route: "/create", text: "Create", shortcut: "⌘N", Icon: PlusIcon },
         { route: "/products", text: "Products", shortcut: "⌘F", Icon: StackIcon },
         { route: "/shareclasses", text: "Share Classes", shortcut: "⌘S", Icon: TokensIcon },
-        { route: "/policies", text: "Investment Policies", shortcut: "⌘P", Icon: BoxModelIcon },
-        { route: "/integrations", text: "Venues & Integrations", shortcut: "⌘I", Icon: TransformIcon },
-        { route: "/access", text: "Access Management", shortcut: "⌘A", Icon: TargetIcon },
+        { route: "/policies", text: "Policies", shortcut: "⌘P", Icon: BoxModelIcon },
+        { route: "/integrations", text: "Integrations", shortcut: "⌘I", Icon: TransformIcon },
+        { route: "/access", text: "Access Control", shortcut: "⌘A", Icon: TargetIcon },
       ],
     },
     {
