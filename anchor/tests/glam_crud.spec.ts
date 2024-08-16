@@ -46,7 +46,7 @@ describe("glam_crud", () => {
     expect(fund.name).toEqual(updatedFund.name);
   });
 
-  it("Update enabled integrations #1", async () => {
+  it("Update enabled integrations", async () => {
     const updatedFund1 = glamClient.getFundModel({
       integrations: [{ drift: {} }],
     });

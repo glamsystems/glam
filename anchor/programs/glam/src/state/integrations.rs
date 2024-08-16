@@ -4,6 +4,7 @@ use anchor_lang::prelude::*;
 pub enum Integration {
     Drift,
     StakePool,
+    NativeStaking,
     Marinade,
     Jupiter,
 }
