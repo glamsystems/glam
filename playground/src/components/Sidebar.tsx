@@ -14,7 +14,6 @@ import {
 import AccountMenu from "./AccountMenu";
 import Link from "next/link";
 import FeedbackInput from "@/components/FeedbackInput";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 
 type IconType =
   | typeof BoxModelIcon
@@ -98,26 +97,21 @@ export default function Sidebar() {
     }
   ];
 
-  return (
-    <div className="flex flex-col w-[280px] min-w-[280px] border-r min-h-screen overflow-hidden fixed">
-      <div className="min-h-[56px] h-[56px] flex justify-start items-center font-extralight text-xl p-4 select-none border-b bg-zinc-100 dark:bg-zinc-900">
-        GLAM *.+
-      </div>
+  return (<div className="flex flex-col w-[280px] min-w-[280px] border-r min-h-screen overflow-hidden fixed">
+    <div className="flex p-[8px]">
+      <AccountMenu />
+    </div>
       <div className="grow">
         <Command style={{ overflow: "visible" }}>
           <CommandList style={{ overflow: "visible" }}>
-            {navList.map((nav, index) => (
-              <CommandGroup key={index} heading={nav.group}>
-                {nav.items.map((item, itemIndex) => (
-                  <SidebarItem key={itemIndex} {...item} />
-                ))}
-              </CommandGroup>
-            ))}
+            {navList.map((nav, index) => (<CommandGroup key={index} heading={nav.group}>
+                {nav.items.map((item, itemIndex) => (<SidebarItem key={itemIndex} {...item} />))}
+              </CommandGroup>))}
           </CommandList>
         </Command>
       </div>
-      {/* <AccountMenu /> */}
-      <WalletMultiButton style={{}} />
-    </div>
-  );
+      <div className="min-h-[56px] h-[56px] flex justify-start items-center font-extralight text-xl p-4 select-none border-b bg-zinc-100 dark:bg-zinc-900">
+        GLAM *.+
+      </div>
+    </div>);
 }
