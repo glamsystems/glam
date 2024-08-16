@@ -236,7 +236,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema }) => {
                   <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger>
-                          <CheckIcon className="ml-2 h-4 w-4" />
+                          <LockClosedIcon className="ml-2 h-4 w-4" />
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>Enforced Onchain</p> {/* Tooltip content for enforced field */}

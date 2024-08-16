@@ -116,9 +116,6 @@ export default function Sidebar() {
           </CommandList>
         </Command>
       </div>
-      <div className="p-4">
-        <FeedbackInput />
-      </div>
       {/* <AccountMenu /> */}
       <WalletMultiButton style={{}} />
     </div>

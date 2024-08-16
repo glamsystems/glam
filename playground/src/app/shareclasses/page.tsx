@@ -9,6 +9,7 @@ import {ShareClassesList} from "./components/shareClasses-list"
 import {shareClasses} from "./data";
 import {Button} from "@/components/ui/button";
 import {FilePlusIcon, PlusIcon} from "@radix-ui/react-icons";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function Products() {
   return <div className="w-full flex">
@@ -31,18 +32,27 @@ export default function Products() {
                 Active
               </TabsTrigger>
             </TabsList>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Button variant="ghost" className="ml-4" size="icon">
+                    <PlusIcon className="h-4 w-4"/>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p>Add share class</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
           <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <form>
               <div className="relative">
-                {/*<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />*/}
-                <Input placeholder="Search" className="pl-8" />
+                {/*<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Search" className="pl-8" />*/}
               </div>
             </form>
-            <Button variant="ghost" className="mt-4">
-              <PlusIcon className="h-4 w-4 mr-2"/> Add Share Class
-            </Button>
           </div>
           <TabsContent value="all" className="m-0">
             <ShareClassesList items={shareClasses} />
@@ -53,7 +63,7 @@ export default function Products() {
         </Tabs>
       </ResizablePanel>
       <ResizablePanel>
-        <div className="p-16 mt-11">
+        <div className="p-16 mt-9">
           <DynamicForm schema={schema} />
           {/*<MailDisplay*/}
           {/*  mail={mails.find((item) => item.id === mail.selected) || null}*/}
