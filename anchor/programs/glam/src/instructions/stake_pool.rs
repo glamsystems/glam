@@ -3,7 +3,8 @@ use anchor_lang::{prelude::*, system_program};
 use anchor_spl::{
     associated_token::AssociatedToken,
     stake::{Stake, StakeAccount},
-    token::{Mint, Token, TokenAccount},
+    token::{Mint, TokenAccount},
+    token_interface::TokenInterface,
 };
 
 use solana_program::program::invoke_signed;
@@ -65,7 +66,7 @@ pub struct StakePoolDepositSol<'info> {
 
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token>,
+    pub token_program: Interface<'info, TokenInterface>,
 }
 
 #[access_control(
@@ -174,7 +175,7 @@ pub struct StakePoolDepositStake<'info> {
 
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token>,
+    pub token_program: Interface<'info, TokenInterface>,
     pub stake_program: Program<'info, Stake>,
 }
 
@@ -273,7 +274,7 @@ pub struct StakePoolWithdrawSol<'info> {
     pub stake_history: Sysvar<'info, StakeHistory>,
 
     pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token>,
+    pub token_program: Interface<'info, TokenInterface>,
     pub stake_program: Program<'info, Stake>,
 }
 
@@ -373,7 +374,7 @@ pub struct StakePoolWithdrawStake<'info> {
     pub clock: Sysvar<'info, Clock>,
 
     pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token>,
+    pub token_program: Interface<'info, TokenInterface>,
     pub stake_program: Program<'info, Stake>,
 }
 
