@@ -1,10 +1,10 @@
 import {
   Keypair,
+  PublicKey,
   SystemProgram,
   Transaction,
-  sendAndConfirmTransaction,
 } from "@solana/web3.js";
-import { AnchorProvider, BN, Wallet } from "@coral-xyz/anchor";
+import { BN, Wallet } from "@coral-xyz/anchor";
 
 import { createFundForTest, fundTestExample, str2seed } from "./setup";
 import { GlamClient } from "../src";
@@ -15,7 +15,7 @@ const key2 = Keypair.fromSeed(str2seed("acl_test_key2"));
 describe("glam_crud", () => {
   const glamClient = new GlamClient();
   const glamClientCustomWallet = new GlamClient({ wallet: new Wallet(key1) });
-  let fundPDA;
+  let fundPDA: PublicKey;
 
   it("Initialize fund", async () => {
     fundTestExample.shareClasses[0].allowlist = [glamClient.getManager()];
@@ -267,25 +267,33 @@ describe("glam_crud", () => {
     );
     expect(fund).not.toBeNull();
 
+    const manager = glamClient.getManager();
+    const treasury = glamClient.getTreasuryPDA(fundPDA);
+    const openfunds = glamClient.getOpenfundsPDA(fundPDA);
+
     try {
       const txId = await glamClient.program.methods
         .closeFund()
         .accounts({
           fund: fundPDA,
-          manager: glamClient.getManager(),
+          manager,
+          treasury,
+          openfunds,
         })
         .rpc();
-      expect(txId).toBeUndefined();
+      console.log("Close fund txId:", txId);
     } catch (e) {
-      const notImplemented = (e.logs as string[]).some((log: string) =>
-        log.includes("Not implemented")
-      );
-      expect(notImplemented).toBeTruthy();
+      console.error(e);
+      throw e;
     }
 
-    // The account should no longer exist, returning null.
-    // const closedAccount =
-    //   await glamClient.program.account.fundAccount.fetchNullable(fundPDA);
-    // expect(closedAccount).toBeNull();
+    // The following accounts should no longer exist
+    const ret = await Promise.all(
+      [fundPDA, treasury, openfunds].map(
+        async (address) =>
+          await glamClient.program.account.fundAccount.fetchNullable(address)
+      )
+    );
+    expect(ret).toEqual([null, null, null]);
   });
 });
