@@ -33,7 +33,6 @@ import { useGlam, JITO_STAKE_POOL, MSOL, JITOSOL } from "@glam/anchor";
 
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
-import WalletOrFundAlert from "@/components/WalletOrFundAlert";
 
 const stakeSchema = z.object({
   service: z.enum(["Marinade", "Native", "Jito"]),
@@ -138,9 +137,17 @@ export default function Stake() {
       return;
     }
 
+    if (!wallet) {
+      toast({
+        title: "Please connected your wallet.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!fundPDA) {
       toast({
-        title: "Fund address unavailable.",
+        title: "Fund not found for the connected wallet.",
         variant: "destructive",
       });
       return;
@@ -255,10 +262,6 @@ export default function Stake() {
     }
   };
 
-  if (!wallet || !fundPDA) {
-    return <WalletOrFundAlert wallet={wallet} fundPDA={fundPDA} />;
-  }
-
   return (
     <div className="flex flex-col justify-center w-full mt-16">
       <div className="w-1/2 self-center">
@@ -354,15 +357,19 @@ export default function Stake() {
           </Form>
         </FormProvider>
       </div>
-      <div className="flex w-1/2 mt-16 self-center">
-        {loading ? (
-          <p>Loading Tickets...</p>
-        ) : (
-          <div className="w-full">
-            <DataTable data={marinadeTicket} columns={columns} />
-          </div>
-        )}
-      </div>
+      {wallet && fundPDA ? (
+        <div className="flex w-1/2 mt-16 self-center">
+          {loading ? (
+            <p>Loading tickets and stake accounts ...</p>
+          ) : (
+            <div className="w-full">
+              <DataTable data={marinadeTicket} columns={columns} />
+            </div>
+          )}
+        </div>
+      ) : (
+        <></>
+      )}
     </div>
   );
 }
