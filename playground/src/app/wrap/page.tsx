@@ -13,7 +13,6 @@ import { useGlam, WSOL } from "@glam/anchor";
 import { BN } from "@coral-xyz/anchor";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
-import WalletOrFundAlert from "@/components/WalletOrFundAlert";
 
 const wrapSchema = z.object({
   direction: z.enum(["wrap", "unwrap"]),
@@ -67,6 +66,14 @@ export default function Wrap() {
       return;
     }
 
+    if (!wallet) {
+      toast({
+        title: "Please connected your wallet.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!fundPDA) {
       toast({
         title: "Fund not found for the connected wallet.",
@@ -114,10 +121,6 @@ export default function Wrap() {
     }
     setDirection(direction);
   };
-
-  if (!wallet || !fundPDA) {
-    return <WalletOrFundAlert wallet={wallet} fundPDA={fundPDA} />;
-  }
 
   return (
     <FormProvider {...form}>

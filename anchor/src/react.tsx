@@ -47,6 +47,7 @@ export function GlamProvider({
         ).toBase58()}`
       ).then((res) => res.json()),
     staleTime: 1000 * 60 * 5,
+    enabled: !!wallet.publicKey,
   });
   // If data is an empty array, set the fund to an empty string
   if (data) {
