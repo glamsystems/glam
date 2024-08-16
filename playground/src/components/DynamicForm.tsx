@@ -1,8 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import Ajv from 'ajv';
-import addFormats from 'ajv-formats';
-import { CheckIcon, CaretSortIcon, CalendarIcon, LockClosedIcon, InfoCircledIcon } from "@radix-ui/react-icons";
+import React, { useState, useEffect, useMemo } from "react";
+import { useForm, Controller } from "react-hook-form";
+import Ajv from "ajv";
+import addFormats from "ajv-formats";
+import {
+  CheckIcon,
+  CaretSortIcon,
+  CalendarIcon,
+  LockClosedIcon,
+  InfoCircledIcon,
+} from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -40,24 +46,42 @@ import {
   CommandList,
 } from "@/components/ui/command";
 
-import { format } from 'date-fns';
+import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import * as openfundsConstants from '@/utils/openfundsConstants';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import * as openfundsConstants from "@/utils/openfundsConstants";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Configure AJV
 const ajv = new Ajv({
   allErrors: true,
   useDefaults: true,
   strict: false,
-  keywords: ['x-component', 'x-id', 'x-tag', 'x-enumSource', 'x-enumValues', 'x-enumValuesLabel', 'x-enumValuesValue', 'x-hidden', 'x-enforced',	'x-error'],
+  keywords: [
+    "x-component",
+    "x-id",
+    "x-tag",
+    "x-enumSource",
+    "x-enumValues",
+    "x-enumValuesLabel",
+    "x-enumValuesValue",
+    "x-hidden",
+    "x-enforced",
+    "x-error",
+    "x-level",
+    "x-order",
+  ],
 });
 addFormats(ajv);
 
 interface Schema {
   type: string;
   title?: string;
-  properties: { [key: string]: SchemaField };
+  fields?: { [key: string]: SchemaField };
   required?: string[];
   [key: string]: any;
 }
@@ -67,17 +91,19 @@ interface SchemaField {
   title?: string;
   description?: string;
   default?: string;
-  'x-component': string;
-  'x-id'?: string;
-  'x-tag'?: string;
-  'x-enumSource'?: string;
-  'x-enumValues'?: string;
-  'x-enumValuesLabel'?: string;
-  'x-enumValuesValue'?: string;
-  'x-hidden'?: boolean;
-  'x-enforced'?: boolean;
-  'x-error'?: string;
-  'x-placeholder'?: string;
+  "x-component": string;
+  "x-id"?: string;
+  "x-tag"?: string;
+  "x-level"?: string;
+  "x-order"?: number;
+  "x-enumSource"?: string;
+  "x-enumValues"?: string;
+  "x-enumValuesLabel"?: string;
+  "x-enumValuesValue"?: string;
+  "x-hidden"?: boolean;
+  "x-enforced"?: boolean;
+  "x-error"?: string;
+  "x-placeholder"?: string;
   enum?: string[];
   format?: string;
   minLength?: number;
@@ -87,45 +113,72 @@ interface SchemaField {
 
 interface DynamicFormProps {
   schema: Schema;
+  isNested?: boolean;
+  groups?: string[];
 }
 
 type FormData = {
   [key: string]: any;
 };
 
-const DynamicForm: React.FC<DynamicFormProps> = ({ schema }) => {
-  const [formSchema, setFormSchema] = useState<Schema | null>(null);
+const DynamicForm: React.FC<DynamicFormProps> = ({ schema, isNested = false, groups = [] }) => {
+  const [formSchema] = useState<Schema>(schema);
   const [enumValues, setEnumValues] = useState<Record<string, { label: string; value: string }[]>>({});
+
+  const validate = useMemo(() => ajv.compile(schema), [schema]);
 
   useEffect(() => {
     const fetchEnumValues = () => {
       const values: Record<string, { label: string; value: string }[]> = {};
-      for (const [key, field] of Object.entries(schema.properties)) {
-        if (field['x-enumValues']) {
-          // Load enum values from openfundsConstants
-          const enumData = (openfundsConstants as any)[field['x-enumValues']];
-          if (Array.isArray(enumData)) {
-            values[key] = enumData.map((item: any) => ({
-              label: item[field['x-enumValuesLabel'] as string] || item.label,
-              value: item[field['x-enumValuesValue'] as string] || item.value,
+
+      if (isNested && groups.length) {
+        groups.forEach(group => {
+          if (schema[group]?.fields) {
+            const fields = schema[group].fields as Record<string, SchemaField>;
+            for (const [key, field] of Object.entries(schema[group].fields as Record<string, SchemaField>)) {
+              if (field["x-enumValues"]) {
+                const enumData = (openfundsConstants as any)[field["x-enumValues"]];
+                if (Array.isArray(enumData)) {
+                  values[key] = enumData.map((item: any) => ({
+                    label: item[field["x-enumValuesLabel"] as string] || item.label,
+                    value: item[field["x-enumValuesValue"] as string] || item.value,
+                  }));
+                }
+              } else if (field.enum) {
+                values[key] = field.enum.map((item: string) => ({
+                  label: item,
+                  value: item,
+                }));
+              }
+            }
+          }
+        });
+      } else if (schema.fields) {  // Add this check
+        for (const [key, field] of Object.entries(schema.fields)) {
+          if (field["x-enumValues"]) {
+            const enumData = (openfundsConstants as any)[field["x-enumValues"]];
+            if (Array.isArray(enumData)) {
+              values[key] = enumData.map((item: any) => ({
+                label: item[field["x-enumValuesLabel"] as string] || item.label,
+                value: item[field["x-enumValuesValue"] as string] || item.value,
+              }));
+            }
+          } else if (field.enum) {
+            values[key] = field.enum.map((item: string) => ({
+              label: item,
+              value: item,
             }));
           }
-        } else if (field.enum) {
-          // If x-enumValues is empty or not present, use enum directly
-          values[key] = field.enum.map((item: string) => ({
-            label: item,
-            value: item,
-          }));
         }
       }
-      setEnumValues(values);
+
+      if (JSON.stringify(enumValues) !== JSON.stringify(values)) {
+        setEnumValues(values);
+      }
     };
 
-    setFormSchema(schema);
     fetchEnumValues();
-  }, [schema]);
-
-  const validate = ajv.compile(schema);
+  }, [schema, isNested, groups]);
 
   const form = useForm<FormData>({
     resolver: async (values) => {
@@ -137,17 +190,21 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema }) => {
           let fieldKey = error.instancePath.substring(1);
 
           // Handle required fields error where `instancePath` might be empty
-          if (error.keyword === 'required') {
+          if (error.keyword === "required") {
             fieldKey = error.params.missingProperty;
           }
 
-          const fieldSchema = schema.properties[fieldKey];
-          const customError = fieldSchema?.['x-error'];
-          const requiredError = error.keyword === 'required' ? `${fieldSchema?.title || fieldKey} is required.` : '';
+          // @ts-ignore
+          const fieldSchema = schema.fields[fieldKey];
+          const customError = fieldSchema?.["x-error"];
+          const requiredError =
+            error.keyword === "required"
+              ? `${fieldSchema?.title || fieldKey} is required.`
+              : "";
 
           errors[fieldKey] = {
             type: error.keyword,
-            message: [customError, requiredError].filter(Boolean).join(' '),
+            message: [customError, requiredError].filter(Boolean).join(" "),
           };
         });
       }
@@ -161,18 +218,22 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema }) => {
   });
 
   const onSubmit = (data: FormData) => {
-    console.log('Form data:', data);
+    console.log("Form data:", data);
   };
 
   if (!formSchema) {
     return <div>Loading...</div>;
   }
 
+  const sortedFields = (fields: Record<string, SchemaField>) =>
+    Object.entries(fields)
+      .sort(([, a], [, b]) => (a["x-order"] || 0) - (b["x-order"] || 0));
+
   const renderField = (key: string, field: SchemaField) => {
     const isRequired = schema.required?.includes(key);
 
     // Skip rendering if x-hidden is true
-    if (field['x-hidden']) {
+    if (field["x-hidden"]) {
       return null;
     }
 
@@ -182,22 +243,26 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema }) => {
         name={key}
         control={form.control}
         render={({ field: formField, fieldState }) => {
-          let errorMessage = '';
+          let errorMessage = "";
 
           if (fieldState.error) {
             // Check for custom error message first
-            if (field['x-error']) {
-              errorMessage = field['x-error'];
-            } else if (fieldState.error.type === 'required') {
+            if (field["x-error"]) {
+              errorMessage = field["x-error"];
+            } else if (fieldState.error.type === "required") {
               // Required field error
               errorMessage = `${field.title} is required.`;
-            } else if (fieldState.error.type === 'type') {
+            } else if (fieldState.error.type === "type") {
               // Type error, add specific type
               errorMessage = `Please enter a valid ${field.type}.`;
             } else {
               // Handle generic errors with validation constraints
-              if (field.type === 'string') {
-                if (field.minLength && field.maxLength && field.minLength === field.maxLength) {
+              if (field.type === "string") {
+                if (
+                  field.minLength &&
+                  field.maxLength &&
+                  field.minLength === field.maxLength
+                ) {
                   errorMessage = `${field.title} must be exactly ${field.minLength} characters long.`;
                 } else if (field.minLength && field.maxLength) {
                   errorMessage = `${field.title} must be between ${field.minLength} and ${field.maxLength} characters long.`;
@@ -206,10 +271,17 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema }) => {
                 } else if (field.maxLength) {
                   errorMessage = `${field.title} must be at most ${field.maxLength} characters long.`;
                 }
-              } else if (['number', 'integer'].includes(field.type)) {
-                if (field.minValue !== undefined && field.maxValue !== undefined && field.minValue === field.maxValue) {
+              } else if (["number", "integer"].includes(field.type)) {
+                if (
+                  field.minValue !== undefined &&
+                  field.maxValue !== undefined &&
+                  field.minValue === field.maxValue
+                ) {
                   errorMessage = `${field.title} must be exactly ${field.minValue}.`;
-                } else if (field.minValue !== undefined && field.maxValue !== undefined) {
+                } else if (
+                  field.minValue !== undefined &&
+                  field.maxValue !== undefined
+                ) {
                   errorMessage = `${field.title} must be between ${field.minValue} and ${field.maxValue}.`;
                 } else if (field.minValue !== undefined) {
                   errorMessage = `${field.title} must be at least ${field.minValue}.`;
@@ -224,7 +296,8 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema }) => {
           }
 
           // If there's no error message, use the description as the fallback
-          const message = errorMessage || field.description || 'Please review this field.';
+          const message =
+            errorMessage || field.description || "Please review this field.";
           const isError = !!errorMessage; // Determine if the message is an error
 
           return (
@@ -232,23 +305,25 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema }) => {
               <FormLabel className="flex items-center">
                 {field.title}
                 {isRequired && <span className="text-red-500 ml-1">*</span>}
-                {field['x-enforced'] && (
+                {field["x-enforced"] && (
                   <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <LockClosedIcon className="ml-2 h-4 w-4" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Enforced Onchain</p> {/* Tooltip content for enforced field */}
-                        </TooltipContent>
-                      </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <LockClosedIcon className="ml-2 h-4 w-4" />
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        <p>Enforced Onchain</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </TooltipProvider>
                 )}
               </FormLabel>
               <FormControl>
                 {renderComponent(key, field, formField)}
               </FormControl>
-              <FormMessage className={isError ? "text-red-500" : "text-gray-500"}>
+              <FormMessage
+                className={isError ? "text-red-500" : "text-gray-500"}
+              >
                 {message}
               </FormMessage>
             </FormItem>
@@ -258,16 +333,27 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema }) => {
     );
   };
 
-  const renderComponent = (key: string, schemaField: SchemaField, field: any) => {
+  const renderComponent = (
+    key: string,
+    schemaField: SchemaField,
+    field: any,
+  ) => {
     const options = enumValues[key] || [];
-    const placeholder = schemaField['x-placeholder'] || '';
+    const placeholder = schemaField["x-placeholder"] || "";
 
     // Handle boolean type with select component
-    if (schemaField.type === 'boolean' && schemaField['x-component'] === 'select') {
+    if (
+      schemaField.type === "boolean" &&
+      schemaField["x-component"] === "select"
+    ) {
       return (
-        <Select onValueChange={(value) => field.onChange(value === 'true')} value={String(field.value)}>
+        <Select
+          onValueChange={(value) => field.onChange(value === "true")}
+          value={String(field.value)}
+        >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder={placeholder || "Select an option"} /> {/* Use placeholder */}
+            <SelectValue placeholder={placeholder || "Select an option"} />{" "}
+            {/* Use placeholder */}
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="true">Yes</SelectItem>
@@ -277,31 +363,32 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema }) => {
       );
     }
 
-    switch (schemaField['x-component']) {
-      case 'input':
+    switch (schemaField["x-component"]) {
+      case "input":
         return (
           <Input
             {...field}
             placeholder={placeholder}
-            value={field.value ?? ''}
+            value={field.value ?? ""}
           />
         );
-      case 'textarea':
+      case "textarea":
         return (
           <Textarea
             {...field}
             placeholder={placeholder}
-            value={field.value ?? ''}
+            value={field.value ?? ""}
           />
         );
-      case 'select':
+      case "select":
         return (
           <Select
             onValueChange={field.onChange}
             value={field.value ?? schemaField.default}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder={placeholder || "Select an option"} /> {/* Use placeholder */}
+              <SelectValue placeholder={placeholder || "Select an option"} />{" "}
+              {/* Use placeholder */}
             </SelectTrigger>
             <SelectContent>
               {options.map((option) => (
@@ -312,16 +399,19 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema }) => {
             </SelectContent>
           </Select>
         );
-      case 'checkbox':
+      case "checkbox":
         return (
           <Checkbox
             checked={field.value ?? schemaField.default}
             onCheckedChange={field.onChange}
           />
         );
-      case 'radio':
+      case "radio":
         return (
-          <RadioGroup onValueChange={field.onChange} value={field.value ?? schemaField.default}>
+          <RadioGroup
+            onValueChange={field.onChange}
+            value={field.value ?? schemaField.default}
+          >
             {options.map((option) => (
               <div key={option.value} className="flex items-center space-x-2">
                 <RadioGroupItem value={option.value} id={option.value} />
@@ -330,46 +420,50 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema }) => {
             ))}
           </RadioGroup>
         );
-      case 'switch':
+      case "switch":
         return (
           <Switch
             checked={field.value ?? schemaField.default}
             onCheckedChange={field.onChange}
           />
         );
-      case 'datePicker':
-        const date = field.value ? new Date(field.value) : (schemaField.default ? new Date(schemaField.default) : undefined);
+      case "datePicker":
+        const date = field.value
+          ? new Date(field.value)
+          : schemaField.default
+            ? new Date(schemaField.default)
+            : undefined;
         return (
-            <FormItem className="flex flex-col">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                        variant={"outline"}
-                        className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !date && "text-muted-foreground"
-                        )}
-                    >
-                      {date ? format(date, "PPP") : (placeholder || "Pick a date")}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                      mode="single"
-                      selected={date ? date : undefined} // Handle null by using undefined
-                      onSelect={(newDate) => {
-                        field.onChange(newDate ? newDate.toISOString() : null);
-                      }}
-                      initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </FormItem>
+          <FormItem className="flex flex-col">
+            <Popover>
+              <PopoverTrigger asChild>
+                <FormControl>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full pl-3 text-left font-normal",
+                      !date && "text-muted-foreground",
+                    )}
+                  >
+                    {date ? format(date, "PPP") : placeholder || "Pick a date"}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </FormControl>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date ? date : undefined} // Handle null by using undefined
+                  onSelect={(newDate) => {
+                    field.onChange(newDate ? newDate.toISOString() : null);
+                  }}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </FormItem>
         );
-      case 'combobox':
+      case "combobox":
         return (
           <FormItem className="flex flex-col">
             <Popover>
@@ -380,21 +474,22 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema }) => {
                     role="combobox"
                     className={cn(
                       "w-full justify-between",
-                      !field.value && "text-muted-foreground"
+                      !field.value && "text-muted-foreground",
                     )}
                   >
                     {field.value
-                      ? options.find(
-                        (option) => option.value === field.value
-                      )?.label
-                      : (placeholder || "Select an option")} {/* Use placeholder */}
+                      ? options.find((option) => option.value === field.value)
+                        ?.label
+                      : placeholder || "Select an option"}{" "}
+                    {/* Use placeholder */}
                     <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </FormControl>
               </PopoverTrigger>
               <PopoverContent className="w-full p-0" align="start">
                 <Command>
-                  <CommandInput placeholder={`Search...`} /> {/* Use placeholder */}
+                  <CommandInput placeholder={`Search...`} />{" "}
+                  {/* Use placeholder */}
                   <CommandList>
                     <CommandEmpty>No option found.</CommandEmpty>
                     <CommandGroup>
@@ -411,7 +506,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema }) => {
                               "mr-2 h-4 w-4",
                               option.value === field.value
                                 ? "opacity-100"
-                                : "opacity-0"
+                                : "opacity-0",
                             )}
                           />
                           {option.label}
@@ -429,7 +524,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema }) => {
           <Input
             {...field}
             placeholder={placeholder}
-            value={field.value ?? ''}
+            value={field.value ?? ""}
           />
         );
     }
@@ -438,8 +533,22 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema }) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {Object.entries(formSchema.properties).map(([key, field]) => renderField(key, field))}
-        <Button type="submit" className="w-full">Submit</Button>
+        {isNested && groups.length
+          ? groups.map(group =>
+            schema[group]?.fields
+              ? sortedFields(schema[group].fields).map(([key, field]) =>
+                renderField(key, field)
+              )
+              : null
+          )
+          : formSchema.fields  // Add this check
+            ? sortedFields(formSchema.fields).map(([key, field]) =>
+              renderField(key, field)
+            )
+            : null}
+        <Button type="submit" className="w-full">
+          Submit
+        </Button>
       </form>
     </Form>
   );

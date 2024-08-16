@@ -1,7 +1,7 @@
 "use client";
 
 import DynamicForm from '@/components/DynamicForm';
-import schema from './data/productFormSchema.json';
+import schema from '../../data/glamFormSchema.json'
 import {ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Input} from "@/components/ui/input";
@@ -49,10 +49,7 @@ export default function Products() {
       </ResizablePanel>
       <ResizablePanel>
         <div className="p-16 mt-9">
-            <DynamicForm schema={schema} />
-        {/*<MailDisplay*/}
-        {/*  mail={mails.find((item) => item.id === mail.selected) || null}*/}
-        {/*/>*/}
+            <DynamicForm schema={schema} isNested={true} groups={["company", "fund", "fundManager"]} />
         </div>
       </ResizablePanel>
     </ResizablePanelGroup>
