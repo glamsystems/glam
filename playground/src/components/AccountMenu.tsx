@@ -153,9 +153,15 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
             className={cn("w-full pl-2", className)}
           >
             <span className="mr-2"><Sparkle address={selectedProduct.value} size={24}/></span>
-            {selectedProduct ? (
-              selectedProduct.label || <TruncateAddress address={selectedProduct.value} />
-            ) : null}
+            <span className="mr-2 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
+    {selectedProduct ? (
+      selectedProduct.label ? (
+        <span>{selectedProduct.label}</span>
+      ) : (
+        <TruncateAddress address={selectedProduct.value} />
+      )
+    ) : null}
+  </span>
             <ChevronDownIcon className="ml-auto h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -177,7 +183,11 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
                     >
                       <span className="mr-2"><Sparkle address={product.value} size={24}/></span>
                       {product ? (
-                        product.label || <TruncateAddress address={product.value} />
+                        product.label ? (
+                          <p className="text-ellipsis mr-4">{product.label}</p>
+                        ) : (
+                          <TruncateAddress address={product.value} />
+                        )
                       ) : null}
                       <CheckIcon
                         className={cn(
@@ -264,121 +274,3 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
     </Dialog>
   );
 }
-
-// "use client";
-//
-//
-//
-// import { Button } from "@/components/ui/button";
-// import {
-//   DropdownMenu,
-//   DropdownMenuContent,
-//   DropdownMenuGroup,
-//   DropdownMenuItem,
-//   DropdownMenuPortal,
-//   DropdownMenuSeparator,
-//   DropdownMenuShortcut,
-//   DropdownMenuSub,
-//   DropdownMenuSubContent,
-//   DropdownMenuSubTrigger,
-//   DropdownMenuTrigger,
-// } from "@/components/ui/dropdown-menu";
-//
-// import TruncateAddress from "@/utils/TruncateAddress";
-//
-// export default function AccountMenu() {
-//   /*
-//     <TruncateAddress address="11111111111111111111111111111111"></TruncateAddress>
-//      */
-//
-//   const effectiveTheme = EffectiveTheme();
-//
-//   console.log("Current theme:", effectiveTheme);
-//
-//   return (
-//     <DropdownMenu>
-//       <DropdownMenuTrigger asChild>
-//         <Button
-//           variant="outline"
-//           className="w-full max-h-[40px] pl-[8px] justify-start rounded-none focus-visible:ring-0 focus-visible:ring-inset"
-//         >
-//           <div className="h-6 w-6 flex items-center justify-start mr-4">
-//             <img
-//               src={
-//                 effectiveTheme === "dark"
-//                   ? "/default-sparkle-light.svg"
-//                   : "/default-sparkle-dark.svg"
-//               }
-//               alt="Sparkle Icon"
-//             />
-//           </div>
-//           <div>Connect Account</div>
-//         </Button>
-//       </DropdownMenuTrigger>
-//       <DropdownMenuContent className="w-56">
-//         <DropdownMenuGroup>
-//           <DropdownMenuItem>
-//             <span>Profile</span>
-//             <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-//           </DropdownMenuItem>
-//           <DropdownMenuItem>
-//             <span>Billing</span>
-//             <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-//           </DropdownMenuItem>
-//           <DropdownMenuItem>
-//             <span>Settings</span>
-//             <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-//           </DropdownMenuItem>
-//           <DropdownMenuItem>
-//             <span>Keyboard shortcuts</span>
-//             <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
-//           </DropdownMenuItem>
-//         </DropdownMenuGroup>
-//         <DropdownMenuSeparator />
-//         <DropdownMenuGroup>
-//           <DropdownMenuItem>
-//             <span>Team</span>
-//           </DropdownMenuItem>
-//           <DropdownMenuSub>
-//             <DropdownMenuSubTrigger>
-//               <span>Invite users</span>
-//             </DropdownMenuSubTrigger>
-//             <DropdownMenuPortal>
-//               <DropdownMenuSubContent>
-//                 <DropdownMenuItem>
-//                   <span>Email</span>
-//                 </DropdownMenuItem>
-//                 <DropdownMenuItem>
-//                   <span>Message</span>
-//                 </DropdownMenuItem>
-//                 <DropdownMenuSeparator />
-//                 <DropdownMenuItem>
-//                   <span>More...</span>
-//                 </DropdownMenuItem>
-//               </DropdownMenuSubContent>
-//             </DropdownMenuPortal>
-//           </DropdownMenuSub>
-//           <DropdownMenuItem>
-//             <span>New Team</span>
-//             <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
-//           </DropdownMenuItem>
-//         </DropdownMenuGroup>
-//         <DropdownMenuSeparator />
-//         <DropdownMenuItem>
-//           <span>GitHub</span>
-//         </DropdownMenuItem>
-//         <DropdownMenuItem>
-//           <span>Support</span>
-//         </DropdownMenuItem>
-//         <DropdownMenuItem disabled>
-//           <span>API</span>
-//         </DropdownMenuItem>
-//         <DropdownMenuSeparator />
-//         <DropdownMenuItem>
-//           <span>Log out</span>
-//           <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-//         </DropdownMenuItem>
-//       </DropdownMenuContent>
-//     </DropdownMenu>
-//   );
-// }

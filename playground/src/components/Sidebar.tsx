@@ -39,8 +39,8 @@ function SidebarItem({ route, text, shortcut, Icon }: SidebarItemProps) {
   const pathname = usePathname();
   const isActive = pathname === route;
 
-  return (// <li className={`ml-1 mr-1 p-0 cursor-pointer opacity-50 hover:opacity-100 ${isActive ? 'text-opacity-100 bg-muted bg-opacity-75' : ''}`}>
-    <li className={`relative flex cursor-pointer items-center text-sm outline-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 ml-2 mr-2 p-0 opacity-50 hover:opacity-100 ${isActive ? 'text-opacity-100 bg-muted bg-opacity-75' : ''}`}>
+  return (
+    <li className={`relative flex cursor-pointer items-center text-sm outline-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 ml-2 mr-2 p-0 opacity-50 hover:opacity-100 hover:bg-opacity-50 hover:bg-muted ${isActive ? 'bg-muted' : ''}`}>
       <Link href={route} className="p-2 flex grow items-center">
         <Icon className="ml-1 mr-3 h-4 w-4" />
         <span className="flex-grow">{text}</span>
