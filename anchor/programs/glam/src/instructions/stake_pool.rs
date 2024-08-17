@@ -3,7 +3,8 @@ use anchor_lang::{prelude::*, system_program};
 use anchor_spl::{
     associated_token::AssociatedToken,
     stake::{Stake, StakeAccount},
-    token::{Mint, Token, TokenAccount},
+    token::{Mint, TokenAccount},
+    token_interface::TokenInterface,
 };
 
 use solana_program::program::invoke_signed;
@@ -12,13 +13,15 @@ use spl_stake_pool::{
     ID as SPL_STAKE_POOL_PROGRAM_ID,
 };
 
-fn check_stake_pool_program(key: &Pubkey) -> bool {
-    [
-        SANCTUM_SINGLE_VALIDATOR,
-        SANCTUM_MULTI_VALIDATOR,
-        SPL_STAKE_POOL_PROGRAM_ID,
-    ]
-    .contains(key)
+pub struct StakePoolInterface;
+impl anchor_lang::Ids for StakePoolInterface {
+    fn ids() -> &'static [Pubkey] {
+        &[
+            SANCTUM_SINGLE_VALIDATOR,
+            SANCTUM_MULTI_VALIDATOR,
+            SPL_STAKE_POOL_PROGRAM_ID,
+        ]
+    }
 }
 
 #[derive(Accounts)]
@@ -32,11 +35,7 @@ pub struct StakePoolDepositSol<'info> {
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
 
-    /// CHECK: use constraint
-    #[account(
-        constraint = check_stake_pool_program(stake_pool_program.key)
-    )]
-    pub stake_pool_program: AccountInfo<'info>,
+    pub stake_pool_program: Interface<'info, StakePoolInterface>,
 
     /// CHECK: checked by stake pool program
     #[account(mut)]
@@ -67,7 +66,7 @@ pub struct StakePoolDepositSol<'info> {
 
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token>,
+    pub token_program: Interface<'info, TokenInterface>,
 }
 
 #[access_control(
@@ -101,7 +100,7 @@ pub fn stake_pool_deposit_sol<'c: 'info, 'info>(
     let _ = invoke_signed(
         &ix,
         &[
-            ctx.accounts.stake_pool_program.clone(),
+            ctx.accounts.stake_pool_program.to_account_info(),
             ctx.accounts.stake_pool.clone(),
             ctx.accounts.withdraw_authority.clone(),
             ctx.accounts.reserve_stake.clone(),
@@ -169,18 +168,14 @@ pub struct StakePoolDepositStake<'info> {
     #[account(mut)]
     pub reserve_stake_account: Box<Account<'info, StakeAccount>>,
 
-    /// CHECK: use constraint
-    #[account(
-        constraint = check_stake_pool_program(stake_pool_program.key)
-    )]
-    pub stake_pool_program: AccountInfo<'info>,
+    pub stake_pool_program: Interface<'info, StakePoolInterface>,
 
     pub clock: Sysvar<'info, Clock>,
     pub stake_history: Sysvar<'info, StakeHistory>,
 
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token>,
+    pub token_program: Interface<'info, TokenInterface>,
     pub stake_program: Program<'info, Stake>,
 }
 
@@ -229,7 +224,7 @@ pub fn stake_pool_deposit_stake<'c: 'info, 'info>(
         ctx.accounts.clock.to_account_info(),
         ctx.accounts.stake_history.to_account_info(),
         ctx.accounts.token_program.to_account_info(),
-        ctx.accounts.stake_pool_program.clone(),
+        ctx.accounts.stake_pool_program.to_account_info(),
         ctx.accounts.treasury.to_account_info(),
     ];
 
@@ -251,11 +246,7 @@ pub struct StakePoolWithdrawSol<'info> {
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
 
-    /// CHECK: use constraint
-    #[account(
-        constraint = check_stake_pool_program(stake_pool_program.key)
-    )]
-    pub stake_pool_program: AccountInfo<'info>,
+    pub stake_pool_program: Interface<'info, StakePoolInterface>,
 
     /// CHECK: checked by stake pool program
     #[account(mut)]
@@ -283,7 +274,7 @@ pub struct StakePoolWithdrawSol<'info> {
     pub stake_history: Sysvar<'info, StakeHistory>,
 
     pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token>,
+    pub token_program: Interface<'info, TokenInterface>,
     pub stake_program: Program<'info, Stake>,
 }
 
@@ -319,7 +310,7 @@ pub fn stake_pool_withdraw_sol<'c: 'info, 'info>(
     let _ = invoke_signed(
         &ix,
         &[
-            ctx.accounts.stake_pool_program.clone(),
+            ctx.accounts.stake_pool_program.to_account_info(),
             ctx.accounts.stake_pool.clone(),
             ctx.accounts.withdraw_authority.clone(),
             ctx.accounts.treasury.to_account_info(),
@@ -378,16 +369,12 @@ pub struct StakePoolWithdrawStake<'info> {
     #[account(mut, constraint = pool_token_ata.mint == pool_mint.key())]
     pub pool_token_ata: Account<'info, TokenAccount>,
 
-    /// CHECK: use constraint
-    #[account(
-        constraint = check_stake_pool_program(stake_pool_program.key)
-    )]
-    pub stake_pool_program: AccountInfo<'info>,
+    pub stake_pool_program: Interface<'info, StakePoolInterface>,
 
     pub clock: Sysvar<'info, Clock>,
 
     pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token>,
+    pub token_program: Interface<'info, TokenInterface>,
     pub stake_program: Program<'info, Stake>,
 }
 
@@ -451,7 +438,7 @@ pub fn stake_pool_withdraw_stake<'c: 'info, 'info>(
     let _ = invoke_signed(
         &ix,
         &[
-            ctx.accounts.stake_pool_program.clone(),
+            ctx.accounts.stake_pool_program.to_account_info(),
             ctx.accounts.stake_pool.clone(),
             ctx.accounts.validator_list.clone(),
             ctx.accounts.withdraw_authority.clone(),
