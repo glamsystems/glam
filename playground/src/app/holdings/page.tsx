@@ -9,7 +9,7 @@ import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useQuery } from "@tanstack/react-query";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { useConnection } from "@solana/wallet-adapter-react";
-import JupiterStrict from "../assets/data/jupiterStrict";
+import JupiterStrict from "../jupiter/data/jupiterStrict";
 import { useGlam } from "@glam/anchor";
 
 export function useGetTokenAccounts({ address }: { address: PublicKey }) {

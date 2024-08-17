@@ -1,17 +1,18 @@
 "use client";
 
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "../../components/ui/resizable";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "../../components/ui/tabs";
-import {Separator} from "../../components/ui/separator";
-import {Input} from "../../components/ui/input";
-import {PoliciesList} from "./components/policies-list";
-import {policies} from "./data";
+import DynamicForm from '@/components/DynamicForm';
+import schema from '../../data/glamFormSchema.json'
+import {ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {Input} from "@/components/ui/input";
+import {ProductsList} from "./components/products-list"
+import {products} from "./data";
 
-export default function Policies() {
+export default function Products() {
   return <div className="w-full flex">
     <ResizablePanelGroup
       direction="horizontal"
-      className="h-full max-h-[800px] items-stretch"
+      className="h-full items-stretch" // TODO: fix max height but allow to scroll
     >
       <ResizablePanel className="w-[25%] max-w-[25%] min-w-[25%]">
         <Tabs defaultValue="all">
@@ -20,12 +21,12 @@ export default function Policies() {
               <TabsTrigger
                 value="all"
               >
-                All policies
+                All products
               </TabsTrigger>
               <TabsTrigger
                 value="active"
               >
-                Active
+                Managed
               </TabsTrigger>
             </TabsList>
           </div>
@@ -39,18 +40,17 @@ export default function Policies() {
             </form>
           </div>
           <TabsContent value="all" className="m-0">
-            <PoliciesList items={policies} />
+            <ProductsList items={products} />
           </TabsContent>
           <TabsContent value="active" className="m-0">
-            <PoliciesList items={policies.filter((item) => item.active)} />
+            <ProductsList items={products.filter((item) => item.active)} />
           </TabsContent>
         </Tabs>
       </ResizablePanel>
-      <ResizableHandle />
       <ResizablePanel>
-        {/*<MailDisplay*/}
-        {/*  mail={mails.find((item) => item.id === mail.selected) || null}*/}
-        {/*/>*/}
+        <div className="p-16 mt-9">
+            <DynamicForm schema={schema} isNested={true} groups={["company", "fund", "fundManager"]} />
+        </div>
       </ResizablePanel>
     </ResizablePanelGroup>
   </div>;

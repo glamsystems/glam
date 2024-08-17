@@ -2,19 +2,11 @@
 
 import React from "react";
 import {
-  BoxModelIcon, CardStackIcon, Component1Icon, Crosshair2Icon, DashboardIcon, DownloadIcon, ExitIcon, GlobeIcon, LayersIcon, ListBulletIcon, LoopIcon, MixerHorizontalIcon, MixIcon, PlusIcon, TransformIcon,
+  BoxModelIcon, CardStackIcon, Component1Icon, Crosshair2Icon, DashboardIcon, DownloadIcon, ExitIcon, FilePlusIcon, GlobeIcon, LayersIcon, ListBulletIcon, LoopIcon, MarginIcon, MixerHorizontalIcon, MixIcon, PersonIcon, PlusIcon, StackIcon, TargetIcon, TokensIcon, TransformIcon,
 } from "@radix-ui/react-icons";
-import {
-  Command,
-  CommandList,
-  CommandGroup,
-  CommandItem,
-  CommandShortcut,
-} from "@/components/ui/command";
 import AccountMenu from "./AccountMenu";
 import Link from "next/link";
-import FeedbackInput from "@/components/FeedbackInput";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { usePathname } from "next/navigation";
 
 type IconType =
   | typeof BoxModelIcon
@@ -22,14 +14,19 @@ type IconType =
   | typeof DashboardIcon
   | typeof DownloadIcon
   | typeof ExitIcon
+  | typeof FilePlusIcon
   | typeof GlobeIcon
   | typeof LayersIcon
   | typeof ListBulletIcon
   | typeof LoopIcon
+  | typeof MarginIcon
   | typeof MixIcon
   | typeof MixerHorizontalIcon
   | typeof PlusIcon
-  | typeof TransformIcon;
+  | typeof StackIcon
+  | typeof TargetIcon
+  | typeof TransformIcon
+  | typeof TokensIcon;
 
 interface SidebarItemProps {
   route: string;
@@ -39,63 +36,49 @@ interface SidebarItemProps {
 }
 
 function SidebarItem({ route, text, shortcut, Icon }: SidebarItemProps) {
+  const pathname = usePathname();
+  const isActive = pathname === route;
+
   return (
-    <CommandItem>
-      <Link href={route} className="flex grow items-center">
-        <Icon className="mr-2 h-4 w-4" />
-        {text}
-        <CommandShortcut>{shortcut}</CommandShortcut>
+    <li className={`relative flex cursor-pointer items-center text-sm outline-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 ml-2 mr-2 p-0 opacity-50 hover:opacity-100 hover:bg-opacity-50 hover:bg-muted ${isActive ? 'bg-muted' : ''}`}>
+      <Link href={route} className="p-2 flex grow items-center">
+        <Icon className="ml-1 mr-3 h-4 w-4" />
+        <span className="flex-grow">{text}</span>
+        <span className="ml-auto text-xs tracking-widest text-muted-foreground">{shortcut}</span>
       </Link>
-    </CommandItem>
-  );
+    </li>);
 }
 
 export default function Sidebar() {
-  const navList = [
-    {
-      group: "Manager",
-      items: [
-        {
-          route: "/holdings",
-          text: "Holdings",
-          shortcut: "⌘H",
-          Icon: ListBulletIcon,
-        },
-        { route: "/policies", text: "Policies", shortcut: "⌘P", Icon: TransformIcon },
-        /*{ route: "/dashboard", text: "Dashboard", shortcut: "⌘D", Icon: DashboardIcon },
-        { route: "/roles", text: "Roles", shortcut: "⌘R", Icon: Component1Icon },
-        { route: "/settings", text: "Settings", shortcut: "⌘N", Icon: MixerHorizontalIcon },*/
-        { route: "/create", text: "Create", shortcut: "⌘N", Icon: PlusIcon }
+  const navList = [{
+    // Adding the Screener link back
+    items: [{ route: "/screener", text: "Screener", shortcut: "", Icon: LayersIcon },],
+  }, {
+    group: "Manage", items: [{ route: "/create", text: "Create", shortcut: "", Icon: PlusIcon },
+        { route: "/products", text: "Products", shortcut: "", Icon: StackIcon },
+        { route: "/shareclasses", text: "Share Classes", shortcut: "", Icon: TokensIcon },
+        { route: "/policies", text: "Policies", shortcut: "", Icon: BoxModelIcon },
+        { route: "/integrations", text: "Integrations", shortcut: "", Icon: TransformIcon },
+        { route: "/access", text: "Access Control", shortcut: "", Icon: TargetIcon },
       ],
     },
     {
       group: "Actions",
       items: [
-        { route: "/wrap", text: "Wrap", shortcut: "⌘W", Icon: BoxModelIcon },
-        { route: "/stake", text: "Stake", shortcut: "⌘K", Icon: DownloadIcon },
-        { route: "/trade", text: "Trade", shortcut: "⌘L", Icon: LoopIcon },
-        { route: "/transfer", text: "Transfer", shortcut: "⌘J", Icon: ExitIcon },
-      ],
-    },
-    {
-      group: "Investor",
-      items: [
-        {
-          route: "/screener",
-          text: "Screener",
-          shortcut: "⌘S",
-          Icon: LayersIcon,
-        },
-        /*{ route: "/portfolio", text: "Portfolio", shortcut: "⌘A", Icon: MixIcon },*/
+        { route: "/holdings", text: "Holdings", shortcut: "", Icon: ListBulletIcon},
+        { route: "/wrap", text: "Wrap", shortcut: "", Icon: MarginIcon },
+        { route: "/stake", text: "Stake", shortcut: "", Icon: DownloadIcon },
+        { route: "/trade", text: "Trade", shortcut: "", Icon: LoopIcon },
+        { route: "/transfer", text: "Transfer", shortcut: "", Icon: ExitIcon },
       ],
     },
     {
       group: "Utilities",
       items: [
         {
-          route: "/assets",
-          text: "Assets",
-          shortcut: "⌘A",
+          route: "/jupiter",
+          text: "Jupiter Token List",
+          shortcut: "",
           Icon: GlobeIcon,
         },
       ],
@@ -104,27 +87,24 @@ export default function Sidebar() {
 
   return (
     <div className="flex flex-col w-[280px] min-w-[280px] border-r min-h-screen overflow-hidden fixed">
+      <div className="flex p-[8px]">
+        <AccountMenu />
+      </div>
+      <div className="grow">
+        {navList.map((nav, index) => (
+          <div key={index} className="mb-4">
+            {nav.group && <div className="text-muted-foreground text-xs ml-2 mb-2">{nav.group}</div>}
+            <ul className="list-none p-0 m-0">
+              {nav.items.map((item, itemIndex) => (
+                <SidebarItem key={itemIndex} {...item} />
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
       <div className="min-h-[56px] h-[56px] flex justify-start items-center font-extralight text-xl p-4 select-none border-b bg-zinc-100 dark:bg-zinc-900">
         GLAM *.+
       </div>
-      <div className="grow">
-        <Command style={{ overflow: "visible" }}>
-          <CommandList style={{ overflow: "visible" }}>
-            {navList.map((nav, index) => (
-              <CommandGroup key={index} heading={nav.group}>
-                {nav.items.map((item, itemIndex) => (
-                  <SidebarItem key={itemIndex} {...item} />
-                ))}
-              </CommandGroup>
-            ))}
-          </CommandList>
-        </Command>
-      </div>
-      <div className="p-4">
-        <FeedbackInput />
-      </div>
-      {/* <AccountMenu /> */}
-      <WalletMultiButton style={{}} />
     </div>
   );
 }

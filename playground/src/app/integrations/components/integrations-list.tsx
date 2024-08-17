@@ -1,17 +1,17 @@
 import { ComponentProps } from "react"
 
 import { cn } from "@/lib/utils"
-import { Policies } from "../data"
-import { usePolicies } from "../use-policy"
+import { Integrations } from "../data"
+import { useIntegrations } from "../use-integration"
 import {Badge} from "../../../components/ui/badge";
 import {ScrollArea} from "../../../components/ui/scroll-area";
 
-interface PoliciesListProps {
-  items: Policies[]
+interface IntegrationsListProps {
+  items: Integrations[]
 }
 
-export function PoliciesList({ items }: PoliciesListProps) {
-  const [poilcies, setPolicies] = usePolicies()
+export function IntegrationsList({ items }: IntegrationsListProps) {
+  const [integrations, setIntegrations] = useIntegrations()
 
   return (
     <ScrollArea className="h-screen">
@@ -21,11 +21,11 @@ export function PoliciesList({ items }: PoliciesListProps) {
             key={item.id}
             className={cn(
               "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent",
-              poilcies.selected === item.id && "bg-muted"
+              integrations.selected === item.id && "bg-muted"
             )}
             onClick={() =>
-              setPolicies({
-                ...poilcies,
+              setIntegrations({
+                ...integrations,
                 selected: item.id,
               })
             }
@@ -41,7 +41,7 @@ export function PoliciesList({ items }: PoliciesListProps) {
                 <div
                   className={cn(
                     "ml-auto text-xs",
-                    poilcies.selected === item.id
+                    integrations.selected === item.id
                       ? "text-foreground"
                       : "text-muted-foreground"
                   )}

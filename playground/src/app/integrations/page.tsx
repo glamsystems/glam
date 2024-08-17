@@ -4,10 +4,10 @@ import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "../../compon
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "../../components/ui/tabs";
 import {Separator} from "../../components/ui/separator";
 import {Input} from "../../components/ui/input";
-import {PoliciesList} from "./components/policies-list";
-import {policies} from "./data";
+import {IntegrationsList} from "./components/integrations-list";
+import {integrations} from "./data";
 
-export default function Policies() {
+export default function Integrations() {
   return <div className="w-full flex">
     <ResizablePanelGroup
       direction="horizontal"
@@ -20,7 +20,7 @@ export default function Policies() {
               <TabsTrigger
                 value="all"
               >
-                All policies
+                All integrations
               </TabsTrigger>
               <TabsTrigger
                 value="active"
@@ -39,10 +39,10 @@ export default function Policies() {
             </form>
           </div>
           <TabsContent value="all" className="m-0">
-            <PoliciesList items={policies} />
+            <IntegrationsList items={integrations} />
           </TabsContent>
           <TabsContent value="active" className="m-0">
-            <PoliciesList items={policies.filter((item) => item.active)} />
+            <IntegrationsList items={integrations.filter((item) => item.active)} />
           </TabsContent>
         </Tabs>
       </ResizablePanel>

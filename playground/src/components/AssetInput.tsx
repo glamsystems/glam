@@ -26,7 +26,7 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 
-import JupiterStrict from "../app/assets/data/jupiterStrict";
+import JupiterStrict from "@/app/jupiter/data/jupiterStrict";
 import TruncateAddress from "../utils/TruncateAddress";
 
 interface AssetInputProps {
