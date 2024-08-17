@@ -1,8 +1,16 @@
 use anchor_lang::{prelude::*, system_program};
-use anchor_spl::{token_2022, token_interface::Token2022};
+use anchor_spl::{
+    token_2022,
+    token_2022::{close_account, CloseAccount},
+    token_interface::{Mint, Token2022},
+};
 use spl_token_2022::{extension::ExtensionType, state::Mint as StateMint};
 
-use crate::{constants::*, error::ManagerError, state::*};
+use crate::{
+    constants::*,
+    error::{FundError, ManagerError},
+    state::*,
+};
 
 #[derive(Accounts)]
 #[instruction(fund_model: FundModel)]
@@ -143,6 +151,7 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
     let share_mint = ctx.accounts.share_class_mint.to_account_info();
     let share_metadata = ctx.accounts.share_class_mint.to_account_info();
     let share_mint_authority = ctx.accounts.share_class_mint.to_account_info();
+    let share_close_authority = ctx.accounts.share_class_mint.to_account_info();
     let share_metadata_authority = ctx.accounts.share_class_mint.to_account_info();
 
     let seeds = &[
@@ -153,10 +162,22 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
     ];
     let signer_seeds = &[&seeds[..]];
 
-    let space =
-        ExtensionType::try_calculate_account_len::<StateMint>(&[ExtensionType::MetadataPointer])
-            .unwrap();
-    let metadata_space = 2048;
+    let space = ExtensionType::try_calculate_account_len::<StateMint>(&[
+        // ExtensionType::TransferFeeConfig,
+        // ExtensionType::TransferFeeAmount,
+        ExtensionType::MintCloseAuthority,
+        // ExtensionType::DefaultAccountState,
+        // ExtensionType::MemoTransfer,
+        // ExtensionType::NonTransferable,
+        // ExtensionType::PermanentDelegate,
+        // ExtensionType::NonTransferableAccount,
+        // ExtensionType::TransferHook,
+        // ExtensionType::TransferHookAccount,
+        ExtensionType::MetadataPointer,
+        // ExtensionType::TokenMetadata,
+    ])
+    .unwrap();
+    let metadata_space = 1024;
     let lamports_required = (Rent::get()?).minimum_balance(space + metadata_space);
 
     msg!(
@@ -190,6 +211,17 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
     solana_program::program::invoke(
         &init_metadata_pointer_ix,
         &[share_mint.clone(), share_metadata_authority.clone()],
+    )?;
+
+    // Initialize the close authority extension
+    let init_close_authority_ix = spl_token_2022::instruction::initialize_mint_close_authority(
+        &Token2022::id(),
+        &share_mint.key(),
+        Some(&share_close_authority.key()),
+    )?;
+    solana_program::program::invoke(
+        &init_close_authority_ix,
+        &[share_mint.clone(), share_close_authority.clone()],
     )?;
 
     // mint2
@@ -365,8 +397,10 @@ pub struct CloseFund<'info> {
 }
 
 pub fn close_handler(ctx: Context<CloseFund>) -> Result<()> {
-    //TODO: check that all share classes have 0 supply
-    //TODO: close treasury (checkin that it's empty)
+    require!(
+        ctx.accounts.fund.share_classes.len() == 0,
+        FundError::CantCloseShareClasses
+    );
 
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
@@ -392,5 +426,68 @@ pub fn close_handler(ctx: Context<CloseFund>) -> Result<()> {
     }
 
     msg!("Fund closed: {}", ctx.accounts.fund.key());
+    Ok(())
+}
+
+#[derive(Accounts)]
+#[instruction(share_class_id: u8)]
+pub struct CloseShareClass<'info> {
+    #[account(mut, has_one = manager @ ManagerError::NotAuthorizedError)]
+    fund: Account<'info, FundAccount>,
+
+    #[account(
+        mut,
+        seeds = [
+          b"share".as_ref(),
+          &[share_class_id],
+          fund.key().as_ref()
+        ],
+        bump, mint::authority = share_class, mint::token_program = token_2022_program
+      )]
+    share_class: InterfaceAccount<'info, Mint>,
+
+    #[account(mut)]
+    manager: Signer<'info>,
+
+    token_2022_program: Program<'info, Token2022>,
+}
+
+pub fn close_share_class_handler(ctx: Context<CloseShareClass>, share_class_id: u8) -> Result<()> {
+    require!(
+        (share_class_id as usize) < ctx.accounts.fund.share_classes.len(),
+        FundError::NoShareClassInFund
+    );
+
+    // Note: this is redundant because close_account should check that supply == 0
+    //       but better safe than sorry
+    require!(
+        ctx.accounts.share_class.supply == 0,
+        FundError::ShareClassNotEmpty
+    );
+
+    let fund_key = ctx.accounts.fund.key();
+    let seeds = &[
+        "share".as_bytes(),
+        &[share_class_id],
+        fund_key.as_ref(),
+        &[ctx.bumps.share_class],
+    ];
+    let signer_seeds = &[&seeds[..]];
+    close_account(CpiContext::new_with_signer(
+        ctx.accounts.token_2022_program.to_account_info(),
+        CloseAccount {
+            account: ctx.accounts.share_class.to_account_info(),
+            destination: ctx.accounts.manager.to_account_info(),
+            authority: ctx.accounts.share_class.to_account_info(),
+        },
+        signer_seeds,
+    ))?;
+
+    ctx.accounts
+        .fund
+        .share_classes
+        .remove(share_class_id as usize);
+
+    msg!("Share class closed: {}", ctx.accounts.share_class.key());
     Ok(())
 }

@@ -5,6 +5,7 @@ import {
   Transaction,
 } from "@solana/web3.js";
 import { BN, Wallet } from "@coral-xyz/anchor";
+import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 
 import { createFundForTest, fundTestExample, str2seed } from "./setup";
 import { GlamClient } from "../src";
@@ -270,6 +271,40 @@ describe("glam_crud", () => {
     const manager = glamClient.getManager();
     const treasury = glamClient.getTreasuryPDA(fundPDA);
     const openfunds = glamClient.getOpenfundsPDA(fundPDA);
+    const shareClass = glamClient.getShareClassPDA(fundPDA, 0);
+
+    try {
+      const txId = await glamClient.program.methods
+        .closeFund()
+        .accounts({
+          fund: fundPDA,
+          manager,
+          treasury,
+          openfunds,
+        })
+        .rpc();
+      expect(txId).toBeUndefined();
+    } catch (e) {
+      expect(e.message).toContain(
+        "Fund can't be closed. Close share classes first"
+      );
+    }
+
+    try {
+      const txId = await glamClient.program.methods
+        .closeShareClass(0)
+        .accounts({
+          fund: fundPDA,
+          manager,
+          shareClass,
+          token2022Program: TOKEN_2022_PROGRAM_ID,
+        })
+        .rpc();
+      console.log("Close share class txId:", txId);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
 
     try {
       const txId = await glamClient.program.methods
