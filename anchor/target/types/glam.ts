@@ -145,6 +145,37 @@ export type Glam = {
       "args": []
     },
     {
+      "name": "closeShareClass",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "shareClass",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "token2022Program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "shareClassId",
+          "type": "u8"
+        }
+      ]
+    },
+    {
       "name": "subscribe",
       "accounts": [
         {
@@ -2437,6 +2468,12 @@ export type Glam = {
         "variants": [
           {
             "name": "NoShareClassInFund"
+          },
+          {
+            "name": "ShareClassNotEmpty"
+          },
+          {
+            "name": "CantCloseShareClasses"
           }
         ]
       }
@@ -4016,6 +4053,37 @@ export const IDL: Glam = {
       "args": []
     },
     {
+      "name": "closeShareClass",
+      "accounts": [
+        {
+          "name": "fund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "shareClass",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "token2022Program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "shareClassId",
+          "type": "u8"
+        }
+      ]
+    },
+    {
       "name": "subscribe",
       "accounts": [
         {
@@ -6308,6 +6376,12 @@ export const IDL: Glam = {
         "variants": [
           {
             "name": "NoShareClassInFund"
+          },
+          {
+            "name": "ShareClassNotEmpty"
+          },
+          {
+            "name": "CantCloseShareClasses"
           }
         ]
       }

@@ -431,7 +431,7 @@ export class BaseClient {
     // fields containing fund id / pda
     const fundPDA = this.getFundPDA(fundModel);
     fundModel.uri =
-      fundModel.uri || `https://devnet.glam.systems/products/${fundPDA}`;
+      fundModel.uri || `https://playground.glam.systems/products/${fundPDA}`;
     fundModel.openfundsUri =
       fundModel.openfundsUri ||
       `https://api.glam.systems/openfunds/${fundPDA}.xlsx`;

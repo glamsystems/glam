@@ -44,8 +44,13 @@ pub mod glam {
     ) -> Result<()> {
         manager::update_fund_handler(ctx, fund)
     }
+
     pub fn close_fund(ctx: Context<CloseFund>) -> Result<()> {
         manager::close_handler(ctx)
+    }
+
+    pub fn close_share_class(ctx: Context<CloseShareClass>, share_class_id: u8) -> Result<()> {
+        manager::close_share_class_handler(ctx, share_class_id)
     }
 
     //
