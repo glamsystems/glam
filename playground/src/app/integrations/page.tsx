@@ -21,11 +21,11 @@ const treeData: TreeNodeData = {
     {
       id: "native",
       label: "Native",
-      collapsed: false,
+      collapsed: true,
       children: [
         { id: "initialize_and_delegate_stake", label: "Initialize and delegate stake", icon: <DownloadIcon className="w-4 h-4" /> },
         { id: "deactivate_stake_accounts", label: "Deactivate stake accounts", icon: <DownloadIcon className="w-4 h-4" /> },
-        { id: "withdraw_from_stake_accounts", label: "Withdraw from stake accounts", icon: <DownloadIcon className="w-4 h-4" /> },
+        { id: "withdraw_from_stake_accounts", label: "Withdraw from stake accounts", icon: <DownloadIcon className="w-4 h-4" /> }
       ],
     },
     {
@@ -34,16 +34,16 @@ const treeData: TreeNodeData = {
       collapsed: false,
       children: [
         {
-          id: "deposit",
+          id: "marinade_staking_deposit",
           label: "Deposit",
           collapsed: true,
           children: [
             { id: "marinade_deposit_sol", label: "Deposit", icon: <DownloadIcon className="w-4 h-4" /> },
-            { id: "marinade_deposit_stake", label: "Deposit stake", icon: <DownloadIcon className="w-4 h-4" /> },
+            { id: "marinade_deposit_stake", label: "Deposit stake", icon: <DownloadIcon className="w-4 h-4" /> }
           ]
         },
         {
-          id: "withdraw",
+          id: "marinade_staking_withdraw",
           label: "Withdraw",
           collapsed: true,
           children: [
@@ -58,10 +58,24 @@ const treeData: TreeNodeData = {
       label: "SPL Stake Pool",
       collapsed: false,
       children: [
-        { id: "spl_stake_pool_deposit_sol", label: "Deposit", icon: <DownloadIcon className="w-4 h-4" /> },
-        { id: "spl_stake_pool_deposit_stake", label: "Deposit stake", icon: <DownloadIcon className="w-4 h-4" /> },
-        { id: "spl_stake_pool_withdraw_sol", label: "Withdraw", icon: <DownloadIcon className="w-4 h-4" /> },
-        { id: "spl_stake_pool_withdraw_stake", label: "Withdraw stake", icon: <DownloadIcon className="w-4 h-4" /> }
+        {
+          id: "splStakePool_deposit",
+          label: "Deposit",
+          collapsed: true,
+          children: [
+            { id: "spl_stake_pool_deposit_sol", label: "Deposit", icon: <DownloadIcon className="w-4 h-4" /> },
+            { id: "spl_stake_pool_deposit_stake", label: "Deposit stake", icon: <DownloadIcon className="w-4 h-4" /> }
+          ]
+        },
+        {
+          id: "splStakePool_withdraw",
+          label: "Withdraw",
+          collapsed: true,
+          children: [
+            { id: "spl_stake_pool_withdraw_sol", label: "Withdraw", icon: <DownloadIcon className="w-4 h-4" /> },
+            { id: "spl_stake_pool_withdraw_stake", label: "Withdraw stake", icon: <DownloadIcon className="w-4 h-4" /> }
+          ]
+        }
       ],
     },
     {
@@ -69,13 +83,27 @@ const treeData: TreeNodeData = {
       label: "Sanctum Stake Pool",
       collapsed: false,
       children: [
-        { id: "sanctum_stake_pool_deposit_sol", label: "Deposit", icon: <DownloadIcon className="w-4 h-4" /> },
-        { id: "sanctum_stake_pool_deposit_stake", label: "Deposit stake", icon: <DownloadIcon className="w-4 h-4" /> },
-        { id: "sanctum_stake_pool_withdraw_sol", label: "Withdraw", icon: <DownloadIcon className="w-4 h-4" /> },
-        { id: "sanctum_stake_pool_withdraw_stake", label: "Withdraw stake", icon: <DownloadIcon className="w-4 h-4" /> }
-      ],
-    },
-  ],
+        {
+          id: "sanctumStakePool_deposit",
+          label: "Deposit",
+          collapsed: true,
+          children: [
+            { id: "sanctum_stake_pool_deposit_sol", label: "Deposit", icon: <DownloadIcon className="w-4 h-4" /> },
+            { id: "sanctum_stake_pool_deposit_stake", label: "Deposit stake", icon: <DownloadIcon className="w-4 h-4" /> }
+          ]
+        },
+        {
+          id: "sanctumStakePool_withdraw",
+          label: "Withdraw",
+          collapsed: true,
+          children: [
+            { id: "sanctum_stake_pool_withdraw_sol", label: "Withdraw", icon: <DownloadIcon className="w-4 h-4" /> },
+            { id: "sanctum_stake_pool_withdraw_stake", label: "Withdraw stake", icon: <DownloadIcon className="w-4 h-4" /> }
+          ]
+        }
+      ]
+    }
+  ]
 };
 
 export default function Integrations() {
