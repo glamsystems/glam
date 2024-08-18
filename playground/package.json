@@ -2,9 +2,6 @@
   "name": "@glam/playground",
   "version": "0.0.1",
   "dependencies": {
-    "@jsonforms/core": "^3.3.0",
-    "@jsonforms/react": "^3.3.0",
-    "@jsonforms/vanilla-renderers": "^3.3.0",
     "@radix-ui/react-scroll-area": "^1.1.0",
     "@radix-ui/react-tabs": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.2",
