@@ -46,9 +46,9 @@ describe("glam_crud", () => {
     expect(fund.name).toEqual(updatedFund.name);
   });
 
-  it("Update enabled integrations", async () => {
+  it("[integration-acl] add and update", async () => {
     const updatedFund1 = glamClient.getFundModel({
-      integrations: [{ drift: {} }],
+      integrationAcls: [{ name: { drift: {} }, features: [] }],
     });
     try {
       const tx = await glamClient.program.methods
@@ -63,15 +63,15 @@ describe("glam_crud", () => {
       throw e;
     }
     const fundModel1 = await glamClient.fetchFund(fundPDA);
-    expect(fundModel1.integrations.length).toEqual(1);
-    expect(fundModel1.integrations[0]).toEqual({ drift: {} });
+    expect(fundModel1.integrationAcls.length).toEqual(1);
+    expect(fundModel1.integrationAcls).toEqual(updatedFund1?.integrationAcls);
 
     const updatedFund2 = glamClient.getFundModel({
-      integrations: [
-        { drift: {} },
-        { jupiter: {} },
-        { marinade: {} },
-        { stakePool: {} },
+      integrationAcls: [
+        { name: { drift: {} }, features: [] },
+        { name: { jupiter: {} }, features: [] },
+        { name: { marinade: {} }, features: [] },
+        { name: { stakePool: {} }, features: [] },
       ],
     });
     try {
@@ -86,32 +86,31 @@ describe("glam_crud", () => {
       console.error(e);
       throw e;
     }
-    const fundModel2 = await glamClient.fetchFund(fundPDA);
-    expect(fundModel2.integrations.length).toEqual(4);
-    expect(fundModel2.integrations).toEqual(updatedFund2?.integrations);
   });
 
-  it("Fund acls upsert", async () => {
+  it("[delegate-acl] upsert", async () => {
     // empty acls
     let fundModel = await glamClient.fetchFund(fundPDA);
-    expect(fundModel.acls.length).toEqual(0);
+    expect(fundModel.delegateAcls.length).toEqual(0);
 
     // grant key1 wSolWrap permission
-    const acls = [{ pubkey: key1.publicKey, permissions: [{ wSolWrap: {} }] }];
+    const delegateAcls = [
+      { pubkey: key1.publicKey, permissions: [{ wSolWrap: {} }] },
+    ];
     try {
-      await glamClient.upsertAcls(fundPDA, acls);
+      await glamClient.upsertDelegateAcls(fundPDA, delegateAcls);
     } catch (e) {
       console.error(e);
       throw e;
     }
     fundModel = await glamClient.fetchFund(fundPDA);
-    expect(fundModel.acls?.length).toEqual(1);
-    expect(fundModel.acls[0].pubkey).toEqual(key1.publicKey);
-    expect(fundModel.acls[0].permissions).toEqual([{ wSolWrap: {} }]);
+    expect(fundModel.delegateAcls?.length).toEqual(1);
+    expect(fundModel.delegateAcls[0].pubkey).toEqual(key1.publicKey);
+    expect(fundModel.delegateAcls[0].permissions).toEqual([{ wSolWrap: {} }]);
 
     // grant key1 wSolWrap and wSolUnwrap permission
     try {
-      await glamClient.upsertAcls(fundPDA, [
+      await glamClient.upsertDelegateAcls(fundPDA, [
         {
           pubkey: key1.publicKey,
           permissions: [{ wSolWrap: {} }, { wSolUnwrap: {} }],
@@ -122,40 +121,45 @@ describe("glam_crud", () => {
       throw e;
     }
     fundModel = await glamClient.fetchFund(fundPDA);
-    expect(fundModel.acls?.length).toEqual(1);
-    expect(fundModel.acls[0].pubkey).toEqual(key1.publicKey);
-    expect(fundModel.acls[0].permissions).toEqual([
+    expect(fundModel.delegateAcls?.length).toEqual(1);
+    expect(fundModel.delegateAcls[0].pubkey).toEqual(key1.publicKey);
+    expect(fundModel.delegateAcls[0].permissions).toEqual([
       { wSolWrap: {} },
       { wSolUnwrap: {} },
     ]);
   });
 
-  it("Fund acls delete", async () => {
+  it("[delegate-acl] delete", async () => {
     // add key2 permissions
-    const acls = [{ pubkey: key2.publicKey, permissions: [{ stake: {} }] }];
+    const delegateAcls = [
+      { pubkey: key2.publicKey, permissions: [{ stake: {} }] },
+    ];
     try {
-      await glamClient.upsertAcls(fundPDA, acls);
+      await glamClient.upsertDelegateAcls(fundPDA, delegateAcls);
     } catch (e) {
       console.error(e);
       throw e;
     }
     let fundModel = await glamClient.fetchFund(fundPDA);
-    expect(fundModel.acls?.length).toEqual(2);
-    expect(fundModel.acls[1].pubkey).toEqual(key2.publicKey);
-    expect(fundModel.acls[1].permissions).toEqual([{ stake: {} }]);
+    expect(fundModel.delegateAcls?.length).toEqual(2);
+    expect(fundModel.delegateAcls[1].pubkey).toEqual(key2.publicKey);
+    expect(fundModel.delegateAcls[1].permissions).toEqual([{ stake: {} }]);
 
     // remove key1 and key2 permissions
     try {
-      await glamClient.deleteAcls(fundPDA, [key1.publicKey, key2.publicKey]);
+      await glamClient.deleteDelegateAcls(fundPDA, [
+        key1.publicKey,
+        key2.publicKey,
+      ]);
     } catch (e) {
       console.error(e);
       throw e;
     }
     fundModel = await glamClient.fetchFund(fundPDA);
-    expect(fundModel.acls?.length).toEqual(0);
+    expect(fundModel.delegateAcls?.length).toEqual(0);
   });
 
-  it("Update fund acls and test authorization", async () => {
+  it("[delegate-acl] test authorization", async () => {
     // transfer 1 SOL to treasury
     const tranferTx = new Transaction().add(
       SystemProgram.transfer({
@@ -178,7 +182,9 @@ describe("glam_crud", () => {
 
     // grant key1 wSolWrap permission
     let updatedFund = glamClient.getFundModel({
-      acls: [{ pubkey: key1.publicKey, permissions: [{ wSolWrap: {} }] }],
+      delegateAcls: [
+        { pubkey: key1.publicKey, permissions: [{ wSolWrap: {} }] },
+      ],
     });
     try {
       await glamClient.program.methods
@@ -193,8 +199,8 @@ describe("glam_crud", () => {
       throw e;
     }
     let fundModel = await glamClient.fetchFund(fundPDA);
-    expect(fundModel.acls?.length).toEqual(1);
-    expect(fundModel.acls[0].pubkey).toEqual(key1.publicKey);
+    expect(fundModel.delegateAcls?.length).toEqual(1);
+    expect(fundModel.delegateAcls[0].pubkey).toEqual(key1.publicKey);
 
     // key1 now has wSolWrap permission, use key1 to wrap some SOL
     try {

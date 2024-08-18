@@ -21,8 +21,8 @@ export const FundModel = class<FundModel> {
       ...partial,
       assets: obj.assets || [],
       assetsWeights: obj.assetsWeights || [],
-      acls: obj.acls || [],
-      integrations: obj.integrations || [],
+      delegateAcls: obj.delegateAcls || [],
+      integrationAcls: obj.integrationAcls || [],
       shareClasses: obj.shareClasses
         ? obj.shareClasses.map(
             (shareClass: any) =>
