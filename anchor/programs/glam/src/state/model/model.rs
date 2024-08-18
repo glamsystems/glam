@@ -27,7 +27,8 @@ pub struct FundModel {
     pub created: Option<CreatedModel>,
 
     // ACLs
-    pub acls: Vec<Acl>,
+    pub delegate_acls: Vec<DelegateAcl>,
+    pub integration_acls: Vec<IntegrationAcl>,
 
     // Openfunds
     pub is_raw_openfunds: Option<bool>,

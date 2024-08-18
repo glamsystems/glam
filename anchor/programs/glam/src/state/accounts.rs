@@ -4,7 +4,7 @@ use super::acl::*;
 use super::model::*;
 use super::openfunds::*;
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
+#[derive(AnchorDeserialize, AnchorSerialize, PartialEq, Clone, Debug)]
 pub enum EngineFieldName {
     TimeCreated,
     IsEnabled,
@@ -12,7 +12,8 @@ pub enum EngineFieldName {
     AssetsWeights,
     ShareClassAllowlist,
     ShareClassBlocklist,
-    Acls,
+    DelegateAcls,
+    IntegrationAcls,
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
@@ -33,7 +34,8 @@ pub enum EngineFieldValue {
     Timestamp { val: i64 },
     VecPubkey { val: Vec<Pubkey> },
     VecU32 { val: Vec<u32> },
-    VecAcl { val: Vec<Acl> },
+    VecDelegateAcl { val: Vec<DelegateAcl> },
+    VecIntegrationAcl { val: Vec<IntegrationAcl> },
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
@@ -130,12 +132,12 @@ impl FundAccount {
         return None;
     }
 
-    pub fn acls(&self) -> Option<&Vec<Acl>> {
+    pub fn delegate_acls(&self) -> Option<&Vec<DelegateAcl>> {
         for EngineField { name, value } in &self.params[0] {
             match name {
-                EngineFieldName::Acls => {
+                EngineFieldName::DelegateAcls => {
                     return match value {
-                        EngineFieldValue::VecAcl { val: v } => Some(v),
+                        EngineFieldValue::VecDelegateAcl { val: v } => Some(v),
                         _ => None,
                     };
                 }

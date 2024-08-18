@@ -95,8 +95,9 @@ export class InvestorClient {
     );
 
     // remaining accounts = treasury atas + pricing to compute AUM
+    // @ts-ignore
     const fundModel = await this.base.fetchFund(fund);
-    const remainingAccounts = (fundModel.assets || []).flatMap((asset) => {
+    const remainingAccounts = (fundModel.assets || []).flatMap((asset: any) => {
       const assetMeta = this.base.getAssetMeta(asset.toBase58());
       const treasuryAta = this.base.getTreasuryAta(
         fund,
@@ -208,7 +209,7 @@ export class InvestorClient {
 
     // remaining accounts = assets + signer atas + treasury atas + pricing to compute AUM
     const fundModel = await this.base.fetchFund(fund);
-    const remainingAccounts = (fundModel.assets || []).flatMap((asset) => {
+    const remainingAccounts = (fundModel.assets || []).flatMap((asset: any) => {
       const assetMeta = this.base.getAssetMeta(asset.toBase58());
       const treasuryAta = this.base.getTreasuryAta(
         fund,
@@ -236,7 +237,7 @@ export class InvestorClient {
 
     const preInstructions = (
       await Promise.all(
-        (fundModel.assets || []).map(async (asset, j) => {
+        (fundModel.assets || []).map(async (asset: any, j: number) => {
           // not in kind, we only need the base asset ATA
           if (!inKind && j > 0) {
             return null;
@@ -268,7 +269,7 @@ export class InvestorClient {
           );
         })
       )
-    ).filter((x) => !!x) as TransactionInstruction[];
+    ).filter((x: any) => !!x) as TransactionInstruction[];
 
     const tx = await this.base.program.methods
       .redeem(amount, inKind, skipState)

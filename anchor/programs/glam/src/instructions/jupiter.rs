@@ -139,7 +139,7 @@ pub fn jupiter_swap<'c: 'info, 'info>(
     amount: u64,
     data: Vec<u8>,
 ) -> Result<()> {
-    if let Some(acls) = ctx.accounts.fund.acls() {
+    if let Some(acls) = ctx.accounts.fund.delegate_acls() {
         // Check if the signer is allowed to swap any asset
         let can_swap_any_asset = acls.iter().any(|acl| {
             acl.pubkey == *ctx.accounts.signer.key

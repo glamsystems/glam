@@ -1792,7 +1792,7 @@ export type Glam = {
       }
     },
     {
-      "name": "Acl",
+      "name": "DelegateAcl",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1805,6 +1805,28 @@ export type Glam = {
             "type": {
               "vec": {
                 "defined": "Permission"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "IntegrationAcl",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "defined": "IntegrationName"
+            }
+          },
+          {
+            "name": "features",
+            "type": {
+              "vec": {
+                "defined": "IntegrationFeature"
               }
             }
           }
@@ -1891,10 +1913,18 @@ export type Glam = {
             }
           },
           {
-            "name": "acls",
+            "name": "delegateAcls",
             "type": {
               "vec": {
-                "defined": "Acl"
+                "defined": "DelegateAcl"
+              }
+            }
+          },
+          {
+            "name": "integrationAcls",
+            "type": {
+              "vec": {
+                "defined": "IntegrationAcl"
               }
             }
           },
@@ -2519,7 +2549,10 @@ export type Glam = {
             "name": "ShareClassBlocklist"
           },
           {
-            "name": "Acls"
+            "name": "DelegateAcls"
+          },
+          {
+            "name": "IntegrationAcls"
           }
         ]
       }
@@ -2660,13 +2693,26 @@ export type Glam = {
             ]
           },
           {
-            "name": "VecAcl",
+            "name": "VecDelegateAcl",
             "fields": [
               {
                 "name": "val",
                 "type": {
                   "vec": {
-                    "defined": "Acl"
+                    "defined": "DelegateAcl"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "VecIntegrationAcl",
+            "fields": [
+              {
+                "name": "val",
+                "type": {
+                  "vec": {
+                    "defined": "IntegrationAcl"
                   }
                 }
               }
@@ -2688,6 +2734,9 @@ export type Glam = {
     },
     {
       "name": "Permission",
+      "docs": [
+        "* Delegate ACL"
+      ],
       "type": {
         "kind": "enum",
         "variants": [
@@ -2717,6 +2766,43 @@ export type Glam = {
           },
           {
             "name": "WSolUnwrap"
+          }
+        ]
+      }
+    },
+    {
+      "name": "IntegrationName",
+      "docs": [
+        "* Integration ACL"
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Drift"
+          },
+          {
+            "name": "StakePool"
+          },
+          {
+            "name": "NativeStaking"
+          },
+          {
+            "name": "Marinade"
+          },
+          {
+            "name": "Jupiter"
+          }
+        ]
+      }
+    },
+    {
+      "name": "IntegrationFeature",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "All"
           }
         ]
       }
@@ -5700,7 +5786,7 @@ export const IDL: Glam = {
       }
     },
     {
-      "name": "Acl",
+      "name": "DelegateAcl",
       "type": {
         "kind": "struct",
         "fields": [
@@ -5713,6 +5799,28 @@ export const IDL: Glam = {
             "type": {
               "vec": {
                 "defined": "Permission"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "IntegrationAcl",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "defined": "IntegrationName"
+            }
+          },
+          {
+            "name": "features",
+            "type": {
+              "vec": {
+                "defined": "IntegrationFeature"
               }
             }
           }
@@ -5799,10 +5907,18 @@ export const IDL: Glam = {
             }
           },
           {
-            "name": "acls",
+            "name": "delegateAcls",
             "type": {
               "vec": {
-                "defined": "Acl"
+                "defined": "DelegateAcl"
+              }
+            }
+          },
+          {
+            "name": "integrationAcls",
+            "type": {
+              "vec": {
+                "defined": "IntegrationAcl"
               }
             }
           },
@@ -6427,7 +6543,10 @@ export const IDL: Glam = {
             "name": "ShareClassBlocklist"
           },
           {
-            "name": "Acls"
+            "name": "DelegateAcls"
+          },
+          {
+            "name": "IntegrationAcls"
           }
         ]
       }
@@ -6568,13 +6687,26 @@ export const IDL: Glam = {
             ]
           },
           {
-            "name": "VecAcl",
+            "name": "VecDelegateAcl",
             "fields": [
               {
                 "name": "val",
                 "type": {
                   "vec": {
-                    "defined": "Acl"
+                    "defined": "DelegateAcl"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "VecIntegrationAcl",
+            "fields": [
+              {
+                "name": "val",
+                "type": {
+                  "vec": {
+                    "defined": "IntegrationAcl"
                   }
                 }
               }
@@ -6596,6 +6728,9 @@ export const IDL: Glam = {
     },
     {
       "name": "Permission",
+      "docs": [
+        "* Delegate ACL"
+      ],
       "type": {
         "kind": "enum",
         "variants": [
@@ -6625,6 +6760,43 @@ export const IDL: Glam = {
           },
           {
             "name": "WSolUnwrap"
+          }
+        ]
+      }
+    },
+    {
+      "name": "IntegrationName",
+      "docs": [
+        "* Integration ACL"
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Drift"
+          },
+          {
+            "name": "StakePool"
+          },
+          {
+            "name": "NativeStaking"
+          },
+          {
+            "name": "Marinade"
+          },
+          {
+            "name": "Jupiter"
+          }
+        ]
+      }
+    },
+    {
+      "name": "IntegrationFeature",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "All"
           }
         ]
       }

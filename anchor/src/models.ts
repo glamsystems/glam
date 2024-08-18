@@ -1,6 +1,7 @@
 import { IdlTypes } from "@coral-xyz/anchor";
 import { Glam } from "./glamExports";
 
+// @ts-ignore
 export type FundModel = IdlTypes<Glam>["FundModel"];
 export const FundModel = class<FundModel> {
   constructor(obj: any) {
@@ -20,7 +21,8 @@ export const FundModel = class<FundModel> {
       ...partial,
       assets: obj.assets || [],
       assetsWeights: obj.assetsWeights || [],
-      acls: obj.acls || [],
+      delegateAcls: obj.delegateAcls || [],
+      integrationAcls: obj.integrationAcls || [],
       shareClasses: obj.shareClasses
         ? obj.shareClasses.map(
             (shareClass: any) =>

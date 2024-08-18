@@ -381,6 +381,7 @@ export class BaseClient {
 
   getFundName(fundModel: FundModel) {
     return (
+      // @ts-ignore
       fundModel.name ||
       fundModel.rawOpenfunds?.legalFundNameIncludingUmbrella ||
       fundModel.shareClasses[0]?.name ||
@@ -437,7 +438,7 @@ export class BaseClient {
       `https://api.glam.systems/openfunds/${fundPDA}.xlsx`;
 
     // share classes
-    fundModel.shareClasses.forEach((shareClass, i) => {
+    fundModel.shareClasses.forEach((shareClass: any, i: number) => {
       if (
         shareClass.rawOpenfunds &&
         shareClass.rawOpenfunds.shareClassLifecycle === "active"
@@ -459,6 +460,7 @@ export class BaseClient {
     fund: any
   ): Promise<[TransactionSignature, PublicKey]> {
     let fundModel = this.enrichFundModelInitialize(fund);
+
     const fundPDA = this.getFundPDA(fundModel);
     const treasury = this.getTreasuryPDA(fundPDA);
     const openfunds = this.getOpenfundsPDA(fundPDA);
@@ -477,7 +479,7 @@ export class BaseClient {
       })
       .rpc();
     await Promise.all(
-      shareClasses.map(async (shareClass, j) => {
+      shareClasses.map(async (shareClass: any, j: number) => {
         const shareClassMint = this.getShareClassPDA(fundPDA, j);
         return await this.program.methods
           .addShareClass(shareClass)
@@ -583,12 +585,12 @@ export class BaseClient {
     return fund;
   }
 
-  public async deleteAcls(
+  public async deleteDelegateAcls(
     fundPDA: PublicKey,
     keys: PublicKey[]
   ): Promise<TransactionSignature> {
     let updatedFund = this.getFundModel({
-      acls: keys.map((key) => ({ pubkey: key, permissions: [] })),
+      delegateAcls: keys.map((key) => ({ pubkey: key, permissions: [] })),
     });
     return await this.program.methods
       .updateFund(updatedFund)
@@ -599,11 +601,11 @@ export class BaseClient {
       .rpc();
   }
 
-  public async upsertAcls(
+  public async upsertDelegateAcls(
     fundPDA: PublicKey,
-    acls: any[]
+    delegateAcls: any[]
   ): Promise<TransactionSignature> {
-    let updatedFund = this.getFundModel({ acls });
+    let updatedFund = this.getFundModel({ delegateAcls });
     return await this.program.methods
       .updateFund(updatedFund)
       .accounts({
