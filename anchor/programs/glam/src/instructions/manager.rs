@@ -304,22 +304,22 @@ pub fn update_fund_handler<'c: 'info, 'info>(
     //
     // 2) a fund acl with same pubkey doesn't exist
     //   - add the acl
-    if !fund_model.acls.is_empty() {
+    if !fund_model.delegate_acls.is_empty() {
         // Add the acls field if it doesn't exist
         let acls_engine_field_exists = fund.params[0]
             .iter()
-            .any(|field| field.name == EngineFieldName::Acls);
+            .any(|field| field.name == EngineFieldName::DelegateAcls);
 
         if !acls_engine_field_exists {
             msg!("Adding acls field to fund params");
             fund.params[0].push(EngineField {
-                name: EngineFieldName::Acls,
-                value: EngineFieldValue::VecAcl { val: Vec::new() },
+                name: EngineFieldName::DelegateAcls,
+                value: EngineFieldValue::VecDelegateAcl { val: Vec::new() },
             });
         }
 
         let to_delete: Vec<Pubkey> = fund_model
-            .acls
+            .delegate_acls
             .clone()
             .iter()
             .filter(|acl| acl.permissions.is_empty())
@@ -327,20 +327,24 @@ pub fn update_fund_handler<'c: 'info, 'info>(
             .collect();
         if !to_delete.is_empty() {
             for EngineField { name, value } in &mut fund.params[0] {
-                if let (EngineFieldName::Acls, EngineFieldValue::VecAcl { val }) = (name, value) {
+                if let (EngineFieldName::DelegateAcls, EngineFieldValue::VecDelegateAcl { val }) =
+                    (name, value)
+                {
                     val.retain(|acl| !to_delete.contains(&acl.pubkey));
                 }
             }
         }
         let to_upsert = fund_model
-            .acls
+            .delegate_acls
             .clone()
             .into_iter()
             .filter(|acl| !acl.permissions.is_empty());
 
         for new_acl in to_upsert {
             for EngineField { name, value } in &mut fund.params[0] {
-                if let (EngineFieldName::Acls, EngineFieldValue::VecAcl { val }) = (name, value) {
+                if let (EngineFieldName::DelegateAcls, EngineFieldValue::VecDelegateAcl { val }) =
+                    (name, value)
+                {
                     if let Some(existing_acl) =
                         val.iter_mut().find(|acl| acl.pubkey == new_acl.pubkey)
                     {
@@ -354,27 +358,27 @@ pub fn update_fund_handler<'c: 'info, 'info>(
     }
 
     // Update enabled integrations for the fund
-    if !fund_model.integrations.is_empty() {
+    if !fund_model.integration_acls.is_empty() {
         // Check if the integrations field exists
         // Add the integrations field if it doesn't exist
         let integrations_engine_field_exists = fund.params[0]
             .iter()
-            .any(|field| field.name == EngineFieldName::Integrations);
+            .any(|field| field.name == EngineFieldName::IntegrationAcls);
 
         if !integrations_engine_field_exists {
             msg!("Adding integrations field to fund params");
             fund.params[0].push(EngineField {
-                name: EngineFieldName::Integrations,
-                value: EngineFieldValue::VecIntegrations { val: Vec::new() },
+                name: EngineFieldName::IntegrationAcls,
+                value: EngineFieldValue::VecIntegrationAcl { val: Vec::new() },
             });
         }
 
         for EngineField { name, value } in &mut fund.params[0] {
-            if let (EngineFieldName::Integrations, EngineFieldValue::VecIntegrations { val }) =
+            if let (EngineFieldName::IntegrationAcls, EngineFieldValue::VecIntegrationAcl { val }) =
                 (name, value)
             {
                 val.clear();
-                val.extend(fund_model.integrations.clone());
+                val.extend(fund_model.integration_acls.clone());
             }
         }
     }

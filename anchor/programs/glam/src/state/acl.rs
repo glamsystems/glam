@@ -8,6 +8,9 @@ pub enum AccessError {
     NotAuthorized,
 }
 
+/**
+ * Delegate ACL
+ */
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, PartialEq, Debug)]
 pub enum Permission {
     DriftDeposit,
@@ -22,9 +25,32 @@ pub enum Permission {
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
-pub struct Acl {
+pub struct DelegateAcl {
     pub pubkey: Pubkey,
     pub permissions: Vec<Permission>,
+}
+
+/**
+ * Integration ACL
+ */
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, PartialEq, Debug)]
+pub enum IntegrationName {
+    Drift,
+    StakePool,
+    NativeStaking,
+    Marinade,
+    Jupiter,
+}
+
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, PartialEq, Debug)]
+pub enum IntegrationFeature {
+    All,
+}
+
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
+pub struct IntegrationAcl {
+    pub name: IntegrationName,
+    pub features: Vec<IntegrationFeature>,
 }
 
 pub fn check_access(fund: &FundAccount, signer: &Pubkey, permission: Permission) -> Result<()> {
@@ -38,7 +64,7 @@ pub fn check_access(fund: &FundAccount, signer: &Pubkey, permission: Permission)
         permission
     );
 
-    if let Some(acls) = fund.acls() {
+    if let Some(acls) = fund.delegate_acls() {
         for acl in acls {
             if acl.pubkey == *signer && acl.permissions.contains(&permission) {
                 return Ok(());
@@ -63,7 +89,7 @@ pub fn check_access_any(
         allowed_permissions
     );
 
-    if let Some(acls) = fund.acls() {
+    if let Some(acls) = fund.delegate_acls() {
         for acl in acls {
             for permission in &allowed_permissions {
                 if acl.pubkey == *signer && acl.permissions.contains(permission) {

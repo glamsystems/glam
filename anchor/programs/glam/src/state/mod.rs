@@ -12,6 +12,3 @@ pub use assets::*;
 
 pub mod acl;
 pub use acl::*;
-
-pub mod integrations;
-pub use integrations::*;
