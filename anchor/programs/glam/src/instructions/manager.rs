@@ -306,11 +306,11 @@ pub fn update_fund_handler<'c: 'info, 'info>(
     //   - add the acl
     if !fund_model.delegate_acls.is_empty() {
         // Add the acls field if it doesn't exist
-        let acls_engine_field_exists = fund.params[0]
+        let delegate_acls_field_exists = fund.params[0]
             .iter()
             .any(|field| field.name == EngineFieldName::DelegateAcls);
 
-        if !acls_engine_field_exists {
+        if !delegate_acls_field_exists {
             msg!("Adding acls field to fund params");
             fund.params[0].push(EngineField {
                 name: EngineFieldName::DelegateAcls,
@@ -357,15 +357,15 @@ pub fn update_fund_handler<'c: 'info, 'info>(
         }
     }
 
-    // Update enabled integrations for the fund
+    // Update integration acls for the fund
     if !fund_model.integration_acls.is_empty() {
         // Check if the integrations field exists
         // Add the integrations field if it doesn't exist
-        let integrations_engine_field_exists = fund.params[0]
+        let integration_acl_field_exists = fund.params[0]
             .iter()
             .any(|field| field.name == EngineFieldName::IntegrationAcls);
 
-        if !integrations_engine_field_exists {
+        if !integration_acl_field_exists {
             msg!("Adding integrations field to fund params");
             fund.params[0].push(EngineField {
                 name: EngineFieldName::IntegrationAcls,
