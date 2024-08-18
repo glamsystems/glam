@@ -1,15 +1,15 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
-  ChevronDownIcon,
-  ChevronRightIcon,
-  FileIcon,
-  FileTextIcon,
-} from '@radix-ui/react-icons';
+  ChevronDownIcon, ChevronRightIcon, InfoCircledIcon
+} from "@radix-ui/react-icons";
 import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export interface TreeNodeData {
   id: string;
   label: string;
+  description?: string;  // Added description field
   checked?: boolean;
   indeterminate?: boolean;
   collapsed?: boolean;
@@ -80,8 +80,6 @@ const TreeNode: React.FC<TreeNodeProps> = React.memo(({
   const hasChildren = node.children && node.children.length > 0;
   const isExpanded = expandedNodes.has(node.id);
 
-  console.log(`Rendering node "${node.id}". Is expanded: ${isExpanded}`); // Debugging log
-
   const handleToggle = useCallback(() => {
     onToggle(node.id);
   }, [onToggle, node.id]);
@@ -92,6 +90,11 @@ const TreeNode: React.FC<TreeNodeProps> = React.memo(({
     },
     [setTreeData, updateTree],
   );
+
+  // Handle click on the entire div
+  const handleDivClick = useCallback(() => {
+    handleCheck(node.id, !node.checked);
+  }, [handleCheck, node.id, node.checked]);
 
   const getIcon = () => {
     if (node.icon) {
@@ -104,25 +107,37 @@ const TreeNode: React.FC<TreeNodeProps> = React.memo(({
         <ChevronRightIcon className="w-4 h-4" />
       );
     }
-    return node.children ? (
-      <FileTextIcon className="w-4 h-4" />
-    ) : (
-      <FileIcon className="w-4 h-4" />
-    );
+    return node.children ? <span></span> : <span></span>;
   };
 
   const checkedState: boolean | "indeterminate" = node.indeterminate
     ? "indeterminate"
     : !!node.checked;
 
+  // Determine class based on level and if node has children
+  let labelClass = "text-sm";
+  if (hasChildren) {
+    if (level === 1) {
+      labelClass = "text-lg font-medium mt-0.5";
+    } else if (level === 2) {
+      labelClass = "text-base font-medium";
+    } else if (level === 3) {
+      labelClass = "text-sm font-medium";
+    }
+  }
+
   return (
     <div className="select-none">
       <div
-        className="flex items-center py-1 px-2"
+        className="flex items-center py-1 px-2 cursor-pointer hover:bg-muted opacity-75 hover:opacity-100"
         style={{ paddingLeft: `${level * 20 + 4}px` }}
+        onClick={handleDivClick}  // Added: click handler for the entire div
       >
         <span
-          onClick={handleToggle}
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent toggling the checkbox when clicking the icon
+            handleToggle();
+          }}
           className={`mr-1 ${hasChildren ? "cursor-pointer" : ""}`}
         >
           {getIcon()}
@@ -134,7 +149,22 @@ const TreeNode: React.FC<TreeNodeProps> = React.memo(({
           }
           className="mr-2"
         />
-        <span className="text-sm">{node.label}</span>
+        <span className={labelClass}>{node.label}</span>
+        {node.description && (
+          // <TooltipProvider>
+          //   <Tooltip>
+          //     <TooltipTrigger>
+          //   <InfoCircledIcon className="ml-2 h-4 w-4 text-muted-foreground"></InfoCircledIcon>
+          //     </TooltipTrigger>
+          //     <TooltipContent side="right">
+          //       <p>{node.description}</p>
+          //     </TooltipContent>
+          //   </Tooltip>
+          // </TooltipProvider>
+          <div className="ml-4 text-muted-foreground text-xs">
+            {node.description}
+          </div>
+        )}
       </div>
       {isExpanded && hasChildren && (
         <div>
@@ -256,7 +286,7 @@ const CustomTree: React.FC<CustomTreeProps> = ({
   }, [isExpanded, expandAllNodes, collapseAllNodes]);
 
   return (
-    <div className="p-4">
+    <div className="p-4 ml-4">
       <TreeNode
         node={treeData}
         level={0}
