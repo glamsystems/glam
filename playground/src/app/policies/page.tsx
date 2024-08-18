@@ -6,6 +6,7 @@ import {Separator} from "../../components/ui/separator";
 import {Input} from "../../components/ui/input";
 import {PoliciesList} from "./components/policies-list";
 import {policies} from "./data";
+import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 
 export default function Policies() {
   return <div className="w-full flex">
@@ -31,12 +32,12 @@ export default function Policies() {
           </div>
 
           <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <form>
-              <div className="relative">
-                {/*<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search" className="pl-8" />*/}
-              </div>
-            </form>
+            {/*<form>*/}
+            {/*  <div className="relative">*/}
+            {/*    <MagnifyingGlassIcon className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />*/}
+            {/*    <Input placeholder="Search" className="pl-8" />*/}
+            {/*  </div>*/}
+            {/*</form>*/}
           </div>
 
           <TabsContent value="all" className="m-0">

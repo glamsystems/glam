@@ -11,7 +11,10 @@ import { IntegrationsList } from "./components/integrations-list";
 import { integrations } from "./data";
 import CustomTree from "@/components/CustomTree";
 import { TreeNodeData } from "@/components/CustomTree";
-import { DownloadIcon } from "@radix-ui/react-icons";
+import { DoubleArrowDownIcon, DoubleArrowUpIcon, DownloadIcon, MagnifyingGlassIcon, PlusIcon } from "@radix-ui/react-icons";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const treeData: TreeNodeData = {
   id: "all",
@@ -108,8 +111,12 @@ const treeData: TreeNodeData = {
 
 export default function Integrations() {
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  // Use useCallback to memoize the handleCheckedItemsChange function
+  const toggleExpandCollapse = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   const handleCheckedItemsChange = useCallback(
     (newCheckedItems: Record<string, boolean>) => {
       setCheckedItems(newCheckedItems);
@@ -133,12 +140,12 @@ export default function Integrations() {
             </div>
 
             <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-              <form>
-                <div className="relative">
-                  {/*<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search" className="pl-8" />*/}
-                </div>
-              </form>
+              {/*<form>*/}
+              {/*  <div className="relative">*/}
+              {/*    <MagnifyingGlassIcon className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />*/}
+              {/*    <Input placeholder="Search" className="pl-8" />*/}
+              {/*  </div>*/}
+              {/*</form>*/}
             </div>
 
             <TabsContent value="all" className="m-0">
@@ -152,10 +159,36 @@ export default function Integrations() {
           </Tabs>
         </ResizablePanel>
         <ResizablePanel>
-          <div className="p-16 mt-9">
+          <div className="flex  flex-col p-16 mt-6">
+            <div className="flex">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Button
+                      className="mr-4"
+                      variant="outline"
+                      size="icon"
+                      onClick={toggleExpandCollapse}
+                    >
+                      {isExpanded ? (<DoubleArrowUpIcon className="w-4 h-4" />) : (<DoubleArrowDownIcon className="w-4 h-4" />)}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p>{isExpanded ? "Collapse all" : "Expand all"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <form>
+                <div className="relative">
+                  <MagnifyingGlassIcon className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Search" className="pl-8" />
+                </div>
+              </form>
+            </div>
             <CustomTree
               data={treeData}
               onCheckedItemsChange={handleCheckedItemsChange}
+              isExpanded={isExpanded} // Pass isExpanded state to CustomTree
             />
           </div>
           {/*<div className="mt-4 p-4">*/}
@@ -166,6 +199,5 @@ export default function Integrations() {
           {/*</div>*/}
         </ResizablePanel>
       </ResizablePanelGroup>
-    </div>
-  );
+    </div>);
 }
