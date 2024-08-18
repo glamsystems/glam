@@ -20,7 +20,7 @@ export function IntegrationsList({ items }: IntegrationsListProps) {
           <button
             key={item.id}
             className={cn(
-              "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent",
+              "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent min-h-[70px]",
               integrations.selected === item.id && "bg-muted"
             )}
             onClick={() =>
