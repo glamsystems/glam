@@ -38,6 +38,7 @@ export default function Policies() {
               </div>
             </form>
           </div>
+
           <TabsContent value="all" className="m-0">
             <PoliciesList items={policies} />
           </TabsContent>
