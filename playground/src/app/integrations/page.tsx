@@ -11,7 +11,7 @@ import { IntegrationsList } from "./components/integrations-list";
 import { integrations } from "./data";
 import CustomTree from "@/components/CustomTree";
 import { TreeNodeData } from "@/components/CustomTree";
-import { DoubleArrowDownIcon, DoubleArrowUpIcon, DownloadIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import { DoubleArrowDownIcon, DoubleArrowRightIcon, DoubleArrowUpIcon, DownloadIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -245,7 +245,15 @@ export default function Integrations() {
           </Tabs>
         </ResizablePanel>
         <ResizablePanel>
-          <div className="flex  flex-col p-16 mt-6">
+          <div className="pl-12 pr-12 pt-2">
+            <form className="w-full">
+              <div className="relative">
+                <MagnifyingGlassIcon className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Search" className="pl-8" />
+              </div>
+            </form>
+          </div>
+          <div className="flex  flex-col pl-12 pr-12 pt-10">
             <div className="flex">
               <TooltipProvider>
                 <Tooltip>
@@ -256,7 +264,7 @@ export default function Integrations() {
                       size="icon"
                       onClick={toggleExpandCollapse}
                     >
-                      {isExpanded ? (<DoubleArrowUpIcon className="w-4 h-4" />) : (<DoubleArrowDownIcon className="w-4 h-4" />)}
+                      {isExpanded ? (<DoubleArrowDownIcon className="w-4 h-4" />) : (<DoubleArrowRightIcon className="w-4 h-4" />)}
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="top">
@@ -264,12 +272,6 @@ export default function Integrations() {
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-              {/*<form className="w-1/2">*/}
-              {/*  <div className="relative">*/}
-              {/*    <MagnifyingGlassIcon className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />*/}
-              {/*    <Input placeholder="Search" className="pl-8" />*/}
-              {/*  </div>*/}
-              {/*</form>*/}
             </div>
             <CustomTree
               data={treeData}

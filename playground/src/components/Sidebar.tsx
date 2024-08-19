@@ -40,8 +40,8 @@ function SidebarItem({ route, text, shortcut, Icon }: SidebarItemProps) {
   const isActive = pathname === route;
 
   return (
-    <li className={`relative flex cursor-pointer items-center text-sm outline-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 ml-2 mr-2 p-0 opacity-50 hover:opacity-100 hover:bg-opacity-50 hover:bg-muted ${isActive ? 'bg-muted' : ''}`}>
-      <Link href={route} className="p-2 flex grow items-center">
+    <li className={`relative flex items-center text-sm outline-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 ml-2 mr-2 p-0 transition-all hover:bg-muted opacity-50 hover:opacity-100 cursor-pointer ${isActive ? 'bg-muted/75' : ''}`}>
+      <Link href={route} className="p-2 flex grow items-center min-h-[40px]">
         <Icon className="ml-1 mr-3 h-4 w-4" />
         <span className="flex-grow">{text}</span>
         <span className="ml-auto text-xs tracking-widest text-muted-foreground">{shortcut}</span>
@@ -90,7 +90,7 @@ export default function Sidebar() {
       <div className="flex p-[8px]">
         <AccountMenu />
       </div>
-      <div className="grow">
+      <div className="grow pt-2">
         {navList.map((nav, index) => (
           <div key={index} className="mb-4">
             {nav.group && <div className="text-muted-foreground text-xs ml-2 mb-2">{nav.group}</div>}

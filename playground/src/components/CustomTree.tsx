@@ -129,7 +129,7 @@ const TreeNode: React.FC<TreeNodeProps> = React.memo(({
   return (
     <div className="select-none">
       <div
-        className="flex items-center py-1 px-2 cursor-pointer hover:bg-muted opacity-75 hover:opacity-100"
+        className="flex items-center py-1 px-2 border-b transition-colors hover:bg-muted/50 opacity-75 hover:opacity-100 cursor-pointer"
         style={{ paddingLeft: `${level * 20 + 4}px` }}
         onClick={handleDivClick}  // Added: click handler for the entire div
       >
@@ -286,7 +286,7 @@ const CustomTree: React.FC<CustomTreeProps> = ({
   }, [isExpanded, expandAllNodes, collapseAllNodes]);
 
   return (
-    <div className="p-4 ml-4">
+    <div className="ml-5 border-l">
       <TreeNode
         node={treeData}
         level={0}
