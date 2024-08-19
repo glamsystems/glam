@@ -13,20 +13,19 @@ import type { ClusterOrCustom } from "./clientConfig";
 export { Glam, GlamIDL };
 export type GlamProgram = Program<Glam>;
 
-// After updating your program ID (e.g. after running `anchor keys sync`) update the value below.
-export const GLAM_PROGRAM_ID = new PublicKey(
+export const GLAM_PROGRAM_ID_DEV = new PublicKey(
   "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc"
 );
+export const GLAM_PROGRAM_ID_MAINNET = new PublicKey(
+  "GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP"
+);
 
-// This is a helper function to get the program ID for the Glam program depending on the cluster.
 export function getGlamProgramId(cluster: ClusterOrCustom) {
   switch (cluster) {
-    case "devnet":
-    case "testnet":
     case "mainnet-beta":
-      // You only need to update this if you deploy your program on one of these clusters.
-      return GLAM_PROGRAM_ID;
+      return GLAM_PROGRAM_ID_MAINNET;
+
     default:
-      return GLAM_PROGRAM_ID;
+      return GLAM_PROGRAM_ID_DEV;
   }
 }
