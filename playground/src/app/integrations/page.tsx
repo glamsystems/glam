@@ -267,7 +267,7 @@ export default function Integrations() {
                       {isExpanded ? (<DoubleArrowDownIcon className="w-4 h-4" />) : (<DoubleArrowRightIcon className="w-4 h-4" />)}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="top">
+                  <TooltipContent side="right">
                     <p>{isExpanded ? "Collapse all" : "Expand all"}</p>
                   </TooltipContent>
                 </Tooltip>
