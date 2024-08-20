@@ -3,6 +3,7 @@ export const integrations = [
     id: "1",
     name: "Stake",
     active: true,
+    disabled: false,
     description: "",
     labels: []
   },
@@ -10,6 +11,7 @@ export const integrations = [
     id: "2",
     name: "Swap",
     active: true,
+    disabled: false,
     description: "",
     labels: []
   },
@@ -17,13 +19,15 @@ export const integrations = [
     id: "3",
     name: "Trade",
     active: true,
+    disabled: false,
     description: "",
     labels: []
   },
   {
     id: "4",
-    name: "Borrow/Lend",
+    name: "Lend",
     active: false,
+    disabled: false,
     description: "Coming Soon",
     labels: []
   },
