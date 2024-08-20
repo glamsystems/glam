@@ -371,6 +371,7 @@ export class DriftClient {
     const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
     const tx = await this.base.program.methods
+      // @ts-ignore
       .driftPlaceOrders(orderParams)
       .accounts({
         fund,
@@ -402,6 +403,7 @@ export class DriftClient {
     const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
     const tx = await this.base.program.methods
+      // @ts-ignore
       .driftCancelOrders(marketType, marketIndex, direction)
       .accounts({
         fund,

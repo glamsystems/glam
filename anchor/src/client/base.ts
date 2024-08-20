@@ -575,6 +575,8 @@ export class BaseClient {
     const shareClasses = fundModel.shareClasses;
     fundModel.shareClasses = [];
 
+    console.log("Creating fund with data", fundModel);
+
     const txSig = await this.program.methods
       .initializeFund(fundModel)
       .accounts({
