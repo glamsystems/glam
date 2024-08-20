@@ -2,7 +2,7 @@ export const testKeys = [
   {
     pubkey: "GLAMvRgo7cHBPjQGf8UaVnsD6TUDjq16dEUuDPAPLjyJ",
     label: "Jim",
-    tags: ["stake","swap","trade","lend"],
+    tags: ["stake","swap","trade","lend","admin"],
   },
   {
     pubkey: "GLAM5PUeNkEyM8wnxuwoHbGRqSVK6wWpfvTVxe2UJKR6",

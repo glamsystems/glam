@@ -15,4 +15,9 @@ export const tag = [
     value: "lend",
     label: "Lend",
   },
+  {
+    value: "admin",
+    label: "Admin",
+  },
+
 ];

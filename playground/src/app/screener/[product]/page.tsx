@@ -22,6 +22,7 @@ import { PublicKey } from "@solana/web3.js";
 import Sparkle from "@/utils/Sparkle";
 import SparkleColorMatcher from "@/utils/SparkleColorMatcher";
 import TruncateAddress from "@/utils/TruncateAddress";
+import PageContentWrapper from "@/components/PageContentWrapper";
 
 const mintData = [
   { mint: "SC 1", shares: 811, fill: "var(--color-sc0)" },
@@ -167,8 +168,8 @@ export default function ProductPage() {
   }, [])
 
   return (
-      <div className="w-full">
-        <Card>
+      <PageContentWrapper>
+        <Card className="w-full">
           <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
             <div className="pt-7 pl-7">
               <Sparkle address={publicKey.toBase58()} size={50} onColorGenerated={handleColorGenerated}/>
@@ -297,5 +298,6 @@ export default function ProductPage() {
             </ChartContainer>
           </CardContent>
         </Card>
-      </div>)
+      </PageContentWrapper>
+    )
 }
