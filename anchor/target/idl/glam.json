@@ -3989,8 +3989,5 @@
       "name": "InvalidSwap",
       "msg": "Swap failed"
     }
-  ],
-  "metadata": {
-    "address": "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc"
-  }
+  ]
 }
