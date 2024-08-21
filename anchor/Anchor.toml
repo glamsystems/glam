@@ -5,6 +5,9 @@ anchor_version = "0.29.0"
 seeds = false
 skip-lint = false
 
+[programs.mainnet]
+glam = "GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP"
+
 [programs.devnet]
 glam = "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc"
 
