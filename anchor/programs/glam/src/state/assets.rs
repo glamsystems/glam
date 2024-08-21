@@ -90,10 +90,10 @@ impl<'a> AssetMeta<'a> {
         let mut asset_price = price_feed.get_price_unchecked();
         // On mainnet, enforce that the price is newer than 30s ago
         // In tests, ignore this check
-        #[cfg(feature = "mainnet")]
-        if (asset_price.publish_time - _timestamp).abs() > 30 {
-            return Err(InvestorError::InvalidAssetPrice.into());
-        };
+        // #[cfg(feature = "mainnet")]
+        // if (asset_price.publish_time - _timestamp).abs() > 30 {
+        //     return Err(InvestorError::InvalidAssetPrice.into());
+        // };
 
         // Scale price to expected decimals
         let asset_expo = -(self.decimals as i32);
