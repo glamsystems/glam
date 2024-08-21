@@ -28,7 +28,7 @@ const ToolbarTree: React.FC<ToolbarTreeProps> = ({
           </div>
         </form>
       </div>
-      <div className="flex flex-col pt-10">
+      <div className="flex flex-col pt-[38px]">
         <div className="flex">
           <TooltipProvider>
             <Tooltip>
@@ -47,7 +47,7 @@ const ToolbarTree: React.FC<ToolbarTreeProps> = ({
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right">
-                <p>{isExpanded ? "Collapse all" : "Expand all"}</p>
+                <p>{isExpanded ? "Collapse All" : "Expand All"}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

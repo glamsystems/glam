@@ -226,19 +226,18 @@ export function DataTableToolbar<TData>({
       <div className="flex flex-1 items-center space-x-2">
         <Sheet>
           <SheetTrigger asChild>
-
-          <Button
-          variant="default"
-          size="sm"
-          className="h-8"
-        >
-          <PlusIcon className="mr-2"/>
-          Add key
-        </Button>
+            <Button
+              variant="default"
+              size="sm"
+              className="h-8"
+            >
+              <PlusIcon className="mr-2"/>
+              Add Key
+            </Button>
           </SheetTrigger>
           <SheetContent side="right" className="p-12 sm:max-w-none w-1/2">
             <SheetHeader>
-              <SheetTitle>Add key</SheetTitle>
+              <SheetTitle>Add Key</SheetTitle>
               <SheetDescription>
                 Add a new key with access rights.
               </SheetDescription>
@@ -248,7 +247,7 @@ export function DataTableToolbar<TData>({
                 <Label htmlFor="label" className="text-right">
                   Label
                 </Label>
-                <Input id="labek" value="" className="col-span-3" />
+                <Input id="label" value="" className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="username" className="text-right">
@@ -272,9 +271,9 @@ export function DataTableToolbar<TData>({
                 />
               </div>
             </div>
-            <SheetFooter>
-              <SheetClose asChild>
-                <Button type="submit">Save changes</Button>
+            <SheetFooter className="mt-4">
+            <SheetClose asChild>
+                <Button type="submit">Add Key</Button>
               </SheetClose>
             </SheetFooter>
           </SheetContent>

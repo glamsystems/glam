@@ -28,6 +28,7 @@ import React, { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/use-toast";
+import PageContentWrapper from "@/components/PageContentWrapper";
 
 const transferSchema = z.object({
   origin: z.enum(["Treasury"]),
@@ -80,90 +81,81 @@ export default function Transfer() {
     setAmountAsset("SOL");
   };
 
-  return (
-    <FormProvider {...form}>
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-4 w-1/2  mt-16"
-        >
-          <div className="flex space-x-4">
-            <AssetInput
-              className="min-w-1/2 w-1/2"
-              name="amount"
-              label="Amount"
-              balance={100}
-              selectedAsset={amountAsset}
-              onSelectAsset={setAmountAsset}
-            />
-            <FormField
-              control={form.control}
-              name="origin"
-              render={({ field }) => (
-                <FormItem className="w-1/2">
-                  <FormLabel>From</FormLabel>
-                  <FormControl>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Treasury" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {transferSchema.shape.origin._def.values.map(
-                          (option) => (
-                            <SelectItem key={option} value={option}>
+  return (<PageContentWrapper>
+    <div className="w-4/6 self-center">
+      <FormProvider {...form}>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-4"
+          >
+            <div className="flex space-x-4">
+              <AssetInput
+                className="min-w-1/2 w-1/2"
+                name="amount"
+                label="Amount"
+                balance={100}
+                selectedAsset={amountAsset}
+                onSelectAsset={setAmountAsset}
+              />
+              <FormField
+                control={form.control}
+                name="origin"
+                render={({ field }) => (<FormItem className="w-1/2">
+                    <FormLabel>From</FormLabel>
+                    <FormControl>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Treasury" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {transferSchema.shape.origin._def.values.map((option) => (<SelectItem key={option} value={option}>
                               {option}
-                            </SelectItem>
-                          )
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="destination"
-              render={({ field }) => (
-                <FormItem className="w-1/2">
-                  <FormLabel>To</FormLabel>
-                  <FormControl>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Drift" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {transferSchema.shape.destination._def.values.map(
-                          (option) => (
-                            <SelectItem key={option} value={option}>
+                            </SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>)}
+              />
+              <FormField
+                control={form.control}
+                name="destination"
+                render={({ field }) => (<FormItem className="w-1/2">
+                    <FormLabel>To</FormLabel>
+                    <FormControl>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Drift" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {transferSchema.shape.destination._def.values.map((option) => (<SelectItem key={option} value={option}>
                               {option}
-                            </SelectItem>
-                          )
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+                            </SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>)}
+              />
+            </div>
 
-          <div className="flex space-x-4 w-full">
-            <Button
-              className="w-1/2"
-              variant="ghost"
-              onClick={(event) => handleClear(event)}
-            >
-              Clear
-            </Button>
-            <Button className="w-1/2" type="submit">
-              Transfer
-            </Button>
-          </div>
-        </form>
-      </Form>
-    </FormProvider>
-  );
+            <div className="flex space-x-4 w-full">
+              <Button
+                className="w-1/2"
+                variant="ghost"
+                onClick={(event) => handleClear(event)}
+              >
+                Clear
+              </Button>
+              <Button className="w-1/2" type="submit">
+                Transfer
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </FormProvider>
+    </div>
+  </PageContentWrapper>
+);
 }

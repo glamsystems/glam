@@ -210,7 +210,7 @@ export default function Integrations() {
           <Tabs defaultValue="all">
             <div>
               <TabsList>
-                <TabsTrigger value="all">All integrations</TabsTrigger>
+                <TabsTrigger value="all">All Integrations</TabsTrigger>
                 <TabsTrigger value="active">Active</TabsTrigger>
               </TabsList>
             </div>

@@ -13,7 +13,7 @@ export default function Policies() {
           <Tabs defaultValue="all">
             <div className="flex items-center">
               <TabsList>
-                <TabsTrigger value="all">All policies</TabsTrigger>
+                <TabsTrigger value="all">All Policies</TabsTrigger>
                 <TabsTrigger value="active">Active</TabsTrigger>
               </TabsList>
             </div>

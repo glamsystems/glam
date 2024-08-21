@@ -33,6 +33,7 @@ import { useGlam, JITO_STAKE_POOL, MSOL, JITOSOL } from "@glam/anchor/react";
 
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import PageContentWrapper from "@/components/PageContentWrapper";
 
 const stakeSchema = z.object({
   service: z.enum(["Marinade", "Native", "Jito"]),
@@ -263,113 +264,98 @@ export default function Stake() {
   };
 
   return (
-    <div className="flex flex-col justify-center w-full mt-16">
-      <div className="w-1/2 self-center">
-        <FormProvider {...form}>
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4 w-full"
-            >
-              <div>
-                <FormItem>
-                  <FormLabel>Mode</FormLabel>
-                  <ToggleGroup
-                    type="single"
-                    value={mode}
-                    onValueChange={handleModeChange}
-                    className="flex space-x-2"
-                  >
-                    <ToggleGroupItem
-                      value="stake"
-                      aria-label="Stake"
-                      className="grow"
+    <PageContentWrapper>
+      <div className="w-4/6 self-center">
+        <div>
+          <FormProvider {...form}>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
+                <div>
+                  <FormItem>
+                    <FormLabel>Mode</FormLabel>
+                    <ToggleGroup
+                      type="single"
+                      value={mode}
+                      onValueChange={handleModeChange}
+                      className="flex space-x-2"
                     >
-                      Stake
-                    </ToggleGroupItem>
-                    <ToggleGroupItem
-                      value="unstake"
-                      aria-label="Unstake"
-                      className="grow"
-                    >
-                      Unstake
-                    </ToggleGroupItem>
-                  </ToggleGroup>
-                </FormItem>
-              </div>
+                      <ToggleGroupItem
+                        value="stake"
+                        aria-label="Stake"
+                        className="grow"
+                      >
+                        Stake
+                      </ToggleGroupItem>
+                      <ToggleGroupItem
+                        value="unstake"
+                        aria-label="Unstake"
+                        className="grow"
+                      >
+                        Unstake
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                  </FormItem>
+                </div>
 
-              <div className="flex space-x-4">
-                <FormField
-                  control={form.control}
-                  name="service"
-                  render={({ field }) => (
-                    <FormItem className="w-1/2">
-                      <FormLabel>Service</FormLabel>
-                      <FormControl>
-                        <Select
-                          value={field.value}
-                          onValueChange={(value) =>
-                            handleServiceChange(value as StakeSchema["service"])
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Service" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {stakeSchema.shape.service._def.values.map(
-                              (option) => (
-                                <SelectItem key={option} value={option}>
+                <div className="flex space-x-4">
+                  <FormField
+                    control={form.control}
+                    name="service"
+                    render={({ field }) => (<FormItem className="w-1/2">
+                        <FormLabel>Service</FormLabel>
+                        <FormControl>
+                          <Select
+                            value={field.value}
+                            onValueChange={(value) => handleServiceChange(value as StakeSchema["service"])}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Service" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {stakeSchema.shape.service._def.values.map((option) => (<SelectItem key={option} value={option}>
                                   {option}
-                                </SelectItem>
-                              )
-                            )}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <AssetInput
-                  className="min-w-1/2 w-1/2"
-                  name="amountIn"
-                  label="Amount"
-                  balance={balance}
-                  selectedAsset={amountInAsset}
-                  onSelectAsset={setAmountInAsset}
-                  disableAssetChange={true}
-                />
-              </div>
+                                </SelectItem>))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>)}
+                  />
+                  <AssetInput
+                    className="min-w-1/2 w-1/2"
+                    name="amountIn"
+                    label="Amount"
+                    balance={balance}
+                    selectedAsset={amountInAsset}
+                    onSelectAsset={setAmountInAsset}
+                    disableAssetChange={true}
+                  />
+                </div>
 
-              <div className="flex space-x-4 w-full">
-                <Button
-                  className="w-1/2"
-                  variant="ghost"
-                  onClick={(event) => handleClear(event)}
-                >
-                  Clear
-                </Button>
-                <Button className="w-1/2" type="submit">
-                  {mode.charAt(0).toUpperCase() + mode.slice(1)}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </FormProvider>
-      </div>
-      {wallet && fundPDA ? (
-        <div className="flex w-1/2 mt-16 self-center">
-          {loading ? (
-            <p>Loading tickets and stake accounts ...</p>
-          ) : (
-            <div className="w-full">
-              <DataTable data={marinadeTicket} columns={columns} />
-            </div>
-          )}
+                <div className="flex space-x-4 w-full  mt-4">
+                  <Button
+                    className="w-1/2"
+                    variant="ghost"
+                    onClick={(event) => handleClear(event)}
+                  >
+                    Clear
+                  </Button>
+                  <Button className="w-1/2" type="submit">
+                    {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </FormProvider>
         </div>
-      ) : (
-        <></>
-      )}
-    </div>
-  );
+        {wallet && fundPDA ? (<div className="flex w-1/2 mt-16 self-center">
+            {loading ? (<p>Loading tickets and stake accounts ...</p>) : (<div className="w-full">
+                <DataTable data={marinadeTicket} columns={columns} />
+              </div>)}
+          </div>) : (<></>)}
+      </div>
+    </PageContentWrapper>);
 }

@@ -71,10 +71,11 @@ export default function Create() {
 
   return (
     <PageContentWrapper>
-      <div className="w-1/2 self-center">
+      <div className="w-4/6 self-center">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-4"
         >
           <div className="flex space-x-4 items-top">
             <FormField

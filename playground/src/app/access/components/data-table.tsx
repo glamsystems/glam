@@ -323,9 +323,9 @@ export function DataTable<TData extends KeyData>({
                   </SheetTrigger>
                   <SheetContent side="right" className="p-12 sm:max-w-none w-1/2">
                     <SheetHeader>
-                      <SheetTitle>Edit key</SheetTitle>
+                      <SheetTitle>Modify Key</SheetTitle>
                       <SheetDescription>
-                        Edit the access rights of the public key.
+                        Modify the access rights of the public key.
                       </SheetDescription>
                     </SheetHeader>
                     <div className="grid gap-4 py-4">
@@ -337,7 +337,7 @@ export function DataTable<TData extends KeyData>({
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="pubKey" className="text-right text-muted-foreground">
-                          Public key
+                          Public Key
                         </Label>
                         <Input id="pubKey" value="" placeholder="GLAMvRgo7cHBPjQGf8UaVnsD6TUDjq16dEUuDPAPLjyJ" className="col-span-3" disabled />
                       </div>
@@ -345,7 +345,7 @@ export function DataTable<TData extends KeyData>({
                     <div className="grid grid-cols-4 gap-4">
                       <div className="col-spar-3 text-right pt-1">
                         <Label htmlFor="accessRights" className="text-right">
-                          Access rights
+                          Access Rights
                         </Label>
                       </div>
                       <div className="col-span-3">
@@ -357,12 +357,12 @@ export function DataTable<TData extends KeyData>({
                           />
                       </div>
                     </div>
-                    <SheetFooter>
+                    <SheetFooter className="mt-4">
                       <Button variant="outline" className="hover:bg-destructive hover:text-destructive-foreground hover:border-destructive">
-                        Delete key
+                        Delete Key
                       </Button>
                       <SheetClose asChild>
-                        <Button type="submit">Save changes</Button>
+                        <Button type="submit">Modify Key</Button>
                       </SheetClose>
                     </SheetFooter>
                   </SheetContent>
