@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { useConnection } from "@solana/wallet-adapter-react";
 import JupiterStrict from "../jupiter/data/jupiterStrict";
+import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";
 
 export function useGetTokenAccounts({ address }: { address: PublicKey }) {
@@ -107,8 +108,8 @@ export default function Holdings() {
   }, [items, jupiterData, solBalance]);
 
   return (
-    <div className="flex w-2/3 mt-16 self-center">
+    <PageContentWrapper>
       <DataTable data={data} columns={columns} />
-    </div>
+    </PageContentWrapper>
   );
 }

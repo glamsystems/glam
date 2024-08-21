@@ -5,6 +5,7 @@ import { DataTable } from "./components/data-table";
 import { columns } from "./components/columns";
 import JupiterStrict from "./data/jupiterStrict";
 import { Skeleton } from "@/components/ui/skeleton";
+import PageContentWrapper from "@/components/PageContentWrapper";
 
 export default function Assets() {
   const [assets, setAssets] = useState(null);
@@ -19,7 +20,7 @@ export default function Assets() {
   }, []);
 
   return (
-    <div className="flex w-2/3 mt-16 self-center">
+    <PageContentWrapper>
       {assets ? (
         <DataTable data={assets} columns={columns} />
       ) : (
@@ -40,6 +41,6 @@ export default function Assets() {
           <Skeleton className="w-1/2 h-[36px]" />
         </div>
       )}
-    </div>
+    </PageContentWrapper>
   );
 }
