@@ -29,7 +29,7 @@ import React, { useState, useEffect } from "react";
 import { columns } from "./components/columns";
 import { DataTable } from "./components/data-table";
 
-import { useGlam, JITO_STAKE_POOL, MSOL, JITOSOL } from "@glam/anchor";
+import { useGlam, JITO_STAKE_POOL, MSOL, JITOSOL } from "@glam/anchor/react";
 
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";

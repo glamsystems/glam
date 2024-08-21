@@ -5,7 +5,7 @@ import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { PublicKey } from "@solana/web3.js";
 import { ticketSchema } from "../data/ticketSchema";
-import { useGlam } from "@glam/anchor";
+import { useGlam } from "@glam/anchor/react";
 import { testFund } from "../../testFund";
 import { toast } from "@/components/ui/use-toast";
 import { ExplorerLink } from "@/components/ExplorerLink";
