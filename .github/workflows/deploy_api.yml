@@ -70,4 +70,4 @@ jobs:
           echo "  GIT_SHA: $GITHUB_SHA" >> api/.env.yaml
 
       - name: Deploy to GAE
-        run: ./deploy_api.sh --${{ inputs.environment }}
+        run: ./scripts/deploy_api.sh --${{ inputs.environment }}
