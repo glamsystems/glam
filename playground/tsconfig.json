@@ -28,7 +28,10 @@
       ],
       "@glam/anchor": [
         "anchor/src/index.ts"
-      ]
+      ],
+      "@glam/anchor/react": [
+        "anchor/src/react/index.tsx"
+      ],
     }
   },
   "include": [

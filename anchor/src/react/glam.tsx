@@ -11,7 +11,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { atomWithStorage } from "jotai/utils";
 
-import { GlamClient } from "./client";
+import { GlamClient } from "../client";
 import { useAtomValue, useSetAtom } from "jotai/react";
 import { PublicKey } from "@solana/web3.js";
 

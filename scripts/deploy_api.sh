@@ -31,6 +31,7 @@ deps_to_remove=(
   "@hookform/resolvers"
   "@solana-developers/preset-react"
   "@solana/wallet-adapter-base"
+  "@solana/wallet-adapter-react"
   "@solana/wallet-adapter-react-ui"
   "@solana/wallet-adapter-wallets"
   "@solana/wallet-adapter-solflare"
@@ -77,6 +78,11 @@ deps_to_remove=(
   "tslib"
   "jotai"
   "cmdk"
+  "ajv"
+  "ajv-formats"
+  "clsx"
+  "class-variance-authority"
+  "recharts"
 )
 jq_command=". | del(.devDependencies)"
 # Build the jq command to delete each key in the list

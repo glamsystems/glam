@@ -8,7 +8,7 @@ import React, {useEffect, useState} from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/use-toast";
-import { useGlam } from "@glam/anchor";
+import { useGlam } from "@glam/anchor/react";
 import { ProductNameGen } from "@/utils/ProductNameGen";
 import {UpdateIcon} from "@radix-ui/react-icons";
 

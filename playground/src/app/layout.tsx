@@ -6,7 +6,7 @@ import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { ClusterProvider } from "@/components/solana-cluster-provider";
-import { GlamProvider } from "@glam/anchor";
+import { GlamProvider } from "@glam/anchor/react";
 import { ReactQueryProvider } from "./react-query-provider";
 
 const AppWalletProvider = dynamic(
