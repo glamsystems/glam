@@ -221,6 +221,10 @@ filename = "./fixtures/accounts/3R3nGZpQs2aZo5FDQvd2MUQ6R7KhAPainds6uT6uE2mn.jso
 address = "HUQEx8TDgEnhtuq6iXj9Rg3yVyX4tF85kS1k7jTnAaqR"
 filename = "./fixtures/accounts/HUQEx8TDgEnhtuq6iXj9Rg3yVyX4tF85kS1k7jTnAaqR.json"
 
+[[test.validator.account]] # vote account
+address = "StepeLdhJ2znRjHcZdjwMWsC4nTRURNKQY8Nca82LJp"
+filename = "./fixtures/accounts/StepeLdhJ2znRjHcZdjwMWsC4nTRURNKQY8Nca82LJp.json"
+
 #
 # Stake pool - SanctumSpl
 #

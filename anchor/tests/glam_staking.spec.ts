@@ -2,7 +2,11 @@ import { BN } from "@coral-xyz/anchor";
 
 import { createFundForTest } from "./setup";
 import { GlamClient } from "../src";
-import { PublicKey } from "@solana/web3.js";
+import {
+  PublicKey,
+  StakeProgram,
+  SYSVAR_STAKE_HISTORY_PUBKEY,
+} from "@solana/web3.js";
 
 const JITO_STAKE_POOL = new PublicKey(
   "Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb"
@@ -54,6 +58,52 @@ describe("glam_staking", () => {
       console.error(e);
       throw e;
     }
+  });
+
+  it("Stake 5 SOL to a validator", async () => {
+    try {
+      const txSig = await glamClient.staking.initializeAndDelegateStake(
+        fundPDA,
+        new PublicKey("StepeLdhJ2znRjHcZdjwMWsC4nTRURNKQY8Nca82LJp"),
+        new BN(5_000_000_000)
+      );
+
+      const stakeAccounts = await glamClient.staking.getStakeAccounts(
+        glamClient.getTreasuryPDA(fundPDA)
+      );
+      expect(stakeAccounts.length).toEqual(2);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+    let stakeAccounts = await glamClient.staking.getStakeAccounts(
+      glamClient.getTreasuryPDA(fundPDA)
+    );
+    expect(stakeAccounts.length).toEqual(2);
+
+    try {
+      const txId = await glamClient.program.methods
+        .mergeStakeAccounts()
+        .accounts({
+          fund: fundPDA,
+          treasury: glamClient.getTreasuryPDA(fundPDA),
+          mainStakeAccount: stakeAccounts[0],
+          secondaryStakeAccount: stakeAccounts[1],
+          stakeProgram: StakeProgram.programId,
+          stakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
+        })
+        .rpc();
+      console.log("mergeStakeAccounts tx:", txId);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+
+    // Only 1 stake account should be left after merging
+    stakeAccounts = await glamClient.staking.getStakeAccounts(
+      glamClient.getTreasuryPDA(fundPDA)
+    );
+    expect(stakeAccounts.length).toEqual(1);
   });
 
   it("[spl-stake-pool] Deposit stake account to jito stake pool", async () => {

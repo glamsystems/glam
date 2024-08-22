@@ -97,6 +97,8 @@ pub fn initialize_and_delegate_stake<'c: 'info, 'info>(
         signer_seeds,
     )?;
 
+    msg!("Creating stake account with {} lamports", lamports);
+
     // Delegate the stake account
     let delegate_stake_ix = solana_program::stake::instruction::delegate_stake(
         ctx.accounts.treasury_stake_account.key,
@@ -209,6 +211,61 @@ pub fn withdraw_from_stake_accounts<'info>(
 
         let _ = withdraw(cpi_ctx, lamports, None);
     });
+
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct MergeStakeAccounts<'info> {
+    #[account(mut)]
+    pub manager: Signer<'info>,
+
+    #[account(has_one = treasury)]
+    pub fund: Box<Account<'info, FundAccount>>,
+
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
+
+    #[account(mut)]
+    pub main_stake_account: Account<'info, StakeAccount>,
+
+    #[account(mut)]
+    pub secondary_stake_account: Account<'info, StakeAccount>,
+
+    pub clock: Sysvar<'info, Clock>,
+    pub rent: Sysvar<'info, Rent>,
+    pub stake_history: Sysvar<'info, StakeHistory>,
+
+    pub stake_program: Program<'info, Stake>,
+    pub system_program: Program<'info, System>,
+}
+
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
+)]
+pub fn merge_stake_accounts<'c: 'info, 'info>(ctx: Context<MergeStakeAccounts>) -> Result<()> {
+    let fund_key = ctx.accounts.fund.key();
+    let treasury_seeds = &[
+        b"treasury".as_ref(),
+        fund_key.as_ref(),
+        &[ctx.bumps.treasury],
+    ];
+    let signer_seeds = &[&treasury_seeds[..]];
+
+    let ix = solana_program::stake::instruction::merge(
+        &ctx.accounts.main_stake_account.key(),
+        &ctx.accounts.secondary_stake_account.key(),
+        ctx.accounts.treasury.key,
+    );
+    let account_infos = &[
+        ctx.accounts.main_stake_account.to_account_info(),
+        ctx.accounts.secondary_stake_account.to_account_info(),
+        ctx.accounts.treasury.to_account_info(),
+        ctx.accounts.clock.to_account_info(),
+        ctx.accounts.stake_history.to_account_info(),
+        ctx.accounts.stake_program.to_account_info(),
+    ];
+    let _ = solana_program::program::invoke_signed(&ix[0], account_infos, signer_seeds);
 
     Ok(())
 }
