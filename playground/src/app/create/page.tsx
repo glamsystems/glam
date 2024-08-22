@@ -1,24 +1,17 @@
 "use client";
 
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import {Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input"
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState} from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/use-toast";
 import { useGlam } from "@glam/anchor/react";
 import { ProductNameGen } from "@/utils/ProductNameGen";
-import { UpdateIcon } from "@radix-ui/react-icons";
+import {UpdateIcon} from "@radix-ui/react-icons";
+
 
 const createSchema = z.object({
   productName: z.string().min(3, {
@@ -56,9 +49,7 @@ export default function Create() {
         title: "Product Created",
         description: (
           <pre className="mt-2 w-[340px] rounded-md bg-zinc-900 p-4">
-            <code className="text-white">
-              {JSON.stringify(values, null, 2)}
-            </code>
+            <code className="text-white">{JSON.stringify(values, null, 2)}</code>
           </pre>
         ),
       });
@@ -69,13 +60,13 @@ export default function Create() {
     event.preventDefault();
     const generatedName = ProductNameGen();
     form.setValue("productName", generatedName);
-  };
+  }
 
   const handleRefresh = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     const generatedName = ProductNameGen();
     form.setValue("productName", generatedName);
-  };
+  }
 
   return (
     <Form {...form}>
@@ -93,9 +84,7 @@ export default function Create() {
                 <FormControl>
                   <Input placeholder="Product Name" {...field} />
                 </FormControl>
-                <FormDescription>
-                  This is the public product name.
-                </FormDescription>
+                <FormDescription>This is the public product name.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -110,7 +99,11 @@ export default function Create() {
           </Button>
         </div>
         <div className="flex space-x-4 w-full">
-          <Button className="w-1/2" variant="ghost" onClick={handleClear}>
+          <Button
+            className="w-1/2"
+            variant="ghost"
+            onClick={handleClear}
+          >
             Clear
           </Button>
           <Button className="w-1/2" type="submit">
