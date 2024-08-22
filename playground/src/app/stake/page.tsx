@@ -273,26 +273,26 @@ export default function Stake() {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-4"
               >
-                <div>
-                  <FormItem>
+                <div className="flex">
+                  <FormItem className="w-full">
                     <FormLabel>Mode</FormLabel>
                     <ToggleGroup
                       type="single"
                       value={mode}
                       onValueChange={handleModeChange}
-                      className="flex space-x-2"
+                      className="flex space-x-4"
                     >
                       <ToggleGroupItem
                         value="stake"
                         aria-label="Stake"
-                        className="grow"
+                        className="w-1/2"
                       >
                         Stake
                       </ToggleGroupItem>
                       <ToggleGroupItem
                         value="unstake"
                         aria-label="Unstake"
-                        className="grow"
+                        className="w-1/2"
                       >
                         Unstake
                       </ToggleGroupItem>
@@ -304,25 +304,35 @@ export default function Stake() {
                   <FormField
                     control={form.control}
                     name="service"
-                    render={({ field }) => (<FormItem className="w-1/2">
+                    render={({ field }) => (
+                      <FormItem className="w-1/2">
                         <FormLabel>Service</FormLabel>
                         <FormControl>
                           <Select
                             value={field.value}
-                            onValueChange={(value) => handleServiceChange(value as StakeSchema["service"])}
+                            onValueChange={(value) =>
+                              handleServiceChange(
+                                value as StakeSchema["service"]
+                              )
+                            }
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Service" />
                             </SelectTrigger>
                             <SelectContent>
-                              {stakeSchema.shape.service._def.values.map((option) => (<SelectItem key={option} value={option}>
-                                  {option}
-                                </SelectItem>))}
+                              {stakeSchema.shape.service._def.values.map(
+                                (option) => (
+                                  <SelectItem key={option} value={option}>
+                                    {option}
+                                  </SelectItem>
+                                )
+                              )}
                             </SelectContent>
                           </Select>
                         </FormControl>
                         <FormMessage />
-                      </FormItem>)}
+                      </FormItem>
+                    )}
                   />
                   <AssetInput
                     className="min-w-1/2 w-1/2"
@@ -351,11 +361,20 @@ export default function Stake() {
             </Form>
           </FormProvider>
         </div>
-        {wallet && fundPDA ? (<div className="flex w-1/2 mt-16 self-center">
-            {loading ? (<p>Loading tickets and stake accounts ...</p>) : (<div className="w-full">
+        {wallet && fundPDA ? (
+          <div className="flex w-1/2 mt-16 self-center">
+            {loading ? (
+              <p>Loading tickets and stake accounts ...</p>
+            ) : (
+              <div className="w-full">
                 <DataTable data={marinadeTicket} columns={columns} />
-              </div>)}
-          </div>) : (<></>)}
+              </div>
+            )}
+          </div>
+        ) : (
+          <></>
+        )}
       </div>
-    </PageContentWrapper>);
+    </PageContentWrapper>
+  );
 }

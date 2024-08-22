@@ -17,7 +17,7 @@ export default function Products() {
         <Tabs defaultValue="all">
           <div>
             <TabsList>
-              <TabsTrigger value="all">All Products</TabsTrigger>
+              <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="active">Managed</TabsTrigger>
             </TabsList>
           </div>

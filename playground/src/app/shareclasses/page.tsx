@@ -23,7 +23,7 @@ export default function Products() {
           <Tabs defaultValue="all">
             <div>
               <TabsList>
-                <TabsTrigger value="all">All Share Classes</TabsTrigger>
+                <TabsTrigger value="all">All</TabsTrigger>
                 <TabsTrigger value="active">Active</TabsTrigger>
                 <TooltipProvider>
                   <Tooltip>

@@ -2,7 +2,7 @@
 
 import React from "react";
 import {
-  BoxModelIcon, CardStackIcon, Component1Icon, Crosshair2Icon, DashboardIcon, DownloadIcon, ExitIcon, FilePlusIcon, GlobeIcon, LayersIcon, ListBulletIcon, LoopIcon, MarginIcon, MixerHorizontalIcon, MixIcon, PersonIcon, PlusIcon, StackIcon, TargetIcon, TokensIcon, TransformIcon,
+  BoxModelIcon, CardStackIcon, Component1Icon, Crosshair2Icon, DashboardIcon, DownloadIcon, ExitIcon, FilePlusIcon, GlobeIcon, LayersIcon, ListBulletIcon, LoopIcon, MarginIcon, MixerHorizontalIcon, MixIcon, PersonIcon, PlusIcon, ShuffleIcon, StackIcon, TargetIcon, TokensIcon, TransformIcon
 } from "@radix-ui/react-icons";
 import AccountMenu from "./AccountMenu";
 import Link from "next/link";
@@ -51,10 +51,13 @@ function SidebarItem({ route, text, shortcut, Icon }: SidebarItemProps) {
 
 export default function Sidebar() {
   const navList = [{
-    // Adding the Screener link back
-    items: [{ route: "/screener", text: "Screener", shortcut: "", Icon: LayersIcon },],
+    group: "Investment",
+    items: [
+      { route: "/screener", text: "Screener", shortcut: "", Icon: LayersIcon },
+      { route: "/flows", text: "Flows", shortcut: "", Icon: LoopIcon },
+    ],
   }, {
-    group: "Manage", items: [{ route: "/create", text: "Create", shortcut: "", Icon: PlusIcon },
+    group: "Administration", items: [{ route: "/create", text: "Create", shortcut: "", Icon: PlusIcon },
         { route: "/products", text: "Products", shortcut: "", Icon: StackIcon },
         { route: "/shareclasses", text: "Share Classes", shortcut: "", Icon: TokensIcon },
         { route: "/policies", text: "Policies", shortcut: "", Icon: BoxModelIcon },
@@ -63,12 +66,12 @@ export default function Sidebar() {
       ],
     },
     {
-      group: "Actions",
+      group: "Management",
       items: [
         { route: "/holdings", text: "Holdings", shortcut: "", Icon: ListBulletIcon},
         { route: "/wrap", text: "Wrap", shortcut: "", Icon: MarginIcon },
         { route: "/stake", text: "Stake", shortcut: "", Icon: DownloadIcon },
-        { route: "/trade", text: "Trade", shortcut: "", Icon: LoopIcon },
+        { route: "/trade", text: "Trade", shortcut: "", Icon: ShuffleIcon },
         { route: "/transfer", text: "Transfer", shortcut: "", Icon: ExitIcon },
       ],
     },
@@ -93,7 +96,7 @@ export default function Sidebar() {
       <div className="grow pt-2">
         {navList.map((nav, index) => (
           <div key={index} className="mb-4">
-            {nav.group && <div className="text-muted-foreground text-xs ml-2 mb-2">{nav.group}</div>}
+            {nav.group && <div className="text-muted-foreground opacity-50  text-xs ml-2 mb-2">{nav.group}</div>}
             <ul className="list-none p-0 m-0">
               {nav.items.map((item, itemIndex) => (
                 <SidebarItem key={itemIndex} {...item} />
