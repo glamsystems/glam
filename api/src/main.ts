@@ -9,6 +9,7 @@ import txRouter from "./routers/tx";
 import openfundsRouter from "./routers/openfunds";
 import fundRouter from "./routers/fund";
 import miscRouter from "./routers/misc";
+import shareClassRouter from "./routers/shareclass";
 
 import { GlamClient, JUPITER_API_DEFAULT } from "@glam/anchor";
 
@@ -63,6 +64,7 @@ app.use(imageRouter);
 // routers that need to use glam client must be registered after req.client is set
 app.use(fundRouter);
 app.use(openfundsRouter);
+app.use(shareClassRouter);
 
 // tx should be the last router
 app.use(txRouter);
