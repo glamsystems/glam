@@ -231,7 +231,6 @@ pub struct MergeStakeAccounts<'info> {
     pub from_stake: Account<'info, StakeAccount>,
 
     pub clock: Sysvar<'info, Clock>,
-    pub rent: Sysvar<'info, Rent>,
     pub stake_history: Sysvar<'info, StakeHistory>,
 
     pub stake_program: Program<'info, Stake>,
@@ -263,6 +262,94 @@ pub fn merge_stake_accounts<'c: 'info, 'info>(ctx: Context<MergeStakeAccounts>) 
         ctx.accounts.stake_history.to_account_info(),
     ];
     let _ = solana_program::program::invoke_signed(&ix[0], account_infos, signer_seeds);
+
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct SplitStakeAccount<'info> {
+    #[account(mut)]
+    pub manager: Signer<'info>,
+
+    #[account(has_one = treasury)]
+    pub fund: Box<Account<'info, FundAccount>>,
+
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
+
+    #[account(mut)]
+    pub existing_stake: Account<'info, StakeAccount>,
+
+    /// CHECK: will be initialized in the instruction
+    #[account(mut)]
+    pub new_stake: UncheckedAccount<'info>,
+
+    pub clock: Sysvar<'info, Clock>,
+
+    pub stake_program: Program<'info, Stake>,
+    pub system_program: Program<'info, System>,
+}
+
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
+)]
+pub fn split_stake_account<'c: 'info, 'info>(
+    ctx: Context<SplitStakeAccount>,
+    lamports: u64,
+    new_stake_account_id: String,
+    new_stake_account_bump: u8,
+) -> Result<()> {
+    let fund_key = ctx.accounts.fund.key();
+    let stake_account_seeds = &[
+        b"stake_account".as_ref(),
+        new_stake_account_id.as_bytes(),
+        fund_key.as_ref(),
+        &[new_stake_account_bump],
+    ];
+
+    let instructions = solana_program::stake::instruction::split(
+        &ctx.accounts.existing_stake.key(),
+        &ctx.accounts.treasury.key(),
+        lamports,
+        ctx.accounts.new_stake.key,
+    );
+
+    // allocate
+    solana_program::program::invoke_signed(
+        &instructions[0],
+        &[
+            ctx.accounts.new_stake.to_account_info(),
+            ctx.accounts.system_program.to_account_info(),
+        ],
+        &[&stake_account_seeds[..]],
+    )?;
+
+    // assign
+    solana_program::program::invoke_signed(
+        &instructions[1],
+        &[
+            ctx.accounts.new_stake.to_account_info(),
+            ctx.accounts.system_program.to_account_info(),
+        ],
+        &[&stake_account_seeds[..]],
+    )?;
+
+    // split
+    let treasury_seeds = &[
+        b"treasury".as_ref(),
+        fund_key.as_ref(),
+        &[ctx.bumps.treasury],
+    ];
+    solana_program::program::invoke_signed(
+        &instructions[2],
+        &[
+            ctx.accounts.existing_stake.to_account_info(),
+            ctx.accounts.new_stake.to_account_info(),
+            ctx.accounts.treasury.to_account_info(),
+            ctx.accounts.clock.to_account_info(),
+        ],
+        &[&treasury_seeds[..]],
+    )?;
 
     Ok(())
 }

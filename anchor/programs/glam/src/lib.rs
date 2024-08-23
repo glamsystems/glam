@@ -208,6 +208,15 @@ pub mod glam {
         stake::merge_stake_accounts(ctx)
     }
 
+    pub fn split_stake_account<'info>(
+        ctx: Context<'_, '_, '_, 'info, SplitStakeAccount<'info>>,
+        lamports: u64,
+        new_stake_account_id: String,
+        new_stake_account_bump: u8,
+    ) -> Result<()> {
+        stake::split_stake_account(ctx, lamports, new_stake_account_id, new_stake_account_bump)
+    }
+
     //
     // Jupiter
     //
