@@ -223,19 +223,35 @@ export default function ProductPage() {
 
           <Card className="col-span-2 row-span-2 aspect-square p-2 flex flex-col justify-between">
             <CardHeader className="p-0">
-              <CardTitle className="text-muted-foreground opacity-75 text-md font-light">NAV per Share</CardTitle>
+              <CardTitle className="text-muted-foreground opacity-75 text-md font-light">
+                NAV per Share
+              </CardTitle>
             </CardHeader>
             <CardContent className="flex-grow flex items-center justify-center text-5xl">
-              <NumberFormatter value={123.456789} addCommas minDecimalPlaces={2} maxLength={7} useLetterNotation />
+              <NumberFormatter
+                value={123.456789}
+                addCommas
+                minDecimalPlaces={2}
+                maxLength={7}
+                useLetterNotation
+              />
             </CardContent>
           </Card>
 
           <Card className="col-span-2 row-span-2 aspect-square p-2 flex flex-col justify-between">
             <CardHeader className="p-0">
-              <CardTitle className="text-muted-foreground opacity-75 text-md font-light">Assets Under Management</CardTitle>
+              <CardTitle className="text-muted-foreground opacity-75 text-md font-light">
+                Assets Under Management
+              </CardTitle>
             </CardHeader>
             <CardContent className="flex-grow flex items-center justify-center text-5xl">
-              <NumberFormatter value={987654321} addCommas minDecimalPlaces={2} maxLength={7} useLetterNotation />
+              <NumberFormatter
+                value={987654321}
+                addCommas
+                minDecimalPlaces={2}
+                maxLength={7}
+                useLetterNotation
+              />
             </CardContent>
           </Card>
 
@@ -261,18 +277,60 @@ export default function ProductPage() {
             </Card>
             <Card className="col-span-3 flex flex-col items-start justify-start p-2 text-sm">
               <CardHeader className="p-0 mb-4">
-                <CardTitle className="text-muted-foreground opacity-75 text-xs font-light">Fees</CardTitle>
+                <CardTitle className="text-muted-foreground opacity-75 text-xs font-light">
+                  Fees
+                </CardTitle>
               </CardHeader>
               <CardContent className="p-0 w-full">
                 <div className="grid grid-cols-4 gap-x-4 gap-y-2">
                   <div className="text-muted-foreground">Management</div>
-                  <div className="font-medium text-right">1.5%</div>
+                  <div className="font-medium text-right">
+                    <NumberFormatter
+                      value={0.0123546}
+                      addCommas
+                      minDecimalPlaces={2}
+                      maxDecimalPlaces={2}
+                      maxLength={6}
+                      useLetterNotation
+                      isPercentage={true}
+                    />
+                  </div>
                   <div className="text-muted-foreground">Subscription</div>
-                  <div className="font-medium text-right">0%</div>
+                  <div className="font-medium text-right">
+                    <NumberFormatter
+                      value={0}
+                      addCommas
+                      minDecimalPlaces={2}
+                      maxDecimalPlaces={2}
+                      maxLength={6}
+                      useLetterNotation
+                      isPercentage={true}
+                    />
+                  </div>
                   <div className="text-muted-foreground">Performance</div>
-                  <div className="font-medium text-right">10%</div>
+                  <div className="font-medium text-right">
+                    <NumberFormatter
+                      value={0.1}
+                      addCommas
+                      minDecimalPlaces={2}
+                      maxDecimalPlaces={2}
+                      maxLength={6}
+                      useLetterNotation
+                      isPercentage={true}
+                    />
+                  </div>
                   <div className="text-muted-foreground">Redemption</div>
-                  <div className="font-medium text-right">0%</div>
+                  <div className="font-medium text-right">
+                    <NumberFormatter
+                      value={0.0}
+                      addCommas
+                      minDecimalPlaces={2}
+                      maxDecimalPlaces={2}
+                      maxLength={6}
+                      useLetterNotation
+                      isPercentage={true}
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -421,77 +479,123 @@ export default function ProductPage() {
                 </CardContent>
               </Card>
               <Card className="col-span-4 row-span-1 aspect-square">
-                <CardHeader className="flex flex-row items-start p-4">
-                  <div className="grid gap-0.5">
-                    <CardTitle className="group flex items-center text-md font-medium">
-                      Key Facts
-                    </CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-4 pt-0 text-sm">
-                  <div className="grid gap-2">
-                    <div className="font-medium">Basic Information</div>
-                    <ul className="grid gap-2">
-                      <li className="flex items-center justify-between">
-                        <span className="text-muted-foreground">
-                          Base Asset
-                        </span>
-                        <span>SOL</span>
-                      </li>
-                      <li className="flex items-center justify-between">
-                        <span className="text-muted-foreground">
-                          Launch Date
-                        </span>
-                        <span>August 20, 2024</span>
-                      </li>
-                      <li className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Domicile</span>
-                        <span>Solana</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <Separator className="my-4" />
-                  <div className="grid gap-2">
-                    <div className="font-medium">Share Class Details</div>
-                    <dl className="grid gap-2">
-                      <div className="flex items-center justify-between">
-                        <dt className="text-muted-foreground">
-                          Share Class Asset
-                        </dt>
-                        <dd>SOL</dd>
+                <CardContent className="p-2 text-sm">
+                  <Tabs defaultValue="keyFacts" className="w-full">
+                    <TabsList>
+                      <TabsTrigger value="keyFacts">Key Facts</TabsTrigger>
+                      <TabsTrigger value="onchain">Onchain</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="keyFacts">
+                      <div className="grid gap-2">
+                        <div className="font-medium">Basic Information</div>
+                        <ul className="grid gap-2">
+                          <li className="flex items-center justify-between">
+                            <span className="text-muted-foreground">
+                              Base Asset
+                            </span>
+                            <span>SOL</span>
+                          </li>
+                          <li className="flex items-center justify-between">
+                            <span className="text-muted-foreground">
+                              Launch Date
+                            </span>
+                            <span>August 20, 2024</span>
+                          </li>
+                          <li className="flex items-center justify-between">
+                            <span className="text-muted-foreground">
+                              Domicile
+                            </span>
+                            <span>Solana</span>
+                          </li>
+                        </ul>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <dt className="text-muted-foreground">Launch Date</dt>
-                        <dd>August 20, 2024</dd>
+                      <Separator className="my-4" />
+                      <div className="grid gap-2">
+                        <div className="font-medium">Share Class Details</div>
+                        <dl className="grid gap-2">
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">
+                              Share Class Asset
+                            </dt>
+                            <dd>SOL</dd>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">
+                              Launch Date
+                            </dt>
+                            <dd>August 20, 2024</dd>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">
+                              Lifecycle Stage
+                            </dt>
+                            <dd>Active</dd>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">
+                              Investment Satus
+                            </dt>
+                            <dd>Open</dd>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">
+                              Minimal Subscription
+                            </dt>
+                            <dd>
+                              1 <span>SOL</span>
+                            </dd>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">
+                              Distribution Policy
+                            </dt>
+                            <dd>Accumulating</dd>
+                          </div>
+                        </dl>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <dt className="text-muted-foreground">
-                          Lifecycle Stage
-                        </dt>
-                        <dd>Active</dd>
+                    </TabsContent>
+                    <TabsContent value="onchain">
+                      <div className="grid gap-2">
+                        <div className="font-medium">Fund Accounts</div>
+                        <ul className="grid gap-2">
+                          <li className="flex items-center justify-between">
+                            <span className="text-muted-foreground">
+                              Fund
+                            </span>
+                            <span>
+                              <TruncateAddress address="G8NKLJ2Y3TFrjXpfkpGJQZLXvbKKyvNDzc84C8P3DDU8" />
+                            </span>
+                          </li>
+                          <li className="flex items-center justify-between">
+                            <span className="text-muted-foreground">
+                              Manager
+                            </span>
+                            <span>
+                              <TruncateAddress address="gLJHKPrZLGBiBZ33hFgZh6YnsEhTVxuRT17UCqNp6ff" />
+                            </span>
+                          </li>
+                          <li className="flex items-center justify-between">
+                            <span className="text-muted-foreground">
+                              Treasury
+                            </span>
+                            <span><TruncateAddress address="5SVdBngSHNGtYaQxkzJxso4S7ggaVb3vaKy5LSqbrFpZ"/></span>
+                          </li>
+                        </ul>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <dt className="text-muted-foreground">
-                          Investment Satus
-                        </dt>
-                        <dd>Open</dd>
+                      <Separator className="my-4" />
+                      <div className="grid gap-2">
+                        <div className="font-medium">Share Class Accounts</div>
+                        <dl className="grid gap-2">
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">
+                              Share Class 1 gmSOL
+                            </dt>
+                            <dd><TruncateAddress address="4DR9bKNPeCcdHaVhdHPh8ge2vEevwZpFpuwyMnWyF3Fu"/></dd>
+                          </div>
+                        </dl>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <dt className="text-muted-foreground">
-                          Minimal Subscription
-                        </dt>
-                        <dd>
-                          1 <span>SOL</span>
-                        </dd>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <dt className="text-muted-foreground">
-                          Distribution Policy
-                        </dt>
-                        <dd>Accumulating</dd>
-                      </div>
-                    </dl>
-                  </div>
+                    </TabsContent>
+                  </Tabs>
                 </CardContent>
               </Card>
             </div>

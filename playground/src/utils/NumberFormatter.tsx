@@ -7,6 +7,7 @@ interface NumberFormatterProps {
   maxDecimalPlaces?: number;
   useLetterNotation?: boolean;
   maxLength?: number;
+  isPercentage?: boolean;
   className?: string;
 }
 
@@ -18,12 +19,20 @@ const formatNumber = (
     maxDecimalPlaces?: number;
     useLetterNotation?: boolean;
     maxLength?: number;
+    isPercentage?: boolean;
   } = {}
 ): string => {
-  const { addCommas = false, minDecimalPlaces = 0, maxDecimalPlaces = 20, useLetterNotation = false, maxLength } = options;
+  const { addCommas = false, minDecimalPlaces = 0, maxDecimalPlaces = 20, useLetterNotation = false, maxLength, isPercentage = false } = options;
 
   let formattedNumber = number;
   let letterNotation = '';
+  let percentageSymbol = '';
+
+  // Handle percentage formatting
+  if (isPercentage) {
+    formattedNumber *= 100;
+    percentageSymbol = '%';
+  }
 
   // Handle letter notation first
   if (useLetterNotation) {
@@ -35,19 +44,12 @@ const formatNumber = (
     }
   }
 
-  // Calculate available length for the number itself
-  const availableLength = maxLength !== undefined ? maxLength - letterNotation.length : Infinity;
-
-  // Ensure at least one digit is shown before the decimal point
-  const integerDigits = Math.max(1, Math.floor(Math.log10(Math.abs(formattedNumber)) + 1));
-
-  // Calculate the number of decimal places we can show given the constraints
-  let decimalPlaces = Math.min(
+  // Format the number with the calculated decimal places
+  const decimalPlaces = Math.min(
     maxDecimalPlaces,
-    Math.max(minDecimalPlaces, availableLength - integerDigits - (minDecimalPlaces > 0 ? 1 : 0))
+    Math.max(minDecimalPlaces, maxDecimalPlaces)
   );
 
-  // Format the number with the calculated decimal places
   let result = formattedNumber.toFixed(decimalPlaces);
 
   // Add commas if needed
@@ -60,20 +62,34 @@ const formatNumber = (
   // Add the letter notation after formatting the number
   result += letterNotation;
 
-  // If the result exceeds maxLength, consider reducing decimal places further
+  // Append percentage symbol if applicable
+  result += percentageSymbol;
+
+  // If the result exceeds maxLength, trim the result appropriately
   if (maxLength !== undefined && result.length > maxLength) {
-    const excessLength = result.length - maxLength;
+    // Account for the length of letter notation and percentage symbol
+    const nonNumericLength = letterNotation.length + percentageSymbol.length;
 
-    // Calculate how many decimal places we can trim to fit maxLength
-    decimalPlaces = Math.max(0, decimalPlaces - excessLength);
-    result = formattedNumber.toFixed(decimalPlaces) + letterNotation;
+    // Calculate the number of allowed characters for the numeric part
+    const allowedLength = maxLength - nonNumericLength;
 
-    // Add commas again if needed after adjusting decimal places
-    if (addCommas) {
-      const parts = result.split('.');
-      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-      result = parts.join('.');
+    // Trim the numeric part of the result to fit within the allowed length
+    const trimmedResult = result.slice(0, allowedLength);
+
+    // If we trimmed the decimal places, we may need to adjust them
+    const decimalPointIndex = trimmedResult.indexOf('.');
+    if (decimalPointIndex !== -1) {
+      const integerPart = trimmedResult.slice(0, decimalPointIndex);
+      const decimalPart = trimmedResult.slice(decimalPointIndex + 1);
+
+      // If the trimmed decimal part is shorter than minDecimalPlaces, pad it with zeros
+      result = `${integerPart}.${decimalPart.padEnd(minDecimalPlaces, '0')}`;
+    } else {
+      result = trimmedResult;
     }
+
+    // Reappend the letter notation and percentage symbol
+    result += letterNotation + percentageSymbol;
   }
 
   return result;
@@ -86,6 +102,7 @@ const NumberFormatter: React.FC<NumberFormatterProps> = ({
                                                            maxDecimalPlaces,
                                                            useLetterNotation = false,
                                                            maxLength,
+                                                           isPercentage = false,
                                                            className = '',
                                                          }) => {
   const formattedNumber = formatNumber(value, {
@@ -94,6 +111,7 @@ const NumberFormatter: React.FC<NumberFormatterProps> = ({
     maxDecimalPlaces,
     useLetterNotation,
     maxLength,
+    isPercentage,
   });
 
   return <span className={className}>{formattedNumber}</span>;
