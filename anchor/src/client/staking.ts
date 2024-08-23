@@ -86,6 +86,15 @@ export class StakingClient {
     return await this.base.sendAndConfirm(tx);
   }
 
+  public async mergeStakeAccounts(
+    fund: PublicKey,
+    toStake: PublicKey,
+    fromStake: PublicKey
+  ): Promise<TransactionSignature> {
+    const tx = await this.mergeStakeAccountsTx(fund, toStake, fromStake);
+    return await this.base.sendAndConfirm(tx);
+  }
+
   /*
    * Utils
    */
@@ -413,6 +422,31 @@ export class StakingClient {
           isWritable: true,
         }))
       )
+      .transaction();
+    return await this.base.intoVersionedTransaction({
+      tx,
+      ...apiOptions,
+    });
+  }
+
+  public async mergeStakeAccountsTx(
+    fund: PublicKey,
+    toStake: PublicKey,
+    fromStake: PublicKey,
+    apiOptions: ApiTxOptions = {}
+  ): Promise<VersionedTransaction> {
+    const manager = apiOptions.signer || this.base.getManager();
+    const treasury = this.base.getTreasuryPDA(fund);
+    const tx = await this.base.program.methods
+      .mergeStakeAccounts()
+      .accounts({
+        fund,
+        treasury,
+        toStake,
+        fromStake,
+        stakeProgram: StakeProgram.programId,
+        stakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
+      })
       .transaction();
     return await this.base.intoVersionedTransaction({
       tx,

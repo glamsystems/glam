@@ -82,17 +82,11 @@ describe("glam_staking", () => {
     expect(stakeAccounts.length).toEqual(2);
 
     try {
-      const txId = await glamClient.program.methods
-        .mergeStakeAccounts()
-        .accounts({
-          fund: fundPDA,
-          treasury: glamClient.getTreasuryPDA(fundPDA),
-          toStake: stakeAccounts[0],
-          fromStake: stakeAccounts[1],
-          stakeProgram: StakeProgram.programId,
-          stakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
-        })
-        .rpc();
+      const txId = await glamClient.staking.mergeStakeAccounts(
+        fundPDA,
+        stakeAccounts[0],
+        stakeAccounts[1]
+      );
       console.log("mergeStakeAccounts tx:", txId);
     } catch (e) {
       console.error(e);
