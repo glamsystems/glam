@@ -28,11 +28,16 @@ import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PublicKey } from "@solana/web3.js";
 import Sparkle from "@/utils/Sparkle";
-import SparkleColorMatcher from "@/utils/SparkleColorMatcher";
+import SparkleColorMatcher, { getColorInfo, ColorInfo } from "@/utils/SparkleColorMatcher";
 import TruncateAddress from "@/utils/TruncateAddress";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { CopyIcon, DotsVerticalIcon, DownloadIcon } from "@radix-ui/react-icons";
+import { Separator } from "@/components/ui/separator"; // Adjust the import based on your setup
+import NumberFormatter from "@/utils/NumberFormatter";
 
 const mintData = [
   { mint: "SC 1", shares: 811, fill: "var(--color-sc0)" },
@@ -76,41 +81,6 @@ const holdersData = [
     shares: 112,
     fill: "var(--color-hld4)",
   },
-  {
-    holder: (
-      <TruncateAddress address="xfBY6dJ4CkcCjB7R8akvxBMTGmZwVeFZPLwjF1oPN5S" />
-    ),
-    shares: 68,
-    fill: "var(--color-hld5)",
-  },
-  {
-    holder: (
-      <TruncateAddress address="xH9as6TSRa2seaGyR4N8DckvW2u1ZNrvXfCTQsmjHWm" />
-    ),
-    shares: 58,
-    fill: "var(--color-hld6)",
-  },
-  {
-    holder: (
-      <TruncateAddress address="x2JLb67iizpn5SbWS1TgiZ64tCadVLpsDg36KA7VJzP" />
-    ),
-    shares: 50,
-    fill: "var(--color-hld7)",
-  },
-  {
-    holder: (
-      <TruncateAddress address="xfauCwxJYsUUg1ZQG3qupZmvyNRPkcXvZoXmrANhHAe" />
-    ),
-    shares: 24,
-    fill: "var(--color-hld8)",
-  },
-  {
-    holder: (
-      <TruncateAddress address="xLoKLKde9CnfvaLJqroaeGq57meboh8YRGfJAZaCP7K" />
-    ),
-    shares: 15,
-    fill: "var(--color-hld9)",
-  },
 ];
 
 const headerConfig = {
@@ -128,70 +98,6 @@ const headerConfig = {
   mgmtFee: {
     label: "Management Fee",
     color: "hsl(var(--chart-1))",
-  },
-} satisfies ChartConfig;
-
-const mintConfig = {
-  shares: {
-    label: "Shares",
-  },
-  sc0: {
-    label: "Share Class 1",
-    color: "hsl(var(--chart-1))",
-  },
-  sc1: {
-    label: "Share Class 2",
-    color: "hsl(var(--chart-2))",
-  },
-  sc2: {
-    label: "Share Class 3",
-    color: "hsl(var(--chart-3))",
-  },
-} satisfies ChartConfig;
-
-const holdersConfig = {
-  holders: {
-    label: "Holders",
-  },
-  hld0: {
-    label: "Holder 1",
-    color: "hsl(var(--chart-1))",
-  },
-  hld1: {
-    label: "Holder 2",
-    color: "hsl(var(--chart-2))",
-  },
-  hld2: {
-    label: "Holder 3",
-    color: "hsl(var(--chart-3))",
-  },
-  hld3: {
-    label: "Holder 4",
-    color: "hsl(var(--chart-4))",
-  },
-  hld4: {
-    label: "Holder 5",
-    color: "hsl(var(--chart-5))",
-  },
-  hld5: {
-    label: "Holder 6",
-    color: "hsl(var(--chart-4))",
-  },
-  hld6: {
-    label: "Holder 7",
-    color: "hsl(var(--chart-3))",
-  },
-  hld7: {
-    label: "Holder 8",
-    color: "hsl(var(--chart-2))",
-  },
-  hld8: {
-    label: "Holder 9",
-    color: "hsl(var(--chart-1))",
-  },
-  hld9: {
-    label: "Holder 10",
-    color: "hsl(var(--chart-2))",
   },
 } satisfies ChartConfig;
 
@@ -231,14 +137,48 @@ export default function ProductPage() {
     return holdersData.reduce((acc, curr) => acc + curr.shares, 0);
   }, []);
 
-  const [color, setColor] = React.useState<string>("");
+  const [sparkleColor, setSparkleColor] = useState<string>("");
+  const [useDefaultColors, setUseDefaultColors] = React.useState(false);
 
   const handleColorGenerated = (generatedColor: string) => {
-    setColor(generatedColor);
+    setSparkleColor(generatedColor);
   };
 
-  const sparkleContainerRef = useRef(null);
+  const colorInfo: ColorInfo = useMemo(() => {
+    return getColorInfo(sparkleColor);
+  }, [sparkleColor]);
+
+  const sparkleContainerRef = useRef<HTMLDivElement>(null);
   const [sparkleSize, setSparkleSize] = useState(50); // Default size
+
+  const chartColors = useMemo(() => {
+    if (useDefaultColors) {
+      return [
+        "221.2 83.2% 53.3%",
+        "212 95% 68%",
+        "216 92% 60%",
+        "210 98% 78%",
+        "212 97% 87%",
+      ];
+    }
+    return colorInfo.colors;
+  }, [useDefaultColors, colorInfo.colors]);
+
+  const mintConfig = useMemo(() => ({
+    shares: { label: "Shares" },
+    sc0: { label: "Share Class 1", color: `hsl(${chartColors[0]})` },
+    sc1: { label: "Share Class 2", color: `hsl(${chartColors[1]})` },
+    sc2: { label: "Share Class 3", color: `hsl(${chartColors[2]})` },
+  }), [chartColors]);
+
+  const holdersConfig = useMemo(() => ({
+    holders: { label: "Holders" },
+    hld0: { label: "Holder 1", color: `hsl(${chartColors[0]})` },
+    hld1: { label: "Holder 2", color: `hsl(${chartColors[1]})` },
+    hld2: { label: "Holder 3", color: `hsl(${chartColors[2]})` },
+    hld3: { label: "Holder 4", color: `hsl(${chartColors[3]})` },
+    hld4: { label: "Holder 5", color: `hsl(${chartColors[4]})` },
+  }), [chartColors]);
 
   useEffect(() => {
     const updateSparkleSize = () => {
@@ -261,7 +201,7 @@ export default function ProductPage() {
       <main className="flex flex-1 flex-col gap-4">
         <div className="grid grid-cols-9 grid-rows-[auto_1fr] gap-4">
           {/* Top row */}
-          <Card className="border-transparent col-span-1 row-span-1 aspect-square">
+          <Card className="border-transparent border-0 col-span-1 row-span-1 aspect-square shadow-none">
             <CardContent className="p-0 h-full" ref={sparkleContainerRef}>
               <Sparkle
                 address={publicKey.toBase58()}
@@ -270,17 +210,38 @@ export default function ProductPage() {
               />
             </CardContent>
           </Card>
-          <Card className="col-span-4 row-span-1 flex items-center">
-            <CardContent className="">
-              <TruncateAddress address={publicKey.toBase58()} />
+          <Card className="col-span-4 row-span-1 flex flex-col items-start justify-start p-2 h-[102px] overflow-hidden">
+            <CardHeader className="p-0 w-full">
+              <CardTitle className="text-xl font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
+                GLAM Managed SOL
+              </CardTitle>
+              <CardDescription className="text-sm text-muted-foreground mt-2 line-clamp-2 overflow-hidden">
+                GLAM Managed SOL is a managed fund that invests in SOL.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="col-span-2 row-span-2 aspect-square p-2 flex flex-col justify-between">
+            <CardHeader className="p-0">
+              <CardTitle className="text-muted-foreground opacity-75 text-md font-light">NAV per Share</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-grow flex items-center justify-center text-5xl">
+              <NumberFormatter value={123.456789} addCommas minDecimalPlaces={2} maxLength={7} useLetterNotation />
             </CardContent>
           </Card>
-          <Card className="col-span-2 row-span-2 aspect-square"></Card>
-          <Card className="col-span-2 row-span-2 aspect-square"></Card>
+
+          <Card className="col-span-2 row-span-2 aspect-square p-2 flex flex-col justify-between">
+            <CardHeader className="p-0">
+              <CardTitle className="text-muted-foreground opacity-75 text-md font-light">Assets Under Management</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-grow flex items-center justify-center text-5xl">
+              <NumberFormatter value={987654321} addCommas minDecimalPlaces={2} maxLength={7} useLetterNotation />
+            </CardContent>
+          </Card>
 
           {/* Bottom row */}
           <div className="col-span-5 row-span-1 grid grid-cols-5 gap-4">
-            <Card className="col-span-1 flex flex-col items-start justify-center font-medium text-xl gap-3 pl-2">
+            <Card className="col-span-1 flex flex-col items-start justify-start font-medium text-xl gap-3 pl-2 pt-2 aspect-square">
               <p className="text-muted-foreground opacity-75 text-xs font-light">
                 Symbol
               </p>
@@ -289,17 +250,31 @@ export default function ProductPage() {
                 <TruncateAddress address={publicKey.toBase58()} />
               </p>
             </Card>
-            <Card className="col-span-1 flex flex-col items-start justify-center font-medium text-xl gap-3 pl-2">
+            <Card className="col-span-1 flex flex-col items-start justify-start font-medium text-xl gap-3 pl-2 pt-2 aspect-square">
               <p className="text-muted-foreground opacity-75 text-xs font-light">
-                Fund Asset
+                Class Asset
               </p>
               SOL
               <p className="text-muted-foreground opacity-25 text-xs font-light">
                 <TruncateAddress address="So11111111111111111111111111111111111111112" />
               </p>
             </Card>
-            <Card className="col-span-3 flex items-center justify-center font-medium text-xl">
-              <SparkleColorMatcher color={color} />
+            <Card className="col-span-3 flex flex-col items-start justify-start p-2 text-sm">
+              <CardHeader className="p-0 mb-4">
+                <CardTitle className="text-muted-foreground opacity-75 text-xs font-light">Fees</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0 w-full">
+                <div className="grid grid-cols-4 gap-x-4 gap-y-2">
+                  <div className="text-muted-foreground">Management</div>
+                  <div className="font-medium text-right">1.5%</div>
+                  <div className="text-muted-foreground">Subscription</div>
+                  <div className="font-medium text-right">0%</div>
+                  <div className="text-muted-foreground">Performance</div>
+                  <div className="font-medium text-right">10%</div>
+                  <div className="text-muted-foreground">Redemption</div>
+                  <div className="font-medium text-right">0%</div>
+                </div>
+              </CardContent>
             </Card>
           </div>
         </div>
@@ -317,9 +292,9 @@ export default function ProductPage() {
           <TabsContent value="overview">
             <div className="grid grid-cols-12 grid-rows-[auto_auto] gap-4">
               <Card className="col-span-8 row-span-1">
-                <CardContent className="flex flex-row justify-between gap-4 pl-0 p-0">
+                <CardContent className="flex flex-row justify-between gap-4 p-2">
                   <Tabs defaultValue="holders" className="w-full">
-                    <TabsList className=" mb-6">
+                    <TabsList>
                       <TabsTrigger value="holders">Holders</TabsTrigger>
                       <TabsTrigger
                         value="performance"
@@ -329,10 +304,13 @@ export default function ProductPage() {
                         Performance
                       </TabsTrigger>
                     </TabsList>
-                    <TabsContent value="holders" className="flex flex-row">
+                    <TabsContent
+                      value="holders"
+                      className="flex flex-row  h-full"
+                    >
                       <ChartContainer
                         config={mintConfig}
-                        className="flex-1 mx-auto aspect-square max-h-[200px]"
+                        className="flex-1 mx-auto aspect-square max-h-[256px] self-center"
                       >
                         <PieChart>
                           <ChartTooltip
@@ -344,8 +322,9 @@ export default function ProductPage() {
                             data={mintData}
                             dataKey="shares"
                             nameKey="mint"
-                            innerRadius={60}
+                            innerRadius={90}
                             strokeWidth={5}
+                            paddingAngle={2}
                           >
                             <Label
                               content={({ viewBox }) => {
@@ -364,7 +343,7 @@ export default function ProductPage() {
                                       <tspan
                                         x={viewBox.cx}
                                         y={viewBox.cy}
-                                        className="fill-foreground text-3xl font-bold"
+                                        className="fill-foreground text-3xl font-medium"
                                       >
                                         {totalShares.toLocaleString()}
                                       </tspan>
@@ -385,7 +364,7 @@ export default function ProductPage() {
                       </ChartContainer>
                       <ChartContainer
                         config={holdersConfig}
-                        className="flex-1 mx-auto aspect-square max-h-[200px]"
+                        className="flex-1 mx-auto aspect-square max-h-[256px]  self-center"
                       >
                         <PieChart>
                           <ChartTooltip
@@ -397,8 +376,9 @@ export default function ProductPage() {
                             isAnimationActive={false}
                             dataKey="shares"
                             nameKey="holder"
-                            innerRadius={60}
+                            innerRadius={90}
                             strokeWidth={5}
+                            paddingAngle={2}
                           >
                             <Label
                               content={({ viewBox }) => {
@@ -417,7 +397,7 @@ export default function ProductPage() {
                                       <tspan
                                         x={viewBox.cx}
                                         y={viewBox.cy}
-                                        className="fill-foreground text-3xl font-bold"
+                                        className="fill-foreground text-3xl font-medium"
                                       >
                                         {holdersData.length.toLocaleString()}
                                       </tspan>
@@ -441,11 +421,77 @@ export default function ProductPage() {
                 </CardContent>
               </Card>
               <Card className="col-span-4 row-span-1 aspect-square">
-                <CardHeader>
-                  <CardTitle>Key Facts</CardTitle>
+                <CardHeader className="flex flex-row items-start p-4">
+                  <div className="grid gap-0.5">
+                    <CardTitle className="group flex items-center text-md font-medium">
+                      Key Facts
+                    </CardTitle>
+                  </div>
                 </CardHeader>
-                <CardContent>
-                  <p>Key performance indicators at a glance.</p>
+                <CardContent className="p-4 pt-0 text-sm">
+                  <div className="grid gap-2">
+                    <div className="font-medium">Basic Information</div>
+                    <ul className="grid gap-2">
+                      <li className="flex items-center justify-between">
+                        <span className="text-muted-foreground">
+                          Base Asset
+                        </span>
+                        <span>SOL</span>
+                      </li>
+                      <li className="flex items-center justify-between">
+                        <span className="text-muted-foreground">
+                          Launch Date
+                        </span>
+                        <span>August 20, 2024</span>
+                      </li>
+                      <li className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Domicile</span>
+                        <span>Solana</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <Separator className="my-4" />
+                  <div className="grid gap-2">
+                    <div className="font-medium">Share Class Details</div>
+                    <dl className="grid gap-2">
+                      <div className="flex items-center justify-between">
+                        <dt className="text-muted-foreground">
+                          Share Class Asset
+                        </dt>
+                        <dd>SOL</dd>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <dt className="text-muted-foreground">Launch Date</dt>
+                        <dd>August 20, 2024</dd>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <dt className="text-muted-foreground">
+                          Lifecycle Stage
+                        </dt>
+                        <dd>Active</dd>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <dt className="text-muted-foreground">
+                          Investment Satus
+                        </dt>
+                        <dd>Open</dd>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <dt className="text-muted-foreground">
+                          Minimal Subscription
+                        </dt>
+                        <dd>
+                          1 <span>SOL</span>
+                        </dd>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <dt className="text-muted-foreground">
+                          Distribution Policy
+                        </dt>
+                        <dd>Accumulating</dd>
+                      </div>
+                    </dl>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -521,4 +567,4 @@ export default function ProductPage() {
       </main>
     </PageContentWrapper>
   );
-}
+  }
