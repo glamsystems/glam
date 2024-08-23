@@ -87,8 +87,8 @@ describe("glam_staking", () => {
         .accounts({
           fund: fundPDA,
           treasury: glamClient.getTreasuryPDA(fundPDA),
-          mainStakeAccount: stakeAccounts[0],
-          secondaryStakeAccount: stakeAccounts[1],
+          toStake: stakeAccounts[0],
+          fromStake: stakeAccounts[1],
           stakeProgram: StakeProgram.programId,
           stakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
         })

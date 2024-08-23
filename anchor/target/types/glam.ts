@@ -1511,12 +1511,12 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "mainStakeAccount",
+          "name": "toStake",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "secondaryStakeAccount",
+          "name": "fromStake",
           "isMut": true,
           "isSigner": false
         },
@@ -5561,12 +5561,12 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "mainStakeAccount",
+          "name": "toStake",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "secondaryStakeAccount",
+          "name": "fromStake",
           "isMut": true,
           "isSigner": false
         },

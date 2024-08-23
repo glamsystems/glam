@@ -1511,12 +1511,12 @@
           "isSigner": false
         },
         {
-          "name": "mainStakeAccount",
+          "name": "toStake",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "secondaryStakeAccount",
+          "name": "fromStake",
           "isMut": true,
           "isSigner": false
         },

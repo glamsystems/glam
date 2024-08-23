@@ -97,8 +97,6 @@ pub fn initialize_and_delegate_stake<'c: 'info, 'info>(
         signer_seeds,
     )?;
 
-    msg!("Creating stake account with {} lamports", lamports);
-
     // Delegate the stake account
     let delegate_stake_ix = solana_program::stake::instruction::delegate_stake(
         ctx.accounts.treasury_stake_account.key,
@@ -227,10 +225,10 @@ pub struct MergeStakeAccounts<'info> {
     pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
-    pub main_stake_account: Account<'info, StakeAccount>,
+    pub to_stake: Account<'info, StakeAccount>,
 
     #[account(mut)]
-    pub secondary_stake_account: Account<'info, StakeAccount>,
+    pub from_stake: Account<'info, StakeAccount>,
 
     pub clock: Sysvar<'info, Clock>,
     pub rent: Sysvar<'info, Rent>,
@@ -253,17 +251,16 @@ pub fn merge_stake_accounts<'c: 'info, 'info>(ctx: Context<MergeStakeAccounts>) 
     let signer_seeds = &[&treasury_seeds[..]];
 
     let ix = solana_program::stake::instruction::merge(
-        &ctx.accounts.main_stake_account.key(),
-        &ctx.accounts.secondary_stake_account.key(),
+        &ctx.accounts.to_stake.key(),
+        &ctx.accounts.from_stake.key(),
         ctx.accounts.treasury.key,
     );
     let account_infos = &[
-        ctx.accounts.main_stake_account.to_account_info(),
-        ctx.accounts.secondary_stake_account.to_account_info(),
+        ctx.accounts.to_stake.to_account_info(),
+        ctx.accounts.from_stake.to_account_info(),
         ctx.accounts.treasury.to_account_info(),
         ctx.accounts.clock.to_account_info(),
         ctx.accounts.stake_history.to_account_info(),
-        ctx.accounts.stake_program.to_account_info(),
     ];
     let _ = solana_program::program::invoke_signed(&ix[0], account_infos, signer_seeds);
 
