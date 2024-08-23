@@ -202,6 +202,12 @@ pub mod glam {
         stake::withdraw_from_stake_accounts(ctx)
     }
 
+    pub fn merge_stake_accounts<'info>(
+        ctx: Context<'_, '_, '_, 'info, MergeStakeAccounts<'info>>,
+    ) -> Result<()> {
+        stake::merge_stake_accounts(ctx)
+    }
+
     //
     // Jupiter
     //
