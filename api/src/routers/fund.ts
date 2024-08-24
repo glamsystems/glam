@@ -66,12 +66,15 @@ router.get("/funds", async (req, res) => {
     if (fundAccount.manager.equals(subject)) {
       return { subject, fund: fundPubkey, role: "manager", permissions: [] };
     }
-    const vecAcl = fundAccount.params[0].find(
-      (param) => param.name.acls !== undefined
-    )?.value.vecAcl.val;
+    const vecDelegateAcl = fundAccount.params[0].find(
+      (param) => param.name.delegateAcls !== undefined
+    )?.value.vecDelegateAcl.val;
 
-    if (vecAcl && vecAcl.some((acl) => acl.pubkey.equals(subject))) {
-      const permissions = vecAcl[0].permissions.map(
+    if (
+      vecDelegateAcl &&
+      vecDelegateAcl.some((acl) => acl.pubkey.equals(subject))
+    ) {
+      const permissions = vecDelegateAcl[0].permissions.map(
         (obj) => Object.keys(obj)[0]
       );
       return {
