@@ -95,6 +95,24 @@ export class StakingClient {
     return await this.base.sendAndConfirm(tx);
   }
 
+  public async splitStakeAccount(
+    fund: PublicKey,
+    existingStake: PublicKey,
+    lamports: BN
+  ): Promise<{ newStake: PublicKey; txSig: TransactionSignature }> {
+    const newStakeAccountId = Date.now().toString();
+    const [newStake, bump] = this.getStakeAccountPDA(fund, newStakeAccountId);
+    const tx = await this.splitStakeAccountTx(
+      fund,
+      existingStake,
+      lamports,
+      newStake,
+      newStakeAccountId,
+      bump
+    );
+    return { newStake, txSig: await this.base.sendAndConfirm(tx) };
+  }
+
   /*
    * Utils
    */
@@ -440,12 +458,42 @@ export class StakingClient {
     const tx = await this.base.program.methods
       .mergeStakeAccounts()
       .accounts({
+        manager,
         fund,
         treasury,
         toStake,
         fromStake,
         stakeProgram: StakeProgram.programId,
         stakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
+      })
+      .transaction();
+    return await this.base.intoVersionedTransaction({
+      tx,
+      ...apiOptions,
+    });
+  }
+
+  public async splitStakeAccountTx(
+    fund: PublicKey,
+    existingStake: PublicKey,
+    lamports: BN,
+    newStake: PublicKey,
+    newStakeAccountId: string,
+    newStakeAccountBump: number,
+    apiOptions: ApiTxOptions = {}
+  ): Promise<VersionedTransaction> {
+    const manager = apiOptions.signer || this.base.getManager();
+    const treasury = this.base.getTreasuryPDA(fund);
+
+    const tx = await this.base.program.methods
+      .splitStakeAccount(lamports, newStakeAccountId, newStakeAccountBump)
+      .accounts({
+        manager,
+        fund,
+        treasury,
+        existingStake,
+        newStake,
+        stakeProgram: StakeProgram.programId,
       })
       .transaction();
     return await this.base.intoVersionedTransaction({

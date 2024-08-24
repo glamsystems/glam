@@ -1526,11 +1526,6 @@ export type Glam = {
           "isSigner": false
         },
         {
-          "name": "rent",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "stakeHistory",
           "isMut": false,
           "isSigner": false
@@ -1547,6 +1542,65 @@ export type Glam = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "splitStakeAccount",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "existingStake",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "newStake",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "lamports",
+          "type": "u64"
+        },
+        {
+          "name": "newStakeAccountId",
+          "type": "string"
+        },
+        {
+          "name": "newStakeAccountBump",
+          "type": "u8"
+        }
+      ]
     },
     {
       "name": "jupiterSwap",
@@ -5576,11 +5630,6 @@ export const IDL: Glam = {
           "isSigner": false
         },
         {
-          "name": "rent",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "stakeHistory",
           "isMut": false,
           "isSigner": false
@@ -5597,6 +5646,65 @@ export const IDL: Glam = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "splitStakeAccount",
+      "accounts": [
+        {
+          "name": "manager",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "fund",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "existingStake",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "newStake",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "lamports",
+          "type": "u64"
+        },
+        {
+          "name": "newStakeAccountId",
+          "type": "string"
+        },
+        {
+          "name": "newStakeAccountBump",
+          "type": "u8"
+        }
+      ]
     },
     {
       "name": "jupiterSwap",
