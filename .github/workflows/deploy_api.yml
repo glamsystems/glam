@@ -68,6 +68,7 @@ jobs:
           echo "env_variables:" > api/.env.yaml
           echo "  SOLANA_RPC: https://mainnet.helius-rpc.com/?api-key=$HELIUS_API_KEY" >> api/.env.yaml
           echo "  GIT_SHA: $GITHUB_SHA" >> api/.env.yaml
+          echo "  SOLANA_CLUSTER: mainnet-beta" >> api/.env.yaml
 
       - name: Deploy to GAE
         run: ./scripts/deploy_api.sh --${{ inputs.environment }}
