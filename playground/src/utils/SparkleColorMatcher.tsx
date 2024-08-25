@@ -1,10 +1,19 @@
-import React from "react";
+import React, { useMemo } from "react";
 
 interface SparkleColorMatcherProps {
   color: string;
 }
 
-const palettes = {
+interface ColorInfo {
+  paletteName: string;
+  colors: string[];
+}
+
+type PaletteType = {
+  [key: string]: string[];
+};
+
+const palettes: PaletteType = {
   Slate: ["#f8fafc", "#f1f5f9", "#e2e8f0", "#cbd5e1", "#94a3b8", "#64748b", "#475569", "#334155", "#1e293b", "#0f172a", "#020617"],
   Gray: ["#f9fafb", "#f3f4f6", "#e5e7eb", "#d1d5db", "#9ca3af", "#6b7280", "#4b5563", "#374151", "#1f2937", "#111827", "#030712"],
   Zinc: ["#fafafa", "#f4f4f5", "#e4e4e7", "#d4d4d8", "#a1a1aa", "#71717a", "#52525b", "#3f3f46", "#27272a", "#18181b", "#09090b"],
@@ -29,14 +38,12 @@ const palettes = {
   Rose: ["#fff1f2", "#ffe4e6", "#fecdd3", "#fda4af", "#fb7185", "#f43f5e", "#e11d48", "#be123c", "#9f1239", "#881337", "#4c0519"]
 };
 
-// Convert color from RGB string to array
 const rgbStringToArray = (color: string): number[] => {
   return color
     .match(/\d+/g)
     ?.map(Number) ?? [0, 0, 0];
 };
 
-// Calculate Euclidean distance between two RGB colors
 const rgbDistance = (rgb1: number[], rgb2: number[]): number => {
   return Math.sqrt(
     (rgb1[0] - rgb2[0]) ** 2 +
@@ -45,7 +52,6 @@ const rgbDistance = (rgb1: number[], rgb2: number[]): number => {
   );
 };
 
-// Find the closest color palette to the given color
 const findClosestPalette = (color: string): string => {
   const colorRgb = rgbStringToArray(color);
   let closestPalette = "";
@@ -65,20 +71,79 @@ const findClosestPalette = (color: string): string => {
   return closestPalette;
 };
 
-// Convert hex color to RGB array
 const hexToRgb = (hex: string): number[] => {
   const bigint = parseInt(hex.substring(1), 16);
   return [bigint >> 16 & 255, bigint >> 8 & 255, bigint & 255];
 };
 
+const hexToHSL = (hex: string): [number, number, number] => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!result) return [0, 0, 0];
+
+  const r = parseInt(result[1], 16) / 255;
+  const g = parseInt(result[2], 16) / 255;
+  const b = parseInt(result[3], 16) / 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0, s, l = (max + min) / 2;
+
+  if (max === min) {
+    h = s = 0;
+  } else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+
+  return [h * 360, s * 100, l * 100];
+};
+
+const generateChartColors = (baseColor: string): string[] => {
+  const [baseHue, baseSaturation, baseLightness] = hexToHSL(baseColor);
+
+  return [
+    `${baseHue} ${Math.min(baseSaturation, 83.2)}% 53.3%`,
+    `${(baseHue + 350) % 360} ${Math.min(baseSaturation, 95)}% 68%`,
+    `${(baseHue + 355) % 360} ${Math.min(baseSaturation, 92)}% 60%`,
+    `${(baseHue + 349) % 360} ${Math.min(baseSaturation, 98)}% 78%`,
+    `${(baseHue + 350) % 360} ${Math.min(baseSaturation, 97)}% 87%`,
+  ];
+};
+
 const SparkleColorMatcher: React.FC<SparkleColorMatcherProps> = ({ color }) => {
-  const closestPalette = findClosestPalette(color);
+  const colorInfo: ColorInfo = useMemo(() => {
+    const closestPalette = findClosestPalette(color);
+    const baseColor = palettes[closestPalette][5]; // Choose a middle color from the palette
+    const chartColors = generateChartColors(baseColor);
+    return {
+      paletteName: closestPalette,
+      colors: chartColors
+    };
+  }, [color]);
 
   return (
     <div>
-      Closest Palette: {closestPalette}
+      Closest Palette: {colorInfo.paletteName}
+      {/* You can render color swatches or other information here if needed */}
     </div>
   );
 };
 
 export default SparkleColorMatcher;
+
+export type { ColorInfo };
+export const getColorInfo = (color: string): ColorInfo => {
+  const closestPalette = findClosestPalette(color);
+  const baseColor = palettes[closestPalette][5]; // Choose a middle color from the palette
+  const chartColors = generateChartColors(baseColor);
+  return {
+    paletteName: closestPalette,
+    colors: chartColors
+  };
+};

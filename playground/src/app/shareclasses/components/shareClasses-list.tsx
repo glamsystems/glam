@@ -14,8 +14,8 @@ export function ShareClassesList({ items }: ShareClassesListProps) {
   const [shareClasses, setShareClasses] = useShareClasses()
 
   return (
-    <ScrollArea className="h-screen">
-      <div className="flex flex-col gap-2 p-4 pt-0">
+    <ScrollArea>
+    <div className="flex flex-col gap-2">
         {items.map((item) => (
           <button
             key={item.id}
@@ -65,8 +65,8 @@ export function ShareClassesList({ items }: ShareClassesListProps) {
           </button>
         ))}
       </div>
-    </ScrollArea>
-  )
+      </ScrollArea>
+      )
 }
 
 function getBadgeVariantFromLabel(

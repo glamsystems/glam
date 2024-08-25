@@ -1,24 +1,35 @@
 export const integrations = [
   {
     id: "1",
-    name: "Drift",
+    name: "Stake",
     active: true,
-    description: "Trade on Drift.",
-    labels: ["trading","derivatives"]
+    disabled: false,
+    description: "",
+    labels: []
   },
   {
     id: "2",
-    name: "Marinade",
-    active: false,
-    description: "Stake on Marinade.",
-    labels: ["staking"]
+    name: "Swap",
+    active: true,
+    disabled: false,
+    description: "",
+    labels: []
   },
   {
     id: "3",
-    name: "Jupiter",
+    name: "Trade",
     active: true,
-    description: "Swap on Jupiter.",
-    labels: ["swap","spot"]
+    disabled: false,
+    description: "",
+    labels: []
+  },
+  {
+    id: "4",
+    name: "Lend",
+    active: false,
+    disabled: false,
+    description: "Coming Soon",
+    labels: []
   },
 ]
 

@@ -11,6 +11,7 @@ import { toast } from "@/components/ui/use-toast";
 import { useGlam } from "@glam/anchor/react";
 import { ProductNameGen } from "@/utils/ProductNameGen";
 import {UpdateIcon} from "@radix-ui/react-icons";
+import PageContentWrapper from "@/components/PageContentWrapper";
 
 
 const createSchema = z.object({
@@ -69,48 +70,52 @@ export default function Create() {
   }
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-4 w-1/2 mt-16"
-      >
-        <div className="flex space-x-4 items-top">
-          <FormField
-            control={form.control}
-            name="productName"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Product Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Product Name" {...field} />
-                </FormControl>
-                <FormDescription>This is the public product name.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="mt-8 min-w-10"
-            onClick={handleRefresh}
-          >
-            <UpdateIcon />
-          </Button>
-        </div>
-        <div className="flex space-x-4 w-full">
-          <Button
-            className="w-1/2"
-            variant="ghost"
-            onClick={handleClear}
-          >
-            Clear
-          </Button>
-          <Button className="w-1/2" type="submit">
-            Create
-          </Button>
-        </div>
-      </form>
-    </Form>
+    <PageContentWrapper>
+      <div className="w-4/6 self-center">
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-4"
+        >
+          <div className="flex space-x-4 items-top">
+            <FormField
+              control={form.control}
+              name="productName"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel>Product Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Product Name" {...field} />
+                  </FormControl>
+                  <FormDescription>This is the public product name.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="mt-8 min-w-10"
+              onClick={handleRefresh}
+            >
+              <UpdateIcon />
+            </Button>
+          </div>
+          <div className="flex space-x-4 w-full">
+            <Button
+              className="w-1/2"
+              variant="ghost"
+              onClick={handleClear}
+            >
+              Clear
+            </Button>
+            <Button className="w-1/2" type="submit">
+              Create
+            </Button>
+          </div>
+        </form>
+      </Form>
+      </div>
+    </PageContentWrapper>
   );
 }

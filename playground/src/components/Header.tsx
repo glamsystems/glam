@@ -13,7 +13,7 @@ import {
 export default function Header() {
   return (
     <div className="min-h-[56px] h-[56px] flex justify-start items-center p-4">
-      {/*<Breadcrumb>
+      <Breadcrumb>
                 <BreadcrumbList>
                     <BreadcrumbItem>
                         <BreadcrumbLink href="/">Home</BreadcrumbLink>
@@ -27,7 +27,7 @@ export default function Header() {
                         <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
                     </BreadcrumbItem>
                 </BreadcrumbList>
-            </Breadcrumb>*/}
+            </Breadcrumb>
     </div>
   );
 }

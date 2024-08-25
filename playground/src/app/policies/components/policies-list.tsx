@@ -14,13 +14,13 @@ export function PoliciesList({ items }: PoliciesListProps) {
   const [poilcies, setPolicies] = usePolicies()
 
   return (
-    <ScrollArea className="h-screen">
-      <div className="flex flex-col gap-2 p-4 pt-0">
+    <ScrollArea>
+      <div className="flex flex-col gap-2">
         {items.map((item) => (
           <button
             key={item.id}
             className={cn(
-              "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent",
+              "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent min-h-[70px]",
               poilcies.selected === item.id && "bg-muted"
             )}
             onClick={() =>
