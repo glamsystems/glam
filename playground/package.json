@@ -1,12 +1,6 @@
 {
   "name": "@glam/playground",
   "version": "0.0.1",
-  "dependencies": {
-    "@radix-ui/react-dialog": "^1.1.1",
-    "@radix-ui/react-scroll-area": "^1.1.0",
-    "@radix-ui/react-tabs": "^1.1.0",
-    "@radix-ui/react-tooltip": "^1.1.2",
-    "react-resizable-panels": "^2.0.20",
-    "recharts": "^2.12.7"
-  }
+  "__WARNING__": "This is a placeholder. New dependencies should be added to the package.json in the root directory of the repo",
+  "dependencies": {}
 }
