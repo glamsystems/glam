@@ -28,18 +28,26 @@ import {
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
 import { columns as defaultColumns } from "./columns"; // Import columns from columns.tsx
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { TreeNodeData } from "@/components/CustomTree";
 import { DownloadIcon } from "@radix-ui/react-icons";
 import ToolbarTree from "@/components/ToolbarTree";
 import { useCallback, useState } from "react";
 
 // Define the type that TData should extend
-interface KeyData {
+export interface KeyData {
   pubkey: string;
   label: string;
   tags: ("stake" | "swap" | "trade" | "lend" | "admin")[];
@@ -200,7 +208,8 @@ const treeData: TreeNodeData = {
             {
               id: "sanctum_stake_pool_deposit_stake",
               label: "Deposit stake",
-              description: "Deposit stake accounts into the Sanctum Stake Pool.",
+              description:
+                "Deposit stake accounts into the Sanctum Stake Pool.",
               icon: <DownloadIcon className="w-4 h-4" />,
             },
           ],
@@ -220,7 +229,8 @@ const treeData: TreeNodeData = {
             {
               id: "sanctum_stake_pool_withdraw_stake",
               label: "Withdraw stake",
-              description: "Withdraw stake accounts from the Sanctum Stake Pool.",
+              description:
+                "Withdraw stake accounts from the Sanctum Stake Pool.",
               icon: <DownloadIcon className="w-4 h-4" />,
             },
           ],
@@ -230,11 +240,10 @@ const treeData: TreeNodeData = {
   ],
 };
 
-
 export function DataTable<TData extends KeyData>({
-                                                   columns = defaultColumns as ColumnDef<TData>[], // Type cast to match the generic types
-                                                   data,
-                                                 }: DataTableProps<TData>) {
+  columns = defaultColumns as ColumnDef<TData>[], // Type cast to match the generic types
+  data,
+}: DataTableProps<TData>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -293,9 +302,9 @@ export function DataTable<TData extends KeyData>({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                     </TableHead>
                   );
                 })}
@@ -305,7 +314,9 @@ export function DataTable<TData extends KeyData>({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <Sheet key={row.id}> {/* Add key prop here */}
+                <Sheet key={row.id}>
+                  {" "}
+                  {/* Add key prop here */}
                   <SheetTrigger asChild>
                     <TableRow
                       data-state={row.getIsSelected() && "selected"}
@@ -321,7 +332,10 @@ export function DataTable<TData extends KeyData>({
                       ))}
                     </TableRow>
                   </SheetTrigger>
-                  <SheetContent side="right" className="p-12 sm:max-w-none w-1/2">
+                  <SheetContent
+                    side="right"
+                    className="p-12 sm:max-w-none w-1/2"
+                  >
                     <SheetHeader>
                       <SheetTitle>Modify Key</SheetTitle>
                       <SheetDescription>
@@ -336,10 +350,19 @@ export function DataTable<TData extends KeyData>({
                         <Input id="label" value="Jim" className="col-span-3" />
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="pubKey" className="text-right text-muted-foreground">
+                        <Label
+                          htmlFor="pubKey"
+                          className="text-right text-muted-foreground"
+                        >
                           Public Key
                         </Label>
-                        <Input id="pubKey" value="" placeholder="GLAMvRgo7cHBPjQGf8UaVnsD6TUDjq16dEUuDPAPLjyJ" className="col-span-3" disabled />
+                        <Input
+                          id="pubKey"
+                          value=""
+                          placeholder="GLAMvRgo7cHBPjQGf8UaVnsD6TUDjq16dEUuDPAPLjyJ"
+                          className="col-span-3"
+                          disabled
+                        />
                       </div>
                     </div>
                     <div className="grid grid-cols-4 gap-4">
@@ -349,16 +372,19 @@ export function DataTable<TData extends KeyData>({
                         </Label>
                       </div>
                       <div className="col-span-3">
-                          <ToolbarTree
-                            treeData={treeData}
-                            isExpanded={isExpanded}
-                            toggleExpandCollapse={toggleExpandCollapse}
-                            handleCheckedItemsChange={handleCheckedItemsChange}
-                          />
+                        <ToolbarTree
+                          treeData={treeData}
+                          isExpanded={isExpanded}
+                          toggleExpandCollapse={toggleExpandCollapse}
+                          handleCheckedItemsChange={handleCheckedItemsChange}
+                        />
                       </div>
                     </div>
                     <SheetFooter className="mt-4">
-                      <Button variant="outline" className="hover:bg-destructive hover:text-destructive-foreground hover:border-destructive">
+                      <Button
+                        variant="outline"
+                        className="hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
+                      >
                         Delete Key
                       </Button>
                       <SheetClose asChild>
@@ -370,7 +396,10 @@ export function DataTable<TData extends KeyData>({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   No results.
                 </TableCell>
               </TableRow>
