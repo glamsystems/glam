@@ -84,7 +84,7 @@ export function GlamProvider({
         setTreasury(data[0].treasury as FundTreasury);
       } else if (data.length === 0) {
         setFund("");
-        setTreasury(undefined);
+        setTreasury({} as FundTreasury);
       }
     }
   }, [data, setFund]);
