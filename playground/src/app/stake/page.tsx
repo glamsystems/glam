@@ -34,6 +34,7 @@ import { useGlam, JITO_STAKE_POOL, MSOL, JITOSOL } from "@glam/anchor/react";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import PageContentWrapper from "@/components/PageContentWrapper";
+import { publicKey } from "@solana/spl-stake-pool/dist/codecs";
 
 const stakeSchema = z.object({
   service: z.enum(["Marinade", "Native", "Jito"]),
@@ -65,7 +66,7 @@ export type assetBalancesMap = {
 export default function Stake() {
   const { fund: fundPDA, treasury, wallet, glamClient } = useGlam();
 
-  const [marinadeTicket, setMarinadeTicket] = useState<Ticket[]>([]);
+  const [ticketsAndStakes, setTicketsAndStakes] = useState<Ticket[]>([]);
   const [amountInAsset, setAmountInAsset] = useState<string>("SOL");
   const [mode, setMode] = useState<string>("stake");
   const [loading, setLoading] = useState<boolean>(true); // New loading state
@@ -74,11 +75,20 @@ export default function Stake() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!fundPDA) {
+      if (!fundPDA || !treasury) {
         return;
       }
       try {
-        // TODO: fetch stake accounts
+        const stakes = await glamClient.staking.getStakeAccounts(
+          new PublicKey(treasury.address)
+        );
+        const transformedStakes = stakes.map((stakeAccount) => ({
+          publicKey: stakeAccount.toBase58(),
+          service: "native",
+          status: "claimable",
+          label: "liquid",
+        }));
+
         const tickets = await glamClient.marinade.getExistingTickets(fundPDA);
         const transformedTickets = tickets.map((ticket) => ({
           publicKey: ticket.toBase58(),
@@ -86,8 +96,8 @@ export default function Stake() {
           status: "claimable",
           label: "liquid",
         }));
-        setMarinadeTicket(transformedTickets);
-        console.log(transformedTickets);
+
+        setTicketsAndStakes(transformedTickets.concat(transformedStakes));
       } catch (error) {
         console.error("Error fetching marinade tickets:", error);
       } finally {
@@ -373,7 +383,7 @@ export default function Stake() {
             {loading ? (
               <p>Loading tickets and stake accounts ...</p>
             ) : (
-              <DataTable data={marinadeTicket} columns={columns} />
+              <DataTable data={ticketsAndStakes} columns={columns} />
             )}
           </div>
         ) : (
