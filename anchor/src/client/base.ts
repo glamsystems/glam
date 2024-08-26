@@ -22,6 +22,7 @@ import {
 import { getSimulationComputeUnits } from "../utils/helpers";
 import {
   TOKEN_2022_PROGRAM_ID,
+  TOKEN_PROGRAM_ID,
   TokenAccountNotFoundError,
   getAccount,
   getAssociatedTokenAddressSync,
@@ -324,6 +325,28 @@ export class BaseClient {
       true,
       programId
     );
+  }
+
+  async listTokenAccounts(owner: PublicKey): Promise<any> {
+    const [tokenAccounts, token2022Accounts] = await Promise.all(
+      [TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID].map(
+        async (programId) =>
+          await this.provider.connection.getParsedTokenAccountsByOwner(owner, {
+            programId,
+          })
+      )
+    );
+    const merged = tokenAccounts.value.concat(token2022Accounts.value);
+    return merged.map((accountInfo) => {
+      const accountData = accountInfo.account.data.parsed.info;
+      return {
+        address: accountInfo.pubkey,
+        mint: accountData.mint,
+        decimals: accountData.tokenAmount.decimals,
+        amount: accountData.tokenAmount.amount,
+        uiAmount: accountData.tokenAmount.uiAmountString,
+      };
+    });
   }
 
   async getTreasuryBalance(fundPDA: PublicKey): Promise<number> {

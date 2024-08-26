@@ -63,7 +63,7 @@ export type assetBalancesMap = {
 };
 
 export default function Stake() {
-  const { fund: fundPDA, wallet, glamClient } = useGlam();
+  const { fund: fundPDA, treasury, wallet, glamClient } = useGlam();
 
   const [marinadeTicket, setMarinadeTicket] = useState<Ticket[]>([]);
   const [amountInAsset, setAmountInAsset] = useState<string>("SOL");
@@ -96,9 +96,16 @@ export default function Stake() {
 
       if (Object.keys(assetBalances).length === 0) {
         const assetBalances = {
-          SOL: await glamClient.getTreasuryBalance(fundPDA),
-          mSOL: await glamClient.getTreasuryTokenBalance(fundPDA, MSOL),
-          jitoSOL: await glamClient.getTreasuryTokenBalance(fundPDA, JITOSOL),
+          SOL: Number(treasury?.balanceLamports) / LAMPORTS_PER_SOL,
+          mSOL: Number(
+            treasury?.tokenAccounts?.find((ta) => ta.mint === MSOL.toBase58())
+              ?.uiAmount
+          ),
+          jitoSOL: Number(
+            treasury?.tokenAccounts?.find(
+              (ta) => ta.mint === JITOSOL.toBase58()
+            )?.uiAmount
+          ),
         };
 
         setBalance(assetBalances["SOL"]);
@@ -107,7 +114,7 @@ export default function Stake() {
     };
 
     fetchData();
-  }, [glamClient, fundPDA]);
+  }, [glamClient, treasury, fundPDA]);
 
   const form = useForm<StakeSchema>({
     resolver: zodResolver(stakeSchema),
@@ -362,13 +369,11 @@ export default function Stake() {
           </FormProvider>
         </div>
         {wallet && fundPDA ? (
-          <div className="flex w-1/2 mt-16 self-center">
+          <div className="flex mt-16 self-center">
             {loading ? (
               <p>Loading tickets and stake accounts ...</p>
             ) : (
-              <div className="w-full">
-                <DataTable data={marinadeTicket} columns={columns} />
-              </div>
+              <DataTable data={marinadeTicket} columns={columns} />
             )}
           </div>
         ) : (

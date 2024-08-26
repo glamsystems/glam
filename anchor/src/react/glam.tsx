@@ -2,7 +2,7 @@
 
 import { AnchorProvider } from "@coral-xyz/anchor";
 
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import {
   AnchorWallet,
   useConnection,
@@ -20,7 +20,22 @@ interface GlamProviderContext {
   glamClient: GlamClient;
   wallet?: PublicKey;
   fund?: PublicKey;
-  setFund?: (fund: string) => void;
+  treasury?: FundTreasury;
+  refresh?: () => void;
+}
+
+interface TokenAccount {
+  address: string;
+  mint: string;
+  decimals: number;
+  amount: string;
+  uiAmount: string;
+}
+
+interface FundTreasury {
+  address: string;
+  balanceLamports: number;
+  tokenAccounts: TokenAccount[];
 }
 
 const GlamContext = createContext<GlamProviderContext>(
@@ -28,6 +43,12 @@ const GlamContext = createContext<GlamProviderContext>(
 );
 
 const fundAtom = atomWithStorage<string>("active-fund", "");
+const treasuryAtom = atomWithStorage<FundTreasury>(
+  "active-fund-treasury",
+  {} as FundTreasury
+);
+
+const GLAM_API = process.env.NEXT_PUBLIC_GLAM_API || "https://api.glam.systems";
 
 export function GlamProvider({
   children,
@@ -35,6 +56,8 @@ export function GlamProvider({
   children: React.ReactNode;
 }>) {
   const setFund = useSetAtom(fundAtom);
+  const setTreasury = useSetAtom(treasuryAtom);
+
   const wallet = useWallet();
 
   const { data } = useQuery({
@@ -42,21 +65,29 @@ export function GlamProvider({
     queryFn: () =>
       // When wallet is not connected, use a dummy public key so the fetch request returns empty data
       fetch(
-        `https://api.glam.systems/funds?subject=${(
+        `${GLAM_API}/funds?subject=${(
           wallet.publicKey || new PublicKey(0)
         ).toBase58()}`
       ).then((res) => res.json()),
-    staleTime: 1000 * 60 * 5,
     enabled: !!wallet.publicKey,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchInterval: 1000 * 10, // 10 seconds
   });
-  // If data is an empty array, set the fund to an empty string
-  if (data) {
-    if (data.length > 0 && data[0].fund) {
-      setFund(data[0].fund);
-    } else if (data.length === 0) {
-      setFund("");
+
+  useEffect(() => {
+    if (data) {
+      if (process.env.NODE_ENV === "development") {
+        console.log(`${GLAM_API} returned funds: ${JSON.stringify(data)}`);
+      }
+      if (data.length > 0 && data[0].fund) {
+        setFund(data[0].fund);
+        setTreasury(data[0].treasury as FundTreasury);
+      } else if (data.length === 0) {
+        setFund("");
+        setTreasury(undefined);
+      }
     }
-  }
+  }, [data, setFund]);
 
   const { connection } = useConnection();
   const provider = new AnchorProvider(connection, wallet as AnchorWallet, {
@@ -68,7 +99,7 @@ export function GlamProvider({
     glamClient: new GlamClient({ provider, cluster: "mainnet-beta" }),
     wallet: (wallet && wallet.publicKey) || undefined,
     fund: (fundAddress && new PublicKey(fundAddress)) || undefined,
-    setFund,
+    treasury: useAtomValue(treasuryAtom),
   };
 
   return <GlamContext.Provider value={value}>{children}</GlamContext.Provider>;
