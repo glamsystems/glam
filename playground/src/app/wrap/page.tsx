@@ -24,11 +24,11 @@ const wrapSchema = z.object({
 type WrapSchema = z.infer<typeof wrapSchema>;
 
 export default function Wrap() {
-  const { fund: fundPDA, wallet, glamClient } = useGlam();
+  const { fund: fundPDA, treasury, wallet, glamClient } = useGlam();
 
   const [amountAsset, setAmountAsset] = useState<string>("SOL");
   const [direction, setDirection] = useState<string>("wrap");
-  const [balance, setBalance] = useState<number>(NaN);
+  const [displayBalance, setDisplayBalance] = useState<number>(NaN);
   const [solBalance, setSolBalance] = useState<number>(NaN);
   const [wSolBalance, setWSolBalance] = useState<number>(NaN);
 
@@ -43,20 +43,16 @@ export default function Wrap() {
 
   useEffect(() => {
     if (fundPDA) {
-      const fetchBalances = async () => {
-        const solBalance = await glamClient.getTreasuryBalance(fundPDA);
-        const wSolBalance = await glamClient.getTreasuryTokenBalance(
-          fundPDA,
-          WSOL
-        );
-        setSolBalance(solBalance);
-        setWSolBalance(wSolBalance);
-        setBalance(solBalance);
-      };
-
-      fetchBalances();
+      const solBalance = Number(treasury?.balanceLamports) / LAMPORTS_PER_SOL;
+      const wSolBalance = Number(
+        treasury?.tokenAccounts?.find((ta) => ta.mint === WSOL.toBase58())
+          ?.uiAmount
+      );
+      setSolBalance(solBalance);
+      setWSolBalance(wSolBalance);
+      setDisplayBalance(solBalance);
     }
-  }, [fundPDA, glamClient]);
+  }, [fundPDA, treasury, glamClient]);
 
   const onSubmit: SubmitHandler<WrapSchema> = async (values, _event) => {
     if (values.amount === 0) {
@@ -115,73 +111,72 @@ export default function Wrap() {
     form.setValue("direction", direction);
     if (direction === "wrap") {
       setAmountAsset("SOL");
-      setBalance(solBalance);
+      setDisplayBalance(solBalance);
     } else {
       setAmountAsset("wSOL");
-      setBalance(wSolBalance);
+      setDisplayBalance(wSolBalance);
     }
     setDirection(direction);
   };
 
   return (
     <PageContentWrapper>
-    <div className="w-4/6 self-center">
-      <FormProvider {...form}>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4"
-          >
-            <div className="flex space-x-4 items-top">
-              <AssetInput
-                className="min-w-1/2 w-1/2"
-                name="amount"
-                label="Amount"
-                balance={balance}
-                selectedAsset={amountAsset}
-                onSelectAsset={setAmountAsset}
-                disableAssetChange={true}
-                disableAmountInput={direction === "unwrap"}
-                useMaxAmount={direction === "unwrap"}
-              />
-              <FormField
-                control={form.control}
-                name="direction"
-                render={({ field }) => (<FormItem className="w-1/2">
-                    <FormLabel>Direction</FormLabel>
-                    <ToggleGroup
-                      type="single"
-                      value={field.value}
-                      onValueChange={handleDirectionChange}
-                      className="flex space-x-2 justify-start"
-                    >
-                      <ToggleGroupItem value="wrap" aria-label="Wrap">
-                        Wrap
-                      </ToggleGroupItem>
-                      <ToggleGroupItem value="unwrap" aria-label="Unwrap">
-                        Unwrap
-                      </ToggleGroupItem>
-                    </ToggleGroup>
-                  </FormItem>)}
-              />
-            </div>
+      <div className="w-4/6 self-center">
+        <FormProvider {...form}>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <div className="flex space-x-4 items-top">
+                <AssetInput
+                  className="min-w-1/2 w-1/2"
+                  name="amount"
+                  label="Amount"
+                  balance={displayBalance}
+                  selectedAsset={amountAsset}
+                  onSelectAsset={setAmountAsset}
+                  disableAssetChange={true}
+                  disableAmountInput={direction === "unwrap"}
+                  useMaxAmount={direction === "unwrap"}
+                />
+                <FormField
+                  control={form.control}
+                  name="direction"
+                  render={({ field }) => (
+                    <FormItem className="w-1/2">
+                      <FormLabel>Direction</FormLabel>
+                      <ToggleGroup
+                        type="single"
+                        value={field.value}
+                        onValueChange={handleDirectionChange}
+                        className="flex space-x-2 justify-start"
+                      >
+                        <ToggleGroupItem value="wrap" aria-label="Wrap">
+                          Wrap
+                        </ToggleGroupItem>
+                        <ToggleGroupItem value="unwrap" aria-label="Unwrap">
+                          Unwrap
+                        </ToggleGroupItem>
+                      </ToggleGroup>
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-            <div className="flex space-x-4 w-full">
-              <Button
-                className="w-1/2"
-                variant="ghost"
-                onClick={(event) => handleClear(event)}
-              >
-                Clear
-              </Button>
-              <Button className="w-1/2" type="submit">
-                {direction === "wrap" ? "Wrap" : "Unwrap"}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </FormProvider>
-    </div>
-  </PageContentWrapper>
-);
+              <div className="flex space-x-4 w-full">
+                <Button
+                  className="w-1/2"
+                  variant="ghost"
+                  onClick={(event) => handleClear(event)}
+                >
+                  Clear
+                </Button>
+                <Button className="w-1/2" type="submit">
+                  {direction === "wrap" ? "Wrap" : "Unwrap"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </FormProvider>
+      </div>
+    </PageContentWrapper>
+  );
 }

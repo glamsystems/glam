@@ -34,6 +34,7 @@ import { useGlam, JITO_STAKE_POOL, MSOL, JITOSOL } from "@glam/anchor/react";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import PageContentWrapper from "@/components/PageContentWrapper";
+import { publicKey } from "@solana/spl-stake-pool/dist/codecs";
 
 const stakeSchema = z.object({
   service: z.enum(["Marinade", "Native", "Jito"]),
@@ -63,9 +64,9 @@ export type assetBalancesMap = {
 };
 
 export default function Stake() {
-  const { fund: fundPDA, wallet, glamClient } = useGlam();
+  const { fund: fundPDA, treasury, wallet, glamClient } = useGlam();
 
-  const [marinadeTicket, setMarinadeTicket] = useState<Ticket[]>([]);
+  const [ticketsAndStakes, setTicketsAndStakes] = useState<Ticket[]>([]);
   const [amountInAsset, setAmountInAsset] = useState<string>("SOL");
   const [mode, setMode] = useState<string>("stake");
   const [loading, setLoading] = useState<boolean>(true); // New loading state
@@ -74,11 +75,20 @@ export default function Stake() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!fundPDA) {
+      if (!fundPDA || !treasury) {
         return;
       }
       try {
-        // TODO: fetch stake accounts
+        const stakes = await glamClient.staking.getStakeAccounts(
+          new PublicKey(treasury.address)
+        );
+        const transformedStakes = stakes.map((stakeAccount) => ({
+          publicKey: stakeAccount.toBase58(),
+          service: "native",
+          status: "claimable",
+          label: "liquid",
+        }));
+
         const tickets = await glamClient.marinade.getExistingTickets(fundPDA);
         const transformedTickets = tickets.map((ticket) => ({
           publicKey: ticket.toBase58(),
@@ -86,8 +96,8 @@ export default function Stake() {
           status: "claimable",
           label: "liquid",
         }));
-        setMarinadeTicket(transformedTickets);
-        console.log(transformedTickets);
+
+        setTicketsAndStakes(transformedTickets.concat(transformedStakes));
       } catch (error) {
         console.error("Error fetching marinade tickets:", error);
       } finally {
@@ -96,9 +106,16 @@ export default function Stake() {
 
       if (Object.keys(assetBalances).length === 0) {
         const assetBalances = {
-          SOL: await glamClient.getTreasuryBalance(fundPDA),
-          mSOL: await glamClient.getTreasuryTokenBalance(fundPDA, MSOL),
-          jitoSOL: await glamClient.getTreasuryTokenBalance(fundPDA, JITOSOL),
+          SOL: Number(treasury?.balanceLamports) / LAMPORTS_PER_SOL,
+          mSOL: Number(
+            treasury?.tokenAccounts?.find((ta) => ta.mint === MSOL.toBase58())
+              ?.uiAmount
+          ),
+          jitoSOL: Number(
+            treasury?.tokenAccounts?.find(
+              (ta) => ta.mint === JITOSOL.toBase58()
+            )?.uiAmount
+          ),
         };
 
         setBalance(assetBalances["SOL"]);
@@ -107,7 +124,7 @@ export default function Stake() {
     };
 
     fetchData();
-  }, [glamClient, fundPDA]);
+  }, [glamClient, treasury, fundPDA]);
 
   const form = useForm<StakeSchema>({
     resolver: zodResolver(stakeSchema),
@@ -362,13 +379,11 @@ export default function Stake() {
           </FormProvider>
         </div>
         {wallet && fundPDA ? (
-          <div className="flex w-1/2 mt-16 self-center">
+          <div className="flex mt-16 self-center">
             {loading ? (
               <p>Loading tickets and stake accounts ...</p>
             ) : (
-              <div className="w-full">
-                <DataTable data={marinadeTicket} columns={columns} />
-              </div>
+              <DataTable data={ticketsAndStakes} columns={columns} />
             )}
           </div>
         ) : (

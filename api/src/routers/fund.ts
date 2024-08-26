@@ -45,7 +45,10 @@ router.get("/funds", async (req, res) => {
     res.send(
       JSON.stringify(
         glamFunds.map((fund) => {
-          return { fund };
+          return {
+            fund,
+            treasury: req.client.getTreasuryPDA(fund),
+          };
         })
       )
     );
@@ -62,37 +65,46 @@ router.get("/funds", async (req, res) => {
     })
   );
 
-  const fundsBySubject = fundAccounts.map(({ fundPubkey, fundAccount }) => {
-    if (fundAccount.manager.equals(subject)) {
-      return { subject, fund: fundPubkey, role: "manager", permissions: [] };
-    }
-    const vecDelegateAcl = fundAccount.params[0].find(
-      (param) => param.name.delegateAcls !== undefined
-    )?.value.vecDelegateAcl.val;
+  const fundsBySubject = await Promise.all(
+    fundAccounts.map(async ({ fundPubkey, fundAccount }) => {
+      const treasury = req.client.getTreasuryPDA(fundPubkey);
+      const balance = await req.client.provider.connection.getBalance(treasury);
+      const tokenAccounts = await req.client.listTokenAccounts(treasury);
 
-    if (
-      vecDelegateAcl &&
-      vecDelegateAcl.some((acl) => acl.pubkey.equals(subject))
-    ) {
-      const permissions = vecDelegateAcl[0].permissions.map(
-        (obj) => Object.keys(obj)[0]
-      );
-      return {
-        subject,
+      const createResponse = (role: string, permissions = []) => ({
         fund: fundPubkey,
-        role: "delegate",
+        treasury: {
+          address: treasury,
+          balanceLamports: balance,
+          tokenAccounts,
+        },
+        role,
         permissions,
-      };
-    }
+      });
 
-    return;
-  });
+      // Check if the subject is the manager
+      if (fundAccount.manager.equals(subject)) {
+        return createResponse("manager");
+      }
+
+      // Check if the subject is a delegate
+      const vecDelegateAcl = fundAccount.params[0].find(
+        (param) => param.name.delegateAcls !== undefined
+      )?.value.vecDelegateAcl.val;
+
+      if (vecDelegateAcl?.some((acl) => acl.pubkey.equals(subject))) {
+        const permissions = vecDelegateAcl[0].permissions.map(
+          (obj) => Object.keys(obj)[0]
+        );
+        return createResponse("delegate", permissions);
+      }
+
+      return undefined;
+    })
+  );
 
   // Filter out undefined values
-  const fundsBySubjectFiltered = fundsBySubject.filter(
-    (fund) => fund !== undefined
-  );
-  res.send(JSON.stringify(fundsBySubjectFiltered));
+  res.send(JSON.stringify(fundsBySubject.filter(Boolean)));
 });
 
 router.get("/funds/:pubkey/perf", async (req, res) => {
