@@ -154,6 +154,14 @@ router.get("/funds/:pubkey/tickets", async (req, res) => {
   res.send({ tickets });
 });
 
+router.get("/funds/:pubkey/stakes", async (req, res) => {
+  const fund = validatePubkey(req.params.pubkey);
+  const treasury = req.client.getTreasuryPDA(fund);
+  const stakes = await req.client.staking.getStakeAccountsWithStates(treasury);
+  res.set("content-type", "application/json");
+  res.send({ stakes });
+});
+
 router.get("/funds/:pubkey/metadata", async (req, res) => {
   const pubkey = validatePubkey(req.params.pubkey);
   if (!pubkey) {

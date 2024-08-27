@@ -71,7 +71,7 @@ export function GlamProvider({
       ).then((res) => res.json()),
     enabled: !!wallet.publicKey,
     staleTime: 1000 * 60 * 5, // 5 minutes
-    refetchInterval: 1000 * 10, // 10 seconds
+    refetchInterval: 1000 * 30, // 10 seconds
   });
 
   useEffect(() => {

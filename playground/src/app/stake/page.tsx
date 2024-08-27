@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, SubmitHandler, FormProvider, get } from "react-hook-form";
-import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -34,30 +33,13 @@ import { useGlam, JITO_STAKE_POOL, MSOL, JITOSOL } from "@glam/anchor/react";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { publicKey } from "@solana/spl-stake-pool/dist/codecs";
+import { StakeService, stakeServiceSchema, TicketOrStake } from "./data/schema";
 
-const stakeSchema = z.object({
-  service: z.enum(["Marinade", "Native", "Jito"]),
-  amountIn: z.number().nonnegative(),
-  amountInAsset: z.string(),
-});
-
-type StakeSchema = z.infer<typeof stakeSchema>;
-
-const serviceToAssetMap: { [key in StakeSchema["service"]]: string } = {
+const serviceToAssetMap: { [key in StakeService["service"]]: string } = {
   Marinade: "mSOL",
   Native: "SOL",
   Jito: "jitoSOL",
 };
-
-const ticketSchema = z.object({
-  publicKey: z.string(),
-  service: z.string(),
-  status: z.string(),
-  label: z.string(),
-});
-
-export type Ticket = z.infer<typeof ticketSchema>;
 
 export type assetBalancesMap = {
   [key: string]: number;
@@ -66,7 +48,7 @@ export type assetBalancesMap = {
 export default function Stake() {
   const { fund: fundPDA, treasury, wallet, glamClient } = useGlam();
 
-  const [ticketsAndStakes, setTicketsAndStakes] = useState<Ticket[]>([]);
+  const [ticketsAndStakes, setTicketsAndStakes] = useState<TicketOrStake[]>([]);
   const [amountInAsset, setAmountInAsset] = useState<string>("SOL");
   const [mode, setMode] = useState<string>("stake");
   const [loading, setLoading] = useState<boolean>(true); // New loading state
@@ -79,22 +61,22 @@ export default function Stake() {
         return;
       }
       try {
-        const stakes = await glamClient.staking.getStakeAccounts(
+        const stakes = await glamClient.staking.getStakeAccountsWithStates(
           new PublicKey(treasury.address)
         );
         const transformedStakes = stakes.map((stakeAccount) => ({
-          publicKey: stakeAccount.toBase58(),
+          publicKey: stakeAccount.address.toBase58(),
           service: "native",
-          status: "claimable",
-          label: "liquid",
+          status: stakeAccount.state,
+          label: "stake",
         }));
 
         const tickets = await glamClient.marinade.getExistingTickets(fundPDA);
         const transformedTickets = tickets.map((ticket) => ({
           publicKey: ticket.toBase58(),
           service: "marinade",
-          status: "claimable",
-          label: "liquid",
+          status: "pending",
+          label: "ticket",
         }));
 
         setTicketsAndStakes(transformedTickets.concat(transformedStakes));
@@ -126,8 +108,8 @@ export default function Stake() {
     fetchData();
   }, [glamClient, treasury, fundPDA]);
 
-  const form = useForm<StakeSchema>({
-    resolver: zodResolver(stakeSchema),
+  const form = useForm<StakeService>({
+    resolver: zodResolver(stakeServiceSchema),
     defaultValues: {
       service: "Marinade",
       amountIn: 0,
@@ -135,8 +117,8 @@ export default function Stake() {
     },
   });
 
-  const onSubmit: SubmitHandler<StakeSchema> = async (
-    values: StakeSchema,
+  const onSubmit: SubmitHandler<StakeService> = async (
+    values: StakeService,
     event
   ) => {
     const nativeEvent = event as React.BaseSyntheticEvent & {
@@ -253,7 +235,7 @@ export default function Stake() {
     setMode("stake");
   };
 
-  const handleServiceChange = (service: StakeSchema["service"]) => {
+  const handleServiceChange = (service: StakeService["service"]) => {
     form.setValue("service", service);
     if (mode === "unstake") {
       const asset = serviceToAssetMap[service];
@@ -329,7 +311,7 @@ export default function Stake() {
                             value={field.value}
                             onValueChange={(value) =>
                               handleServiceChange(
-                                value as StakeSchema["service"]
+                                value as StakeService["service"]
                               )
                             }
                           >
@@ -337,7 +319,7 @@ export default function Stake() {
                               <SelectValue placeholder="Service" />
                             </SelectTrigger>
                             <SelectContent>
-                              {stakeSchema.shape.service._def.values.map(
+                              {stakeServiceSchema.shape.service._def.values.map(
                                 (option) => (
                                   <SelectItem key={option} value={option}>
                                     {option}

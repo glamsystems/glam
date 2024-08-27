@@ -12,7 +12,15 @@ export const types = [
   {
     value: "liquid",
     label: "Liquid",
-  }
+  },
+  {
+    value: "stake",
+    label: "Stake",
+  },
+  {
+    value: "ticket",
+    label: "Ticket",
+  },
 ];
 
 export const statuses = [

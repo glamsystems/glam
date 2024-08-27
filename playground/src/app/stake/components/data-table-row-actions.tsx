@@ -4,7 +4,7 @@ import { ResetIcon } from "@radix-ui/react-icons";
 import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { PublicKey } from "@solana/web3.js";
-import { ticketSchema } from "../data/ticketSchema";
+import { ticketOrStakeSchema } from "../data/schema";
 import { useGlam } from "@glam/anchor/react";
 import { testFund } from "../../testFund";
 import { toast } from "@/components/ui/use-toast";
@@ -17,20 +17,24 @@ interface DataTableRowActionsProps<TData> {
 export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
-  const ticket = ticketSchema.parse(row.original);
+  const ticket = ticketOrStakeSchema.parse(row.original);
   const isClaimable = ticket.status === "claimable";
 
-  const { glamClient } = useGlam();
+  const { glamClient, fund: fundPDA } = useGlam();
 
   const handleClaim = async () => {
+    if (!fundPDA) {
+      console.error("No fund selected");
+      return;
+    }
+
     try {
       const ticketPublicKey = new PublicKey(ticket.publicKey);
-      console.log("Test Claim Button");
+      console.log("Deactivating stake account:", ticketPublicKey.toBase58());
 
-      const txId = await glamClient.marinade.claimTickets(testFund.fundPDA, [
+      const txId = await glamClient.staking.deactivateStakeAccounts(fundPDA, [
         ticketPublicKey,
       ]);
-      console.log("Claim successful");
 
       toast({
         title: "Claim Successful",

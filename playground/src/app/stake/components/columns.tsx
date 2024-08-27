@@ -6,13 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 
 import { types, statuses } from "../data/data";
-import { Ticket } from "../data/ticketSchema";
+import { TicketOrStake } from "../data/schema";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
 
 import TruncateAddress from "../../../utils/TruncateAddress";
 
-export const columns: ColumnDef<Ticket>[] = [
+export const columns: ColumnDef<TicketOrStake>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -43,7 +43,7 @@ export const columns: ColumnDef<Ticket>[] = [
       <DataTableColumnHeader column={column} title="Ticket" />
     ),
     cell: ({ row }) => {
-      return <TruncateAddress address={row.getValue("publicKey")}/>
+      return <TruncateAddress address={row.getValue("publicKey")} />;
     },
     enableSorting: false,
     enableHiding: false,
@@ -58,9 +58,12 @@ export const columns: ColumnDef<Ticket>[] = [
 
       return (
         <div className="flex space-x-2">
-          {type && <Badge variant="outline" className="rounded-none">{type.label}</Badge>}
-          <span className="max-w-[500px] truncate font-medium">
-        </span>
+          {type && (
+            <Badge variant="outline" className="rounded-none">
+              {type.label}
+            </Badge>
+          )}
+          <span className="max-w-[500px] truncate font-medium"></span>
         </div>
       );
     },

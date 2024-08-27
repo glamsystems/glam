@@ -7,6 +7,7 @@ import {
   SYSVAR_CLOCK_PUBKEY,
   SYSVAR_STAKE_HISTORY_PUBKEY,
   STAKE_CONFIG_ID,
+  ParsedAccountData,
 } from "@solana/web3.js";
 
 import { BaseClient, ApiTxOptions } from "./base";
@@ -22,6 +23,12 @@ interface StakePoolAccountData {
   tokenProgramId: PublicKey;
   validatorList: PublicKey;
 }
+
+type StakeAccountInfo = {
+  address: PublicKey;
+  lamports: number;
+  state: string;
+};
 
 export class StakingClient {
   public constructor(readonly base: BaseClient) {}
@@ -170,6 +177,46 @@ export class StakingClient {
     return accounts
       .sort((a, b) => b.account.lamports - a.account.lamports)
       .map((a) => a.pubkey);
+  }
+
+  async getStakeAccountsWithStates(
+    withdrawAuthority: PublicKey
+  ): Promise<StakeAccountInfo[]> {
+    const STAKE_ACCOUNT_SIZE = 200;
+    const accounts =
+      await this.base.provider.connection.getParsedProgramAccounts(
+        StakeProgram.programId,
+        {
+          filters: [
+            {
+              dataSize: STAKE_ACCOUNT_SIZE,
+            },
+            {
+              memcmp: {
+                offset: 12,
+                bytes: withdrawAuthority.toBase58(),
+              },
+            },
+          ],
+        }
+      );
+
+    const stakes = await Promise.all(
+      accounts.map(async (account) => {
+        const stakeInfo =
+          await this.base.provider.connection.getStakeActivation(
+            account.pubkey
+          );
+        return {
+          address: account.pubkey,
+          lamports: account.account.lamports,
+          state: stakeInfo.state,
+        };
+      })
+    );
+
+    // order by lamports desc
+    return stakes.sort((a, b) => b.lamports - a.lamports);
   }
 
   async getStakePoolAccountData(
