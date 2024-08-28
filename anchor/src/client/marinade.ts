@@ -99,6 +99,52 @@ export class MarinadeClient {
     return accounts.map((a) => a.pubkey);
   }
 
+  async getTickets(fundPDA: PublicKey): Promise<
+    {
+      address: PublicKey;
+      lamports: number;
+      createdEpoch: number;
+      isDue: boolean;
+    }[]
+  > {
+    // TicketAccount {
+    //   stateAddress: web3.PublicKey; // offset 8
+    //   beneficiary: web3.PublicKey;  // offset 40
+    //   lamportsAmount: BN;           // offset 72
+    //   createdEpoch: BN;
+    // }
+    const accounts =
+      await this.base.provider.connection.getParsedProgramAccounts(
+        MARINADE_PROGRAM_ID,
+        {
+          filters: [
+            {
+              dataSize: 88,
+            },
+            {
+              memcmp: {
+                offset: 40,
+                bytes: this.base.getTreasuryPDA(fundPDA).toBase58(),
+              },
+            },
+          ],
+        }
+      );
+    const currentEpoch = await this.base.provider.connection.getEpochInfo();
+    return accounts.map((a) => {
+      const lamports = Number((a.account.data as Buffer).readBigInt64LE(72));
+      const createdEpoch = Number(
+        (a.account.data as Buffer).readBigInt64LE(80)
+      );
+      return {
+        address: a.pubkey,
+        lamports,
+        createdEpoch,
+        isDue: currentEpoch.epoch > createdEpoch,
+      };
+    });
+  }
+
   getMarinadeState(): any {
     // The addresses are the same in mainnet and devnet:
     // https://docs.marinade.finance/developers/contract-addresses

@@ -55,6 +55,9 @@ app.use((req, res, next) => {
   if (process.env.GAE_SERVICE && req.hostname !== "api.glam.systems") {
     req.client = devnetClient;
   }
+  if (process.env.NODE_ENV === "development") {
+    console.log(`${new Date().toISOString()} ${req.method} ${req.originalUrl}`);
+  }
   next();
 });
 
