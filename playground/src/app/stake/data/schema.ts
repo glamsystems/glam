@@ -8,6 +8,7 @@ export const stakeServiceSchema = z.object({
 
 export const ticketOrStakeSchema = z.object({
   publicKey: z.string(),
+  lamports: z.number().nonnegative(),
   service: z.string(),
   status: z.string(),
   label: z.string(),

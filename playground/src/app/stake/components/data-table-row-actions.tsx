@@ -17,8 +17,9 @@ interface DataTableRowActionsProps<TData> {
 export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
-  const ticket = ticketOrStakeSchema.parse(row.original);
-  const isClaimable = ticket.status === "claimable";
+  const ticketOrStake = ticketOrStakeSchema.parse(row.original);
+  const isClaimable =
+    ticketOrStake.status === "claimable" || ticketOrStake.status === "inactive";
 
   const { glamClient, fund: fundPDA } = useGlam();
 
@@ -29,7 +30,7 @@ export function DataTableRowActions<TData>({
     }
 
     try {
-      const ticketPublicKey = new PublicKey(ticket.publicKey);
+      const ticketPublicKey = new PublicKey(ticketOrStake.publicKey);
       console.log("Deactivating stake account:", ticketPublicKey.toBase58());
 
       const txId = await glamClient.staking.deactivateStakeAccounts(fundPDA, [

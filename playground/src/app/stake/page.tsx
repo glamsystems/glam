@@ -66,16 +66,18 @@ export default function Stake() {
         );
         const transformedStakes = stakes.map((stakeAccount) => ({
           publicKey: stakeAccount.address.toBase58(),
+          lamports: stakeAccount.lamports,
           service: "native",
           status: stakeAccount.state,
           label: "stake",
         }));
 
-        const tickets = await glamClient.marinade.getExistingTickets(fundPDA);
+        const tickets = await glamClient.marinade.getTickets(fundPDA);
         const transformedTickets = tickets.map((ticket) => ({
-          publicKey: ticket.toBase58(),
+          publicKey: ticket.address.toBase58(),
+          lamports: ticket.lamports,
           service: "marinade",
-          status: "pending",
+          status: ticket.isDue ? "claimable" : "pending",
           label: "ticket",
         }));
 

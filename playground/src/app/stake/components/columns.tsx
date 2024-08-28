@@ -49,6 +49,20 @@ export const columns: ColumnDef<TicketOrStake>[] = [
     enableHiding: false,
   },
   {
+    accessorKey: "lamports",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Lamports" />
+    ),
+    cell: ({ row }) => {
+      const formatted = new Intl.NumberFormat("en-US").format(
+        row.getValue("lamports")
+      );
+      return <p>{formatted}</p>;
+    },
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
     accessorKey: "label",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Type" />
@@ -83,7 +97,7 @@ export const columns: ColumnDef<TicketOrStake>[] = [
       }
 
       return (
-        <div className="flex w-[100px] items-center">
+        <div className="flex w-[120px] items-center">
           {status.icon && (
             <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
           )}

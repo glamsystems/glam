@@ -149,7 +149,7 @@ router.get("/funds/:pubkey/perf", async (req, res) => {
 
 router.get("/funds/:pubkey/tickets", async (req, res) => {
   const fund = validatePubkey(req.params.pubkey);
-  const tickets = await req.client.marinade.getExistingTickets(fund);
+  const tickets = await req.client.marinade.getTickets(fund);
   res.set("content-type", "application/json");
   res.send({ tickets });
 });
