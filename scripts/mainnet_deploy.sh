@@ -2,8 +2,8 @@
 
 set -e
 
-PROGRAM_KEYPAIR=
-SOLANA=
+PROGRAM_KEYPAIR=/path/to/program-keypair.json
+SOLANA=/path/to/solana
 PRIORITY_FEE=10000
 MAX_ATTEMPTS=1000
 PROGRAM_ID=GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP
@@ -13,11 +13,34 @@ build() {
 }
 
 deploy() {
-    $SOLANA program deploy anchor/target/deploy/glam.so \
-    --program-id $PROGRAM_KEYPAIR \
-    --use-rpc \
-    --with-compute-unit-price $PRIORITY_FEE \
-    --max-sign-attempts $MAX_ATTEMPTS
+    cmd=$(cat <<EOF
+$SOLANA program deploy anchor/target/deploy/glam.so \
+--program-id $PROGRAM_KEYPAIR \
+--use-rpc \
+--with-compute-unit-price $PRIORITY_FEE \
+--max-sign-attempts $MAX_ATTEMPTS
+EOF
+)
+
+    default_choice="N"
+    echo "🔴️ You're about to deploy the program to mainnet! Double check the command below:"
+    echo
+    echo $cmd
+    echo
+    read -p "Continue (Y/N)? [$default_choice] " choice
+    choice="${choice:-$default_choice}"
+
+    case "$choice" in
+        y | Y) 
+            $cmd
+            ;;
+        n | N) 
+            echo "Aborted"
+            ;;
+        *) 
+            echo "Invalid input: $choice"
+            ;;
+    esac
 }
 
 if [ -n "$SOLANA" ] && [ -f "$SOLANA" ]; then
@@ -51,5 +74,5 @@ echo "==== Program size ===="
 echo "glam.so: $size_kb ($size_bytes bytes)"
 echo "======================"
 
-# Uncomment the following line to deploy the program
-# deploy
+deploy
+
