@@ -1,21 +1,11 @@
 import {
-  CheckCircledIcon,
-  CrossCircledIcon,
-  StopwatchIcon,
+  CheckCircledIcon, CrossCircledIcon, RadiobuttonIcon, StopwatchIcon
 } from "@radix-ui/react-icons";
 
 export const types = [
   {
-    value: "native",
-    label: "Native",
-  },
-  {
-    value: "liquid",
-    label: "Liquid",
-  },
-  {
-    value: "stake",
-    label: "Stake",
+    value: "account",
+    label: "Account",
   },
   {
     value: "ticket",
@@ -28,26 +18,36 @@ export const statuses = [
     value: "pending",
     label: "Pending",
     icon: StopwatchIcon,
+    lightModeColor: "text-amber-500",
+    darkModeColor: "text-amber-400",
   },
   {
     value: "claimable",
     label: "Claimable",
     icon: CheckCircledIcon,
+    lightModeColor: "text-emerald-600",
+    darkModeColor: "text-emerald-400",
   },
   {
     value: "active",
     label: "Active",
-    icon: CrossCircledIcon,
+    icon: RadiobuttonIcon,
+    lightModeColor: "text-foreground",
+    darkModeColor: "text-foreground",
   },
   {
     value: "deactivating",
     label: "Deactivating",
     icon: StopwatchIcon,
+    lightModeColor: "text-amber-500",
+    darkModeColor: "text-amber-400",
   },
   {
     value: "inactive",
     label: "Inactive",
     icon: CheckCircledIcon,
+    lightModeColor: "text-emerald-600",
+    darkModeColor: "text-emerald-400",
   },
 ];
 

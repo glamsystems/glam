@@ -69,8 +69,8 @@ export default function Sidebar() {
       group: "Management",
       items: [
         { route: "/holdings", text: "Holdings", shortcut: "", Icon: ListBulletIcon},
-        { route: "/wrap", text: "Wrap", shortcut: "", Icon: MarginIcon },
         { route: "/stake", text: "Stake", shortcut: "", Icon: DownloadIcon },
+        { route: "/wrap", text: "Wrap", shortcut: "", Icon: MarginIcon },
         { route: "/trade", text: "Trade", shortcut: "", Icon: ShuffleIcon },
         { route: "/transfer", text: "Transfer", shortcut: "", Icon: ExitIcon },
       ],
