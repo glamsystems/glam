@@ -1,4 +1,8 @@
-<p align="center">
+**Update 2024-09-02** 
+
+We joined the Colosseum Radar hackathon. If you're a frontend, backend or Solana program engineer and are excited (or just curious) about fund management on Solana, [reach out to us](https://arena.colosseum.org/profiles/ascii) and let's start hacking.
+
+<!--p align="center">
  <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/glamsystems/brand_assets/main/github/github_banner_light.svg">
     <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/glamsystems/brand_assets/main/github/github_banner_dark.svg">
@@ -11,7 +15,7 @@
     <br>
     <br>
     <br>
-</p>
+</p-->
 
 ---
 
@@ -19,7 +23,7 @@
 
 GLAM is a decentralized on-chain asset management protocol on Solana that enables efficient management & operations of investment products, empowering investors to have greater control & equity in their financial futures.
 
-## Demo
+## Demo (from Colosseum Renaissance hackathon)
 
 Check out the live demo: [https://devnet.glam.systems](https://devnet.glam.systems)
 
@@ -51,9 +55,9 @@ Integrations:
 - [x] Pricing (Pyth, LST)
 - [x] Trading (Drift delegate account, deposit, withdraw)
 - [x] Swap (Jupiter)
-- [x] Staking (Marinade stake, liquid vs delayed unstake)
+- [x] Staking (SPL, Sanctum, Marinade)
 - [ ] Alternative strategy engine (Symmetry?)
-- [ ] Alternative custody (Squad?)
+- [ ] Alternative custody (Squads?)
 
 ## Contribute
 
