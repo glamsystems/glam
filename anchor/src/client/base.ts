@@ -62,15 +62,9 @@ export class BaseClient {
   jupiterApi: string;
 
   public constructor(config?: GlamClientConfig) {
-    this.cluster = config?.cluster || "devnet";
-    this.programId = getGlamProgramId(this.cluster);
     if (config?.provider) {
       this.provider = config?.provider;
-      this.program = new Program(
-        GlamIDL,
-        this.programId,
-        this.provider
-      ) as GlamProgram;
+      this.program = new Program(GlamIDL, this.provider) as GlamProgram;
     } else {
       const defaultProvider = anchor.AnchorProvider.env();
       const url = defaultProvider.connection.rpcEndpoint;
@@ -91,6 +85,14 @@ export class BaseClient {
       this.program = anchor.workspace.Glam as GlamProgram;
     }
 
+    // autodetect mainnet
+    const defaultCluster = this.provider.connection.rpcEndpoint.includes(
+      "mainnet"
+    )
+      ? "mainnet-beta"
+      : "devnet";
+    this.cluster = config?.cluster || defaultCluster;
+    this.programId = getGlamProgramId(this.cluster);
     this.jupiterApi = config?.jupiterApi || JUPITER_API_DEFAULT;
   }
 
@@ -284,7 +286,8 @@ export class BaseClient {
   }
 
   getFundModel(fund: any): FundModel {
-    return new FundModel(fund) as FundModel;
+    //@ts-ignore
+    return new FundModel(fund);
   }
 
   getFundPDA(fundModel: FundModel): PublicKey {
@@ -495,6 +498,7 @@ export class BaseClient {
     const txSig = await this.program.methods
       .initializeFund(fundModel)
       .accounts({
+        //@ts-ignore IDL ts type is unhappy
         fund: fundPDA,
         treasury,
         openfunds,
@@ -510,6 +514,7 @@ export class BaseClient {
             fund: fundPDA,
             shareClassMint,
             openfunds,
+            //@ts-ignore IDL ts type is unhappy
             manager,
             tokenProgram: TOKEN_2022_PROGRAM_ID,
           })
@@ -545,7 +550,7 @@ export class BaseClient {
     openfundsAccount: FundMetadataAccount
   ): any {
     let shareClasses = openfundsAccount.shareClasses.map((shareClass, i) => ({
-      shareClassId: fundAccount.shareClasses[i],
+      id: fundAccount.shareClasses[i],
       ...this.remapKeyValueArray(shareClass),
     }));
     let fundManagers = openfundsAccount.fundManagers.map((fundManager) => ({
@@ -579,12 +584,14 @@ export class BaseClient {
     return accounts.map((a) => a.pubkey);
   }
 
-  public async fetchFund(fundPDA: PublicKey): Promise<FundModel> {
-    const fundAccount = await this.fetchFundAccount(fundPDA);
-    const openfundsAccount = await this.fetchFundMetadataAccount(fundPDA);
-
+  fundModelFromAccounts(
+    fundPDA: PublicKey,
+    fundAccount: FundAccount,
+    openfundsAccount: FundMetadataAccount
+  ): FundModel {
     //TODO rebuild model from accounts
     let fundModel = this.getFundModel(fundAccount);
+    //@ts-ignore
     fundModel.id = fundPDA;
     fundAccount.params[0].forEach((param) => {
       const name = Object.keys(param.name)[0];
@@ -599,13 +606,44 @@ export class BaseClient {
       ...this.getOpenfundsFromAccounts(fundAccount, openfundsAccount),
     };
 
+    fund.idStr = fundPDA.toBase58();
+    fund.imageKey = (fund.shareClasses[0]?.id || fundPDA).toBase58();
+
     // fund params [1...N] are allowlist and blocklist pairs for share classes [0...N-1]
     fundAccount.params.slice(1).forEach((param, i) => {
       fund.shareClasses[i].allowlist = param[0].value.vecPubkey?.val;
       fund.shareClasses[i].blocklist = param[1].value.vecPubkey?.val;
     });
 
+    //TODO: this is no longer FundModel, we should create a proper type
     return fund;
+  }
+
+  public async fetchFund(fundPDA: PublicKey): Promise<FundModel> {
+    const fundAccount = await this.fetchFundAccount(fundPDA);
+    const openfundsAccount = await this.fetchFundMetadataAccount(fundPDA);
+    return this.fundModelFromAccounts(fundPDA, fundAccount, openfundsAccount);
+  }
+
+  public async fetchAllFunds(): Promise<FundModel[]> {
+    const fundAccounts = await this.program.account.fundAccount.all();
+    const openfundsAccounts =
+      await this.program.account.fundMetadataAccount.all();
+    let openfundsCache = new Map<string, FundMetadataAccount>();
+    (openfundsAccounts || []).forEach((of) => {
+      openfundsCache.set(of.publicKey.toBase58(), of.account);
+    });
+
+    const funds = (fundAccounts || []).map((f) =>
+      this.fundModelFromAccounts(
+        f.publicKey,
+        f.account,
+        openfundsCache.get(f.account.openfunds.toBase58()) ||
+          ({} as FundMetadataAccount)
+      )
+    );
+
+    return funds;
   }
 
   public async deleteDelegateAcls(

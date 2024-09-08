@@ -252,11 +252,13 @@ describe("glam_crud", () => {
     console.log("New manager:", newManager.publicKey);
 
     const updatedFund = glamClient.getFundModel({
-      manager: {
-        name: "New Manager",
-        pubkey: newManager.publicKey,
-        // kind: "Wallet"
-      },
+      fundManagers: [
+        {
+          name: "New Manager",
+          pubkey: newManager.publicKey,
+          // kind: "Wallet"
+        },
+      ],
     });
     try {
       await glamClient.program.methods
@@ -274,11 +276,13 @@ describe("glam_crud", () => {
     expect(fund.manager.toString()).toEqual(newManager.publicKey.toString());
 
     const updatedFund2 = glamClient.getFundModel({
-      manager: {
-        name: "Old Manager",
-        pubkey: manager,
-        // kind: "Wallet"
-      },
+      fundManagers: [
+        {
+          name: "Old Manager",
+          pubkey: manager,
+          // kind: "Wallet"
+        },
+      ],
     });
 
     // old manager can NOT update back

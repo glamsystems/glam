@@ -31,7 +31,7 @@ pub struct FundModel {
     pub integration_acls: Vec<IntegrationAcl>,
 
     // Openfunds
-    pub is_raw_openfunds: Option<bool>,
+    pub is_raw_openfunds: bool,
     pub raw_openfunds: Option<FundOpenfundsModel>,
 }
 
@@ -81,15 +81,20 @@ pub struct ShareClassModel {
     pub image_uri: Option<String>,
 
     // Openfund
-    pub is_raw_openfunds: Option<bool>,
+    pub is_raw_openfunds: bool,
     pub raw_openfunds: Option<ShareClassOpenfundsModel>,
 
     // Acls
     pub allowlist: Vec<Pubkey>,
     pub blocklist: Vec<Pubkey>,
+
+    // Policies
+    pub lock_up_period_in_seconds: i32,
+    pub permanent_delegate: Option<Pubkey>,
+    pub default_account_state_frozen: bool,
 }
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug, Default)]
 pub struct ShareClassOpenfundsModel {
     // Essential
     pub isin: Option<String>,

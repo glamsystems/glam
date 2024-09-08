@@ -1,7 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
-import { Glam } from "../target/types/glam";
+import { Glam, GlamProgram } from "../src";
 import { DRIFT_PROGRAM_ID } from "@drift-labs/sdk";
 
 import {
@@ -17,7 +17,7 @@ describe("glam_drift", () => {
 
   const manager = provider.wallet as anchor.Wallet;
 
-  const program = anchor.workspace.Glam as Program<Glam>;
+  const program = anchor.workspace.Glam as GlamProgram;
   const commitment = "confirmed";
 
   let fundPDA, treasuryPDA, sharePDA;

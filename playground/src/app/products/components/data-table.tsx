@@ -73,7 +73,7 @@ export function DataTable<TData, TValue>({
   const router = useRouter(); // Initialize useRouter
 
   const handleRowClick = (address: string) => {
-    router.push(`/screener/${address}`);
+    router.push(`/products/${address}`);
   };
 
   return (
@@ -106,9 +106,7 @@ export function DataTable<TData, TValue>({
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className="cursor-pointer" // Make cursor pointer
-                  onClick={() =>
-                    handleRowClick((row.original as Product).address)
-                  } // Add click handler
+                  onClick={() => handleRowClick((row.original as Product).id)} // Add click handler
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

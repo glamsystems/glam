@@ -44,7 +44,7 @@ import {
   getUserStatsAccountPublicKey,
   getDriftSignerPublicKey,
 } from "@drift-labs/sdk";
-import { Glam } from "../target/types/glam";
+import { Glam, GlamProgram } from "../src";
 
 describe("glam_devnet", () => {
   // Configure the client to use the local cluster.
@@ -55,7 +55,7 @@ describe("glam_devnet", () => {
   const manager = provider.wallet as anchor.Wallet;
   // console.log("Manager:", manager.publicKey);
 
-  const program = anchor.workspace.Glam as Program<Glam>;
+  const program = anchor.workspace.Glam as GlamProgram;
   const commitment = "confirmed";
 
   const usdc = new PublicKey("8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2"); // 6 decimals

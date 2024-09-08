@@ -62,15 +62,25 @@ describe("glam_marinade", () => {
       console.log("Error", error);
       throw error;
     }
-  });
+  }, 20_000);
 
-  it("Search tickets before claim", async () => {
+  it("Check tickets before claim", async () => {
     const tickets = await glamClient.marinade.getExistingTickets(fundPDA);
     console.log(
       "Tickets:",
       tickets.map((t) => t.toBase58())
     );
     expect(tickets.length).toBe(5);
+
+    const fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
+
+    // fund.params[0] looks like this:
+    // [
+    //   { name: { assets: {} }, value: { vecPubkey: [Object] } },
+    //   { name: { assetsWeights: {} }, value: { vecU32: [Object] } },
+    //   { name: { marinadeTickets: {} }, value: { vecPubkey: [Object] } }
+    // ]
+    expect(fund.params[0][2].value.vecPubkey?.val.length).toBe(tickets.length);
   });
 
   it("Claim tickets", async () => {
@@ -86,9 +96,12 @@ describe("glam_marinade", () => {
     }
   }, 45_000);
 
-  it("Search tickets after claim", async () => {
+  it("Check tickets after claim", async () => {
     const tickets = await glamClient.marinade.getExistingTickets(fundPDA);
     expect(tickets.length).toBe(0);
+
+    const fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
+    expect(fund.params[0][2].value.vecPubkey?.val.length).toBe(tickets.length);
   });
 
   // FIXME: For some reason, depositStake test must be run after the claimTickets test

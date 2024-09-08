@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
-  Form,
   FormControl,
   FormDescription,
   FormField,
@@ -26,15 +25,23 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 
-import JupiterStrict from "@/app/jupiter/data/jupiterStrict";
 import TruncateAddress from "../utils/TruncateAddress";
+
+export interface Asset {
+  name: string;
+  symbol: string;
+  address: string;
+  decimals: number;
+  balance: number;
+}
 
 interface AssetInputProps {
   name: string;
   label: string;
   balance: number;
+  assets?: Asset[];
   selectedAsset: string;
-  onSelectAsset: (value: string) => void;
+  onSelectAsset?: (value: string) => void;
   className?: string;
   disableAssetChange?: boolean;
   disableAmountInput?: boolean;
@@ -45,8 +52,9 @@ export const AssetInput: React.FC<AssetInputProps> = ({
   name,
   label,
   balance,
+  assets = [],
   selectedAsset,
-  onSelectAsset,
+  onSelectAsset = () => {},
   className,
   disableAssetChange = false,
   disableAmountInput = false,
@@ -56,22 +64,6 @@ export const AssetInput: React.FC<AssetInputProps> = ({
   const [displayValue, setDisplayValue] = useState<string>("0");
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [assets, setAssets] = useState<any[]>([]);
-
-  useEffect(() => {
-    const fetchAssets = async () => {
-      const data = await JupiterStrict();
-      if (data) {
-        const updatedAssets = data.map((asset: any) =>
-          asset.symbol === "SOL" ? { ...asset, symbol: "wSOL" } : asset
-        );
-        updatedAssets.unshift({ name: "Solana", symbol: "SOL", address: "" });
-        setAssets(updatedAssets);
-      }
-    };
-
-    fetchAssets();
-  }, []);
 
   const handleSelect = (value: string) => {
     onSelectAsset(value);
@@ -110,7 +102,9 @@ export const AssetInput: React.FC<AssetInputProps> = ({
     }
   }, [selectedAsset, setValue, name, useMaxAmount]);
 
-  const formattedBalance = new Intl.NumberFormat("en-US").format(balance);
+  const formattedBalance = new Intl.NumberFormat("en-US").format(
+    assets.find((asset) => asset.symbol === selectedAsset)?.balance || 0
+  );
 
   const handleInputChange = (value: string) => {
     if (/^\d*\.?\d*$/.test(value)) {
@@ -181,7 +175,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
                       <CommandList>
                         <CommandEmpty>No results found.</CommandEmpty>
                         <CommandGroup>
-                          {assets.map((asset) => (
+                          {assets?.map((asset) => (
                             <CommandItem
                               key={asset.address}
                               value={asset.symbol}

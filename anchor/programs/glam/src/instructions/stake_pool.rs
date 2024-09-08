@@ -334,7 +334,7 @@ pub struct StakePoolWithdrawStake<'info> {
     #[account(mut)]
     pub manager: Signer<'info>,
 
-    #[account(has_one = treasury)]
+    #[account(mut, has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
@@ -455,6 +455,13 @@ pub fn stake_pool_withdraw_stake<'c: 'info, 'info>(
         ],
         &[&treasury_seeds[..]],
     )?;
+
+    // Add stake account to the fund params
+    let fund = &mut ctx.accounts.fund;
+    fund.add_to_engine_field(
+        EngineFieldName::StakeAccounts,
+        ctx.accounts.treasury_stake_account.key(),
+    );
 
     Ok(())
 }

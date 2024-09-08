@@ -35,6 +35,7 @@ export class DriftClient {
     return this.base.program.methods
       .initializeFund(this.base.getFundModel({})) //TODO: replace with method
       .accounts({
+        //@ts-ignore IDL ts type is unhappy
         fund,
         treasury,
         manager,

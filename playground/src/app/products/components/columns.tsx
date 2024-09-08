@@ -10,16 +10,16 @@ import Sparkle from "../../../utils/Sparkle";
 
 export const columns: ColumnDef<Product>[] = [
   {
-    accessorKey: "address",
+    accessorKey: "imageKey",
     header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: ({ row }) => (
       <div>
-  <Sparkle address={row.getValue('address')} size={32}/>
-  {/*<img*/}
-  {/*      src={`https://api.glam.systems/image/${row.getValue("address")}.svg`}*/}
-  {/*      className="min-w-8 min-h-8 max-h-8 max-w-8"*/}
-  {/*      alt="Sparkle"*/}
-  {/*    />*/}
+        <Sparkle address={row.getValue("imageKey")} size={32} />
+        {/*<img*/}
+        {/*      src={`https://api.glam.systems/image/${row.getValue("address")}.svg`}*/}
+        {/*      className="min-w-8 min-h-8 max-h-8 max-w-8"*/}
+        {/*      alt="Sparkle"*/}
+        {/*    />*/}
       </div>
     ),
     enableSorting: false,
@@ -31,7 +31,7 @@ export const columns: ColumnDef<Product>[] = [
       <DataTableColumnHeader column={column} title="Name" />
     ),
     cell: ({ row }) => (
-      <div className="w-[100px] truncate">{row.getValue("name")}</div>
+      <div className="w-[150px] truncate">{row.getValue("name")}</div>
     ),
     enableSorting: false,
     enableHiding: false,
@@ -41,7 +41,7 @@ export const columns: ColumnDef<Product>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Symbol" />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("symbol")}</div>,
+    cell: ({ row }) => <div className="flex">{row.getValue("symbol")}</div>,
     enableSorting: true,
     enableHiding: true,
   },
@@ -52,8 +52,10 @@ export const columns: ColumnDef<Product>[] = [
     ),
     cell: ({ row }) => {
       return (
-        <div className="flex space-x-2">
-          <Badge variant="outline" className="rounded-none">{row.getValue("baseAsset")}</Badge>
+        <div className="flex">
+          <Badge variant="outline" className="rounded-none">
+            {row.getValue("baseAsset")}
+          </Badge>
           <span className="max-w-[500px] truncate font-medium"></span>
         </div>
       );
@@ -64,9 +66,7 @@ export const columns: ColumnDef<Product>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Inception" />
     ),
-    cell: ({ row }) => (
-      <div className="w-[90px]">{row.getValue("inception")}</div>
-    ),
+    cell: ({ row }) => <div className="flex">{row.getValue("inception")}</div>,
     enableSorting: true,
     enableHiding: true,
   },
@@ -81,7 +81,7 @@ export const columns: ColumnDef<Product>[] = [
       );
 
       return (
-        <div className="flex space-x-2">
+        <div className="flex">
           <span className="max-w-[500px] truncate font-medium">
             {status?.label}
           </span>

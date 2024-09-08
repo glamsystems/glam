@@ -1,5 +1,7 @@
 "use client";
 
+import React, { useState, useEffect } from "react";
+
 import { ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +13,13 @@ import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
 
 import TruncateAddress from "../../../utils/TruncateAddress";
+import {
+  TooltipContent,
+  Tooltip,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 export const columns: ColumnDef<TicketOrStake>[] = [
   {
@@ -40,10 +49,25 @@ export const columns: ColumnDef<TicketOrStake>[] = [
   {
     accessorKey: "publicKey",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Ticket" />
+      <DataTableColumnHeader column={column} title="ID" />
     ),
     cell: ({ row }) => {
-      return <TruncateAddress address={row.getValue("publicKey")} />;
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <TruncateAddress
+                start={3}
+                end={3}
+                address={row.getValue("publicKey")}
+              />
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              {row.getValue("publicKey")}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
     },
     enableSorting: false,
     enableHiding: false,
@@ -51,24 +75,25 @@ export const columns: ColumnDef<TicketOrStake>[] = [
   {
     accessorKey: "lamports",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Lamports" />
+      <DataTableColumnHeader column={column} title="SOL" />
     ),
     cell: ({ row }) => {
-      const formatted = new Intl.NumberFormat("en-US").format(
-        row.getValue("lamports")
-      );
+      const sol = (row.getValue("lamports") as number) / LAMPORTS_PER_SOL;
+      const formatted = new Intl.NumberFormat("en-US", {
+        minimumFractionDigits: 3,
+      }).format(sol);
       return <p>{formatted}</p>;
     },
     enableSorting: false,
     enableHiding: false,
   },
   {
-    accessorKey: "label",
+    accessorKey: "type",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Type" />
     ),
     cell: ({ row }) => {
-      const type = types.find((type) => type.value === row.getValue("label"));
+      const type = types.find((type) => type.value === row.getValue("type"));
 
       return (
         <div className="flex space-x-2">
@@ -81,6 +106,38 @@ export const columns: ColumnDef<TicketOrStake>[] = [
         </div>
       );
     },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
+    },
+  },
+  {
+    accessorKey: "validator",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Validator" />
+    ),
+    cell: ({ row }) => {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <TruncateAddress
+                start={3}
+                end={3}
+                address={row.getValue("validator")}
+              />
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              {row.getValue("validator")}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
+    },
+    enableSorting: true,
+    enableHiding: false,
   },
   {
     accessorKey: "status",
@@ -92,16 +149,34 @@ export const columns: ColumnDef<TicketOrStake>[] = [
         (status) => status.value === row.getValue("status")
       );
 
+      const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+
+      useEffect(() => {
+        const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+        setIsDarkMode(mediaQuery.matches);
+
+        const handleChange = (e: MediaQueryListEvent) => {
+          setIsDarkMode(e.matches);
+        };
+
+        mediaQuery.addEventListener("change", handleChange);
+        return () => mediaQuery.removeEventListener("change", handleChange);
+      }, []);
+
       if (!status) {
         return null;
       }
 
+      const colorClass = isDarkMode
+        ? status.darkModeColor
+        : status.lightModeColor;
+
       return (
         <div className="flex w-[120px] items-center">
           {status.icon && (
-            <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+            <status.icon className={`mr-2 h-4 w-4 ${colorClass}`} />
           )}
-          <span>{status.label}</span>
+          <span className={colorClass}>{status.label}</span>
         </div>
       );
     },

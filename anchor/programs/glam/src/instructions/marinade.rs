@@ -9,7 +9,6 @@ use marinade::cpi::accounts::{Claim, Deposit, DepositStakeAccount, LiquidUnstake
 use marinade::cpi::{claim, deposit, deposit_stake_account, liquid_unstake, order_unstake};
 use marinade::program::MarinadeFinance;
 use marinade::state::delayed_unstake_ticket::TicketAccountData;
-use marinade::State as MarinadeState;
 
 #[access_control(
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
@@ -143,6 +142,10 @@ pub fn marinade_delayed_unstake<'c: 'info, 'info>(
     let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
     let _ = order_unstake(cpi_ctx, msol_amount);
 
+    // Add new ticket account to the fund param
+    let fund = &mut ctx.accounts.fund;
+    fund.add_to_engine_field(EngineFieldName::MarinadeTickets, ctx.accounts.ticket.key());
+
     Ok(())
 }
 
@@ -160,6 +163,7 @@ pub fn marinade_claim_tickets<'info>(
     ];
     let signer_seeds = &[&seeds[..]];
 
+    let fund = &mut ctx.accounts.fund;
     ctx.remaining_accounts
         .iter()
         .for_each(|ticket_account_info| {
@@ -179,6 +183,11 @@ pub fn marinade_claim_tickets<'info>(
                 signer_seeds,
             );
             let _ = claim(cpi_ctx);
+
+            fund.delete_from_engine_field(
+                EngineFieldName::MarinadeTickets,
+                ticket_account_info.key(),
+            );
         });
 
     Ok(())
@@ -228,8 +237,9 @@ pub struct MarinadeDepositSol<'info> {
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
 
+    /// CHECK: skip
     #[account(mut)]
-    pub marinade_state: Account<'info, MarinadeState>,
+    pub marinade_state: AccountInfo<'info>,
 
     /// CHECK: skip
     #[account(mut)]
@@ -279,8 +289,9 @@ pub struct MarinadeDepositStake<'info> {
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
 
+    /// CHECK: skip
     #[account(mut)]
-    pub marinade_state: Box<Account<'info, MarinadeState>>,
+    pub marinade_state: AccountInfo<'info>,
 
     /// CHECK: skip
     #[account(mut)]
@@ -327,7 +338,7 @@ pub struct MarinadeDelayedUnstake<'info> {
     #[account(mut)]
     pub manager: Signer<'info>,
 
-    #[account(has_one = treasury)]
+    #[account(mut, has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
@@ -367,7 +378,7 @@ pub struct MarinadeClaimTickets<'info> {
     #[account(mut)]
     pub manager: Signer<'info>,
 
-    #[account(has_one = treasury)]
+    #[account(mut, has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]

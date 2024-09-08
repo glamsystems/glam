@@ -1,15 +1,23 @@
-use anchor_lang::{prelude::*, system_program};
-use anchor_spl::{
-    token_2022,
-    token_2022::{close_account, CloseAccount},
-    token_interface::{Mint, Token2022},
-};
-use spl_token_2022::{extension::ExtensionType, state::Mint as StateMint};
-
 use crate::{
     constants::*,
     error::{FundError, ManagerError},
+    policy_hook::TRANSFER_HOOK_EXTRA_ACCOUNTS,
     state::*,
+    ID,
+};
+use anchor_lang::{prelude::*, system_program};
+use anchor_spl::{
+    token_2022,
+    token_2022::spl_token_2022,
+    token_2022::spl_token_2022::{extension::ExtensionType, state::Mint as StateMint},
+    token_2022_extensions::spl_token_metadata_interface,
+    token_interface::{Mint, Token2022},
+};
+use {
+    spl_tlv_account_resolution::{
+        account::ExtraAccountMeta, seeds::Seed, state::ExtraAccountMetaList,
+    },
+    spl_transfer_hook_interface::instruction::ExecuteInstruction,
 };
 
 #[derive(Accounts)]
@@ -97,7 +105,7 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
 
 #[derive(Accounts)]
 pub struct AddShareClass<'info> {
-    /// CHECK: we'll create the account later on with metadata
+    /// CHECK: Token2022 Mint, we manually create it with dynamic extensions
     #[account(
       mut,
       seeds = [
@@ -109,8 +117,18 @@ pub struct AddShareClass<'info> {
     )]
     pub share_class_mint: AccountInfo<'info>,
 
+    /// CHECK: Token2022 Transfer Hook, we manually create it
+    #[account(
+        init,
+        space = ExtraAccountMetaList::size_of(TRANSFER_HOOK_EXTRA_ACCOUNTS).unwrap(),
+        seeds = [b"extra-account-metas", share_class_mint.key().as_ref()],
+        bump,
+        payer = manager,
+    )]
+    pub extra_account_meta_list: UncheckedAccount<'info>,
+
     #[account(mut, has_one = manager @ ManagerError::NotAuthorizedError)]
-    pub fund: Account<'info, FundAccount>,
+    pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut)]
     pub openfunds: Box<Account<'info, FundMetadataAccount>>,
@@ -134,7 +152,59 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
     let share_class_idx = fund.share_classes.len() as u8;
     fund.share_classes.push(ctx.accounts.share_class_mint.key());
 
-    let openfunds_metadata = Vec::<ShareClassField>::from(&share_class_metadata);
+    //
+    // Compute and add share class params
+    //
+    let mut share_class_params = vec![
+        EngineField {
+            name: EngineFieldName::ShareClassAllowlist,
+            value: EngineFieldValue::VecPubkey {
+                val: share_class_metadata.allowlist.clone(),
+            },
+        },
+        EngineField {
+            name: EngineFieldName::ShareClassBlocklist,
+            value: EngineFieldValue::VecPubkey {
+                val: share_class_metadata.blocklist.clone(),
+            },
+        },
+    ];
+    let share_class_metadata = &mut share_class_metadata.clone();
+    let mut raw_openfunds = share_class_metadata
+        .raw_openfunds
+        .clone()
+        .unwrap_or_default();
+
+    // Policy: Lock-up
+    // Input:
+    // - lock_up_period_in_seconds (engine)
+    // - lock_up_comment (openfunds)
+    // Output:
+    // - has_lock_up_for_redemption (openfunds)
+    // - lock_up_period_in_days (openfunds)
+    let policy_has_lock_up = share_class_metadata.lock_up_period_in_seconds > 0;
+    if policy_has_lock_up {
+        share_class_params.push(EngineField {
+            name: EngineFieldName::LockUp,
+            value: EngineFieldValue::Timestamp {
+                // lock_up_period_in_seconds is i32 so it's easier to use in js,
+                // we can express it as a number instead of requiring BN.
+                // the max lock up is 24k+ days, so it should be good.
+                val: share_class_metadata.lock_up_period_in_seconds.into(),
+            },
+        });
+        raw_openfunds.lock_up_period_in_days =
+            Some((share_class_metadata.lock_up_period_in_seconds / 24 * 60 * 60).to_string())
+    } else {
+        raw_openfunds.lock_up_period_in_days = None;
+        raw_openfunds.lock_up_comment = None;
+    }
+    raw_openfunds.has_lock_up_for_redemption = Some(policy_has_lock_up);
+
+    share_class_metadata.raw_openfunds = Some(raw_openfunds);
+    fund.params.push(share_class_params);
+
+    let openfunds_metadata = Vec::<ShareClassField>::from(&share_class_metadata.clone());
     //
     // Add share class to openfunds
     //
@@ -142,13 +212,17 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
     openfunds.share_classes.push(openfunds_metadata.clone());
 
     //
-    // Initialize share class mint and metadata
+    // Initialize share class mint, extensions and metadata
     //
-    let share_mint = ctx.accounts.share_class_mint.to_account_info();
-    let share_metadata = ctx.accounts.share_class_mint.to_account_info();
-    let share_mint_authority = ctx.accounts.share_class_mint.to_account_info();
-    let share_close_authority = ctx.accounts.share_class_mint.to_account_info();
-    let share_metadata_authority = ctx.accounts.share_class_mint.to_account_info();
+    let share_mint = &ctx.accounts.share_class_mint.to_account_info();
+    let share_mint_key = &share_mint.key();
+    let share_metadata = share_mint;
+    let share_self_authority = share_mint;
+    let share_permanent_delegate = match share_class_metadata.permanent_delegate {
+        Some(system_program::ID) => Some(share_mint.key()),
+        other => other,
+    };
+    let default_account_state_frozen = share_class_metadata.default_account_state_frozen;
 
     let seeds = &[
         "share".as_bytes(),
@@ -158,21 +232,17 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
     ];
     let signer_seeds = &[&seeds[..]];
 
-    let space = ExtensionType::try_calculate_account_len::<StateMint>(&[
-        // ExtensionType::TransferFeeConfig,
-        // ExtensionType::TransferFeeAmount,
-        ExtensionType::MintCloseAuthority,
-        // ExtensionType::DefaultAccountState,
-        // ExtensionType::MemoTransfer,
-        // ExtensionType::NonTransferable,
-        // ExtensionType::PermanentDelegate,
-        // ExtensionType::NonTransferableAccount,
-        // ExtensionType::TransferHook,
-        // ExtensionType::TransferHookAccount,
-        ExtensionType::MetadataPointer,
-        // ExtensionType::TokenMetadata,
-    ])
-    .unwrap();
+    let transfer_hook_active = policy_has_lock_up;
+    let mut extension_types = vec![
+        ExtensionType::MetadataPointer,     // always present
+        ExtensionType::MintCloseAuthority,  // always present
+        ExtensionType::DefaultAccountState, // always present, default AccountState::Initialized
+        ExtensionType::TransferHook,        // always present, default transfer_hook_program_id=None
+    ];
+    if share_permanent_delegate.is_some() {
+        extension_types.push(ExtensionType::PermanentDelegate);
+    }
+    let space = ExtensionType::try_calculate_account_len::<StateMint>(&extension_types).unwrap();
     let metadata_space = 1024;
     let lamports_required = (Rent::get()?).minimum_balance(space + metadata_space);
 
@@ -182,6 +252,7 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
         lamports_required
     );
 
+    // Create mint account
     system_program::create_account(
         CpiContext::new_with_signer(
             ctx.accounts.token_program.to_account_info(),
@@ -196,46 +267,108 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
         &ctx.accounts.token_program.key(),
     )?;
 
-    // Initialize the metadata pointer (Need to do this before initializing the mint)
-    let init_metadata_pointer_ix =
+    // Initialize all the extensions before calling mint2
+    let mut init_ixs = Vec::new();
+    init_ixs.push(
+        // always present
         spl_token_2022::extension::metadata_pointer::instruction::initialize(
             &Token2022::id(),
-            &share_mint.key(),
-            Some(share_metadata_authority.key()),
+            share_mint_key,
+            Some(share_self_authority.key()),
             Some(share_metadata.key()),
-        )?;
-    solana_program::program::invoke(
-        &init_metadata_pointer_ix,
-        &[share_mint.clone(), share_metadata_authority.clone()],
-    )?;
-
-    // Initialize the close authority extension
-    let init_close_authority_ix = spl_token_2022::instruction::initialize_mint_close_authority(
-        &Token2022::id(),
-        &share_mint.key(),
-        Some(&share_close_authority.key()),
-    )?;
-    solana_program::program::invoke(
-        &init_close_authority_ix,
-        &[share_mint.clone(), share_close_authority.clone()],
-    )?;
-
-    // mint2
-    let mint_cpi_ix = CpiContext::new(
-        ctx.accounts.token_program.to_account_info(),
-        token_2022::InitializeMint2 {
-            mint: share_mint.clone(),
-        },
+        )?,
     );
-    token_2022::initialize_mint2(mint_cpi_ix, 9, &share_mint_authority.key(), None).unwrap();
+    init_ixs.push(
+        // always present
+        spl_token_2022::instruction::initialize_mint_close_authority(
+            &Token2022::id(),
+            share_mint_key,
+            Some(&share_self_authority.key()),
+        )?,
+    );
+    init_ixs.push(
+        // always present
+        spl_token_2022::extension::default_account_state::instruction::initialize_default_account_state(
+            &Token2022::id(),
+            share_mint_key,
+            if default_account_state_frozen { &spl_token_2022::state::AccountState::Frozen } else { &spl_token_2022::state::AccountState::Initialized },
+        )?,
+    );
+    init_ixs.push(
+        // always present, transfer_hook_program_id optional
+        spl_token_2022::extension::transfer_hook::instruction::initialize(
+            &Token2022::id(),
+            share_mint_key,
+            Some(share_self_authority.key()),
+            if transfer_hook_active { Some(ID) } else { None },
+        )?,
+    );
+    if let Some(delegate) = share_permanent_delegate {
+        // default not present, optional
+        init_ixs.push(spl_token_2022::instruction::initialize_permanent_delegate(
+            &Token2022::id(),
+            share_mint_key,
+            &delegate,
+        )?);
+    }
+
+    for ix in init_ixs {
+        solana_program::program::invoke(&ix, &[share_mint.clone(), share_self_authority.clone()])?;
+    }
+
+    // Invoke mint2
+    token_2022::initialize_mint2(
+        CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            token_2022::InitializeMint2 {
+                mint: share_mint.clone(),
+            },
+        ),
+        9,
+        &share_self_authority.key(),
+        Some(&share_self_authority.key()),
+    )
+    .unwrap();
+
+    // Init transfer hook ExtraAccountMetaList
+    let account_metas = vec![
+        // index 5, fund
+        ExtraAccountMeta::new_with_pubkey(&fund_key, false, false)?,
+        // index 6, src_account_policy
+        ExtraAccountMeta::new_with_seeds(
+            &[
+                Seed::Literal {
+                    bytes: "account-policy".as_bytes().to_vec(),
+                },
+                Seed::AccountKey { index: 0 },
+            ],
+            false, // is_signer
+            false, // is_writable
+        )?,
+        // index 7, dst_account_policy
+        ExtraAccountMeta::new_with_seeds(
+            &[
+                Seed::Literal {
+                    bytes: "account-policy".as_bytes().to_vec(),
+                },
+                Seed::AccountKey { index: 2 },
+            ],
+            false, // is_signer
+            false, // is_writable
+        )?,
+    ];
+    let extra_account_meta_list = &ctx.accounts.extra_account_meta_list;
+    let mut data = extra_account_meta_list.try_borrow_mut_data()?;
+    ExtraAccountMetaList::init::<ExecuteInstruction>(&mut data, &account_metas)?;
 
     // Init the metadata account
+    let share_class_metadata = share_class_metadata.clone();
     let init_token_metadata_ix = spl_token_metadata_interface::instruction::initialize(
         &spl_token_2022::id(),
         &share_metadata.key(),
-        &share_metadata_authority.key(),
+        &share_self_authority.key(),
         &share_mint.key(),
-        &share_mint_authority.key(),
+        &share_self_authority.key(),
         share_class_metadata.name.unwrap(),
         share_class_metadata.symbol.unwrap(),
         share_class_metadata.uri.unwrap(),
@@ -244,9 +377,9 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
         &init_token_metadata_ix,
         &[
             share_metadata.clone(),
-            share_metadata_authority.clone(),
+            share_self_authority.clone(),
             share_mint.clone(),
-            share_mint_authority.clone(),
+            share_self_authority.clone(),
         ],
         signer_seeds,
     )?;
@@ -258,11 +391,11 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
         &spl_token_metadata_interface::instruction::update_field(
             &spl_token_2022::id(),
             &share_metadata.key(),
-            &share_metadata_authority.key(),
+            &share_self_authority.key(),
             spl_token_metadata_interface::state::Field::Key("FundId".to_string()),
             fund_key.to_string(),
         ),
-        &[share_mint.clone(), share_mint_authority.clone()],
+        &[share_mint.clone(), share_self_authority.clone()],
         signer_seeds,
     )?;
     let _ = openfunds_metadata.iter().take(10).try_for_each(|field| {
@@ -270,29 +403,15 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
             &spl_token_metadata_interface::instruction::update_field(
                 &spl_token_2022::id(),
                 &share_metadata.key(),
-                &share_metadata_authority.key(),
+                &share_self_authority.key(),
                 spl_token_metadata_interface::state::Field::Key(field.name.to_string()),
                 field.clone().value,
             ),
-            &[share_mint.clone(), share_mint_authority.clone()],
+            &[share_mint.clone(), share_self_authority.clone()],
             signer_seeds,
         )
     });
 
-    fund.params.push(vec![
-        EngineField {
-            name: EngineFieldName::ShareClassAllowlist,
-            value: EngineFieldValue::VecPubkey {
-                val: share_class_metadata.allowlist,
-            },
-        },
-        EngineField {
-            name: EngineFieldName::ShareClassBlocklist,
-            value: EngineFieldValue::VecPubkey {
-                val: share_class_metadata.blocklist,
-            },
-        },
-    ]);
     Ok(())
 }
 
@@ -485,6 +604,14 @@ pub struct CloseShareClass<'info> {
       )]
     share_class: InterfaceAccount<'info, Mint>,
 
+    /// CHECK: Token2022 Transfer Hook, we manually close it
+    #[account(
+        mut,
+        seeds = [b"extra-account-metas", share_class.key().as_ref()],
+        bump,
+    )]
+    pub extra_account_meta_list: UncheckedAccount<'info>,
+
     #[account(mut)]
     manager: Signer<'info>,
 
@@ -512,9 +639,9 @@ pub fn close_share_class_handler(ctx: Context<CloseShareClass>, share_class_id: 
         &[ctx.bumps.share_class],
     ];
     let signer_seeds = &[&seeds[..]];
-    close_account(CpiContext::new_with_signer(
+    token_2022::close_account(CpiContext::new_with_signer(
         ctx.accounts.token_2022_program.to_account_info(),
-        CloseAccount {
+        token_2022::CloseAccount {
             account: ctx.accounts.share_class.to_account_info(),
             destination: ctx.accounts.manager.to_account_info(),
             authority: ctx.accounts.share_class.to_account_info(),
@@ -526,6 +653,11 @@ pub fn close_share_class_handler(ctx: Context<CloseShareClass>, share_class_id: 
         .fund
         .share_classes
         .remove(share_class_id as usize);
+
+    close_account_info(
+        ctx.accounts.extra_account_meta_list.to_account_info(),
+        ctx.accounts.manager.to_account_info(),
+    )?;
 
     msg!("Share class closed: {}", ctx.accounts.share_class.key());
     Ok(())

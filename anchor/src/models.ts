@@ -2,7 +2,7 @@ import { IdlTypes } from "@coral-xyz/anchor";
 import { Glam } from "./glamExports";
 
 // @ts-ignore
-export type FundModel = IdlTypes<Glam>["FundModel"];
+export type FundModel = IdlTypes<Glam>["fundModel"];
 export const FundModel = class<FundModel> {
   constructor(obj: any) {
     let partial: any = {
@@ -12,12 +12,14 @@ export const FundModel = class<FundModel> {
       openfundsUri: null,
       isEnabled: null,
       created: null,
-      isRawOpenfunds: null,
+      isRawOpenfunds: false,
     };
     for (const key in partial) {
-      partial[key] = obj[key] || null;
+      if (obj[key]) {
+        partial[key] = obj[key];
+      }
     }
-    let result: IdlTypes<Glam>["FundModel"] = {
+    let result: IdlTypes<Glam>["fundModel"] = {
       ...partial,
       assets: obj.assets || [],
       assetsWeights: obj.assetsWeights || [],
@@ -32,16 +34,20 @@ export const FundModel = class<FundModel> {
       company: obj.company
         ? (new CompanyModel(obj.company) as CompanyModel)
         : null,
-      manager: obj.manager
-        ? (new ManagerModel(obj.manager) as ManagerModel)
+      manager: obj.fundManagers
+        ? (new ManagerModel(obj.fundManagers[0]) as ManagerModel)
         : null,
       rawOpenfunds: new FundOpenfundsModel(obj) as FundOpenfundsModel,
     };
-    return result;
+    Object.keys(result).forEach((key) => {
+      //@ts-ignore
+      this[key] = result[key];
+    });
+    return this;
   }
 };
 
-export type FundOpenfundsModel = IdlTypes<Glam>["FundOpenfundsModel"];
+export type FundOpenfundsModel = IdlTypes<Glam>["fundOpenfundsModel"];
 export const FundOpenfundsModel = class<FundOpenfundsModel> {
   constructor(obj: any) {
     let partial: any = {
@@ -63,51 +69,60 @@ export const FundOpenfundsModel = class<FundOpenfundsModel> {
       ucitsVersion: null,
     };
     for (const key in partial) {
-      partial[key] = obj[key] || null;
+      if (obj[key]) {
+        partial[key] = obj[key];
+      }
     }
-    let result: IdlTypes<Glam>["FundOpenfundsModel"] = {
+    let result: IdlTypes<Glam>["fundOpenfundsModel"] = {
       ...partial,
     };
-    return result;
+    Object.keys(result).forEach((key) => {
+      //@ts-ignore
+      this[key] = result[key];
+    });
+    return this;
   }
 };
 
-export type ShareClassModel = IdlTypes<Glam>["ShareClassModel"];
+export type ShareClassModel = IdlTypes<Glam>["shareClassModel"];
 export const ShareClassModel = class<ShareClassModel> {
   constructor(obj: any) {
     let partial: any = {
+      id: null,
       symbol: null,
       name: null,
       uri: null,
       fundId: null,
       asset: null,
       imageUri: null,
-      isRawOpenfunds: null,
+      isRawOpenfunds: false,
       allowlist: [],
       blocklist: [],
+      lockUpPeriodInSeconds: 0,
+      permanentDelegate: null,
+      defaultAccountStateFrozen: false,
     };
     for (const key in partial) {
-      partial[key] = obj[key] || null;
+      if (obj[key]) {
+        partial[key] = obj[key];
+      }
     }
-    let result: IdlTypes<Glam>["ShareClassModel"] = {
-      symbol: null,
-      name: null,
-      uri: null,
-      fundId: null,
-      asset: null,
-      imageUri: null,
-      isRawOpenfunds: null,
+    let result: IdlTypes<Glam>["shareClassModel"] = {
       ...partial,
       rawOpenfunds: new ShareClassOpenfundsModel(
         obj
       ) as ShareClassOpenfundsModel,
     };
-    return result;
+    Object.keys(result).forEach((key) => {
+      //@ts-ignore
+      this[key] = result[key];
+    });
+    return this;
   }
 };
 
 export type ShareClassOpenfundsModel =
-  IdlTypes<Glam>["ShareClassOpenfundsModel"];
+  IdlTypes<Glam>["shareClassOpenfundsModel"];
 export const ShareClassOpenfundsModel = class<ShareClassOpenfundsModel> {
   constructor(obj: any) {
     let partial: any = {
@@ -141,19 +156,25 @@ export const ShareClassOpenfundsModel = class<ShareClassOpenfundsModel> {
       valor: null,
     };
     for (const key in partial) {
-      partial[key] = obj[key] || null;
+      if (obj[key]) {
+        partial[key] = obj[key];
+      }
     }
-    let result: IdlTypes<Glam>["ShareClassOpenfundsModel"] = {
+    let result: IdlTypes<Glam>["shareClassOpenfundsModel"] = {
       ...partial,
     };
-    return result;
+    Object.keys(result).forEach((key) => {
+      //@ts-ignore
+      this[key] = result[key];
+    });
+    return this;
   }
 };
 
-export type CompanyModel = IdlTypes<Glam>["CompanyModel"];
+export type CompanyModel = IdlTypes<Glam>["companyModel"];
 export const CompanyModel = class<CompanyModel> {
   constructor(obj: any) {
-    let result: IdlTypes<Glam>["CompanyModel"] = {
+    let result: IdlTypes<Glam>["companyModel"] = {
       // alias name = fundGroupName
       fundGroupName: obj.fundGroupName || obj.name || null,
       // alias email = emailAddressOfManCo
@@ -163,19 +184,27 @@ export const CompanyModel = class<CompanyModel> {
       manCo: obj.manCo || null,
       domicileOfManCo: obj.domicileOfManCo || null,
     };
-    return result;
+    Object.keys(result).forEach((key) => {
+      //@ts-ignore
+      this[key] = result[key];
+    });
+    return this;
   }
 };
 
-export type ManagerModel = IdlTypes<Glam>["ManagerModel"];
+export type ManagerModel = IdlTypes<Glam>["managerModel"];
 export const ManagerModel = class<ManagerModel> {
   constructor(obj: any) {
-    let result: IdlTypes<Glam>["ManagerModel"] = {
+    let result: IdlTypes<Glam>["managerModel"] = {
       // alias name = portfolioManagerName
       portfolioManagerName: obj.portfolioManagerName || obj.name || null,
       pubkey: obj.pubkey || null,
-      kind: (obj.kind as IdlTypes<Glam>["ManagerKind"]) || null,
+      kind: (obj.kind as IdlTypes<Glam>["managerKind"]) || null,
     };
-    return result;
+    Object.keys(result).forEach((key) => {
+      //@ts-ignore
+      this[key] = result[key];
+    });
+    return this;
   }
 };

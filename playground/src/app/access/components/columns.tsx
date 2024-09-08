@@ -62,7 +62,7 @@ export const columns: ColumnDef<KeyData>[] = [
             <Badge
               key={tag}
               variant="default"
-              className={`pointer-events-none capitalize font-light rounded-none dark:bg-opacity-25 ${tagColors[tag]}`}
+              className={`pointer-events-none capitalize font-normal rounded-none dark:bg-opacity-25 ${tagColors[tag]}`}
             >
               {tag}
             </Badge>

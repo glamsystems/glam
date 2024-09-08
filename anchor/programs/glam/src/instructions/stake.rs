@@ -9,7 +9,7 @@ pub struct InitializeAndDelegateStake<'info> {
     #[account(mut)]
     pub manager: Signer<'info>,
 
-    #[account(has_one = treasury)]
+    #[account(mut, has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
@@ -116,6 +116,13 @@ pub fn initialize_and_delegate_stake<'c: 'info, 'info>(
         &[&treasury_seeds[..]],
     )?;
 
+    // Add the stake account to the fund params
+    let fund = &mut ctx.accounts.fund;
+    fund.add_to_engine_field(
+        EngineFieldName::StakeAccounts,
+        ctx.accounts.treasury_stake_account.key(),
+    );
+
     Ok(())
 }
 
@@ -168,7 +175,7 @@ pub struct WithdrawFromStakeAccounts<'info> {
     #[account(mut)]
     pub manager: Signer<'info>,
 
-    #[account(has_one = treasury)]
+    #[account(mut, has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
@@ -193,6 +200,7 @@ pub fn withdraw_from_stake_accounts<'info>(
     ];
     let signer_seeds = &[&seeds[..]];
 
+    let fund = &mut ctx.accounts.fund;
     ctx.remaining_accounts.iter().for_each(|stake_account| {
         let lamports = stake_account.get_lamports();
         let cpi_ctx = CpiContext::new_with_signer(
@@ -208,6 +216,8 @@ pub fn withdraw_from_stake_accounts<'info>(
         );
 
         let _ = withdraw(cpi_ctx, lamports, None);
+
+        fund.delete_from_engine_field(EngineFieldName::StakeAccounts, stake_account.key());
     });
 
     Ok(())
@@ -218,7 +228,7 @@ pub struct MergeStakeAccounts<'info> {
     #[account(mut)]
     pub manager: Signer<'info>,
 
-    #[account(has_one = treasury)]
+    #[account(mut, has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
@@ -263,6 +273,13 @@ pub fn merge_stake_accounts<'c: 'info, 'info>(ctx: Context<MergeStakeAccounts>) 
     ];
     let _ = solana_program::program::invoke_signed(&ix[0], account_infos, signer_seeds);
 
+    // Remove the from_stake account from the fund params
+    let fund = &mut ctx.accounts.fund;
+    fund.delete_from_engine_field(
+        EngineFieldName::StakeAccounts,
+        ctx.accounts.from_stake.key(),
+    );
+
     Ok(())
 }
 
@@ -271,7 +288,7 @@ pub struct SplitStakeAccount<'info> {
     #[account(mut)]
     pub manager: Signer<'info>,
 
-    #[account(has_one = treasury)]
+    #[account(mut, has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
@@ -350,6 +367,10 @@ pub fn split_stake_account<'c: 'info, 'info>(
         ],
         &[&treasury_seeds[..]],
     )?;
+
+    // Add the new stake account to the fund params
+    let fund = &mut ctx.accounts.fund;
+    fund.add_to_engine_field(EngineFieldName::StakeAccounts, ctx.accounts.new_stake.key());
 
     Ok(())
 }
