@@ -120,6 +120,24 @@ export class StakingClient {
     return { newStake, txSig: await this.base.sendAndConfirm(tx) };
   }
 
+  public async redelegateStake(
+    fund: PublicKey,
+    existingStake: PublicKey,
+    vote: PublicKey
+  ): Promise<{ newStake: PublicKey; txSig: TransactionSignature }> {
+    const newStakeAccountId = Date.now().toString();
+    const [newStake, bump] = this.getStakeAccountPDA(fund, newStakeAccountId);
+    const tx = await this.redelegateStakeTx(
+      fund,
+      existingStake,
+      vote,
+      newStake,
+      newStakeAccountId,
+      bump
+    );
+    return { newStake, txSig: await this.base.sendAndConfirm(tx) };
+  }
+
   /*
    * Utils
    */
@@ -566,6 +584,38 @@ export class StakingClient {
         existingStake,
         newStake,
         stakeProgram: StakeProgram.programId,
+      })
+      .transaction();
+    return await this.base.intoVersionedTransaction({
+      tx,
+      ...apiOptions,
+    });
+  }
+
+  public async redelegateStakeTx(
+    fund: PublicKey,
+    existingStake: PublicKey,
+    vote: PublicKey,
+    newStake: PublicKey,
+    newStakeAccountId: string,
+    newStakeAccountBump: number,
+    apiOptions: ApiTxOptions = {}
+  ): Promise<VersionedTransaction> {
+    const manager = apiOptions.signer || this.base.getManager();
+    const treasury = this.base.getTreasuryPDA(fund);
+
+    const tx = await this.base.program.methods
+      .redelegateStake(newStakeAccountId, newStakeAccountBump)
+      .accounts({
+        manager,
+        fund,
+        //@ts-ignore IDL ts type is unhappy
+        treasury,
+        vote,
+        existingStake,
+        newStake,
+        stakeProgram: StakeProgram.programId,
+        stakeConfig: STAKE_CONFIG_ID,
       })
       .transaction();
     return await this.base.intoVersionedTransaction({

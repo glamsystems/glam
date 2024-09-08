@@ -2037,6 +2037,94 @@ export type Glam = {
       ]
     },
     {
+      "name": "redelegateStake",
+      "discriminator": [
+        240,
+        90,
+        140,
+        104,
+        96,
+        8,
+        134,
+        31
+      ],
+      "accounts": [
+        {
+          "name": "manager",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "fund",
+          "writable": true
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          },
+          "relations": [
+            "fund"
+          ]
+        },
+        {
+          "name": "existingStake",
+          "writable": true
+        },
+        {
+          "name": "newStake",
+          "writable": true
+        },
+        {
+          "name": "vote"
+        },
+        {
+          "name": "stakeConfig"
+        },
+        {
+          "name": "clock",
+          "address": "SysvarC1ock11111111111111111111111111111111"
+        },
+        {
+          "name": "stakeProgram",
+          "address": "Stake11111111111111111111111111111111111111"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "newStakeAccountId",
+          "type": "string"
+        },
+        {
+          "name": "newStakeAccountBump",
+          "type": "u8"
+        }
+      ]
+    },
+    {
       "name": "splitStakeAccount",
       "discriminator": [
         130,
@@ -3484,58 +3572,8 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "fundNotActive",
-      "msg": "Fund is not active"
-    },
-    {
-      "code": 6001,
-      "name": "invalidShareClass",
-      "msg": "Share class not allowed to subscribe"
-    },
-    {
-      "code": 6002,
-      "name": "invalidAssetSubscribe",
-      "msg": "Asset not allowed to subscribe"
-    },
-    {
-      "code": 6003,
-      "name": "invalidPricingOracle",
-      "msg": "Invalid oracle for asset price"
-    },
-    {
-      "code": 6004,
-      "name": "invalidRemainingAccounts",
-      "msg": "Invalid accounts: the transaction is malformed"
-    },
-    {
-      "code": 6005,
-      "name": "invalidTreasuryAccount",
-      "msg": "Invalid treasury ata"
-    },
-    {
-      "code": 6006,
-      "name": "invalidSignerAccount",
-      "msg": "Invalid signer ata"
-    },
-    {
-      "code": 6007,
-      "name": "invalidAssetPrice",
-      "msg": "Invalid asset price"
-    },
-    {
-      "code": 6008,
-      "name": "invalidStableCoinPriceForSubscribe",
-      "msg": "Subscription not allowed: invalid stable coin price"
-    },
-    {
-      "code": 6009,
-      "name": "subscribeRedeemPaused",
-      "msg": "Fund is paused for subscription and redemption"
-    },
-    {
-      "code": 6010,
-      "name": "invalidPolicyAccount",
-      "msg": "Policy account is mandatory"
+      "name": "notAuthorized",
+      "msg": "Signer is not authorized"
     }
   ],
   "types": [
