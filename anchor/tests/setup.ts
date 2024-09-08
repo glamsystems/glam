@@ -1,9 +1,8 @@
 import { PublicKey } from "@solana/web3.js";
 import { GlamClient, WSOL, MSOL, USDC } from "../src";
 
-export const sleep = async (ms: number) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-};
+export const sleep = async (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 export const str2seed = (str: String) =>
   Uint8Array.from(
@@ -19,11 +18,15 @@ export const fundTestExample = {
       name: "Glam Fund SOL-mSOL",
       symbol: "GBS",
       asset: USDC,
+
+      // Glam Policies
       allowlist: [] as PublicKey[],
       blocklist: [] as PublicKey[],
-      // Glam
-      lockUpTime: 4 * 60 * 60,
-      requiresMemoOnTransfer: true,
+      lockUpPeriodInSeconds: 0, // number or BN
+      lockUpComment: "", // string
+      permanentDelegate: null, // PublicKey, new PublicKey(0) => mint
+      defaultAccountStateFrozen: false, // bool
+
       // Openfunds Share Class
       fullShareClassName: "Glam Fund SOL-mSOL",
       isin: "XS1082172823",
@@ -46,9 +49,6 @@ export const fundTestExample = {
       currencyOfMinimalOrMaximumRedemption: "SOL",
       shareClassDividendType: "both",
       srri: "4",
-      hasLockUpForRedemption: true,
-      lockUpComment: "demo",
-      lockUpPeriodInDays: "40",
       launchPrice: "100",
       launchPriceCurrency: "USD",
       launchPriceDate: new Date().toISOString().split("T")[0],

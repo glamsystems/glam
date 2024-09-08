@@ -118,7 +118,7 @@ export class InvestorClient {
     // SOL -> wSOL
     // If the user doesn't have enough wSOL but does have SOL, we auto wrap
     let preInstructions: TransactionInstruction[] = [];
-    if (asset == WSOL) {
+    if (WSOL.equals(asset)) {
       const connection = this.base.provider.connection;
       let wsolBalance = new BN(0);
       let signerAssetAtaExists = true;
@@ -176,14 +176,13 @@ export class InvestorClient {
       .subscribe(amount, skipState)
       .accounts({
         fund,
-        treasury,
         shareClass,
-        signerShareAta,
         asset,
         treasuryAta,
         signerAssetAta,
+        //TODO: only add if the fund has lock-up? (just for efficiency)
+        // signerAccountPolicy: null,
         signer,
-        token2022Program: TOKEN_2022_PROGRAM_ID,
       })
       .remainingAccounts(remainingAccounts)
       .preInstructions(preInstructions)
@@ -242,10 +241,6 @@ export class InvestorClient {
           if (!inKind && j > 0) {
             return null;
           }
-          // in kind, we need ATAs for all assets with weight > 0
-          if (inKind && fundModel.assetsWeights[j] === 0) {
-            return null;
-          }
 
           const assetMeta = this.base.getAssetMeta(asset.toBase58());
           const signerAta = getAssociatedTokenAddressSync(
@@ -275,11 +270,11 @@ export class InvestorClient {
       .redeem(amount, inKind, skipState)
       .accounts({
         fund,
-        treasury,
         shareClass,
         signerShareAta,
+        //TODO: only add if the fund has lock-up? (just for efficiency)
+        // signerAccountPolicy: null,
         signer,
-        token2022Program: TOKEN_2022_PROGRAM_ID,
       })
       .remainingAccounts(remainingAccounts)
       .preInstructions(preInstructions)

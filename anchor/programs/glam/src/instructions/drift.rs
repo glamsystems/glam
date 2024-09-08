@@ -12,7 +12,6 @@ use drift::cpi::{
     delete_user, deposit, initialize_user, initialize_user_stats, update_user_delegate, withdraw,
 };
 use drift::program::Drift;
-use drift::State;
 
 #[derive(Accounts)]
 pub struct DriftInitialize<'info> {
@@ -28,8 +27,9 @@ pub struct DriftInitialize<'info> {
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
     pub user: UncheckedAccount<'info>,
+    /// CHECK: checks are done inside cpi call
     #[account(mut)]
-    pub state: Box<Account<'info, State>>,
+    pub state: UncheckedAccount<'info>,
 
     #[account(mut)]
     manager: Signer<'info>,
@@ -177,8 +177,9 @@ pub struct DriftDeposit<'info> {
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
     pub user: UncheckedAccount<'info>,
+    /// CHECK: checks are done inside cpi call
     #[account(mut)]
-    pub state: Box<Account<'info, State>>,
+    pub state: UncheckedAccount<'info>,
 
     #[account(mut)]
     pub treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
@@ -251,8 +252,9 @@ pub struct DriftWithdraw<'info> {
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
     pub user: UncheckedAccount<'info>,
+    /// CHECK: checks are done inside cpi call
     #[account(mut)]
-    pub state: Box<Account<'info, State>>,
+    pub state: UncheckedAccount<'info>,
     /// CHECK: checks are done inside cpi call
     pub drift_signer: UncheckedAccount<'info>,
 
@@ -328,8 +330,9 @@ pub struct DriftClose<'info> {
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
     pub user: UncheckedAccount<'info>,
+    /// CHECK: checks are done inside cpi call
     #[account(mut)]
-    pub state: Box<Account<'info, State>>,
+    pub state: UncheckedAccount<'info>,
 
     #[account(mut)]
     manager: Signer<'info>,

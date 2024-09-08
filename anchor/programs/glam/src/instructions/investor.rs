@@ -1,17 +1,17 @@
 use anchor_lang::prelude::*;
-use anchor_lang::system_program::{transfer, Transfer};
-use anchor_spl::associated_token::AssociatedToken;
+use anchor_lang::system_program;
+use anchor_spl::associated_token::{
+    spl_associated_token_account::get_associated_token_address_with_program_id, AssociatedToken,
+};
 use anchor_spl::token::Token;
 use anchor_spl::token_interface::{
     burn, mint_to, transfer_checked, Burn, Mint, MintTo, Token2022, TokenAccount, TransferChecked,
 };
 use pyth_sdk_solana::Price;
 
-use spl_associated_token_account::get_associated_token_address_with_program_id;
-
 use crate::constants::{self, WSOL};
-use crate::error::{FundError, InvestorError};
-use crate::state::*;
+use crate::error::{FundError, InvestorError, PolicyError};
+use crate::{state::*, PolicyAccount};
 
 //TODO(security): check that treasury belongs to the fund
 
@@ -54,6 +54,21 @@ pub struct Subscribe<'info> {
     #[account(mut)]
     pub signer_asset_ata: Box<InterfaceAccount<'info, TokenAccount>>, // user account
 
+    // signer_policy is required if a fund has a lock-up period.
+    // it's optional, so we can avoid creating it for funds without
+    // a lock-up period.
+    #[account(
+        init_if_needed,
+        payer = signer,
+        space = 8+8,
+        seeds = [
+          b"account-policy".as_ref(),
+          signer_share_ata.key().as_ref()
+        ],
+        bump
+      )]
+    pub signer_policy: Option<Account<'info, PolicyAccount>>,
+
     // user
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -73,6 +88,20 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     let fund = &ctx.accounts.fund;
     require!(fund.is_enabled(), InvestorError::FundNotActive);
 
+    let stake_accounts = fund.get_pubkeys_from_engine_field(EngineFieldName::StakeAccounts);
+    let marinade_tickets = fund.get_pubkeys_from_engine_field(EngineFieldName::MarinadeTickets);
+
+    #[cfg(not(feature = "mainnet"))]
+    msg!(
+        "stake_accounts={:?} marinade_tickets={:?}",
+        stake_accounts,
+        marinade_tickets
+    );
+    require!(
+        stake_accounts.len() == 0 && marinade_tickets.len() == 0,
+        InvestorError::SubscribeRedeemPaused
+    );
+
     if fund.share_classes.len() > 1 {
         // we need to define how to split the total amount into share classes
         panic!("not implemented")
@@ -82,6 +111,29 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         fund.share_classes[0] == ctx.accounts.share_class.key(),
         InvestorError::InvalidShareClass
     );
+
+    // Lock-up
+    let lock_up = fund.share_class_lock_up(0);
+    if lock_up > 0 {
+        require!(
+            ctx.accounts.signer_policy.is_some(),
+            InvestorError::InvalidPolicyAccount
+        );
+        let signer_policy = ctx.accounts.signer_policy.as_mut().unwrap();
+
+        let timestamp = Clock::get()?.unix_timestamp;
+        let cur_locked_until_ts = signer_policy.locked_until_ts;
+        let new_locked_until_ts = timestamp.saturating_add(lock_up);
+        // This check is only paranoia.
+        // If the fund changes the lock-up period to a shorter one,
+        // user with an existing lock-up won't get a shorter period
+        // just by re-subscribing.
+        // Note: because we use init_if_needed there might be a way
+        // to circumvent with re-init attack, but we accept the risk.
+        if new_locked_until_ts > cur_locked_until_ts {
+            signer_policy.locked_until_ts = new_locked_until_ts;
+        }
+    }
 
     if let Some(share_class_blocklist) = fund.share_class_blocklist(0) {
         require!(
@@ -248,6 +300,16 @@ pub struct Redeem<'info> {
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
 
+    #[account(
+        mut,
+        seeds = [
+          b"account-policy".as_ref(),
+          signer_share_ata.key().as_ref()
+        ],
+        bump
+      )]
+    pub signer_policy: Option<UncheckedAccount<'info>>,
+
     // programs
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
@@ -261,6 +323,20 @@ pub fn redeem_handler<'c: 'info, 'info>(
     skip_state: bool,
 ) -> Result<()> {
     let fund = &ctx.accounts.fund;
+
+    let stake_accounts = fund.get_pubkeys_from_engine_field(EngineFieldName::StakeAccounts);
+    let marinade_tickets = fund.get_pubkeys_from_engine_field(EngineFieldName::MarinadeTickets);
+
+    #[cfg(not(feature = "mainnet"))]
+    msg!(
+        "stake_accounts={:?} marinade_tickets={:?}",
+        stake_accounts,
+        marinade_tickets
+    );
+    require!(
+        stake_accounts.len() == 0 && marinade_tickets.len() == 0,
+        InvestorError::SubscribeRedeemPaused
+    );
 
     if ctx.accounts.fund.share_classes.len() > 1 {
         // we need to define how to split the total amount into share classes
@@ -280,6 +356,46 @@ pub fn redeem_handler<'c: 'info, 'info>(
     ];
     let signer_seeds = &[&seeds[..]];
     let treasury = &ctx.accounts.treasury;
+
+    // Lock-up
+    let mut close_signer_policy = false;
+    let lock_up = fund.share_class_lock_up(0);
+    if lock_up > 0 {
+        require!(
+            ctx.accounts.signer_policy.is_some(),
+            InvestorError::InvalidPolicyAccount
+        );
+
+        let mut_signer_policy = ctx.accounts.signer_policy.as_mut().unwrap();
+        let signer_policy = &mut_signer_policy.clone();
+
+        // It's responsibility of subscribe() to create the policy account
+        // with the proper lock-up timestamp.
+        // If a user doesn't have a policy account, it means that his tokens
+        // are not subject to lock-up period for whatever reason, so from the
+        // perspective of this check an unitialized account means lock-up
+        // timestamp set to 0.
+        // All other deserialize errors must be thrown.
+        let maybe_signer_policy = PolicyAccount::try_from(signer_policy);
+        let locked_until_ts = match maybe_signer_policy {
+            Ok(src_account_policy) => Ok(src_account_policy.locked_until_ts),
+            Err(ProgramError::UninitializedAccount) => Ok(0),
+            Err(err) => Err(err),
+        }?;
+
+        let cur_timestamp = Clock::get()?.unix_timestamp;
+        if cur_timestamp < locked_until_ts {
+            return err!(PolicyError::LockOut);
+        }
+
+        // If the lock-up period has expired, we can delete the
+        // signer_policy account and reclaim the rent.
+        // We do it only if lamports > 0 (but for completeness,
+        // it'd work also without the if).
+        if signer_policy.lamports() > 0 {
+            close_signer_policy = true;
+        }
+    }
 
     let share_class = &ctx.accounts.share_class;
     let share_expo = -(share_class.decimals as i32);
@@ -418,10 +534,10 @@ pub fn redeem_handler<'c: 'info, 'info>(
         if should_transfer_everything {
             let lamports = treasury.lamports();
             if lamports > 0 {
-                transfer(
+                system_program::transfer(
                     CpiContext::new_with_signer(
                         ctx.accounts.system_program.to_account_info(),
-                        Transfer {
+                        system_program::Transfer {
                             from: ctx.accounts.treasury.to_account_info(),
                             to: ctx.accounts.signer.to_account_info(),
                         },
@@ -434,6 +550,18 @@ pub fn redeem_handler<'c: 'info, 'info>(
     } else {
         //TODO: create redeem state
         panic!("not implemented")
+    }
+
+    // close the signer_policy account
+    if close_signer_policy {
+        close_account_info(
+            ctx.accounts
+                .signer_policy
+                .as_ref()
+                .unwrap()
+                .to_account_info(),
+            ctx.accounts.signer.to_account_info(),
+        )?;
     }
 
     Ok(())
@@ -531,8 +659,10 @@ pub fn get_aum_components<'info>(
             // Parse and deser signer ata account
             let signer_ata_account = &accounts[3];
             let signer_asset_ata: InterfaceAccount<'_, TokenAccount> =
-                InterfaceAccount::<TokenAccount>::try_from(signer_ata_account)
-                    .expect("invalid user account");
+                InterfaceAccount::<TokenAccount>::try_from(signer_ata_account).expect(&format!(
+                    "invalid user account: {}",
+                    signer_ata_account.key()
+                ));
             require!(
                 signer_asset_ata.mint == cur_asset,
                 InvestorError::InvalidSignerAccount

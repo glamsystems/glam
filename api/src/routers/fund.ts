@@ -73,6 +73,8 @@ router.get("/funds", async (req, res) => {
 
       const createResponse = (role: string, permissions = []) => ({
         fund: fundPubkey,
+        name: fundAccount.name,
+        imageKey: fundAccount.shareClasses[0] || fundPubkey,
         treasury: {
           address: treasury,
           balanceLamports: balance,

@@ -126,13 +126,13 @@ describe("glam_jupiter", () => {
       },
     ];
     try {
-      await glamClient.upsertAcls(fundPDA, acls);
+      await glamClient.upsertDelegateAcls(fundPDA, acls);
     } catch (e) {
       console.error(e);
       throw e;
     }
     let fundModel = await glamClient.fetchFund(fundPDA);
-    expect(fundModel.acls.length).toEqual(1);
+    expect(fundModel.delegateAcls.length).toEqual(1);
 
     // Swap tx
     const tx = await glamClient.jupiter.swapTx(
@@ -169,13 +169,13 @@ describe("glam_jupiter", () => {
     // allow testSigner to swap any assets
     acls[0].permissions = [{ jupiterSwapAnyAsset: {} }, { wSolWrap: {} }];
     try {
-      await glamClient.upsertAcls(fundPDA, acls);
+      await glamClient.upsertDelegateAcls(fundPDA, acls);
     } catch (e) {
       console.error(e);
       throw e;
     }
     fundModel = await glamClient.fetchFund(fundPDA);
-    expect(fundModel.acls.length).toEqual(1);
+    expect(fundModel.delegateAcls.length).toEqual(1);
 
     // 1st attempt, should reach jupiter
     try {

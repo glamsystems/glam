@@ -230,6 +230,7 @@ export class MarinadeClient {
       .marinadeDepositSol(amount)
       .accounts({
         fund,
+        //@ts-ignore IDL ts type is unhappy
         treasury,
         manager,
         reservePda: marinadeState.reserveAddress,
@@ -279,6 +280,7 @@ export class MarinadeClient {
       .marinadeDepositStake(validatorIndex)
       .accounts({
         fund,
+        //@ts-ignore IDL ts type is unhappy
         treasury,
         manager,
         marinadeState: marinadeState.marinadeStateAddress,
@@ -325,6 +327,7 @@ export class MarinadeClient {
       .marinadeDelayedUnstake(amount, ticketId, bump)
       .accounts({
         fund,
+        //@ts-ignore IDL ts type is unhappy
         treasury,
         manager,
         ticket,
@@ -355,6 +358,7 @@ export class MarinadeClient {
       .marinadeClaimTickets()
       .accounts({
         fund,
+        //@ts-ignore IDL ts type is unhappy
         treasury,
         manager,
         marinadeState: marinadeState.marinadeStateAddress,
@@ -390,6 +394,7 @@ export class MarinadeClient {
       .marinadeLiquidUnstake(amount)
       .accounts({
         fund,
+        //@ts-ignore IDL ts type is unhappy
         treasury,
         manager,
         marinadeState: marinadeState.marinadeStateAddress,

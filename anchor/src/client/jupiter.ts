@@ -153,6 +153,7 @@ export class JupiterClient {
       .jupiterSwap(amount, swapIx.data)
       .accounts({
         fund,
+        //@ts-ignore IDL ts type is unhappy
         treasury: this.base.getTreasuryPDA(fund),
         inputTreasuryAta: this.base.getTreasuryAta(fund, inputMint),
         outputTreasuryAta: this.base.getTreasuryAta(fund, outputMint),
@@ -264,6 +265,7 @@ export class JupiterClient {
             .wsolWrap(new BN(amount))
             .accounts({
               fund,
+              //@ts-ignore IDL ts type is unhappy
               treasury: treasuryPda,
               treasuryWsolAta,
               wsolMint: inputMint,

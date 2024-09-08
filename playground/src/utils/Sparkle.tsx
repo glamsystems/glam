@@ -1,6 +1,6 @@
 "use client";
 
-import {PublicKey} from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 const crypto = require("crypto");
 import React, { useEffect } from "react";
 
@@ -15,7 +15,12 @@ const defaultSparkleProps: SparkleProps = {
   size: 32,
 };
 
-const Sparkle: React.FC<SparkleProps> = ({ address, size, onColorGenerated }) => {
+const Sparkle: React.FC<SparkleProps> = ({
+  address,
+  size,
+  onColorGenerated,
+}) => {
+  if (!address) return null;
   const pubKey = new PublicKey(address);
   const keyBytes = pubKey.toBytes();
   const hash = crypto.createHash("sha256").update(keyBytes).digest("hex");
@@ -36,8 +41,13 @@ const Sparkle: React.FC<SparkleProps> = ({ address, size, onColorGenerated }) =>
 
   const color = `rgb(${r},${g},${b})`;
 
-  const conicGradient = "conic-gradient(from " + angle + "deg at 50% 50%, " + color + ", rgba(0,0,0,0))"
-  const svgViewBox = "0 0 " + String(size) + " " + String(size)
+  const conicGradient =
+    "conic-gradient(from " +
+    angle +
+    "deg at 50% 50%, " +
+    color +
+    ", rgba(0,0,0,0))";
+  const svgViewBox = "0 0 " + String(size) + " " + String(size);
 
   useEffect(() => {
     if (onColorGenerated) {
@@ -47,12 +57,23 @@ const Sparkle: React.FC<SparkleProps> = ({ address, size, onColorGenerated }) =>
 
   return (
     <div>
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox={svgViewBox} style={{padding: 0, margin: 0}}>
-        <foreignObject width="100%" height="100%" style={{margin: 0, background: conicGradient}}>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width={size}
+        height={size}
+        viewBox={svgViewBox}
+        style={{ padding: 0, margin: 0 }}
+      >
+        <foreignObject
+          width="100%"
+          height="100%"
+          style={{ margin: 0, background: conicGradient }}
+        >
           <div></div>
         </foreignObject>
       </svg>
-    </div>);
-}
+    </div>
+  );
+};
 
 export default Sparkle;

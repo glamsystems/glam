@@ -31,11 +31,15 @@ import { DataTableToolbar } from "./data-table-toolbar";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  isLoadingData: boolean;
+  onOpenSheet: () => void; // Add this prop
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  isLoadingData,
+  onOpenSheet, // Destructure the prop here
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -69,7 +73,8 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4 w-full">
-      <DataTableToolbar table={table} />
+      <DataTableToolbar table={table as any} onOpenSheet={onOpenSheet} />{" "}
+      {/* Pass the prop here */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -90,6 +95,7 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
           </TableHeader>
+
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
@@ -113,7 +119,7 @@ export function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  {isLoadingData ? "Loading data ..." : "No results."}
                 </TableCell>
               </TableRow>
             )}

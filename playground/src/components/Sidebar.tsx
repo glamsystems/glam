@@ -2,7 +2,32 @@
 
 import React from "react";
 import {
-  BoxModelIcon, CardStackIcon, Component1Icon, Crosshair2Icon, DashboardIcon, DownloadIcon, ExitIcon, FilePlusIcon, GlobeIcon, LayersIcon, ListBulletIcon, LoopIcon, MarginIcon, MixerHorizontalIcon, MixIcon, PersonIcon, PlusIcon, ShuffleIcon, StackIcon, TargetIcon, TokensIcon, TransformIcon
+  BoxModelIcon,
+  CardStackIcon,
+  Component1Icon,
+  Crosshair2Icon,
+  DashboardIcon,
+  DiscIcon,
+  DownloadIcon,
+  ExitIcon,
+  FilePlusIcon,
+  GearIcon,
+  GlobeIcon,
+  LayersIcon,
+  ListBulletIcon,
+  LoopIcon,
+  MarginIcon,
+  MixerHorizontalIcon,
+  MixerVerticalIcon,
+  MixIcon,
+  PaddingIcon,
+  PersonIcon,
+  PlusIcon,
+  ShuffleIcon,
+  StackIcon,
+  TargetIcon,
+  TokensIcon,
+  TransformIcon,
 } from "@radix-ui/react-icons";
 import AccountMenu from "./AccountMenu";
 import Link from "next/link";
@@ -12,6 +37,7 @@ type IconType =
   | typeof BoxModelIcon
   | typeof Component1Icon
   | typeof DashboardIcon
+  | typeof DiscIcon
   | typeof DownloadIcon
   | typeof ExitIcon
   | typeof FilePlusIcon
@@ -22,6 +48,8 @@ type IconType =
   | typeof MarginIcon
   | typeof MixIcon
   | typeof MixerHorizontalIcon
+  | typeof MixerVerticalIcon
+  | typeof PaddingIcon
   | typeof PlusIcon
   | typeof StackIcon
   | typeof TargetIcon
@@ -40,35 +68,82 @@ function SidebarItem({ route, text, shortcut, Icon }: SidebarItemProps) {
   const isActive = pathname === route;
 
   return (
-    <li className={`relative flex items-center text-sm outline-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 ml-2 mr-2 p-0 transition-all hover:bg-muted opacity-50 hover:opacity-100 cursor-pointer ${isActive ? 'bg-muted/75' : ''}`}>
+    <li
+      className={`relative flex items-center text-sm outline-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 ml-2 mr-2 p-0 transition-all hover:bg-muted opacity-50 hover:opacity-100 cursor-pointer ${
+        isActive ? "bg-muted/75" : ""
+      }`}
+    >
       <Link href={route} className="p-2 flex grow items-center min-h-[40px]">
         <Icon className="ml-1 mr-3 h-4 w-4" />
         <span className="flex-grow">{text}</span>
-        <span className="ml-auto text-xs tracking-widest text-muted-foreground">{shortcut}</span>
+        <span className="ml-auto text-xs tracking-widest text-muted-foreground">
+          {shortcut}
+        </span>
       </Link>
-    </li>);
+    </li>
+  );
 }
 
 export default function Sidebar() {
-  const navList = [{
-    group: "Investment",
-    items: [
-      { route: "/screener", text: "Screener", shortcut: "", Icon: LayersIcon },
-      { route: "/flows", text: "Flows", shortcut: "", Icon: LoopIcon },
-    ],
-  }, {
-    group: "Administration", items: [{ route: "/create", text: "Create", shortcut: "", Icon: PlusIcon },
-        { route: "/products", text: "Products", shortcut: "", Icon: StackIcon },
-        { route: "/shareclasses", text: "Share Classes", shortcut: "", Icon: TokensIcon },
-        { route: "/policies", text: "Policies", shortcut: "", Icon: BoxModelIcon },
-        { route: "/integrations", text: "Integrations", shortcut: "", Icon: TransformIcon },
-        { route: "/access", text: "Access Control", shortcut: "", Icon: TargetIcon },
+  const navList = [
+    {
+      group: "Investment",
+      items: [
+        {
+          route: "/products",
+          text: "Screener",
+          shortcut: "",
+          Icon: LayersIcon,
+        },
+        { route: "/flows", text: "Flows", shortcut: "", Icon: LoopIcon },
+      ],
+    },
+    {
+      group: "Administration",
+      items: [
+        { route: "/create", text: "Create", shortcut: "", Icon: PlusIcon },
+        { route: "/manage", text: "Products", shortcut: "", Icon: StackIcon },
+        {
+          route: "/shareclasses",
+          text: "Share Classes",
+          shortcut: "",
+          Icon: DashboardIcon,
+        },
+        {
+          route: "/policies",
+          text: "Policies",
+          shortcut: "",
+          Icon: TransformIcon,
+        },
+        {
+          route: "/integrations",
+          text: "Integrations",
+          shortcut: "",
+          Icon: MixIcon,
+        },
+        {
+          route: "/risk",
+          text: "Risk Management",
+          shortcut: "",
+          Icon: DiscIcon,
+        },
+        {
+          route: "/access",
+          text: "Access Control",
+          shortcut: "",
+          Icon: TargetIcon,
+        },
       ],
     },
     {
       group: "Management",
       items: [
-        { route: "/holdings", text: "Holdings", shortcut: "", Icon: ListBulletIcon},
+        {
+          route: "/holdings",
+          text: "Holdings",
+          shortcut: "",
+          Icon: ListBulletIcon,
+        },
         { route: "/wrap", text: "Wrap", shortcut: "", Icon: MarginIcon },
         { route: "/stake", text: "Stake", shortcut: "", Icon: DownloadIcon },
         { route: "/trade", text: "Trade", shortcut: "", Icon: ShuffleIcon },
@@ -84,8 +159,14 @@ export default function Sidebar() {
           shortcut: "",
           Icon: GlobeIcon,
         },
+        {
+          route: "/openfunds",
+          text: "Openfunds Debugger",
+          shortcut: "",
+          Icon: GearIcon,
+        },
       ],
-    }
+    },
   ];
 
   return (
@@ -96,7 +177,11 @@ export default function Sidebar() {
       <div className="grow pt-2">
         {navList.map((nav, index) => (
           <div key={index} className="mb-4">
-            {nav.group && <div className="text-muted-foreground opacity-50  text-xs ml-2 mb-2">{nav.group}</div>}
+            {nav.group && (
+              <div className="text-muted-foreground opacity-50  text-xs ml-2 mb-2">
+                {nav.group}
+              </div>
+            )}
             <ul className="list-none p-0 m-0">
               {nav.items.map((item, itemIndex) => (
                 <SidebarItem key={itemIndex} {...item} />

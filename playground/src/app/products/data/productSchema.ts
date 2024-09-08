@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 export const productSchema = z.object({
-  address: z.string(),
+  id: z.string(),
+  imageKey: z.string(),
   name: z.string(),
   symbol: z.string(),
   baseAsset: z.string(),

@@ -42,6 +42,10 @@ pub enum InvestorError {
     InvalidAssetPrice,
     #[msg("Subscription not allowed: invalid stable coin price")]
     InvalidStableCoinPriceForSubscribe,
+    #[msg("Fund is paused for subscription and redemption")]
+    SubscribeRedeemPaused,
+    #[msg("Policy account is mandatory")]
+    InvalidPolicyAccount,
 }
 
 #[error_code]

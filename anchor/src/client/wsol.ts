@@ -45,6 +45,7 @@ export class WSolClient {
       .wsolWrap(amount)
       .accounts({
         fund,
+        //@ts-ignore IDL ts type is unhappy
         treasury,
         treasuryWsolAta,
         wsolMint: WSOL,
@@ -70,6 +71,7 @@ export class WSolClient {
       .wsolUnwrap()
       .accounts({
         fund,
+        //@ts-ignore IDL ts type is unhappy
         treasury,
         treasuryWsolAta,
         wsolMint: WSOL,

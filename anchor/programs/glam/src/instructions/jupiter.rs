@@ -9,23 +9,19 @@ use solana_program::{instruction::Instruction, program::invoke_signed};
 use crate::error::ManagerError;
 use crate::state::*;
 
-mod jupiter {
-    use anchor_lang::declare_id;
-    declare_id!("JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4");
-}
-
 #[derive(Clone)]
 pub struct Jupiter;
 
 impl anchor_lang::Id for Jupiter {
     fn id() -> Pubkey {
-        jupiter::id()
+        pubkey!("JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4")
     }
 }
 
 #[derive(Accounts)]
 pub struct JupiterSwap<'info> {
-    #[account()]
+    // fund can mutate: output_mint can be added to assets
+    #[account(mut)]
     pub fund: Box<Account<'info, FundAccount>>,
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
@@ -139,22 +135,30 @@ pub fn jupiter_swap<'c: 'info, 'info>(
     amount: u64,
     data: Vec<u8>,
 ) -> Result<()> {
-    if let Some(acls) = ctx.accounts.fund.delegate_acls() {
-        // Check if the signer is allowed to swap any asset
-        let can_swap_any_asset = acls.iter().any(|acl| {
-            acl.pubkey == *ctx.accounts.signer.key
-                && acl.permissions.contains(&Permission::JupiterSwapAnyAsset)
-        });
+    // Check if swap is among assets that belong to the funds, or possibly new
+    // assets. swap_any tells if either the input or output is not part of the fund
+    let fund = ctx.accounts.fund.clone();
+    let assets = ctx.accounts.fund.assets_mut().unwrap();
+    let output_in_assets = assets.contains(&ctx.accounts.output_mint.key());
+    let input_in_assets = assets.contains(&ctx.accounts.input_mint.key());
+    let swap_any = !(output_in_assets && input_in_assets);
 
-        // If the signer doesn't have permission to swap any asset, check the input and output mints
-        if !can_swap_any_asset {
-            if let Some(assets) = ctx.accounts.fund.assets() {
-                require!(
-                    assets.contains(&ctx.accounts.input_mint.key())
-                        && assets.contains(&ctx.accounts.output_mint.key()),
-                    ManagerError::InvalidAssetForSwap
-                );
-            }
+    if swap_any {
+        // Manager is currently always allowed to swap_any
+
+        // Delegate must have JupiterSwapAnyAsset perm
+        if let Some(acls) = fund.delegate_acls() {
+            // Check if the signer is allowed to swap any asset
+            let can_swap_any_asset = acls.iter().any(|acl| {
+                acl.pubkey == *ctx.accounts.signer.key
+                    && acl.permissions.contains(&Permission::JupiterSwapAnyAsset)
+            });
+            require!(can_swap_any_asset, ManagerError::InvalidAssetForSwap);
+        }
+
+        // Add output mint to fund assets
+        if !output_in_assets {
+            assets.push(ctx.accounts.output_mint.key());
         }
     }
 

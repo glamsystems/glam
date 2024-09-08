@@ -15,7 +15,7 @@ import { getStakePoolAccount } from "@solana/spl-stake-pool";
 
 interface StakePoolAccountData {
   programId: PublicKey;
-  depositAuthority?: PublicKey;
+  depositAuthority: PublicKey;
   withdrawAuthority: PublicKey;
   poolMint: PublicKey;
   feeAccount: PublicKey;
@@ -146,7 +146,10 @@ export class StakingClient {
     return publicKey;
   }
 
-  getStakePoolDepositAuthority(programId: PublicKey, stakePool: PublicKey) {
+  getStakePoolDepositAuthority(
+    programId: PublicKey,
+    stakePool: PublicKey
+  ): PublicKey {
     const [publicKey] = PublicKey.findProgramAddressSync(
       [stakePool.toBuffer(), Buffer.from("deposit")],
       programId
@@ -201,16 +204,29 @@ export class StakingClient {
         }
       );
 
+    const epochInfo = await this.base.provider.connection.getEpochInfo();
     const stakes = await Promise.all(
       accounts.map(async (account) => {
-        const stakeInfo =
-          await this.base.provider.connection.getStakeActivation(
-            account.pubkey
-          );
+        const delegation = (account.account.data as ParsedAccountData).parsed
+          .info.stake.delegation;
+        const { activationEpoch, deactivationEpoch, stake } = delegation;
+
+        // possible state: 'active', 'inactive', 'activating', 'deactivating'
+        let state = "unknown";
+        if (activationEpoch == epochInfo.epoch) {
+          state = "activating";
+        } else if (deactivationEpoch == epochInfo.epoch) {
+          state = "deactivating";
+        } else if (epochInfo.epoch > deactivationEpoch) {
+          state = "inactive";
+        } else if (epochInfo.epoch > activationEpoch) {
+          state = "active";
+        }
+
         return {
           address: account.pubkey,
           lamports: account.account.lamports,
-          state: stakeInfo.state,
+          state,
         };
       })
     );
@@ -279,6 +295,7 @@ export class StakingClient {
       .accounts({
         manager,
         fund,
+        //@ts-ignore IDL ts type is unhappy
         treasury,
         mintTo: this.base.getTreasuryAta(fund, poolMint),
         stakePoolProgram,
@@ -325,6 +342,7 @@ export class StakingClient {
       .accounts({
         manager,
         fund,
+        //@ts-ignore IDL ts type is unhappy
         treasury,
         treasuryStakeAccount: stakeAccount,
         mintTo: this.base.getTreasuryAta(fund, poolMint),
@@ -380,6 +398,7 @@ export class StakingClient {
       .accounts({
         manager,
         fund,
+        //@ts-ignore IDL ts type is unhappy
         treasury,
         treasuryStakeAccount: stakeAccountPda,
         stakePoolProgram,
@@ -419,6 +438,7 @@ export class StakingClient {
       .accounts({
         manager,
         fund,
+        //@ts-ignore IDL ts type is unhappy
         treasury,
         treasuryStakeAccount: stakeAccountPda,
         vote,
@@ -446,6 +466,7 @@ export class StakingClient {
       .accounts({
         manager,
         fund,
+        //@ts-ignore IDL ts type is unhappy
         treasury,
         clock: SYSVAR_CLOCK_PUBKEY,
         stakeProgram: StakeProgram.programId,
@@ -476,6 +497,7 @@ export class StakingClient {
       .accounts({
         manager,
         fund,
+        //@ts-ignore IDL ts type is unhappy
         treasury,
         clock: SYSVAR_CLOCK_PUBKEY,
         stakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
@@ -508,6 +530,7 @@ export class StakingClient {
       .accounts({
         manager,
         fund,
+        //@ts-ignore IDL ts type is unhappy
         treasury,
         toStake,
         fromStake,
@@ -538,6 +561,7 @@ export class StakingClient {
       .accounts({
         manager,
         fund,
+        //@ts-ignore IDL ts type is unhappy
         treasury,
         existingStake,
         newStake,

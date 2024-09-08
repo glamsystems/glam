@@ -613,4 +613,44 @@ describe("glam_investor", () => {
       expect(errMsg).toContain("Error Code: InvalidShareClass");
     }
   });
+
+  it("Manager failed to subscribe/redeem due to unclaimed marinade ticket", async () => {
+    try {
+      const airdropTx = await connection.requestAirdrop(treasuryPDA, 10 ** 9);
+      await connection.confirmTransaction({
+        ...(await connection.getLatestBlockhash()),
+        signature: airdropTx,
+      });
+      await glamClient.marinade.depositSol(fundPDA, new anchor.BN(10 ** 9));
+      await glamClient.marinade.delayedUnstake(fundPDA, new anchor.BN(10 ** 8));
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+
+    const fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
+    expect(fund.params[0][2].value.vecPubkey?.val.length).toBe(1);
+
+    try {
+      const txId = await glamClient.investor.subscribe(
+        fundPDA,
+        btc.publicKey,
+        new BN(10 ** 8)
+      );
+      expect(txId).toBeUndefined();
+    } catch (e) {
+      expect(e.logs.toString()).toContain("Error Code: SubscribeRedeemPaused");
+    }
+
+    try {
+      const txId = await glamClient.investor.redeem(
+        fundPDA,
+        new BN(10 ** 8),
+        true
+      );
+      console.log("redeem 50%:", txId);
+    } catch (e) {
+      expect(e.logs.toString()).toContain("Error Code: SubscribeRedeemPaused");
+    }
+  });
 });

@@ -33,18 +33,22 @@ export default function Holdings() {
     }
     if (treasury?.tokenAccounts) {
       tokenAccounts.push(
-        ...treasury.tokenAccounts.map((ta) => ({
-          name:
+        ...treasury.tokenAccounts.map((ta) => {
+          const name =
             tokensInfo?.find((t: any) => t.address === ta.mint)?.name ||
-            "Unknown",
-          symbol:
+            "Unknown";
+          const symbol =
             tokensInfo?.find((t: any) => t.address === ta.mint)?.symbol ||
-            ta.mint,
-          mint: ta.mint,
-          ata: ta.address,
-          balance: Number(ta.uiAmount),
-          notional: 1234.56,
-        }))
+            ta.mint;
+          return {
+            name,
+            symbol: symbol === "SOL" ? "wSOL" : symbol,
+            mint: ta.mint,
+            ata: ta.address,
+            balance: Number(ta.uiAmount),
+            notional: 1234.56,
+          };
+        })
       );
     }
 

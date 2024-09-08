@@ -240,4 +240,12 @@ pub mod glam {
     pub fn wsol_unwrap(ctx: Context<WSolUnwrap>) -> Result<()> {
         wsol::wsol_unwrap(ctx)
     }
+
+    //
+    // Policy Transfer Hook
+    //
+    #[interface(spl_transfer_hook_interface::execute)]
+    pub fn transfer_hook(ctx: Context<TransferHook>, amount: u64) -> Result<()> {
+        policy_hook::execute(ctx, amount)
+    }
 }
