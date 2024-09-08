@@ -295,20 +295,32 @@
       "args": []
     },
     {
-      "name": "drift_close",
+      "name": "drift_delete_user",
       "discriminator": [
-        23,
-        133,
-        219,
-        157,
-        137,
-        34,
-        93,
-        58
+        179,
+        118,
+        20,
+        212,
+        145,
+        146,
+        49,
+        130
       ],
       "accounts": [
         {
           "name": "fund"
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "user_stats",
+          "writable": true
+        },
+        {
+          "name": "state",
+          "writable": true
         },
         {
           "name": "treasury",
@@ -333,18 +345,6 @@
               }
             ]
           }
-        },
-        {
-          "name": "user_stats",
-          "writable": true
-        },
-        {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "state",
-          "writable": true
         },
         {
           "name": "manager",
@@ -363,7 +363,12 @@
           "address": "11111111111111111111111111111111"
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "_sub_account_id",
+          "type": "u16"
+        }
+      ]
     },
     {
       "name": "drift_deposit",
@@ -380,6 +385,18 @@
       "accounts": [
         {
           "name": "fund"
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "user_stats",
+          "writable": true
+        },
+        {
+          "name": "state",
+          "writable": true
         },
         {
           "name": "treasury",
@@ -406,23 +423,11 @@
           }
         },
         {
-          "name": "user_stats",
-          "writable": true
-        },
-        {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "state",
+          "name": "drift_ata",
           "writable": true
         },
         {
           "name": "treasury_ata",
-          "writable": true
-        },
-        {
-          "name": "drift_ata",
           "writable": true
         },
         {
@@ -440,6 +445,10 @@
         }
       ],
       "args": [
+        {
+          "name": "_sub_account_id",
+          "type": "u16"
+        },
         {
           "name": "amount",
           "type": "u64"
@@ -463,6 +472,18 @@
           "name": "fund"
         },
         {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "user_stats",
+          "writable": true
+        },
+        {
+          "name": "state",
+          "writable": true
+        },
+        {
           "name": "treasury",
           "pda": {
             "seeds": [
@@ -485,18 +506,6 @@
               }
             ]
           }
-        },
-        {
-          "name": "user_stats",
-          "writable": true
-        },
-        {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "state",
-          "writable": true
         },
         {
           "name": "manager",
@@ -519,30 +528,27 @@
           "address": "11111111111111111111111111111111"
         }
       ],
-      "args": [
-        {
-          "name": "trader",
-          "type": {
-            "option": "pubkey"
-          }
-        }
-      ]
+      "args": []
     },
     {
-      "name": "drift_update_delegated_trader",
+      "name": "drift_update_user_custom_margin_ratio",
       "discriminator": [
-        98,
-        66,
-        206,
-        146,
-        109,
-        215,
-        206,
-        57
+        4,
+        47,
+        193,
+        177,
+        128,
+        62,
+        228,
+        14
       ],
       "accounts": [
         {
           "name": "fund"
+        },
+        {
+          "name": "user",
+          "writable": true
         },
         {
           "name": "treasury",
@@ -569,8 +575,72 @@
           }
         },
         {
+          "name": "manager",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "fund"
+          ]
+        },
+        {
+          "name": "drift_program",
+          "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+        }
+      ],
+      "args": [
+        {
+          "name": "_sub_account_id",
+          "type": "u16"
+        },
+        {
+          "name": "margin_ratio",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "drift_update_user_delegate",
+      "discriminator": [
+        36,
+        181,
+        34,
+        31,
+        22,
+        77,
+        36,
+        154
+      ],
+      "accounts": [
+        {
+          "name": "fund"
+        },
+        {
           "name": "user",
           "writable": true
+        },
+        {
+          "name": "treasury",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          }
         },
         {
           "name": "manager",
@@ -587,10 +657,80 @@
       ],
       "args": [
         {
-          "name": "trader",
-          "type": {
-            "option": "pubkey"
+          "name": "_sub_account_id",
+          "type": "u16"
+        },
+        {
+          "name": "delegate",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "drift_update_user_margin_trading_enabled",
+      "discriminator": [
+        157,
+        175,
+        12,
+        19,
+        202,
+        114,
+        17,
+        36
+      ],
+      "accounts": [
+        {
+          "name": "fund"
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "treasury",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
           }
+        },
+        {
+          "name": "manager",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "fund"
+          ]
+        },
+        {
+          "name": "drift_program",
+          "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+        }
+      ],
+      "args": [
+        {
+          "name": "_sub_account_id",
+          "type": "u16"
+        },
+        {
+          "name": "margin_trading_enabled",
+          "type": "bool"
         }
       ]
     },
@@ -611,6 +751,18 @@
           "name": "fund"
         },
         {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "user_stats",
+          "writable": true
+        },
+        {
+          "name": "state",
+          "writable": true
+        },
+        {
           "name": "treasury",
           "pda": {
             "seeds": [
@@ -635,27 +787,15 @@
           }
         },
         {
-          "name": "user_stats",
-          "writable": true
-        },
-        {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "state",
-          "writable": true
-        },
-        {
-          "name": "drift_signer"
-        },
-        {
           "name": "treasury_ata",
           "writable": true
         },
         {
           "name": "drift_ata",
           "writable": true
+        },
+        {
+          "name": "drift_signer"
         },
         {
           "name": "manager",
@@ -675,6 +815,10 @@
         }
       ],
       "args": [
+        {
+          "name": "_sub_account_id",
+          "type": "u16"
+        },
         {
           "name": "amount",
           "type": "u64"
@@ -3478,58 +3622,8 @@
   "errors": [
     {
       "code": 6000,
-      "name": "FundNotActive",
-      "msg": "Fund is not active"
-    },
-    {
-      "code": 6001,
-      "name": "InvalidShareClass",
-      "msg": "Share class not allowed to subscribe"
-    },
-    {
-      "code": 6002,
-      "name": "InvalidAssetSubscribe",
-      "msg": "Asset not allowed to subscribe"
-    },
-    {
-      "code": 6003,
-      "name": "InvalidPricingOracle",
-      "msg": "Invalid oracle for asset price"
-    },
-    {
-      "code": 6004,
-      "name": "InvalidRemainingAccounts",
-      "msg": "Invalid accounts: the transaction is malformed"
-    },
-    {
-      "code": 6005,
-      "name": "InvalidTreasuryAccount",
-      "msg": "Invalid treasury ata"
-    },
-    {
-      "code": 6006,
-      "name": "InvalidSignerAccount",
-      "msg": "Invalid signer ata"
-    },
-    {
-      "code": 6007,
-      "name": "InvalidAssetPrice",
-      "msg": "Invalid asset price"
-    },
-    {
-      "code": 6008,
-      "name": "InvalidStableCoinPriceForSubscribe",
-      "msg": "Subscription not allowed: invalid stable coin price"
-    },
-    {
-      "code": 6009,
-      "name": "SubscribeRedeemPaused",
-      "msg": "Fund is paused for subscription and redemption"
-    },
-    {
-      "code": 6010,
-      "name": "InvalidPolicyAccount",
-      "msg": "Policy account is mandatory"
+      "name": "NotAuthorized",
+      "msg": "Signer is not authorized"
     }
   ],
   "types": [
