@@ -6,10 +6,12 @@ use crate::error::ManagerError;
 use crate::state::*;
 
 use drift::cpi::accounts::{
-    DeleteUser, Deposit, InitializeUser, InitializeUserStats, UpdateUserDelegate, Withdraw,
+    DeleteUser, Deposit, InitializeUser, InitializeUserStats, UpdateUserCustomMarginRatio,
+    UpdateUserDelegate, UpdateUserMarginTradingEnabled, Withdraw,
 };
 use drift::cpi::{
-    delete_user, deposit, initialize_user, initialize_user_stats, update_user_delegate, withdraw,
+    delete_user, deposit, initialize_user, initialize_user_stats, update_user_custom_margin_ratio,
+    update_user_delegate, update_user_margin_trading_enabled, withdraw,
 };
 use drift::program::Drift;
 
@@ -18,18 +20,18 @@ pub struct DriftInitialize<'info> {
     #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
     pub fund: Account<'info, FundAccount>,
 
-    #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
-
+    #[account(mut)]
+    /// CHECK: checks are done inside cpi call
+    pub user: UncheckedAccount<'info>,
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
     pub user_stats: UncheckedAccount<'info>,
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
-    pub user: UncheckedAccount<'info>,
-    /// CHECK: checks are done inside cpi call
-    #[account(mut)]
     pub state: UncheckedAccount<'info>,
+
+    #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
     manager: Signer<'info>,
@@ -39,10 +41,7 @@ pub struct DriftInitialize<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn drift_initialize_handler(
-    ctx: Context<DriftInitialize>,
-    trader: Option<Pubkey>,
-) -> Result<()> {
+pub fn drift_initialize_handler(ctx: Context<DriftInitialize>) -> Result<()> {
     require!(
         ctx.accounts.treasury.key() == ctx.accounts.fund.treasury,
         ManagerError::NotAuthorizedError
@@ -56,7 +55,6 @@ pub fn drift_initialize_handler(
     ];
     let signer_seeds = &[&seeds[..]];
 
-    msg!("initialize_user_stats");
     initialize_user_stats(CpiContext::new_with_signer(
         ctx.accounts.drift_program.to_account_info(),
         InitializeUserStats {
@@ -70,9 +68,8 @@ pub fn drift_initialize_handler(
         signer_seeds,
     ))?;
 
-    msg!("initialize_user");
     let mut name = [0u8; 32];
-    let name_glam = b"Glam Trading";
+    let name_glam = b"GLAM *.+";
     name[..name_glam.len()].copy_from_slice(name_glam);
     initialize_user(
         CpiContext::new_with_signer(
@@ -92,21 +89,6 @@ pub fn drift_initialize_handler(
         name,
     )?;
 
-    msg!("update_user_delegate");
-    let trader = trader.unwrap_or(ctx.accounts.manager.key());
-    update_user_delegate(
-        CpiContext::new_with_signer(
-            ctx.accounts.drift_program.to_account_info(),
-            UpdateUserDelegate {
-                user: ctx.accounts.user.to_account_info(),
-                authority: ctx.accounts.treasury.to_account_info(),
-            },
-            signer_seeds,
-        ),
-        0,
-        trader,
-    )?;
-
     Ok(())
 }
 
@@ -115,12 +97,12 @@ pub struct DriftUpdate<'info> {
     #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
     pub fund: Account<'info, FundAccount>,
 
-    #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
-
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
     pub user: UncheckedAccount<'info>,
+
+    #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
     manager: Signer<'info>,
@@ -128,9 +110,9 @@ pub struct DriftUpdate<'info> {
     pub drift_program: Program<'info, Drift>,
 }
 
-pub fn drift_update_delegated_trader_handler(
+pub fn drift_update_user_custom_margin_ratio_handler(
     ctx: Context<DriftUpdate>,
-    trader: Option<Pubkey>,
+    margin_ratio: u32,
 ) -> Result<()> {
     require!(
         ctx.accounts.treasury.key() == ctx.accounts.fund.treasury,
@@ -145,8 +127,67 @@ pub fn drift_update_delegated_trader_handler(
     ];
     let signer_seeds = &[&seeds[..]];
 
-    msg!("update_user_delegate");
-    let trader = trader.unwrap_or(ctx.accounts.manager.key());
+    update_user_custom_margin_ratio(
+        CpiContext::new_with_signer(
+            ctx.accounts.drift_program.to_account_info(),
+            UpdateUserCustomMarginRatio {
+                user: ctx.accounts.user.to_account_info(),
+                authority: ctx.accounts.treasury.to_account_info(),
+            },
+            signer_seeds,
+        ),
+        0,
+        margin_ratio,
+    )?;
+
+    Ok(())
+}
+
+pub fn drift_update_user_margin_trading_enabled_handler(
+    ctx: Context<DriftUpdate>,
+    margin_trading_enabled: bool,
+) -> Result<()> {
+    require!(
+        ctx.accounts.treasury.key() == ctx.accounts.fund.treasury,
+        ManagerError::NotAuthorizedError
+    );
+
+    let fund_key = ctx.accounts.fund.key();
+    let seeds = &[
+        "treasury".as_bytes(),
+        fund_key.as_ref(),
+        &[ctx.bumps.treasury],
+    ];
+    let signer_seeds = &[&seeds[..]];
+
+    update_user_margin_trading_enabled(
+        CpiContext::new_with_signer(
+            ctx.accounts.drift_program.to_account_info(),
+            UpdateUserMarginTradingEnabled {
+                user: ctx.accounts.user.to_account_info(),
+                authority: ctx.accounts.treasury.to_account_info(),
+            },
+            signer_seeds,
+        ),
+        0,
+        margin_trading_enabled,
+    )?;
+
+    Ok(())
+}
+
+pub fn drift_update_user_delegate_handler(
+    ctx: Context<DriftUpdate>,
+    delegate: Pubkey,
+) -> Result<()> {
+    let fund_key = ctx.accounts.fund.key();
+    let seeds = &[
+        "treasury".as_bytes(),
+        fund_key.as_ref(),
+        &[ctx.bumps.treasury],
+    ];
+    let signer_seeds = &[&seeds[..]];
+
     update_user_delegate(
         CpiContext::new_with_signer(
             ctx.accounts.drift_program.to_account_info(),
@@ -157,7 +198,7 @@ pub fn drift_update_delegated_trader_handler(
             signer_seeds,
         ),
         0,
-        trader,
+        delegate,
     )?;
 
     Ok(())
@@ -168,23 +209,23 @@ pub struct DriftDeposit<'info> {
     #[account()]
     pub fund: Account<'info, FundAccount>,
 
-    #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
-
+    #[account(mut)]
+    /// CHECK: checks are done inside cpi call
+    pub user: UncheckedAccount<'info>,
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
     pub user_stats: UncheckedAccount<'info>,
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
-    pub user: UncheckedAccount<'info>,
-    /// CHECK: checks are done inside cpi call
-    #[account(mut)]
     pub state: UncheckedAccount<'info>,
 
-    #[account(mut)]
-    pub treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
+
     #[account(mut)]
     pub drift_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    #[account(mut)]
+    pub treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(mut)]
     manager: Signer<'info>,
@@ -213,7 +254,6 @@ pub fn drift_deposit_handler<'c: 'info, 'info>(
     ];
     let signer_seeds = &[&seeds[..]];
 
-    msg!("deposit");
     let market_index = 0u16;
     deposit(
         CpiContext::new_with_signer(
@@ -243,25 +283,25 @@ pub struct DriftWithdraw<'info> {
     #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
     pub fund: Account<'info, FundAccount>,
 
-    #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
-
+    #[account(mut)]
+    /// CHECK: checks are done inside cpi call
+    pub user: UncheckedAccount<'info>,
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
     pub user_stats: UncheckedAccount<'info>,
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
-    pub user: UncheckedAccount<'info>,
-    /// CHECK: checks are done inside cpi call
-    #[account(mut)]
     pub state: UncheckedAccount<'info>,
-    /// CHECK: checks are done inside cpi call
-    pub drift_signer: UncheckedAccount<'info>,
+
+    #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
     pub treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(mut)]
     pub drift_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    /// CHECK: checks are done inside cpi call
+    pub drift_signer: UncheckedAccount<'info>,
 
     #[account(mut)]
     manager: Signer<'info>,
@@ -290,7 +330,6 @@ pub fn drift_withdraw_handler<'c: 'info, 'info>(
     ];
     let signer_seeds = &[&seeds[..]];
 
-    msg!("withdraw");
     let market_index = 0u16;
     withdraw(
         CpiContext::new_with_signer(
@@ -317,22 +356,22 @@ pub fn drift_withdraw_handler<'c: 'info, 'info>(
 }
 
 #[derive(Accounts)]
-pub struct DriftClose<'info> {
+pub struct DriftDeleteUser<'info> {
     #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
     pub fund: Account<'info, FundAccount>,
 
-    #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
-
+    #[account(mut)]
+    /// CHECK: checks are done inside cpi call
+    pub user: UncheckedAccount<'info>,
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
     pub user_stats: UncheckedAccount<'info>,
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
-    pub user: UncheckedAccount<'info>,
-    /// CHECK: checks are done inside cpi call
-    #[account(mut)]
     pub state: UncheckedAccount<'info>,
+
+    #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
     manager: Signer<'info>,
@@ -341,7 +380,7 @@ pub struct DriftClose<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn drift_close_handler(ctx: Context<DriftClose>) -> Result<()> {
+pub fn drift_delete_user_handler(ctx: Context<DriftDeleteUser>) -> Result<()> {
     require!(
         ctx.accounts.treasury.key() == ctx.accounts.fund.treasury,
         ManagerError::NotAuthorizedError
@@ -355,7 +394,6 @@ pub fn drift_close_handler(ctx: Context<DriftClose>) -> Result<()> {
     ];
     let signer_seeds = &[&seeds[..]];
 
-    msg!("close_user");
     delete_user(CpiContext::new_with_signer(
         ctx.accounts.drift_program.to_account_info(),
         DeleteUser {

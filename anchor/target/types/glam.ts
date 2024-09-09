@@ -301,20 +301,32 @@ export type Glam = {
       "args": []
     },
     {
-      "name": "driftClose",
+      "name": "driftDeleteUser",
       "discriminator": [
-        23,
-        133,
-        219,
-        157,
-        137,
-        34,
-        93,
-        58
+        179,
+        118,
+        20,
+        212,
+        145,
+        146,
+        49,
+        130
       ],
       "accounts": [
         {
           "name": "fund"
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "userStats",
+          "writable": true
+        },
+        {
+          "name": "state",
+          "writable": true
         },
         {
           "name": "treasury",
@@ -339,18 +351,6 @@ export type Glam = {
               }
             ]
           }
-        },
-        {
-          "name": "userStats",
-          "writable": true
-        },
-        {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "state",
-          "writable": true
         },
         {
           "name": "manager",
@@ -369,7 +369,12 @@ export type Glam = {
           "address": "11111111111111111111111111111111"
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "subAccountId",
+          "type": "u16"
+        }
+      ]
     },
     {
       "name": "driftDeposit",
@@ -386,6 +391,18 @@ export type Glam = {
       "accounts": [
         {
           "name": "fund"
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "userStats",
+          "writable": true
+        },
+        {
+          "name": "state",
+          "writable": true
         },
         {
           "name": "treasury",
@@ -412,23 +429,11 @@ export type Glam = {
           }
         },
         {
-          "name": "userStats",
-          "writable": true
-        },
-        {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "state",
+          "name": "driftAta",
           "writable": true
         },
         {
           "name": "treasuryAta",
-          "writable": true
-        },
-        {
-          "name": "driftAta",
           "writable": true
         },
         {
@@ -446,6 +451,10 @@ export type Glam = {
         }
       ],
       "args": [
+        {
+          "name": "subAccountId",
+          "type": "u16"
+        },
         {
           "name": "amount",
           "type": "u64"
@@ -469,6 +478,18 @@ export type Glam = {
           "name": "fund"
         },
         {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "userStats",
+          "writable": true
+        },
+        {
+          "name": "state",
+          "writable": true
+        },
+        {
           "name": "treasury",
           "pda": {
             "seeds": [
@@ -491,18 +512,6 @@ export type Glam = {
               }
             ]
           }
-        },
-        {
-          "name": "userStats",
-          "writable": true
-        },
-        {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "state",
-          "writable": true
         },
         {
           "name": "manager",
@@ -525,30 +534,27 @@ export type Glam = {
           "address": "11111111111111111111111111111111"
         }
       ],
-      "args": [
-        {
-          "name": "trader",
-          "type": {
-            "option": "pubkey"
-          }
-        }
-      ]
+      "args": []
     },
     {
-      "name": "driftUpdateDelegatedTrader",
+      "name": "driftUpdateUserCustomMarginRatio",
       "discriminator": [
-        98,
-        66,
-        206,
-        146,
-        109,
-        215,
-        206,
-        57
+        4,
+        47,
+        193,
+        177,
+        128,
+        62,
+        228,
+        14
       ],
       "accounts": [
         {
           "name": "fund"
+        },
+        {
+          "name": "user",
+          "writable": true
         },
         {
           "name": "treasury",
@@ -575,8 +581,72 @@ export type Glam = {
           }
         },
         {
+          "name": "manager",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "fund"
+          ]
+        },
+        {
+          "name": "driftProgram",
+          "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+        }
+      ],
+      "args": [
+        {
+          "name": "subAccountId",
+          "type": "u16"
+        },
+        {
+          "name": "marginRatio",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "driftUpdateUserDelegate",
+      "discriminator": [
+        36,
+        181,
+        34,
+        31,
+        22,
+        77,
+        36,
+        154
+      ],
+      "accounts": [
+        {
+          "name": "fund"
+        },
+        {
           "name": "user",
           "writable": true
+        },
+        {
+          "name": "treasury",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          }
         },
         {
           "name": "manager",
@@ -593,10 +663,80 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "trader",
-          "type": {
-            "option": "pubkey"
+          "name": "subAccountId",
+          "type": "u16"
+        },
+        {
+          "name": "delegate",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "driftUpdateUserMarginTradingEnabled",
+      "discriminator": [
+        157,
+        175,
+        12,
+        19,
+        202,
+        114,
+        17,
+        36
+      ],
+      "accounts": [
+        {
+          "name": "fund"
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "treasury",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
           }
+        },
+        {
+          "name": "manager",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "fund"
+          ]
+        },
+        {
+          "name": "driftProgram",
+          "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+        }
+      ],
+      "args": [
+        {
+          "name": "subAccountId",
+          "type": "u16"
+        },
+        {
+          "name": "marginTradingEnabled",
+          "type": "bool"
         }
       ]
     },
@@ -617,6 +757,18 @@ export type Glam = {
           "name": "fund"
         },
         {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "userStats",
+          "writable": true
+        },
+        {
+          "name": "state",
+          "writable": true
+        },
+        {
           "name": "treasury",
           "pda": {
             "seeds": [
@@ -641,27 +793,15 @@ export type Glam = {
           }
         },
         {
-          "name": "userStats",
-          "writable": true
-        },
-        {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "state",
-          "writable": true
-        },
-        {
-          "name": "driftSigner"
-        },
-        {
           "name": "treasuryAta",
           "writable": true
         },
         {
           "name": "driftAta",
           "writable": true
+        },
+        {
+          "name": "driftSigner"
         },
         {
           "name": "manager",
@@ -681,6 +821,10 @@ export type Glam = {
         }
       ],
       "args": [
+        {
+          "name": "subAccountId",
+          "type": "u16"
+        },
         {
           "name": "amount",
           "type": "u64"
@@ -3484,58 +3628,8 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "fundNotActive",
-      "msg": "Fund is not active"
-    },
-    {
-      "code": 6001,
-      "name": "invalidShareClass",
-      "msg": "Share class not allowed to subscribe"
-    },
-    {
-      "code": 6002,
-      "name": "invalidAssetSubscribe",
-      "msg": "Asset not allowed to subscribe"
-    },
-    {
-      "code": 6003,
-      "name": "invalidPricingOracle",
-      "msg": "Invalid oracle for asset price"
-    },
-    {
-      "code": 6004,
-      "name": "invalidRemainingAccounts",
-      "msg": "Invalid accounts: the transaction is malformed"
-    },
-    {
-      "code": 6005,
-      "name": "invalidTreasuryAccount",
-      "msg": "Invalid treasury ata"
-    },
-    {
-      "code": 6006,
-      "name": "invalidSignerAccount",
-      "msg": "Invalid signer ata"
-    },
-    {
-      "code": 6007,
-      "name": "invalidAssetPrice",
-      "msg": "Invalid asset price"
-    },
-    {
-      "code": 6008,
-      "name": "invalidStableCoinPriceForSubscribe",
-      "msg": "Subscription not allowed: invalid stable coin price"
-    },
-    {
-      "code": 6009,
-      "name": "subscribeRedeemPaused",
-      "msg": "Fund is paused for subscription and redemption"
-    },
-    {
-      "code": 6010,
-      "name": "invalidPolicyAccount",
-      "msg": "Policy account is mandatory"
+      "name": "notAuthorized",
+      "msg": "Signer is not authorized"
     }
   ],
   "types": [

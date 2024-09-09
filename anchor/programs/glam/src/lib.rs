@@ -77,19 +77,37 @@ pub mod glam {
     // Drift
     //
 
-    pub fn drift_initialize(ctx: Context<DriftInitialize>, trader: Option<Pubkey>) -> Result<()> {
-        drift::drift_initialize_handler(ctx, trader)
+    pub fn drift_initialize(ctx: Context<DriftInitialize>) -> Result<()> {
+        drift::drift_initialize_handler(ctx)
     }
 
-    pub fn drift_update_delegated_trader(
+    pub fn drift_update_user_custom_margin_ratio(
         ctx: Context<DriftUpdate>,
-        trader: Option<Pubkey>,
+        _sub_account_id: u16,
+        margin_ratio: u32,
     ) -> Result<()> {
-        drift::drift_update_delegated_trader_handler(ctx, trader)
+        drift::drift_update_user_custom_margin_ratio_handler(ctx, margin_ratio)
+    }
+
+    pub fn drift_update_user_margin_trading_enabled(
+        ctx: Context<DriftUpdate>,
+        _sub_account_id: u16,
+        margin_trading_enabled: bool,
+    ) -> Result<()> {
+        drift::drift_update_user_margin_trading_enabled_handler(ctx, margin_trading_enabled)
+    }
+
+    pub fn drift_update_user_delegate(
+        ctx: Context<DriftUpdate>,
+        _sub_account_id: u16,
+        delegate: Pubkey,
+    ) -> Result<()> {
+        drift::drift_update_user_delegate_handler(ctx, delegate)
     }
 
     pub fn drift_deposit<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, DriftDeposit<'info>>,
+        _sub_account_id: u16,
         amount: u64,
     ) -> Result<()> {
         drift::drift_deposit_handler(ctx, amount)
@@ -97,13 +115,14 @@ pub mod glam {
 
     pub fn drift_withdraw<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, DriftWithdraw<'info>>,
+        _sub_account_id: u16,
         amount: u64,
     ) -> Result<()> {
         drift::drift_withdraw_handler(ctx, amount)
     }
 
-    pub fn drift_close(ctx: Context<DriftClose>) -> Result<()> {
-        drift::drift_close_handler(ctx)
+    pub fn drift_delete_user(ctx: Context<DriftDeleteUser>, _sub_account_id: u16) -> Result<()> {
+        drift::drift_delete_user_handler(ctx)
     }
 
     //
