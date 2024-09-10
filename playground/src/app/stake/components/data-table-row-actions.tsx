@@ -192,9 +192,6 @@ export function DataTableRowActions<TData>({
           <DropdownMenuItem onClick={handlDeactivateStake}>
             Deactivate
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleRedelegate}>
-            Redelegate
-          </DropdownMenuItem>
           <DropdownMenuItem onClick={handleSplit}>Split</DropdownMenuItem>
           <DropdownMenuItem onClick={handleAuthorize}>
             Authorize Stake Authority
