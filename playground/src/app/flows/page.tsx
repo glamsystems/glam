@@ -90,7 +90,7 @@ function InvestorDisclaimers({
               <span>
                 <p className="font-semibold">
                   You will receive a combination of {fund.fundCurrency} and
-                  other assets.
+                  other assets
                 </p>
               </span>
             </li>
@@ -101,7 +101,7 @@ function InvestorDisclaimers({
               </span>
               <span>
                 <p className="font-semibold">
-                  You will receive {fund.fundCurrency}.
+                  You will receive {fund.fundCurrency}
                 </p>
               </span>
             </li>

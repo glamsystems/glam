@@ -46,6 +46,7 @@ interface AssetInputProps {
   disableAssetChange?: boolean;
   disableAmountInput?: boolean;
   useMaxAmount?: boolean;
+  hideBalance?: boolean;
 }
 
 export const AssetInput: React.FC<AssetInputProps> = ({
@@ -59,6 +60,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
   disableAssetChange = false,
   disableAmountInput = false,
   useMaxAmount = false,
+  hideBalance = false,
 }) => {
   const { control, setValue, reset } = useFormContext();
   const [displayValue, setDisplayValue] = useState<string>("0");
@@ -209,6 +211,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
               )}
             </div>
           </FormControl>
+          {!hideBalance && (
           <div className="flex justify-between text-sm">
             <FormDescription>Balance</FormDescription>
             <FormDescription
@@ -220,6 +223,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
               {formattedBalance}
             </FormDescription>
           </div>
+            )}
           <FormMessage />
         </FormItem>
       )}
