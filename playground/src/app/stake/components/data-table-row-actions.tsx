@@ -93,10 +93,6 @@ export function DataTableRowActions<TData>({
     }
   };
 
-  const handleRedelegate = async () => {
-    console.error("Not implemented, need additional input");
-  };
-
   const handleSplit = async () => {
     console.error("Not implemented, need additional input");
   };
