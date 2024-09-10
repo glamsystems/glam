@@ -1,38 +1,15 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  useForm,
-  SubmitHandler,
-  FormProvider,
-  useFormContext,
-} from "react-hook-form";
+import { useForm, SubmitHandler, FormProvider, useFormContext } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormLabel,
-  FormField,
-  FormItem,
-  FormMessage,
-  FormDescription,
-} from "@/components/ui/form";
-import {
-  CaretSortIcon,
-  CheckIcon,
-  ColumnSpacingIcon,
-} from "@radix-ui/react-icons";
+import { Form, FormControl, FormLabel, FormField, FormItem, FormMessage, FormDescription } from "@/components/ui/form";
+import { CaretSortIcon, CheckIcon, ColumnSpacingIcon } from "@radix-ui/react-icons";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
@@ -44,27 +21,11 @@ import { ExplorerLink } from "@/components/ExplorerLink";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { InfoIcon } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import LeverageInput from "@/components/LeverageInput";
 
 const spotMarkets = [{ label: "SOL/USDC", value: "SOL-USDC" }] as const;
@@ -164,7 +125,6 @@ export default function Trade() {
           label: label as string,
         }));
 
-        // Sort the items alphabetically by label
         const sortedItems = formattedItems.sort((a, b) =>
           a.label.localeCompare(b.label)
         );
@@ -172,7 +132,6 @@ export default function Trade() {
         setItems(sortedItems);
       } catch (error) {
         console.error("Error fetching program ID to label mapping:", error);
-        // If there's an error, we'll keep using the default items
       }
     };
 
@@ -259,7 +218,7 @@ export default function Trade() {
       perpsReduceOnly: false,
       post: false,
       showConfirmation: true,
-      leverage: 0
+      leverage: 0,
     },
   });
 
@@ -294,7 +253,7 @@ export default function Trade() {
           return t.symbol === "SOL";
         }
         return t.symbol === fromAsset;
-      }) || {};
+    }) || {};
 
     const outputMint = tokenList?.find((t) => t.symbol === toAsset)?.address;
     if (!inputMint || !outputMint) {
@@ -355,7 +314,6 @@ export default function Trade() {
   const onSubmitPerps: SubmitHandler<PerpsSchema> = async (values) => {
     console.log("Submit Perps:", values);
   };
-
 
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -616,15 +574,15 @@ export default function Trade() {
                                               onCheckedChange={(checked) => {
                                                 return checked
                                                   ? field.onChange([
-                                                      ...field.value,
-                                                      item.id,
-                                                    ])
+                                                    ...field.value,
+                                                    item.id,
+                                                  ])
                                                   : field.onChange(
-                                                      field.value?.filter(
-                                                        (value) =>
-                                                          value !== item.id
-                                                      )
-                                                    );
+                                                    field.value?.filter(
+                                                      (value) =>
+                                                        value !== item.id
+                                                    )
+                                                  );
                                               }}
                                             />
                                           </FormControl>
@@ -938,27 +896,7 @@ export default function Trade() {
                                 value="buy"
                                 aria-label="Buy"
                                 variant="outline"
-                                className="
-                                  w-full
-                                  transition-all
-                                  border-emerald-800
-                                  text-emerald-800
-                                  hover:border-emerald-600
-                                  hover:text-emerald-600
-                                  hover:bg-emerald-50
-                                  data-[state=on]:border-emerald-800
-                                  data-[state=on]:text-emerald-800
-                                  data-[state=on]:bg-emerald-100
-                                  dark:border-emerald-950
-                                  dark:text-emerald-950
-                                  dark:hover:border-emerald-500
-                                  dark:hover:text-emerald-500
-                                  dark:hover:bg-emerald-950
-                                  dark:data-[state=on]:border-emerald-400
-                                  dark:data-[state=on]:text-emerald-400
-                                  dark:data-[state=on]:bg-emerald-900
-                                  dark:data-[state=on]:bg-opacity-25
-                                  "
+                                className="w-full transition-all border-emerald-800 text-emerald-800 hover:border-emerald-600 hover:text-emerald-600 hover:bg-emerald-50 data-[state=on]:border-emerald-800 data-[state=on]:text-emerald-800 data-[state=on]:bg-emerald-100 dark:border-emerald-950 dark:text-emerald-950 dark:hover:border-emerald-500 dark:hover:text-emerald-500 dark:hover:bg-emerald-950 dark:data-[state=on]:border-emerald-400 dark:data-[state=on]:text-emerald-400 dark:data-[state=on]:bg-emerald-900 dark:data-[state=on]:bg-opacity-25"
                               >
                                 Buy
                               </ToggleGroupItem>
@@ -966,27 +904,7 @@ export default function Trade() {
                                 value="sell"
                                 aria-label="Sell"
                                 variant="outline"
-                                className="
-                                  transition-all
-                                  w-full
-                                  border-rose-800
-                                  text-rose-800
-                                  hover:border-rose-600
-                                  hover:text-rose-600
-                                  hover:bg-rose-50
-                                  data-[state=on]:border-rose-800
-                                  data-[state=on]:text-rose-800
-                                  data-[state=on]:bg-rose-100
-                                  dark:border-rose-950
-                                  dark:text-rose-950
-                                  dark:hover:border-rose-500
-                                  dark:hover:text-rose-500
-                                  dark:hover:bg-rose-950
-                                  dark:data-[state=on]:border-rose-400
-                                  dark:data-[state=on]:text-rose-400
-                                  dark:data-[state=on]:bg-rose-900
-                                  dark:data-[state=on]:bg-opacity-25
-                                  "
+                                className="transition-all w-full border-rose-800 text-rose-800 hover:border-rose-600 hover:text-rose-600 hover:bg-rose-50 data-[state=on]:border-rose-800 data-[state=on]:text-rose-800 data-[state=on]:bg-rose-100 dark:border-rose-950 dark:text-rose-950 dark:hover:border-rose-500 dark:hover:text-rose-500 dark:hover:bg-rose-950 dark:data-[state=on]:border-rose-400 dark:data-[state=on]:text-rose-400 dark:data-[state=on]:bg-rose-900 dark:data-[state=on]:bg-opacity-25"
                               >
                                 Sell
                               </ToggleGroupItem>
@@ -1363,27 +1281,7 @@ export default function Trade() {
                                 value="buy"
                                 aria-label="Buy"
                                 variant="outline"
-                                className="
-                                  w-full
-                                  transition-all
-                                  border-emerald-800
-                                  text-emerald-800
-                                  hover:border-emerald-600
-                                  hover:text-emerald-600
-                                  hover:bg-emerald-50
-                                  data-[state=on]:border-emerald-800
-                                  data-[state=on]:text-emerald-800
-                                  data-[state=on]:bg-emerald-100
-                                  dark:border-emerald-950
-                                  dark:text-emerald-950
-                                  dark:hover:border-emerald-500
-                                  dark:hover:text-emerald-500
-                                  dark:hover:bg-emerald-950
-                                  dark:data-[state=on]:border-emerald-400
-                                  dark:data-[state=on]:text-emerald-400
-                                  dark:data-[state=on]:bg-emerald-900
-                                  dark:data-[state=on]:bg-opacity-25
-                                  "
+                                className="w-full transition-all border-emerald-800 text-emerald-800 hover:border-emerald-600 hover:text-emerald-600 hover:bg-emerald-50 data-[state=on]:border-emerald-800 data-[state=on]:text-emerald-800 data-[state=on]:bg-emerald-100 dark:border-emerald-950 dark:text-emerald-950 dark:hover:border-emerald-500 dark:hover:text-emerald-500 dark:hover:bg-emerald-950 dark:data-[state=on]:border-emerald-400 dark:data-[state=on]:text-emerald-400 dark:data-[state=on]:bg-emerald-900 dark:data-[state=on]:bg-opacity-25"
                               >
                                 Buy
                               </ToggleGroupItem>
@@ -1391,27 +1289,7 @@ export default function Trade() {
                                 value="sell"
                                 aria-label="Sell"
                                 variant="outline"
-                                className="
-                                  transition-all
-                                  w-full
-                                  border-rose-800
-                                  text-rose-800
-                                  hover:border-rose-600
-                                  hover:text-rose-600
-                                  hover:bg-rose-50
-                                  data-[state=on]:border-rose-800
-                                  data-[state=on]:text-rose-800
-                                  data-[state=on]:bg-rose-100
-                                  dark:border-rose-950
-                                  dark:text-rose-950
-                                  dark:hover:border-rose-500
-                                  dark:hover:text-rose-500
-                                  dark:hover:bg-rose-950
-                                  dark:data-[state=on]:border-rose-400
-                                  dark:data-[state=on]:text-rose-400
-                                  dark:data-[state=on]:bg-rose-900
-                                  dark:data-[state=on]:bg-opacity-25
-                                  "
+                                className="transition-all w-full border-rose-800 text-rose-800 hover:border-rose-600 hover:text-rose-600 hover:bg-rose-50 data-[state=on]:border-rose-800 data-[state=on]:text-rose-800 data-[state=on]:bg-rose-100 dark:border-rose-950 dark:text-rose-950 dark:hover:border-rose-500 dark:hover:text-rose-500 dark:hover:bg-rose-950 dark:data-[state=on]:border-rose-400 dark:data-[state=on]:text-rose-400 dark:data-[state=on]:bg-rose-900 dark:data-[state=on]:bg-opacity-25"
                               >
                                 Sell
                               </ToggleGroupItem>
