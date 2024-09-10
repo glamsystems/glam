@@ -915,59 +915,100 @@ export default function Trade() {
                     </div>
                   </div>
 
-                  <div className="flex space-x-4 items-start">
-                    <AssetInput
-                      className="min-w-1/3 w-1/3"
-                      name="limit-price"
-                      label="Limit Price"
-                      assets={fromAssetList}
-                      balance={NaN}
-                      selectedAsset={fromAsset}
-                      onSelectAsset={setFromAsset}
-                      hideBalance={true}
-                      disableAssetChange={true}
-                    />
+                  {orderType === "Limit" ? (
+                    <>
+                      <div className="flex space-x-4 items-start">
+                        <AssetInput
+                          className="min-w-1/3 w-1/3"
+                          name="limit-price"
+                          label="Limit Price"
+                          assets={fromAssetList}
+                          balance={NaN}
+                          selectedAsset={fromAsset}
+                          onSelectAsset={setFromAsset}
+                          hideBalance={true}
+                          disableAssetChange={true}
+                        />
+                        <AssetInput
+                          className="min-w-1/3 w-1/3"
+                          name="size"
+                          label="Size"
+                          assets={fromAssetList}
+                          balance={NaN}
+                          selectedAsset={fromAsset}
+                          onSelectAsset={setFromAsset}
+                        />
+                        <AssetInput
+                          className="min-w-1/3 w-1/3"
+                          name="notional"
+                          label="Notional"
+                          assets={tokenList?.map((t) => ({
+                            name: t.name, symbol: t.symbol, address: t.address, decimals: t.decimals, balance: 0,
+                          } as Asset))}
+                          balance={NaN}
+                          selectedAsset={toAsset}
+                          onSelectAsset={setToAsset}
+                        />
+                      </div>
+                    </>
+                  ) : orderType === "Stop Limit" ? (
+                    <>
+                      <div className="flex space-x-4 items-start">
+                        <AssetInput
+                          className="min-w-1/2 w-1/2"
+                          name="trigger-price"
+                          label="Trigger Price"
+                          assets={fromAssetList}
+                          balance={NaN}
+                          selectedAsset={fromAsset}
+                          onSelectAsset={setFromAsset}
+                          hideBalance={true}
+                          disableAssetChange={true}
+                        />
+                        <AssetInput
+                          className="min-w-1/2 w-1/2"
+                          name="limit-price"
+                          label="Limit Price"
+                          assets={fromAssetList}
+                          balance={NaN}
+                          selectedAsset={fromAsset}
+                          onSelectAsset={setFromAsset}
+                          hideBalance={true}
+                          disableAssetChange={true}
+                        />
+                      </div>
+                      <div className="flex space-x-4 items-start">
+                        <AssetInput
+                          className="min-w-1/2 w-1/2"
+                          name="size"
+                          label="Size"
+                          assets={fromAssetList}
+                          balance={NaN}
+                          selectedAsset={fromAsset}
+                          onSelectAsset={setFromAsset}
+                        />
+                        <AssetInput
+                          className="min-w-1/2 w-1/2"
+                          name="notional"
+                          label="Notional"
+                          assets={tokenList?.map((t) => ({
+                            name: t.name, symbol: t.symbol, address: t.address, decimals: t.decimals, balance: 0,
+                          } as Asset))}
+                          balance={NaN}
+                          selectedAsset={toAsset}
+                          onSelectAsset={setToAsset}
+                        />
+                      </div>
+                    </>
+                  ) : null}
 
-                    <AssetInput
-                      className="min-w-1/3 w-1/3"
-                      name="size"
-                      label="Size"
-                      assets={fromAssetList}
-                      balance={NaN}
-                      selectedAsset={fromAsset}
-                      onSelectAsset={setFromAsset}
-                    />
+                  <div className="flex flex-row gap-4 items-start w-full">
 
-                    <AssetInput
-                      className="min-w-1/2 w-1/3"
-                      name="notional"
-                      label="Notional"
-                      assets={tokenList?.map((t) => ({
-                        name: t.name, symbol: t.symbol, address: t.address, decimals: t.decimals, balance: 0,
-                      } as Asset))}
-                      balance={NaN}
-                      selectedAsset={toAsset}
-                      onSelectAsset={setToAsset}
-                    />{" "}
-                  </div>
+                    <div className="w-1/2 flex flex-row">
 
-                  <div className="flex flex-row gap-8 items-end w-full">
-
-                    <div className="w-1/3 flex flex-row">
-                      {orderType === "Stop Limit" && (
-                      <AssetInput
-                        name="trigger-price"
-                        label="Trigger Price"
-                        assets={fromAssetList}
-                        balance={NaN}
-                        selectedAsset={fromAsset}
-                        onSelectAsset={setFromAsset}
-                        hideBalance={true}
-                        disableAssetChange={true}
-                      />)}
                     </div>
 
-                    <div className="w-2/3 flex flex-row justify-end gap-4">
+                    <div className="w-1/2 flex flex-row justify-start gap-4">
                       <FormField
                       control={spotForm.control}
                       name="reduceOnly"
