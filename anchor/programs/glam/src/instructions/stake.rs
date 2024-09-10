@@ -119,7 +119,7 @@ pub fn initialize_and_delegate_stake<'c: 'info, 'info>(
     // Add the stake account to the fund params
     let fund = &mut ctx.accounts.fund;
     fund.add_to_engine_field(
-        EngineFieldName::StakeAccounts,
+        EngineFieldName::ExternalTreasuryAccounts,
         ctx.accounts.treasury_stake_account.key(),
     );
 
@@ -217,7 +217,10 @@ pub fn withdraw_from_stake_accounts<'info>(
 
         let _ = withdraw(cpi_ctx, lamports, None);
 
-        fund.delete_from_engine_field(EngineFieldName::StakeAccounts, stake_account.key());
+        fund.delete_from_engine_field(
+            EngineFieldName::ExternalTreasuryAccounts,
+            stake_account.key(),
+        );
     });
 
     Ok(())
@@ -276,7 +279,7 @@ pub fn merge_stake_accounts<'c: 'info, 'info>(ctx: Context<MergeStakeAccounts>) 
     // Remove the from_stake account from the fund params
     let fund = &mut ctx.accounts.fund;
     fund.delete_from_engine_field(
-        EngineFieldName::StakeAccounts,
+        EngineFieldName::ExternalTreasuryAccounts,
         ctx.accounts.from_stake.key(),
     );
 
@@ -370,7 +373,10 @@ pub fn split_stake_account<'c: 'info, 'info>(
 
     // Add the new stake account to the fund params
     let fund = &mut ctx.accounts.fund;
-    fund.add_to_engine_field(EngineFieldName::StakeAccounts, ctx.accounts.new_stake.key());
+    fund.add_to_engine_field(
+        EngineFieldName::ExternalTreasuryAccounts,
+        ctx.accounts.new_stake.key(),
+    );
 
     Ok(())
 }
@@ -471,10 +477,13 @@ pub fn redelegate_stake<'c: 'info, 'info>(
     // Remove existing stake account from the fund params and add the new one
     let fund = &mut ctx.accounts.fund;
     fund.delete_from_engine_field(
-        EngineFieldName::StakeAccounts,
+        EngineFieldName::ExternalTreasuryAccounts,
         ctx.accounts.existing_stake.key(),
     );
-    fund.add_to_engine_field(EngineFieldName::StakeAccounts, ctx.accounts.new_stake.key());
+    fund.add_to_engine_field(
+        EngineFieldName::ExternalTreasuryAccounts,
+        ctx.accounts.new_stake.key(),
+    );
 
     Ok(())
 }

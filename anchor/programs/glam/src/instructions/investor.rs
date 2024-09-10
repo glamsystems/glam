@@ -88,17 +88,16 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     let fund = &ctx.accounts.fund;
     require!(fund.is_enabled(), InvestorError::FundNotActive);
 
-    let stake_accounts = fund.get_pubkeys_from_engine_field(EngineFieldName::StakeAccounts);
-    let marinade_tickets = fund.get_pubkeys_from_engine_field(EngineFieldName::MarinadeTickets);
+    let external_treasury_accounts =
+        fund.get_pubkeys_from_engine_field(EngineFieldName::ExternalTreasuryAccounts);
 
     #[cfg(not(feature = "mainnet"))]
     msg!(
-        "stake_accounts={:?} marinade_tickets={:?}",
-        stake_accounts,
-        marinade_tickets
+        "external_treasury_accounts={:?}",
+        external_treasury_accounts
     );
     require!(
-        stake_accounts.len() == 0 && marinade_tickets.len() == 0,
+        external_treasury_accounts.len() == 0,
         InvestorError::SubscribeRedeemPaused
     );
 
@@ -324,17 +323,16 @@ pub fn redeem_handler<'c: 'info, 'info>(
 ) -> Result<()> {
     let fund = &ctx.accounts.fund;
 
-    let stake_accounts = fund.get_pubkeys_from_engine_field(EngineFieldName::StakeAccounts);
-    let marinade_tickets = fund.get_pubkeys_from_engine_field(EngineFieldName::MarinadeTickets);
+    let external_treasury_accounts =
+        fund.get_pubkeys_from_engine_field(EngineFieldName::ExternalTreasuryAccounts);
 
     #[cfg(not(feature = "mainnet"))]
     msg!(
-        "stake_accounts={:?} marinade_tickets={:?}",
-        stake_accounts,
-        marinade_tickets
+        "external_treasury_accounts={:?}",
+        external_treasury_accounts
     );
     require!(
-        stake_accounts.len() == 0 && marinade_tickets.len() == 0,
+        external_treasury_accounts.len() == 0,
         InvestorError::SubscribeRedeemPaused
     );
 

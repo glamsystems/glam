@@ -15,9 +15,8 @@ pub enum EngineFieldName {
     ShareClassBlocklist, // share class
     DelegateAcls,
     IntegrationAcls,
-    MarinadeTickets,
-    StakeAccounts,
-    LockUp, // share class
+    ExternalTreasuryAccounts, // external accounts with treasury assets
+    LockUp,                   // share class
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]

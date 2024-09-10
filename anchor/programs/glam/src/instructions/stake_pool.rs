@@ -122,7 +122,7 @@ pub struct StakePoolDepositStake<'info> {
     #[account(mut)]
     pub manager: Signer<'info>,
 
-    #[account(has_one = treasury)]
+    #[account(mut, has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
@@ -231,6 +231,12 @@ pub fn stake_pool_deposit_stake<'c: 'info, 'info>(
     for ix in vec_ix {
         let _ = invoke_signed(&ix, &account_infos, signer_seeds);
     }
+
+    let fund = &mut ctx.accounts.fund;
+    fund.delete_from_engine_field(
+        EngineFieldName::ExternalTreasuryAccounts,
+        ctx.accounts.treasury_stake_account.key(),
+    );
 
     Ok(())
 }
@@ -459,7 +465,7 @@ pub fn stake_pool_withdraw_stake<'c: 'info, 'info>(
     // Add stake account to the fund params
     let fund = &mut ctx.accounts.fund;
     fund.add_to_engine_field(
-        EngineFieldName::StakeAccounts,
+        EngineFieldName::ExternalTreasuryAccounts,
         ctx.accounts.treasury_stake_account.key(),
     );
 

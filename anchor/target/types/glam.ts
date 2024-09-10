@@ -2556,7 +2556,8 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "fund"
+          "name": "fund",
+          "writable": true
         },
         {
           "name": "treasury",
@@ -3716,6 +3717,7 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
+<<<<<<< HEAD
       "name": "closeNotEmptyError",
       "msg": "Error closing account: not empty"
     },
@@ -3758,6 +3760,60 @@ export type Glam = {
       "code": 6008,
       "name": "invalidSwap",
       "msg": "Swap failed"
+=======
+      "name": "fundNotActive",
+      "msg": "Fund is not active"
+    },
+    {
+      "code": 6001,
+      "name": "invalidShareClass",
+      "msg": "Share class not allowed to subscribe"
+    },
+    {
+      "code": 6002,
+      "name": "invalidAssetSubscribe",
+      "msg": "Asset not allowed to subscribe"
+    },
+    {
+      "code": 6003,
+      "name": "invalidPricingOracle",
+      "msg": "Invalid oracle for asset price"
+    },
+    {
+      "code": 6004,
+      "name": "invalidRemainingAccounts",
+      "msg": "Invalid accounts: the transaction is malformed"
+    },
+    {
+      "code": 6005,
+      "name": "invalidTreasuryAccount",
+      "msg": "Invalid treasury ata"
+    },
+    {
+      "code": 6006,
+      "name": "invalidSignerAccount",
+      "msg": "Invalid signer ata"
+    },
+    {
+      "code": 6007,
+      "name": "invalidAssetPrice",
+      "msg": "Invalid asset price"
+    },
+    {
+      "code": 6008,
+      "name": "invalidStableCoinPriceForSubscribe",
+      "msg": "Subscription not allowed: invalid stable coin price"
+    },
+    {
+      "code": 6009,
+      "name": "subscribeRedeemPaused",
+      "msg": "Fund is paused for subscription and redemption"
+    },
+    {
+      "code": 6010,
+      "name": "invalidPolicyAccount",
+      "msg": "Policy account is mandatory"
+>>>>>>> 601e7b9 (anchor: aum from external accounts)
     }
   ],
   "types": [
@@ -4019,10 +4075,7 @@ export type Glam = {
             "name": "integrationAcls"
           },
           {
-            "name": "marinadeTickets"
-          },
-          {
-            "name": "stakeAccounts"
+            "name": "externalTreasuryAccounts"
           },
           {
             "name": "lockUp"
