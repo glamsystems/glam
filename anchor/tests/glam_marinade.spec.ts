@@ -78,7 +78,7 @@ describe("glam_marinade", () => {
     // [
     //   { name: { assets: {} }, value: { vecPubkey: [Object] } },
     //   { name: { assetsWeights: {} }, value: { vecU32: [Object] } },
-    //   { name: { marinadeTickets: {} }, value: { vecPubkey: [Object] } }
+    //   { name: { externalTreasuryAccounts: {} }, value: { vecPubkey: [Object] } }
     // ]
     expect(fund.params[0][2].value.vecPubkey?.val.length).toBe(tickets.length);
   });

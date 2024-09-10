@@ -95,7 +95,6 @@ export class InvestorClient {
     );
 
     // remaining accounts = treasury atas + pricing to compute AUM
-    // @ts-ignore
     const fundModel = await this.base.fetchFund(fund);
     const remainingAccounts = (fundModel.assets || []).flatMap((asset: any) => {
       const assetMeta = this.base.getAssetMeta(asset.toBase58());

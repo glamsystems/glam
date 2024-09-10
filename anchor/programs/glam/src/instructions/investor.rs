@@ -166,6 +166,13 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     let asset_base = assets[0];
     //TODO check if in_kind is allowed, or idx must be 0
 
+    let (stake_accounts, marinade_tickets, accounts_for_pricing) =
+        split_remaining_accounts(ctx.remaining_accounts)?;
+    require!(
+        stake_accounts.len() + marinade_tickets.len() == external_treasury_accounts.len(),
+        InvestorError::InvalidRemainingAccounts
+    );
+
     // compute amount of shares
     let share_class = &ctx.accounts.share_class;
     let share_expo = -(share_class.decimals as i32);
@@ -175,7 +182,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     let aum_components = get_aum_components(
         Action::Subscribe,
         assets,
-        ctx.remaining_accounts,
+        accounts_for_pricing,
         &ctx.accounts.treasury,
         &ctx.accounts.signer,
         &ctx.accounts.token_program,
@@ -209,7 +216,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     //     log_decimal(asset_value as u64, share_expo),
     // );
 
-    // amount_shares = asset_value / nav = asset_value * total_shares / aum
+    // amount_shares = asset_value / nav = asset_value / (aum / total_shares) = asset_value * total_shares / aum
     // - when total_shares = 0, default nav is $100 or 1 SOL
     let amount_shares = if use_fixed_price {
         if asset_base == WSOL {
@@ -406,12 +413,19 @@ pub fn redeem_handler<'c: 'info, 'info>(
         share_expo,
     );
 
+    let (stake_accounts, marinade_tickets, accounts_for_pricing) =
+        split_remaining_accounts(ctx.remaining_accounts)?;
+    require!(
+        stake_accounts.len() + marinade_tickets.len() == external_treasury_accounts.len(),
+        InvestorError::InvalidRemainingAccounts
+    );
+
     let assets = fund.assets().unwrap();
     let skip_prices = should_transfer_everything || in_kind;
     let aum_components = get_aum_components(
         Action::Redeem,
         assets,
-        ctx.remaining_accounts,
+        accounts_for_pricing,
         treasury,
         &ctx.accounts.signer,
         &ctx.accounts.token_program,
@@ -577,7 +591,7 @@ pub struct AumComponent<'info> {
 pub fn get_aum_components<'info>(
     action: Action,
     assets: &[Pubkey],
-    remaining_accounts: &'info [AccountInfo<'info>],
+    accounts_for_pricing: Vec<&'info AccountInfo<'info>>,
     treasury: &SystemAccount<'info>,
     signer: &Signer<'info>,
     token_program: &Program<'info, Token>,
@@ -589,14 +603,14 @@ pub fn get_aum_components<'info>(
 
     let num_accounts = if action == Action::Subscribe { 2 } else { 4 };
     require!(
-        remaining_accounts.len() == num_accounts * assets.len(),
+        accounts_for_pricing.len() == num_accounts * assets.len(),
         InvestorError::InvalidRemainingAccounts
     );
 
     let timestamp = Clock::get()?.unix_timestamp;
     let mut price_sol_usd = Price::default();
     let mut price_type = PriceDenom::USD;
-    for (i, accounts) in remaining_accounts.chunks(num_accounts).enumerate() {
+    for (i, accounts) in accounts_for_pricing.chunks(num_accounts).enumerate() {
         let cur_asset = assets[i];
         let cur_asset_str = cur_asset.to_string();
         let cur_asset_meta = AssetMeta::get(cur_asset_str.as_str())?;
@@ -773,4 +787,46 @@ pub fn get_aum_components<'info>(
     }
 
     Ok(aum_components)
+}
+
+/**
+ * Split remaining_accounts into 3 categories:
+ * 1) Accounts with owner being stake program
+ * 2) Accounts with owner being marinade program
+ * 3) Accounts for pricing: those not in 1) or 2)
+ */
+fn split_remaining_accounts<'info>(
+    remaining_accounts: &'info [AccountInfo<'info>],
+) -> Result<(
+    Vec<&'info AccountInfo<'info>>,
+    Vec<&'info AccountInfo<'info>>,
+    Vec<&'info AccountInfo<'info>>,
+)> {
+    let mut stake_accounts = Vec::new();
+    let mut marinade_tickets = Vec::new();
+    let mut accounts_for_pricing = Vec::new();
+
+    // Iterate through the remaining accounts and categorize them by owner program
+    for account in remaining_accounts.iter() {
+        match account.owner {
+            owner if *owner == solana_program::stake::program::ID => {
+                stake_accounts.push(account);
+            }
+            owner if *owner == marinade::ID => {
+                marinade_tickets.push(account);
+            }
+            _ => {
+                accounts_for_pricing.push(account);
+            }
+        }
+    }
+
+    #[cfg(not(feature = "mainnet"))]
+    msg!(
+        "stake_accounts={:?}, marinade_tickets={:?}",
+        stake_accounts,
+        marinade_tickets
+    );
+
+    Ok((stake_accounts, marinade_tickets, accounts_for_pricing))
 }
