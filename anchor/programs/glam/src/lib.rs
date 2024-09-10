@@ -236,6 +236,14 @@ pub mod glam {
         stake::split_stake_account(ctx, lamports, new_stake_account_id, new_stake_account_bump)
     }
 
+    pub fn redelegate_stake<'info>(
+        ctx: Context<'_, '_, '_, 'info, RedelegateStake<'info>>,
+        new_stake_account_id: String,
+        new_stake_account_bump: u8,
+    ) -> Result<()> {
+        stake::redelegate_stake(ctx, new_stake_account_id, new_stake_account_bump)
+    }
+
     //
     // Jupiter
     //

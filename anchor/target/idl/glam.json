@@ -2175,6 +2175,94 @@
       ]
     },
     {
+      "name": "redelegate_stake",
+      "discriminator": [
+        240,
+        90,
+        140,
+        104,
+        96,
+        8,
+        134,
+        31
+      ],
+      "accounts": [
+        {
+          "name": "manager",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "fund",
+          "writable": true
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          },
+          "relations": [
+            "fund"
+          ]
+        },
+        {
+          "name": "existing_stake",
+          "writable": true
+        },
+        {
+          "name": "new_stake",
+          "writable": true
+        },
+        {
+          "name": "vote"
+        },
+        {
+          "name": "stake_config"
+        },
+        {
+          "name": "clock",
+          "address": "SysvarC1ock11111111111111111111111111111111"
+        },
+        {
+          "name": "stake_program",
+          "address": "Stake11111111111111111111111111111111111111"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "new_stake_account_id",
+          "type": "string"
+        },
+        {
+          "name": "new_stake_account_bump",
+          "type": "u8"
+        }
+      ]
+    },
+    {
       "name": "split_stake_account",
       "discriminator": [
         130,

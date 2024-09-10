@@ -1,12 +1,8 @@
 import { BN } from "@coral-xyz/anchor";
 
-import { createFundForTest } from "./setup";
+import { createFundForTest, sleep } from "./setup";
 import { GlamClient } from "../src";
-import {
-  PublicKey,
-  StakeProgram,
-  SYSVAR_STAKE_HISTORY_PUBKEY,
-} from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 
 const JITO_STAKE_POOL = new PublicKey(
   "Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb"
@@ -23,7 +19,16 @@ describe("glam_staking", () => {
   const glamClient = new GlamClient();
   const connection = glamClient.provider.connection;
 
+  let defaultVote; // the test validator's default vote account
   let fundPDA;
+
+  beforeAll(async () => {
+    const voteAccountStatus = await connection.getVoteAccounts();
+    const vote = voteAccountStatus.current.sort(
+      (a, b) => b.activatedStake - a.activatedStake
+    )[0].votePubkey;
+    defaultVote = new PublicKey(vote);
+  });
 
   it("Create fund with 100 SOL in treasury", async () => {
     const fundData = await createFundForTest(glamClient);
@@ -39,45 +44,74 @@ describe("glam_staking", () => {
     });
   });
 
-  it("Stake 10 SOL to a validator", async () => {
+  it("Initialize stake with 10 SOL and delegate to a validator", async () => {
     try {
-      // The same stake account will be used later on for depositing stake to jito
-      // So the vote account must match jito validator stake account's vote
       const txSig = await glamClient.staking.initializeAndDelegateStake(
         fundPDA,
-        new PublicKey("StepeLdhJ2znRjHcZdjwMWsC4nTRURNKQY8Nca82LJp"),
+        defaultVote,
         new BN(10_000_000_000)
       );
       console.log("initializeAndDelegateStake tx:", txSig);
-
-      const stakeAccounts = await glamClient.staking.getStakeAccounts(
-        glamClient.getTreasuryPDA(fundPDA)
-      );
-      expect(stakeAccounts.length).toEqual(1);
     } catch (e) {
       console.error(e);
       throw e;
     }
+
+    const stakeAccounts = await glamClient.staking.getStakeAccounts(
+      glamClient.getTreasuryPDA(fundPDA)
+    );
+    expect(stakeAccounts.length).toEqual(1);
   });
 
-  it("Spilt stake account 8-2", async () => {
+  it("Redelegate stake", async () => {
+    // wait for the stake account to become active
+    await sleep(75_000);
+
+    let stakeAccounts = await glamClient.staking.getStakeAccountsWithStates(
+      glamClient.getTreasuryPDA(fundPDA)
+    );
+    expect(stakeAccounts.length).toEqual(1);
+
+    // redelegate the stake account
     try {
-      let stakeAccounts = await glamClient.staking.getStakeAccounts(
-        glamClient.getTreasuryPDA(fundPDA)
+      const { txSig } = await glamClient.staking.redelegateStake(
+        fundPDA,
+        stakeAccounts[0].address,
+        new PublicKey("GJQjnyhSG9jN1AdMHTSyTxUR44hJHEGCmNzkidw9z3y8")
       );
+      console.log("redelegateStake tx:", txSig);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+
+    // 2 stake accounts after re-delegation
+    // the existing stake account is not closed by default
+    stakeAccounts = await glamClient.staking.getStakeAccountsWithStates(
+      glamClient.getTreasuryPDA(fundPDA)
+    );
+    expect(stakeAccounts.length).toEqual(2);
+  }, 90_000);
+
+  it("Spilt stake account", async () => {
+    let stakeAccounts = await glamClient.staking.getStakeAccountsWithStates(
+      glamClient.getTreasuryPDA(fundPDA)
+    );
+
+    try {
       const { newStake, txSig } = await glamClient.staking.splitStakeAccount(
         fundPDA,
-        stakeAccounts[0],
+        stakeAccounts[0].address,
         new BN(2_000_000_000)
       );
       console.log("splitStakeAccount tx:", txSig);
 
-      stakeAccounts = await glamClient.staking.getStakeAccounts(
+      stakeAccounts = await glamClient.staking.getStakeAccountsWithStates(
         glamClient.getTreasuryPDA(fundPDA)
       );
-      expect(stakeAccounts.length).toEqual(2);
+      expect(stakeAccounts.length).toEqual(3);
       expect(
-        stakeAccounts.some((account) => account.equals(newStake))
+        stakeAccounts.some((account) => account.address.equals(newStake))
       ).toBeTruthy();
     } catch (e) {
       console.error(e);
@@ -86,16 +120,16 @@ describe("glam_staking", () => {
   });
 
   it("Merge stake accounts", async () => {
-    let stakeAccounts = await glamClient.staking.getStakeAccounts(
+    let stakeAccounts = await glamClient.staking.getStakeAccountsWithStates(
       glamClient.getTreasuryPDA(fundPDA)
     );
-    expect(stakeAccounts.length).toEqual(2);
+    expect(stakeAccounts.length).toEqual(3);
 
     try {
       const txId = await glamClient.staking.mergeStakeAccounts(
         fundPDA,
-        stakeAccounts[0],
-        stakeAccounts[1]
+        stakeAccounts[0].address,
+        stakeAccounts[1].address
       );
       console.log("mergeStakeAccounts tx:", txId);
     } catch (e) {
@@ -104,10 +138,10 @@ describe("glam_staking", () => {
     }
 
     // Only 1 stake account should be left after merging
-    stakeAccounts = await glamClient.staking.getStakeAccounts(
+    stakeAccounts = await glamClient.staking.getStakeAccountsWithStates(
       glamClient.getTreasuryPDA(fundPDA)
     );
-    expect(stakeAccounts.length).toEqual(1);
+    expect(stakeAccounts.length).toEqual(2);
   });
 
   it("[spl-stake-pool] Deposit stake account to jito stake pool", async () => {

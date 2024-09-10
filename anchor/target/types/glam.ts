@@ -2181,6 +2181,94 @@ export type Glam = {
       ]
     },
     {
+      "name": "redelegateStake",
+      "discriminator": [
+        240,
+        90,
+        140,
+        104,
+        96,
+        8,
+        134,
+        31
+      ],
+      "accounts": [
+        {
+          "name": "manager",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "fund",
+          "writable": true
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          },
+          "relations": [
+            "fund"
+          ]
+        },
+        {
+          "name": "existingStake",
+          "writable": true
+        },
+        {
+          "name": "newStake",
+          "writable": true
+        },
+        {
+          "name": "vote"
+        },
+        {
+          "name": "stakeConfig"
+        },
+        {
+          "name": "clock",
+          "address": "SysvarC1ock11111111111111111111111111111111"
+        },
+        {
+          "name": "stakeProgram",
+          "address": "Stake11111111111111111111111111111111111111"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "newStakeAccountId",
+          "type": "string"
+        },
+        {
+          "name": "newStakeAccountBump",
+          "type": "u8"
+        }
+      ]
+    },
+    {
       "name": "splitStakeAccount",
       "discriminator": [
         130,

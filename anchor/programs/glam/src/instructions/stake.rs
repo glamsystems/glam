@@ -374,3 +374,107 @@ pub fn split_stake_account<'c: 'info, 'info>(
 
     Ok(())
 }
+
+#[derive(Accounts)]
+pub struct RedelegateStake<'info> {
+    #[account(mut)]
+    pub manager: Signer<'info>,
+
+    #[account(mut, has_one = treasury)]
+    pub fund: Box<Account<'info, FundAccount>>,
+
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
+
+    #[account(mut)]
+    pub existing_stake: Account<'info, StakeAccount>,
+
+    /// CHECK: will be initialized in the instruction
+    #[account(mut)]
+    pub new_stake: AccountInfo<'info>,
+
+    /// CHECK: skip
+    pub vote: AccountInfo<'info>,
+
+    /// CHECK: skip
+    pub stake_config: AccountInfo<'info>,
+
+    pub clock: Sysvar<'info, Clock>,
+
+    pub stake_program: Program<'info, Stake>,
+    pub system_program: Program<'info, System>,
+}
+
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
+)]
+pub fn redelegate_stake<'c: 'info, 'info>(
+    ctx: Context<RedelegateStake>,
+    new_stake_account_id: String,
+    new_stake_account_bump: u8,
+) -> Result<()> {
+    let fund_key = ctx.accounts.fund.key();
+
+    let stake_account_seeds = &[
+        b"stake_account".as_ref(),
+        new_stake_account_id.as_bytes(),
+        fund_key.as_ref(),
+        &[new_stake_account_bump],
+    ];
+
+    // 3 instructions: allocate, assign, redelegate
+    let instructions = solana_program::stake::instruction::redelegate(
+        &ctx.accounts.existing_stake.key(),
+        ctx.accounts.treasury.key,
+        ctx.accounts.vote.key,
+        ctx.accounts.new_stake.key,
+    );
+    // allocate
+    solana_program::program::invoke_signed(
+        &instructions[0],
+        &[
+            ctx.accounts.new_stake.to_account_info(),
+            ctx.accounts.system_program.to_account_info(),
+        ],
+        &[&stake_account_seeds[..]],
+    )?;
+
+    // assign
+    solana_program::program::invoke_signed(
+        &instructions[1],
+        &[
+            ctx.accounts.new_stake.to_account_info(),
+            ctx.accounts.system_program.to_account_info(),
+        ],
+        &[&stake_account_seeds[..]],
+    )?;
+
+    // redelegate
+    let treasury_seeds = &[
+        b"treasury".as_ref(),
+        fund_key.as_ref(),
+        &[ctx.bumps.treasury],
+    ];
+    solana_program::program::invoke_signed(
+        &instructions[2],
+        &[
+            ctx.accounts.existing_stake.to_account_info(),
+            ctx.accounts.new_stake.to_account_info(),
+            ctx.accounts.treasury.to_account_info(),
+            ctx.accounts.stake_config.clone(),
+            ctx.accounts.vote.clone(),
+            ctx.accounts.clock.to_account_info(),
+        ],
+        &[&treasury_seeds[..]],
+    )?;
+
+    // Remove existing stake account from the fund params and add the new one
+    let fund = &mut ctx.accounts.fund;
+    fund.delete_from_engine_field(
+        EngineFieldName::StakeAccounts,
+        ctx.accounts.existing_stake.key(),
+    );
+    fund.add_to_engine_field(EngineFieldName::StakeAccounts, ctx.accounts.new_stake.key());
+
+    Ok(())
+}
