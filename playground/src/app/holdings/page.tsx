@@ -29,11 +29,15 @@ export default function Holdings() {
         ata: "",
         balance: solBalance,
         notional: 1234.56,
+        logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
       });
     }
     if (treasury?.tokenAccounts) {
       tokenAccounts.push(
         ...treasury.tokenAccounts.map((ta) => {
+          const logoURI =
+            tokensInfo?.find((t: any) => t.address === ta.mint)?.logoURI ||
+            "";
           const name =
             tokensInfo?.find((t: any) => t.address === ta.mint)?.name ||
             "Unknown";
@@ -47,6 +51,7 @@ export default function Holdings() {
             ata: ta.address,
             balance: Number(ta.uiAmount),
             notional: 1234.56,
+            logoURI: logoURI,
           };
         })
       );

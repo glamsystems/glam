@@ -12,14 +12,26 @@ interface DataTableRowActionsProps<TData> {
 }
 
 export const columns: ColumnDef<Holding>[] = [
-{
+  {
+    accessorKey: "logoURI",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="" />
+    ),
+    cell: ({ row }) => {
+      return <img className="h-6 w-6 rounded-full" src={row.getValue("logoURI")} />;
+    },
+    enableSorting: false,
+    enableHiding: true,
+  },
+  {
     accessorKey: "symbol",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Symbol" />
     ),
-    cell: ({ row }) => {
-      const holding = holdingSchema.parse(row.original);
+    cell: ({ row }) =>
 
+    {
+      const holding = holdingSchema.parse(row.original);
       return  <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>

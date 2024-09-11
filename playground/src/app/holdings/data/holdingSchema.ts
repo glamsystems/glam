@@ -7,6 +7,7 @@ export const holdingSchema = z.object({
   ata: z.string(),
   balance: z.number(),
   notional: z.number(),
+  logoURI: z.string(),
 });
 
 export type Holding = z.infer<typeof holdingSchema>;
