@@ -81,25 +81,9 @@ filename = "./fixtures/accounts/So11111111111111111111111111111111111111112.json
 address = "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
 program = "fixtures/programs/drift.so"
 
-# Drift state account
-[[test.validator.clone]]
+[[test.validator.account]] # drift state account
 address = "5zpq7DvB6UdFFvpmBPspGPNfUGoBRRCE2HHg5u3gxcsN"
-[[test.validator.clone]]
-address = "GXWqPpjQpdz7KZw9p7f5PX2eGxHAhvpNXiviFkAB8zXg"
-[[test.validator.clone]]
-address = "3x85u7SWkmmr7YQGYhtjARgxwegTLJgkSLRprfXod6rh"
-[[test.validator.clone]]
-address = "6gMq3mRCKf8aP3ttTyYhuijVZ2LGi14oDsBbkgubfLB3"
-
-[[test.validator.clone]]
-# Drift program data
-address = "7dLgmtcTavcguNoynVimF9ZNVb13FvhXVRfj2HyrDGaP"
-[[test.validator.clone]]
-# Drift USDC
-address = "8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2"
-[[test.validator.clone]]
-# Drift BTC
-address = "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv"
+filename = "./fixtures/accounts/drift/5zpq7DvB6UdFFvpmBPspGPNfUGoBRRCE2HHg5u3gxcsN.json"
 
 #
 # Marinade

@@ -1,8 +1,11 @@
 import * as anchor from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
-import { Glam, GlamProgram } from "../src";
-import { DRIFT_PROGRAM_ID } from "@drift-labs/sdk";
+import {
+  getAssociatedTokenAddressSync,
+  createAssociatedTokenAccount,
+} from "@solana/spl-token";
+import { DRIFT_PROGRAM_ID, DriftClient } from "@drift-labs/sdk";
+import { Glam, GlamClient, GlamProgram } from "../src";
 
 import {
   getDriftStateAccountPublicKey,
@@ -15,7 +18,8 @@ describe("glam_drift", () => {
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
 
-  const manager = provider.wallet as anchor.Wallet;
+  const glamClient = new GlamClient();
+  const manager = glamClient.getManager();
 
   const program = anchor.workspace.Glam as GlamProgram;
   const commitment = "confirmed";
@@ -53,15 +57,13 @@ describe("glam_drift", () => {
     console.log("statePublicKey", statePublicKey.toBase58());
     try {
       const txId = await program.methods
-        .driftInitialize(null)
+        .driftInitialize()
         .accounts({
           fund: fundPDA,
-          treasury: treasuryPDA,
-          userStats: userStatsAccountPublicKey,
           user: userAccountPublicKey,
+          userStats: userStatsAccountPublicKey,
           state: statePublicKey,
-          manager: manager.publicKey,
-          driftProgram: new PublicKey(DRIFT_PROGRAM_ID),
+          manager,
         })
         .rpc({ commitment });
       console.log("driftInitialize", txId);
@@ -77,26 +79,24 @@ describe("glam_drift", () => {
       treasuryPDA,
       0
     );
-    const trader = manager.publicKey;
+    const trader = manager;
 
     try {
       const txId = await program.methods
-        .driftUpdateDelegatedTrader(trader)
+        .driftUpdateUserDelegate(0, trader)
         .accounts({
           fund: fundPDA,
-          treasury: treasuryPDA,
           user: userAccountPublicKey,
-          manager: manager.publicKey,
-          driftProgram: DRIFT_PROGRAM_ID,
+          manager,
         })
         .rpc({ commitment });
 
-      console.log("driftUpdateDelegatedTrader", txId);
+      console.log("driftUpdateUserDelegate", txId);
     } catch (e) {
       console.error(e);
       throw e;
     }
-  }, 10_000);
+  });
 
   /*
   it("Deposit 100 USDC in Drift trading account", async () => {
@@ -113,16 +113,31 @@ describe("glam_drift", () => {
       new PublicKey(DRIFT_PROGRAM_ID)
     );
 
+    const connection = glamClient.provider.connection;
     const driftClient = new DriftClient({
       connection,
-      wallet: manager,
-      env: "devnet"
+      wallet: glamClient.getWallet(),
+      env: "devnet",
     });
 
     await driftClient.subscribe();
 
-    const marketIndex = 0; // USDC
-    const amount = new BN(100_000_000);
+    const marketIndex = 0; // SOL
+    // https://github.com/drift-labs/protocol-v2/blob/master/sdk/src/constants/perpMarkets.ts#L18-L29
+    // {
+    //   fullName: 'Solana',
+    //   category: ['L1', 'Infra'],
+    //   symbol: 'SOL-PERP',
+    //   baseAssetSymbol: 'SOL',
+    //   marketIndex: 0,
+    //   oracle: new PublicKey('BAtFj4kQttZRVep3UZS2aZRDixkGYgWsbqTBVDbnSsPF'),
+    //   launchTs: 1655751353000,
+    //   oracleSource: OracleSource.PYTH_PULL,
+    //   pythFeedId:
+    //     '0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d',
+    // },
+
+    const amount = new anchor.BN(100_000_000);
     const spotMarketAccountUsdc = new PublicKey(
       "GXWqPpjQpdz7KZw9p7f5PX2eGxHAhvpNXiviFkAB8zXg"
     );
@@ -143,24 +158,23 @@ describe("glam_drift", () => {
       { pubkey: pricingSol, isSigner: false, isWritable: false },
       { pubkey: pricingUsdc, isSigner: false, isWritable: false },
       { pubkey: driftSpotSol, isSigner: false, isWritable: true },
-      { pubkey: driftSpotUsdc, isSigner: false, isWritable: true }
+      { pubkey: driftSpotUsdc, isSigner: false, isWritable: true },
     ];
     const usdc = new PublicKey("8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2");
-    const treasuryUsdcAta = getAssociatedTokenAddressSync(
+    const treasuryUsdcAta = await createAssociatedTokenAccount(
+      connection,
+      manager,
       usdc,
       treasuryPDA,
-      true,
-      TOKEN_PROGRAM_ID,
-      ASSOCIATED_TOKEN_PROGRAM_ID
+      { commitment }
     );
     console.log("treasuryUsdcAta", treasuryUsdcAta.toBase58());
 
     try {
       const txId = await program.methods
-        .driftDeposit(amount)
+        .driftDeposit(0, amount)
         .accounts({
           fund: fundPDA,
-          treasury: treasuryPDA,
           treasuryAta: treasuryUsdcAta,
           driftAta: spotMarketAccountUsdc,
           userStats: userStatsAccountPublicKey,
@@ -168,9 +182,6 @@ describe("glam_drift", () => {
           state: statePublicKey,
           manager: manager.publicKey,
           tokenMint: usdc,
-          driftProgram: new PublicKey(DRIFT_PROGRAM_ID),
-          tokenProgram: TOKEN_PROGRAM_ID,
-          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID
         })
         .remainingAccounts(remainingAccountsDeposit)
         .rpc({ commitment });
