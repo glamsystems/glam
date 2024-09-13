@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, SubmitHandler, FormProvider, useFormContext } from "react-hook-form";
+import { useForm, SubmitHandler, FormProvider, UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -27,9 +27,56 @@ import { cn } from "@/lib/utils";
 import { InfoIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import LeverageInput from "@/components/LeverageInput";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const spotMarkets = [{ label: "SOL/USDC", value: "SOL-USDC" }] as const;
 const perpsMarkets = [{ label: "SOL-PERP", value: "SOL-PERP" }] as const;
+
+const PERSISTED_FIELDS = {
+  swap: ['venue', 'slippage', 'exactMode', 'maxAccounts', 'directRouteOnly', 'useWSOL', 'items','versionedTransactions'],
+  spot: ['venue', 'spotMarket', 'spotType', 'side', 'spotReduceOnly', 'post', 'leverage'],
+  perps: ['venue', 'perpsMarket', 'perpsType', 'side', 'perpsReduceOnly', 'post', 'leverage']
+};
+
+type FormKey = keyof typeof PERSISTED_FIELDS;
+
+function usePersistedForm<T extends z.ZodTypeAny>(
+  formKey: FormKey,
+  schema: T,
+  defaultValues: z.infer<T>
+): UseFormReturn<z.infer<T>> {
+  const form = useForm<z.infer<T>>({
+    resolver: zodResolver(schema),
+    defaultValues: defaultValues,
+  });
+
+  useEffect(() => {
+    const storedValues = localStorage.getItem(formKey);
+    if (storedValues) {
+      const parsedValues = JSON.parse(storedValues);
+      Object.keys(parsedValues).forEach(key => {
+        if (PERSISTED_FIELDS[formKey].includes(key as any)) {
+          form.setValue(key as any, parsedValues[key]);
+        }
+      });
+    }
+  }, [formKey, form]);
+
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      const persistedValues: Partial<z.infer<T>> = {};
+      PERSISTED_FIELDS[formKey].forEach(field => {
+        if (value[field as keyof z.infer<T>] !== undefined) {
+          persistedValues[field as keyof z.infer<T>] = value[field as keyof z.infer<T>];
+        }
+      });
+      localStorage.setItem(formKey, JSON.stringify(persistedValues));
+    });
+    return () => subscription.unsubscribe();
+  }, [formKey, form]);
+
+  return form;
+}
 
 const swapSchema = z.object({
   venue: z.enum(["Jupiter"]),
@@ -61,6 +108,7 @@ const spotSchema = z.object({
   spotReduceOnly: z.boolean().optional(),
   post: z.boolean().optional(),
   showConfirmation: z.boolean().optional(),
+  leverage: z.number().nonnegative(),
 });
 
 const perpsSchema = z.object({
@@ -86,35 +134,13 @@ export default function Trade() {
   const { fund: fundPDA, treasury, wallet, glamClient, tokenList } = useGlam();
   const [fromAsset, setFromAsset] = useState<string>("SOL");
   const [toAsset, setToAsset] = useState<string>("SOL");
-  const [items, setItems] = useState<{ id: string; label: string }[]>([
-    {
-      id: "meteora",
-      label: "Meteora",
-    },
-    {
-      id: "meteora-dlmm",
-      label: "Meteora DLMM",
-    },
-    {
-      id: "raydium",
-      label: "Raydium",
-    },
-    {
-      id: "raydium-clmm",
-      label: "Raydium CLMM",
-    },
-    {
-      id: "raydium-cp",
-      label: "Raydium CP",
-    },
-    {
-      id: "whirlpool",
-      label: "Whirlpool",
-    },
-  ] as const);
+  const [items, setItems] = useState<{ id: string; label: string }[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("swap");
 
   useEffect(() => {
     const fetchItems = async () => {
+      setIsLoading(true);
       try {
         const response = await fetch(
           "https://quote-api.jup.ag/v6/program-id-to-label"
@@ -132,6 +158,8 @@ export default function Trade() {
         setItems(sortedItems);
       } catch (error) {
         console.error("Error fetching program ID to label mapping:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -170,26 +198,23 @@ export default function Trade() {
     return assets;
   }, [treasury, tokenList]);
 
-  const swapForm = useForm<SwapSchema>({
-    resolver: zodResolver(swapSchema),
-    defaultValues: {
+  const swapForm = usePersistedForm('swap', swapSchema, {
       venue: "Jupiter",
       swapType: "Swap",
       slippage: 0.1,
-      items: ["meteora"],
+      items: [""],
       exactMode: "ExactIn",
       maxAccounts: 20,
       from: 0,
+      fromAsset: "SOL",
       to: 0,
+      toAsset: "USDC",
       directRouteOnly: false,
       useWSOL: false,
       versionedTransactions: false,
-    },
   });
 
-  const spotForm = useForm<SpotSchema>({
-    resolver: zodResolver(spotSchema),
-    defaultValues: {
+const spotForm = usePersistedForm('spot', spotSchema, {
       venue: "Drift",
       spotMarket: "SOL-USDC",
       spotType: "Limit",
@@ -201,13 +226,11 @@ export default function Trade() {
       spotReduceOnly: false,
       post: false,
       showConfirmation: true,
-    },
+      leverage: 0
   });
 
-  const perpsForm = useForm<PerpsSchema>({
-    resolver: zodResolver(perpsSchema),
-    defaultValues: {
-      venue: "Drift",
+const perpsForm = usePersistedForm('perps', perpsSchema, {
+  venue: "Drift",
       perpsMarket: "SOL-PERP",
       perpsType: "Limit",
       side: "Buy",
@@ -219,8 +242,17 @@ export default function Trade() {
       post: false,
       showConfirmation: true,
       leverage: 0,
-    },
   });
+
+  useEffect(() => {
+    const perpsLeverageValue = perpsForm.watch('leverage');
+    console.log('Perps form leverage value:', perpsLeverageValue);
+  }, [perpsForm]);
+
+  useEffect(() => {
+    const spotLeverageValue = spotForm.watch('leverage');
+    console.log('Spot form leverage value:', spotLeverageValue);
+  }, [spotForm]);
 
   const spotOrderType = spotForm.watch("spotType");
   const spotReduceOnly = spotForm.watch("spotReduceOnly");
@@ -321,7 +353,7 @@ export default function Trade() {
       venue: "Jupiter",
       swapType: "Swap",
       slippage: 0.1,
-      items: ["meteora"],
+      items: [""],
       exactMode: "ExactIn",
       maxAccounts: 20,
       from: 0,
@@ -365,10 +397,42 @@ export default function Trade() {
     }
   };
 
+  const getButtonText = () => {
+    switch (activeTab) {
+      case "swap":
+        return "Swap";
+      case "spot":
+        return "Place Spot Order";
+      case "perps":
+        return "Place Perp Order";
+      default:
+        return "Submit";
+    }
+  };
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    switch (activeTab) {
+      case "swap":
+        swapForm.handleSubmit(onSubmitSwap)();
+        break;
+      case "spot":
+        spotForm.handleSubmit(onSubmitSpot)();
+        break;
+      case "perps":
+        perpsForm.handleSubmit(onSubmitPerps)();
+        break;
+    }
+  };
+
   return (
     <PageContentWrapper>
       <div className="w-4/6 self-center">
-        <Tabs defaultValue="perps" className="w-full">
+        <Tabs
+          defaultValue="swap"
+          className="w-full"
+          onValueChange={setActiveTab}
+        >
           <TabsList className="w-full select-none mb-2">
             <TabsTrigger value="swap" className="w-full">
               Swap
@@ -392,16 +456,12 @@ export default function Trade() {
           <TabsContent value="swap">
             <FormProvider {...swapForm}>
               <Form {...swapForm}>
-                <form
-                  onSubmit={swapForm.handleSubmit(onSubmitSwap)}
-                  className="space-y-4"
-                >
+                <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="flex space-x-4">
                     <FormField
                       control={swapForm.control}
                       name="venue"
-                      render={({ field }) => (
-                        <FormItem className="w-1/2">
+                      render={({ field }) => (<FormItem className="w-1/2">
                           <FormLabel>Venue</FormLabel>
                           <FormControl>
                             <Select
@@ -412,25 +472,19 @@ export default function Trade() {
                                 <SelectValue placeholder="Venue" />
                               </SelectTrigger>
                               <SelectContent>
-                                {swapSchema.shape.venue._def.values.map(
-                                  (option) => (
-                                    <SelectItem key={option} value={option}>
-                                      {option}
-                                    </SelectItem>
-                                  )
-                                )}
+                                {swapSchema.shape.venue._def.values.map((option) => (<SelectItem key={option} value={option}>
+                                    {option}
+                                  </SelectItem>))}
                               </SelectContent>
                             </Select>
                           </FormControl>
                           <FormMessage />
-                        </FormItem>
-                      )}
+                        </FormItem>)}
                     />
                     <FormField
                       control={swapForm.control}
                       name="swapType"
-                      render={({ field }) => (
-                        <FormItem className="w-1/2">
+                      render={({ field }) => (<FormItem className="w-1/2">
                           <FormLabel>Order Type</FormLabel>
                           <FormControl>
                             <Select
@@ -442,19 +496,14 @@ export default function Trade() {
                                 <SelectValue placeholder="Type" />
                               </SelectTrigger>
                               <SelectContent>
-                                {swapSchema.shape.swapType._def.values.map(
-                                  (option) => (
-                                    <SelectItem key={option} value={option}>
-                                      {option}
-                                    </SelectItem>
-                                  )
-                                )}
+                                {swapSchema.shape.swapType._def.values.map((option) => (<SelectItem key={option} value={option}>
+                                    {option}
+                                  </SelectItem>))}
                               </SelectContent>
                             </Select>
                           </FormControl>
                           <FormMessage />
-                        </FormItem>
-                      )}
+                        </FormItem>)}
                     />
                   </div>
 
@@ -479,8 +528,7 @@ export default function Trade() {
                     <FormField
                       control={swapForm.control}
                       name="slippage"
-                      render={({ field }) => (
-                        <FormItem>
+                      render={({ field }) => (<FormItem>
                           <FormLabel>Slippage</FormLabel>
                           <FormControl>
                             <Input
@@ -488,31 +536,21 @@ export default function Trade() {
                               type="number"
                               min="0.1"
                               step="0.1"
-                              onChange={(e) =>
-                                field.onChange(parseFloat(e.target.value))
-                              }
+                              onChange={(e) => field.onChange(parseFloat(e.target.value))}
                               value={field.value}
                             />
                           </FormControl>
                           <FormDescription>&nbsp;</FormDescription>
                           <FormMessage />
-                        </FormItem>
-                      )}
+                        </FormItem>)}
                     />
                     <AssetInput
                       className="min-w-1/2 w-1/2"
                       name="to"
                       label="To"
-                      assets={tokenList?.map(
-                        (t) =>
-                          ({
-                            name: t.name,
-                            symbol: t.symbol,
-                            address: t.address,
-                            decimals: t.decimals,
-                            balance: 0,
-                          } as Asset)
-                      )}
+                      assets={tokenList?.map((t) => ({
+                        name: t.name, symbol: t.symbol, address: t.address, decimals: t.decimals, balance: 0,
+                      } as Asset))}
                       balance={NaN}
                       selectedAsset={toAsset}
                       onSelectAsset={setToAsset}
@@ -527,9 +565,7 @@ export default function Trade() {
                           <ToggleGroup
                             type="single"
                             value={filterType}
-                            onValueChange={(value) =>
-                              setFilterType(value || "include")
-                            }
+                            onValueChange={(value) => setFilterType(value || "include")}
                             className="justify-start"
                           >
                             <ToggleGroupItem value="include">
@@ -553,49 +589,36 @@ export default function Trade() {
                           <FormField
                             control={swapForm.control}
                             name="items"
-                            render={() => (
-                              <FormItem>
-                                {filteredItems.map((item) => (
-                                  <FormField
-                                    key={item.id}
-                                    control={swapForm.control}
-                                    name="items"
-                                    render={({ field }) => {
-                                      return (
-                                        <FormItem
+                            render={() => (<FormItem>
+                                {isLoading // Skeleton loading state
+                                  ? Array.from({ length: 10 }).map((_, index) => (<div
+                                      key={index}
+                                      className="flex items-center space-x-3 mb-2"
+                                    >
+                                      <Skeleton className="w-4 h-4" />
+                                      <Skeleton className="w-[200px] h-[20px]" />
+                                    </div>)) : filteredItems.map((item) => (<FormField
+                                      key={item.id}
+                                      control={swapForm.control}
+                                      name="items"
+                                      render={({ field }) => (<FormItem
                                           key={item.id}
-                                          className="flex flex-row items-start space-x-3 space-y-0"
+                                          className="flex flex-row items-start space-x-3 space-y-0 mb-2"
                                         >
                                           <FormControl>
                                             <Checkbox
-                                              checked={field.value?.includes(
-                                                item.id
-                                              )}
+                                              checked={field.value?.includes(item.id)}
                                               onCheckedChange={(checked) => {
-                                                return checked
-                                                  ? field.onChange([
-                                                    ...field.value,
-                                                    item.id,
-                                                  ])
-                                                  : field.onChange(
-                                                    field.value?.filter(
-                                                      (value) =>
-                                                        value !== item.id
-                                                    )
-                                                  );
+                                                return checked ? field.onChange([...field.value, item.id,]) : field.onChange(field.value?.filter((value) => value !== item.id));
                                               }}
                                             />
                                           </FormControl>
                                           <FormLabel className="font-normal">
                                             {item.label}
                                           </FormLabel>
-                                        </FormItem>
-                                      );
-                                    }}
-                                  />
-                                ))}
-                              </FormItem>
-                            )}
+                                        </FormItem>)}
+                                    />))}
+                              </FormItem>)}
                           />
                         </ScrollArea>
                       </div>
@@ -606,8 +629,7 @@ export default function Trade() {
                         <FormField
                           control={swapForm.control}
                           name="exactMode"
-                          render={({ field }) => (
-                            <FormItem>
+                          render={({ field }) => (<FormItem>
                               <FormLabel>Mode</FormLabel>
                               <ToggleGroup
                                 type="single"
@@ -628,16 +650,14 @@ export default function Trade() {
                                   Exact Out
                                 </ToggleGroupItem>
                               </ToggleGroup>
-                            </FormItem>
-                          )}
+                            </FormItem>)}
                         />
                       </div>
 
                       <FormField
                         control={swapForm.control}
                         name="maxAccounts"
-                        render={({ field }) => (
-                          <FormItem className="w-1/2">
+                        render={({ field }) => (<FormItem className="w-1/2">
                             <FormLabel>Max. Accounts</FormLabel>
                             <FormControl>
                               <Input
@@ -645,23 +665,19 @@ export default function Trade() {
                                 type="number"
                                 min="5"
                                 step="1"
-                                onChange={(e) =>
-                                  field.onChange(parseInt(e.target.value, 10))
-                                }
+                                onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
                                 value={field.value}
                                 className="w-full"
                               />
                             </FormControl>
                             <FormMessage />
-                          </FormItem>
-                        )}
+                          </FormItem>)}
                       />
                       <FormLabel>Advanced</FormLabel>
                       <FormField
                         control={swapForm.control}
                         name="directRouteOnly"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                        render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">
                             <FormControl>
                               <Switch
                                 checked={field.value}
@@ -675,14 +691,12 @@ export default function Trade() {
                             >
                               Direct Route Only
                             </FormLabel>
-                          </FormItem>
-                        )}
+                          </FormItem>)}
                       />
                       <FormField
                         control={swapForm.control}
                         name="useWSOL"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                        render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">
                             <FormControl>
                               <Switch
                                 checked={field.value}
@@ -696,14 +710,12 @@ export default function Trade() {
                             >
                               Use wSOL
                             </FormLabel>
-                          </FormItem>
-                        )}
+                          </FormItem>)}
                       />
                       <FormField
                         control={swapForm.control}
                         name="versionedTransactions"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                        render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">
                             <FormControl>
                               <Switch
                                 checked={field.value}
@@ -717,23 +729,9 @@ export default function Trade() {
                             >
                               Versioned Transactions
                             </FormLabel>
-                          </FormItem>
-                        )}
+                          </FormItem>)}
                       />
                     </div>
-                  </div>
-
-                  <div className="flex space-x-4 w-full">
-                    <Button
-                      className="w-1/2"
-                      variant="ghost"
-                      onClick={(event) => handleClear(event)}
-                    >
-                      Clear
-                    </Button>
-                    <Button className="w-1/2" type="submit">
-                      Swap
-                    </Button>
                   </div>
                 </form>
               </Form>
@@ -745,16 +743,12 @@ export default function Trade() {
           <TabsContent value="spot">
             <FormProvider {...spotForm}>
               <Form {...spotForm}>
-                <form
-                  onSubmit={spotForm.handleSubmit(onSubmitSpot)}
-                  className="space-y-4"
-                >
+                <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="flex space-x-4">
                     <FormField
                       control={spotForm.control}
                       name="venue"
-                      render={({ field }) => (
-                        <FormItem className="w-1/3">
+                      render={({ field }) => (<FormItem className="w-1/3">
                           <FormLabel>Venue</FormLabel>
                           <FormControl>
                             <Select
@@ -765,26 +759,20 @@ export default function Trade() {
                                 <SelectValue placeholder="Venue" />
                               </SelectTrigger>
                               <SelectContent>
-                                {spotSchema.shape.venue._def.values.map(
-                                  (option) => (
-                                    <SelectItem key={option} value={option}>
-                                      {option}
-                                    </SelectItem>
-                                  )
-                                )}
+                                {spotSchema.shape.venue._def.values.map((option) => (<SelectItem key={option} value={option}>
+                                    {option}
+                                  </SelectItem>))}
                               </SelectContent>
                             </Select>
                           </FormControl>
                           <FormMessage />
-                        </FormItem>
-                      )}
+                        </FormItem>)}
                     />
 
                     <FormField
                       control={spotForm.control}
                       name="spotMarket"
-                      render={({ field }) => (
-                        <FormItem className="w-1/3">
+                      render={({ field }) => (<FormItem className="w-1/3">
                           <FormLabel>Market</FormLabel>
                           <Popover>
                             <PopoverTrigger asChild>
@@ -792,17 +780,9 @@ export default function Trade() {
                                 <Button
                                   variant="outline"
                                   role="combobox"
-                                  className={cn(
-                                    "w-full justify-between",
-                                    !field.value && "text-muted-foreground"
-                                  )}
+                                  className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
                                 >
-                                  {field.value
-                                    ? spotMarkets.find(
-                                        (spotMarket) =>
-                                          spotMarket.value === field.value
-                                      )?.label || "Select Market"
-                                    : "Select Market"}
+                                  {field.value ? spotMarkets.find((spotMarket) => spotMarket.value === field.value)?.label || "Select Market" : "Select Market"}
                                   <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                 </Button>
                               </FormControl>
@@ -816,43 +796,31 @@ export default function Trade() {
                                 <CommandList>
                                   <CommandEmpty>No market found.</CommandEmpty>
                                   <CommandGroup>
-                                    {spotMarkets.map((spotMarket) => (
-                                      <CommandItem
+                                    {spotMarkets.map((spotMarket) => (<CommandItem
                                         value={spotMarket.label}
                                         key={spotMarket.value}
                                         onSelect={() => {
-                                          spotForm.setValue(
-                                            "spotMarket",
-                                            spotMarket.value as "SOL-USDC"
-                                          );
+                                          spotForm.setValue("spotMarket", spotMarket.value as "SOL-USDC");
                                         }}
                                       >
                                         <CheckIcon
-                                          className={cn(
-                                            "mr-2 h-4 w-4",
-                                            spotMarket.value === field.value
-                                              ? "opacity-100"
-                                              : "opacity-0"
-                                          )}
+                                          className={cn("mr-2 h-4 w-4", spotMarket.value === field.value ? "opacity-100" : "opacity-0")}
                                         />
                                         {spotMarket.label}
-                                      </CommandItem>
-                                    ))}
+                                      </CommandItem>))}
                                   </CommandGroup>
                                 </CommandList>
                               </Command>
                             </PopoverContent>
                           </Popover>
                           <FormMessage />
-                        </FormItem>
-                      )}
+                        </FormItem>)}
                     />
 
                     <FormField
                       control={spotForm.control}
                       name="spotType"
-                      render={({ field }) => (
-                        <FormItem className="w-1/3">
+                      render={({ field }) => (<FormItem className="w-1/3">
                           <FormLabel>Order Type</FormLabel>
                           <FormControl>
                             <Select
@@ -863,19 +831,14 @@ export default function Trade() {
                                 <SelectValue placeholder="Type" />
                               </SelectTrigger>
                               <SelectContent>
-                                {spotSchema.shape.spotType._def.values.map(
-                                  (option) => (
-                                    <SelectItem key={option} value={option}>
-                                      {option}
-                                    </SelectItem>
-                                  )
-                                )}
+                                {spotSchema.shape.spotType._def.values.map((option) => (<SelectItem key={option} value={option}>
+                                    {option}
+                                  </SelectItem>))}
                               </SelectContent>
                             </Select>
                           </FormControl>
                           <FormMessage />
-                        </FormItem>
-                      )}
+                        </FormItem>)}
                     />
                   </div>
 
@@ -884,8 +847,7 @@ export default function Trade() {
                       <FormField
                         control={spotForm.control}
                         name="side"
-                        render={({ field }) => (
-                          <FormItem className="w-full">
+                        render={({ field }) => (<FormItem className="w-full">
                             <ToggleGroup
                               type="single"
                               value={field.value}
@@ -909,14 +871,12 @@ export default function Trade() {
                                 Sell
                               </ToggleGroupItem>
                             </ToggleGroup>
-                          </FormItem>
-                        )}
+                          </FormItem>)}
                       />
                     </div>
                   </div>
 
-                  {spotOrderType === "Limit" ? (
-                    <>
+                  {spotOrderType === "Limit" ? (<>
                       <div className="flex space-x-4 items-start">
                         <AssetInput
                           className="min-w-1/3 w-1/3"
@@ -942,24 +902,15 @@ export default function Trade() {
                           className="min-w-1/3 w-1/3"
                           name="notional"
                           label="Notional"
-                          assets={tokenList?.map(
-                            (t) =>
-                              ({
-                                name: t.name,
-                                symbol: t.symbol,
-                                address: t.address,
-                                decimals: t.decimals,
-                                balance: 0,
-                              } as Asset)
-                          )}
+                          assets={tokenList?.map((t) => ({
+                            name: t.name, symbol: t.symbol, address: t.address, decimals: t.decimals, balance: 0,
+                          } as Asset))}
                           balance={NaN}
                           selectedAsset={toAsset}
                           onSelectAsset={setToAsset}
                         />
                       </div>
-                    </>
-                  ) : spotOrderType === "Stop Limit" ? (
-                    <>
+                    </>) : spotOrderType === "Stop Limit" ? (<>
                       <div className="flex space-x-4 items-start">
                         <AssetInput
                           className="min-w-1/2 w-1/2"
@@ -998,36 +949,26 @@ export default function Trade() {
                           className="min-w-1/2 w-1/2"
                           name="notional"
                           label="Notional"
-                          assets={tokenList?.map(
-                            (t) =>
-                              ({
-                                name: t.name,
-                                symbol: t.symbol,
-                                address: t.address,
-                                decimals: t.decimals,
-                                balance: 0,
-                              } as Asset)
-                          )}
+                          assets={tokenList?.map((t) => ({
+                            name: t.name, symbol: t.symbol, address: t.address, decimals: t.decimals, balance: 0,
+                          } as Asset))}
                           balance={NaN}
                           selectedAsset={toAsset}
                           onSelectAsset={setToAsset}
                         />
                       </div>
-                    </>
-                  ) : null}
+                    </>) : null}
 
-                  {spotOrderType !== "Stop Limit" && !spotReduceOnly && (
-                    <div className="flex flex-row gap-4 items-start w-full">
-                      <LeverageInput
-                        control={spotForm.control}
-                        name="leverage"
-                        label="Leverage: 100x"
-                        min={0}
-                        max={100}
-                        step={1}
-                      />
-                    </div>
-                  )}
+                  {spotOrderType !== "Stop Limit" && !spotReduceOnly && (<div className="flex flex-row gap-4 items-start w-full">
+                    <LeverageInput
+                      name="leverage"
+                      control={spotForm.control}
+                      label="Spot Leverage"
+                      min={0}
+                      max={100}
+                      step={1}
+                    />
+                    </div>)}
 
                   <div className="flex flex-row gap-4 items-start w-full">
                     <div className="w-1/2 flex h-6 items-center text-sm text-muted-foreground">
@@ -1049,8 +990,7 @@ export default function Trade() {
                       <FormField
                         control={spotForm.control}
                         name="spotReduceOnly"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                        render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">
                             <FormControl>
                               <Switch
                                 checked={field.value}
@@ -1064,14 +1004,12 @@ export default function Trade() {
                             >
                               Reduce Only
                             </FormLabel>
-                          </FormItem>
-                        )}
+                          </FormItem>)}
                       />
                       <FormField
                         control={spotForm.control}
                         name="post"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                        render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">
                             <FormControl>
                               <Switch
                                 checked={field.value}
@@ -1082,8 +1020,7 @@ export default function Trade() {
                             <FormLabel htmlFor="post" className="font-normal">
                               Post
                             </FormLabel>
-                          </FormItem>
-                        )}
+                          </FormItem>)}
                       />
                     </div>
 
@@ -1107,19 +1044,6 @@ export default function Trade() {
                     {/*    </FormItem>)}*/}
                     {/*/>*/}
                   </div>
-
-                  <div className="flex space-x-4 w-full">
-                    <Button
-                      className="w-1/2"
-                      variant="ghost"
-                      onClick={(event) => handleClear(event)}
-                    >
-                      Clear
-                    </Button>
-                    <Button className="w-1/2" type="submit">
-                      Swap
-                    </Button>
-                  </div>
                 </form>
               </Form>
             </FormProvider>
@@ -1130,16 +1054,12 @@ export default function Trade() {
           <TabsContent value="perps">
             <FormProvider {...perpsForm}>
               <Form {...perpsForm}>
-                <form
-                  onSubmit={perpsForm.handleSubmit(onSubmitPerps)}
-                  className="space-y-4"
-                >
+                <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="flex space-x-4">
                     <FormField
                       control={perpsForm.control}
                       name="venue"
-                      render={({ field }) => (
-                        <FormItem className="w-1/3">
+                      render={({ field }) => (<FormItem className="w-1/3">
                           <FormLabel>Venue</FormLabel>
                           <FormControl>
                             <Select
@@ -1150,26 +1070,20 @@ export default function Trade() {
                                 <SelectValue placeholder="Venue" />
                               </SelectTrigger>
                               <SelectContent>
-                                {perpsSchema.shape.venue._def.values.map(
-                                  (option) => (
-                                    <SelectItem key={option} value={option}>
-                                      {option}
-                                    </SelectItem>
-                                  )
-                                )}
+                                {perpsSchema.shape.venue._def.values.map((option) => (<SelectItem key={option} value={option}>
+                                    {option}
+                                  </SelectItem>))}
                               </SelectContent>
                             </Select>
                           </FormControl>
                           <FormMessage />
-                        </FormItem>
-                      )}
+                        </FormItem>)}
                     />
 
                     <FormField
                       control={perpsForm.control}
                       name="perpsMarket"
-                      render={({ field }) => (
-                        <FormItem className="w-1/3">
+                      render={({ field }) => (<FormItem className="w-1/3">
                           <FormLabel>Market</FormLabel>
                           <Popover>
                             <PopoverTrigger asChild>
@@ -1177,17 +1091,9 @@ export default function Trade() {
                                 <Button
                                   variant="outline"
                                   role="combobox"
-                                  className={cn(
-                                    "w-full justify-between",
-                                    !field.value && "text-muted-foreground"
-                                  )}
+                                  className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
                                 >
-                                  {field.value
-                                    ? perpsMarkets.find(
-                                        (perpsMarket) =>
-                                          perpsMarket.value === field.value
-                                      )?.label || "Select Market"
-                                    : "Select Market"}
+                                  {field.value ? perpsMarkets.find((perpsMarket) => perpsMarket.value === field.value)?.label || "Select Market" : "Select Market"}
                                   <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                 </Button>
                               </FormControl>
@@ -1201,43 +1107,31 @@ export default function Trade() {
                                 <CommandList>
                                   <CommandEmpty>No market found.</CommandEmpty>
                                   <CommandGroup>
-                                    {perpsMarkets.map((perpsMarket) => (
-                                      <CommandItem
+                                    {perpsMarkets.map((perpsMarket) => (<CommandItem
                                         value={perpsMarket.label}
                                         key={perpsMarket.value}
                                         onSelect={() => {
-                                          perpsForm.setValue(
-                                            "perpsMarket",
-                                            perpsMarket.value as "SOL-PERP"
-                                          );
+                                          perpsForm.setValue("perpsMarket", perpsMarket.value as "SOL-PERP");
                                         }}
                                       >
                                         <CheckIcon
-                                          className={cn(
-                                            "mr-2 h-4 w-4",
-                                            perpsMarket.value === field.value
-                                              ? "opacity-100"
-                                              : "opacity-0"
-                                          )}
+                                          className={cn("mr-2 h-4 w-4", perpsMarket.value === field.value ? "opacity-100" : "opacity-0")}
                                         />
                                         {perpsMarket.label}
-                                      </CommandItem>
-                                    ))}
+                                      </CommandItem>))}
                                   </CommandGroup>
                                 </CommandList>
                               </Command>
                             </PopoverContent>
                           </Popover>
                           <FormMessage />
-                        </FormItem>
-                      )}
+                        </FormItem>)}
                     />
 
                     <FormField
                       control={perpsForm.control}
                       name="perpsType"
-                      render={({ field }) => (
-                        <FormItem className="w-1/3">
+                      render={({ field }) => (<FormItem className="w-1/3">
                           <FormLabel>Order Type</FormLabel>
                           <FormControl>
                             <Select
@@ -1248,19 +1142,14 @@ export default function Trade() {
                                 <SelectValue placeholder="Type" />
                               </SelectTrigger>
                               <SelectContent>
-                                {perpsSchema.shape.perpsType._def.values.map(
-                                  (option) => (
-                                    <SelectItem key={option} value={option}>
-                                      {option}
-                                    </SelectItem>
-                                  )
-                                )}
+                                {perpsSchema.shape.perpsType._def.values.map((option) => (<SelectItem key={option} value={option}>
+                                    {option}
+                                  </SelectItem>))}
                               </SelectContent>
                             </Select>
                           </FormControl>
                           <FormMessage />
-                        </FormItem>
-                      )}
+                        </FormItem>)}
                     />
                   </div>
 
@@ -1269,8 +1158,7 @@ export default function Trade() {
                       <FormField
                         control={spotForm.control}
                         name="side"
-                        render={({ field }) => (
-                          <FormItem className="w-full">
+                        render={({ field }) => (<FormItem className="w-full">
                             <ToggleGroup
                               type="single"
                               value={field.value}
@@ -1294,14 +1182,12 @@ export default function Trade() {
                                 Sell
                               </ToggleGroupItem>
                             </ToggleGroup>
-                          </FormItem>
-                        )}
+                          </FormItem>)}
                       />
                     </div>
                   </div>
 
-                  {perpsOrderType === "Limit" ? (
-                    <>
+                  {perpsOrderType === "Limit" ? (<>
                       <div className="flex space-x-4 items-start">
                         <AssetInput
                           className="min-w-1/3 w-1/3"
@@ -1327,24 +1213,15 @@ export default function Trade() {
                           className="min-w-1/3 w-1/3"
                           name="notional"
                           label="Notional"
-                          assets={tokenList?.map(
-                            (t) =>
-                              ({
-                                name: t.name,
-                                symbol: t.symbol,
-                                address: t.address,
-                                decimals: t.decimals,
-                                balance: 0,
-                              } as Asset)
-                          )}
+                          assets={tokenList?.map((t) => ({
+                            name: t.name, symbol: t.symbol, address: t.address, decimals: t.decimals, balance: 0,
+                          } as Asset))}
                           balance={NaN}
                           selectedAsset={toAsset}
                           onSelectAsset={setToAsset}
                         />
                       </div>
-                    </>
-                  ) : perpsOrderType === "Stop Limit" ? (
-                    <>
+                    </>) : perpsOrderType === "Stop Limit" ? (<>
                       <div className="flex space-x-4 items-start">
                         <AssetInput
                           className="min-w-1/2 w-1/2"
@@ -1383,26 +1260,17 @@ export default function Trade() {
                           className="min-w-1/2 w-1/2"
                           name="notional"
                           label="Notional"
-                          assets={tokenList?.map(
-                            (t) =>
-                              ({
-                                name: t.name,
-                                symbol: t.symbol,
-                                address: t.address,
-                                decimals: t.decimals,
-                                balance: 0,
-                              } as Asset)
-                          )}
+                          assets={tokenList?.map((t) => ({
+                            name: t.name, symbol: t.symbol, address: t.address, decimals: t.decimals, balance: 0,
+                          } as Asset))}
                           balance={NaN}
                           selectedAsset={toAsset}
                           onSelectAsset={setToAsset}
                         />
                       </div>
-                    </>
-                  ) : null}
+                    </>) : null}
 
-                  {perpsOrderType !== "Stop Limit" && !perpsReduceOnly && (
-                    <div className="flex flex-row gap-4 items-start w-full">
+                  {perpsOrderType !== "Stop Limit" && !perpsReduceOnly && (<div className="flex flex-row gap-4 items-start w-full">
                       <LeverageInput
                         control={perpsForm.control}
                         name="leverage"
@@ -1411,8 +1279,7 @@ export default function Trade() {
                         max={100}
                         step={1}
                       />
-                    </div>
-                  )}
+                    </div>)}
                   <div className="flex flex-row gap-4 items-start w-full">
                     <div className="w-1/2 flex h-6 items-center text-sm text-muted-foreground">
                       <TooltipProvider>
@@ -1433,8 +1300,7 @@ export default function Trade() {
                       <FormField
                         control={perpsForm.control}
                         name="perpsReduceOnly"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                        render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">
                             <FormControl>
                               <Switch
                                 checked={field.value}
@@ -1448,14 +1314,12 @@ export default function Trade() {
                             >
                               Reduce Only
                             </FormLabel>
-                          </FormItem>
-                        )}
+                          </FormItem>)}
                       />
                       <FormField
                         control={spotForm.control}
                         name="post"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                        render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">
                             <FormControl>
                               <Switch
                                 checked={field.value}
@@ -1466,8 +1330,7 @@ export default function Trade() {
                             <FormLabel htmlFor="post" className="font-normal">
                               Post
                             </FormLabel>
-                          </FormItem>
-                        )}
+                          </FormItem>)}
                       />
                     </div>
 
@@ -1491,25 +1354,27 @@ export default function Trade() {
                     {/*    </FormItem>)}*/}
                     {/*/>*/}
                   </div>
-
-                  <div className="flex space-x-4 w-full">
-                    <Button
-                      className="w-1/2"
-                      variant="ghost"
-                      onClick={(event) => handleClear(event)}
-                    >
-                      Clear
-                    </Button>
-                    <Button className="w-1/2" type="submit">
-                      Swap
-                    </Button>
-                  </div>
                 </form>
               </Form>
             </FormProvider>
           </TabsContent>
         </Tabs>
+        <div className="flex space-x-4 w-full mt-4">
+          <Button
+            className="w-1/2"
+            variant="ghost"
+            onClick={(event) => handleClear(event)}
+          >
+            Clear
+          </Button>
+          <Button
+            className="w-1/2"
+            type="submit"
+            onClick={handleSubmit}
+          >
+            {getButtonText()}
+          </Button>
+        </div>
       </div>
-    </PageContentWrapper>
-  );
+    </PageContentWrapper>);
 }
