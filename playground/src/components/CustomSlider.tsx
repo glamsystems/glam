@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import React, { useEffect, useRef, useState } from "react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface CustomSliderProps {
   min?: number;
@@ -13,20 +13,26 @@ const getGradient = (value: number, isLightMode: boolean) => {
   const startColor = isLightMode ? [228, 228, 231] : [37, 37, 40];
   const endColor = isLightMode ? [159, 18, 57] : [241, 113, 133];
 
-  const r = Math.round(startColor[0] + (endColor[0] - startColor[0]) * (value / 100));
-  const g = Math.round(startColor[1] + (endColor[1] - startColor[1]) * (value / 100));
-  const b = Math.round(startColor[2] + (endColor[2] - startColor[2]) * (value / 100));
+  const r = Math.round(
+    startColor[0] + (endColor[0] - startColor[0]) * (value / 100)
+  );
+  const g = Math.round(
+    startColor[1] + (endColor[1] - startColor[1]) * (value / 100)
+  );
+  const b = Math.round(
+    startColor[2] + (endColor[2] - startColor[2]) * (value / 100)
+  );
 
   return `rgb(${r}, ${g}, ${b})`;
 };
 
 export default function CustomSlider({
-                                       min = 0,
-                                       max = 100,
-                                       step = 1,
-                                       value,
-                                       onValueChange,
-                                     }: CustomSliderProps) {
+  min = 0,
+  max = 100,
+  step = 1,
+  value,
+  onValueChange,
+}: CustomSliderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [thumbWidth, setThumbWidth] = useState(20);
   const [isLightMode, setIsLightMode] = useState(true);
@@ -35,17 +41,20 @@ export default function CustomSlider({
   useEffect(() => {
     if (inputRef.current) {
       const computedStyle = window.getComputedStyle(inputRef.current);
-      const thumbWidth = parseInt(computedStyle.getPropertyValue('--thumb-width') || '20', 10);
+      const thumbWidth = parseInt(
+        computedStyle.getPropertyValue("--thumb-width") || "20",
+        10
+      );
       setThumbWidth(thumbWidth);
     }
 
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     setIsLightMode(!mediaQuery.matches);
     setIsLoaded(true);
 
     const handler = () => setIsLightMode(!mediaQuery.matches);
-    mediaQuery.addEventListener('change', handler);
-    return () => mediaQuery.removeEventListener('change', handler);
+    mediaQuery.addEventListener("change", handler);
+    return () => mediaQuery.removeEventListener("change", handler);
   }, []);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,15 +66,18 @@ export default function CustomSlider({
   };
 
   const getBackgroundSize = () => {
-    if (!inputRef.current) return { backgroundSize: '0% 100%' };
+    if (!inputRef.current) return { backgroundSize: "0% 100%" };
 
     const range = max - min;
     const trackWidth = inputRef.current.offsetWidth - thumbWidth;
     const thumbPosition = ((value - min) / range) * trackWidth;
-    const backgroundPercentage = (thumbPosition / inputRef.current.offsetWidth) * 100;
+    const backgroundPercentage =
+      (thumbPosition / inputRef.current.offsetWidth) * 100;
 
     return {
-      backgroundSize: `calc(${backgroundPercentage}% + ${thumbWidth / 2}px) 100%`,
+      backgroundSize: `calc(${backgroundPercentage}% + ${
+        thumbWidth / 2
+      }px) 100%`,
     };
   };
 
@@ -96,18 +108,36 @@ export default function CustomSlider({
             [&::-moz-range-thumb]:bg-background
             [&::-moz-range-thumb]:dark:bg-background
             [&::-moz-range-thumb]:shadow-lg
-            ${value === min ? '[&::-webkit-slider-thumb]:ml-0.5 [&::-moz-range-thumb]:ml-0.5' : ''}
-            ${value === max ? '[&::-webkit-slider-thumb]:-translate-x-0.5 [&::-moz-range-thumb]:-translate-x-0.5' : ''}`}
+            ${
+              value === min
+                ? "[&::-webkit-slider-thumb]:ml-0.5 [&::-moz-range-thumb]:ml-0.5"
+                : ""
+            }
+            ${
+              value === max
+                ? "[&::-webkit-slider-thumb]:-translate-x-0.5 [&::-moz-range-thumb]:-translate-x-0.5"
+                : ""
+            }`}
           style={{
             ...getBackgroundSize(),
-            ...(isLoaded ? {
-              background: `linear-gradient(to right, ${getGradient(0, isLightMode)}, ${getGradient(value, isLightMode)})`
-            } : {}),
-            ['--thumb-width' as any]: `${thumbWidth}px`,
+            ...(isLoaded
+              ? {
+                  background: `linear-gradient(to right, ${getGradient(
+                    0,
+                    isLightMode
+                  )}, ${getGradient(value, isLightMode)})`,
+                }
+              : {}),
+            ["--thumb-width" as any]: `${thumbWidth}px`,
           }}
         />
       </div>
-      <ToggleGroup type="single" value={value.toString()} onValueChange={handleToggleChange} className="justify-between w-full">
+      <ToggleGroup
+        type="single"
+        value={value.toString()}
+        onValueChange={handleToggleChange}
+        className="justify-between w-full"
+      >
         {[0, 25, 50, 75, 100].map((percentage) => (
           <ToggleGroupItem
             key={percentage}
