@@ -365,9 +365,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
             ctx.accounts.signer_policy.is_some(),
             InvestorError::InvalidPolicyAccount
         );
-
-        let mut_signer_policy = ctx.accounts.signer_policy.as_mut().unwrap();
-        let signer_policy = &mut_signer_policy.clone();
+        let signer_policy = &ctx.accounts.signer_policy.clone().unwrap();
 
         // It's responsibility of subscribe() to create the policy account
         // with the proper lock-up timestamp.
