@@ -701,15 +701,14 @@ export default function Flows() {
                         setFundId((f as any)?.idStr);
                         setOpen(false);
                       }}
+                      className="flex items-center"
                     >
-                      <CheckIcon
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          fundId === (f as any)?.idStr
-                            ? "opacity-100"
-                            : "opacity-0"
-                        )}
-                      />
+                      <span className="mr-2">
+                        <Sparkle
+                          address={(f as any)?.imageKey}
+                          size={24}
+                        />
+                      </span>
                       {f.name}
                     </CommandItem>
                   ))}

@@ -5,7 +5,8 @@ interface CustomSliderProps {
   min?: number;
   max?: number;
   step?: number;
-  defaultValue?: number;
+  value: number;
+  onValueChange: (value: number) => void;
 }
 
 const getGradient = (value: number, isLightMode: boolean) => {
@@ -23,9 +24,9 @@ export default function CustomSlider({
                                        min = 0,
                                        max = 100,
                                        step = 1,
-                                       defaultValue = 0,
+                                       value,
+                                       onValueChange,
                                      }: CustomSliderProps) {
-  const [value, setValue] = useState(defaultValue);
   const inputRef = useRef<HTMLInputElement>(null);
   const [thumbWidth, setThumbWidth] = useState(20);
   const [isLightMode, setIsLightMode] = useState(true);
@@ -48,7 +49,11 @@ export default function CustomSlider({
   }, []);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(Number(event.target.value));
+    onValueChange(Number(event.target.value));
+  };
+
+  const handleToggleChange = (newValue: string) => {
+    onValueChange(Number(newValue));
   };
 
   const getBackgroundSize = () => {
@@ -62,10 +67,6 @@ export default function CustomSlider({
     return {
       backgroundSize: `calc(${backgroundPercentage}% + ${thumbWidth / 2}px) 100%`,
     };
-  };
-
-  const handleToggleChange = (newValue: string) => {
-    setValue(Number(newValue));
   };
 
   return (
@@ -142,14 +143,6 @@ export default function CustomSlider({
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
-    </div>
-  );
-}
-
-export function SliderExample() {
-  return (
-    <div className="w-full">
-      <CustomSlider defaultValue={0} />
     </div>
   );
 }
