@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { useController, Control } from 'react-hook-form';
+import React, { useEffect, useState } from "react";
+import { Control, useController } from "react-hook-form";
 import {
   FormControl,
   FormDescription,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import CustomSlider from './CustomSlider';
+} from "@/components/ui/form";
+import CustomSlider from "./CustomSlider";
 
 interface LeverageInputProps {
   name: string;
@@ -20,14 +20,14 @@ interface LeverageInputProps {
 }
 
 export function LeverageInput({
-                                name,
-                                control,
-                                label,
-                                description,
-                                min = 0,
-                                max = 100,
-                                step = 1,
-                              }: LeverageInputProps) {
+  name,
+  control,
+  label,
+  description,
+  min = 0,
+  max = 100,
+  step = 1,
+}: LeverageInputProps) {
   const {
     field,
     fieldState: { error },
