@@ -6,20 +6,50 @@ import {Holding, holdingSchema} from "../data/holdingSchema";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "../../../components/ui/tooltip";
+import { useEffect, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
 }
 
 export const columns: ColumnDef<Holding>[] = [
-{
+  {
+    accessorKey: "logoURI",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="" />
+    ),
+    cell: ({ row }) => {
+      const [isLoading, setIsLoading] = useState(true);
+      const logoURI = row.getValue("logoURI") as string;
+
+      useEffect(() => {
+        if (logoURI) {
+          const img = new Image();
+          img.onload = () => setIsLoading(false);
+          img.onerror = () => setIsLoading(false);
+          img.src = logoURI;
+        }
+      }, [logoURI]);
+
+      if (isLoading) {
+        return <Skeleton className="h-6 w-6 rounded-full" />;
+      }
+
+      return <img className="h-6 w-6 rounded-full" src={logoURI} alt="Logo" />;
+    },
+    enableSorting: false,
+    enableHiding: true,
+  },
+  {
     accessorKey: "symbol",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Symbol" />
     ),
-    cell: ({ row }) => {
-      const holding = holdingSchema.parse(row.original);
+    cell: ({ row }) =>
 
+    {
+      const holding = holdingSchema.parse(row.original);
       return  <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>

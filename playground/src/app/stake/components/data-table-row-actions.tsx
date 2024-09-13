@@ -93,10 +93,6 @@ export function DataTableRowActions<TData>({
     }
   };
 
-  const handleRedelegate = async () => {
-    console.error("Not implemented, need additional input");
-  };
-
   const handleSplit = async () => {
     console.error("Not implemented, need additional input");
   };
@@ -191,9 +187,6 @@ export function DataTableRowActions<TData>({
         <DropdownMenuContent align="end" className="w-[200px]">
           <DropdownMenuItem onClick={handlDeactivateStake}>
             Deactivate
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleRedelegate}>
-            Redelegate
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleSplit}>Split</DropdownMenuItem>
           <DropdownMenuItem onClick={handleAuthorize}>
