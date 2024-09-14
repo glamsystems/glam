@@ -143,7 +143,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
       <PopoverContent className="w-full p-0" align="start">
         <Command>
           {/*<CommandInput placeholder="Search product..." />*/}
-          <CommandList>
+          <CommandList className="h-fit overflow-hidden">
             <CommandGroup key="Products" heading="Products">
               {fundsList.map((product) => (
                 <CommandItem
@@ -186,13 +186,14 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
             ></CommandGroup>
             <WalletMultiButton
               style={{
-                width: 263,
-                backgroundColor: "transparent",
+                width: 275,
+                marginLeft: 4,
+                marginBottom: 4,
                 color: "inherit",
                 padding: 0,
-                paddingLeft: 12,
-                paddingRight: 12,
-                height: 24,
+                paddingLeft: 8,
+                paddingRight: 16,
+                height: 36,
               }}
             />
           </CommandList>
