@@ -30,7 +30,7 @@ export default function Products() {
         </Tabs>
       </div>
         <div className="w-full ml-16 pt-[26px]">
-            <DynamicForm schema={schema} isNested={true} groups={["company", "fund", "fundManager"]} />
+            <DynamicForm schema={schema} isNested={true} groups={["company", "fund", "fundManager"]} columns={2}/>
         </div>
       </div>
   </PageContentWrapper>

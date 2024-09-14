@@ -106,6 +106,7 @@ export default function Products() {
             schema={schema}
             isNested={true}
             groups={["shareClass"]}
+            columns={2}
           />
         </div>
       </div>
