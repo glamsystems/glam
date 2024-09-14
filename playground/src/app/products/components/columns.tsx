@@ -36,15 +36,15 @@ export const columns: ColumnDef<Product>[] = [
     enableSorting: false,
     enableHiding: false,
   },
-  {
-    accessorKey: "symbol",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Symbol" />
-    ),
-    cell: ({ row }) => <div className="flex">{row.getValue("symbol")}</div>,
-    enableSorting: true,
-    enableHiding: true,
-  },
+  // {
+  //   accessorKey: "symbol",
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title="Symbol" />
+  //   ),
+  //   cell: ({ row }) => <div className="flex">{row.getValue("symbol")}</div>,
+  //   enableSorting: true,
+  //   enableHiding: true,
+  // },
   {
     accessorKey: "baseAsset",
     header: ({ column }) => (
@@ -70,27 +70,27 @@ export const columns: ColumnDef<Product>[] = [
     enableSorting: true,
     enableHiding: true,
   },
-  {
-    accessorKey: "status",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Status" />
-    ),
-    cell: ({ row }) => {
-      const status = statuses.find(
-        (status) => status.value === row.original.status
-      );
-
-      return (
-        <div className="flex">
-          <span className="max-w-[500px] truncate font-medium">
-            {status?.label}
-          </span>
-        </div>
-      );
-    },
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => <DataTableRowActions row={row} />,
-  },
+  // {
+  //   accessorKey: "status",
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title="Status" />
+  //   ),
+  //   cell: ({ row }) => {
+  //     const status = statuses.find(
+  //       (status) => status.value === row.original.status
+  //     );
+  //
+  //     return (
+  //       <div className="flex">
+  //         <span className="max-w-[500px] truncate font-medium">
+  //           {status?.label}
+  //         </span>
+  //       </div>
+  //     );
+  //   },
+  // },
+  // {
+  //   id: "actions",
+  //   cell: ({ row }) => <DataTableRowActions row={row} />,
+  // },
 ];
