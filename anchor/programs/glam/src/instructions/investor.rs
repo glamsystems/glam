@@ -9,6 +9,7 @@ use anchor_spl::token_interface::{
     burn, mint_to, transfer_checked, Burn, Mint, MintTo, Token2022, TokenAccount, TransferChecked,
 };
 use pyth_sdk_solana::Price;
+use solana_program::stake::state::warmup_cooldown_rate;
 
 use crate::constants::{self, WSOL};
 use crate::error::{FundError, InvestorError, PolicyError};
@@ -744,9 +745,10 @@ pub fn get_aum_components<'info>(
     msg!("aum_components={:?}", aum_components);
 
     // Get the aum component with the asset being wsol and update its asset amount
+    let clock = Clock::get()?;
     if let Some(wsol_component) = aum_components
         .iter_mut()
-        .find(|att| att.asset.is_some() && att.asset.as_ref().unwrap().key() == constants::WSOL)
+        .find(|aum| aum.asset.is_some() && aum.asset.as_ref().unwrap().key() == constants::WSOL)
     {
         let mut external_lamports = marinade_tickets
             .iter()
@@ -763,13 +765,43 @@ pub fn get_aum_components<'info>(
             .map(|account_info| {
                 let mut data_slice: &[u8] = &account_info.data.borrow();
                 let data: &mut &[u8] = &mut data_slice;
-                let stake = StakeAccount::try_deserialize(data);
-                if stake.is_ok() {
-                    return stake.unwrap().delegation().unwrap().stake;
+                let stake = StakeAccount::try_deserialize(data).unwrap();
+
+                #[cfg(not(feature = "mainnet"))]
+                msg!(
+                    "Stake account {:?}, delegation: {:?}",
+                    account_info.key,
+                    stake.delegation()
+                );
+
+                let delegation = stake.delegation().unwrap();
+
+                // stake is activating, not eligible for yields
+                if clock.epoch <= delegation.activation_epoch {
+                    return 0;
                 }
-                0
+                // stake has been deactivated, not eligible for yields
+                if clock.epoch > delegation.deactivation_epoch {
+                    return 0;
+                }
+                // activation_epoch < clock.epoch <= deactivation_epoch
+                let mut activated_stake_pct = (clock.epoch - delegation.activation_epoch) as f64
+                    * warmup_cooldown_rate(clock.epoch, None);
+                activated_stake_pct = activated_stake_pct.min(1.0);
+
+                #[cfg(not(feature = "mainnet"))]
+                msg!(
+                    "current epoch: {:?}, activation epoch {:?}, activated_stake_pct {:?}",
+                    clock.epoch,
+                    delegation.activation_epoch,
+                    activated_stake_pct
+                );
+
+                return (activated_stake_pct * delegation.stake as f64) as u64;
             })
             .sum();
+
+        // TODO: allow fund manager to set the yield rate
         let stake_rewards = activated_stake as f64 * 0.0005 * get_epoch_progress().unwrap();
 
         let expo = wsol_component.asset_price.expo;

@@ -3712,6 +3712,7 @@
     {
       "code": 6000,
 <<<<<<< HEAD
+<<<<<<< HEAD
       "name": "CloseNotEmptyError",
       "msg": "Error closing account: not empty"
     },
@@ -3757,14 +3758,19 @@
 =======
       "name": "FundNotActive",
       "msg": "Fund is not active"
+=======
+      "name": "TransfersDisabled",
+      "msg": "Policy violation: transfers disabled"
+>>>>>>> fe953d9 (activated stake calc)
     },
     {
       "code": 6001,
-      "name": "InvalidShareClass",
-      "msg": "Share class not allowed to subscribe"
+      "name": "AmountTooBig",
+      "msg": "Policy violation: amount too big"
     },
     {
       "code": 6002,
+<<<<<<< HEAD
       "name": "InvalidAssetSubscribe",
       "msg": "Asset not allowed to subscribe"
     },
@@ -3808,6 +3814,10 @@
       "name": "InvalidPolicyAccount",
       "msg": "Policy account is mandatory"
 >>>>>>> 601e7b9 (anchor: aum from external accounts)
+=======
+      "name": "LockOut",
+      "msg": "Policy violation: lock out period"
+>>>>>>> fe953d9 (activated stake calc)
     }
   ],
   "types": [
