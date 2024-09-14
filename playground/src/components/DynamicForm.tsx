@@ -656,16 +656,14 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
         {isNested && groups.length
           ? groups.map((group) =>
               schema[group]?.fields
-                ? sortedFields(schema[group].fields).map(([key, field]) =>
-                    renderField(key, field)
-                  )
-                : null
+                ? renderFields(schema[group].fields)
+
+                  : null
             )
           : formSchema.fields // Add this check
-          ? sortedFields(formSchema.fields).map(([key, field]) =>
-              renderField(key, field)
-            )
-          : null}
+            ? renderFields(formSchema.fields)
+
+              : null}
         <Button type="submit" className="w-full" disabled>
           Submit
         </Button>
