@@ -20,18 +20,17 @@ jobs:
     container: ghcr.io/yurushao/soldev:release
 
     steps:
-      # - name: Setup rust
-      #   run: rustup default stable
+      - name: Setup default rust version
+        run: rustup default 1.78.0
 
       - name: Check anchor version
         run: rm /root/.cargo/bin/anchor && ln -s /root/.avm/bin/anchor-0.30.1 /root/.cargo/bin/anchor && anchor --version
 
       - name: Generate new keygen
         run: solana-keygen new --no-bip39-passphrase --force
-      - name: Set solana target cluster to local
+
+      - name: Set solana cluster to localnet
         run: solana config set --url l
-      - name: Check solana config
-        run: solana config get
 
       - uses: actions/checkout@v3
 
