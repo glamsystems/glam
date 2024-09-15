@@ -1,17 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
-import { PublicKey } from "@solana/web3.js";
-import {
-  getAssociatedTokenAddressSync,
-  createAssociatedTokenAccount,
-} from "@solana/spl-token";
-import { DRIFT_PROGRAM_ID, DriftClient } from "@drift-labs/sdk";
-import { Glam, GlamClient, GlamProgram } from "../src";
-
-import {
-  getDriftStateAccountPublicKey,
-  getUserAccountPublicKey,
-  getUserStatsAccountPublicKey,
-} from "@drift-labs/sdk";
+import { GlamClient, GlamProgram } from "../src";
 import { createFundForTest } from "./setup";
 
 describe("glam_drift", () => {
@@ -42,30 +30,8 @@ describe("glam_drift", () => {
   });
 
   it("Drift initialize", async () => {
-    const userAccountPublicKey = await getUserAccountPublicKey(
-      new PublicKey(DRIFT_PROGRAM_ID),
-      treasuryPDA,
-      0
-    );
-    const userStatsAccountPublicKey = await getUserStatsAccountPublicKey(
-      new PublicKey(DRIFT_PROGRAM_ID),
-      treasuryPDA
-    );
-    const statePublicKey = await getDriftStateAccountPublicKey(
-      new PublicKey(DRIFT_PROGRAM_ID)
-    );
-    console.log("statePublicKey", statePublicKey.toBase58());
     try {
-      const txId = await program.methods
-        .driftInitialize()
-        .accounts({
-          fund: fundPDA,
-          user: userAccountPublicKey,
-          userStats: userStatsAccountPublicKey,
-          state: statePublicKey,
-          manager,
-        })
-        .rpc({ commitment });
+      const txId = await glamClient.drift.initialize(fundPDA);
       console.log("driftInitialize", txId);
     } catch (e) {
       console.error(e);
@@ -74,23 +40,13 @@ describe("glam_drift", () => {
   });
 
   it("Drift: update trader", async () => {
-    const userAccountPublicKey = await getUserAccountPublicKey(
-      new PublicKey(DRIFT_PROGRAM_ID),
-      treasuryPDA,
-      0
-    );
     const trader = manager;
-
     try {
-      const txId = await program.methods
-        .driftUpdateUserDelegate(0, trader)
-        .accounts({
-          fund: fundPDA,
-          user: userAccountPublicKey,
-          manager,
-        })
-        .rpc({ commitment });
-
+      const txId = await glamClient.drift.updateUserDelegate(
+        fundPDA,
+        0,
+        trader
+      );
       console.log("driftUpdateUserDelegate", txId);
     } catch (e) {
       console.error(e);
