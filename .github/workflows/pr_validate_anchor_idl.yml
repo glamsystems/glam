@@ -1,4 +1,4 @@
-name: Build dapp
+name: Validate anchor IDL
 
 on:
   pull_request:
