@@ -22,11 +22,11 @@ jobs:
       - name: Validate anchor IDL
         shell: bash
         run: |
-          if [ $(cat anchor/target/idl/glam.json | jq -r .address) == "GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP"]; then
+          if [ $(cat anchor/target/idl/glam.json | jq -r .address) == "GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP" ]; then
             echo "Anchor IDL program address is correct."
           else
             echo "Anchor IDL program address is incorrect."
             echo "Program address in the main branch IDL should be GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP (mainnet deploy)."
-            echo "Make sure you run `anchor build` or `pnpm run anchor-build` before pushing changes to your PR."
+            echo "Make sure you run \"anchor build\" or \"pnpm run anchor-build\" before pushing changes to your PR."
             exit 1
           fi
