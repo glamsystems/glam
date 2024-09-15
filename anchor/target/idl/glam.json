@@ -1,5 +1,5 @@
 {
-  "address": "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc",
+  "address": "GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP",
   "metadata": {
     "name": "glam",
     "version": "0.2.9",
@@ -3714,62 +3714,8 @@
   "errors": [
     {
       "code": 6000,
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      "name": "CloseNotEmptyError",
-      "msg": "Error closing account: not empty"
-    },
-    {
-      "code": 6001,
-      "name": "NotAuthorizedError",
-      "msg": "Error: not authorized"
-    },
-    {
-      "code": 6002,
-      "name": "InvalidFundName",
-      "msg": "Invalid fund name: max 30 chars"
-    },
-    {
-      "code": 6003,
-      "name": "InvalidFundSymbol",
-      "msg": "Too many assets: max 50"
-    },
-    {
-      "code": 6004,
-      "name": "InvalidFundUri",
-      "msg": "Too many assets: max 20"
-    },
-    {
-      "code": 6005,
-      "name": "InvalidAssetsLen",
-      "msg": "Too many assets: max 100"
-    },
-    {
-      "code": 6006,
-      "name": "InvalidAssetsWeights",
-      "msg": "Number of weights should match number of assets"
-    },
-    {
-      "code": 6007,
-      "name": "InvalidAssetForSwap",
-      "msg": "Asset cannot be swapped"
-    },
-    {
-      "code": 6008,
-      "name": "InvalidSwap",
-      "msg": "Swap failed"
-=======
       "name": "FundNotActive",
       "msg": "Fund is not active"
-=======
-      "name": "TransfersDisabled",
-      "msg": "Policy violation: transfers disabled"
->>>>>>> fe953d9 (activated stake calc)
-=======
-      "name": "FundNotActive",
-      "msg": "Fund is not active"
->>>>>>> 333dc43 (test)
     },
     {
       "code": 6001,
@@ -3778,10 +3724,6 @@
     },
     {
       "code": 6002,
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 333dc43 (test)
       "name": "InvalidAssetSubscribe",
       "msg": "Asset not allowed to subscribe"
     },
@@ -3824,14 +3766,6 @@
       "code": 6010,
       "name": "InvalidPolicyAccount",
       "msg": "Policy account is mandatory"
-<<<<<<< HEAD
->>>>>>> 601e7b9 (anchor: aum from external accounts)
-=======
-      "name": "LockOut",
-      "msg": "Policy violation: lock out period"
->>>>>>> fe953d9 (activated stake calc)
-=======
->>>>>>> 333dc43 (test)
     }
   ],
   "types": [

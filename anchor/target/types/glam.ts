@@ -3720,62 +3720,8 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      "name": "closeNotEmptyError",
-      "msg": "Error closing account: not empty"
-    },
-    {
-      "code": 6001,
-      "name": "notAuthorizedError",
-      "msg": "Error: not authorized"
-    },
-    {
-      "code": 6002,
-      "name": "invalidFundName",
-      "msg": "Invalid fund name: max 30 chars"
-    },
-    {
-      "code": 6003,
-      "name": "invalidFundSymbol",
-      "msg": "Too many assets: max 50"
-    },
-    {
-      "code": 6004,
-      "name": "invalidFundUri",
-      "msg": "Too many assets: max 20"
-    },
-    {
-      "code": 6005,
-      "name": "invalidAssetsLen",
-      "msg": "Too many assets: max 100"
-    },
-    {
-      "code": 6006,
-      "name": "invalidAssetsWeights",
-      "msg": "Number of weights should match number of assets"
-    },
-    {
-      "code": 6007,
-      "name": "invalidAssetForSwap",
-      "msg": "Asset cannot be swapped"
-    },
-    {
-      "code": 6008,
-      "name": "invalidSwap",
-      "msg": "Swap failed"
-=======
       "name": "fundNotActive",
       "msg": "Fund is not active"
-=======
-      "name": "transfersDisabled",
-      "msg": "Policy violation: transfers disabled"
->>>>>>> fe953d9 (activated stake calc)
-=======
-      "name": "fundNotActive",
-      "msg": "Fund is not active"
->>>>>>> 333dc43 (test)
     },
     {
       "code": 6001,
@@ -3784,10 +3730,6 @@ export type Glam = {
     },
     {
       "code": 6002,
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 333dc43 (test)
       "name": "invalidAssetSubscribe",
       "msg": "Asset not allowed to subscribe"
     },
@@ -3830,14 +3772,6 @@ export type Glam = {
       "code": 6010,
       "name": "invalidPolicyAccount",
       "msg": "Policy account is mandatory"
-<<<<<<< HEAD
->>>>>>> 601e7b9 (anchor: aum from external accounts)
-=======
-      "name": "lockOut",
-      "msg": "Policy violation: lock out period"
->>>>>>> fe953d9 (activated stake calc)
-=======
->>>>>>> 333dc43 (test)
     }
   ],
   "types": [
