@@ -12,6 +12,7 @@ import {
   Connection,
   LAMPORTS_PER_SOL,
   PublicKey,
+  StakeProgram,
   SystemProgram,
   Transaction,
   TransactionMessage,
@@ -34,6 +35,7 @@ import { ClusterOrCustom, GlamClientConfig } from "../clientConfig";
 import { FundModel, FundOpenfundsModel } from "../models";
 import { AssetMeta, ASSETS_MAINNET, ASSETS_TESTS } from "./assets";
 import base58 from "bs58";
+import { MARINADE_PROGRAM_ID } from "../constants";
 
 type FundAccount = IdlAccounts<Glam>["fundAccount"];
 type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
@@ -204,7 +206,10 @@ export class BaseClient {
       }
     }
     if (units) {
-      units += 150; // ComputeBudgetProgram.setComputeUnitLimit costs 150 CUs
+      // ComputeBudgetProgram.setComputeUnitLimit costs 150 CUs
+      units += 150;
+      // More CUs for tests as logs are more verbose
+      !this.isMainnet() && (units += 10_000);
       instructions.unshift(ComputeBudgetProgram.setComputeUnitLimit({ units }));
     }
 
@@ -374,6 +379,75 @@ export class BaseClient {
       }
       throw e;
     }
+  }
+  async getStakeAccounts(fundPDA: PublicKey): Promise<PublicKey[]> {
+    const STAKE_ACCOUNT_SIZE = 200;
+    const accounts = await this.provider.connection.getParsedProgramAccounts(
+      StakeProgram.programId,
+      {
+        filters: [
+          {
+            dataSize: STAKE_ACCOUNT_SIZE,
+          },
+          {
+            memcmp: {
+              offset: 12,
+              bytes: this.getTreasuryPDA(fundPDA).toBase58(),
+            },
+          },
+        ],
+      }
+    );
+    // order by lamports desc
+    return accounts
+      .sort((a, b) => b.account.lamports - a.account.lamports)
+      .map((a) => a.pubkey);
+  }
+
+  async getTickets(fundPDA: PublicKey): Promise<
+    {
+      address: PublicKey;
+      lamports: number;
+      createdEpoch: number;
+      isDue: boolean;
+    }[]
+  > {
+    // TicketAccount {
+    //   stateAddress: web3.PublicKey; // offset 8
+    //   beneficiary: web3.PublicKey;  // offset 40
+    //   lamportsAmount: BN;           // offset 72
+    //   createdEpoch: BN;
+    // }
+    const connection = this.provider.connection;
+    const accounts = await connection.getParsedProgramAccounts(
+      MARINADE_PROGRAM_ID,
+      {
+        filters: [
+          {
+            dataSize: 88,
+          },
+          {
+            memcmp: {
+              offset: 40,
+              bytes: this.getTreasuryPDA(fundPDA).toBase58(),
+            },
+          },
+        ],
+      }
+    );
+    const currentEpoch = await connection.getEpochInfo();
+    return accounts.map((a) => {
+      const lamports = Number((a.account.data as Buffer).readBigInt64LE(72));
+      const createdEpoch = Number(
+        (a.account.data as Buffer).readBigInt64LE(80)
+      );
+      return {
+        address: a.pubkey,
+        lamports,
+        createdEpoch,
+        isDue: currentEpoch.epoch > createdEpoch,
+      };
+    });
   }
 
   getOpenfundsPDA(fundPDA: PublicKey): PublicKey {

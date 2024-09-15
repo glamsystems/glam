@@ -144,7 +144,10 @@ pub fn marinade_delayed_unstake<'c: 'info, 'info>(
 
     // Add new ticket account to the fund param
     let fund = &mut ctx.accounts.fund;
-    fund.add_to_engine_field(EngineFieldName::MarinadeTickets, ctx.accounts.ticket.key());
+    fund.add_to_engine_field(
+        EngineFieldName::ExternalTreasuryAccounts,
+        ctx.accounts.ticket.key(),
+    );
 
     Ok(())
 }
@@ -185,7 +188,7 @@ pub fn marinade_claim_tickets<'info>(
             let _ = claim(cpi_ctx);
 
             fund.delete_from_engine_field(
-                EngineFieldName::MarinadeTickets,
+                EngineFieldName::ExternalTreasuryAccounts,
                 ticket_account_info.key(),
             );
         });

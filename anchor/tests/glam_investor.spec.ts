@@ -214,20 +214,6 @@ describe("glam_investor", () => {
     }
   }, /* timeout */ 15_000);
 
-  /*afterAll(async () => {
-    await program.methods
-      .close()
-      .accounts({
-        fund: fundPDA,
-        manager: manager.publicKey
-      })
-      .rpc();
-
-    // The account should no longer exist, returning null.
-    const closedAccount = await program.account.fund.fetchNullable(fundPDA);
-    expect(closedAccount).toBeNull();
-  });*/
-
   it("Fund created", async () => {
     try {
       const fund = await program.account.fundAccount.fetch(fundPDA);

@@ -3,17 +3,18 @@ use anchor_lang::system_program;
 use anchor_spl::associated_token::{
     spl_associated_token_account::get_associated_token_address_with_program_id, AssociatedToken,
 };
+use anchor_spl::stake::StakeAccount;
 use anchor_spl::token::Token;
 use anchor_spl::token_interface::{
     burn, mint_to, transfer_checked, Burn, Mint, MintTo, Token2022, TokenAccount, TransferChecked,
 };
+use marinade::state::delayed_unstake_ticket::TicketAccountData;
 use pyth_sdk_solana::Price;
+use solana_program::stake::state::warmup_cooldown_rate;
 
 use crate::constants::{self, WSOL};
 use crate::error::{FundError, InvestorError, PolicyError};
 use crate::{state::*, PolicyAccount};
-
-//TODO(security): check that treasury belongs to the fund
 
 fn log_decimal(amount: u64, minus_decimals: i32) -> f64 {
     amount as f64 * 10f64.powf(minus_decimals as f64)
@@ -24,6 +25,7 @@ fn _log_price(price: Price) -> f64 {
 
 #[derive(Accounts)]
 pub struct Subscribe<'info> {
+    #[account(has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
@@ -88,19 +90,8 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     let fund = &ctx.accounts.fund;
     require!(fund.is_enabled(), InvestorError::FundNotActive);
 
-    let stake_accounts = fund.get_pubkeys_from_engine_field(EngineFieldName::StakeAccounts);
-    let marinade_tickets = fund.get_pubkeys_from_engine_field(EngineFieldName::MarinadeTickets);
-
-    #[cfg(not(feature = "mainnet"))]
-    msg!(
-        "stake_accounts={:?} marinade_tickets={:?}",
-        stake_accounts,
-        marinade_tickets
-    );
-    require!(
-        stake_accounts.len() == 0 && marinade_tickets.len() == 0,
-        InvestorError::SubscribeRedeemPaused
-    );
+    let external_treasury_accounts =
+        fund.get_pubkeys_from_engine_field(EngineFieldName::ExternalTreasuryAccounts);
 
     if fund.share_classes.len() > 1 {
         // we need to define how to split the total amount into share classes
@@ -178,6 +169,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         assets,
         ctx.remaining_accounts,
         &ctx.accounts.treasury,
+        &external_treasury_accounts,
         &ctx.accounts.signer,
         &ctx.accounts.token_program,
         &ctx.accounts.token_2022_program,
@@ -210,7 +202,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     //     log_decimal(asset_value as u64, share_expo),
     // );
 
-    // amount_shares = asset_value / nav = asset_value * total_shares / aum
+    // amount_shares = asset_value / nav = asset_value / (aum / total_shares) = asset_value * total_shares / aum
     // - when total_shares = 0, default nav is $100 or 1 SOL
     let amount_shares = if use_fixed_price {
         if asset_base == WSOL {
@@ -324,19 +316,8 @@ pub fn redeem_handler<'c: 'info, 'info>(
 ) -> Result<()> {
     let fund = &ctx.accounts.fund;
 
-    let stake_accounts = fund.get_pubkeys_from_engine_field(EngineFieldName::StakeAccounts);
-    let marinade_tickets = fund.get_pubkeys_from_engine_field(EngineFieldName::MarinadeTickets);
-
-    #[cfg(not(feature = "mainnet"))]
-    msg!(
-        "stake_accounts={:?} marinade_tickets={:?}",
-        stake_accounts,
-        marinade_tickets
-    );
-    require!(
-        stake_accounts.len() == 0 && marinade_tickets.len() == 0,
-        InvestorError::SubscribeRedeemPaused
-    );
+    let external_treasury_accounts =
+        fund.get_pubkeys_from_engine_field(EngineFieldName::ExternalTreasuryAccounts);
 
     if ctx.accounts.fund.share_classes.len() > 1 {
         // we need to define how to split the total amount into share classes
@@ -355,7 +336,6 @@ pub fn redeem_handler<'c: 'info, 'info>(
         &[ctx.bumps.treasury],
     ];
     let signer_seeds = &[&seeds[..]];
-    let treasury = &ctx.accounts.treasury;
 
     // Lock-up
     let mut close_signer_policy = false;
@@ -414,7 +394,8 @@ pub fn redeem_handler<'c: 'info, 'info>(
         Action::Redeem,
         assets,
         ctx.remaining_accounts,
-        treasury,
+        &ctx.accounts.treasury,
+        &external_treasury_accounts,
         &ctx.accounts.signer,
         &ctx.accounts.token_program,
         &ctx.accounts.token_2022_program,
@@ -530,7 +511,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
         }
 
         if should_transfer_everything {
-            let lamports = treasury.lamports();
+            let lamports = ctx.accounts.treasury.lamports();
             if lamports > 0 {
                 system_program::transfer(
                     CpiContext::new_with_signer(
@@ -581,24 +562,45 @@ pub fn get_aum_components<'info>(
     assets: &[Pubkey],
     remaining_accounts: &'info [AccountInfo<'info>],
     treasury: &SystemAccount<'info>,
+    external_treasury_accounts: &[Pubkey],
     signer: &Signer<'info>,
     token_program: &Program<'info, Token>,
     token_2022_program: &Program<'info, Token2022>,
     skip_prices: bool,            // only for redeem
     force_price_asset_idx: usize, // only for subscribe
 ) -> Result<Vec<AumComponent<'info>>> {
-    let mut aum_components: Vec<AumComponent> = Vec::new();
+    //
+    // Split remaining_accounts and validate them
+    //
+    let (stake_accounts, marinade_tickets, accounts_for_pricing) =
+        split_remaining_accounts(remaining_accounts)?;
 
-    let num_accounts = if action == Action::Subscribe { 2 } else { 4 };
     require!(
-        remaining_accounts.len() == num_accounts * assets.len(),
+        stake_accounts.len() + marinade_tickets.len() == external_treasury_accounts.len(),
         InvestorError::InvalidRemainingAccounts
     );
 
+    for account in stake_accounts.iter().chain(marinade_tickets.iter()) {
+        require!(
+            external_treasury_accounts.contains(&account.key()),
+            InvestorError::InvalidRemainingAccounts
+        );
+    }
+
+    let num_accounts = if action == Action::Subscribe { 2 } else { 4 };
+    require!(
+        accounts_for_pricing.len() == num_accounts * assets.len(),
+        InvestorError::InvalidRemainingAccounts
+    );
+
+    //
+    // Collect aum components
+    //
+    let mut aum_components: Vec<AumComponent> = Vec::new();
     let timestamp = Clock::get()?.unix_timestamp;
     let mut price_sol_usd = Price::default();
     let mut price_type = PriceDenom::USD;
-    for (i, accounts) in remaining_accounts.chunks(num_accounts).enumerate() {
+    for (i, accounts) in accounts_for_pricing.chunks(num_accounts).enumerate() {
         let cur_asset = assets[i];
         let cur_asset_str = cur_asset.to_string();
         let cur_asset_meta = AssetMeta::get(cur_asset_str.as_str())?;
@@ -737,7 +739,94 @@ pub fn get_aum_components<'info>(
             asset_value,
             price_type: asset_price_type,
         });
-        // msg!("{:?}", aum_components);
+    }
+
+    /*
+     * Calculate the external lamports of the fund. Currently only marinade tickets and stake accounts are included.
+     * External lamports will be added to the wsol aum_component.
+     */
+    if let Some(wsol_component) = aum_components
+        .iter_mut()
+        .find(|aum| aum.price_type == PriceDenom::SOL)
+    {
+        // msg!("wsol_component={:?}", wsol_component);
+
+        let mut external_lamports = marinade_tickets
+            .iter()
+            .map(|account| account.lamports())
+            .sum::<u64>();
+
+        external_lamports += stake_accounts
+            .iter()
+            .map(|account| account.lamports())
+            .sum::<u64>();
+
+        /*
+         * Besides lamports in the tickets and stake accounts, we also estimate the yields of eligible stake accounts:
+         * 1. iterate through stake accounts and calculate the activated stake
+         * 2. calculate the rewards based on the activated stake
+         */
+        let clock = Clock::get()?;
+        let activated_stake: u64 = stake_accounts
+            .iter()
+            .map(|account_info| {
+                let mut data_slice: &[u8] = &account_info.data.borrow();
+                let data: &mut &[u8] = &mut data_slice;
+                let stake = StakeAccount::try_deserialize(data).unwrap();
+
+                #[cfg(not(feature = "mainnet"))]
+                msg!(
+                    "Stake account {:?}, delegation: {:?}",
+                    account_info.key,
+                    stake.delegation()
+                );
+
+                let delegation = stake.delegation().unwrap();
+
+                // stake is activating, not eligible for yields
+                if clock.epoch <= delegation.activation_epoch {
+                    return 0;
+                }
+                // stake has been deactivated, not eligible for yields
+                if clock.epoch > delegation.deactivation_epoch {
+                    return 0;
+                }
+                // activation_epoch < clock.epoch <= deactivation_epoch
+                let mut activated_stake_pct = (clock.epoch - delegation.activation_epoch) as f64
+                    * warmup_cooldown_rate(clock.epoch, None);
+                activated_stake_pct = activated_stake_pct.min(1.0);
+
+                #[cfg(not(feature = "mainnet"))]
+                msg!(
+                    "current epoch: {:?}, activation epoch {:?}, activated_stake_pct {:?}",
+                    clock.epoch,
+                    delegation.activation_epoch,
+                    activated_stake_pct
+                );
+
+                return (activated_stake_pct * delegation.stake as f64) as u64;
+            })
+            .sum();
+
+        // TODO: allow fund manager to set the yield rate
+        let stake_rewards = activated_stake as f64 * 0.0005 * get_epoch_progress().unwrap();
+
+        msg!(
+            "external_lamports={:?}, stake_rewards={:?}",
+            external_lamports,
+            stake_rewards as u64
+        );
+
+        let expo = wsol_component.asset_price.expo;
+        let updated_asset_amount =
+            wsol_component.asset_amount + external_lamports + stake_rewards as u64;
+        let updated_asset_value = wsol_component
+            .asset_price
+            .cmul(updated_asset_amount.try_into().unwrap(), expo)
+            .unwrap();
+
+        wsol_component.asset_amount = updated_asset_amount;
+        wsol_component.asset_value = updated_asset_value;
     }
 
     for att in &mut aum_components {
@@ -775,4 +864,75 @@ pub fn get_aum_components<'info>(
     }
 
     Ok(aum_components)
+}
+
+/**
+ * Split remaining_accounts into 3 categories:
+ * 1) Accounts with owner being stake program
+ * 2) Accounts with owner being marinade program
+ * 3) Accounts for pricing: those not in 1) or 2)
+ */
+fn split_remaining_accounts<'info>(
+    remaining_accounts: &'info [AccountInfo<'info>],
+) -> Result<(
+    Vec<&'info AccountInfo<'info>>,
+    Vec<&'info AccountInfo<'info>>,
+    Vec<&'info AccountInfo<'info>>,
+)> {
+    let mut stake_accounts = Vec::new();
+    let mut marinade_tickets = Vec::new();
+    let mut accounts_for_pricing = Vec::new();
+
+    // Iterate through the remaining accounts and categorize them by owner program
+    for account in remaining_accounts.iter() {
+        let owner = account.owner;
+        let size = account.data.borrow().len();
+
+        // marinade ticket account size need to include the anchor discriminator
+        if *owner == marinade::ID && size == std::mem::size_of::<TicketAccountData>() + 8 {
+            marinade_tickets.push(account);
+        } else if *owner == solana_program::stake::program::ID
+            && size == std::mem::size_of::<StakeAccount>()
+        {
+            stake_accounts.push(account);
+        } else {
+            accounts_for_pricing.push(account);
+        }
+    }
+
+    #[cfg(not(feature = "mainnet"))]
+    msg!(
+        "stake_accounts={:?}, marinade_tickets={:?}, accounts_for_pricing={:?}",
+        stake_accounts.iter().map(|a| a.key()).collect::<Vec<_>>(),
+        marinade_tickets.iter().map(|a| a.key()).collect::<Vec<_>>(),
+        accounts_for_pricing
+            .iter()
+            .map(|a| a.key())
+            .collect::<Vec<_>>()
+    );
+
+    Ok((stake_accounts, marinade_tickets, accounts_for_pricing))
+}
+
+pub fn get_epoch_progress<'info>() -> Result<f64> {
+    let clock = Clock::get()?;
+
+    // Retrieve the EpochSchedule sysvar and get first slot in epoch & slots per epoch
+    let epoch_schedule = EpochSchedule::get()?;
+    let first_slot_in_epoch = epoch_schedule.get_first_slot_in_epoch(clock.epoch);
+    let slots_in_epoch = epoch_schedule.get_slots_in_epoch(clock.epoch);
+
+    // Calculate epoch progress as a percentage
+    let slot_index = clock.slot - first_slot_in_epoch;
+    let epoch_progress = (slot_index as f64 / slots_in_epoch as f64) * 100.0;
+
+    #[cfg(not(feature = "mainnet"))]
+    msg!(
+        "Epoch: {}, Slot: {}, Progress: {:.2}%",
+        clock.epoch,
+        clock.slot,
+        epoch_progress
+    );
+
+    Ok(epoch_progress)
 }
