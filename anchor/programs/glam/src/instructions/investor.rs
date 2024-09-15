@@ -900,13 +900,16 @@ fn split_remaining_accounts<'info>(
         }
     }
 
-    // #[cfg(not(feature = "mainnet"))]
-    // msg!(
-    //     "stake_accounts={:?}, marinade_tickets={:?}, accounts_for_pricing={:?}",
-    //     stake_accounts,
-    //     marinade_tickets,
-    //     accounts_for_pricing
-    // );
+    #[cfg(not(feature = "mainnet"))]
+    msg!(
+        "stake_accounts={:?}, marinade_tickets={:?}, accounts_for_pricing={:?}",
+        stake_accounts.iter().map(|a| a.key()).collect::<Vec<_>>(),
+        marinade_tickets.iter().map(|a| a.key()).collect::<Vec<_>>(),
+        accounts_for_pricing
+            .iter()
+            .map(|a| a.key())
+            .collect::<Vec<_>>()
+    );
 
     Ok((stake_accounts, marinade_tickets, accounts_for_pricing))
 }

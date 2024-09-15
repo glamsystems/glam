@@ -206,7 +206,10 @@ export class BaseClient {
       }
     }
     if (units) {
-      units += 9500; // ComputeBudgetProgram.setComputeUnitLimit costs 150 CUs, add some extra as buffer
+      // ComputeBudgetProgram.setComputeUnitLimit costs 150 CUs
+      units += 150;
+      // More CUs for tests as logs are more verbose
+      !this.isMainnet() && (units += 10_000);
       instructions.unshift(ComputeBudgetProgram.setComputeUnitLimit({ units }));
     }
 
