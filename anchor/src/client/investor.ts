@@ -94,7 +94,10 @@ export class InvestorClient {
       assetMeta?.programId
     );
 
-    // remaining accounts = treasury atas + pricing to compute AUM
+    // remaining accounts may have 3 parts:
+    // 1. treasury atas + pricing to compute AUM
+    // 2. marinade ticket
+    // 3. stake accounts
     const fundModel = await this.base.fetchFund(fund);
     const remainingAccounts = (fundModel.assets || []).flatMap((asset: any) => {
       const assetMeta = this.base.getAssetMeta(asset.toBase58());
@@ -113,6 +116,18 @@ export class InvestorClient {
         },
       ];
     });
+
+    const tickets = (await this.base.getTickets(fund)).map(
+      (ticket) => ticket.address
+    );
+    const stakes = await this.base.getStakeAccounts(fund);
+    remainingAccounts.push(
+      ...tickets.concat(stakes).map((address) => ({
+        pubkey: address,
+        isSigner: false,
+        isWritable: false,
+      }))
+    );
 
     // SOL -> wSOL
     // If the user doesn't have enough wSOL but does have SOL, we auto wrap

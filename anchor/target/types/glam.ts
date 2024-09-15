@@ -2996,7 +2996,10 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          }
+          },
+          "relations": [
+            "fund"
+          ]
         },
         {
           "name": "shareClass",
@@ -3719,6 +3722,7 @@ export type Glam = {
       "code": 6000,
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       "name": "closeNotEmptyError",
       "msg": "Error closing account: not empty"
     },
@@ -3768,15 +3772,22 @@ export type Glam = {
       "name": "transfersDisabled",
       "msg": "Policy violation: transfers disabled"
 >>>>>>> fe953d9 (activated stake calc)
+=======
+      "name": "fundNotActive",
+      "msg": "Fund is not active"
+>>>>>>> 333dc43 (test)
     },
     {
       "code": 6001,
-      "name": "amountTooBig",
-      "msg": "Policy violation: amount too big"
+      "name": "invalidShareClass",
+      "msg": "Share class not allowed to subscribe"
     },
     {
       "code": 6002,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 333dc43 (test)
       "name": "invalidAssetSubscribe",
       "msg": "Asset not allowed to subscribe"
     },
@@ -3819,11 +3830,14 @@ export type Glam = {
       "code": 6010,
       "name": "invalidPolicyAccount",
       "msg": "Policy account is mandatory"
+<<<<<<< HEAD
 >>>>>>> 601e7b9 (anchor: aum from external accounts)
 =======
       "name": "lockOut",
       "msg": "Policy violation: lock out period"
 >>>>>>> fe953d9 (activated stake calc)
+=======
+>>>>>>> 333dc43 (test)
     }
   ],
   "types": [

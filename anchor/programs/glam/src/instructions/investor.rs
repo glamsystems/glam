@@ -8,14 +8,13 @@ use anchor_spl::token::Token;
 use anchor_spl::token_interface::{
     burn, mint_to, transfer_checked, Burn, Mint, MintTo, Token2022, TokenAccount, TransferChecked,
 };
+use marinade::state::delayed_unstake_ticket::TicketAccountData;
 use pyth_sdk_solana::Price;
 use solana_program::stake::state::warmup_cooldown_rate;
 
 use crate::constants::{self, WSOL};
 use crate::error::{FundError, InvestorError, PolicyError};
 use crate::{state::*, PolicyAccount};
-
-//TODO(security): check that treasury belongs to the fund
 
 fn log_decimal(amount: u64, minus_decimals: i32) -> f64 {
     amount as f64 * 10f64.powf(minus_decimals as f64)
@@ -26,6 +25,7 @@ fn _log_price(price: Price) -> f64 {
 
 #[derive(Accounts)]
 pub struct Subscribe<'info> {
+    #[account(has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
@@ -741,15 +741,16 @@ pub fn get_aum_components<'info>(
         });
     }
 
-    #[cfg(not(feature = "mainnet"))]
-    msg!("aum_components={:?}", aum_components);
-
-    // Get the aum component with the asset being wsol and update its asset amount
-    let clock = Clock::get()?;
+    /*
+     * Calculate the external lamports of the fund. Currently only marinade tickets and stake accounts are included.
+     * External lamports will be added to the wsol aum_component.
+     */
     if let Some(wsol_component) = aum_components
         .iter_mut()
-        .find(|aum| aum.asset.is_some() && aum.asset.as_ref().unwrap().key() == constants::WSOL)
+        .find(|aum| aum.price_type == PriceDenom::SOL)
     {
+        // msg!("wsol_component={:?}", wsol_component);
+
         let mut external_lamports = marinade_tickets
             .iter()
             .map(|account| account.lamports())
@@ -760,6 +761,12 @@ pub fn get_aum_components<'info>(
             .map(|account| account.lamports())
             .sum::<u64>();
 
+        /*
+         * Besides lamports in the tickets and stake accounts, we also estimate the yields of eligible stake accounts:
+         * 1. iterate through stake accounts and calculate the activated stake
+         * 2. calculate the rewards based on the activated stake
+         */
+        let clock = Clock::get()?;
         let activated_stake: u64 = stake_accounts
             .iter()
             .map(|account_info| {
@@ -804,6 +811,12 @@ pub fn get_aum_components<'info>(
         // TODO: allow fund manager to set the yield rate
         let stake_rewards = activated_stake as f64 * 0.0005 * get_epoch_progress().unwrap();
 
+        msg!(
+            "external_lamports={:?}, stake_rewards={:?}",
+            external_lamports,
+            stake_rewards as u64
+        );
+
         let expo = wsol_component.asset_price.expo;
         let updated_asset_amount =
             wsol_component.asset_amount + external_lamports + stake_rewards as u64;
@@ -815,9 +828,6 @@ pub fn get_aum_components<'info>(
         wsol_component.asset_amount = updated_asset_amount;
         wsol_component.asset_value = updated_asset_value;
     }
-
-    #[cfg(not(feature = "mainnet"))]
-    msg!("updated aum_components={:?}", aum_components);
 
     for att in &mut aum_components {
         if price_type == PriceDenom::SOL {
@@ -875,26 +885,28 @@ fn split_remaining_accounts<'info>(
 
     // Iterate through the remaining accounts and categorize them by owner program
     for account in remaining_accounts.iter() {
-        match account.owner {
-            owner if *owner == solana_program::stake::program::ID => {
-                stake_accounts.push(account);
-            }
-            owner if *owner == marinade::ID => {
-                marinade_tickets.push(account);
-            }
-            _ => {
-                accounts_for_pricing.push(account);
-            }
+        let owner = account.owner;
+        let size = account.data.borrow().len();
+
+        // marinade ticket account size need to include the anchor discriminator
+        if *owner == marinade::ID && size == std::mem::size_of::<TicketAccountData>() + 8 {
+            marinade_tickets.push(account);
+        } else if *owner == solana_program::stake::program::ID
+            && size == std::mem::size_of::<StakeAccount>()
+        {
+            stake_accounts.push(account);
+        } else {
+            accounts_for_pricing.push(account);
         }
     }
 
-    #[cfg(not(feature = "mainnet"))]
-    msg!(
-        "stake_accounts={:?}, marinade_tickets={:?}, accounts_for_pricing={:?}",
-        stake_accounts,
-        marinade_tickets,
-        accounts_for_pricing
-    );
+    // #[cfg(not(feature = "mainnet"))]
+    // msg!(
+    //     "stake_accounts={:?}, marinade_tickets={:?}, accounts_for_pricing={:?}",
+    //     stake_accounts,
+    //     marinade_tickets,
+    //     accounts_for_pricing
+    // );
 
     Ok((stake_accounts, marinade_tickets, accounts_for_pricing))
 }

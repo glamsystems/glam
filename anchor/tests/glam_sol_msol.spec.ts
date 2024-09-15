@@ -5,6 +5,7 @@ import {
   sendAndConfirmTransaction,
   Keypair,
   SystemProgram,
+  PublicKey,
 } from "@solana/web3.js";
 import {
   createMint,
@@ -25,13 +26,12 @@ import {
   createFundForTest,
   quoteResponseForTest,
   swapInstructionsForTest,
+  sleep,
 } from "./setup";
 import { GlamClient, MSOL, WSOL } from "../src";
 
 describe("glam_sol_msol", () => {
   const glamClient = new GlamClient();
-
-  const useWsolInsteadOfEth = true;
 
   const userKeypairs = [
     Keypair.generate(), // alice
@@ -45,22 +45,20 @@ describe("glam_sol_msol", () => {
   const glamClientBob = new GlamClient({ wallet: new Wallet(bob) });
   const glamClientEve = new GlamClient({ wallet: new Wallet(eve) });
 
-  const client = new GlamClient();
-  const manager = (client.provider as anchor.AnchorProvider)
-    .wallet as anchor.Wallet;
-
   const fundExample = {
     ...fundTestExample,
     name: "Glam SOL-mSOL",
     assets: [WSOL, MSOL],
   } as any;
 
-  const fundPDA = client.getFundPDA(fundExample);
-  const treasuryPDA = client.getTreasuryPDA(fundPDA);
-  const sharePDA = client.getShareClassPDA(fundPDA, 0);
+  const fundPDA = glamClient.getFundPDA(fundExample);
+  const treasuryPDA = glamClient.getTreasuryPDA(fundPDA);
+  const sharePDA = glamClient.getShareClassPDA(fundPDA, 0);
 
-  const connection = client.provider.connection;
+  const connection = glamClient.provider.connection;
   const commitment = "confirmed";
+
+  let defaultVote;
 
   beforeAll(async () => {
     try {
@@ -78,7 +76,14 @@ describe("glam_sol_msol", () => {
       //
       // create fund
       //
-      const fundData = await createFundForTest(client, fundExample);
+      const fundData = await createFundForTest(glamClient, fundExample);
+
+      // default vote account
+      const voteAccountStatus = await connection.getVoteAccounts();
+      const vote = voteAccountStatus.current.sort(
+        (a, b) => b.activatedStake - a.activatedStake
+      )[0].votePubkey;
+      defaultVote = new PublicKey(vote);
     } catch (e) {
       console.error(e);
       throw e;
@@ -389,7 +394,7 @@ describe("glam_sol_msol", () => {
     expect((Number(sharesAta.amount) / 1e9).toFixed(2)).toEqual("4.50");
   });
 
-  it("Alice redeems 2 shares", async () => {
+  it("Alice redeems 1 share", async () => {
     /* The fund has ~13 SOL for 6.5 shares. */
     const amount = new BN(1_000_000_000);
     try {
@@ -428,4 +433,94 @@ describe("glam_sol_msol", () => {
     );
     expect((Number(wsolAta.amount) / 1e9).toFixed(2)).toEqual("1.99"); // rounding err because of mSOL price
   });
+
+  it("Manager orders marinade delayed stake and delegates stake", async () => {
+    try {
+      let txSig = await glamClient.marinade.delayedUnstake(
+        fundPDA,
+        new BN(30_000_000)
+      );
+      console.log("delayedUnstake txSig", txSig);
+
+      txSig = await glamClient.staking.initializeAndDelegateStake(
+        fundPDA,
+        defaultVote,
+        new BN(2_000_000_000)
+      );
+      console.log("initializeAndDelegateStake txSig", txSig);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  });
+
+  it("Eve subscribes to fund with 1 SOL twice at different epochs", async () => {
+    /* The fund has ~11 SOL for 5.5 shares. */
+    try {
+      const txId = await glamClientEve.investor.subscribe(
+        fundPDA,
+        WSOL,
+        new BN(1_000_000_000),
+        0,
+        true
+      );
+      console.log("eve subscribe #0 tx:", txId);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+
+    let shares = await getMint(
+      connection,
+      sharePDA,
+      commitment,
+      TOKEN_2022_PROGRAM_ID
+    );
+    expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("6.00");
+    const sharesAtaEpoch0 = await getAccount(
+      connection,
+      glamClientAlice.getShareClassAta(eve.publicKey, sharePDA),
+      commitment,
+      TOKEN_2022_PROGRAM_ID
+    );
+    expect((Number(sharesAtaEpoch0.amount) / 1e9).toFixed(2)).toEqual("0.50");
+
+    await sleep(15_000); // wait for epoch change
+
+    /* The fund has ~12 SOL for 6.0 shares. */
+    try {
+      const txId = await glamClientEve.investor.subscribe(
+        fundPDA,
+        WSOL,
+        new BN(1_000_000_000),
+        0,
+        true
+      );
+      console.log("eve subscribe #1 tx:", txId);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+
+    shares = await getMint(
+      connection,
+      sharePDA,
+      commitment,
+      TOKEN_2022_PROGRAM_ID
+    );
+    expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("6.50");
+    const sharesAtaEpoch1 = await getAccount(
+      connection,
+      glamClientAlice.getShareClassAta(eve.publicKey, sharePDA),
+      commitment,
+      TOKEN_2022_PROGRAM_ID
+    );
+    expect((Number(sharesAtaEpoch1.amount) / 1e9).toFixed(2)).toEqual("1.00");
+
+    // shares received at epoch 1 should be less than shares received at epoch 0
+    // because the fund has more SOL at epoch 1 due to staking yield
+    expect(sharesAtaEpoch1.amount - sharesAtaEpoch0.amount).toBeLessThan(
+      sharesAtaEpoch0.amount
+    );
+  }, 30_000);
 });
