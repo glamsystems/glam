@@ -1,0 +1,32 @@
+name: Validate anchor IDL
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths-ignore:
+      - "api/**" # Skip workflow when changes are made to the api/ directory
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate anchor IDL
+        shell: bash
+        run: |
+          if [ $(cat anchor/target/idl/glam.json | jq -r .address) == "GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP" ]; then
+            echo "Anchor IDL program address is correct."
+          else
+            echo "Anchor IDL program address is incorrect."
+            echo "Program address in the main branch IDL should be GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP (mainnet deploy)."
+            echo "Make sure you run \"anchor build\" or \"pnpm run anchor-build\" before pushing changes to your PR."
+            exit 1
+          fi
