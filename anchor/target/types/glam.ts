@@ -350,7 +350,10 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          }
+          },
+          "relations": [
+            "fund"
+          ]
         },
         {
           "name": "manager",
@@ -426,7 +429,10 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          }
+          },
+          "relations": [
+            "fund"
+          ]
         },
         {
           "name": "driftAta",
@@ -439,7 +445,10 @@ export type Glam = {
         {
           "name": "manager",
           "writable": true,
-          "signer": true
+          "signer": true,
+          "relations": [
+            "fund"
+          ]
         },
         {
           "name": "driftProgram",
@@ -511,7 +520,10 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          }
+          },
+          "relations": [
+            "fund"
+          ]
         },
         {
           "name": "manager",
@@ -535,6 +547,102 @@ export type Glam = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "driftPlaceOrders",
+      "discriminator": [
+        117,
+        18,
+        210,
+        6,
+        238,
+        174,
+        135,
+        167
+      ],
+      "accounts": [
+        {
+          "name": "fund"
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "userStats",
+          "writable": true
+        },
+        {
+          "name": "state",
+          "writable": true
+        },
+        {
+          "name": "treasury",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          },
+          "relations": [
+            "fund"
+          ]
+        },
+        {
+          "name": "treasuryAta",
+          "writable": true
+        },
+        {
+          "name": "driftAta",
+          "writable": true
+        },
+        {
+          "name": "driftSigner"
+        },
+        {
+          "name": "manager",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "fund"
+          ]
+        },
+        {
+          "name": "driftProgram",
+          "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "orderParams",
+          "type": {
+            "vec": {
+              "defined": {
+                "name": "orderParams"
+              }
+            }
+          }
+        }
+      ]
     },
     {
       "name": "driftUpdateUserCustomMarginRatio",
@@ -578,7 +686,10 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          }
+          },
+          "relations": [
+            "fund"
+          ]
         },
         {
           "name": "manager",
@@ -646,7 +757,10 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          }
+          },
+          "relations": [
+            "fund"
+          ]
         },
         {
           "name": "manager",
@@ -714,7 +828,10 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          }
+          },
+          "relations": [
+            "fund"
+          ]
         },
         {
           "name": "manager",
@@ -790,7 +907,10 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          }
+          },
+          "relations": [
+            "fund"
+          ]
         },
         {
           "name": "treasuryAta",
@@ -4808,6 +4928,171 @@ export type Glam = {
       }
     },
     {
+      "name": "marketType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "spot"
+          },
+          {
+            "name": "perp"
+          }
+        ]
+      }
+    },
+    {
+      "name": "orderParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "orderType",
+            "type": {
+              "defined": {
+                "name": "orderType"
+              }
+            }
+          },
+          {
+            "name": "marketType",
+            "type": {
+              "defined": {
+                "name": "marketType"
+              }
+            }
+          },
+          {
+            "name": "direction",
+            "type": {
+              "defined": {
+                "name": "positionDirection"
+              }
+            }
+          },
+          {
+            "name": "userOrderId",
+            "type": "u8"
+          },
+          {
+            "name": "baseAssetAmount",
+            "type": "u64"
+          },
+          {
+            "name": "price",
+            "type": "u64"
+          },
+          {
+            "name": "marketIndex",
+            "type": "u16"
+          },
+          {
+            "name": "reduceOnly",
+            "type": "bool"
+          },
+          {
+            "name": "postOnly",
+            "type": {
+              "defined": {
+                "name": "postOnlyParam"
+              }
+            }
+          },
+          {
+            "name": "immediateOrCancel",
+            "type": "bool"
+          },
+          {
+            "name": "maxTs",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "triggerPrice",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "triggerCondition",
+            "type": {
+              "defined": {
+                "name": "orderTriggerCondition"
+              }
+            }
+          },
+          {
+            "name": "oraclePriceOffset",
+            "type": {
+              "option": "i32"
+            }
+          },
+          {
+            "name": "auctionDuration",
+            "type": {
+              "option": "u8"
+            }
+          },
+          {
+            "name": "auctionStartPrice",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "auctionEndPrice",
+            "type": {
+              "option": "i64"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "orderTriggerCondition",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "above"
+          },
+          {
+            "name": "below"
+          },
+          {
+            "name": "triggeredAbove"
+          },
+          {
+            "name": "triggeredBelow"
+          }
+        ]
+      }
+    },
+    {
+      "name": "orderType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "market"
+          },
+          {
+            "name": "limit"
+          },
+          {
+            "name": "triggerMarket"
+          },
+          {
+            "name": "triggerLimit"
+          },
+          {
+            "name": "oracle"
+          }
+        ]
+      }
+    },
+    {
       "name": "permission",
       "docs": [
         "* Delegate ACL"
@@ -4820,6 +5105,12 @@ export type Glam = {
           },
           {
             "name": "driftWithdraw"
+          },
+          {
+            "name": "driftPlaceOrders"
+          },
+          {
+            "name": "driftCancelOrders"
           },
           {
             "name": "stake"
@@ -4853,6 +5144,40 @@ export type Glam = {
           {
             "name": "lockedUntilTs",
             "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "positionDirection",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "long"
+          },
+          {
+            "name": "short"
+          }
+        ]
+      }
+    },
+    {
+      "name": "postOnlyParam",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "none"
+          },
+          {
+            "name": "mustPostOnly"
+          },
+          {
+            "name": "tryPostOnly"
+          },
+          {
+            "name": "slide"
           }
         ]
       }

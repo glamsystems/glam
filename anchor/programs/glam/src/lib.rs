@@ -18,6 +18,8 @@ declare_id!("Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc");
 #[program]
 pub mod glam {
 
+    use ::drift::OrderParams;
+
     use super::*;
 
     //
@@ -123,6 +125,13 @@ pub mod glam {
 
     pub fn drift_delete_user(ctx: Context<DriftDeleteUser>, _sub_account_id: u16) -> Result<()> {
         drift::drift_delete_user_handler(ctx)
+    }
+
+    pub fn drift_place_orders<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, DriftPlaceOrders<'info>>,
+        order_params: Vec<OrderParams>,
+    ) -> Result<()> {
+        drift::drift_place_orders_handler(ctx, order_params)
     }
 
     //

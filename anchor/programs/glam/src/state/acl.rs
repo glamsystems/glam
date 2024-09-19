@@ -15,6 +15,8 @@ pub enum AccessError {
 pub enum Permission {
     DriftDeposit,
     DriftWithdraw,
+    DriftPlaceOrders,
+    DriftCancelOrders,
     Stake, // Stake with marinade or spl/sanctum stake pool programs
     Unstake,
     LiquidUnstake,

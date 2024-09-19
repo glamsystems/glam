@@ -344,7 +344,10 @@
                 "path": "fund"
               }
             ]
-          }
+          },
+          "relations": [
+            "fund"
+          ]
         },
         {
           "name": "manager",
@@ -420,7 +423,10 @@
                 "path": "fund"
               }
             ]
-          }
+          },
+          "relations": [
+            "fund"
+          ]
         },
         {
           "name": "drift_ata",
@@ -433,7 +439,10 @@
         {
           "name": "manager",
           "writable": true,
-          "signer": true
+          "signer": true,
+          "relations": [
+            "fund"
+          ]
         },
         {
           "name": "drift_program",
@@ -505,7 +514,10 @@
                 "path": "fund"
               }
             ]
-          }
+          },
+          "relations": [
+            "fund"
+          ]
         },
         {
           "name": "manager",
@@ -529,6 +541,102 @@
         }
       ],
       "args": []
+    },
+    {
+      "name": "drift_place_orders",
+      "discriminator": [
+        117,
+        18,
+        210,
+        6,
+        238,
+        174,
+        135,
+        167
+      ],
+      "accounts": [
+        {
+          "name": "fund"
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "user_stats",
+          "writable": true
+        },
+        {
+          "name": "state",
+          "writable": true
+        },
+        {
+          "name": "treasury",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          },
+          "relations": [
+            "fund"
+          ]
+        },
+        {
+          "name": "treasury_ata",
+          "writable": true
+        },
+        {
+          "name": "drift_ata",
+          "writable": true
+        },
+        {
+          "name": "drift_signer"
+        },
+        {
+          "name": "manager",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "fund"
+          ]
+        },
+        {
+          "name": "drift_program",
+          "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "order_params",
+          "type": {
+            "vec": {
+              "defined": {
+                "name": "OrderParams"
+              }
+            }
+          }
+        }
+      ]
     },
     {
       "name": "drift_update_user_custom_margin_ratio",
@@ -572,7 +680,10 @@
                 "path": "fund"
               }
             ]
-          }
+          },
+          "relations": [
+            "fund"
+          ]
         },
         {
           "name": "manager",
@@ -640,7 +751,10 @@
                 "path": "fund"
               }
             ]
-          }
+          },
+          "relations": [
+            "fund"
+          ]
         },
         {
           "name": "manager",
@@ -708,7 +822,10 @@
                 "path": "fund"
               }
             ]
-          }
+          },
+          "relations": [
+            "fund"
+          ]
         },
         {
           "name": "manager",
@@ -784,7 +901,10 @@
                 "path": "fund"
               }
             ]
-          }
+          },
+          "relations": [
+            "fund"
+          ]
         },
         {
           "name": "treasury_ata",
@@ -4802,6 +4922,171 @@
       }
     },
     {
+      "name": "MarketType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Spot"
+          },
+          {
+            "name": "Perp"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OrderParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "order_type",
+            "type": {
+              "defined": {
+                "name": "OrderType"
+              }
+            }
+          },
+          {
+            "name": "market_type",
+            "type": {
+              "defined": {
+                "name": "MarketType"
+              }
+            }
+          },
+          {
+            "name": "direction",
+            "type": {
+              "defined": {
+                "name": "PositionDirection"
+              }
+            }
+          },
+          {
+            "name": "user_order_id",
+            "type": "u8"
+          },
+          {
+            "name": "base_asset_amount",
+            "type": "u64"
+          },
+          {
+            "name": "price",
+            "type": "u64"
+          },
+          {
+            "name": "market_index",
+            "type": "u16"
+          },
+          {
+            "name": "reduce_only",
+            "type": "bool"
+          },
+          {
+            "name": "post_only",
+            "type": {
+              "defined": {
+                "name": "PostOnlyParam"
+              }
+            }
+          },
+          {
+            "name": "immediate_or_cancel",
+            "type": "bool"
+          },
+          {
+            "name": "max_ts",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "trigger_price",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "trigger_condition",
+            "type": {
+              "defined": {
+                "name": "OrderTriggerCondition"
+              }
+            }
+          },
+          {
+            "name": "oracle_price_offset",
+            "type": {
+              "option": "i32"
+            }
+          },
+          {
+            "name": "auction_duration",
+            "type": {
+              "option": "u8"
+            }
+          },
+          {
+            "name": "auction_start_price",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "auction_end_price",
+            "type": {
+              "option": "i64"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "OrderTriggerCondition",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Above"
+          },
+          {
+            "name": "Below"
+          },
+          {
+            "name": "TriggeredAbove"
+          },
+          {
+            "name": "TriggeredBelow"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OrderType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Market"
+          },
+          {
+            "name": "Limit"
+          },
+          {
+            "name": "TriggerMarket"
+          },
+          {
+            "name": "TriggerLimit"
+          },
+          {
+            "name": "Oracle"
+          }
+        ]
+      }
+    },
+    {
       "name": "Permission",
       "docs": [
         "* Delegate ACL"
@@ -4814,6 +5099,12 @@
           },
           {
             "name": "DriftWithdraw"
+          },
+          {
+            "name": "DriftPlaceOrders"
+          },
+          {
+            "name": "DriftCancelOrders"
           },
           {
             "name": "Stake"
@@ -4847,6 +5138,40 @@
           {
             "name": "locked_until_ts",
             "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PositionDirection",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Long"
+          },
+          {
+            "name": "Short"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PostOnlyParam",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "None"
+          },
+          {
+            "name": "MustPostOnly"
+          },
+          {
+            "name": "TryPostOnly"
+          },
+          {
+            "name": "Slide"
           }
         ]
       }
