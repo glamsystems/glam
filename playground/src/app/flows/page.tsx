@@ -658,7 +658,7 @@ export default function Flows() {
     <PageContentWrapper>
       <div className="w-4/6 self-center">
         <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
+          <PopoverTrigger asChild className="mb-4">
             <Button
               variant="outline"
               role="combobox"
@@ -717,9 +717,6 @@ export default function Flows() {
             </Command>
           </PopoverContent>
         </Popover>
-
-        <br />
-        <br />
 
         <InvestorWidget fundId={fundId} />
       </div>
