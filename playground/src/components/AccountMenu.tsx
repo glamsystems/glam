@@ -186,13 +186,13 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
             ></CommandGroup>
             <WalletMultiButton
               style={{
-                width: 275,
                 marginLeft: 4,
+                marginRight: 4,
                 marginBottom: 4,
                 color: "inherit",
                 padding: 0,
                 paddingLeft: 8,
-                paddingRight: 16,
+                paddingRight: 8,
                 height: 36,
               }}
             />

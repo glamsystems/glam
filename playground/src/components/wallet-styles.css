@@ -1,13 +1,14 @@
 .wallet-adapter-button {
+  display: flex;
+  flex-grow: inherit;
   background-color: transparent;
   border: none;
   color: #fff;
   cursor: pointer;
-  display: flex;
   align-items: center;
   font-size: 14px;
   font-weight: 400;
-  width: 100%;
+  width: 100% !important;
   height: 48px;
   line-height: 48px;
   padding: 0 24px;
@@ -19,7 +20,7 @@
 }
 
 .wallet-adapter-button:hover {
-  @apply bg-muted !important;
+  @apply bg-transparent !important;
 }
 
 .wallet-adapter-button:not([disabled]):focus-visible {
@@ -61,7 +62,8 @@
 
 .wallet-adapter-dropdown {
   position: relative;
-  display: inline-block;
+  width: 100%;
+  background-color: transparent;
 }
 
 .wallet-adapter-dropdown-list {
@@ -93,7 +95,7 @@
 .wallet-adapter-dropdown-list-item {
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: start;
   align-items: center;
   border: none;
   outline: none;
@@ -143,8 +145,8 @@
 
 .wallet-adapter-modal-button-close {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: start;
+  justify-content: start;
   position: absolute;
   top: 18px;
   right: 18px;
