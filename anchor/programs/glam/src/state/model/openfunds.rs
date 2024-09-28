@@ -410,7 +410,7 @@ impl From<&CompanyModel> for Vec<CompanyField> {
             ),
             (
                 model.fund_website_of_man_co,
-                CompanyFieldName::FundWebsiteofManCo,
+                CompanyFieldName::FundWebsiteOfManCo,
             ),
         ]
         .iter()

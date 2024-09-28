@@ -28,7 +28,13 @@ import {
   getAccount,
   getAssociatedTokenAddressSync,
   getMint,
+  unpackMint,
+  Mint,
+  getExtensionData,
+  ExtensionType,
 } from "@solana/spl-token";
+import { TokenMetadata, unpack } from "@solana/spl-token-metadata";
+import { WSOL, USDC } from "../constants";
 
 import { Glam, GlamIDL, GlamProgram, getGlamProgramId } from "../glamExports";
 import { ClusterOrCustom, GlamClientConfig } from "../clientConfig";
@@ -612,6 +618,32 @@ export class BaseClient {
     return this.program.account.fundMetadataAccount.fetch(openfunds);
   }
 
+  public async fetchShareClassAccount(
+    fundPDA: PublicKey,
+    shareId: number
+  ): Promise<Mint> {
+    const shareClassMint = this.getShareClassPDA(fundPDA, shareId);
+    const connection = this.provider.connection;
+    return await getMint(
+      connection,
+      shareClassMint,
+      connection.commitment,
+      TOKEN_2022_PROGRAM_ID
+    );
+  }
+
+  getAssetIdFromCurrency(currency: string): string {
+    switch (currency.toUpperCase()) {
+      case "SOL":
+      case "WSOL":
+        return WSOL.toBase58();
+      case "USD":
+      case "USDC":
+        return USDC.toBase58();
+    }
+    return "";
+  }
+
   remapKeyValueArray(vec: Array<any>): any {
     return vec.reduce((prev, el) => {
       prev[Object.keys(el.name)[0]] = el.value;
@@ -621,14 +653,48 @@ export class BaseClient {
 
   getOpenfundsFromAccounts(
     fundAccount: FundAccount,
-    openfundsAccount: FundMetadataAccount
+    openfundsAccount: FundMetadataAccount,
+    mints: any[]
   ): any {
-    let shareClasses = openfundsAccount.shareClasses.map((shareClass, i) => ({
-      id: fundAccount.shareClasses[i],
-      ...this.remapKeyValueArray(shareClass),
-    }));
+    let shareClasses = openfundsAccount.shareClasses.map((shareClass, i) => {
+      let shareClassSymbol;
+      let shareClassCurrencyId;
+      let hasPermanentDelegate;
+
+      const mint = mints[i];
+      if (mint) {
+        const data = getExtensionData(
+          ExtensionType.TokenMetadata,
+          mint.tlvData
+        );
+        const metadata = data ? unpack(data) : ({} as TokenMetadata);
+        const permanentDelegate = getExtensionData(
+          ExtensionType.PermanentDelegate,
+          mint.tlvData
+        );
+
+        shareClassSymbol = metadata?.symbol;
+        hasPermanentDelegate = permanentDelegate ? "yes" : "no";
+      }
+
+      const remapped = this.remapKeyValueArray(shareClass);
+      shareClassCurrencyId = this.getAssetIdFromCurrency(
+        remapped.shareClassCurrency
+      );
+
+      return {
+        id: fundAccount.shareClasses[i],
+        // custom share class fields
+        shareClassId: fundAccount.shareClasses[i].toBase58(),
+        shareClassSymbol,
+        shareClassCurrencyId,
+        hasPermanentDelegate,
+        ...remapped,
+      };
+    });
     let fundManagers = openfundsAccount.fundManagers.map((fundManager) => ({
       pubkey: fundAccount.manager,
+      portfolioManagerId: fundAccount.manager.toBase58(),
       ...this.remapKeyValueArray(fundManager),
     }));
 
@@ -661,7 +727,8 @@ export class BaseClient {
   fundModelFromAccounts(
     fundPDA: PublicKey,
     fundAccount: FundAccount,
-    openfundsAccount: FundMetadataAccount
+    openfundsAccount: FundMetadataAccount,
+    firstShareClass: Mint
   ): FundModel {
     //TODO rebuild model from accounts
     let fundModel = this.getFundModel(fundAccount);
@@ -677,7 +744,11 @@ export class BaseClient {
 
     let fund = {
       ...fundModel,
-      ...this.getOpenfundsFromAccounts(fundAccount, openfundsAccount),
+      fundId: fundPDA,
+      fundUri: `https://playground.glam.systems/products/${fundPDA}`,
+      ...this.getOpenfundsFromAccounts(fundAccount, openfundsAccount, [
+        firstShareClass,
+      ]),
     };
 
     fund.idStr = fundPDA.toBase58();
@@ -696,7 +767,13 @@ export class BaseClient {
   public async fetchFund(fundPDA: PublicKey): Promise<FundModel> {
     const fundAccount = await this.fetchFundAccount(fundPDA);
     const openfundsAccount = await this.fetchFundMetadataAccount(fundPDA);
-    return this.fundModelFromAccounts(fundPDA, fundAccount, openfundsAccount);
+    const firstShareClass = await this.fetchShareClassAccount(fundPDA, 0);
+    return this.fundModelFromAccounts(
+      fundPDA,
+      fundAccount,
+      openfundsAccount,
+      firstShareClass
+    );
   }
 
   public async fetchAllFunds(): Promise<FundModel[]> {
@@ -708,12 +785,33 @@ export class BaseClient {
       openfundsCache.set(of.publicKey.toBase58(), of.account);
     });
 
+    /* fetch first mint */
+    let mintCache = new Map<string, Mint>();
+    const connection = this.provider.connection;
+    const mintAddresses = (fundAccounts || [])
+      .map((f) => f.account.shareClasses[0])
+      .filter((addr) => !!addr);
+    const mintAccounts = await connection.getMultipleAccountsInfo(
+      mintAddresses
+    );
+    (mintAccounts || []).forEach((info, j) => {
+      const mintInfo = unpackMint(
+        mintAddresses[j],
+        info,
+        TOKEN_2022_PROGRAM_ID
+      );
+      mintCache.set(mintAddresses[j].toBase58(), mintInfo);
+    });
+
     const funds = (fundAccounts || []).map((f) =>
       this.fundModelFromAccounts(
         f.publicKey,
         f.account,
         openfundsCache.get(f.account.openfunds.toBase58()) ||
-          ({} as FundMetadataAccount)
+          ({} as FundMetadataAccount),
+        mintCache.get(
+          f.account.shareClasses[0] ? f.account.shareClasses[0].toBase58() : ""
+        ) || ({} as Mint)
       )
     );
 

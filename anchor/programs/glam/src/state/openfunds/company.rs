@@ -28,7 +28,7 @@ pub enum CompanyFieldName {
     AuditorName,
     CityofManCo,
     EmailAddressOfManCo, // impl
-    FundWebsiteofManCo,  // impl
+    FundWebsiteOfManCo,  // impl
     IsUNPRISignatory,
     PhoneCountryCodeofManCo,
     PhoneNumberofManCo,
