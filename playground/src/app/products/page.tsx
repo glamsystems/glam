@@ -3,7 +3,6 @@
 import { DataTable } from "./components/data-table";
 import { columns } from "./components/columns";
 import React from "react";
-import { testProducts } from "./data/testProducts";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";
 
@@ -14,7 +13,7 @@ export default function Products() {
     id: f.idStr,
     imageKey: f.imageKey,
     name: f.name,
-    symbol: "GLAM",
+    symbol: f.shareClasses[0]?.shareClassSymbol || "",
     baseAsset: f.fundCurrency,
     inception: f.fundLaunchDate,
     status: "active",
