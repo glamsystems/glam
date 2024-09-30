@@ -1,23 +1,29 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::Token;
 use anchor_spl::token_interface::TokenAccount;
+use drift::{MarketType, PositionDirection};
 
 use crate::error::ManagerError;
 use crate::state::*;
 
 use drift::cpi::accounts::{
-    DeleteUser, Deposit, InitializeUser, InitializeUserStats, UpdateUserCustomMarginRatio,
-    UpdateUserDelegate, UpdateUserMarginTradingEnabled, Withdraw,
+    CancelOrders, DeleteUser, Deposit, InitializeUser, InitializeUserStats, PlaceOrders,
+    UpdateUserCustomMarginRatio, UpdateUserDelegate, UpdateUserMarginTradingEnabled, Withdraw,
 };
 use drift::cpi::{
-    delete_user, deposit, initialize_user, initialize_user_stats, update_user_custom_margin_ratio,
-    update_user_delegate, update_user_margin_trading_enabled, withdraw,
+    cancel_orders, delete_user, deposit, initialize_user, initialize_user_stats, place_orders,
+    update_user_custom_margin_ratio, update_user_delegate, update_user_margin_trading_enabled,
+    withdraw,
 };
 use drift::program::Drift;
+pub use drift::OrderParams;
 
 #[derive(Accounts)]
 pub struct DriftInitialize<'info> {
-    #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
+    #[account(
+        has_one = manager @ ManagerError::NotAuthorizedError,
+        has_one = treasury @ ManagerError::NotAuthorizedError
+    )]
     pub fund: Account<'info, FundAccount>,
 
     #[account(mut)]
@@ -42,11 +48,6 @@ pub struct DriftInitialize<'info> {
 }
 
 pub fn drift_initialize_handler(ctx: Context<DriftInitialize>) -> Result<()> {
-    require!(
-        ctx.accounts.treasury.key() == ctx.accounts.fund.treasury,
-        ManagerError::NotAuthorizedError
-    );
-
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
         "treasury".as_bytes(),
@@ -94,7 +95,10 @@ pub fn drift_initialize_handler(ctx: Context<DriftInitialize>) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct DriftUpdate<'info> {
-    #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
+    #[account(
+        has_one = manager @ ManagerError::NotAuthorizedError,
+        has_one = treasury @ ManagerError::NotAuthorizedError,
+    )]
     pub fund: Account<'info, FundAccount>,
 
     #[account(mut)]
@@ -114,11 +118,6 @@ pub fn drift_update_user_custom_margin_ratio_handler(
     ctx: Context<DriftUpdate>,
     margin_ratio: u32,
 ) -> Result<()> {
-    require!(
-        ctx.accounts.treasury.key() == ctx.accounts.fund.treasury,
-        ManagerError::NotAuthorizedError
-    );
-
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
         "treasury".as_bytes(),
@@ -147,11 +146,6 @@ pub fn drift_update_user_margin_trading_enabled_handler(
     ctx: Context<DriftUpdate>,
     margin_trading_enabled: bool,
 ) -> Result<()> {
-    require!(
-        ctx.accounts.treasury.key() == ctx.accounts.fund.treasury,
-        ManagerError::NotAuthorizedError
-    );
-
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
         "treasury".as_bytes(),
@@ -206,7 +200,10 @@ pub fn drift_update_user_delegate_handler(
 
 #[derive(Accounts)]
 pub struct DriftDeposit<'info> {
-    #[account()]
+    #[account(
+        has_one = manager @ ManagerError::NotAuthorizedError,
+        has_one = treasury @ ManagerError::NotAuthorizedError
+    )]
     pub fund: Account<'info, FundAccount>,
 
     #[account(mut)]
@@ -223,7 +220,7 @@ pub struct DriftDeposit<'info> {
     pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
-    pub drift_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub drift_ata: Box<InterfaceAccount<'info, TokenAccount>>, // spot market vault
     #[account(mut)]
     pub treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
@@ -239,13 +236,9 @@ pub struct DriftDeposit<'info> {
 )]
 pub fn drift_deposit_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftDeposit<'info>>,
+    market_index: u16,
     amount: u64,
 ) -> Result<()> {
-    require!(
-        ctx.accounts.treasury.key() == ctx.accounts.fund.treasury,
-        ManagerError::NotAuthorizedError
-    );
-
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
         "treasury".as_bytes(),
@@ -254,7 +247,6 @@ pub fn drift_deposit_handler<'c: 'info, 'info>(
     ];
     let signer_seeds = &[&seeds[..]];
 
-    let market_index = 0u16;
     deposit(
         CpiContext::new_with_signer(
             ctx.accounts.drift_program.to_account_info(),
@@ -280,7 +272,10 @@ pub fn drift_deposit_handler<'c: 'info, 'info>(
 
 #[derive(Accounts)]
 pub struct DriftWithdraw<'info> {
-    #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
+    #[account(
+        has_one = manager @ ManagerError::NotAuthorizedError,
+        has_one = treasury @ ManagerError::NotAuthorizedError
+    )]
     pub fund: Account<'info, FundAccount>,
 
     #[account(mut)]
@@ -317,11 +312,6 @@ pub fn drift_withdraw_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftWithdraw<'info>>,
     amount: u64,
 ) -> Result<()> {
-    require!(
-        ctx.accounts.treasury.key() == ctx.accounts.fund.treasury,
-        ManagerError::NotAuthorizedError
-    );
-
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
         "treasury".as_bytes(),
@@ -357,7 +347,10 @@ pub fn drift_withdraw_handler<'c: 'info, 'info>(
 
 #[derive(Accounts)]
 pub struct DriftDeleteUser<'info> {
-    #[account(has_one = manager @ ManagerError::NotAuthorizedError)]
+    #[account(
+        has_one = manager @ ManagerError::NotAuthorizedError,
+        has_one = treasury @ ManagerError::NotAuthorizedError
+    )]
     pub fund: Account<'info, FundAccount>,
 
     #[account(mut)]
@@ -381,11 +374,6 @@ pub struct DriftDeleteUser<'info> {
 }
 
 pub fn drift_delete_user_handler(ctx: Context<DriftDeleteUser>) -> Result<()> {
-    require!(
-        ctx.accounts.treasury.key() == ctx.accounts.fund.treasury,
-        ManagerError::NotAuthorizedError
-    );
-
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
         "treasury".as_bytes(),
@@ -404,6 +392,126 @@ pub fn drift_delete_user_handler(ctx: Context<DriftDeleteUser>) -> Result<()> {
         },
         signer_seeds,
     ))?;
+
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct DriftPlaceOrders<'info> {
+    #[account(
+        has_one = manager @ ManagerError::NotAuthorizedError,
+        has_one = treasury @ ManagerError::NotAuthorizedError
+    )]
+    pub fund: Account<'info, FundAccount>,
+
+    #[account(mut)]
+    /// CHECK: checks are done inside cpi call
+    pub user: UncheckedAccount<'info>,
+
+    #[account(mut)]
+    /// CHECK: checks are done inside cpi call
+    pub state: UncheckedAccount<'info>,
+
+    #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
+
+    #[account(mut)]
+    manager: Signer<'info>,
+
+    pub drift_program: Program<'info, Drift>,
+    pub token_program: Program<'info, Token>,
+}
+
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftPlaceOrders)
+)]
+pub fn drift_place_orders_handler<'c: 'info, 'info>(
+    ctx: Context<'_, '_, 'c, 'info, DriftPlaceOrders<'info>>,
+    order_params: Vec<OrderParams>,
+) -> Result<()> {
+    let fund_key = ctx.accounts.fund.key();
+    let seeds = &[
+        "treasury".as_bytes(),
+        fund_key.as_ref(),
+        &[ctx.bumps.treasury],
+    ];
+    let signer_seeds = &[&seeds[..]];
+
+    place_orders(
+        CpiContext::new_with_signer(
+            ctx.accounts.drift_program.to_account_info(),
+            PlaceOrders {
+                user: ctx.accounts.user.to_account_info(),
+                state: ctx.accounts.state.to_account_info(),
+                authority: ctx.accounts.treasury.to_account_info(),
+            },
+            signer_seeds,
+        )
+        .with_remaining_accounts(ctx.remaining_accounts.to_vec()),
+        order_params,
+    )?;
+
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct DriftCancelOrders<'info> {
+    #[account(
+        has_one = manager @ ManagerError::NotAuthorizedError,
+        has_one = treasury @ ManagerError::NotAuthorizedError
+    )]
+    pub fund: Account<'info, FundAccount>,
+
+    #[account(mut)]
+    /// CHECK: checks are done inside cpi call
+    pub user: UncheckedAccount<'info>,
+
+    #[account(mut)]
+    /// CHECK: checks are done inside cpi call
+    pub state: UncheckedAccount<'info>,
+
+    #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
+
+    #[account(mut)]
+    manager: Signer<'info>,
+
+    pub drift_program: Program<'info, Drift>,
+    pub token_program: Program<'info, Token>,
+}
+
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftCancelOrders)
+)]
+pub fn drift_cancel_orders_handler<'c: 'info, 'info>(
+    ctx: Context<'_, '_, 'c, 'info, DriftCancelOrders<'info>>,
+    market_type: Option<MarketType>,
+    market_index: Option<u16>,
+    direction: Option<PositionDirection>,
+) -> Result<()> {
+    let fund_key = ctx.accounts.fund.key();
+    let seeds = &[
+        "treasury".as_bytes(),
+        fund_key.as_ref(),
+        &[ctx.bumps.treasury],
+    ];
+    let signer_seeds = &[&seeds[..]];
+
+    cancel_orders(
+        CpiContext::new_with_signer(
+            ctx.accounts.drift_program.to_account_info(),
+            CancelOrders {
+                user: ctx.accounts.user.to_account_info(),
+                state: ctx.accounts.state.to_account_info(),
+                authority: ctx.accounts.treasury.to_account_info(),
+            },
+            signer_seeds,
+        )
+        .with_remaining_accounts(ctx.remaining_accounts.to_vec()),
+        market_type,
+        market_index,
+        direction,
+    )?;
 
     Ok(())
 }
