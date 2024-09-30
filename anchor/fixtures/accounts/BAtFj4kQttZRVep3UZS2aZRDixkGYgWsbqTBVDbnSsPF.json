@@ -1,0 +1,14 @@
+{
+  "pubkey": "BAtFj4kQttZRVep3UZS2aZRDixkGYgWsbqTBVDbnSsPF",
+  "account": {
+    "lamports": 1823520,
+    "data": [
+      "IvEjY51+9M2XHQyryJjMHoB2Eq6pUa+Jj5v4KkT1g/vJZQFqePw+CgAC7w2Lb9os66QdoV1AldHaOSoNL47Qxse8D0z6yMKAtW2X80GdAwAAAFfW5AAAAAAA+P///+gG+WYAAAAA5wb5ZgAAAAAo9FehAwAAAMKMwQAAAAAA439xEQAAAAA=",
+      "base64"
+    ],
+    "owner": "G6EoTTTgpkNBtVXo96EQp2m6uwwVh2Kt6YidjkmQqoha",
+    "executable": false,
+    "rentEpoch": 18446744073709551615,
+    "space": 134
+  }
+}

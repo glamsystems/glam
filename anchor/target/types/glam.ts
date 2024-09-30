@@ -321,10 +321,6 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "userStats",
-          "writable": true
-        },
-        {
           "name": "state",
           "writable": true
         },
@@ -354,17 +350,6 @@ export type Glam = {
           "relations": [
             "fund"
           ]
-        },
-        {
-          "name": "treasuryAta",
-          "writable": true
-        },
-        {
-          "name": "driftAta",
-          "writable": true
-        },
-        {
-          "name": "driftSigner"
         },
         {
           "name": "manager",
@@ -577,6 +562,10 @@ export type Glam = {
           "type": "u16"
         },
         {
+          "name": "marketIndex",
+          "type": "u16"
+        },
+        {
           "name": "amount",
           "type": "u64"
         }
@@ -681,10 +670,6 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "userStats",
-          "writable": true
-        },
-        {
           "name": "state",
           "writable": true
         },
@@ -714,17 +699,6 @@ export type Glam = {
           "relations": [
             "fund"
           ]
-        },
-        {
-          "name": "treasuryAta",
-          "writable": true
-        },
-        {
-          "name": "driftAta",
-          "writable": true
-        },
-        {
-          "name": "driftSigner"
         },
         {
           "name": "manager",

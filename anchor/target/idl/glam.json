@@ -1,5 +1,5 @@
 {
-  "address": "GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP",
+  "address": "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc",
   "metadata": {
     "name": "glam",
     "version": "0.3.0",
@@ -315,10 +315,6 @@
           "writable": true
         },
         {
-          "name": "user_stats",
-          "writable": true
-        },
-        {
           "name": "state",
           "writable": true
         },
@@ -348,17 +344,6 @@
           "relations": [
             "fund"
           ]
-        },
-        {
-          "name": "treasury_ata",
-          "writable": true
-        },
-        {
-          "name": "drift_ata",
-          "writable": true
-        },
-        {
-          "name": "drift_signer"
         },
         {
           "name": "manager",
@@ -571,6 +556,10 @@
           "type": "u16"
         },
         {
+          "name": "market_index",
+          "type": "u16"
+        },
+        {
           "name": "amount",
           "type": "u64"
         }
@@ -675,10 +664,6 @@
           "writable": true
         },
         {
-          "name": "user_stats",
-          "writable": true
-        },
-        {
           "name": "state",
           "writable": true
         },
@@ -708,17 +693,6 @@
           "relations": [
             "fund"
           ]
-        },
-        {
-          "name": "treasury_ata",
-          "writable": true
-        },
-        {
-          "name": "drift_ata",
-          "writable": true
-        },
-        {
-          "name": "drift_signer"
         },
         {
           "name": "manager",

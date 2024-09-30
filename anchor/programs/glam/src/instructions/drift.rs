@@ -220,7 +220,7 @@ pub struct DriftDeposit<'info> {
     pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
-    pub drift_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub drift_ata: Box<InterfaceAccount<'info, TokenAccount>>, // spot market vault
     #[account(mut)]
     pub treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
@@ -236,6 +236,7 @@ pub struct DriftDeposit<'info> {
 )]
 pub fn drift_deposit_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftDeposit<'info>>,
+    market_index: u16,
     amount: u64,
 ) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
@@ -246,7 +247,6 @@ pub fn drift_deposit_handler<'c: 'info, 'info>(
     ];
     let signer_seeds = &[&seeds[..]];
 
-    let market_index = 0u16;
     deposit(
         CpiContext::new_with_signer(
             ctx.accounts.drift_program.to_account_info(),
@@ -407,22 +407,13 @@ pub struct DriftPlaceOrders<'info> {
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
     pub user: UncheckedAccount<'info>,
-    #[account(mut)]
-    /// CHECK: checks are done inside cpi call
-    pub user_stats: UncheckedAccount<'info>,
+
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
     pub state: UncheckedAccount<'info>,
 
     #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
-
-    #[account(mut)]
-    pub treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
-    #[account(mut)]
-    pub drift_ata: Box<InterfaceAccount<'info, TokenAccount>>,
-    /// CHECK: checks are done inside cpi call
-    pub drift_signer: UncheckedAccount<'info>,
 
     #[account(mut)]
     manager: Signer<'info>,
@@ -474,22 +465,13 @@ pub struct DriftCancelOrders<'info> {
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
     pub user: UncheckedAccount<'info>,
-    #[account(mut)]
-    /// CHECK: checks are done inside cpi call
-    pub user_stats: UncheckedAccount<'info>,
+
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
     pub state: UncheckedAccount<'info>,
 
     #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
-
-    #[account(mut)]
-    pub treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
-    #[account(mut)]
-    pub drift_ata: Box<InterfaceAccount<'info, TokenAccount>>,
-    /// CHECK: checks are done inside cpi call
-    pub drift_signer: UncheckedAccount<'info>,
 
     #[account(mut)]
     manager: Signer<'info>,
