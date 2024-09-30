@@ -1,16 +1,17 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::Token;
 use anchor_spl::token_interface::TokenAccount;
+use drift::{MarketType, PositionDirection};
 
 use crate::error::ManagerError;
 use crate::state::*;
 
 use drift::cpi::accounts::{
-    DeleteUser, Deposit, InitializeUser, InitializeUserStats, PlaceOrders,
+    CancelOrders, DeleteUser, Deposit, InitializeUser, InitializeUserStats, PlaceOrders,
     UpdateUserCustomMarginRatio, UpdateUserDelegate, UpdateUserMarginTradingEnabled, Withdraw,
 };
 use drift::cpi::{
-    delete_user, deposit, initialize_user, initialize_user_stats, place_orders,
+    cancel_orders, delete_user, deposit, initialize_user, initialize_user_stats, place_orders,
     update_user_custom_margin_ratio, update_user_delegate, update_user_margin_trading_enabled,
     withdraw,
 };
@@ -457,6 +458,77 @@ pub fn drift_place_orders_handler<'c: 'info, 'info>(
         )
         .with_remaining_accounts(ctx.remaining_accounts.to_vec()),
         order_params,
+    )?;
+
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct DriftCancelOrders<'info> {
+    #[account(
+        has_one = manager @ ManagerError::NotAuthorizedError,
+        has_one = treasury @ ManagerError::NotAuthorizedError
+    )]
+    pub fund: Account<'info, FundAccount>,
+
+    #[account(mut)]
+    /// CHECK: checks are done inside cpi call
+    pub user: UncheckedAccount<'info>,
+    #[account(mut)]
+    /// CHECK: checks are done inside cpi call
+    pub user_stats: UncheckedAccount<'info>,
+    #[account(mut)]
+    /// CHECK: checks are done inside cpi call
+    pub state: UncheckedAccount<'info>,
+
+    #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
+
+    #[account(mut)]
+    pub treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    #[account(mut)]
+    pub drift_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    /// CHECK: checks are done inside cpi call
+    pub drift_signer: UncheckedAccount<'info>,
+
+    #[account(mut)]
+    manager: Signer<'info>,
+
+    pub drift_program: Program<'info, Drift>,
+    pub token_program: Program<'info, Token>,
+}
+
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftCancelOrders)
+)]
+pub fn drift_cancel_orders_handler<'c: 'info, 'info>(
+    ctx: Context<'_, '_, 'c, 'info, DriftCancelOrders<'info>>,
+    market_type: Option<MarketType>,
+    market_index: Option<u16>,
+    direction: Option<PositionDirection>,
+) -> Result<()> {
+    let fund_key = ctx.accounts.fund.key();
+    let seeds = &[
+        "treasury".as_bytes(),
+        fund_key.as_ref(),
+        &[ctx.bumps.treasury],
+    ];
+    let signer_seeds = &[&seeds[..]];
+
+    cancel_orders(
+        CpiContext::new_with_signer(
+            ctx.accounts.drift_program.to_account_info(),
+            CancelOrders {
+                user: ctx.accounts.user.to_account_info(),
+                state: ctx.accounts.state.to_account_info(),
+                authority: ctx.accounts.treasury.to_account_info(),
+            },
+            signer_seeds,
+        )
+        .with_remaining_accounts(ctx.remaining_accounts.to_vec()),
+        market_type,
+        market_index,
+        direction,
     )?;
 
     Ok(())

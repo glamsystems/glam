@@ -301,6 +301,118 @@ export type Glam = {
       "args": []
     },
     {
+      "name": "driftCancelOrders",
+      "discriminator": [
+        98,
+        107,
+        48,
+        79,
+        97,
+        60,
+        99,
+        58
+      ],
+      "accounts": [
+        {
+          "name": "fund"
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "userStats",
+          "writable": true
+        },
+        {
+          "name": "state",
+          "writable": true
+        },
+        {
+          "name": "treasury",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          },
+          "relations": [
+            "fund"
+          ]
+        },
+        {
+          "name": "treasuryAta",
+          "writable": true
+        },
+        {
+          "name": "driftAta",
+          "writable": true
+        },
+        {
+          "name": "driftSigner"
+        },
+        {
+          "name": "manager",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "fund"
+          ]
+        },
+        {
+          "name": "driftProgram",
+          "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "marketType",
+          "type": {
+            "option": {
+              "defined": {
+                "name": "marketType"
+              }
+            }
+          }
+        },
+        {
+          "name": "marketIndex",
+          "type": {
+            "option": "u16"
+          }
+        },
+        {
+          "name": "direction",
+          "type": {
+            "option": {
+              "defined": {
+                "name": "positionDirection"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "driftDeleteUser",
       "discriminator": [
         179,
@@ -3840,8 +3952,58 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "notAuthorized",
-      "msg": "Signer is not authorized"
+      "name": "fundNotActive",
+      "msg": "Fund is not active"
+    },
+    {
+      "code": 6001,
+      "name": "invalidShareClass",
+      "msg": "Share class not allowed to subscribe"
+    },
+    {
+      "code": 6002,
+      "name": "invalidAssetSubscribe",
+      "msg": "Asset not allowed to subscribe"
+    },
+    {
+      "code": 6003,
+      "name": "invalidPricingOracle",
+      "msg": "Invalid oracle for asset price"
+    },
+    {
+      "code": 6004,
+      "name": "invalidRemainingAccounts",
+      "msg": "Invalid accounts: the transaction is malformed"
+    },
+    {
+      "code": 6005,
+      "name": "invalidTreasuryAccount",
+      "msg": "Invalid treasury ata"
+    },
+    {
+      "code": 6006,
+      "name": "invalidSignerAccount",
+      "msg": "Invalid signer ata"
+    },
+    {
+      "code": 6007,
+      "name": "invalidAssetPrice",
+      "msg": "Invalid asset price"
+    },
+    {
+      "code": 6008,
+      "name": "invalidStableCoinPriceForSubscribe",
+      "msg": "Subscription not allowed: invalid stable coin price"
+    },
+    {
+      "code": 6009,
+      "name": "subscribeRedeemPaused",
+      "msg": "Fund is paused for subscription and redemption"
+    },
+    {
+      "code": 6010,
+      "name": "invalidPolicyAccount",
+      "msg": "Policy account is mandatory"
     }
   ],
   "types": [

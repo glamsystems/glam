@@ -9,6 +9,8 @@ use crate::instructions::*;
 pub use constants::*;
 pub use state::model::*;
 
+use ::drift::{MarketType, OrderParams, PositionDirection};
+
 #[cfg(feature = "mainnet")]
 declare_id!("GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP");
 
@@ -18,7 +20,7 @@ declare_id!("Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc");
 #[program]
 pub mod glam {
 
-    use ::drift::OrderParams;
+    // use ::drift::{MarketType, OrderParams, PositionDirection};
 
     use super::*;
 
@@ -132,6 +134,15 @@ pub mod glam {
         order_params: Vec<OrderParams>,
     ) -> Result<()> {
         drift::drift_place_orders_handler(ctx, order_params)
+    }
+
+    pub fn drift_cancel_orders<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, DriftCancelOrders<'info>>,
+        market_type: Option<MarketType>,
+        market_index: Option<u16>,
+        direction: Option<PositionDirection>,
+    ) -> Result<()> {
+        drift::drift_cancel_orders_handler(ctx, market_type, market_index, direction)
     }
 
     //
