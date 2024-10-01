@@ -113,7 +113,7 @@ export class JupiterClient {
     const outputMint = new PublicKey(
       quoteParams?.outputMint || quoteResponse!.outputMint
     );
-    const amount = new BN(quoteParams?.amount || quoteResponse?.inAmount);
+    const amount = new BN(quoteParams?.amount || quoteResponse!.inAmount);
 
     if (swapInstructions === undefined) {
       // Fetch quoteResponse if not specified - quoteParams must be specified in this case
