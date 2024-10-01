@@ -153,7 +153,6 @@ export function GlamProvider({
   // all funds
   const { data: allFundsData } = useQuery({
     queryKey: ["/funds"],
-    enabled: !!wallet.publicKey,
     queryFn: () => glamClient.fetchAllFunds(),
   });
   useEffect(() => {
