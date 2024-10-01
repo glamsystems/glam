@@ -309,6 +309,7 @@ export class DriftClient {
         user,
         userStats,
         state,
+        //@ts-ignore IDL ts type is unhappy
         manager,
       })
       .remainingAccounts(ACCOUNTS_FOR_DEPOSIT_WITHDRAW.SOL.remainingAccounts)
@@ -345,6 +346,7 @@ export class DriftClient {
         user,
         userStats,
         state,
+        //@ts-ignore IDL ts type is unhappy
         manager,
         driftSigner: DRIFT_VAULT,
       })
@@ -374,6 +376,7 @@ export class DriftClient {
         fund,
         user,
         state,
+        //@ts-ignore IDL ts type is unhappy
         manager,
       })
       .remainingAccounts(remainingAccountsForOrders)
@@ -404,6 +407,7 @@ export class DriftClient {
         fund,
         user,
         state,
+        //@ts-ignore IDL ts type is unhappy
         manager,
       })
       .remainingAccounts(remainingAccountsForOrders)
