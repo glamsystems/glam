@@ -658,6 +658,8 @@ export class BaseClient {
   ): any {
     let shareClasses = openfundsAccount.shareClasses.map((shareClass, i) => {
       let shareClassSymbol;
+      let shareClassSupply;
+      let shareClassDecimals;
       let shareClassCurrencyId;
       let hasPermanentDelegate;
 
@@ -674,6 +676,8 @@ export class BaseClient {
         );
 
         shareClassSymbol = metadata?.symbol;
+        shareClassSupply = mint.supply;
+        shareClassDecimals = mint.decimals;
         hasPermanentDelegate = permanentDelegate ? "yes" : "no";
       }
 
@@ -687,6 +691,8 @@ export class BaseClient {
         // custom share class fields
         shareClassId: fundAccount.shareClasses[i].toBase58(),
         shareClassSymbol,
+        shareClassSupply,
+        shareClassDecimals,
         shareClassCurrencyId,
         hasPermanentDelegate,
         ...remapped,
@@ -745,6 +751,8 @@ export class BaseClient {
     let fund = {
       ...fundModel,
       fundId: fundPDA,
+      treasuryId: fundAccount.treasury.toBase58(),
+      openfundsMetadataId: fundAccount.openfunds.toBase58(),
       fundUri: `https://playground.glam.systems/products/${fundPDA}`,
       ...this.getOpenfundsFromAccounts(fundAccount, openfundsAccount, [
         firstShareClass,
