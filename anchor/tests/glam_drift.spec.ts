@@ -1,16 +1,11 @@
 import * as anchor from "@coral-xyz/anchor";
-import { GlamClient, GlamProgram, WSOL } from "../src";
+import { GlamClient, GlamProgram } from "../src";
 import { createFundForTest } from "./setup";
 import {
-  DRIFT_PROGRAM_ID,
-  getDriftStateAccountPublicKey,
   getOrderParams,
-  getUserAccountPublicKey,
-  getUserStatsAccountPublicKey,
   MarketType,
   OrderType,
   PositionDirection,
-  PublicKey,
 } from "@drift-labs/sdk";
 
 describe("glam_drift", () => {
@@ -23,48 +18,7 @@ describe("glam_drift", () => {
   const program = anchor.workspace.Glam as GlamProgram;
   const commitment = "confirmed";
 
-  const remainingAccountsForDeposit = [
-    {
-      pubkey: new PublicKey("BAtFj4kQttZRVep3UZS2aZRDixkGYgWsbqTBVDbnSsPF"), // sol pricing oracle
-      isSigner: false,
-      isWritable: false,
-    },
-    {
-      pubkey: new PublicKey("3x85u7SWkmmr7YQGYhtjARgxwegTLJgkSLRprfXod6rh"), // sol spot market account
-      isSigner: false,
-      isWritable: true,
-    },
-  ];
-  const remainingAccountsForOrders = [
-    {
-      pubkey: new PublicKey("BAtFj4kQttZRVep3UZS2aZRDixkGYgWsbqTBVDbnSsPF"), // sol pricing oracle
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: new PublicKey("En8hkHLkRe9d9DraYmBTrus518BvmVH448YcvmrFM6Ce"), // usdc pricing oracle
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: new PublicKey("3x85u7SWkmmr7YQGYhtjARgxwegTLJgkSLRprfXod6rh"), // sol spot market account
-      isWritable: true,
-      isSigner: false,
-    },
-    {
-      pubkey: new PublicKey("6gMq3mRCKf8aP3ttTyYhuijVZ2LGi14oDsBbkgubfLB3"), // usdc spot market
-      isWritable: true,
-      isSigner: false,
-    },
-    {
-      pubkey: new PublicKey("8UJgxaiQx5nTrdDgph5FiahMmzduuLTLf5WmsPegYA6W"), // sol perp market account
-      isWritable: true,
-      isSigner: false,
-    },
-  ];
-
   let fundPDA, treasuryPDA, sharePDA;
-  let driftUser, driftUserStats, driftState;
 
   it("Create and initialize fund", async () => {
     const fundData = await createFundForTest();
@@ -75,44 +29,6 @@ describe("glam_drift", () => {
     const fund = await program.account.fundAccount.fetch(fundPDA);
     expect(fund.shareClasses.length).toEqual(1);
     expect(fund.name).toEqual("Glam Fund SOL-mSOL");
-  });
-
-  it("Drift initialize", async () => {
-    try {
-      const txId = await glamClient.drift.initialize(fundPDA);
-      console.log("driftInitialize", txId);
-    } catch (e) {
-      console.error(e);
-      throw e;
-    }
-
-    driftUser = await getUserAccountPublicKey(
-      new PublicKey(DRIFT_PROGRAM_ID),
-      treasuryPDA,
-      0
-    );
-    driftUserStats = await getUserStatsAccountPublicKey(
-      new PublicKey(DRIFT_PROGRAM_ID),
-      treasuryPDA
-    );
-    driftState = await getDriftStateAccountPublicKey(
-      new PublicKey(DRIFT_PROGRAM_ID)
-    );
-  });
-
-  it("Drift: update trader", async () => {
-    const trader = manager;
-    try {
-      const txId = await glamClient.drift.updateUserDelegate(
-        fundPDA,
-        0,
-        trader
-      );
-      console.log("driftUpdateUserDelegate", txId);
-    } catch (e) {
-      console.error(e);
-      throw e;
-    }
   });
 
   it("Airdrop 10 SOL to treasury and wrap it", async () => {
@@ -139,32 +55,47 @@ describe("glam_drift", () => {
     }
   });
 
-  it("Drift: deposit 10 SOL to trading account", async () => {
-    const treasuryAta = glamClient.getTreasuryAta(fundPDA, WSOL);
-    console.log("treasuryAta wSOL:", treasuryAta.toBase58());
+  it("Drift initialize", async () => {
+    try {
+      const txId = await glamClient.drift.initialize(fundPDA);
+      console.log("driftInitialize", txId);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  });
 
-    const amount = new anchor.BN(1_000_000_000);
-    const spotMarketVaultSol = new PublicKey(
-      "DfYCNezifxAEsQbAJ1b3j6PX3JVBe8fu11KBhxsbw5d2"
-    );
+  it("Drift: update trader", async () => {
+    const trader = manager;
+    try {
+      const txId = await glamClient.drift.updateUserDelegate(fundPDA, trader);
+      console.log("driftUpdateUserDelegate", txId);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  });
+
+  it("Drift: deposit 10 SOL to trading account", async () => {
+    const amount = new anchor.BN(10_000_000_000);
 
     try {
-      // SOL spot market index is 1
-      const txId = await program.methods
-        .driftDeposit(0, 1, amount) // subaccount_id: 0, market_index: 1
-        .accounts({
-          fund: fundPDA,
-          treasuryAta,
-          driftAta: spotMarketVaultSol,
-          userStats: driftUserStats,
-          user: driftUser,
-          state: driftState,
-          manager,
-        })
-        .remainingAccounts(remainingAccountsForDeposit)
-        .rpc({ commitment });
+      const txId = await glamClient.drift.deposit(fundPDA, amount);
 
       console.log("driftDeposit", txId);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  });
+
+  it("Drift: withdraw 1 SOL to trading account", async () => {
+    const amount = new anchor.BN(1_000_000_000);
+
+    try {
+      const txId = await glamClient.drift.withdraw(fundPDA, amount);
+
+      console.log("driftWithdraw", txId);
     } catch (e) {
       console.error(e);
       throw e;
@@ -182,17 +113,7 @@ describe("glam_drift", () => {
     });
 
     try {
-      const txId = await program.methods
-        .driftPlaceOrders([orderParams])
-        .accounts({
-          fund: fundPDA,
-          user: driftUser,
-          state: driftState,
-          manager,
-        })
-        .remainingAccounts(remainingAccountsForOrders)
-        .rpc({ commitment });
-
+      const txId = await glamClient.drift.placeOrders(fundPDA, [orderParams]);
       console.log("driftPlaceOrders", txId);
     } catch (e) {
       console.error(e);
@@ -203,16 +124,12 @@ describe("glam_drift", () => {
   it("Drift: cancel orders", async () => {
     try {
       // SOL perp market index is 0
-      const txId = await program.methods
-        .driftCancelOrders(MarketType.PERP, 0, PositionDirection.LONG)
-        .accounts({
-          fund: fundPDA,
-          user: driftUser,
-          state: driftState,
-          manager,
-        })
-        .remainingAccounts(remainingAccountsForOrders)
-        .rpc({ commitment });
+      const txId = await glamClient.drift.cancelOrders(
+        fundPDA,
+        MarketType.PERP,
+        0,
+        PositionDirection.LONG
+      );
 
       console.log("driftCancelOrders", txId);
     } catch (e) {
