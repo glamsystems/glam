@@ -113,7 +113,7 @@ export class JupiterClient {
     const outputMint = new PublicKey(
       quoteParams?.outputMint || quoteResponse!.outputMint
     );
-    const amount = new BN(quoteParams?.amount || quoteResponse?.inAmount);
+    const amount = new BN(quoteParams?.amount || quoteResponse!.inAmount);
 
     if (swapInstructions === undefined) {
       // Fetch quoteResponse if not specified - quoteParams must be specified in this case
@@ -253,13 +253,13 @@ export class JupiterClient {
       const solBalance = new BN(
         await this.base.provider.connection.getBalance(treasuryPda)
       );
-      const delta = amount - wsolBalance;
+      const delta = amount.sub(wsolBalance);
       if (solBalance < delta) {
         throw new Error(
           `Insufficient balance in treasury (${treasuryPda.toBase58()}) for swap. solBalance: ${solBalance}, lamports needed: ${delta}`
         );
       }
-      if (delta > 0 && solBalance > delta) {
+      if (delta > new BN(0) && solBalance > delta) {
         preInstructions.push(
           await this.base.program.methods
             .wsolWrap(new BN(amount))

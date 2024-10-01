@@ -1,7 +1,5 @@
-import * as anchor from "@coral-xyz/anchor";
 import { BN } from "@coral-xyz/anchor";
 import {
-  Keypair,
   PublicKey,
   SystemProgram,
   TransactionInstruction,
@@ -11,7 +9,6 @@ import {
 import {
   getAssociatedTokenAddressSync,
   createAssociatedTokenAccountInstruction,
-  TOKEN_2022_PROGRAM_ID,
   createSyncNativeInstruction,
 } from "@solana/spl-token";
 
@@ -145,8 +142,8 @@ export class InvestorClient {
         signerAssetAtaExists = false;
       }
       const solBalance = new BN(String(await connection.getBalance(signer)));
-      const delta = amount - wsolBalance;
-      if (delta > 0 && solBalance > delta) {
+      const delta = amount.sub(wsolBalance);
+      if (delta > new BN(0) && solBalance > delta) {
         if (!signerAssetAtaExists) {
           preInstructions = preInstructions.concat([
             createAssociatedTokenAccountInstruction(
@@ -161,7 +158,7 @@ export class InvestorClient {
           SystemProgram.transfer({
             fromPubkey: signer,
             toPubkey: signerAssetAta,
-            lamports: delta,
+            lamports: delta.toNumber(),
           }),
           createSyncNativeInstruction(signerAssetAta),
         ]);
