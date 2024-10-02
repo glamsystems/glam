@@ -8,8 +8,9 @@ import {
 } from "@solana/web3.js";
 import {
   getAssociatedTokenAddressSync,
-  createAssociatedTokenAccountInstruction,
+  createAssociatedTokenAccountIdempotentInstruction,
   createSyncNativeInstruction,
+  TOKEN_2022_PROGRAM_ID,
 } from "@solana/spl-token";
 
 import { BaseClient, ApiTxOptions } from "./base";
@@ -128,32 +129,43 @@ export class InvestorClient {
 
     // SOL -> wSOL
     // If the user doesn't have enough wSOL but does have SOL, we auto wrap
-    let preInstructions: TransactionInstruction[] = [];
+    let preInstructions: TransactionInstruction[] = [
+      createAssociatedTokenAccountIdempotentInstruction(
+        signer,
+        signerAssetAta,
+        signer,
+        asset,
+        assetMeta?.programId
+      ),
+      createAssociatedTokenAccountIdempotentInstruction(
+        signer,
+        treasuryAta,
+        treasury,
+        asset,
+        assetMeta?.programId
+      ),
+      createAssociatedTokenAccountIdempotentInstruction(
+        signer,
+        signerShareAta,
+        signer,
+        shareClass,
+        TOKEN_2022_PROGRAM_ID
+      ),
+    ];
+
     if (WSOL.equals(asset)) {
       const connection = this.base.provider.connection;
       let wsolBalance = new BN(0);
-      let signerAssetAtaExists = true;
       try {
         wsolBalance = new BN(
           (await connection.getTokenAccountBalance(signerAssetAta)).value.amount
         );
       } catch (err) {
         // ignore
-        signerAssetAtaExists = false;
       }
-      const solBalance = new BN(String(await connection.getBalance(signer)));
+      // const solBalance = new BN(String(await connection.getBalance(signer)));
       const delta = amount.sub(wsolBalance);
-      if (delta > new BN(0) && solBalance > delta) {
-        if (!signerAssetAtaExists) {
-          preInstructions = preInstructions.concat([
-            createAssociatedTokenAccountInstruction(
-              signer,
-              signerAssetAta,
-              signer,
-              asset
-            ),
-          ]);
-        }
+      if (delta.gt(new BN(0)) /*&& solBalance > delta*/) {
         preInstructions = preInstructions.concat([
           SystemProgram.transfer({
             fromPubkey: signer,
@@ -163,24 +175,6 @@ export class InvestorClient {
           createSyncNativeInstruction(signerAssetAta),
         ]);
       }
-    }
-
-    // Treasury ATA
-    // If the treasury ATA doesn't exist, create it.
-    // This is unlikely, but especially with wSOL may happen.
-    const accountInfo = await this.base.provider.connection.getAccountInfo(
-      treasuryAta
-    );
-    if (!accountInfo) {
-      preInstructions = preInstructions.concat([
-        createAssociatedTokenAccountInstruction(
-          signer,
-          treasuryAta,
-          treasury,
-          asset,
-          assetMeta?.programId
-        ),
-      ]);
     }
 
     const tx = await this.base.program.methods
@@ -261,12 +255,7 @@ export class InvestorClient {
             assetMeta?.programId
           );
 
-          const accountInfo =
-            await this.base.provider.connection.getAccountInfo(signerAta);
-          if (accountInfo) {
-            return null;
-          }
-          return createAssociatedTokenAccountInstruction(
+          return createAssociatedTokenAccountIdempotentInstruction(
             signer,
             signerAta,
             signer,

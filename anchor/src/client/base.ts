@@ -75,7 +75,9 @@ export class BaseClient {
       this.program = new Program(GlamIDL, this.provider) as GlamProgram;
     } else {
       const defaultProvider = anchor.AnchorProvider.env();
-      const url = defaultProvider.connection.rpcEndpoint;
+      const url =
+        process.env.ANCHOR_PROVIDER_URL ||
+        defaultProvider.connection.rpcEndpoint;
       const connection = new Connection(url, {
         commitment: "confirmed",
         confirmTransactionInitialTimeout: 45000, // default timeout is 30s, we extend it to 45s
