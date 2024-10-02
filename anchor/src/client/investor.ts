@@ -239,6 +239,18 @@ export class InvestorClient {
       ];
     });
 
+    const tickets = (await this.base.getTickets(fund)).map(
+      (ticket) => ticket.address
+    );
+    const stakes = await this.base.getStakeAccounts(fund);
+    remainingAccounts.push(
+      ...tickets.concat(stakes).map((address) => ({
+        pubkey: address,
+        isSigner: false,
+        isWritable: false,
+      }))
+    );
+
     const preInstructions = (
       await Promise.all(
         (fundModel.assets || []).map(async (asset: any, j: number) => {
