@@ -41,8 +41,7 @@ pub struct Subscribe<'info> {
     pub share_class: Box<InterfaceAccount<'info, Mint>>, // mint
 
     #[account(
-      init_if_needed,
-      payer = signer,
+      mut,
       associated_token::mint = share_class,
       associated_token::authority = signer,
       associated_token::token_program = token_2022_program
