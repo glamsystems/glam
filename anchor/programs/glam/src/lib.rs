@@ -111,7 +111,6 @@ pub mod glam {
 
     pub fn drift_deposit<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, DriftDeposit<'info>>,
-        _sub_account_id: u16,
         market_index: u16,
         amount: u64,
     ) -> Result<()> {
@@ -120,10 +119,10 @@ pub mod glam {
 
     pub fn drift_withdraw<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, DriftWithdraw<'info>>,
-        _sub_account_id: u16,
+        market_index: u16,
         amount: u64,
     ) -> Result<()> {
-        drift::drift_withdraw_handler(ctx, amount)
+        drift::drift_withdraw_handler(ctx, market_index, amount)
     }
 
     pub fn drift_delete_user(ctx: Context<DriftDeleteUser>, _sub_account_id: u16) -> Result<()> {

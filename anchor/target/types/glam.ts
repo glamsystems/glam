@@ -558,10 +558,6 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "subAccountId",
-          "type": "u16"
-        },
-        {
           "name": "marketIndex",
           "type": "u16"
         },
@@ -1028,7 +1024,7 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "subAccountId",
+          "name": "marketIndex",
           "type": "u16"
         },
         {

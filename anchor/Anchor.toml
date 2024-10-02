@@ -85,37 +85,29 @@ program = "fixtures/programs/drift.so"
 address = "5zpq7DvB6UdFFvpmBPspGPNfUGoBRRCE2HHg5u3gxcsN"
 filename = "./fixtures/accounts/drift/5zpq7DvB6UdFFvpmBPspGPNfUGoBRRCE2HHg5u3gxcsN.json"
 
-[[test.validator.account]]
+[[test.validator.account]] # sol price oracle
 address = "BAtFj4kQttZRVep3UZS2aZRDixkGYgWsbqTBVDbnSsPF"
-filename = "./fixtures/accounts/BAtFj4kQttZRVep3UZS2aZRDixkGYgWsbqTBVDbnSsPF.json"
+filename = "./fixtures/accounts/drift/BAtFj4kQttZRVep3UZS2aZRDixkGYgWsbqTBVDbnSsPF.json"
 
-[[test.validator.account]]
+[[test.validator.account]] # sol spot market account
 address = "3x85u7SWkmmr7YQGYhtjARgxwegTLJgkSLRprfXod6rh"
-filename = "./fixtures/accounts/3x85u7SWkmmr7YQGYhtjARgxwegTLJgkSLRprfXod6rh.json"
+filename = "./fixtures/accounts/drift/3x85u7SWkmmr7YQGYhtjARgxwegTLJgkSLRprfXod6rh.json"
 
-[[test.validator.account]]
+[[test.validator.account]] # sol spot market vault
 address = "DfYCNezifxAEsQbAJ1b3j6PX3JVBe8fu11KBhxsbw5d2"
-filename = "./fixtures/accounts/DfYCNezifxAEsQbAJ1b3j6PX3JVBe8fu11KBhxsbw5d2.json"
+filename = "./fixtures/accounts/drift/DfYCNezifxAEsQbAJ1b3j6PX3JVBe8fu11KBhxsbw5d2.json"
 
-[[test.validator.account]]
-address = "GyyHYVCrZGc2AQPuvNbcP1babmU3L42ptmxZthUfD9q"
-filename = "./fixtures/accounts/GyyHYVCrZGc2AQPuvNbcP1babmU3L42ptmxZthUfD9q.json"
-
-[[test.validator.account]]
-address = "HpMoKp3TCd3QT4MWYUKk2zCBwmhr5Df45fB6wdxYqEeh"
-filename = "./fixtures/accounts/HpMoKp3TCd3QT4MWYUKk2zCBwmhr5Df45fB6wdxYqEeh.json"
-
-[[test.validator.account]]
+[[test.validator.account]] # sol perp market account
 address = "8UJgxaiQx5nTrdDgph5FiahMmzduuLTLf5WmsPegYA6W"
-filename = "./fixtures/accounts/8UJgxaiQx5nTrdDgph5FiahMmzduuLTLf5WmsPegYA6W.json"
+filename = "./fixtures/accounts/drift/8UJgxaiQx5nTrdDgph5FiahMmzduuLTLf5WmsPegYA6W.json"
 
-[[test.validator.account]]
+[[test.validator.account]] # usdc pricing oracle
 address = "En8hkHLkRe9d9DraYmBTrus518BvmVH448YcvmrFM6Ce"
-filename = "./fixtures/accounts/En8hkHLkRe9d9DraYmBTrus518BvmVH448YcvmrFM6Ce.json"
+filename = "./fixtures/accounts/drift/En8hkHLkRe9d9DraYmBTrus518BvmVH448YcvmrFM6Ce.json"
 
-[[test.validator.account]]
+[[test.validator.account]] # usdc spot market account
 address = "6gMq3mRCKf8aP3ttTyYhuijVZ2LGi14oDsBbkgubfLB3"
-filename = "./fixtures/accounts/6gMq3mRCKf8aP3ttTyYhuijVZ2LGi14oDsBbkgubfLB3.json"
+filename = "./fixtures/accounts/drift/6gMq3mRCKf8aP3ttTyYhuijVZ2LGi14oDsBbkgubfLB3.json"
 
 #
 # Marinade

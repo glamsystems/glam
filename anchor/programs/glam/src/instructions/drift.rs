@@ -310,6 +310,7 @@ pub struct DriftWithdraw<'info> {
 )]
 pub fn drift_withdraw_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftWithdraw<'info>>,
+    market_index: u16,
     amount: u64,
 ) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
@@ -320,7 +321,6 @@ pub fn drift_withdraw_handler<'c: 'info, 'info>(
     ];
     let signer_seeds = &[&seeds[..]];
 
-    let market_index = 0u16;
     withdraw(
         CpiContext::new_with_signer(
             ctx.accounts.drift_program.to_account_info(),
