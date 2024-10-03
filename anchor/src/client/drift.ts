@@ -11,34 +11,18 @@ import {
   getUserStatsAccountPublicKey,
   MarketType,
   OrderParams,
+  DriftClient as _DriftClient,
+  initialize as _initialize,
   PositionDirection,
+  BulkAccountLoader,
 } from "@drift-labs/sdk";
 
 import { BaseClient, ApiTxOptions } from "./base";
-import { WSOL } from "../constants";
 
 const DRIFT_VAULT = new PublicKey(
   "JCNCMFXo5M5qwUPg2Utu1u6YWp3MbygxqBsBeXXJfrw"
 );
-const ACCOUNTS_FOR_DEPOSIT_WITHDRAW = {
-  SOL: {
-    spotMarketVault: new PublicKey(
-      "DfYCNezifxAEsQbAJ1b3j6PX3JVBe8fu11KBhxsbw5d2"
-    ),
-    remainingAccounts: [
-      {
-        pubkey: new PublicKey("BAtFj4kQttZRVep3UZS2aZRDixkGYgWsbqTBVDbnSsPF"), // sol pricing oracle
-        isSigner: false,
-        isWritable: false,
-      },
-      {
-        pubkey: new PublicKey("3x85u7SWkmmr7YQGYhtjARgxwegTLJgkSLRprfXod6rh"), // sol spot market account
-        isSigner: false,
-        isWritable: true,
-      },
-    ],
-  },
-};
+
 const remainingAccountsForOrders = [
   {
     pubkey: new PublicKey("BAtFj4kQttZRVep3UZS2aZRDixkGYgWsbqTBVDbnSsPF"), // sol pricing oracle
@@ -68,6 +52,8 @@ const remainingAccountsForOrders = [
 ];
 
 export class DriftClient {
+  _driftClient: _DriftClient;
+
   public constructor(readonly base: BaseClient) {}
 
   /*
@@ -134,12 +120,12 @@ export class DriftClient {
     return await this.base.sendAndConfirm(tx);
   }
 
-  public async placeOrders(
+  public async placeOrder(
     fund: PublicKey,
-    orderParams: OrderParams[],
+    orderParams: OrderParams,
     subAccountId: number = 0
   ): Promise<TransactionSignature> {
-    const tx = await this.placeOrdersTx(fund, orderParams, subAccountId);
+    const tx = await this.placeOrderTx(fund, orderParams, subAccountId);
     return await this.base.sendAndConfirm(tx);
   }
 
@@ -172,6 +158,40 @@ export class DriftClient {
       getUserAccountPublicKeySync(this.DRIFT_PROGRAM, treasury, subAccountId),
       getUserStatsAccountPublicKey(this.DRIFT_PROGRAM, treasury),
     ];
+  }
+
+  async initializeDriftClient(): Promise<_DriftClient> {
+    if (!this._driftClient || !this._driftClient.isSubscribed) {
+      const sdkConfig = _initialize({ env: "mainnet-beta" });
+      const bulkAccountLoader = new BulkAccountLoader(
+        this.base.provider.connection,
+        "confirmed",
+        1000
+      );
+      this._driftClient = new _DriftClient({
+        connection: this.base.provider.connection,
+        wallet: this.base.getWallet(),
+        programID: new PublicKey(DRIFT_PROGRAM_ID),
+        env: "mainnet-beta",
+        accountSubscription: {
+          type: "polling",
+          accountLoader: bulkAccountLoader,
+        },
+      });
+      await this._driftClient.subscribe();
+    }
+
+    return this._driftClient;
+  }
+
+  async getSpotMarketAccount(marketIndex: number) {
+    const drift = await this.initializeDriftClient();
+    return drift.getSpotMarketAccount(marketIndex);
+  }
+
+  async getPerpMarketAccount(marketIndex: number) {
+    const drift = await this.initializeDriftClient();
+    return drift.getPerpMarketAccount(marketIndex);
   }
 
   /*
@@ -280,10 +300,6 @@ export class DriftClient {
     });
   }
 
-  /**
-   * @param marketIndex SOL spot market index is 1
-   * TODO: fetch accounts according to marketIndex
-   */
   public async depositTx(
     fund: PublicKey,
     amount: anchor.BN,
@@ -291,28 +307,34 @@ export class DriftClient {
     subAccountId: number = 0,
     apiOptions: ApiTxOptions = {}
   ): Promise<VersionedTransaction> {
-    if (marketIndex !== 1) {
-      throw new Error("Only SOL spot market index is supported for now");
-    }
-
-    const manager = apiOptions.signer || this.base.getManager();
+    const {
+      pubkey: market,
+      mint,
+      vault,
+      oracle,
+    } = await this.getSpotMarketAccount(marketIndex);
 
     const [user, userStats] = this.getUser(fund, subAccountId);
     const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
+
+    const manager = apiOptions.signer || this.base.getManager();
 
     const tx = await this.base.program.methods
       .driftDeposit(marketIndex, amount)
       .accounts({
         fund,
-        treasuryAta: this.base.getTreasuryAta(fund, WSOL),
-        driftAta: ACCOUNTS_FOR_DEPOSIT_WITHDRAW.SOL.spotMarketVault,
+        treasuryAta: this.base.getTreasuryAta(fund, mint),
+        driftAta: vault,
         user,
         userStats,
         state,
         //@ts-ignore IDL ts type is unhappy
         manager,
       })
-      .remainingAccounts(ACCOUNTS_FOR_DEPOSIT_WITHDRAW.SOL.remainingAccounts)
+      .remainingAccounts([
+        { pubkey: oracle, isSigner: false, isWritable: false },
+        { pubkey: market, isSigner: false, isWritable: true },
+      ])
       .transaction();
 
     return await this.base.intoVersionedTransaction({
@@ -328,21 +350,24 @@ export class DriftClient {
     subAccountId: number = 0,
     apiOptions: ApiTxOptions = {}
   ): Promise<VersionedTransaction> {
-    if (marketIndex !== 1) {
-      throw new Error("Only SOL spot market index is supported for now");
-    }
-
-    const manager = apiOptions.signer || this.base.getManager();
+    const {
+      pubkey: market,
+      mint,
+      vault,
+      oracle,
+    } = await this.getSpotMarketAccount(marketIndex);
 
     const [user, userStats] = this.getUser(fund, subAccountId);
     const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
+
+    const manager = apiOptions.signer || this.base.getManager();
 
     const tx = await this.base.program.methods
       .driftWithdraw(marketIndex, amount)
       .accounts({
         fund,
-        treasuryAta: this.base.getTreasuryAta(fund, WSOL),
-        driftAta: ACCOUNTS_FOR_DEPOSIT_WITHDRAW.SOL.spotMarketVault,
+        treasuryAta: this.base.getTreasuryAta(fund, mint),
+        driftAta: vault,
         user,
         userStats,
         state,
@@ -350,7 +375,10 @@ export class DriftClient {
         manager,
         driftSigner: DRIFT_VAULT,
       })
-      .remainingAccounts(ACCOUNTS_FOR_DEPOSIT_WITHDRAW.SOL.remainingAccounts)
+      .remainingAccounts([
+        { pubkey: oracle, isSigner: false, isWritable: false },
+        { pubkey: market, isSigner: false, isWritable: true },
+      ])
       .transaction();
 
     return await this.base.intoVersionedTransaction({
@@ -359,19 +387,19 @@ export class DriftClient {
     });
   }
 
-  public async placeOrdersTx(
+  public async placeOrderTx(
     fund: PublicKey,
-    orderParams: OrderParams[],
+    orderParams: OrderParams,
     subAccountId: number = 0,
     apiOptions: ApiTxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
 
-    const [user, userStats] = this.getUser(fund, subAccountId);
+    const [user] = this.getUser(fund, subAccountId);
     const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
     const tx = await this.base.program.methods
-      .driftPlaceOrders(orderParams)
+      .driftPlaceOrders([orderParams])
       .accounts({
         fund,
         user,
@@ -398,7 +426,7 @@ export class DriftClient {
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
 
-    const [user, userStats] = this.getUser(fund, subAccountId);
+    const [user] = this.getUser(fund, subAccountId);
     const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
     const tx = await this.base.program.methods

@@ -377,7 +377,7 @@ export default function Trade() {
     console.log("Drift perps orderParams", orderParams);
 
     try {
-      const txId = await glamClient.drift.placeOrders(fundPDA!, [orderParams]);
+      const txId = await glamClient.drift.placeOrder(fundPDA!, orderParams);
       toast({
         title: "Perps order submitted",
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
