@@ -326,7 +326,7 @@ describe("glam_crud", () => {
     const manager = glamClient.getManager();
     const treasury = glamClient.getTreasuryPDA(fundPDA);
     const openfunds = glamClient.getOpenfundsPDA(fundPDA);
-    const shareClass = glamClient.getShareClassPDA(fundPDA, 0);
+    const shareClassMint = glamClient.getShareClassPDA(fundPDA, 0);
 
     try {
       const txId = await glamClient.program.methods
@@ -351,8 +351,8 @@ describe("glam_crud", () => {
         .accounts({
           fund: fundPDA,
           manager,
-          shareClass,
-          token2022Program: TOKEN_2022_PROGRAM_ID,
+          openfunds,
+          shareClassMint,
         })
         .rpc();
       console.log("Close share class txId:", txId);

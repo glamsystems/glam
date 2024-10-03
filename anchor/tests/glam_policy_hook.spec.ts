@@ -181,10 +181,23 @@ describe("glam_policy_hook", () => {
 
   it("Fund created", async () => {
     try {
-      const fund = await program.account.fundAccount.fetch(fundPDA);
-      expect(fund.shareClasses[0]).toEqual(sharePDA);
+      const fund = await glamClient.fetchFund(fundPDA);
+      console.log("fund", fund);
+      expect(fund.shareClasses[0]?.id).toEqual(sharePDA);
+      // params
+      expect(fund.shareClasses[0]?.lockUpPeriodInSeconds).toEqual(new BN(3));
+      // mint
+      expect(fund.shareClasses[0]?.shareClassSymbol).toEqual("GBS");
+      expect(fund.shareClasses[0]?.shareClassDecimals).toEqual(9);
+      expect(fund.shareClasses[0]?.permanentDelegate).toEqual(sharePDA);
+      // computed
+      expect(fund.shareClasses[0]?.hasPermanentDelegate).toEqual("yes");
+      // openfunds
+      expect(fund.shareClasses[0]?.lockUpPeriodInDays).toEqual("1");
+      expect(fund.shareClasses[0]?.lockUpComment).toEqual("lock-up test");
     } catch (e) {
       console.error(e);
+      throw e;
     }
   });
 

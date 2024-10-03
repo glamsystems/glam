@@ -7,9 +7,10 @@ use crate::{
 };
 use anchor_lang::{prelude::*, system_program};
 use anchor_spl::{
-    token_2022,
-    token_2022::spl_token_2022,
-    token_2022::spl_token_2022::{extension::ExtensionType, state::Mint as StateMint},
+    token_2022::{
+        self,
+        spl_token_2022::{self, extension::ExtensionType, state::Mint as StateMint},
+    },
     token_2022_extensions::spl_token_metadata_interface,
     token_interface::{Mint, Token2022},
 };
@@ -137,7 +138,7 @@ pub struct AddShareClass<'info> {
     pub manager: Signer<'info>,
 
     pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token2022>,
+    pub token_2022_program: Program<'info, Token2022>,
 }
 
 pub fn add_share_class_handler<'c: 'info, 'info>(
@@ -194,7 +195,7 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
             },
         });
         raw_openfunds.lock_up_period_in_days =
-            Some((share_class_metadata.lock_up_period_in_seconds / 24 * 60 * 60).to_string())
+            Some((1 + share_class_metadata.lock_up_period_in_seconds / 24 * 60 * 60).to_string())
     } else {
         raw_openfunds.lock_up_period_in_days = None;
         raw_openfunds.lock_up_comment = None;
@@ -255,7 +256,7 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
     // Create mint account
     system_program::create_account(
         CpiContext::new_with_signer(
-            ctx.accounts.token_program.to_account_info(),
+            ctx.accounts.token_2022_program.to_account_info(),
             system_program::CreateAccount {
                 from: ctx.accounts.manager.to_account_info(),
                 to: share_mint.clone(),
@@ -264,7 +265,7 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
         ),
         lamports_required,
         space as u64,
-        &ctx.accounts.token_program.key(),
+        &ctx.accounts.token_2022_program.key(),
     )?;
 
     // Initialize all the extensions before calling mint2
@@ -319,7 +320,7 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
     // Invoke mint2
     token_2022::initialize_mint2(
         CpiContext::new(
-            ctx.accounts.token_program.to_account_info(),
+            ctx.accounts.token_2022_program.to_account_info(),
             token_2022::InitializeMint2 {
                 mint: share_mint.clone(),
             },
@@ -600,17 +601,20 @@ pub struct CloseShareClass<'info> {
           &[share_class_id],
           fund.key().as_ref()
         ],
-        bump, mint::authority = share_class, mint::token_program = token_2022_program
+        bump, mint::authority = share_class_mint, mint::token_program = token_2022_program
       )]
-    share_class: InterfaceAccount<'info, Mint>,
+    share_class_mint: InterfaceAccount<'info, Mint>,
 
     /// CHECK: Token2022 Transfer Hook, we manually close it
     #[account(
         mut,
-        seeds = [b"extra-account-metas", share_class.key().as_ref()],
+        seeds = [b"extra-account-metas", share_class_mint.key().as_ref()],
         bump,
     )]
     pub extra_account_meta_list: UncheckedAccount<'info>,
+
+    #[account(mut)]
+    pub openfunds: Box<Account<'info, FundMetadataAccount>>,
 
     #[account(mut)]
     manager: Signer<'info>,
@@ -627,7 +631,7 @@ pub fn close_share_class_handler(ctx: Context<CloseShareClass>, share_class_id: 
     // Note: this is redundant because close_account should check that supply == 0
     //       but better safe than sorry
     require!(
-        ctx.accounts.share_class.supply == 0,
+        ctx.accounts.share_class_mint.supply == 0,
         FundError::ShareClassNotEmpty
     );
 
@@ -636,15 +640,15 @@ pub fn close_share_class_handler(ctx: Context<CloseShareClass>, share_class_id: 
         "share".as_bytes(),
         &[share_class_id],
         fund_key.as_ref(),
-        &[ctx.bumps.share_class],
+        &[ctx.bumps.share_class_mint],
     ];
     let signer_seeds = &[&seeds[..]];
     token_2022::close_account(CpiContext::new_with_signer(
         ctx.accounts.token_2022_program.to_account_info(),
         token_2022::CloseAccount {
-            account: ctx.accounts.share_class.to_account_info(),
+            account: ctx.accounts.share_class_mint.to_account_info(),
             destination: ctx.accounts.manager.to_account_info(),
-            authority: ctx.accounts.share_class.to_account_info(),
+            authority: ctx.accounts.share_class_mint.to_account_info(),
         },
         signer_seeds,
     ))?;
@@ -654,11 +658,19 @@ pub fn close_share_class_handler(ctx: Context<CloseShareClass>, share_class_id: 
         .share_classes
         .remove(share_class_id as usize);
 
+    ctx.accounts
+        .openfunds
+        .share_classes
+        .remove(share_class_id as usize);
+
     close_account_info(
         ctx.accounts.extra_account_meta_list.to_account_info(),
         ctx.accounts.manager.to_account_info(),
     )?;
 
-    msg!("Share class closed: {}", ctx.accounts.share_class.key());
+    msg!(
+        "Share class closed: {}",
+        ctx.accounts.share_class_mint.key()
+    );
     Ok(())
 }

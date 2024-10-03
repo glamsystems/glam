@@ -48,6 +48,7 @@ ledger = ".anchor/test-ledger"
 rpc_port = 8899
 slots_per_epoch = "32"
 url = "https://api.devnet.solana.com"
+deactivate_feature = ["EenyoWx9UMXYKpR8mW5Jmfmy2fRjzUtM7NduYMY8bx33"]
 
 #
 # Pricing
