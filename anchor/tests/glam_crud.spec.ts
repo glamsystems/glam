@@ -25,8 +25,10 @@ describe("glam_crud", () => {
 
     const fund = await glamClient.fetchFund(fundPDA);
     expect(fund.shareClasses.length).toEqual(1);
-    expect(fund.shareClasses[0].allowlist).toEqual([glamClient.getManager()]);
-    expect(fund.shareClasses[0].blocklist).toEqual([]);
+    expect(fund.shareClasses[0].shareClassAllowlist).toEqual([
+      glamClient.getManager(),
+    ]);
+    expect(fund.shareClasses[0].shareClassBlocklist).toEqual([]);
   });
 
   it("Update fund name", async () => {

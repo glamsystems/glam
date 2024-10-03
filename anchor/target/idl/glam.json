@@ -3920,18 +3920,48 @@
   "errors": [
     {
       "code": 6000,
-      "name": "NoShareClassInFund",
-      "msg": "No share class found"
+      "name": "CloseNotEmptyError",
+      "msg": "Error closing account: not empty"
     },
     {
       "code": 6001,
-      "name": "ShareClassNotEmpty",
-      "msg": "Share class not empty"
+      "name": "NotAuthorizedError",
+      "msg": "Error: not authorized"
     },
     {
       "code": 6002,
-      "name": "CantCloseShareClasses",
-      "msg": "Fund can't be closed. Close share classes first"
+      "name": "InvalidFundName",
+      "msg": "Invalid fund name: max 30 chars"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidFundSymbol",
+      "msg": "Too many assets: max 50"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidFundUri",
+      "msg": "Too many assets: max 20"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidAssetsLen",
+      "msg": "Too many assets: max 100"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidAssetsWeights",
+      "msg": "Number of weights should match number of assets"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidAssetForSwap",
+      "msg": "Asset cannot be swapped"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidSwap",
+      "msg": "Swap failed"
     }
   ],
   "types": [

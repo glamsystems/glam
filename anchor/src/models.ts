@@ -36,7 +36,7 @@ export const FundModel = class<FundModel> {
         : null,
       manager: obj.fundManagers
         ? (new ManagerModel(obj.fundManagers[0]) as ManagerModel)
-        : null,
+        : obj?.manager || null,
       rawOpenfunds: new FundOpenfundsModel(obj) as FundOpenfundsModel,
     };
     Object.keys(result).forEach((key) => {
