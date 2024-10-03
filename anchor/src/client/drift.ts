@@ -54,7 +54,25 @@ const remainingAccountsForOrders = [
 export class DriftClient {
   _driftClient: _DriftClient;
 
-  public constructor(readonly base: BaseClient) {}
+  public constructor(readonly base: BaseClient) {
+    // Set up the drift client
+    const env = "mainnet-beta";
+    const sdkConfig = _initialize({ env });
+    this._driftClient = new _DriftClient({
+      connection: this.base.provider.connection,
+      wallet: this.base.getWallet(),
+      programID: new PublicKey(DRIFT_PROGRAM_ID),
+      env,
+      accountSubscription: {
+        type: "polling",
+        accountLoader: new BulkAccountLoader(
+          this.base.provider.connection,
+          "confirmed",
+          1000
+        ),
+      },
+    });
+  }
 
   /*
    * Client methods
@@ -160,24 +178,8 @@ export class DriftClient {
     ];
   }
 
-  async initializeDriftClient(): Promise<_DriftClient> {
-    if (!this._driftClient || !this._driftClient.isSubscribed) {
-      const sdkConfig = _initialize({ env: "mainnet-beta" });
-      const bulkAccountLoader = new BulkAccountLoader(
-        this.base.provider.connection,
-        "confirmed",
-        1000
-      );
-      this._driftClient = new _DriftClient({
-        connection: this.base.provider.connection,
-        wallet: this.base.getWallet(),
-        programID: new PublicKey(DRIFT_PROGRAM_ID),
-        env: "mainnet-beta",
-        accountSubscription: {
-          type: "polling",
-          accountLoader: bulkAccountLoader,
-        },
-      });
+  async getDriftClient(): Promise<_DriftClient> {
+    if (!this._driftClient.isSubscribed) {
       await this._driftClient.subscribe();
     }
 
@@ -185,13 +187,21 @@ export class DriftClient {
   }
 
   async getSpotMarketAccount(marketIndex: number) {
-    const drift = await this.initializeDriftClient();
-    return drift.getSpotMarketAccount(marketIndex);
+    const drift = await this.getDriftClient();
+    const market = drift.getSpotMarketAccount(marketIndex);
+    if (!market) {
+      throw new Error(`Spot market not found: ${marketIndex}`);
+    }
+    return market;
   }
 
   async getPerpMarketAccount(marketIndex: number) {
-    const drift = await this.initializeDriftClient();
-    return drift.getPerpMarketAccount(marketIndex);
+    const drift = await this.getDriftClient();
+    const market = drift.getPerpMarketAccount(marketIndex);
+    if (!market) {
+      throw new Error(`Perp market not found: ${marketIndex}`);
+    }
+    return market;
   }
 
   /*
@@ -207,6 +217,7 @@ export class DriftClient {
     const [user, userStats] = this.getUser(fund);
     const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
+    // @ts-ignore Type instantiation is excessively deep and possibly infinite.
     const tx = await this.base.program.methods
       .driftInitialize()
       .accounts({
