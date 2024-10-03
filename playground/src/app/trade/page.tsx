@@ -1,15 +1,39 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, SubmitHandler, FormProvider, useFormContext } from "react-hook-form";
+import {
+  useForm,
+  SubmitHandler,
+  FormProvider,
+  useFormContext,
+} from "react-hook-form";
 import { z } from "zod";
 
+import * as anchor from "@coral-xyz/anchor";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormLabel, FormField, FormItem, FormMessage, FormDescription } from "@/components/ui/form";
-import { CaretSortIcon, CheckIcon, ColumnSpacingIcon } from "@radix-ui/react-icons";
+import {
+  Form,
+  FormControl,
+  FormLabel,
+  FormField,
+  FormItem,
+  FormMessage,
+  FormDescription,
+} from "@/components/ui/form";
+import {
+  CaretSortIcon,
+  CheckIcon,
+  ColumnSpacingIcon,
+} from "@radix-ui/react-icons";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
@@ -21,12 +45,34 @@ import { ExplorerLink } from "@/components/ExplorerLink";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { InfoIcon } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import LeverageInput from "@/components/LeverageInput";
+import {
+  getOrderParams,
+  MarketType,
+  OrderType,
+  PositionDirection,
+} from "@drift-labs/sdk";
 
 const spotMarkets = [{ label: "SOL/USDC", value: "SOL-USDC" }] as const;
 const perpsMarkets = [{ label: "SOL-PERP", value: "SOL-PERP" }] as const;
@@ -253,7 +299,7 @@ export default function Trade() {
           return t.symbol === "SOL";
         }
         return t.symbol === fromAsset;
-    }) || {};
+      }) || {};
 
     const outputMint = tokenList?.find((t) => t.symbol === toAsset)?.address;
     if (!inputMint || !outputMint) {
@@ -313,6 +359,35 @@ export default function Trade() {
 
   const onSubmitPerps: SubmitHandler<PerpsSchema> = async (values) => {
     console.log("Submit Perps:", values);
+    if (!fundPDA || !wallet || !treasury) {
+      console.error(
+        "Cannot submit perps order due to missing fundPDA, wallet, or treasury"
+      );
+      return;
+    }
+
+    const orderParams = getOrderParams({
+      orderType: OrderType.LIMIT,
+      marketType: MarketType.PERP,
+      direction: PositionDirection.LONG,
+      marketIndex: 0,
+      baseAssetAmount: new anchor.BN(values.size * LAMPORTS_PER_SOL),
+      price: new anchor.BN(values.limitPrice), // set a very low limit price
+    });
+    console.log("Drift perps orderParams", orderParams);
+
+    try {
+      const txId = await glamClient.drift.placeOrder(fundPDA!, orderParams);
+      toast({
+        title: "Perps order submitted",
+        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to submit perps order",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -361,7 +436,7 @@ export default function Trade() {
 
   const handleSideChange = (value: string) => {
     if (value) {
-      spotForm.setValue("side", value as "Buy" | "Sell");
+      perpsForm.setValue("side", value as "Buy" | "Sell");
     }
   };
 
@@ -574,15 +649,15 @@ export default function Trade() {
                                               onCheckedChange={(checked) => {
                                                 return checked
                                                   ? field.onChange([
-                                                    ...field.value,
-                                                    item.id,
-                                                  ])
+                                                      ...field.value,
+                                                      item.id,
+                                                    ])
                                                   : field.onChange(
-                                                    field.value?.filter(
-                                                      (value) =>
-                                                        value !== item.id
-                                                    )
-                                                  );
+                                                      field.value?.filter(
+                                                        (value) =>
+                                                          value !== item.id
+                                                      )
+                                                    );
                                               }}
                                             />
                                           </FormControl>
@@ -920,7 +995,7 @@ export default function Trade() {
                       <div className="flex space-x-4 items-start">
                         <AssetInput
                           className="min-w-1/3 w-1/3"
-                          name="limit-price"
+                          name="limitPrice"
                           label="Limit Price"
                           assets={fromAssetList}
                           balance={NaN}
@@ -974,7 +1049,7 @@ export default function Trade() {
                         />
                         <AssetInput
                           className="min-w-1/2 w-1/2"
-                          name="limit-price"
+                          name="limitPrice"
                           label="Limit Price"
                           assets={fromAssetList}
                           balance={NaN}
@@ -1117,7 +1192,7 @@ export default function Trade() {
                       Clear
                     </Button>
                     <Button className="w-1/2" type="submit">
-                      Swap
+                      Submit
                     </Button>
                   </div>
                 </form>
@@ -1267,7 +1342,7 @@ export default function Trade() {
                   <div className="flex flex-col gap-4 w-full">
                     <div className="flex space-x-4 items-center w-full">
                       <FormField
-                        control={spotForm.control}
+                        control={perpsForm.control}
                         name="side"
                         render={({ field }) => (
                           <FormItem className="w-full">
@@ -1278,7 +1353,7 @@ export default function Trade() {
                               className="w-full gap-4 mt-2"
                             >
                               <ToggleGroupItem
-                                value="buy"
+                                value="Buy"
                                 aria-label="Buy"
                                 variant="outline"
                                 className="w-full transition-all border-emerald-800 text-emerald-800 hover:border-emerald-600 hover:text-emerald-600 hover:bg-emerald-50 data-[state=on]:border-emerald-800 data-[state=on]:text-emerald-800 data-[state=on]:bg-emerald-100 dark:border-emerald-950 dark:text-emerald-950 dark:hover:border-emerald-500 dark:hover:text-emerald-500 dark:hover:bg-emerald-950 dark:data-[state=on]:border-emerald-400 dark:data-[state=on]:text-emerald-400 dark:data-[state=on]:bg-emerald-900 dark:data-[state=on]:bg-opacity-25"
@@ -1286,7 +1361,7 @@ export default function Trade() {
                                 Buy
                               </ToggleGroupItem>
                               <ToggleGroupItem
-                                value="sell"
+                                value="Sell"
                                 aria-label="Sell"
                                 variant="outline"
                                 className="transition-all w-full border-rose-800 text-rose-800 hover:border-rose-600 hover:text-rose-600 hover:bg-rose-50 data-[state=on]:border-rose-800 data-[state=on]:text-rose-800 data-[state=on]:bg-rose-100 dark:border-rose-950 dark:text-rose-950 dark:hover:border-rose-500 dark:hover:text-rose-500 dark:hover:bg-rose-950 dark:data-[state=on]:border-rose-400 dark:data-[state=on]:text-rose-400 dark:data-[state=on]:bg-rose-900 dark:data-[state=on]:bg-opacity-25"
@@ -1305,12 +1380,10 @@ export default function Trade() {
                       <div className="flex space-x-4 items-start">
                         <AssetInput
                           className="min-w-1/3 w-1/3"
-                          name="limit-price"
+                          name="limitPrice"
                           label="Limit Price"
-                          assets={fromAssetList}
                           balance={NaN}
-                          selectedAsset={fromAsset}
-                          onSelectAsset={setFromAsset}
+                          selectedAsset="$"
                           hideBalance={true}
                           disableAssetChange={true}
                         />
@@ -1359,7 +1432,7 @@ export default function Trade() {
                         />
                         <AssetInput
                           className="min-w-1/2 w-1/2"
-                          name="limit-price"
+                          name="limitPrice"
                           label="Limit Price"
                           assets={fromAssetList}
                           balance={NaN}
@@ -1501,7 +1574,7 @@ export default function Trade() {
                       Clear
                     </Button>
                     <Button className="w-1/2" type="submit">
-                      Swap
+                      Submit
                     </Button>
                   </div>
                 </form>

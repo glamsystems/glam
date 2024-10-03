@@ -113,7 +113,7 @@ describe("glam_drift", () => {
     });
 
     try {
-      const txId = await glamClient.drift.placeOrders(fundPDA, [orderParams]);
+      const txId = await glamClient.drift.placeOrder(fundPDA, orderParams);
       console.log("driftPlaceOrders", txId);
     } catch (e) {
       console.error(e);

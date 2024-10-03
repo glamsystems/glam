@@ -212,18 +212,18 @@ export const AssetInput: React.FC<AssetInputProps> = ({
             </div>
           </FormControl>
           {!hideBalance && (
-          <div className="flex justify-between text-sm">
-            <FormDescription>Balance</FormDescription>
-            <FormDescription
-              className={`select-none cursor-pointer ${
-                disableAmountInput ? "pointer-events-none text-gray-400" : ""
-              }`}
-              onClick={!disableAmountInput ? handleBalanceClick : undefined}
-            >
-              {formattedBalance}
-            </FormDescription>
-          </div>
-            )}
+            <div className="flex justify-between text-sm">
+              <FormDescription>Balance</FormDescription>
+              <FormDescription
+                className={`select-none cursor-pointer ${
+                  disableAmountInput ? "pointer-events-none text-gray-400" : ""
+                }`}
+                onClick={!disableAmountInput ? handleBalanceClick : undefined}
+              >
+                {formattedBalance}
+              </FormDescription>
+            </div>
+          )}
           <FormMessage />
         </FormItem>
       )}
