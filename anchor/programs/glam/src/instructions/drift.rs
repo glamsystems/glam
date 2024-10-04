@@ -3,7 +3,6 @@ use anchor_spl::token::Token;
 use anchor_spl::token_interface::TokenAccount;
 use drift::{MarketType, PositionDirection};
 
-use crate::error::ManagerError;
 use crate::state::*;
 
 use drift::cpi::accounts::{
@@ -20,10 +19,7 @@ pub use drift::OrderParams;
 
 #[derive(Accounts)]
 pub struct DriftInitialize<'info> {
-    #[account(
-        has_one = manager @ ManagerError::NotAuthorizedError,
-        has_one = treasury @ ManagerError::NotAuthorizedError
-    )]
+    #[account()]
     pub fund: Account<'info, FundAccount>,
 
     #[account(mut)]
@@ -40,13 +36,16 @@ pub struct DriftInitialize<'info> {
     pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
-    manager: Signer<'info>,
+    pub manager: Signer<'info>,
 
     pub drift_program: Program<'info, Drift>,
     pub rent: Sysvar<'info, Rent>,
     pub system_program: Program<'info, System>,
 }
 
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftInitialize)
+)]
 pub fn drift_initialize_handler(ctx: Context<DriftInitialize>) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
@@ -95,10 +94,7 @@ pub fn drift_initialize_handler(ctx: Context<DriftInitialize>) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct DriftUpdate<'info> {
-    #[account(
-        has_one = manager @ ManagerError::NotAuthorizedError,
-        has_one = treasury @ ManagerError::NotAuthorizedError,
-    )]
+    #[account()]
     pub fund: Account<'info, FundAccount>,
 
     #[account(mut)]
@@ -114,8 +110,12 @@ pub struct DriftUpdate<'info> {
     pub drift_program: Program<'info, Drift>,
 }
 
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftUpdateUser)
+)]
 pub fn drift_update_user_custom_margin_ratio_handler(
     ctx: Context<DriftUpdate>,
+    sub_account_id: u16,
     margin_ratio: u32,
 ) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
@@ -135,15 +135,19 @@ pub fn drift_update_user_custom_margin_ratio_handler(
             },
             signer_seeds,
         ),
-        0,
+        sub_account_id,
         margin_ratio,
     )?;
 
     Ok(())
 }
 
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftUpdateUser)
+)]
 pub fn drift_update_user_margin_trading_enabled_handler(
     ctx: Context<DriftUpdate>,
+    sub_account_id: u16,
     margin_trading_enabled: bool,
 ) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
@@ -163,15 +167,19 @@ pub fn drift_update_user_margin_trading_enabled_handler(
             },
             signer_seeds,
         ),
-        0,
+        sub_account_id,
         margin_trading_enabled,
     )?;
 
     Ok(())
 }
 
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftUpdateUser)
+)]
 pub fn drift_update_user_delegate_handler(
     ctx: Context<DriftUpdate>,
+    sub_account_id: u16,
     delegate: Pubkey,
 ) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
@@ -191,7 +199,7 @@ pub fn drift_update_user_delegate_handler(
             },
             signer_seeds,
         ),
-        0,
+        sub_account_id,
         delegate,
     )?;
 
@@ -200,10 +208,7 @@ pub fn drift_update_user_delegate_handler(
 
 #[derive(Accounts)]
 pub struct DriftDeposit<'info> {
-    #[account(
-        has_one = manager @ ManagerError::NotAuthorizedError,
-        has_one = treasury @ ManagerError::NotAuthorizedError
-    )]
+    #[account()]
     pub fund: Account<'info, FundAccount>,
 
     #[account(mut)]
@@ -225,7 +230,7 @@ pub struct DriftDeposit<'info> {
     pub treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(mut)]
-    manager: Signer<'info>,
+    pub manager: Signer<'info>,
 
     pub drift_program: Program<'info, Drift>,
     pub token_program: Program<'info, Token>,
@@ -272,10 +277,7 @@ pub fn drift_deposit_handler<'c: 'info, 'info>(
 
 #[derive(Accounts)]
 pub struct DriftWithdraw<'info> {
-    #[account(
-        has_one = manager @ ManagerError::NotAuthorizedError,
-        has_one = treasury @ ManagerError::NotAuthorizedError
-    )]
+    #[account()]
     pub fund: Account<'info, FundAccount>,
 
     #[account(mut)]
@@ -287,6 +289,8 @@ pub struct DriftWithdraw<'info> {
     #[account(mut)]
     /// CHECK: checks are done inside cpi call
     pub state: UncheckedAccount<'info>,
+    /// CHECK: checks are done inside cpi call
+    pub drift_signer: UncheckedAccount<'info>,
 
     #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
@@ -295,11 +299,9 @@ pub struct DriftWithdraw<'info> {
     pub treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(mut)]
     pub drift_ata: Box<InterfaceAccount<'info, TokenAccount>>,
-    /// CHECK: checks are done inside cpi call
-    pub drift_signer: UncheckedAccount<'info>,
 
     #[account(mut)]
-    manager: Signer<'info>,
+    pub manager: Signer<'info>,
 
     pub drift_program: Program<'info, Drift>,
     pub token_program: Program<'info, Token>,
@@ -347,10 +349,7 @@ pub fn drift_withdraw_handler<'c: 'info, 'info>(
 
 #[derive(Accounts)]
 pub struct DriftDeleteUser<'info> {
-    #[account(
-        has_one = manager @ ManagerError::NotAuthorizedError,
-        has_one = treasury @ ManagerError::NotAuthorizedError
-    )]
+    #[account()]
     pub fund: Account<'info, FundAccount>,
 
     #[account(mut)]
@@ -367,12 +366,15 @@ pub struct DriftDeleteUser<'info> {
     pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
-    manager: Signer<'info>,
+    pub manager: Signer<'info>,
 
     pub drift_program: Program<'info, Drift>,
     pub system_program: Program<'info, System>,
 }
 
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftDeleteUser)
+)]
 pub fn drift_delete_user_handler(ctx: Context<DriftDeleteUser>) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
@@ -398,10 +400,7 @@ pub fn drift_delete_user_handler(ctx: Context<DriftDeleteUser>) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct DriftPlaceOrders<'info> {
-    #[account(
-        has_one = manager @ ManagerError::NotAuthorizedError,
-        has_one = treasury @ ManagerError::NotAuthorizedError
-    )]
+    #[account()]
     pub fund: Account<'info, FundAccount>,
 
     #[account(mut)]
@@ -416,7 +415,7 @@ pub struct DriftPlaceOrders<'info> {
     pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
-    manager: Signer<'info>,
+    pub manager: Signer<'info>,
 
     pub drift_program: Program<'info, Drift>,
     pub token_program: Program<'info, Token>,
@@ -456,10 +455,7 @@ pub fn drift_place_orders_handler<'c: 'info, 'info>(
 
 #[derive(Accounts)]
 pub struct DriftCancelOrders<'info> {
-    #[account(
-        has_one = manager @ ManagerError::NotAuthorizedError,
-        has_one = treasury @ ManagerError::NotAuthorizedError
-    )]
+    #[account()]
     pub fund: Account<'info, FundAccount>,
 
     #[account(mut)]
@@ -474,7 +470,7 @@ pub struct DriftCancelOrders<'info> {
     pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
-    manager: Signer<'info>,
+    pub manager: Signer<'info>,
 
     pub drift_program: Program<'info, Drift>,
     pub token_program: Program<'info, Token>,

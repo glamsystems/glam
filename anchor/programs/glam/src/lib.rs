@@ -87,26 +87,30 @@ pub mod glam {
 
     pub fn drift_update_user_custom_margin_ratio(
         ctx: Context<DriftUpdate>,
-        _sub_account_id: u16,
+        sub_account_id: u16,
         margin_ratio: u32,
     ) -> Result<()> {
-        drift::drift_update_user_custom_margin_ratio_handler(ctx, margin_ratio)
+        drift::drift_update_user_custom_margin_ratio_handler(ctx, sub_account_id, margin_ratio)
     }
 
     pub fn drift_update_user_margin_trading_enabled(
         ctx: Context<DriftUpdate>,
-        _sub_account_id: u16,
+        sub_account_id: u16,
         margin_trading_enabled: bool,
     ) -> Result<()> {
-        drift::drift_update_user_margin_trading_enabled_handler(ctx, margin_trading_enabled)
+        drift::drift_update_user_margin_trading_enabled_handler(
+            ctx,
+            sub_account_id,
+            margin_trading_enabled,
+        )
     }
 
     pub fn drift_update_user_delegate(
         ctx: Context<DriftUpdate>,
-        _sub_account_id: u16,
+        sub_account_id: u16,
         delegate: Pubkey,
     ) -> Result<()> {
-        drift::drift_update_user_delegate_handler(ctx, delegate)
+        drift::drift_update_user_delegate_handler(ctx, sub_account_id, delegate)
     }
 
     pub fn drift_deposit<'c: 'info, 'info>(
