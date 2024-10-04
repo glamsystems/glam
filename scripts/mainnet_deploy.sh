@@ -9,7 +9,7 @@ MAX_ATTEMPTS=1000
 PROGRAM_ID=GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP
 
 build() {
-    anchor build -- --features mainnet
+    anchor build -- --features mainnet --tools-version v1.43
 }
 
 deploy() {

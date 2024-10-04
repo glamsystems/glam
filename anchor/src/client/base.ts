@@ -36,7 +36,13 @@ import {
 import { TokenMetadata, unpack } from "@solana/spl-token-metadata";
 import { WSOL, USDC } from "../constants";
 
-import { Glam, GlamIDL, GlamProgram, getGlamProgramId } from "../glamExports";
+import {
+  Glam,
+  GlamIDL,
+  GlamProgram,
+  getGlamProgramId,
+  GLAM_FORCE_MAINNET,
+} from "../glamExports";
 import { ClusterOrCustom, GlamClientConfig } from "../clientConfig";
 import { FundModel, FundOpenfundsModel } from "../models";
 import { AssetMeta, ASSETS_MAINNET, ASSETS_TESTS } from "./assets";
@@ -105,7 +111,7 @@ export class BaseClient {
   }
 
   isMainnet(): boolean {
-    return this.cluster === "mainnet-beta";
+    return GLAM_FORCE_MAINNET || this.cluster === "mainnet-beta";
   }
 
   getAssetMeta(asset: string): AssetMeta {
@@ -596,7 +602,6 @@ export class BaseClient {
             openfunds,
             //@ts-ignore IDL ts type is unhappy
             manager,
-            tokenProgram: TOKEN_2022_PROGRAM_ID,
           })
           .preInstructions([
             ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 }),
@@ -656,48 +661,64 @@ export class BaseClient {
     openfundsAccount: FundMetadataAccount,
     mints: any[]
   ): any {
-    let shareClasses = openfundsAccount.shareClasses.map((shareClass, i) => {
-      let shareClassSymbol;
-      let shareClassSupply;
-      let shareClassDecimals;
-      let shareClassCurrencyId;
-      let hasPermanentDelegate;
+    let shareClasses = fundAccount.shareClasses.map(
+      (_shareClassFromFund, i) => {
+        const shareClassMeta = openfundsAccount.shareClasses[i] || [];
+        let shareClassSymbol;
+        let shareClassSupply;
+        let shareClassDecimals;
+        let shareClassCurrencyId;
+        let hasPermanentDelegate;
+        let permanentDelegate;
 
-      const mint = mints[i];
-      if (mint) {
-        const data = getExtensionData(
-          ExtensionType.TokenMetadata,
-          mint.tlvData
-        );
-        const metadata = data ? unpack(data) : ({} as TokenMetadata);
-        const permanentDelegate = getExtensionData(
-          ExtensionType.PermanentDelegate,
-          mint.tlvData
+        const mint = mints[i];
+        if (mint) {
+          const data = getExtensionData(
+            ExtensionType.TokenMetadata,
+            mint.tlvData
+          );
+          const metadata = data ? unpack(data) : ({} as TokenMetadata);
+          permanentDelegate = getExtensionData(
+            ExtensionType.PermanentDelegate,
+            mint.tlvData
+          );
+
+          shareClassSymbol = metadata?.symbol;
+          shareClassSupply = mint.supply;
+          shareClassDecimals = mint.decimals;
+          hasPermanentDelegate = permanentDelegate ? "yes" : "no";
+        }
+
+        const remapped = this.remapKeyValueArray(shareClassMeta);
+        shareClassCurrencyId = this.getAssetIdFromCurrency(
+          remapped?.shareClassCurrency || ""
         );
 
-        shareClassSymbol = metadata?.symbol;
-        shareClassSupply = mint.supply;
-        shareClassDecimals = mint.decimals;
-        hasPermanentDelegate = permanentDelegate ? "yes" : "no";
+        (fundAccount.params[i + 1] || []).forEach((param) => {
+          const name = Object.keys(param.name)[0];
+          //@ts-ignore
+          const value = Object.values(param.value)[0].val;
+          //@ts-ignore
+          remapped[name] = value;
+        });
+
+        return {
+          id: fundAccount.shareClasses[i],
+          // custom share class fields
+          shareClassId: fundAccount.shareClasses[i].toBase58(),
+          shareClassSymbol,
+          shareClassSupply,
+          shareClassDecimals,
+          shareClassCurrencyId,
+          permanentDelegate: permanentDelegate
+            ? new PublicKey(permanentDelegate)
+            : null,
+          hasPermanentDelegate,
+          lockUpPeriodInSeconds: remapped.lockUp,
+          ...remapped,
+        };
       }
-
-      const remapped = this.remapKeyValueArray(shareClass);
-      shareClassCurrencyId = this.getAssetIdFromCurrency(
-        remapped.shareClassCurrency
-      );
-
-      return {
-        id: fundAccount.shareClasses[i],
-        // custom share class fields
-        shareClassId: fundAccount.shareClasses[i].toBase58(),
-        shareClassSymbol,
-        shareClassSupply,
-        shareClassDecimals,
-        shareClassCurrencyId,
-        hasPermanentDelegate,
-        ...remapped,
-      };
-    });
+    );
     let fundManagers = openfundsAccount.fundManagers.map((fundManager) => ({
       pubkey: fundAccount.manager,
       portfolioManagerId: fundAccount.manager.toBase58(),
@@ -751,22 +772,16 @@ export class BaseClient {
     let fund = {
       ...fundModel,
       fundId: fundPDA,
+      idStr: fundPDA.toBase58(),
       treasuryId: fundAccount.treasury.toBase58(),
       openfundsMetadataId: fundAccount.openfunds.toBase58(),
       fundUri: `https://playground.glam.systems/products/${fundPDA}`,
+      //@ts-ignore
+      imageKey: (fundModel.shareClasses[0]?.id || fundPDA).toBase58(),
       ...this.getOpenfundsFromAccounts(fundAccount, openfundsAccount, [
         firstShareClass,
       ]),
     };
-
-    fund.idStr = fundPDA.toBase58();
-    fund.imageKey = (fund.shareClasses[0]?.id || fundPDA).toBase58();
-
-    // fund params [1...N] are allowlist and blocklist pairs for share classes [0...N-1]
-    fundAccount.params.slice(1).forEach((param, i) => {
-      fund.shareClasses[i].allowlist = param[0].value.vecPubkey?.val;
-      fund.shareClasses[i].blocklist = param[1].value.vecPubkey?.val;
-    });
 
     //TODO: this is no longer FundModel, we should create a proper type
     return fund;

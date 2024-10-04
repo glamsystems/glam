@@ -18,6 +18,7 @@ import {
   getMint,
   getAccount,
   createTransferCheckedInstruction,
+  createAssociatedTokenAccountIdempotentInstruction,
 } from "@solana/spl-token";
 
 import { fundTestExample, createFundForTest, str2seed } from "./setup";
@@ -292,6 +293,15 @@ describe("glam_investor", () => {
           tokenProgram: TOKEN_PROGRAM_ID,
           token2022Program: TOKEN_2022_PROGRAM_ID,
         })
+        .preInstructions([
+          createAssociatedTokenAccountIdempotentInstruction(
+            manager.publicKey,
+            shareAta,
+            manager.publicKey,
+            invalidShareClass,
+            TOKEN_2022_PROGRAM_ID
+          ),
+        ])
         .rpc({ commitment });
     } catch (e) {
       // console.error(e);
@@ -623,9 +633,10 @@ describe("glam_investor", () => {
         btc.publicKey,
         new BN(10 ** 8)
       );
-      expect(txId).toBeUndefined();
+      console.log("subscribe:", txId);
     } catch (e) {
-      expect(e.logs.toString()).toContain("Error Code: SubscribeRedeemPaused");
+      console.error(e);
+      throw e;
     }
 
     try {
@@ -636,7 +647,8 @@ describe("glam_investor", () => {
       );
       console.log("redeem 50%:", txId);
     } catch (e) {
-      expect(e.logs.toString()).toContain("Error Code: SubscribeRedeemPaused");
+      console.error(e);
+      throw e;
     }
   });
 });

@@ -81,7 +81,7 @@
           "address": "11111111111111111111111111111111"
         },
         {
-          "name": "token_program",
+          "name": "token_2022_program",
           "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
         }
       ],
@@ -175,7 +175,7 @@
           "writable": true
         },
         {
-          "name": "share_class",
+          "name": "share_class_mint",
           "writable": true
         },
         {
@@ -209,10 +209,14 @@
               },
               {
                 "kind": "account",
-                "path": "share_class"
+                "path": "share_class_mint"
               }
             ]
           }
+        },
+        {
+          "name": "openfunds",
+          "writable": true
         },
         {
           "name": "manager",
@@ -3916,58 +3920,48 @@
   "errors": [
     {
       "code": 6000,
-      "name": "FundNotActive",
-      "msg": "Fund is not active"
+      "name": "CloseNotEmptyError",
+      "msg": "Error closing account: not empty"
     },
     {
       "code": 6001,
-      "name": "InvalidShareClass",
-      "msg": "Share class not allowed to subscribe"
+      "name": "NotAuthorizedError",
+      "msg": "Error: not authorized"
     },
     {
       "code": 6002,
-      "name": "InvalidAssetSubscribe",
-      "msg": "Asset not allowed to subscribe"
+      "name": "InvalidFundName",
+      "msg": "Invalid fund name: max 30 chars"
     },
     {
       "code": 6003,
-      "name": "InvalidPricingOracle",
-      "msg": "Invalid oracle for asset price"
+      "name": "InvalidFundSymbol",
+      "msg": "Too many assets: max 50"
     },
     {
       "code": 6004,
-      "name": "InvalidRemainingAccounts",
-      "msg": "Invalid accounts: the transaction is malformed"
+      "name": "InvalidFundUri",
+      "msg": "Too many assets: max 20"
     },
     {
       "code": 6005,
-      "name": "InvalidTreasuryAccount",
-      "msg": "Invalid treasury ata"
+      "name": "InvalidAssetsLen",
+      "msg": "Too many assets: max 100"
     },
     {
       "code": 6006,
-      "name": "InvalidSignerAccount",
-      "msg": "Invalid signer ata"
+      "name": "InvalidAssetsWeights",
+      "msg": "Number of weights should match number of assets"
     },
     {
       "code": 6007,
-      "name": "InvalidAssetPrice",
-      "msg": "Invalid asset price"
+      "name": "InvalidAssetForSwap",
+      "msg": "Asset cannot be swapped"
     },
     {
       "code": 6008,
-      "name": "InvalidStableCoinPriceForSubscribe",
-      "msg": "Subscription not allowed: invalid stable coin price"
-    },
-    {
-      "code": 6009,
-      "name": "SubscribeRedeemPaused",
-      "msg": "Fund is paused for subscription and redemption"
-    },
-    {
-      "code": 6010,
-      "name": "InvalidPolicyAccount",
-      "msg": "Policy account is mandatory"
+      "name": "InvalidSwap",
+      "msg": "Swap failed"
     }
   ],
   "types": [
