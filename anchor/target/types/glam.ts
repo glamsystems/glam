@@ -350,18 +350,12 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "manager",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "driftProgram",
@@ -451,18 +445,12 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "manager",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "driftProgram",
@@ -530,10 +518,7 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "driftAta",
@@ -546,10 +531,7 @@ export type Glam = {
         {
           "name": "manager",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "driftProgram",
@@ -621,18 +603,12 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "manager",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "driftProgram",
@@ -695,18 +671,12 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "manager",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "driftProgram",
@@ -772,18 +742,12 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "manager",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "driftProgram",
@@ -843,18 +807,12 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "manager",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "driftProgram",
@@ -914,18 +872,12 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "manager",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "driftProgram",
@@ -972,6 +924,9 @@ export type Glam = {
           "writable": true
         },
         {
+          "name": "driftSigner"
+        },
+        {
           "name": "treasury",
           "pda": {
             "seeds": [
@@ -993,10 +948,7 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "treasuryAta",
@@ -1007,15 +959,9 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "driftSigner"
-        },
-        {
           "name": "manager",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "driftProgram",
@@ -5226,6 +5172,15 @@ export type Glam = {
       "type": {
         "kind": "enum",
         "variants": [
+          {
+            "name": "driftInitialize"
+          },
+          {
+            "name": "driftUpdateUser"
+          },
+          {
+            "name": "driftDeleteUser"
+          },
           {
             "name": "driftDeposit"
           },

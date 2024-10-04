@@ -344,18 +344,12 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "manager",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "drift_program",
@@ -445,18 +439,12 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "manager",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "drift_program",
@@ -524,10 +512,7 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "drift_ata",
@@ -540,10 +525,7 @@
         {
           "name": "manager",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "drift_program",
@@ -615,18 +597,12 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "manager",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "drift_program",
@@ -689,18 +665,12 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "manager",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "drift_program",
@@ -766,18 +736,12 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "manager",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "drift_program",
@@ -786,7 +750,7 @@
       ],
       "args": [
         {
-          "name": "_sub_account_id",
+          "name": "sub_account_id",
           "type": "u16"
         },
         {
@@ -837,18 +801,12 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "manager",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "drift_program",
@@ -857,7 +815,7 @@
       ],
       "args": [
         {
-          "name": "_sub_account_id",
+          "name": "sub_account_id",
           "type": "u16"
         },
         {
@@ -908,18 +866,12 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "manager",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "drift_program",
@@ -928,7 +880,7 @@
       ],
       "args": [
         {
-          "name": "_sub_account_id",
+          "name": "sub_account_id",
           "type": "u16"
         },
         {
@@ -966,6 +918,9 @@
           "writable": true
         },
         {
+          "name": "drift_signer"
+        },
+        {
           "name": "treasury",
           "pda": {
             "seeds": [
@@ -987,10 +942,7 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "treasury_ata",
@@ -1001,15 +953,9 @@
           "writable": true
         },
         {
-          "name": "drift_signer"
-        },
-        {
           "name": "manager",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "drift_program",
@@ -5220,6 +5166,15 @@
       "type": {
         "kind": "enum",
         "variants": [
+          {
+            "name": "DriftInitialize"
+          },
+          {
+            "name": "DriftUpdateUser"
+          },
+          {
+            "name": "DriftDeleteUser"
+          },
           {
             "name": "DriftDeposit"
           },

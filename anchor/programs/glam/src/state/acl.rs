@@ -13,6 +13,9 @@ pub enum AccessError {
  */
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, PartialEq, Debug)]
 pub enum Permission {
+    DriftInitialize,
+    DriftUpdateUser,
+    DriftDeleteUser,
     DriftDeposit,
     DriftWithdraw,
     DriftPlaceOrders,
