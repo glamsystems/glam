@@ -225,7 +225,6 @@ export class DriftClient {
         user,
         userStats,
         state,
-        //@ts-ignore IDL ts type is unhappy
         manager,
       })
       .transaction();
@@ -250,7 +249,6 @@ export class DriftClient {
       .accounts({
         fund,
         user,
-        //@ts-ignore IDL ts type is unhappy
         manager,
       })
       .transaction();
@@ -275,7 +273,6 @@ export class DriftClient {
       .accounts({
         fund,
         user,
-        //@ts-ignore IDL ts type is unhappy
         manager,
       })
       .transaction();
@@ -300,7 +297,6 @@ export class DriftClient {
       .accounts({
         fund,
         user,
-        //@ts-ignore IDL ts type is unhappy
         manager,
       })
       .transaction();
@@ -339,7 +335,6 @@ export class DriftClient {
         user,
         userStats,
         state,
-        //@ts-ignore IDL ts type is unhappy
         manager,
       })
       .remainingAccounts([
@@ -382,7 +377,6 @@ export class DriftClient {
         user,
         userStats,
         state,
-        //@ts-ignore IDL ts type is unhappy
         manager,
         driftSigner: DRIFT_VAULT,
       })
@@ -416,7 +410,6 @@ export class DriftClient {
         fund,
         user,
         state,
-        //@ts-ignore IDL ts type is unhappy
         manager,
       })
       .remainingAccounts(remainingAccountsForOrders)
@@ -448,7 +441,6 @@ export class DriftClient {
         fund,
         user,
         state,
-        //@ts-ignore IDL ts type is unhappy
         manager,
       })
       .remainingAccounts(remainingAccountsForOrders)
