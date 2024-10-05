@@ -85,12 +85,12 @@ export class DriftClient {
 
   public async updateUserCustomMarginRatio(
     fund: PublicKey,
-    marginRatio: number,
+    maxLeverage: number, // 1=1x, 2=2x ... 50=50x leverage
     subAccountId: number = 0
   ): Promise<TransactionSignature> {
     const tx = await this.updateUserCustomMarginRatioTx(
       fund,
-      marginRatio,
+      maxLeverage,
       subAccountId
     );
     return await this.base.sendAndConfirm(tx);
@@ -237,12 +237,16 @@ export class DriftClient {
 
   public async updateUserCustomMarginRatioTx(
     fund: PublicKey,
-    marginRatio: number,
+    maxLeverage: number, // 1=1x, 2=2x ... 50=50x leverage
     subAccountId: number = 0,
     apiOptions: ApiTxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const [user] = this.getUser(fund, subAccountId);
+
+    const MARGIN_PRECISION = 10_000;
+    // https://github.com/drift-labs/protocol-v2/blob/babed162b08b1fe34e49a81c5aa3e4ec0a88ecdf/programs/drift/src/math/constants.rs#L183-L184
+    const marginRatio = MARGIN_PRECISION / maxLeverage;
 
     const tx = await this.base.program.methods
       .driftUpdateUserCustomMarginRatio(subAccountId, marginRatio)

@@ -1,9 +1,16 @@
 "use client";
 
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "../../components/ui/tabs";
-import {PoliciesList} from "./components/policies-list";
-import {policies} from "./data";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../../components/ui/tabs";
+import { ShareClassesList } from "../shareclasses/components/shareClasses-list";
+import { shareClasses } from "../shareclasses/data";
 import PageContentWrapper from "@/components/PageContentWrapper";
+import DynamicForm from "@/components/DynamicForm";
+import schema from "../../data/glamFormSchema.json";
 
 export default function Policies() {
   return (
@@ -18,14 +25,21 @@ export default function Policies() {
               </TabsList>
             </div>
             <TabsContent value="all">
-              <PoliciesList items={policies} />
+              <ShareClassesList items={shareClasses} />
             </TabsContent>
             <TabsContent value="active">
-              <PoliciesList items={policies.filter((item) => item.active)} />
+              <ShareClassesList
+                items={shareClasses.filter((item) => item.active)}
+              />
             </TabsContent>
           </Tabs>
         </div>
-        <div className="w-full ml-16">
+        <div className="w-full ml-16 pt-[26px]">
+          <DynamicForm
+            schema={schema}
+            isNested={true}
+            groups={["shareClassPolicy"]}
+          />
         </div>
       </div>
     </PageContentWrapper>

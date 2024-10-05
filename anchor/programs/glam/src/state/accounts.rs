@@ -17,6 +17,8 @@ pub enum EngineFieldName {
     IntegrationAcls,
     ExternalTreasuryAccounts, // external accounts with treasury assets
     LockUp,                   // share class
+    DriftMarketIndexesPerp,
+    DriftMarketIndexesSpot,
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
@@ -194,6 +196,36 @@ impl FundAccount {
                 EngineFieldName::IntegrationAcls => {
                     return match value {
                         EngineFieldValue::VecIntegrationAcl { val: v } => Some(v),
+                        _ => None,
+                    };
+                }
+                _ => { /* ignore */ }
+            }
+        }
+        return None;
+    }
+
+    pub fn drift_market_indexes_perp(&self) -> Option<&Vec<u32>> {
+        for EngineField { name, value } in &self.params[0] {
+            match name {
+                EngineFieldName::DriftMarketIndexesPerp => {
+                    return match value {
+                        EngineFieldValue::VecU32 { val: v } => Some(v),
+                        _ => None,
+                    };
+                }
+                _ => { /* ignore */ }
+            }
+        }
+        return None;
+    }
+
+    pub fn drift_market_indexes_spot(&self) -> Option<&Vec<u32>> {
+        for EngineField { name, value } in &self.params[0] {
+            match name {
+                EngineFieldName::DriftMarketIndexesSpot => {
+                    return match value {
+                        EngineFieldValue::VecU32 { val: v } => Some(v),
                         _ => None,
                     };
                 }

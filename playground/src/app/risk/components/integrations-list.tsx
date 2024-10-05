@@ -1,17 +1,17 @@
-import { ComponentProps } from "react"
+import { ComponentProps } from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 import { Integrations } from "../data";
 import { useIntegrations } from "../use-integration";
-import {Badge} from "../../../components/ui/badge";
-import {ScrollArea} from "../../../components/ui/scroll-area";
+import { Badge } from "../../../components/ui/badge";
+import { ScrollArea } from "../../../components/ui/scroll-area";
 
 interface IntegrationsListProps {
-  items: Integrations[]
+  items: Integrations[];
 }
 
 export function IntegrationsList({ items }: IntegrationsListProps) {
-  const [integrations, setIntegrations] = useIntegrations()
+  const [integrations, setIntegrations] = useIntegrations();
 
   return (
     <ScrollArea>
@@ -45,8 +45,7 @@ export function IntegrationsList({ items }: IntegrationsListProps) {
                       ? "text-foreground"
                       : "text-muted-foreground"
                   )}
-                >
-                </div>
+                ></div>
               </div>
               {/*<div className="text-xs font-medium">{item.subject}</div>*/}
             </div>
@@ -56,7 +55,11 @@ export function IntegrationsList({ items }: IntegrationsListProps) {
             {item.labels.length ? (
               <div className="flex items-center gap-2">
                 {item.labels.map((label) => (
-                  <Badge key={label} variant={getBadgeVariantFromLabel(label)} className="rounded-none">
+                  <Badge
+                    key={label}
+                    variant={getBadgeVariantFromLabel(label)}
+                    className="rounded-none"
+                  >
                     {label}
                   </Badge>
                 ))}
@@ -66,19 +69,19 @@ export function IntegrationsList({ items }: IntegrationsListProps) {
         ))}
       </div>
     </ScrollArea>
-  )
+  );
 }
 
 function getBadgeVariantFromLabel(
   label: string
 ): ComponentProps<typeof Badge>["variant"] {
   if (["work"].includes(label.toLowerCase())) {
-    return "default"
+    return "default";
   }
 
   if (["personal"].includes(label.toLowerCase())) {
-    return "outline"
+    return "outline";
   }
 
-  return "secondary"
+  return "secondary";
 }

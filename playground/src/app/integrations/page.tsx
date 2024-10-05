@@ -331,10 +331,11 @@ export default function Integrations() {
     []
   );
 
+  //TODO: load on chain data and remove this whole useEffect
   useEffect(() => {
     let newFundConfig = [[""], [""], [""]];
     switch (fundId) {
-      case "G8NKLJ2Y3TFrjXpfkpGJQZLXvbKKyvNDzc84C8P3DDU8": //gmSOL
+      case "G8NKLJ2Y3TFrjXpfkpGJQZLXvbKKyvNDzc84C8P3DDU8": // gmSOL
       case "F22FvADosEScBzKMf5iMmNgyrJfhpy4CgFoPYhVw3SHs": // pSOL
         newFundConfig = [
           [
@@ -355,6 +356,7 @@ export default function Integrations() {
         integrations[1].active = true;
         integrations[2].active = false;
         break;
+      case "9F7KB5xiFo8bt66Wey5AvNtmLxJYv4oq4tkhgpbgAG9f": // gnUSD
       case "GXDoZfmdDgB846vYmexuyCEs3C2ByNe7nGcgz4GZa1ZE": // pUSDC
         newFundConfig = [
           [""],

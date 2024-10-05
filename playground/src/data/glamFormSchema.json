@@ -259,10 +259,7 @@
         "x-tag": "core",
         "x-component": "select",
         "readOnly": false,
-        "enum": [
-          "openEndedFund",
-          "closedEndedFund"
-        ],
+        "enum": ["openEndedFund", "closedEndedFund"],
         "x-enumSource": "utils/openfundsConstants.tsx",
         "x-enumValues": "fundStructures",
         "x-enumValuesLabel": "label",
@@ -511,11 +508,7 @@
         "x-tag": "core",
         "x-component": "select",
         "readOnly": false,
-        "enum": [
-          "accumulating",
-          "accumulatingAndDistributing",
-          "distributing"
-        ],
+        "enum": ["accumulating", "accumulatingAndDistributing", "distributing"],
         "x-enumSource": "utils/openfundsConstants.tsx",
         "x-enumValues": "distributionPolicy",
         "x-enumValuesLabel": "label",
@@ -620,11 +613,7 @@
         "x-tag": "core",
         "x-component": "select",
         "readOnly": false,
-        "enum": [
-          "shares",
-          "amount",
-          "sharesAndAmount"
-        ],
+        "enum": ["shares", "amount", "sharesAndAmount"],
         "x-enumSource": "utils/openfundsConstants.tsx",
         "x-enumValues": "minimalInitialCategory",
         "x-enumValuesLabel": "label",
@@ -689,11 +678,7 @@
         "x-tag": "full",
         "x-component": "select",
         "readOnly": false,
-        "enum": [
-          "shares",
-          "amount",
-          "sharesAndAmount"
-        ],
+        "enum": ["shares", "amount", "sharesAndAmount"],
         "x-enumSource": "utils/openfundsConstants.tsx",
         "x-enumValues": "minimalInitialCategory",
         "x-enumValuesLabel": "label",
@@ -782,11 +767,7 @@
         "x-tag": "full",
         "x-component": "select",
         "readOnly": false,
-        "enum": [
-          "shares",
-          "cash",
-          "both"
-        ],
+        "enum": ["shares", "cash", "both"],
         "x-enumSource": "utils/openfundsConstants.tsx",
         "x-enumValues": "dividendType",
         "x-enumValuesLabel": "label",
@@ -803,15 +784,7 @@
         "x-tag": "core",
         "x-component": "select",
         "readOnly": false,
-        "enum": [
-          "1",
-          "2",
-          "3",
-          "4",
-          "5",
-          "6",
-          "7"
-        ],
+        "enum": ["1", "2", "3", "4", "5", "6", "7"],
         "x-hidden": false,
         "x-enforced": false,
         "minValue": 1,
@@ -850,7 +823,7 @@
         "x-tag": "full",
         "x-component": "textarea",
         "readOnly": false,
-        "x-hidden": false,
+        "x-hidden": true,
         "x-enforced": false,
         "minLength": 3,
         "maxLength": 256
@@ -1098,6 +1071,49 @@
         "readOnly": false,
         "x-hidden": true,
         "x-enforced": false
+      }
+    }
+  },
+  "shareClassPolicy": {
+    "type": "object",
+    "fields": {
+      "hasPermanentDelegate": {
+        "x-id": "OFGS410948",
+        "type": "boolean",
+        "title": "Has Permanent Delegate",
+        "description": "Indicates if the share class has a permanent delegate",
+        "x-order": 1,
+        "x-tag": "glam",
+        "x-component": "select",
+        "readOnly": false,
+        "x-hidden": false,
+        "x-enforced": false
+      },
+      "lockUpPeriodInSeconds": {
+        "x-id": "OFGS410955",
+        "type": "number",
+        "title": "Lock-up Period in Seconds",
+        "description": "Duration of the lock-up period in seconds",
+        "x-order": 2,
+        "x-tag": "glam",
+        "x-component": "input",
+        "readOnly": false,
+        "x-hidden": false,
+        "x-enforced": false
+      },
+      "lockUpComment": {
+        "x-id": "OFST410952",
+        "type": "string",
+        "title": "Lock-up Comment",
+        "description": "Details about the lock-up period and conditions",
+        "x-order": 3,
+        "x-tag": "full",
+        "x-component": "textarea",
+        "readOnly": false,
+        "x-hidden": false,
+        "x-enforced": false,
+        "minLength": 3,
+        "maxLength": 256
       }
     }
   },
