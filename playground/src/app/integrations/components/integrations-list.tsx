@@ -14,7 +14,7 @@ export function IntegrationsList({
   return (
     <ScrollArea>
       <div className="flex flex-col gap-2">
-        {items.map((item) => (
+        {items.map((item: any) => (
           <button
             key={item.id}
             className={cn(
@@ -47,7 +47,7 @@ export function IntegrationsList({
             </div>
             {item.labels.length ? (
               <div className="flex items-center gap-2">
-                {item.labels.map((label) => (
+                {item.labels.map((label: string) => (
                   <Badge
                     key={label}
                     variant={getBadgeVariantFromLabel(label)}

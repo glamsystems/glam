@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import {
   DoubleArrowDownIcon,
   DoubleArrowRightIcon,
@@ -15,16 +15,14 @@ import {
 import CustomTree, { TreeNodeData } from "@/components/CustomTree";
 
 interface ToolbarTreeProps {
-  fundId: string;
   treeData: TreeNodeData;
-  setTreeData: () => void;
+  setTreeData: Dispatch<SetStateAction<TreeNodeData>>;
   isExpanded: boolean;
   toggleExpandCollapse: () => void;
   handleCheckedItemsChange: (checkedItems: Record<string, boolean>) => void;
 }
 
 const ToolbarTree: React.FC<ToolbarTreeProps> = ({
-  fundId,
   treeData,
   setTreeData,
   isExpanded,
@@ -66,7 +64,6 @@ const ToolbarTree: React.FC<ToolbarTreeProps> = ({
           </TooltipProvider>
         </div>
         <CustomTree
-          fundId={fundId}
           treeData={treeData}
           setTreeData={setTreeData}
           onCheckedItemsChange={handleCheckedItemsChange}

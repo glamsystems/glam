@@ -1,4 +1,10 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, {
+  useState,
+  useCallback,
+  useEffect,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import {
   ChevronDownIcon,
   ChevronRightIcon,
@@ -260,15 +266,13 @@ const useExpandedNodes = ({ data }: UseExpandedNodesProps) => {
 };
 
 interface CustomTreeProps {
-  fundId: string;
   treeData: TreeNodeData;
-  setTreeData: () => void;
+  setTreeData: Dispatch<SetStateAction<TreeNodeData>>;
   onCheckedItemsChange?: (checkedItems: Record<string, boolean>) => void;
   isExpanded?: boolean;
 }
 
 const CustomTree: React.FC<CustomTreeProps> = ({
-  fundId,
   treeData,
   setTreeData,
   onCheckedItemsChange,
@@ -313,7 +317,7 @@ const CustomTree: React.FC<CustomTreeProps> = ({
     }
   }, [isExpanded, expandAllNodes, collapseAllNodes]);
 
-  return fundId ? (
+  return (
     <div className="ml-5 border-l">
       <TreeNode
         node={treeData}
@@ -325,7 +329,7 @@ const CustomTree: React.FC<CustomTreeProps> = ({
         updateTree={updateTree}
       />
     </div>
-  ) : null;
+  );
 };
 
 export default CustomTree;

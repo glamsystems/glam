@@ -307,11 +307,12 @@ const treeDataTrade: TreeNodeData = {
 };
 
 export default function Integrations() {
+  //@ts-ignore
+  const { allFunds, activeFund } = useGlam();
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
   const [isExpanded, setIsExpanded] = useState(true);
   const [activeIntegration, setActiveIntegration] = useState(0);
   const [treeData, setTreeData] = useState<TreeNodeData>(treeDataStake);
-  const { allFunds, activeFund } = useGlam();
   const [fundConfig, setFundConfig] = useState<string[][]>([]);
 
   const fundId = activeFund?.addressStr;
@@ -384,7 +385,7 @@ export default function Integrations() {
     }
     const active = newFundConfig[activeIntegration] || [];
 
-    const setChecked = (el) => {
+    const setChecked = (el: TreeNodeData) => {
       if (el.children) {
         (el.children || []).forEach(setChecked);
       } else {
@@ -427,7 +428,6 @@ export default function Integrations() {
         </div>
         <div className="w-full ml-16">
           <ToolbarTree
-            fundId={fundId}
             treeData={treeData}
             setTreeData={setTreeData}
             isExpanded={isExpanded}

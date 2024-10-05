@@ -374,6 +374,7 @@ export function DataTable<TData extends KeyData>({
                       <div className="col-span-3">
                         <ToolbarTree
                           treeData={treeData}
+                          setTreeData={() => {}}
                           isExpanded={isExpanded}
                           toggleExpandCollapse={toggleExpandCollapse}
                           handleCheckedItemsChange={handleCheckedItemsChange}
