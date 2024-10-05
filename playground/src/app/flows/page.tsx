@@ -46,7 +46,12 @@ import {
 } from "@/components/ui/popover";
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import {
-  Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import Sparkle from "@/utils/Sparkle";
@@ -75,6 +80,17 @@ function InvestorDisclaimers({
   if (!fund || !share) return null;
 
   console.log(fund);
+  const lockUp = Number(share?.lockUpPeriodInSeconds || 0);
+  let lockUpStr;
+  if (lockUp < 120) {
+    lockUpStr = lockUp + " seconds";
+  } else if (lockUp < 120 * 60) {
+    lockUpStr = lockUp / 60 + " minutes";
+  } else if (lockUp < 48 * 60 * 60) {
+    lockUpStr = lockUp / 3600 + " hours";
+  } else {
+    lockUpStr = lockUp / (24 * 3600) + " days";
+  }
 
   return direction === "redeem" ? (
     <TooltipProvider>
@@ -123,16 +139,14 @@ function InvestorDisclaimers({
                     <p>
                       Shares will be restricted from redemption or transfer for
                       a period of{" "}
-                      <span className="font-semibold">
-                        {share.lockUpPeriodInDays} days
-                      </span>{" "}
+                      <span className="font-semibold">{lockUpStr}</span>{" "}
                       following subscription.
                     </p>
                   </TooltipContent>
                 </Tooltip>
               </span>
               <span>
-                <p className="font-semibold">{share.lockUpPeriodInDays} days</p>
+                <p className="font-semibold">{lockUpStr}</p>
               </span>
             </li>
           ) : null}
@@ -249,13 +263,13 @@ function InvestorDisclaimers({
                       <span className="font-semibold underline">
                         redemption or transfer
                       </span>{" "}
-                      for a period of {share.lockUpPeriodInDays} days.
+                      for a period of {lockUpStr}.
                     </p>
                   </TooltipContent>
                 </Tooltip>
               </span>
               <span>
-                <p className="font-semibold">{share.lockUpPeriodInDays} days</p>
+                <p className="font-semibold">{lockUpStr}</p>
               </span>
             </li>
           ) : null}
@@ -600,7 +614,7 @@ function InvestorWidget({ fundId }: { fundId: string }) {
 export default function Flows() {
   const { allFunds } = useGlam();
   const [fundId, setFundId] = useState("");
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = React.useState(false);
 
   return (
     <PageContentWrapper>
@@ -614,21 +628,24 @@ export default function Flows() {
               className="w-full pl-2 justify-between"
             >
               <span className="flex flex-row align-center">
-              <span className="mr-2">
-                {fundId ? (
-                  <Sparkle
-                    address={(allFunds.find((f: any) => f.idStr === fundId) as any)?.imageKey}
-                    size={24}
-                  />
-                ) : (
-                  <div className="h-[24px] w-[24px] border"></div>
-                )}
-              </span>
-              <span className="leading-6">
-                {fundId
-                  ? allFunds.find((f: any) => f.idStr === fundId)?.name
-                  : "Select product..."}
-              </span>
+                <span className="mr-2">
+                  {fundId ? (
+                    <Sparkle
+                      address={
+                        (allFunds.find((f: any) => f.idStr === fundId) as any)
+                          ?.imageKey
+                      }
+                      size={24}
+                    />
+                  ) : (
+                    <div className="h-[24px] w-[24px] border"></div>
+                  )}
+                </span>
+                <span className="leading-6">
+                  {fundId
+                    ? allFunds.find((f: any) => f.idStr === fundId)?.name
+                    : "Select product..."}
+                </span>
               </span>
               <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
@@ -650,7 +667,9 @@ export default function Flows() {
                       <CheckIcon
                         className={cn(
                           "mr-2 h-4 w-4",
-                          fundId === (f as any)?.idStr ? "opacity-100" : "opacity-0"
+                          fundId === (f as any)?.idStr
+                            ? "opacity-100"
+                            : "opacity-0"
                         )}
                       />
                       {f.name}

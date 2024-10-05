@@ -50,7 +50,7 @@ import { useCallback, useState } from "react";
 export interface KeyData {
   pubkey: string;
   label: string;
-  tags: ("stake" | "swap" | "trade" | "lend" | "admin")[];
+  tags: string[];
 }
 
 // Update the DataTableProps to ensure TData extends KeyData

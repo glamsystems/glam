@@ -1,25 +1,24 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { IntegrationsList } from "./components/integrations-list";
-import { integrations } from "./data";
 import { TreeNodeData } from "@/components/CustomTree";
 import { DownloadIcon } from "@radix-ui/react-icons";
+import { integrations } from "./data";
 import ToolbarTree from "@/components/ToolbarTree";
 import PageContentWrapper from "@/components/PageContentWrapper";
+import { useGlam } from "@glam/anchor/react";
 
-const treeData: TreeNodeData = {
+const treeDataStake: TreeNodeData = {
   id: "all",
   label: "All",
   description: "",
-  collapsed: false,
   children: [
     {
       id: "native",
       label: "Native",
       description: "",
-      collapsed: true,
       children: [
         {
           id: "initialize_and_delegate_stake",
@@ -45,13 +44,11 @@ const treeData: TreeNodeData = {
       id: "marinade_staking",
       label: "Marinade Staking",
       description: "",
-      collapsed: false,
       children: [
         {
           id: "marinade_staking_deposit",
           label: "Deposit",
           description: "",
-          collapsed: true,
           children: [
             {
               id: "marinade_deposit_sol",
@@ -71,7 +68,6 @@ const treeData: TreeNodeData = {
           id: "marinade_staking_withdraw",
           label: "Withdraw",
           description: "",
-          collapsed: true,
           children: [
             {
               id: "marinade_delayed_unstake",
@@ -93,13 +89,11 @@ const treeData: TreeNodeData = {
       id: "splStakePool",
       label: "SPL Stake Pool",
       description: "",
-      collapsed: false,
       children: [
         {
           id: "splStakePool_deposit",
           label: "Deposit",
           description: "",
-          collapsed: true,
           children: [
             {
               id: "spl_stake_pool_deposit_sol",
@@ -119,7 +113,6 @@ const treeData: TreeNodeData = {
           id: "splStakePool_withdraw",
           label: "Withdraw",
           description: "",
-          collapsed: true,
           children: [
             {
               id: "spl_stake_pool_withdraw_sol",
@@ -141,13 +134,11 @@ const treeData: TreeNodeData = {
       id: "sanctumStakePool",
       label: "Sanctum Stake Pool",
       description: "",
-      collapsed: false,
       children: [
         {
           id: "sanctumStakePool_deposit",
           label: "Deposit",
           description: "",
-          collapsed: true,
           children: [
             {
               id: "sanctum_stake_pool_deposit_sol",
@@ -158,7 +149,8 @@ const treeData: TreeNodeData = {
             {
               id: "sanctum_stake_pool_deposit_stake",
               label: "Deposit stake",
-              description: "Deposit stake accounts into the Sanctum Stake Pool.",
+              description:
+                "Deposit stake accounts into the Sanctum Stake Pool.",
               icon: <DownloadIcon className="w-4 h-4" />,
             },
           ],
@@ -167,7 +159,6 @@ const treeData: TreeNodeData = {
           id: "sanctumStakePool_withdraw",
           label: "Withdraw",
           description: "",
-          collapsed: true,
           children: [
             {
               id: "sanctum_stake_pool_withdraw_sol",
@@ -178,7 +169,134 @@ const treeData: TreeNodeData = {
             {
               id: "sanctum_stake_pool_withdraw_stake",
               label: "Withdraw stake",
-              description: "Withdraw stake accounts from the Sanctum Stake Pool.",
+              description:
+                "Withdraw stake accounts from the Sanctum Stake Pool.",
+              icon: <DownloadIcon className="w-4 h-4" />,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+const treeDataSwap: TreeNodeData = {
+  id: "all",
+  label: "All",
+  description: "",
+  children: [
+    {
+      id: "jupiter",
+      label: "Jupiter",
+      description: "",
+      children: [
+        {
+          id: "jupiter_swap",
+          label: "Swap fund assets",
+          description: "Swap only among fund assets",
+          icon: <DownloadIcon className="w-4 h-4" />,
+        },
+        {
+          id: "jupiter_swap_any",
+          label: "Swap any asset",
+          description:
+            "Swap into any asset (can further constrain in risk management)",
+          icon: <DownloadIcon className="w-4 h-4" />,
+        },
+      ],
+    },
+  ],
+};
+
+const treeDataTrade: TreeNodeData = {
+  id: "all",
+  label: "All",
+  description: "",
+  children: [
+    {
+      id: "drift",
+      label: "Drift",
+      description: "",
+      children: [
+        {
+          id: "drift_basic",
+          label: "Basic operations",
+          description: "",
+          children: [
+            {
+              id: "drift_deposit",
+              label: "Deposit",
+              description: "Deposit from treasury into Drift",
+              icon: <DownloadIcon className="w-4 h-4" />,
+            },
+            {
+              id: "drift_withdraw",
+              label: "Withdraw",
+              description: "Withdraw from Drift into treasury",
+              icon: <DownloadIcon className="w-4 h-4" />,
+            },
+            {
+              id: "update_user_delegate",
+              label: "Update user delegate",
+              description: "",
+              icon: <DownloadIcon className="w-4 h-4" />,
+            },
+          ],
+        },
+        {
+          id: "drift_orders",
+          label: "Orders",
+          description:
+            "Finer-grain permissions if user delegate is not enabled",
+          children: [
+            {
+              id: "drift_place_orders",
+              label: "Place orders",
+              description: "",
+              icon: <DownloadIcon className="w-4 h-4" />,
+            },
+            {
+              id: "drift_cancel_orders",
+              label: "Cancel orders",
+              description: "",
+              icon: <DownloadIcon className="w-4 h-4" />,
+            },
+          ],
+        },
+        {
+          id: "drift_users",
+          label: "Sub-accounts",
+          description: "",
+          children: [
+            {
+              id: "initialize_user",
+              label: "Create sub-account",
+              description: "",
+              icon: <DownloadIcon className="w-4 h-4" />,
+            },
+            {
+              id: "drift_delete_user",
+              label: "Delete sub-account",
+              description: "",
+              icon: <DownloadIcon className="w-4 h-4" />,
+            },
+          ],
+        },
+        {
+          id: "drift_config",
+          label: "Update config",
+          description: "",
+          children: [
+            {
+              id: "update_user_custom_margin_ratio",
+              label: "Increase max leverage",
+              description: "",
+              icon: <DownloadIcon className="w-4 h-4" />,
+            },
+            {
+              id: "update_user_margin_trading_enabled",
+              label: "Enable margin trading",
+              description: "",
               icon: <DownloadIcon className="w-4 h-4" />,
             },
           ],
@@ -190,7 +308,16 @@ const treeData: TreeNodeData = {
 
 export default function Integrations() {
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
+  const [activeIntegration, setActiveIntegration] = useState(0);
+  const [treeData, setTreeData] = useState<TreeNodeData>(treeDataStake);
+  const { allFunds, activeFund } = useGlam();
+  const [fundConfig, setFundConfig] = useState<string[][]>([]);
+
+  const fundId = activeFund?.addressStr;
+  const fund: any = fundId
+    ? (allFunds || []).find((f: any) => f.idStr === fundId)
+    : undefined;
 
   const toggleExpandCollapse = () => {
     setIsExpanded(!isExpanded);
@@ -202,6 +329,74 @@ export default function Integrations() {
     },
     []
   );
+
+  useEffect(() => {
+    let newFundConfig = [[""], [""], [""]];
+    switch (fundId) {
+      case "G8NKLJ2Y3TFrjXpfkpGJQZLXvbKKyvNDzc84C8P3DDU8": //gmSOL
+      case "F22FvADosEScBzKMf5iMmNgyrJfhpy4CgFoPYhVw3SHs": // pSOL
+        newFundConfig = [
+          [
+            "marinade_deposit_stake",
+            "marinade_delayed_unstake",
+            "marinade_claim_tickets",
+            "spl_stake_pool_deposit_stake",
+            "spl_stake_pool_withdraw_sol",
+            "spl_stake_pool_withdraw_stake",
+            "sanctum_stake_pool_deposit_stake",
+            "sanctum_stake_pool_withdraw_sol",
+            "sanctum_stake_pool_withdraw_stake",
+          ],
+          ["jupiter_swap_any"],
+          [""],
+        ];
+        integrations[0].active = true;
+        integrations[1].active = true;
+        integrations[2].active = false;
+        break;
+      case "GXDoZfmdDgB846vYmexuyCEs3C2ByNe7nGcgz4GZa1ZE": // pUSDC
+        newFundConfig = [
+          [""],
+          ["jupiter_swap"],
+          [
+            "drift_deposit",
+            "drift_withdraw",
+            "drift_place_orders",
+            "drift_cancel_orders",
+          ],
+        ];
+        integrations[0].active = false;
+        integrations[1].active = true;
+        integrations[2].active = true;
+        break;
+    }
+
+    let treeData;
+    switch (activeIntegration) {
+      case 1:
+        treeData = treeDataSwap;
+        break;
+      case 2:
+        treeData = treeDataTrade;
+        break;
+      default:
+        treeData = treeDataStake;
+    }
+    const active = newFundConfig[activeIntegration] || [];
+
+    const setChecked = (el) => {
+      if (el.children) {
+        (el.children || []).forEach(setChecked);
+      } else {
+        el.checked = active.indexOf(el.id) >= 0;
+      }
+    };
+
+    console.log("updating checked...");
+    (treeData.children || []).forEach(setChecked);
+    setTreeData(treeData);
+    setFundConfig(newFundConfig);
+  }, [activeIntegration, fundId]);
 
   return (
     <PageContentWrapper>
@@ -215,18 +410,26 @@ export default function Integrations() {
               </TabsList>
             </div>
             <TabsContent value="all">
-              <IntegrationsList items={integrations} />
+              <IntegrationsList
+                items={integrations}
+                activeIntegration={activeIntegration}
+                setActiveIntegration={setActiveIntegration}
+              />
             </TabsContent>
             <TabsContent value="active">
               <IntegrationsList
                 items={integrations.filter((item) => item.active)}
+                activeIntegration={activeIntegration}
+                setActiveIntegration={setActiveIntegration}
               />
             </TabsContent>
           </Tabs>
         </div>
         <div className="w-full ml-16">
           <ToolbarTree
+            fundId={fundId}
             treeData={treeData}
+            setTreeData={setTreeData}
             isExpanded={isExpanded}
             toggleExpandCollapse={toggleExpandCollapse}
             handleCheckedItemsChange={handleCheckedItemsChange}
