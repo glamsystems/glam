@@ -1,25 +1,46 @@
 export const integrations = [
   {
-    id: "1",
+    id: 0,
     name: "Drift",
     active: true,
     description: "Trade on Drift.",
-    labels: ["trading","derivatives"]
+    labels: ["trade"],
   },
   {
-    id: "2",
-    name: "Marinade",
-    active: false,
-    description: "Stake on Marinade.",
-    labels: ["staking"]
-  },
-  {
-    id: "3",
+    id: 1,
     name: "Jupiter",
     active: true,
     description: "Swap on Jupiter.",
-    labels: ["swap","spot"]
+    labels: ["swap"],
   },
-]
+  {
+    id: 2,
+    name: "Marinade",
+    active: false,
+    description: "Stake on Marinade.",
+    labels: ["stake"],
+  },
+  {
+    id: 3,
+    name: "Sanctum Stake Pools",
+    active: false,
+    description: "Stake on Sanctum pools.",
+    labels: ["stake"],
+  },
+  {
+    id: 4,
+    name: "SPL Stake Pools",
+    active: false,
+    description: "Stake on SPL pools.",
+    labels: ["stake"],
+  },
+  {
+    id: 5,
+    name: "Native Staking",
+    active: false,
+    description: "Stake natively.",
+    labels: ["stake"],
+  },
+];
 
-export type Integrations = (typeof integrations)[number]
+export type Integrations = (typeof integrations)[number];
