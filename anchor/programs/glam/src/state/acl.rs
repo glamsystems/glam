@@ -6,6 +6,8 @@ use super::FundAccount;
 pub enum AccessError {
     #[msg("Signer is not authorized")]
     NotAuthorized,
+    #[msg("Integration is disabled")]
+    IntegrationDisabled,
 }
 
 /**
@@ -43,7 +45,8 @@ pub struct DelegateAcl {
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, PartialEq, Debug)]
 pub enum IntegrationName {
     Drift,
-    StakePool,
+    SplStakePool,
+    SanctunmStakePool,
     NativeStaking,
     Marinade,
     Jupiter,
@@ -106,4 +109,23 @@ pub fn check_access_any(
         }
     }
     return Err(AccessError::NotAuthorized.into());
+}
+
+pub fn check_integration(fund: &FundAccount, integration: IntegrationName) -> Result<()> {
+    #[cfg(not(feature = "mainnet"))]
+    msg!(
+        "Checking integration {:?} is enabled for fund {:?}",
+        integration,
+        fund.name
+    );
+
+    if let Some(acls) = fund.integration_acls() {
+        for acl in acls {
+            if acl.name == integration {
+                return Ok(());
+            }
+        }
+    }
+
+    return Err(AccessError::IntegrationDisabled.into());
 }

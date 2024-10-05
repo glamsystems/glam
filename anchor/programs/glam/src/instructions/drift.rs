@@ -43,9 +43,8 @@ pub struct DriftInitialize<'info> {
     pub system_program: Program<'info, System>,
 }
 
-#[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftInitialize)
-)]
+#[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftInitialize))]
+#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
 pub fn drift_initialize_handler(ctx: Context<DriftInitialize>) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
@@ -110,9 +109,8 @@ pub struct DriftUpdate<'info> {
     pub drift_program: Program<'info, Drift>,
 }
 
-#[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftUpdateUser)
-)]
+#[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftUpdateUser))]
+#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
 pub fn drift_update_user_custom_margin_ratio_handler(
     ctx: Context<DriftUpdate>,
     sub_account_id: u16,
@@ -142,9 +140,8 @@ pub fn drift_update_user_custom_margin_ratio_handler(
     Ok(())
 }
 
-#[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftUpdateUser)
-)]
+#[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftUpdateUser))]
+#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
 pub fn drift_update_user_margin_trading_enabled_handler(
     ctx: Context<DriftUpdate>,
     sub_account_id: u16,
@@ -174,9 +171,8 @@ pub fn drift_update_user_margin_trading_enabled_handler(
     Ok(())
 }
 
-#[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftUpdateUser)
-)]
+#[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftUpdateUser))]
+#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
 pub fn drift_update_user_delegate_handler(
     ctx: Context<DriftUpdate>,
     sub_account_id: u16,
@@ -236,9 +232,8 @@ pub struct DriftDeposit<'info> {
     pub token_program: Program<'info, Token>,
 }
 
-#[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftDeposit)
-)]
+#[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftDeposit))]
+#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
 pub fn drift_deposit_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftDeposit<'info>>,
     market_index: u16,
@@ -307,9 +302,8 @@ pub struct DriftWithdraw<'info> {
     pub token_program: Program<'info, Token>,
 }
 
-#[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftWithdraw)
-)]
+#[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftWithdraw))]
+#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
 pub fn drift_withdraw_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftWithdraw<'info>>,
     market_index: u16,
@@ -372,9 +366,8 @@ pub struct DriftDeleteUser<'info> {
     pub system_program: Program<'info, System>,
 }
 
-#[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftDeleteUser)
-)]
+#[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftDeleteUser))]
+#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
 pub fn drift_delete_user_handler(ctx: Context<DriftDeleteUser>) -> Result<()> {
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
@@ -421,9 +414,8 @@ pub struct DriftPlaceOrders<'info> {
     pub token_program: Program<'info, Token>,
 }
 
-#[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftPlaceOrders)
-)]
+#[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftPlaceOrders))]
+#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
 pub fn drift_place_orders_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftPlaceOrders<'info>>,
     order_params: Vec<OrderParams>,
@@ -484,9 +476,8 @@ pub struct DriftCancelOrders<'info> {
     pub token_program: Program<'info, Token>,
 }
 
-#[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftCancelOrders)
-)]
+#[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftCancelOrders))]
+#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
 pub fn drift_cancel_orders_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftCancelOrders<'info>>,
     market_type: Option<MarketType>,
