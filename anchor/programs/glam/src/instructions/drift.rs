@@ -420,12 +420,36 @@ pub fn drift_place_orders_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftPlaceOrders<'info>>,
     order_params: Vec<OrderParams>,
 ) -> Result<()> {
+    let fund = &ctx.accounts.fund;
     for order in &order_params {
         let permission = match order.market_type {
             MarketType::Spot => Permission::DriftSpotMarket,
             MarketType::Perp => Permission::DriftPerpMarket,
         };
         acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, permission)?;
+
+        match order.market_type {
+            MarketType::Spot => {
+                if let Some(drift_market_indexes_spot) = fund.drift_market_indexes_spot() {
+                    if drift_market_indexes_spot.len() > 0 {
+                        require!(
+                            drift_market_indexes_spot.contains(&(order.market_index as u32)),
+                            AccessError::NotAuthorized
+                        );
+                    }
+                }
+            }
+            MarketType::Perp => {
+                if let Some(drift_market_indexes_perp) = fund.drift_market_indexes_perp() {
+                    if drift_market_indexes_perp.len() > 0 {
+                        require!(
+                            drift_market_indexes_perp.contains(&(order.market_index as u32)),
+                            AccessError::NotAuthorized
+                        );
+                    }
+                }
+            }
+        }
     }
 
     let fund_key = ctx.accounts.fund.key();

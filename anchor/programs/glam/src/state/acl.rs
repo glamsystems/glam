@@ -46,7 +46,7 @@ pub struct DelegateAcl {
 pub enum IntegrationName {
     Drift,
     SplStakePool,
-    SanctunmStakePool,
+    SanctumStakePool,
     NativeStaking,
     Marinade,
     Jupiter,

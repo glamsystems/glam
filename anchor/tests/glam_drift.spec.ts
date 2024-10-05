@@ -155,4 +155,35 @@ describe("glam_drift", () => {
       throw e;
     }
   });
+
+  it("Drift: constrain market", async () => {
+    try {
+      const txId = await glamClient.updateFund(fundPDA, {
+        driftMarketIndexesPerp: [2, 3],
+      });
+      console.log("driftPlaceOrders", txId);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  });
+
+  it("Drift: place perp order again - should fail", async () => {
+    const orderParams = getOrderParams({
+      orderType: OrderType.LIMIT,
+      marketType: MarketType.PERP,
+      direction: PositionDirection.LONG,
+      marketIndex: 0,
+      baseAssetAmount: new anchor.BN(10_0000_000),
+      price: new anchor.BN(100_000_000), // set a very low limit price
+    });
+
+    try {
+      const txId = await glamClient.drift.placeOrder(fundPDA, orderParams);
+      expect(txId).toBeUndefined();
+    } catch (err) {
+      const errMsg = err.message + err.logs;
+      expect(errMsg).toContain("Signer is not authorized");
+    }
+  });
 });

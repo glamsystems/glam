@@ -535,6 +535,48 @@ pub fn update_fund_handler<'c: 'info, 'info>(
         }
     }
 
+    if !fund_model.drift_market_indexes_perp.is_empty() {
+        let mut found = false;
+        for EngineField { name, value } in &mut fund.params[0] {
+            if let (EngineFieldName::DriftMarketIndexesPerp, EngineFieldValue::VecU32 { val }) =
+                (name, value)
+            {
+                val.clear();
+                val.extend(fund_model.drift_market_indexes_perp.clone());
+                found = true;
+            }
+        }
+        if !found {
+            fund.params[0].push(EngineField {
+                name: EngineFieldName::DriftMarketIndexesPerp,
+                value: EngineFieldValue::VecU32 {
+                    val: fund_model.drift_market_indexes_perp,
+                },
+            });
+        }
+    }
+
+    if !fund_model.drift_market_indexes_spot.is_empty() {
+        let mut found = false;
+        for EngineField { name, value } in &mut fund.params[0] {
+            if let (EngineFieldName::DriftMarketIndexesSpot, EngineFieldValue::VecU32 { val }) =
+                (name, value)
+            {
+                val.clear();
+                val.extend(fund_model.drift_market_indexes_spot.clone());
+                found = true;
+            }
+        }
+        if !found {
+            fund.params[0].push(EngineField {
+                name: EngineFieldName::DriftMarketIndexesSpot,
+                value: EngineFieldValue::VecU32 {
+                    val: fund_model.drift_market_indexes_spot,
+                },
+            });
+        }
+    }
+
     Ok(())
 }
 
