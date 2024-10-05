@@ -188,6 +188,21 @@ impl FundAccount {
         return None;
     }
 
+    pub fn integration_acls(&self) -> Option<&Vec<IntegrationAcl>> {
+        for EngineField { name, value } in &self.params[0] {
+            match name {
+                EngineFieldName::IntegrationAcls => {
+                    return match value {
+                        EngineFieldValue::VecIntegrationAcl { val: v } => Some(v),
+                        _ => None,
+                    };
+                }
+                _ => { /* ignore */ }
+            }
+        }
+        return None;
+    }
+
     pub fn add_to_engine_field(&mut self, engine_field_name: EngineFieldName, pubkey: Pubkey) {
         // Try to find the MarinadeTickets field, if it exists.
         let mut engine_field = self.params[0]

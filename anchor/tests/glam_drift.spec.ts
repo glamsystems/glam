@@ -29,6 +29,24 @@ describe("glam_drift", () => {
     const fund = await program.account.fundAccount.fetch(fundPDA);
     expect(fund.shareClasses.length).toEqual(1);
     expect(fund.name).toEqual("Glam Fund SOL-mSOL");
+
+    // Enable drift integration
+    const updatedFund = glamClient.getFundModel({
+      integrationAcls: [{ name: { drift: {} }, features: [] }],
+    });
+    try {
+      const txSig = await glamClient.program.methods
+        .updateFund(updatedFund)
+        .accounts({
+          fund: fundPDA,
+          signer: glamClient.getManager(),
+        })
+        .rpc();
+      console.log("Enable drift integration tx:", txSig);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
   });
 
   it("Airdrop 10 SOL to treasury and wrap it", async () => {
