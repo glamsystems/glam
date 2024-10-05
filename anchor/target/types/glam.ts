@@ -8,7 +8,7 @@ export type Glam = {
   "address": "GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP",
   "metadata": {
     "name": "glam",
-    "version": "0.3.1",
+    "version": "0.3.2",
     "spec": "0.1.0",
     "description": "Glam Protocol"
   },
@@ -3872,48 +3872,18 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "closeNotEmptyError",
-      "msg": "Error closing account: not empty"
+      "name": "transfersDisabled",
+      "msg": "Policy violation: transfers disabled"
     },
     {
       "code": 6001,
-      "name": "notAuthorizedError",
-      "msg": "Error: not authorized"
+      "name": "amountTooBig",
+      "msg": "Policy violation: amount too big"
     },
     {
       "code": 6002,
-      "name": "invalidFundName",
-      "msg": "Invalid fund name: max 30 chars"
-    },
-    {
-      "code": 6003,
-      "name": "invalidFundSymbol",
-      "msg": "Too many assets: max 50"
-    },
-    {
-      "code": 6004,
-      "name": "invalidFundUri",
-      "msg": "Too many assets: max 20"
-    },
-    {
-      "code": 6005,
-      "name": "invalidAssetsLen",
-      "msg": "Too many assets: max 100"
-    },
-    {
-      "code": 6006,
-      "name": "invalidAssetsWeights",
-      "msg": "Number of weights should match number of assets"
-    },
-    {
-      "code": 6007,
-      "name": "invalidAssetForSwap",
-      "msg": "Asset cannot be swapped"
-    },
-    {
-      "code": 6008,
-      "name": "invalidSwap",
-      "msg": "Swap failed"
+      "name": "lockOut",
+      "msg": "Policy violation: lock out period"
     }
   ],
   "types": [
