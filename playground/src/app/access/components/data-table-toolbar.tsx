@@ -10,7 +10,14 @@ import { DataTableRefresh } from "./data-table-refresh";
 import { tag } from "../data/data";
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import {
-  Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -172,7 +179,8 @@ const treeData: TreeNodeData = {
             {
               id: "sanctum_stake_pool_deposit_stake",
               label: "Deposit stake",
-              description: "Deposit stake accounts into the Sanctum Stake Pool.",
+              description:
+                "Deposit stake accounts into the Sanctum Stake Pool.",
               icon: <DownloadIcon className="w-4 h-4" />,
             },
           ],
@@ -192,7 +200,8 @@ const treeData: TreeNodeData = {
             {
               id: "sanctum_stake_pool_withdraw_stake",
               label: "Withdraw stake",
-              description: "Withdraw stake accounts from the Sanctum Stake Pool.",
+              description:
+                "Withdraw stake accounts from the Sanctum Stake Pool.",
               icon: <DownloadIcon className="w-4 h-4" />,
             },
           ],
@@ -226,12 +235,8 @@ export function DataTableToolbar<TData>({
       <div className="flex flex-1 items-center space-x-2">
         <Sheet>
           <SheetTrigger asChild>
-            <Button
-              variant="default"
-              size="sm"
-              className="h-8"
-            >
-              <PlusIcon className="mr-2"/>
+            <Button variant="default" size="sm" className="h-8">
+              <PlusIcon className="mr-2" />
               Add Key
             </Button>
           </SheetTrigger>
@@ -253,7 +258,11 @@ export function DataTableToolbar<TData>({
                 <Label htmlFor="username" className="text-right">
                   Public key
                 </Label>
-                <Input id="username" placeholder="Publ1cK3y4cc355R1gh75KqM7VxWzeA9cUjfP2y" className="col-span-3" />
+                <Input
+                  id="username"
+                  placeholder="Publ1cK3y4cc355R1gh75KqM7VxWzeA9cUjfP2y"
+                  className="col-span-3"
+                />
               </div>
             </div>
             <div className="grid grid-cols-4 gap-4">
@@ -265,6 +274,7 @@ export function DataTableToolbar<TData>({
               <div className="col-span-3">
                 <ToolbarTree
                   treeData={treeData}
+                  setTreeData={() => {}}
                   isExpanded={isExpanded}
                   toggleExpandCollapse={toggleExpandCollapse}
                   handleCheckedItemsChange={handleCheckedItemsChange}
@@ -272,7 +282,7 @@ export function DataTableToolbar<TData>({
               </div>
             </div>
             <SheetFooter className="mt-4">
-            <SheetClose asChild>
+              <SheetClose asChild>
                 <Button type="submit">Add Key</Button>
               </SheetClose>
             </SheetFooter>

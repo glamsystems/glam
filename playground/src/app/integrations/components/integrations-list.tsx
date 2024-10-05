@@ -1,34 +1,27 @@
-import { ComponentProps } from "react"
+import { ComponentProps } from "react";
 
-import { cn } from "@/lib/utils"
-import { Integrations } from "../data"
-import { useIntegrations } from "../use-integration"
-import {Badge} from "../../../components/ui/badge";
-import {ScrollArea} from "../../../components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+import { Integrations } from "../data";
+import { useIntegrations } from "../use-integration";
+import { Badge } from "../../../components/ui/badge";
+import { ScrollArea } from "../../../components/ui/scroll-area";
 
-interface IntegrationsListProps {
-  items: Integrations[]
-}
-
-export function IntegrationsList({ items }: IntegrationsListProps) {
-  const [integrations, setIntegrations] = useIntegrations()
-
+export function IntegrationsList({
+  items,
+  activeIntegration,
+  setActiveIntegration,
+}: any) {
   return (
     <ScrollArea>
       <div className="flex flex-col gap-2">
-        {items.map((item) => (
+        {items.map((item: any) => (
           <button
             key={item.id}
             className={cn(
               "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent min-h-[70px]",
-              integrations.selected === item.id && "bg-muted"
+              activeIntegration === item.id && "bg-muted"
             )}
-            onClick={() =>
-              setIntegrations({
-                ...integrations,
-                selected: item.id,
-              })
-            }
+            onClick={() => !item.disabled && setActiveIntegration(item.id)}
           >
             <div className="flex w-full flex-col gap-1">
               <div className="flex items-center">
@@ -41,12 +34,11 @@ export function IntegrationsList({ items }: IntegrationsListProps) {
                 <div
                   className={cn(
                     "ml-auto text-xs",
-                    integrations.selected === item.id
+                    activeIntegration === item.id
                       ? "text-foreground"
                       : "text-muted-foreground"
                   )}
-                >
-                </div>
+                ></div>
               </div>
               {/*<div className="text-xs font-medium">{item.subject}</div>*/}
             </div>
@@ -55,8 +47,12 @@ export function IntegrationsList({ items }: IntegrationsListProps) {
             </div>
             {item.labels.length ? (
               <div className="flex items-center gap-2">
-                {item.labels.map((label) => (
-                  <Badge key={label} variant={getBadgeVariantFromLabel(label)} className="rounded-none">
+                {item.labels.map((label: string) => (
+                  <Badge
+                    key={label}
+                    variant={getBadgeVariantFromLabel(label)}
+                    className="rounded-none"
+                  >
                     {label}
                   </Badge>
                 ))}
@@ -66,19 +62,19 @@ export function IntegrationsList({ items }: IntegrationsListProps) {
         ))}
       </div>
     </ScrollArea>
-  )
+  );
 }
 
 function getBadgeVariantFromLabel(
   label: string
 ): ComponentProps<typeof Badge>["variant"] {
   if (["work"].includes(label.toLowerCase())) {
-    return "default"
+    return "default";
   }
 
   if (["personal"].includes(label.toLowerCase())) {
-    return "outline"
+    return "outline";
   }
 
-  return "secondary"
+  return "secondary";
 }

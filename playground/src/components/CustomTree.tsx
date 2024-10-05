@@ -1,15 +1,28 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, {
+  useState,
+  useCallback,
+  useEffect,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import {
-  ChevronDownIcon, ChevronRightIcon, InfoCircledIcon
+  ChevronDownIcon,
+  ChevronRightIcon,
+  InfoCircledIcon,
 } from "@radix-ui/react-icons";
-import { Checkbox } from '@/components/ui/checkbox';
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export interface TreeNodeData {
   id: string;
   label: string;
-  description?: string;  // Added description field
+  description?: string; // Added description field
   checked?: boolean;
   indeterminate?: boolean;
   collapsed?: boolean;
@@ -24,13 +37,21 @@ interface TreeNodeProps {
   onCheck: (nodeId: string, checked: boolean) => void;
   expandedNodes: Set<string>;
   setTreeData: React.Dispatch<React.SetStateAction<TreeNodeData>>;
-  updateTree: (node: TreeNodeData, nodeId: string, checked: boolean) => TreeNodeData;
+  updateTree: (
+    node: TreeNodeData,
+    nodeId: string,
+    checked: boolean
+  ) => TreeNodeData;
 }
 
-const updateTree = (node: TreeNodeData, nodeId: string, checked: boolean): TreeNodeData => {
+const updateTree = (
+  node: TreeNodeData,
+  nodeId: string,
+  checked: boolean
+): TreeNodeData => {
   if (node.id === nodeId) {
     const updateChildren = (
-      children: TreeNodeData[] | undefined,
+      children: TreeNodeData[] | undefined
     ): TreeNodeData[] | undefined => {
       return children?.map((child) => ({
         ...child,
@@ -50,11 +71,11 @@ const updateTree = (node: TreeNodeData, nodeId: string, checked: boolean): TreeN
 
   if (node.children) {
     const updatedChildren = node.children.map((child) =>
-      updateTree(child, nodeId, checked),
+      updateTree(child, nodeId, checked)
     );
     const allChecked = updatedChildren.every((child) => child.checked);
     const someChecked = updatedChildren.some(
-      (child) => child.checked || child.indeterminate,
+      (child) => child.checked || child.indeterminate
     );
 
     return {
@@ -68,15 +89,15 @@ const updateTree = (node: TreeNodeData, nodeId: string, checked: boolean): TreeN
   return node;
 };
 
-const TreeNode: React.FC<TreeNodeProps> = React.memo(({
-                                                        node,
-                                                        level,
-                                                        onToggle,
-                                                        onCheck,
-                                                        expandedNodes,
-                                                        setTreeData,
-                                                        updateTree,
-                                                      }) => {
+const TreeNode: React.FC<TreeNodeProps> = ({
+  node,
+  level,
+  onToggle,
+  onCheck,
+  expandedNodes,
+  setTreeData,
+  updateTree,
+}) => {
   const hasChildren = node.children && node.children.length > 0;
   const isExpanded = expandedNodes.has(node.id);
 
@@ -88,7 +109,7 @@ const TreeNode: React.FC<TreeNodeProps> = React.memo(({
     (nodeId: string, checked: boolean) => {
       setTreeData((prevData) => updateTree(prevData, nodeId, checked));
     },
-    [setTreeData, updateTree],
+    [setTreeData, updateTree]
   );
 
   // Handle click on the entire div
@@ -127,11 +148,11 @@ const TreeNode: React.FC<TreeNodeProps> = React.memo(({
   }
 
   return (
-    <div className="select-none">
+    <div key={node.id + node.checked} className="select-none">
       <div
         className="flex items-center py-1 px-2 cursor-pointer border-b transition-colors hover:bg-muted/50 opacity-75 hover:opacity-100 cursor-pointer"
         style={{ paddingLeft: `${level * 20 + 4}px` }}
-        onClick={handleDivClick}  // Added: click handler for the entire div
+        onClick={handleDivClick} // Added: click handler for the entire div
       >
         <span
           onClick={(e) => {
@@ -170,7 +191,6 @@ const TreeNode: React.FC<TreeNodeProps> = React.memo(({
         <div>
           {node.children!.map((child) => (
             <TreeNode
-              key={child.id}
               node={child}
               level={level + 1}
               onToggle={onToggle}
@@ -184,7 +204,7 @@ const TreeNode: React.FC<TreeNodeProps> = React.memo(({
       )}
     </div>
   );
-});
+};
 
 interface UseExpandedNodesProps {
   data: TreeNodeData;
@@ -236,23 +256,35 @@ const useExpandedNodes = ({ data }: UseExpandedNodesProps) => {
     setExpandedNodes(new Set());
   }, []);
 
-  return { expandedNodes, setExpandedNodes, toggleNode, expandAllNodes, collapseAllNodes };
+  return {
+    expandedNodes,
+    setExpandedNodes,
+    toggleNode,
+    expandAllNodes,
+    collapseAllNodes,
+  };
 };
 
 interface CustomTreeProps {
-  data: TreeNodeData;
+  treeData: TreeNodeData;
+  setTreeData: Dispatch<SetStateAction<TreeNodeData>>;
   onCheckedItemsChange?: (checkedItems: Record<string, boolean>) => void;
   isExpanded?: boolean;
 }
 
 const CustomTree: React.FC<CustomTreeProps> = ({
-                                                 data,
-                                                 onCheckedItemsChange,
-                                                 isExpanded,
-                                               }) => {
-  const { expandedNodes, setExpandedNodes, toggleNode, expandAllNodes, collapseAllNodes } = useExpandedNodes({ data });
-  const [treeData, setTreeData] = useState<TreeNodeData>(data);
-
+  treeData,
+  setTreeData,
+  onCheckedItemsChange,
+  isExpanded,
+}) => {
+  const {
+    expandedNodes,
+    setExpandedNodes,
+    toggleNode,
+    expandAllNodes,
+    collapseAllNodes,
+  } = useExpandedNodes({ data: treeData });
   const handleCheck = useCallback((nodeId: string, checked: boolean) => {
     setTreeData((prevData) => updateTree(prevData, nodeId, checked));
   }, []);

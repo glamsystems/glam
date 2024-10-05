@@ -212,8 +212,8 @@ function MetadataAccount({ fundId }: { fundId: any }) {
 export default function Openfunds() {
   const { allFunds, activeFund } = useGlam();
 
-  // const fundId = activeFund?.addressStr;
-  const fundId = "APx491vs2rRkGUCLp4kVDHz8J2Pc9cry3ZvVDJ7goVTB";
+  const fundId = activeFund?.addressStr;
+  // const fundId = "APx491vs2rRkGUCLp4kVDHz8J2Pc9cry3ZvVDJ7goVTB";
   const fund: any = fundId
     ? (allFunds || []).find((f: any) => f.idStr === fundId)
     : undefined;

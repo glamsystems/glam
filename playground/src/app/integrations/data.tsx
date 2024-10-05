@@ -1,36 +1,36 @@
 export const integrations = [
   {
-    id: "1",
+    id: 0,
     name: "Stake",
     active: true,
     disabled: false,
     description: "",
-    labels: []
+    labels: [],
   },
   {
-    id: "2",
+    id: 1,
     name: "Swap",
     active: true,
     disabled: false,
     description: "",
-    labels: []
+    labels: [],
   },
   {
-    id: "3",
+    id: 2,
     name: "Trade",
     active: true,
     disabled: false,
     description: "",
-    labels: []
+    labels: [],
   },
   {
-    id: "4",
+    id: 3,
     name: "Lend",
     active: false,
-    disabled: false,
+    disabled: true,
     description: "Coming Soon",
-    labels: []
+    labels: [],
   },
-]
+];
 
-export type Integrations = (typeof integrations)[number]
+export type Integrations = (typeof integrations)[number];

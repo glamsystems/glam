@@ -1,23 +1,34 @@
-import React from "react";
-import { DoubleArrowDownIcon, DoubleArrowRightIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import React, { Dispatch, SetStateAction } from "react";
+import {
+  DoubleArrowDownIcon,
+  DoubleArrowRightIcon,
+  MagnifyingGlassIcon,
+} from "@radix-ui/react-icons";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import CustomTree, { TreeNodeData } from "@/components/CustomTree";
 
 interface ToolbarTreeProps {
   treeData: TreeNodeData;
+  setTreeData: Dispatch<SetStateAction<TreeNodeData>>;
   isExpanded: boolean;
   toggleExpandCollapse: () => void;
   handleCheckedItemsChange: (checkedItems: Record<string, boolean>) => void;
 }
 
 const ToolbarTree: React.FC<ToolbarTreeProps> = ({
-                                                   treeData,
-                                                   isExpanded,
-                                                   toggleExpandCollapse,
-                                                   handleCheckedItemsChange,
-                                                 }) => {
+  treeData,
+  setTreeData,
+  isExpanded,
+  toggleExpandCollapse,
+  handleCheckedItemsChange,
+}) => {
   return (
     <div className="w-full">
       <div className="w-full">
@@ -53,7 +64,8 @@ const ToolbarTree: React.FC<ToolbarTreeProps> = ({
           </TooltipProvider>
         </div>
         <CustomTree
-          data={treeData}
+          treeData={treeData}
+          setTreeData={setTreeData}
           onCheckedItemsChange={handleCheckedItemsChange}
           isExpanded={isExpanded}
         />

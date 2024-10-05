@@ -50,7 +50,7 @@ import { useCallback, useState } from "react";
 export interface KeyData {
   pubkey: string;
   label: string;
-  tags: ("stake" | "swap" | "trade" | "lend" | "admin")[];
+  tags: string[];
 }
 
 // Update the DataTableProps to ensure TData extends KeyData
@@ -374,6 +374,7 @@ export function DataTable<TData extends KeyData>({
                       <div className="col-span-3">
                         <ToolbarTree
                           treeData={treeData}
+                          setTreeData={() => {}}
                           isExpanded={isExpanded}
                           toggleExpandCollapse={toggleExpandCollapse}
                           handleCheckedItemsChange={handleCheckedItemsChange}
