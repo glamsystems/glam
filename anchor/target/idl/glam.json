@@ -3866,48 +3866,58 @@
   "errors": [
     {
       "code": 6000,
-      "name": "CloseNotEmptyError",
-      "msg": "Error closing account: not empty"
+      "name": "FundNotActive",
+      "msg": "Fund is not active"
     },
     {
       "code": 6001,
-      "name": "NotAuthorizedError",
-      "msg": "Error: not authorized"
+      "name": "InvalidShareClass",
+      "msg": "Share class not allowed to subscribe"
     },
     {
       "code": 6002,
-      "name": "InvalidFundName",
-      "msg": "Invalid fund name: max 30 chars"
+      "name": "InvalidAssetSubscribe",
+      "msg": "Asset not allowed to subscribe"
     },
     {
       "code": 6003,
-      "name": "InvalidFundSymbol",
-      "msg": "Too many assets: max 50"
+      "name": "InvalidPricingOracle",
+      "msg": "Invalid oracle for asset price"
     },
     {
       "code": 6004,
-      "name": "InvalidFundUri",
-      "msg": "Too many assets: max 20"
+      "name": "InvalidRemainingAccounts",
+      "msg": "Invalid accounts: the transaction is malformed"
     },
     {
       "code": 6005,
-      "name": "InvalidAssetsLen",
-      "msg": "Too many assets: max 100"
+      "name": "InvalidTreasuryAccount",
+      "msg": "Invalid treasury ata"
     },
     {
       "code": 6006,
-      "name": "InvalidAssetsWeights",
-      "msg": "Number of weights should match number of assets"
+      "name": "InvalidSignerAccount",
+      "msg": "Invalid signer ata"
     },
     {
       "code": 6007,
-      "name": "InvalidAssetForSwap",
-      "msg": "Asset cannot be swapped"
+      "name": "InvalidAssetPrice",
+      "msg": "Invalid asset price"
     },
     {
       "code": 6008,
-      "name": "InvalidSwap",
-      "msg": "Swap failed"
+      "name": "InvalidStableCoinPriceForSubscribe",
+      "msg": "Subscription not allowed: invalid stable coin price"
+    },
+    {
+      "code": 6009,
+      "name": "SubscribeRedeemPaused",
+      "msg": "Fund is paused for subscription and redemption"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidPolicyAccount",
+      "msg": "Policy account is mandatory"
     }
   ],
   "types": [
@@ -5186,6 +5196,12 @@
           },
           {
             "name": "DriftCancelOrders"
+          },
+          {
+            "name": "DriftPerpMarket"
+          },
+          {
+            "name": "DriftSpotMarket"
           },
           {
             "name": "Stake"

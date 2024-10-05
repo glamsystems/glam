@@ -20,6 +20,8 @@ pub enum Permission {
     DriftWithdraw,
     DriftPlaceOrders,
     DriftCancelOrders,
+    DriftPerpMarket,
+    DriftSpotMarket,
     Stake, // Stake with marinade or spl/sanctum stake pool programs
     Unstake,
     LiquidUnstake,

@@ -428,6 +428,14 @@ pub fn drift_place_orders_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftPlaceOrders<'info>>,
     order_params: Vec<OrderParams>,
 ) -> Result<()> {
+    for order in &order_params {
+        let permission = match order.market_type {
+            MarketType::Spot => Permission::DriftSpotMarket,
+            MarketType::Perp => Permission::DriftPerpMarket,
+        };
+        acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, permission)?;
+    }
+
     let fund_key = ctx.accounts.fund.key();
     let seeds = &[
         "treasury".as_bytes(),
