@@ -75,7 +75,67 @@ import {
 } from "@drift-labs/sdk";
 
 const spotMarkets = [{ label: "SOL/USDC", value: "SOL-USDC" }] as const;
-const perpsMarkets = [{ label: "SOL-PERP", value: "SOL-PERP" }] as const;
+
+const ORDER_TYPES: [string, ...string[]] = [
+  "Market",
+  "Limit",
+  "Trigger Market",
+  "Trigger Limit",
+  "Oracle",
+];
+
+const PERP_MARKETS: [string, ...string[]] = [
+  "SOL-PERP",
+  "BTC-PERP",
+  "ETH-PERP",
+  "APT-PERP",
+  "1MBONK-PERP",
+  "MATIC-PERP",
+  "ARB-PERP",
+  "DOGE-PERP",
+  "BNB-PERP",
+  "SUI-PERP",
+  "1MPEPE-PERP",
+  "OP-PERP",
+  "RENDER-PERP",
+  "XRP-PERP",
+  "HNT-PERP",
+  "INJ-PERP",
+  "LINK-PERP",
+  "RLB-PERP",
+  "PYTH-PERP",
+  "TIA-PERP",
+  "JTO-PERP",
+  "SEI-PERP",
+  "AVAX-PERP",
+  "WIF-PERP",
+  "JUP-PERP",
+  "DYM-PERP",
+  "TAO-PERP",
+  "W-PERP",
+  "KMNO-PERP",
+  "TNSR-PERP",
+  "DRIFT-PERP",
+  "CLOUD-PERP",
+  "IO-PERP",
+  "ZEX-PERP",
+  "POPCAT-PERP",
+  "1KWEN-PERP",
+  "TRUMP-WIN-2024-BET",
+  "KAMALA-POPULAR-VOTE-2024-BET",
+  "FED-CUT-50-SEPT-2024-BET",
+  "REPUBLICAN-POPULAR-AND-WIN-BET",
+  "BREAKPOINT-IGGYERIC-BET",
+  "DEMOCRATS-WIN-MICHIGAN-BET",
+  "TON-PERP",
+  "LANDO-F1-SGP-WIN-BET",
+  "MOTHER-PERP",
+  "MOODENG-PERP",
+  "WARWICK-FIGHT-WIN-BET",
+];
+
+const perpsMarkets = PERP_MARKETS.map((x) => ({ label: x, value: x }));
+const orderTypes = ORDER_TYPES.map((x) => ({ label: x, value: x }));
 
 const swapSchema = z.object({
   venue: z.enum(["Jupiter"]),
@@ -98,7 +158,13 @@ const swapSchema = z.object({
 const spotSchema = z.object({
   venue: z.enum(["Jupiter", "Drift"]),
   spotMarket: z.enum(["SOL-USDC"]),
-  spotType: z.enum(["Limit", "Stop Limit"]),
+  spotType: z.enum([
+    "Market",
+    "Limit",
+    "Trigger Market",
+    "Trigger Limit",
+    "Oracle",
+  ]),
   side: z.enum(["Buy", "Sell"]),
   limitPrice: z.number().nonnegative(),
   size: z.number().nonnegative(),
@@ -111,8 +177,8 @@ const spotSchema = z.object({
 
 const perpsSchema = z.object({
   venue: z.enum(["Drift"]),
-  perpsMarket: z.enum(["SOL-PERP"]),
-  perpsType: z.enum(["Limit", "Stop Limit"]),
+  perpsMarket: z.enum(PERP_MARKETS),
+  perpsType: z.enum(ORDER_TYPES),
   side: z.enum(["Buy", "Sell"]),
   limitPrice: z.number().nonnegative(),
   size: z.number().nonnegative(),
@@ -361,23 +427,28 @@ export default function Trade() {
     console.log("Submit Perps:", values);
     if (!fundPDA || !wallet || !treasury) {
       console.error(
-        "Cannot submit perps order due to missing fundPDA, wallet, or treasury"
+        "Cannot submit perps order due to missing fund, wallet, or treasury"
       );
       return;
     }
 
+    console.log(values);
     const orderParams = getOrderParams({
-      orderType: OrderType.LIMIT,
+      orderType:
+        values.perpsType === "Market" ? OrderType.MARKET : OrderType.LIMIT,
       marketType: MarketType.PERP,
-      direction: PositionDirection.LONG,
-      marketIndex: 0,
+      direction:
+        values.side === "Buy"
+          ? PositionDirection.LONG
+          : PositionDirection.SHORT,
+      marketIndex: PERP_MARKETS.indexOf(values.perpsMarket),
       baseAssetAmount: new anchor.BN(values.size * LAMPORTS_PER_SOL),
       price: new anchor.BN(values.limitPrice), // set a very low limit price
     });
     console.log("Drift perps orderParams", orderParams);
 
     try {
-      const txId = await glamClient.drift.placeOrder(fundPDA!, orderParams);
+      const txId = await glamClient.drift.placeOrder(fundPDA, orderParams);
       toast({
         title: "Perps order submitted",
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
@@ -439,6 +510,18 @@ export default function Trade() {
       perpsForm.setValue("side", value as "Buy" | "Sell");
     }
   };
+
+  const watchPerpsMarket = perpsForm.watch("perpsMarket");
+  const perpsFromAsset = watchPerpsMarket
+    .replace("-PERP", "")
+    .replace("-BET", "");
+
+  const watchPerpsLimitPrice = perpsForm.watch("limitPrice");
+  const watchPerpsSize = perpsForm.watch("size");
+  useEffect(() => {
+    const perpsNotional = watchPerpsLimitPrice * watchPerpsSize;
+    perpsForm.setValue("notional", perpsNotional);
+  }, [watchPerpsLimitPrice, watchPerpsSize]);
 
   return (
     <PageContentWrapper>
@@ -1033,7 +1116,7 @@ export default function Trade() {
                         />
                       </div>
                     </>
-                  ) : spotOrderType === "Stop Limit" ? (
+                  ) : spotOrderType === "Trigger Limit" ? (
                     <>
                       <div className="flex space-x-4 items-start">
                         <AssetInput
@@ -1091,7 +1174,7 @@ export default function Trade() {
                     </>
                   ) : null}
 
-                  {spotOrderType !== "Stop Limit" && !spotReduceOnly && (
+                  {spotOrderType !== "Trigger Limit" && !spotReduceOnly && (
                     <div className="flex flex-row gap-4 items-start w-full">
                       <LeverageInput
                         control={spotForm.control}
@@ -1391,32 +1474,21 @@ export default function Trade() {
                           className="min-w-1/3 w-1/3"
                           name="size"
                           label="Size"
-                          assets={fromAssetList}
+                          selectedAsset={perpsFromAsset}
                           balance={NaN}
-                          selectedAsset={fromAsset}
-                          onSelectAsset={setFromAsset}
+                          disableAssetChange={true}
                         />
                         <AssetInput
                           className="min-w-1/3 w-1/3"
                           name="notional"
                           label="Notional"
-                          assets={tokenList?.map(
-                            (t) =>
-                              ({
-                                name: t.name,
-                                symbol: t.symbol,
-                                address: t.address,
-                                decimals: t.decimals,
-                                balance: 0,
-                              } as Asset)
-                          )}
+                          selectedAsset={"USDC"}
                           balance={NaN}
-                          selectedAsset={toAsset}
-                          onSelectAsset={setToAsset}
+                          disableAssetChange={true}
                         />
                       </div>
                     </>
-                  ) : perpsOrderType === "Stop Limit" ? (
+                  ) : perpsOrderType === "Trigger Limit" ? (
                     <>
                       <div className="flex space-x-4 items-start">
                         <AssetInput
@@ -1474,96 +1546,101 @@ export default function Trade() {
                     </>
                   ) : null}
 
-                  {perpsOrderType !== "Stop Limit" && !perpsReduceOnly && (
-                    <div className="flex flex-row gap-4 items-start w-full">
-                      <LeverageInput
-                        control={perpsForm.control}
-                        name="leverage"
-                        label="Leverage: 100x"
-                        min={0}
-                        max={100}
-                        step={1}
-                      />
-                    </div>
+                  {false && (
+                    <>
+                      <div className="flex flex-row gap-4 items-start w-full">
+                        <LeverageInput
+                          control={perpsForm.control}
+                          name="leverage"
+                          label="Leverage: 100x"
+                          min={0}
+                          max={100}
+                          step={1}
+                        />
+                      </div>
+                      <div className="flex flex-row gap-4 items-start w-full">
+                        <div className="w-1/2 flex h-6 items-center text-sm text-muted-foreground">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger className="flex items-center">
+                                <InfoIcon className="w-4 h-4 mr-1"></InfoIcon>
+                                <p>Leverage Limit Enabled</p>
+                              </TooltipTrigger>
+                              <TooltipContent side="right">
+                                Please view the Risk Management configuration of
+                                the Venue Integration.
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+
+                        <div className="w-1/2 flex flex-row justify-start gap-4">
+                          <FormField
+                            control={perpsForm.control}
+                            name="perpsReduceOnly"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                                <FormControl>
+                                  <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                    id="reduce-only"
+                                  />
+                                </FormControl>
+                                <FormLabel
+                                  htmlFor="reduce-only"
+                                  className="font-normal"
+                                >
+                                  Reduce Only
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={spotForm.control}
+                            name="post"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                                <FormControl>
+                                  <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                    id="post"
+                                  />
+                                </FormControl>
+                                <FormLabel
+                                  htmlFor="post"
+                                  className="font-normal"
+                                >
+                                  Post
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        {/*<FormField*/}
+                        {/*  control={spotForm.control}*/}
+                        {/*  name="showConfirmation"*/}
+                        {/*  render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
+                        {/*      <FormControl>*/}
+                        {/*        <Switch*/}
+                        {/*          checked={field.value}*/}
+                        {/*          onCheckedChange={field.onChange}*/}
+                        {/*          id="show-confirmation"*/}
+                        {/*        />*/}
+                        {/*      </FormControl>*/}
+                        {/*      <FormLabel*/}
+                        {/*        htmlFor="show-confirmation"*/}
+                        {/*        className="font-normal"*/}
+                        {/*      >*/}
+                        {/*        Show Confirmation*/}
+                        {/*      </FormLabel>*/}
+                        {/*    </FormItem>)}*/}
+                        {/*/>*/}
+                      </div>
+                    </>
                   )}
-                  <div className="flex flex-row gap-4 items-start w-full">
-                    <div className="w-1/2 flex h-6 items-center text-sm text-muted-foreground">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger className="flex items-center">
-                            <InfoIcon className="w-4 h-4 mr-1"></InfoIcon>
-                            <p>Leverage Limit Enabled</p>
-                          </TooltipTrigger>
-                          <TooltipContent side="right">
-                            Please view the Risk Management configuration of the
-                            Venue Integration.
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-
-                    <div className="w-1/2 flex flex-row justify-start gap-4">
-                      <FormField
-                        control={perpsForm.control}
-                        name="perpsReduceOnly"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                                id="reduce-only"
-                              />
-                            </FormControl>
-                            <FormLabel
-                              htmlFor="reduce-only"
-                              className="font-normal"
-                            >
-                              Reduce Only
-                            </FormLabel>
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={spotForm.control}
-                        name="post"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                                id="post"
-                              />
-                            </FormControl>
-                            <FormLabel htmlFor="post" className="font-normal">
-                              Post
-                            </FormLabel>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    {/*<FormField*/}
-                    {/*  control={spotForm.control}*/}
-                    {/*  name="showConfirmation"*/}
-                    {/*  render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
-                    {/*      <FormControl>*/}
-                    {/*        <Switch*/}
-                    {/*          checked={field.value}*/}
-                    {/*          onCheckedChange={field.onChange}*/}
-                    {/*          id="show-confirmation"*/}
-                    {/*        />*/}
-                    {/*      </FormControl>*/}
-                    {/*      <FormLabel*/}
-                    {/*        htmlFor="show-confirmation"*/}
-                    {/*        className="font-normal"*/}
-                    {/*      >*/}
-                    {/*        Show Confirmation*/}
-                    {/*      </FormLabel>*/}
-                    {/*    </FormItem>)}*/}
-                    {/*/>*/}
-                  </div>
 
                   <div className="flex space-x-4 w-full">
                     <Button

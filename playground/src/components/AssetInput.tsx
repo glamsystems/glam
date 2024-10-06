@@ -62,8 +62,8 @@ export const AssetInput: React.FC<AssetInputProps> = ({
   useMaxAmount = false,
   hideBalance = false,
 }) => {
-  const { control, setValue, reset } = useFormContext();
-  const [displayValue, setDisplayValue] = useState<string>("0");
+  const { control, getValues, setValue, reset } = useFormContext();
+  // const [displayValue, setDisplayValue] = useState<string>("0");
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -73,13 +73,13 @@ export const AssetInput: React.FC<AssetInputProps> = ({
   };
 
   const handleBalanceClick = () => {
-    const balanceValue = balance.toString();
-    setDisplayValue(balanceValue);
+    // const balanceValue = balance.toString();
+    // setDisplayValue(balanceValue);
     setValue(name, balance);
   };
 
   const resetAssetInput = () => {
-    setDisplayValue("0");
+    setValue(name, 0);
   };
 
   useEffect(() => {
@@ -88,19 +88,19 @@ export const AssetInput: React.FC<AssetInputProps> = ({
 
   useEffect(() => {
     if (useMaxAmount) {
-      const balanceValue = balance.toString();
-      setDisplayValue(balanceValue);
+      // const balanceValue = balance.toString();
+      // setDisplayValue(balanceValue);
       setValue(name, balance);
     } else {
       setValue(name, 0);
-      setDisplayValue("0");
+      // setDisplayValue("0");
     }
   }, [useMaxAmount, balance, name, setValue]);
 
   useEffect(() => {
     if (!useMaxAmount) {
       setValue(name, 0);
-      setDisplayValue("0");
+      // setDisplayValue("0");
     }
   }, [selectedAsset, setValue, name, useMaxAmount]);
 
@@ -110,7 +110,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
 
   const handleInputChange = (value: string) => {
     if (/^\d*\.?\d*$/.test(value)) {
-      setDisplayValue(value);
+      // setDisplayValue(value);
       const numericValue = parseFloat(value.replace(/,/g, ""));
       if (!isNaN(numericValue)) {
         setValue(name, numericValue);
@@ -130,6 +130,8 @@ export const AssetInput: React.FC<AssetInputProps> = ({
       : formattedIntegerPart;
   };
 
+  hideBalance = hideBalance || Number.isNaN(balance);
+
   return (
     <FormField
       control={control}
@@ -142,23 +144,10 @@ export const AssetInput: React.FC<AssetInputProps> = ({
               <Input
                 {...field}
                 ref={inputRef}
-                value={displayValue}
+                value={getValues()[name]}
                 className="pr-20"
                 placeholder="0"
                 onChange={(e) => handleInputChange(e.target.value)}
-                onFocus={(e) => {
-                  if (field.value === 0) {
-                    setDisplayValue("");
-                  }
-                }}
-                onBlur={(e) => {
-                  if (e.target.value === "") {
-                    setDisplayValue("0");
-                    setValue(name, 0);
-                  } else {
-                    setDisplayValue(formatDisplayValue(e.target.value));
-                  }
-                }}
                 disabled={disableAmountInput}
               />
               {!disableAssetChange && (
