@@ -130,6 +130,10 @@ export default function Wrap() {
                   className="min-w-1/2 w-1/2"
                   name="amount"
                   label="Amount"
+                  assets={[
+                    { name: "SOL", symbol: "SOL", balance: solBalance },
+                    { name: "wSOL", symbol: "wSOL", balance: wSolBalance },
+                  ]}
                   balance={displayBalance}
                   selectedAsset={amountAsset}
                   onSelectAsset={setAmountAsset}

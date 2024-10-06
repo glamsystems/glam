@@ -30,8 +30,8 @@ import TruncateAddress from "../utils/TruncateAddress";
 export interface Asset {
   name: string;
   symbol: string;
-  address: string;
-  decimals: number;
+  address?: string;
+  decimals?: number;
   balance: number;
 }
 
