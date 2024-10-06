@@ -105,7 +105,9 @@ export const AssetInput: React.FC<AssetInputProps> = ({
   }, [selectedAsset, setValue, name, useMaxAmount]);
 
   const formattedBalance = new Intl.NumberFormat("en-US").format(
-    assets.find((asset) => asset.symbol === selectedAsset)?.balance || 0
+    assets.find((asset) => asset.symbol === selectedAsset)?.balance ||
+      balance ||
+      0
   );
 
   const handleInputChange = (value: string) => {

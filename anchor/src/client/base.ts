@@ -777,7 +777,7 @@ export class BaseClient {
       openfundsMetadataId: fundAccount.openfunds.toBase58(),
       fundUri: `https://playground.glam.systems/products/${fundPDA}`,
       //@ts-ignore
-      imageKey: (fundModel.shareClasses[0]?.id || fundPDA).toBase58(),
+      imageKey: (fundAccount.shareClasses[0] || fundPDA).toBase58(),
       ...this.getOpenfundsFromAccounts(fundAccount, openfundsAccount, [
         firstShareClass,
       ]),
