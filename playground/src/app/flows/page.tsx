@@ -79,7 +79,6 @@ function InvestorDisclaimers({
   const share = fund?.shareClasses[0];
   if (!fund || !share) return null;
 
-  console.log(fund);
   const lockUp = Number(share?.lockUpPeriodInSeconds || 0);
   let lockUpStr;
   if (lockUp < 120) {
@@ -427,8 +426,8 @@ function InvestorWidget({ fundId }: { fundId: string }) {
           Number(walletBalances?.balanceLamports || 0) / LAMPORTS_PER_SOL
         );
       } else {
-        const tokenAccount = (walletBalances.tokenAccounts || []).find(
-          (a: any) => a.mint === mint
+        const tokenAccount = (walletBalances?.tokenAccounts || []).find(
+          (a: any) => a.mint === mint.toBase58()
         );
         if (tokenAccount) {
           setBalance(Number(tokenAccount.amount) / 10 ** tokenAccount.decimals);
@@ -495,7 +494,7 @@ function InvestorWidget({ fundId }: { fundId: string }) {
     let txId;
     if (direction === "redeem") {
       const asset = fund.shareClasses[0].id;
-      const decimals = getDecimals(asset, walletBalances.tokenAccounts);
+      const decimals = getDecimals(asset, walletBalances?.tokenAccounts);
       const amount = new BN(values.amountIn * 10 ** decimals);
       txId = await glamClient.investor.redeem(
         fund.id,
@@ -504,7 +503,7 @@ function InvestorWidget({ fundId }: { fundId: string }) {
       );
     } else {
       const asset = fund.assets[0];
-      const decimals = getDecimals(asset, walletBalances.tokenAccounts);
+      const decimals = getDecimals(asset, walletBalances?.tokenAccounts);
       const amount = new BN(values.amountIn * 10 ** decimals);
       txId = await glamClient.investor.subscribe(fund.id, asset, amount);
     }
