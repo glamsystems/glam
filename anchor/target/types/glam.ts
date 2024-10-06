@@ -3872,48 +3872,13 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "closeNotEmptyError",
-      "msg": "Error closing account: not empty"
+      "name": "notAuthorized",
+      "msg": "Signer is not authorized"
     },
     {
       "code": 6001,
-      "name": "notAuthorizedError",
-      "msg": "Error: not authorized"
-    },
-    {
-      "code": 6002,
-      "name": "invalidFundName",
-      "msg": "Invalid fund name: max 30 chars"
-    },
-    {
-      "code": 6003,
-      "name": "invalidFundSymbol",
-      "msg": "Too many assets: max 50"
-    },
-    {
-      "code": 6004,
-      "name": "invalidFundUri",
-      "msg": "Too many assets: max 20"
-    },
-    {
-      "code": 6005,
-      "name": "invalidAssetsLen",
-      "msg": "Too many assets: max 100"
-    },
-    {
-      "code": 6006,
-      "name": "invalidAssetsWeights",
-      "msg": "Number of weights should match number of assets"
-    },
-    {
-      "code": 6007,
-      "name": "invalidAssetForSwap",
-      "msg": "Asset cannot be swapped"
-    },
-    {
-      "code": 6008,
-      "name": "invalidSwap",
-      "msg": "Swap failed"
+      "name": "integrationDisabled",
+      "msg": "Integration is disabled"
     }
   ],
   "types": [

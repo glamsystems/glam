@@ -523,6 +523,10 @@ export default function Trade() {
     perpsForm.setValue("notional", perpsNotional);
   }, [watchPerpsLimitPrice, watchPerpsSize]);
 
+  const driftUserAccount = fundPDA
+    ? glamClient.drift.getUser(fundPDA)[0].toBase58()
+    : "";
+
   return (
     <PageContentWrapper>
       <div className="w-4/6 self-center">
@@ -1422,6 +1426,13 @@ export default function Trade() {
                     />
                   </div>
 
+                  <div className="flex">
+                    <ExplorerLink
+                      path={`/account/${driftUserAccount}`}
+                      label={driftUserAccount}
+                    />
+                  </div>
+
                   <div className="flex flex-col gap-4 w-full">
                     <div className="flex space-x-4 items-center w-full">
                       <FormField
@@ -1433,7 +1444,7 @@ export default function Trade() {
                               type="single"
                               value={field.value}
                               onValueChange={handleSideChange}
-                              className="w-full gap-4 mt-2"
+                              className="w-full gap-4"
                             >
                               <ToggleGroupItem
                                 value="Buy"
@@ -1457,7 +1468,6 @@ export default function Trade() {
                       />
                     </div>
                   </div>
-
                   {perpsOrderType === "Limit" ? (
                     <>
                       <div className="flex space-x-4 items-start">
@@ -1545,7 +1555,6 @@ export default function Trade() {
                       </div>
                     </>
                   ) : null}
-
                   {false && (
                     <>
                       <div className="flex flex-row gap-4 items-start w-full">
@@ -1641,7 +1650,6 @@ export default function Trade() {
                       </div>
                     </>
                   )}
-
                   <div className="flex space-x-4 w-full">
                     <Button
                       className="w-1/2"
