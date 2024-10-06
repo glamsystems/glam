@@ -97,6 +97,23 @@ function InvestorDisclaimers({
       <div className="grid gap-3 text-sm">
         <div className="font-semibold">Redemption Details</div>
         <ul className="grid gap-3">
+          {/* Share Class Link */}
+          {fund?.shareClasses[0]?.shareClassId ? (
+            <li className="border-b pb-3 flex items-center justify-between">
+              <span className="text-muted-foreground flex items-center">
+                Share Class Address
+              </span>
+              <span>
+                <p className="font-semibold">
+                  <ExplorerLink
+                    path={`/account/${fund?.shareClasses[0]?.shareClassId}`}
+                    label={fund?.shareClasses[0]?.shareClassId}
+                  />
+                </p>
+              </span>
+            </li>
+          ) : null}
+
           {/* Method: in-kind vs currency */}
           {method === "in-kind" ? (
             <li className="border-b pb-3 flex items-center justify-between">
@@ -215,6 +232,23 @@ function InvestorDisclaimers({
       <div className="grid gap-3 text-sm">
         <div className="font-semibold">Subscription Details</div>
         <ul className="grid gap-3">
+          {/* Share Class Link */}
+          {fund?.shareClasses[0]?.shareClassId ? (
+            <li className="border-b pb-3 flex items-center justify-between">
+              <span className="text-muted-foreground flex items-center">
+                Share Class Address
+              </span>
+              <span>
+                <p className="font-semibold">
+                  <ExplorerLink
+                    path={`/account/${fund?.shareClasses[0]?.shareClassId}`}
+                    label={fund?.shareClasses[0]?.shareClassId}
+                  />
+                </p>
+              </span>
+            </li>
+          ) : null}
+
           {/* Minimal subscription */}
           {share.minimalInitialSubscriptionCategory === "amount" ? (
             <li className="border-b pb-3 flex items-center justify-between">
