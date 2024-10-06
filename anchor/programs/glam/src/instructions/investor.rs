@@ -362,7 +362,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
 
         let cur_timestamp = Clock::get()?.unix_timestamp;
         if cur_timestamp < locked_until_ts {
-            return err!(PolicyError::LockOut);
+            return err!(PolicyError::LockUp);
         }
 
         // If the lock-up period has expired, we can delete the

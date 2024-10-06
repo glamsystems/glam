@@ -3872,13 +3872,18 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "notAuthorized",
-      "msg": "Signer is not authorized"
+      "name": "transfersDisabled",
+      "msg": "Policy violation: transfers disabled"
     },
     {
       "code": 6001,
-      "name": "integrationDisabled",
-      "msg": "Integration is disabled"
+      "name": "amountTooBig",
+      "msg": "Policy violation: amount too big"
+    },
+    {
+      "code": 6002,
+      "name": "lockUp",
+      "msg": "Policy violation: lock-up period"
     }
   ],
   "types": [

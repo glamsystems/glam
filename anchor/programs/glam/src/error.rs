@@ -64,6 +64,6 @@ pub enum PolicyError {
     TransfersDisabled,
     #[msg("Policy violation: amount too big")]
     AmountTooBig,
-    #[msg("Policy violation: lock out period")]
-    LockOut,
+    #[msg("Policy violation: lock-up period")]
+    LockUp,
 }

@@ -3866,13 +3866,18 @@
   "errors": [
     {
       "code": 6000,
-      "name": "NotAuthorized",
-      "msg": "Signer is not authorized"
+      "name": "TransfersDisabled",
+      "msg": "Policy violation: transfers disabled"
     },
     {
       "code": 6001,
-      "name": "IntegrationDisabled",
-      "msg": "Integration is disabled"
+      "name": "AmountTooBig",
+      "msg": "Policy violation: amount too big"
+    },
+    {
+      "code": 6002,
+      "name": "LockUp",
+      "msg": "Policy violation: lock-up period"
     }
   ],
   "types": [
