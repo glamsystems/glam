@@ -74,7 +74,8 @@ describe("glam_crud", () => {
         { name: { drift: {} }, features: [] },
         { name: { jupiter: {} }, features: [] },
         { name: { marinade: {} }, features: [] },
-        { name: { stakePool: {} }, features: [] },
+        { name: { splStakePool: {} }, features: [] },
+        { name: { sanctumStakePool: {} }, features: [] },
       ],
     });
     try {
