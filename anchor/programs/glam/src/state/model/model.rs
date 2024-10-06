@@ -31,6 +31,7 @@ pub struct FundModel {
     pub integration_acls: Vec<IntegrationAcl>,
     pub drift_market_indexes_perp: Vec<u32>,
     pub drift_market_indexes_spot: Vec<u32>,
+    pub drift_order_types: Vec<u32>,
 
     // Openfunds
     pub is_raw_openfunds: bool,

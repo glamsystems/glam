@@ -19,6 +19,7 @@ pub enum EngineFieldName {
     LockUp,                   // share class
     DriftMarketIndexesPerp,
     DriftMarketIndexesSpot,
+    DriftOrderTypes,
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
@@ -196,6 +197,21 @@ impl FundAccount {
                 EngineFieldName::IntegrationAcls => {
                     return match value {
                         EngineFieldValue::VecIntegrationAcl { val: v } => Some(v),
+                        _ => None,
+                    };
+                }
+                _ => { /* ignore */ }
+            }
+        }
+        return None;
+    }
+
+    pub fn drift_order_types(&self) -> Option<&Vec<u32>> {
+        for EngineField { name, value } in &self.params[0] {
+            match name {
+                EngineFieldName::DriftOrderTypes => {
+                    return match value {
+                        EngineFieldValue::VecU32 { val: v } => Some(v),
                         _ => None,
                     };
                 }

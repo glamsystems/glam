@@ -8,7 +8,7 @@ export type Glam = {
   "address": "GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP",
   "metadata": {
     "name": "glam",
-    "version": "0.3.2",
+    "version": "0.3.3",
     "spec": "0.1.0",
     "description": "Glam Protocol"
   },
@@ -3872,18 +3872,58 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "transfersDisabled",
-      "msg": "Policy violation: transfers disabled"
+      "name": "fundNotActive",
+      "msg": "Fund is not active"
     },
     {
       "code": 6001,
-      "name": "amountTooBig",
-      "msg": "Policy violation: amount too big"
+      "name": "invalidShareClass",
+      "msg": "Share class not allowed to subscribe"
     },
     {
       "code": 6002,
-      "name": "lockOut",
-      "msg": "Policy violation: lock out period"
+      "name": "invalidAssetSubscribe",
+      "msg": "Asset not allowed to subscribe"
+    },
+    {
+      "code": 6003,
+      "name": "invalidPricingOracle",
+      "msg": "Invalid oracle for asset price"
+    },
+    {
+      "code": 6004,
+      "name": "invalidRemainingAccounts",
+      "msg": "Invalid accounts: the transaction is malformed"
+    },
+    {
+      "code": 6005,
+      "name": "invalidTreasuryAccount",
+      "msg": "Invalid treasury ata"
+    },
+    {
+      "code": 6006,
+      "name": "invalidSignerAccount",
+      "msg": "Invalid signer ata"
+    },
+    {
+      "code": 6007,
+      "name": "invalidAssetPrice",
+      "msg": "Invalid asset price"
+    },
+    {
+      "code": 6008,
+      "name": "invalidStableCoinPriceForSubscribe",
+      "msg": "Subscription not allowed: invalid stable coin price"
+    },
+    {
+      "code": 6009,
+      "name": "subscribeRedeemPaused",
+      "msg": "Fund is paused for subscription and redemption"
+    },
+    {
+      "code": 6010,
+      "name": "invalidPolicyAccount",
+      "msg": "Policy account is mandatory"
     }
   ],
   "types": [
@@ -4155,6 +4195,9 @@ export type Glam = {
           },
           {
             "name": "driftMarketIndexesSpot"
+          },
+          {
+            "name": "driftOrderTypes"
           }
         ]
       }
@@ -4755,6 +4798,12 @@ export type Glam = {
           },
           {
             "name": "driftMarketIndexesSpot",
+            "type": {
+              "vec": "u32"
+            }
+          },
+          {
+            "name": "driftOrderTypes",
             "type": {
               "vec": "u32"
             }

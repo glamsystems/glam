@@ -577,6 +577,27 @@ pub fn update_fund_handler<'c: 'info, 'info>(
         }
     }
 
+    if !fund_model.drift_order_types.is_empty() {
+        let mut found = false;
+        for EngineField { name, value } in &mut fund.params[0] {
+            if let (EngineFieldName::DriftOrderTypes, EngineFieldValue::VecU32 { val }) =
+                (name, value)
+            {
+                val.clear();
+                val.extend(fund_model.drift_order_types.clone());
+                found = true;
+            }
+        }
+        if !found {
+            fund.params[0].push(EngineField {
+                name: EngineFieldName::DriftOrderTypes,
+                value: EngineFieldValue::VecU32 {
+                    val: fund_model.drift_order_types,
+                },
+            });
+        }
+    }
+
     Ok(())
 }
 

@@ -450,6 +450,14 @@ pub fn drift_place_orders_handler<'c: 'info, 'info>(
                 }
             }
         }
+        if let Some(drift_order_types) = fund.drift_order_types() {
+            if drift_order_types.len() > 0 {
+                require!(
+                    drift_order_types.contains(&(order.order_type as u32)),
+                    AccessError::NotAuthorized
+                );
+            }
+        }
     }
 
     let fund_key = ctx.accounts.fund.key();

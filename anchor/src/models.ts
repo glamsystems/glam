@@ -27,6 +27,7 @@ export const FundModel = class<FundModel> {
       integrationAcls: obj.integrationAcls || [],
       driftMarketIndexesPerp: obj.driftMarketIndexesPerp || [],
       driftMarketIndexesSpot: obj.driftMarketIndexesSpot || [],
+      driftOrderTypes: obj.driftOrderTypes || [],
       shareClasses: obj.shareClasses
         ? obj.shareClasses.map(
             (shareClass: any) =>
