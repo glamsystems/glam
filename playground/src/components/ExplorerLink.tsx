@@ -23,7 +23,6 @@ export function ExplorerLink({
   explorer?: string;
 }) {
   const cluster = useCluster();
-  console.log(cluster);
   let href = cluster.getExplorerUrl(path);
   if (explorer == "solana.fm") {
     href = href
@@ -35,6 +34,9 @@ export function ExplorerLink({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
       className={className ? className : `link font-mono`}
     >
       {ellipsify(label)}

@@ -7,6 +7,7 @@ import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
 import Sparkle from "../../../utils/Sparkle";
 import TruncateAddress from "@/utils/TruncateAddress";
+import { ExplorerLink } from "@/components/ExplorerLink";
 
 const tagColors: Record<string, string> = {
   stake:
@@ -28,24 +29,29 @@ interface KeyData {
 
 // Use the defined type in ColumnDef
 export const columns: ColumnDef<KeyData>[] = [
-  {
-    accessorKey: "label",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Label" />
-    ),
-    cell: ({ row }) => (
-      <div className="w-[100px] truncate">{row.getValue("label")}</div>
-    ),
-    enableSorting: true,
-    enableHiding: false,
-  },
+  // {
+  //   accessorKey: "label",
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title="Label" />
+  //   ),
+  //   cell: ({ row }) => (
+  //     <div className="w-[100px] truncate">{row.getValue("label")}</div>
+  //   ),
+  //   enableSorting: true,
+  //   enableHiding: false,
+  // },
   {
     accessorKey: "pubkey",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Key" />
     ),
     cell: ({ row }) => (
-      <div className="w-[100px] truncate">{row.getValue("pubkey")}</div>
+      <div className="w-[100px]">
+        <ExplorerLink
+          path={`/account/${row.getValue("pubkey")}`}
+          label={row.getValue("pubkey")}
+        />
+      </div>
     ),
     enableSorting: false,
     enableHiding: false,
@@ -58,12 +64,12 @@ export const columns: ColumnDef<KeyData>[] = [
     cell: ({ row }) => {
       const tags = row.getValue("tags") as KeyData["tags"];
       return (
-        <div className="flex space-x-2">
+        <div className="space-x-2">
           {tags.map((tag) => (
             <Badge
               key={tag}
               variant="default"
-              className={`pointer-events-none capitalize font-normal rounded-none dark:bg-opacity-25 ${tagColors[tag]}`}
+              className={`my-1 pointer-events-none capitalize font-normal rounded-none dark:bg-opacity-25 ${tagColors[tag]}`}
             >
               {tag}
             </Badge>
