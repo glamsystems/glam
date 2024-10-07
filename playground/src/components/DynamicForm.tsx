@@ -45,10 +45,12 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import * as openfundsConstants from "@/utils/openfundsConstants";
+import * as constants from "@/constants";
 import {
   Tooltip,
   TooltipContent,
@@ -115,45 +117,83 @@ interface DynamicFormProps {
   schema: Schema;
   isNested?: boolean;
   groups?: string[];
+  onSubmit?: (data: FormData) => void;
+  onWatch?: (data: FormData) => void;
+  formData?: any;
 }
 
 type FormData = {
   [key: string]: any;
 };
 
-const DynamicForm: React.FC<DynamicFormProps> = ({ schema, isNested = false, groups = [] }) => {
+const defaultOnData = (data: FormData) => {
+  console.log("Form data:", data);
+};
+
+const DynamicForm: React.FC<DynamicFormProps> = ({
+  schema,
+  isNested = false,
+  groups = [],
+  onSubmit = defaultOnData,
+  onWatch = defaultOnData,
+  formData = undefined,
+}) => {
   const [formSchema] = useState<Schema>(schema);
-  const [enumValues, setEnumValues] = useState<Record<string, { label: string; value: string }[]>>({});
+  const [enumValues, setEnumValues] = useState<
+    Record<string, { label: string; value: string | number }[]>
+  >({});
 
   const validate = useMemo(() => ajv.compile(schema), [schema]);
 
   useEffect(() => {
     const fetchEnumValues = () => {
-      const values: Record<string, { label: string; value: string }[]> = {};
+      const values: Record<
+        string,
+        { label: string; value: string | number }[]
+      > = {};
 
       if (isNested && groups.length) {
-        groups.forEach(group => {
+        groups.forEach((group) => {
           if (schema[group]?.fields) {
             const fields = schema[group].fields as Record<string, SchemaField>;
-            for (const [key, field] of Object.entries(schema[group].fields as Record<string, SchemaField>)) {
+            for (const [key, field] of Object.entries(
+              schema[group].fields as Record<string, SchemaField>
+            )) {
               if (field["x-enumValues"]) {
-                const enumData = (openfundsConstants as any)[field["x-enumValues"]];
+                const enumData =
+                  (openfundsConstants as any)[field["x-enumValues"]] ||
+                  (constants as any)[field["x-enumValues"]];
                 if (Array.isArray(enumData)) {
-                  values[key] = enumData.map((item: any) => ({
-                    label: item[field["x-enumValuesLabel"] as string] || item.label,
-                    value: item[field["x-enumValuesValue"] as string] || item.value,
-                  }));
+                  if (
+                    field["x-enumValuesLabel"] &&
+                    field["x-enumValuesValue"]
+                  ) {
+                    values[key] = enumData.map((item: any) => ({
+                      label:
+                        item[field["x-enumValuesLabel"] as string] ||
+                        item.label,
+                      value:
+                        item[field["x-enumValuesValue"] as string] ||
+                        item.value,
+                    }));
+                  } else {
+                    values[key] = enumData.map((item: string, j) => ({
+                      label: item,
+                      value: j,
+                    }));
+                  }
                 }
               } else if (field.enum) {
-                values[key] = field.enum.map((item: string) => ({
+                values[key] = field.enum.map((item: string, j) => ({
                   label: item,
-                  value: item,
+                  value: j,
                 }));
               }
             }
           }
         });
-      } else if (schema.fields) {  // Add this check
+      } else if (schema.fields) {
+        // Add this check
         for (const [key, field] of Object.entries(schema.fields)) {
           if (field["x-enumValues"]) {
             const enumData = (openfundsConstants as any)[field["x-enumValues"]];
@@ -164,9 +204,9 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, isNested = false, gro
               }));
             }
           } else if (field.enum) {
-            values[key] = field.enum.map((item: string) => ({
+            values[key] = field.enum.map((item: string, j) => ({
               label: item,
-              value: item,
+              value: j,
             }));
           }
         }
@@ -180,54 +220,53 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, isNested = false, gro
     fetchEnumValues();
   }, [schema, isNested, groups]);
 
-  const form = useForm<FormData>({
-    resolver: async (values) => {
-      const valid = validate(values);
-      const errors: any = {};
+  const form = formData
+    ? formData
+    : useForm<FormData>({
+        resolver: async (values) => {
+          const valid = validate(values);
+          const errors: any = {};
 
-      if (!valid) {
-        validate.errors?.forEach((error) => {
-          let fieldKey = error.instancePath.substring(1);
+          if (!valid) {
+            validate.errors?.forEach((error) => {
+              let fieldKey = error.instancePath.substring(1);
 
-          // Handle required fields error where `instancePath` might be empty
-          if (error.keyword === "required") {
-            fieldKey = error.params.missingProperty;
+              // Handle required fields error where `instancePath` might be empty
+              if (error.keyword === "required") {
+                fieldKey = error.params.missingProperty;
+              }
+
+              // @ts-ignore
+              const fieldSchema = schema.fields[fieldKey];
+              const customError = fieldSchema?.["x-error"];
+              const requiredError =
+                error.keyword === "required"
+                  ? `${fieldSchema?.title || fieldKey} is required.`
+                  : "";
+
+              errors[fieldKey] = {
+                type: error.keyword,
+                message: [customError, requiredError].filter(Boolean).join(" "),
+              };
+            });
           }
 
-          // @ts-ignore
-          const fieldSchema = schema.fields[fieldKey];
-          const customError = fieldSchema?.["x-error"];
-          const requiredError =
-            error.keyword === "required"
-              ? `${fieldSchema?.title || fieldKey} is required.`
-              : "";
-
-          errors[fieldKey] = {
-            type: error.keyword,
-            message: [customError, requiredError].filter(Boolean).join(" "),
+          return {
+            values: valid ? values : {},
+            errors: valid ? {} : errors,
           };
-        });
-      }
-
-      return {
-        values: valid ? values : {},
-        errors: valid ? {} : errors,
-      };
-    },
-    defaultValues: {},
-  });
-
-  const onSubmit = (data: FormData) => {
-    console.log("Form data:", data);
-  };
+        },
+        defaultValues: {},
+      });
 
   if (!formSchema) {
     return <div>Loading...</div>;
   }
 
   const sortedFields = (fields: Record<string, SchemaField>) =>
-    Object.entries(fields)
-      .sort(([, a], [, b]) => (a["x-order"] || 0) - (b["x-order"] || 0));
+    Object.entries(fields).sort(
+      ([, a], [, b]) => (a["x-order"] || 0) - (b["x-order"] || 0)
+    );
 
   const renderField = (key: string, field: SchemaField) => {
     const isRequired = schema.required?.includes(key);
@@ -336,7 +375,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, isNested = false, gro
   const renderComponent = (
     key: string,
     schemaField: SchemaField,
-    field: any,
+    field: any
   ) => {
     const options = enumValues[key] || [];
     const placeholder = schemaField["x-placeholder"] || "";
@@ -392,7 +431,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, isNested = false, gro
             </SelectTrigger>
             <SelectContent>
               {options.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
+                <SelectItem key={option.value} value={"" + option.value}>
                   {option.label}
                 </SelectItem>
               ))}
@@ -414,8 +453,13 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, isNested = false, gro
           >
             {options.map((option) => (
               <div key={option.value} className="flex items-center space-x-2">
-                <RadioGroupItem value={option.value} id={option.value} />
-                <FormLabel htmlFor={option.value}>{option.label}</FormLabel>
+                <RadioGroupItem
+                  value={"" + option.value}
+                  id={"" + option.value}
+                />
+                <FormLabel htmlFor={"" + option.value}>
+                  {option.label}
+                </FormLabel>
               </div>
             ))}
           </RadioGroup>
@@ -431,8 +475,8 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, isNested = false, gro
         const date = field.value
           ? new Date(field.value)
           : schemaField.default
-            ? new Date(schemaField.default)
-            : undefined;
+          ? new Date(schemaField.default)
+          : undefined;
         return (
           <FormItem className="flex flex-col">
             <Popover>
@@ -442,7 +486,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, isNested = false, gro
                     variant={"outline"}
                     className={cn(
                       "w-full pl-3 text-left font-normal",
-                      !date && "text-muted-foreground",
+                      !date && "text-muted-foreground"
                     )}
                   >
                     {date ? format(date, "PPP") : placeholder || "Pick a date"}
@@ -474,12 +518,12 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, isNested = false, gro
                     role="combobox"
                     className={cn(
                       "w-full justify-between",
-                      !field.value && "text-muted-foreground",
+                      !field.value && "text-muted-foreground"
                     )}
                   >
                     {field.value
                       ? options.find((option) => option.value === field.value)
-                        ?.label
+                          ?.label
                       : placeholder || "Select an option"}{" "}
                     {/* Use placeholder */}
                     <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -506,7 +550,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, isNested = false, gro
                               "mr-2 h-4 w-4",
                               option.value === field.value
                                 ? "opacity-100"
-                                : "opacity-0",
+                                : "opacity-0"
                             )}
                           />
                           {option.label}
@@ -517,6 +561,56 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, isNested = false, gro
                 </Command>
               </PopoverContent>
             </Popover>
+          </FormItem>
+        );
+      case "checklist":
+        return (
+          <FormItem className="flex flex-col">
+            <ScrollArea className="h-[185px] w-full border p-4">
+              <FormField
+                name="items"
+                render={() => {
+                  return (
+                    <FormItem>
+                      {options.map((item) => (
+                        <FormField
+                          key={item.value}
+                          name="items"
+                          render={() => {
+                            return (
+                              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={(field.value || []).includes(
+                                      item.value
+                                    )}
+                                    onCheckedChange={(checked) => {
+                                      return checked
+                                        ? field.onChange(
+                                            [...field.value, item.value].sort()
+                                          )
+                                        : field.onChange(
+                                            (field.value || []).filter(
+                                              (value: number) =>
+                                                value !== item.value
+                                            )
+                                          );
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-normal">
+                                  {item.label}
+                                </FormLabel>
+                              </FormItem>
+                            );
+                          }}
+                        />
+                      ))}
+                    </FormItem>
+                  );
+                }}
+              />
+            </ScrollArea>
           </FormItem>
         );
       default:
@@ -534,19 +628,19 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, isNested = false, gro
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         {isNested && groups.length
-          ? groups.map(group =>
-            schema[group]?.fields
-              ? sortedFields(schema[group].fields).map(([key, field]) =>
-                renderField(key, field)
-              )
-              : null
-          )
-          : formSchema.fields  // Add this check
-            ? sortedFields(formSchema.fields).map(([key, field]) =>
+          ? groups.map((group) =>
+              schema[group]?.fields
+                ? sortedFields(schema[group].fields).map(([key, field]) =>
+                    renderField(key, field)
+                  )
+                : null
+            )
+          : formSchema.fields // Add this check
+          ? sortedFields(formSchema.fields).map(([key, field]) =>
               renderField(key, field)
             )
-            : null}
-        <Button type="submit" className="w-full">
+          : null}
+        <Button type="submit" className="w-full" disabled>
           Submit
         </Button>
       </form>

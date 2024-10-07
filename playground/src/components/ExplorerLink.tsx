@@ -23,7 +23,7 @@ export function ExplorerLink({
   explorer?: string;
 }) {
   const cluster = useCluster();
-  let href = cluster.getExplorerUrl(path);
+  let href = path.startsWith("http") ? path : cluster.getExplorerUrl(path);
   if (explorer == "solana.fm") {
     href = href
       .replace("explorer.solana.com", "solana.fm")
