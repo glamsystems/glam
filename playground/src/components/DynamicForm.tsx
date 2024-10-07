@@ -118,7 +118,6 @@ interface DynamicFormProps {
   isNested?: boolean;
   groups?: string[];
   onSubmit?: (data: FormData) => void;
-  onWatch?: (data: FormData) => void;
   formData?: any;
 }
 
@@ -135,7 +134,6 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   isNested = false,
   groups = [],
   onSubmit = defaultOnData,
-  onWatch = defaultOnData,
   formData = undefined,
 }) => {
   const [formSchema] = useState<Schema>(schema);
@@ -431,7 +429,8 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             </SelectTrigger>
             <SelectContent>
               {options.map((option) => (
-                <SelectItem key={option.value} value={"" + option.value}>
+                //@ts-ignore
+                <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
               ))}
@@ -453,13 +452,10 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
           >
             {options.map((option) => (
               <div key={option.value} className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value={"" + option.value}
-                  id={"" + option.value}
-                />
-                <FormLabel htmlFor={"" + option.value}>
-                  {option.label}
-                </FormLabel>
+                {/* @ts-ignore */}
+                <RadioGroupItem value={option.value} id={option.value} />
+                {/* @ts-ignore */}
+                <FormLabel htmlFor={option.value}>{option.label}</FormLabel>
               </div>
             ))}
           </RadioGroup>

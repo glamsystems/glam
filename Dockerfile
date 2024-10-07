@@ -1,17 +1,14 @@
-FROM ubuntu:22.04
+FROM node:20-slim AS base
 
+# BUILDER
+FROM base AS builder
 WORKDIR /mnt/workspace
-
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y curl
-
-RUN curl -sL https://deb.nodesource.com/setup_20.x | bash && \
-    apt-get install -y nodejs && \
-    npm install -g pnpm@9.1.2
 
 COPY . ./
 
-ENV PORT=8080
+RUN corepack enable pnpm
 RUN pnpm install && pnpm run pg-build
+RUN scripts/cleandeps_playground.sh
 
+ENV PORT=8080
 CMD ["pnpm", "pg-start-docker"]

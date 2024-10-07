@@ -15,8 +15,8 @@ import DynamicForm from "@/components/DynamicForm";
 import schema from "../../data/glamRiskSchema.json";
 import { useForm } from "react-hook-form";
 
-export default async function Risk() {
-  //@ts-ignore
+export default function Risk() {
+  // @ts-ignore
   const { allFunds, activeFund, glamClient } = useGlam();
 
   const fundId = activeFund?.addressStr;
@@ -119,9 +119,6 @@ export default async function Risk() {
             formData={driftForm}
             onSubmit={(data: any) => {
               console.log("submit", data);
-            }}
-            onWatch={(data: any) => {
-              console.log("watch", data);
             }}
           />
         </div>
