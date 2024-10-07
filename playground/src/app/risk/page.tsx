@@ -11,15 +11,41 @@ import { IntegrationsList } from "./components/integrations-list";
 import { integrations } from "./data";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";
+import DynamicForm from "@/components/DynamicForm";
+import schema from "../../data/glamRiskSchema.json";
+import { useForm } from "react-hook-form";
 
-export default function Risk() {
+export default async function Risk() {
   //@ts-ignore
-  const { allFunds, activeFund } = useGlam();
+  const { allFunds, activeFund, glamClient } = useGlam();
 
   const fundId = activeFund?.addressStr;
   const fund: any = fundId
     ? (allFunds || []).find((f: any) => f.idStr === fundId)
     : undefined;
+
+  const driftForm = useForm<any>({
+    defaultValues: {
+      driftAccessControl: 0,
+      driftDelegatedAccount: null,
+      driftMarketIndexesPerp: [],
+      driftOrderTypes: [],
+      driftMaxLeverage: null,
+      driftEnableSpot: false,
+      driftMarketIndexesSpot: [],
+    },
+  });
+
+  useEffect(() => {
+    const fetchDriftData = async () => {
+      const driftPolicy = await glamClient.drift.fetchPolicyConfig(fund);
+      for (const [key, value] of Object.entries(driftPolicy)) {
+        driftForm.setValue(key, value);
+      }
+    };
+
+    fetchDriftData();
+  }, [fund]);
 
   //TODO: load on chain data and remove this whole useEffect
   const [rerender, setRerender] = useState(0);
@@ -47,6 +73,23 @@ export default function Risk() {
     setRerender(rerender + 1);
   }, [fundId]);
 
+  // form behavior, change visible fields based on access control
+  const watchDriftAccessControl = driftForm.watch("driftAccessControl");
+  useEffect(() => {
+    if (watchDriftAccessControl === 0) {
+      schema.drift.fields.driftDelegatedAccount["x-hidden"] = false;
+      schema.drift.fields.driftMarketIndexesPerp["x-hidden"] = true;
+      schema.drift.fields.driftOrderTypes["x-hidden"] = true;
+      schema.drift.fields.driftMarketIndexesSpot["x-hidden"] = true;
+    } else {
+      schema.drift.fields.driftDelegatedAccount["x-hidden"] = true;
+      schema.drift.fields.driftMarketIndexesPerp["x-hidden"] = false;
+      schema.drift.fields.driftOrderTypes["x-hidden"] = false;
+      schema.drift.fields.driftMarketIndexesSpot["x-hidden"] = false;
+    }
+    setRerender(rerender + 1);
+  }, [watchDriftAccessControl]);
+
   return (
     <PageContentWrapper>
       <div className="flex">
@@ -68,7 +111,20 @@ export default function Risk() {
             </TabsContent>
           </Tabs>
         </div>
-        <div className="w-full ml-16"></div>
+        <div className="w-full ml-16 pt-[26px]">
+          <DynamicForm
+            schema={schema}
+            isNested={true}
+            groups={["drift"]}
+            formData={driftForm}
+            onSubmit={(data: any) => {
+              console.log("submit", data);
+            }}
+            onWatch={(data: any) => {
+              console.log("watch", data);
+            }}
+          />
+        </div>
       </div>
     </PageContentWrapper>
   );

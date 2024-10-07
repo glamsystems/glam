@@ -73,69 +73,14 @@ import {
   OrderType,
   PositionDirection,
 } from "@drift-labs/sdk";
+import {
+  DRIFT_ORDER_TYPES,
+  DRIFT_PERP_MARKETS,
+  DRIFT_SPOT_MARKETS,
+} from "@/constants";
 
-const spotMarkets = [{ label: "SOL/USDC", value: "SOL-USDC" }] as const;
-
-const ORDER_TYPES: [string, ...string[]] = [
-  "Market",
-  "Limit",
-  "Trigger Market",
-  "Trigger Limit",
-  "Oracle",
-];
-
-const PERP_MARKETS: [string, ...string[]] = [
-  "SOL-PERP",
-  "BTC-PERP",
-  "ETH-PERP",
-  "APT-PERP",
-  "1MBONK-PERP",
-  "MATIC-PERP",
-  "ARB-PERP",
-  "DOGE-PERP",
-  "BNB-PERP",
-  "SUI-PERP",
-  "1MPEPE-PERP",
-  "OP-PERP",
-  "RENDER-PERP",
-  "XRP-PERP",
-  "HNT-PERP",
-  "INJ-PERP",
-  "LINK-PERP",
-  "RLB-PERP",
-  "PYTH-PERP",
-  "TIA-PERP",
-  "JTO-PERP",
-  "SEI-PERP",
-  "AVAX-PERP",
-  "WIF-PERP",
-  "JUP-PERP",
-  "DYM-PERP",
-  "TAO-PERP",
-  "W-PERP",
-  "KMNO-PERP",
-  "TNSR-PERP",
-  "DRIFT-PERP",
-  "CLOUD-PERP",
-  "IO-PERP",
-  "ZEX-PERP",
-  "POPCAT-PERP",
-  "1KWEN-PERP",
-  "TRUMP-WIN-2024-BET",
-  "KAMALA-POPULAR-VOTE-2024-BET",
-  "FED-CUT-50-SEPT-2024-BET",
-  "REPUBLICAN-POPULAR-AND-WIN-BET",
-  "BREAKPOINT-IGGYERIC-BET",
-  "DEMOCRATS-WIN-MICHIGAN-BET",
-  "TON-PERP",
-  "LANDO-F1-SGP-WIN-BET",
-  "MOTHER-PERP",
-  "MOODENG-PERP",
-  "WARWICK-FIGHT-WIN-BET",
-];
-
-const perpsMarkets = PERP_MARKETS.map((x) => ({ label: x, value: x }));
-const orderTypes = ORDER_TYPES.map((x) => ({ label: x, value: x }));
+const spotMarkets = DRIFT_SPOT_MARKETS.map((x) => ({ label: x, value: x }));
+const perpsMarkets = DRIFT_PERP_MARKETS.map((x) => ({ label: x, value: x }));
 
 const swapSchema = z.object({
   venue: z.enum(["Jupiter"]),
@@ -157,14 +102,8 @@ const swapSchema = z.object({
 
 const spotSchema = z.object({
   venue: z.enum(["Jupiter", "Drift"]),
-  spotMarket: z.enum(["SOL-USDC"]),
-  spotType: z.enum([
-    "Market",
-    "Limit",
-    "Trigger Market",
-    "Trigger Limit",
-    "Oracle",
-  ]),
+  spotMarket: z.enum(DRIFT_SPOT_MARKETS),
+  spotType: z.enum(DRIFT_ORDER_TYPES),
   side: z.enum(["Buy", "Sell"]),
   limitPrice: z.number().nonnegative(),
   size: z.number().nonnegative(),
@@ -177,8 +116,8 @@ const spotSchema = z.object({
 
 const perpsSchema = z.object({
   venue: z.enum(["Drift"]),
-  perpsMarket: z.enum(PERP_MARKETS),
-  perpsType: z.enum(ORDER_TYPES),
+  perpsMarket: z.enum(DRIFT_PERP_MARKETS),
+  perpsType: z.enum(DRIFT_ORDER_TYPES),
   side: z.enum(["Buy", "Sell"]),
   limitPrice: z.number().nonnegative(),
   size: z.number().nonnegative(),
@@ -441,7 +380,7 @@ export default function Trade() {
         values.side === "Buy"
           ? PositionDirection.LONG
           : PositionDirection.SHORT,
-      marketIndex: PERP_MARKETS.indexOf(values.perpsMarket),
+      marketIndex: DRIFT_PERP_MARKETS.indexOf(values.perpsMarket),
       baseAssetAmount: new anchor.BN(values.size * LAMPORTS_PER_SOL),
       price: new anchor.BN(values.limitPrice), // set a very low limit price
     });
@@ -1428,7 +1367,7 @@ export default function Trade() {
 
                   <div className="flex">
                     <ExplorerLink
-                      path={`/account/${driftUserAccount}`}
+                      path={`https://app.drift.trade/?userAccount=${driftUserAccount}`}
                       label={driftUserAccount}
                     />
                   </div>

@@ -15,6 +15,7 @@ import {
   initialize as _initialize,
   PositionDirection,
   BulkAccountLoader,
+  decodeUser,
 } from "@drift-labs/sdk";
 
 import { BaseClient, ApiTxOptions } from "./base";
@@ -22,6 +23,7 @@ import { BaseClient, ApiTxOptions } from "./base";
 const DRIFT_VAULT = new PublicKey(
   "JCNCMFXo5M5qwUPg2Utu1u6YWp3MbygxqBsBeXXJfrw"
 );
+const DRIFT_MARGIN_PRECISION = 10_000;
 
 const remainingAccountsForOrders = [
   {
@@ -204,6 +206,39 @@ export class DriftClient {
     return market;
   }
 
+  async fetchPolicyConfig(fund: any) {
+    let driftUserAccount;
+    if (fund) {
+      const [driftUserAddress] = this.getUser(fund.id);
+      const connection = this.base.provider.connection;
+      const info = await connection.getAccountInfo(
+        driftUserAddress,
+        connection.commitment
+      );
+      if (info) {
+        driftUserAccount = decodeUser(info.data);
+      }
+    }
+    let delegate = driftUserAccount?.delegate;
+    if (
+      delegate &&
+      delegate.toBase58() === "11111111111111111111111111111111"
+    ) {
+      delegate = undefined;
+    }
+    return {
+      driftAccessControl: delegate ? 0 : 1,
+      driftDelegatedAccount: delegate || null,
+      driftMarketIndexesPerp: fund?.driftMarketIndexesPerp || [],
+      driftOrderTypes: fund?.driftOrderTypes || [],
+      driftMaxLeverage: driftUserAccount?.maxMarginRatio
+        ? DRIFT_MARGIN_PRECISION / driftUserAccount?.maxMarginRatio
+        : null,
+      driftEnableSpot: driftUserAccount?.isMarginTradingEnabled || false,
+      driftMarketIndexesSpot: fund?.driftMarketIndexesSpot || [],
+    };
+  }
+
   /*
    * API methods
    */
@@ -244,9 +279,8 @@ export class DriftClient {
     const manager = apiOptions.signer || this.base.getManager();
     const [user] = this.getUser(fund, subAccountId);
 
-    const MARGIN_PRECISION = 10_000;
     // https://github.com/drift-labs/protocol-v2/blob/babed162b08b1fe34e49a81c5aa3e4ec0a88ecdf/programs/drift/src/math/constants.rs#L183-L184
-    const marginRatio = MARGIN_PRECISION / maxLeverage;
+    const marginRatio = DRIFT_MARGIN_PRECISION / maxLeverage;
 
     const tx = await this.base.program.methods
       .driftUpdateUserCustomMarginRatio(subAccountId, marginRatio)
