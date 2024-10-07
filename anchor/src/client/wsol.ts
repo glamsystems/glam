@@ -41,6 +41,7 @@ export class WSolClient {
     const treasury = this.base.getTreasuryPDA(fund);
     const treasuryWsolAta = this.base.getTreasuryAta(fund, WSOL);
 
+    // @ts-ignore
     const tx = await this.base.program.methods
       .wsolWrap(amount)
       .accounts({

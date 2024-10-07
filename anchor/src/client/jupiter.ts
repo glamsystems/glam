@@ -149,6 +149,7 @@ export class JupiterClient {
       outputMint,
       amount
     );
+    // @ts-ignore
     const tx = await this.base.program.methods
       .jupiterSwap(amount, swapIx.data)
       .accounts({

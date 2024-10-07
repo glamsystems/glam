@@ -57,23 +57,27 @@ export class DriftClient {
   _driftClient: _DriftClient;
 
   public constructor(readonly base: BaseClient) {
-    // Set up the drift client
-    const env = "mainnet-beta";
-    const sdkConfig = _initialize({ env });
-    this._driftClient = new _DriftClient({
-      connection: this.base.provider.connection,
-      wallet: this.base.getWallet(),
-      programID: new PublicKey(DRIFT_PROGRAM_ID),
-      env,
-      accountSubscription: {
-        type: "polling",
-        accountLoader: new BulkAccountLoader(
-          this.base.provider.connection,
-          "confirmed",
-          1000
-        ),
-      },
-    });
+    const wallet = this.base.getWallet();
+
+    // Set up the drift client of wallet is connected
+    if (wallet) {
+      const env = "mainnet-beta";
+      const sdkConfig = _initialize({ env });
+      this._driftClient = new _DriftClient({
+        connection: this.base.provider.connection,
+        wallet,
+        programID: new PublicKey(DRIFT_PROGRAM_ID),
+        env,
+        accountSubscription: {
+          type: "polling",
+          accountLoader: new BulkAccountLoader(
+            this.base.provider.connection,
+            "confirmed",
+            1000
+          ),
+        },
+      });
+    }
   }
 
   /*

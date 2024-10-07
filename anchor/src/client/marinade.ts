@@ -226,6 +226,7 @@ export class MarinadeClient {
       true
     );
 
+    // @ts-ignore
     const tx = await this.base.program.methods
       .marinadeDepositSol(amount)
       .accounts({
