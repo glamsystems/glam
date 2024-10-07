@@ -315,7 +315,6 @@ export function DataTable<TData extends KeyData>({
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <Sheet key={row.id}>
-                  {" "}
                   {/* Add key prop here */}
                   <SheetTrigger asChild>
                     <TableRow

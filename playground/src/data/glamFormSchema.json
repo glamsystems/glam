@@ -791,7 +791,7 @@
         "maxValue": 7
       },
       "hasPermanentDelegate": {
-        "x-id": "OFGS410948",
+        "x-id": "OFGS410948x",
         "type": "boolean",
         "title": "Has Permanent Delegate",
         "description": "Indicates if the share class has a permanent delegate",
@@ -1078,7 +1078,7 @@
     "type": "object",
     "fields": {
       "hasPermanentDelegate": {
-        "x-id": "OFGS410948",
+        "x-id": "OFGS410948x",
         "type": "boolean",
         "title": "Has Permanent Delegate",
         "description": "Indicates if the share class has a permanent delegate",
@@ -1090,7 +1090,7 @@
         "x-enforced": false
       },
       "lockUpPeriodInSeconds": {
-        "x-id": "OFGS410955",
+        "x-id": "OFGS410955x",
         "type": "number",
         "title": "Lock-up Period in Seconds",
         "description": "Duration of the lock-up period in seconds",
@@ -1102,7 +1102,7 @@
         "x-enforced": false
       },
       "lockUpComment": {
-        "x-id": "OFST410952",
+        "x-id": "OFST410952x",
         "type": "string",
         "title": "Lock-up Comment",
         "description": "Details about the lock-up period and conditions",

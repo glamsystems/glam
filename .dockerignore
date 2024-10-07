@@ -1,3 +1,14 @@
-node_modules
+.github
 .nx
+.vscode
+anchor
+!anchor/src
+!anchor/target/idl
+!anchor/target/types
 api
+dist
+node_modules
+playground/.next
+scripts
+!scripts/cleandeps_playground.sh
+.git

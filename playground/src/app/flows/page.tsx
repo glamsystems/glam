@@ -372,6 +372,7 @@ function InvestorDisclaimers({
 }
 
 function InvestorWidget({ fundId }: { fundId: string }) {
+  //@ts-ignore
   const { glamClient, allFunds, walletBalances, walletBalancesQueryKey } =
     useGlam();
   const queryClient = useQueryClient();
