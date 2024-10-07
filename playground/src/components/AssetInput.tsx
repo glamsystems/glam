@@ -117,7 +117,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
       if (!isNaN(numericValue)) {
         setValue(name, numericValue);
       } else {
-        setValue(name, 0);
+        setValue(name, "");
       }
     }
   };
@@ -145,10 +145,12 @@ export const AssetInput: React.FC<AssetInputProps> = ({
             <div className="relative">
               <Input
                 {...field}
+                type="number"
+                step="any"
                 ref={inputRef}
                 value={getValues()[name]}
                 className="pr-20"
-                placeholder="0"
+                placeholder=""
                 onChange={(e) => handleInputChange(e.target.value)}
                 disabled={disableAmountInput}
               />
