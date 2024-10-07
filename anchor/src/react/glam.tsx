@@ -31,8 +31,10 @@ interface GlamProviderContext {
   fund?: PublicKey;
   treasury?: FundCacheTreasury;
   fundsList: FundCache[];
+  //@ts-ignore
   allFunds: FundModel[];
   walletBalances: any;
+  walletBalancesQueryKey: any[];
   refresh?: () => void;
   setActiveFund: any;
   tokenList?: TokenListItem[];
@@ -175,10 +177,13 @@ export function GlamProvider({
     );
   }, [allFundsData]);
 
+  const walletBalancesQueryKey = ["balances", wallet?.publicKey];
   const { data: walletBalances } = useQuery({
-    queryKey: ["balances", wallet?.publicKey],
+    queryKey: walletBalancesQueryKey,
     enabled: !!wallet?.publicKey,
+    // refetchInterval: 2000, // 2s
     queryFn: async () => {
+      console.log("fetching walletBalances");
       const balanceLamports = await glamClient.provider.connection.getBalance(
         wallet?.publicKey || new PublicKey(0)
       );
@@ -228,6 +233,7 @@ export function GlamProvider({
     fundsList: useAtomValue(fundsListAtom),
     allFunds,
     walletBalances,
+    walletBalancesQueryKey,
     tokenList,
     setActiveFund,
   };

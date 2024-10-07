@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, SubmitHandler, FormProvider } from "react-hook-form";
 import { z } from "zod";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -372,7 +372,10 @@ function InvestorDisclaimers({
 }
 
 function InvestorWidget({ fundId }: { fundId: string }) {
-  const { glamClient, allFunds, walletBalances } = useGlam();
+  const { glamClient, allFunds, walletBalances, walletBalancesQueryKey } =
+    useGlam();
+  const queryClient = useQueryClient();
+
   const fund: any = fundId
     ? (allFunds || []).find((f: any) => f.idStr === fundId)
     : undefined;
@@ -508,6 +511,7 @@ function InvestorWidget({ fundId }: { fundId: string }) {
       txId = await glamClient.investor.subscribe(fund.id, asset, amount);
     }
 
+    queryClient.invalidateQueries({ queryKey: walletBalancesQueryKey });
     toast({
       title: `Successful ${direction}`,
       description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
