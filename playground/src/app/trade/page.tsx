@@ -382,7 +382,7 @@ export default function Trade() {
           : PositionDirection.SHORT,
       marketIndex: DRIFT_PERP_MARKETS.indexOf(values.perpsMarket),
       baseAssetAmount: new anchor.BN(values.size * LAMPORTS_PER_SOL),
-      price: new anchor.BN(values.limitPrice), // set a very low limit price
+      price: new anchor.BN(values.limitPrice * 10 ** 6),
     });
     console.log("Drift perps orderParams", orderParams);
 
