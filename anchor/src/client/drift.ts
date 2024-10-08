@@ -54,6 +54,7 @@ const remainingAccountsForOrders = [
 ];
 
 export class DriftClient {
+  // @ts-ignore: Property '_driftClient' has no initializer and is not definitely assigned in the constructor.
   _driftClient: _DriftClient;
 
   public constructor(readonly base: BaseClient) {
