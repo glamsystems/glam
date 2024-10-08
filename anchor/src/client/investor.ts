@@ -96,6 +96,7 @@ export class InvestorClient {
     // 1. treasury atas + pricing to compute AUM
     // 2. marinade ticket
     // 3. stake accounts
+    // @ts-ignore
     const fundModel = await this.base.fetchFund(fund);
     const remainingAccounts = (fundModel.assets || []).flatMap((asset: any) => {
       const assetMeta = this.base.getAssetMeta(asset.toBase58());

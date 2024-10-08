@@ -49,6 +49,7 @@ import { AssetMeta, ASSETS_MAINNET, ASSETS_TESTS } from "./assets";
 import base58 from "bs58";
 import { MARINADE_PROGRAM_ID } from "../constants";
 
+// @ts-ignore
 type FundAccount = IdlAccounts<Glam>["fundAccount"];
 type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
 
