@@ -646,7 +646,7 @@ export default function Trade() {
                     />
                   </div>
 
-                  <div className="flex space-x-4 items-center">
+                  <div className="flex space-x-4 items-start">
                     <AssetInput
                       className="min-w-1/2 w-1/2"
                       name="from"
@@ -682,7 +682,7 @@ export default function Trade() {
                               value={field.value}
                             />
                           </FormControl>
-                          <FormDescription>&nbsp;</FormDescription>
+                          {/*<FormDescription>&nbsp;</FormDescription>*/}
                           <FormMessage />
                         </FormItem>
                       )}
