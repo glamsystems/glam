@@ -27,64 +27,6 @@ export default function Product() {
   return (
     <PageContentWrapper>
       <div className="w-4/6 self-center">
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild className="mb-5">
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              className="w-full pl-2 justify-between"
-            >
-              <span className="flex flex-row align-center">
-              <span className="mr-2">
-                {fundId ? (
-                  <Sparkle
-                    address={(allFunds.find((f: any) => f.idStr === fundId) as any)?.imageKey}
-                    size={24}
-                  />
-                ) : (
-                  <div className="h-[24px] w-[24px] border"></div>
-                )}
-              </span>
-              <span className="leading-6">
-                {fundId
-                  ? allFunds.find((f: any) => f.idStr === fundId)?.name
-                  : "Select product..."}
-              </span>
-              </span>
-              <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-full p-0" align="start">
-            <Command>
-              <CommandInput placeholder="Search product..." />
-              <CommandList>
-                <CommandEmpty>No product found.</CommandEmpty>
-                <CommandGroup>
-                  {allFunds.map((f) => (
-                    <CommandItem
-                      key={(f as any)?.idStr}
-                      onSelect={() => {
-                        setFundId((f as any)?.idStr);
-                        setOpen(false);
-                      }}
-                      className="flex items-center"
-                    >
-                      <span className="mr-2">
-                        <Sparkle
-                          address={(f as any)?.imageKey}
-                          size={24}
-                        />
-                      </span>
-                      {f.name}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-
           <DynamicForm schema={schema} isNested={true} groups={["company", "fund", "fundManager"]} columns={2} />
       </div>
     </PageContentWrapper>);

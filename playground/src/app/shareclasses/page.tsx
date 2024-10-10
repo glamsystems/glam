@@ -6,86 +6,109 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {ShareClassesList} from "./components/shareClasses-list"
 import {shareClasses} from "./data";
 import {Button} from "@/components/ui/button";
-import { CaretSortIcon, PlusIcon } from "@radix-ui/react-icons";
+import { PlusIcon } from "@radix-ui/react-icons";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import ToolbarTree from "@/components/ToolbarTree";
 import * as React from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import Sparkle from "@/utils/Sparkle";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { useGlam } from "@glam/anchor/react";
-import { useState } from "react";
 
-export default function ShareClasses() {
-  const { glamClient, allFunds, walletBalances } = useGlam();
-  const [fundId, setFundId] = useState("");
-  const [open, setOpen] = React.useState(false);
-  const fund: any = fundId
-    ? (allFunds || []).find((f: any) => f.idStr === fundId)
-    : undefined;
-
-  return (<PageContentWrapper>
-      <div className="w-4/6 self-center">
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild className="mb-5">
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              className="w-full pl-2 justify-between"
-            >
-              <span className="flex flex-row align-center">
-              <span className="mr-2">
-                {fundId ? (<Sparkle
-                    address={(allFunds.find((f: any) => f.idStr === fundId) as any)?.imageKey}
-                    size={24}
-                  />) : (<div className="h-[24px] w-[24px] border"></div>)}
-              </span>
-              <span className="leading-6">
-                {fundId ? allFunds.find((f: any) => f.idStr === fundId)?.name : "Select share class..."}
-              </span>
-              </span>
-              <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-full p-0" align="start">
-            <Command>
-              <CommandInput placeholder="Search product..." />
-              <CommandList>
-                <CommandEmpty>No product found.</CommandEmpty>
-                <CommandGroup>
-                  {allFunds.map((f) => (<CommandItem
-                      key={(f as any)?.idStr}
-                      onSelect={() => {
-                        setFundId((f as any)?.idStr);
-                        setOpen(false);
-                      }}
-                      className="flex items-center"
-                    >
-                      <span className="mr-2">
-                        <Sparkle
-                          address={(f as any)?.imageKey}
-                          size={24}
-                        />
-                      </span>
-                      {f.name}
-                    </CommandItem>))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-
-        <DynamicForm
-          schema={schema}
-          isNested={true}
-          groups={["shareClass"]}
-          columns={2}
-        />
+export default function Products() {
+  return (
+    <PageContentWrapper>
+      <div className="flex">
+        <div className="w-[25%] max-w-[25%] min-w-[25%]">
+          <Tabs defaultValue="all">
+            <div>
+              <TabsList>
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="active">Active</TabsTrigger>
+                <TooltipProvider>
+                  <Tooltip>
+                    <Sheet>
+                      <SheetTrigger asChild>
+                        <TooltipTrigger>
+                          <Button
+                            variant="ghost"
+                            className="ml-4 h-10"
+                            size="icon"
+                          >
+                            <PlusIcon className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                      </SheetTrigger>
+                      <SheetContent
+                        side="right"
+                        className="p-12 sm:max-w-none w-1/2"
+                      >
+                        <SheetHeader>
+                          <SheetTitle>Create Share Class</SheetTitle>
+                          <SheetDescription>
+                            Create a new share class.
+                          </SheetDescription>
+                        </SheetHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="fullShareClassName" className="text-right">
+                              Full Share Class Name
+                            </Label>
+                            <Input id="fullShareClassName" placeholder="ESPA Bond Danubia A EUR" className="col-span-3" />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="shareClassSymbol" className="text-right">
+                              Share Class Symbol
+                            </Label>
+                            <Input
+                              id="shareClassSymbol"
+                              placeholder="EBDAE"
+                              className="col-span-3"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="shareClassCurrency" className="text-right">
+                              Share Class Currency
+                            </Label>
+                            <Input
+                              id="shareClassCurrency"
+                              placeholder="SOL"
+                              className="col-span-3"
+                            />
+                          </div>
+                        </div>
+                        <SheetFooter>
+                          <SheetClose asChild>
+                            <Button type="submit">Create Share Class</Button>
+                          </SheetClose>
+                        </SheetFooter>
+                      </SheetContent>
+                    </Sheet>
+                    <TooltipContent side="right">
+                      <p>Create Share Class</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </TabsList>
+            </div>
+            <TabsContent value="all">
+              <ShareClassesList items={shareClasses} />
+            </TabsContent>
+            <TabsContent value="active">
+              <ShareClassesList
+                items={shareClasses.filter((item) => item.active)}
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
+        <div className="w-full ml-16 pt-[26px]">
+          <DynamicForm
+            schema={schema}
+            isNested={true}
+            groups={["shareClass"]}
+            columns={2}
+          />
+        </div>
       </div>
-    </PageContentWrapper>);
+    </PageContentWrapper>
+  );
 }
