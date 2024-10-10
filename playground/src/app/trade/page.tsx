@@ -2,10 +2,10 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  useForm,
-  SubmitHandler,
   FormProvider,
-  useFormContext,
+  SubmitHandler,
+  useForm,
+  UseFormReturn,
 } from "react-hook-form";
 import { z } from "zod";
 
@@ -38,9 +38,9 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
 import { Asset, AssetInput } from "@/components/AssetInput";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { MSOL, useGlam, WSOL } from "@glam/anchor/react";
+import { useGlam } from "@glam/anchor/react";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -78,9 +78,82 @@ import {
   DRIFT_PERP_MARKETS,
   DRIFT_SPOT_MARKETS,
 } from "@/constants";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const spotMarkets = DRIFT_SPOT_MARKETS.map((x) => ({ label: x, value: x }));
 const perpsMarkets = DRIFT_PERP_MARKETS.map((x) => ({ label: x, value: x }));
+
+const PERSISTED_FIELDS = {
+  swap: [
+    "venue",
+    "slippage",
+    "exactMode",
+    "maxAccounts",
+    "directRouteOnly",
+    "useWSOL",
+    "items",
+    "versionedTransactions",
+  ],
+  spot: [
+    "venue",
+    "spotMarket",
+    "spotType",
+    "side",
+    "spotReduceOnly",
+    "post",
+    "leverage",
+  ],
+  perps: [
+    "venue",
+    "perpsMarket",
+    "perpsType",
+    "side",
+    "perpsReduceOnly",
+    "post",
+    "leverage",
+  ],
+};
+
+type FormKey = keyof typeof PERSISTED_FIELDS;
+
+function usePersistedForm<T extends z.ZodTypeAny>(
+  formKey: FormKey,
+  schema: T,
+  defaultValues: z.infer<T>
+): UseFormReturn<z.infer<T>> {
+  const form = useForm<z.infer<T>>({
+    resolver: zodResolver(schema),
+    defaultValues: defaultValues,
+  });
+
+  useEffect(() => {
+    const storedValues = localStorage.getItem(formKey);
+    if (storedValues) {
+      const parsedValues = JSON.parse(storedValues);
+      Object.keys(parsedValues).forEach((key) => {
+        if (PERSISTED_FIELDS[formKey].includes(key as any)) {
+          form.setValue(key as any, parsedValues[key]);
+        }
+      });
+    }
+  }, [formKey, form]);
+
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      const persistedValues: Partial<z.infer<T>> = {};
+      PERSISTED_FIELDS[formKey].forEach((field) => {
+        if (value[field as keyof z.infer<T>] !== undefined) {
+          persistedValues[field as keyof z.infer<T>] =
+            value[field as keyof z.infer<T>];
+        }
+      });
+      localStorage.setItem(formKey, JSON.stringify(persistedValues));
+    });
+    return () => subscription.unsubscribe();
+  }, [formKey, form]);
+
+  return form;
+}
 
 const swapSchema = z.object({
   venue: z.enum(["Jupiter"]),
@@ -112,6 +185,7 @@ const spotSchema = z.object({
   spotReduceOnly: z.boolean().optional(),
   post: z.boolean().optional(),
   showConfirmation: z.boolean().optional(),
+  leverage: z.number().nonnegative(),
 });
 
 const perpsSchema = z.object({
@@ -137,35 +211,13 @@ export default function Trade() {
   const { fund: fundPDA, treasury, wallet, glamClient, tokenList } = useGlam();
   const [fromAsset, setFromAsset] = useState<string>("SOL");
   const [toAsset, setToAsset] = useState<string>("SOL");
-  const [items, setItems] = useState<{ id: string; label: string }[]>([
-    {
-      id: "meteora",
-      label: "Meteora",
-    },
-    {
-      id: "meteora-dlmm",
-      label: "Meteora DLMM",
-    },
-    {
-      id: "raydium",
-      label: "Raydium",
-    },
-    {
-      id: "raydium-clmm",
-      label: "Raydium CLMM",
-    },
-    {
-      id: "raydium-cp",
-      label: "Raydium CP",
-    },
-    {
-      id: "whirlpool",
-      label: "Whirlpool",
-    },
-  ] as const);
+  const [items, setItems] = useState<{ id: string; label: string }[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("swap");
 
   useEffect(() => {
     const fetchItems = async () => {
+      setIsLoading(true);
       try {
         const response = await fetch(
           "https://quote-api.jup.ag/v6/program-id-to-label"
@@ -183,6 +235,8 @@ export default function Trade() {
         setItems(sortedItems);
       } catch (error) {
         console.error("Error fetching program ID to label mapping:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -221,57 +275,61 @@ export default function Trade() {
     return assets;
   }, [treasury, tokenList]);
 
-  const swapForm = useForm<SwapSchema>({
-    resolver: zodResolver(swapSchema),
-    defaultValues: {
-      venue: "Jupiter",
-      swapType: "Swap",
-      slippage: 0.1,
-      items: ["meteora"],
-      exactMode: "ExactIn",
-      maxAccounts: 20,
-      from: 0,
-      to: 0,
-      directRouteOnly: false,
-      useWSOL: false,
-      versionedTransactions: false,
-    },
+  const swapForm = usePersistedForm("swap", swapSchema, {
+    venue: "Jupiter",
+    swapType: "Swap",
+    slippage: 0.1,
+    items: [""],
+    exactMode: "ExactIn",
+    maxAccounts: 20,
+    from: 0,
+    fromAsset: "SOL",
+    to: 0,
+    toAsset: "USDC",
+    directRouteOnly: false,
+    useWSOL: false,
+    versionedTransactions: false,
   });
 
-  const spotForm = useForm<SpotSchema>({
-    resolver: zodResolver(spotSchema),
-    defaultValues: {
-      venue: "Drift",
-      spotMarket: "SOL-USDC",
-      spotType: "Limit",
-      side: "Buy",
-      limitPrice: 0,
-      size: 0,
-      notional: 0,
-      triggerPrice: 0,
-      spotReduceOnly: false,
-      post: false,
-      showConfirmation: true,
-    },
+  const spotForm = usePersistedForm("spot", spotSchema, {
+    venue: "Drift",
+    spotMarket: "SOL-USDC",
+    spotType: "Limit",
+    side: "Buy",
+    limitPrice: 0,
+    size: 0,
+    notional: 0,
+    triggerPrice: 0,
+    spotReduceOnly: false,
+    post: false,
+    showConfirmation: true,
+    leverage: 0,
   });
 
-  const perpsForm = useForm<PerpsSchema>({
-    resolver: zodResolver(perpsSchema),
-    defaultValues: {
-      venue: "Drift",
-      perpsMarket: "SOL-PERP",
-      perpsType: "Limit",
-      side: "Buy",
-      limitPrice: 0,
-      size: 0,
-      notional: 0,
-      triggerPrice: 0,
-      perpsReduceOnly: false,
-      post: false,
-      showConfirmation: true,
-      leverage: 0,
-    },
+  const perpsForm = usePersistedForm("perps", perpsSchema, {
+    venue: "Drift",
+    perpsMarket: "SOL-PERP",
+    perpsType: "Limit",
+    side: "Buy",
+    limitPrice: 0,
+    size: 0,
+    notional: 0,
+    triggerPrice: 0,
+    perpsReduceOnly: false,
+    post: false,
+    showConfirmation: true,
+    leverage: 0,
   });
+
+  useEffect(() => {
+    const perpsLeverageValue = perpsForm.watch("leverage");
+    console.log("Perps form leverage value:", perpsLeverageValue);
+  }, [perpsForm]);
+
+  useEffect(() => {
+    const spotLeverageValue = spotForm.watch("leverage");
+    console.log("Spot form leverage value:", spotLeverageValue);
+  }, [spotForm]);
 
   const spotOrderType = spotForm.watch("spotType");
   const spotReduceOnly = spotForm.watch("spotReduceOnly");
@@ -406,7 +464,7 @@ export default function Trade() {
       venue: "Jupiter",
       swapType: "Swap",
       slippage: 0.1,
-      items: ["meteora"],
+      items: [""],
       exactMode: "ExactIn",
       maxAccounts: 20,
       from: 0,
@@ -446,7 +504,7 @@ export default function Trade() {
 
   const handleSideChange = (value: string) => {
     if (value) {
-      perpsForm.setValue("side", value as "Buy" | "Sell");
+      spotForm.setValue("side", value as "Buy" | "Sell");
     }
   };
 
@@ -466,10 +524,42 @@ export default function Trade() {
     ? glamClient.drift.getUser(fundPDA)[0].toBase58()
     : "";
 
+  const getButtonText = () => {
+    switch (activeTab) {
+      case "swap":
+        return "Swap";
+      case "spot":
+        return "Place Spot Order";
+      case "perps":
+        return "Place Perp Order";
+      default:
+        return "Submit";
+    }
+  };
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    switch (activeTab) {
+      case "swap":
+        swapForm.handleSubmit(onSubmitSwap)();
+        break;
+      case "spot":
+        spotForm.handleSubmit(onSubmitSpot)();
+        break;
+      case "perps":
+        perpsForm.handleSubmit(onSubmitPerps)();
+        break;
+    }
+  };
+
   return (
     <PageContentWrapper>
       <div className="w-4/6 self-center">
-        <Tabs defaultValue="perps" className="w-full">
+        <Tabs
+          defaultValue="swap"
+          className="w-full"
+          onValueChange={setActiveTab}
+        >
           <TabsList className="w-full select-none mb-2">
             <TabsTrigger value="swap" className="w-full">
               Swap
@@ -493,10 +583,7 @@ export default function Trade() {
           <TabsContent value="swap">
             <FormProvider {...swapForm}>
               <Form {...swapForm}>
-                <form
-                  onSubmit={swapForm.handleSubmit(onSubmitSwap)}
-                  className="space-y-4"
-                >
+                <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="flex space-x-4">
                     <FormField
                       control={swapForm.control}
@@ -656,23 +743,26 @@ export default function Trade() {
                             name="items"
                             render={() => (
                               <FormItem>
-                                {filteredItems.map((item) => (
-                                  <FormField
-                                    key={item.id}
-                                    control={swapForm.control}
-                                    name="items"
-                                    render={({ field }) => {
-                                      return (
-                                        <FormItem
+                                {isLoading // Skeleton loading state
+                                  ? Array.from({ length: 10 }).map((_, index) => (<div
+                                      key={index}
+                                      className="flex items-center space-x-3 mb-2"
+                                    >
+                                      <Skeleton className="w-4 h-4" />
+                                      <Skeleton className="w-[200px] h-[20px]" />
+                                    </div>)) : filteredItems.map((item) => (<FormField
+                                      key={item.id}
+                                      control={swapForm.control}
+                                      name="items"
+                                      render={({ field }) => (<FormItem
                                           key={item.id}
-                                          className="flex flex-row items-start space-x-3 space-y-0"
+                                          className="flex flex-row items-start space-x-3 space-y-0 mb-2"
                                         >
                                           <FormControl>
                                             <Checkbox
-                                              checked={field.value?.includes(
-                                                item.id
-                                              )}
+                                              checked={field.value?.includes(item.id)}
                                               onCheckedChange={(checked) => {
+                                                return checked ? field.onChange([...field.value, item.id,]) : field.onChange(field.value?.filter((value) => value !== item.id));
                                                 return checked
                                                   ? field.onChange([
                                                       ...field.value,
@@ -690,13 +780,9 @@ export default function Trade() {
                                           <FormLabel className="font-normal">
                                             {item.label}
                                           </FormLabel>
-                                        </FormItem>
-                                      );
-                                    }}
-                                  />
-                                ))}
-                              </FormItem>
-                            )}
+                                        </FormItem>)}
+                                    />))}
+                              </FormItem>)}
                           />
                         </ScrollArea>
                       </div>
@@ -823,19 +909,6 @@ export default function Trade() {
                       />
                     </div>
                   </div>
-
-                  <div className="flex space-x-4 w-full">
-                    <Button
-                      className="w-1/2"
-                      variant="ghost"
-                      onClick={(event) => handleClear(event)}
-                    >
-                      Clear
-                    </Button>
-                    <Button className="w-1/2" type="submit">
-                      Swap
-                    </Button>
-                  </div>
                 </form>
               </Form>
             </FormProvider>
@@ -846,10 +919,7 @@ export default function Trade() {
           <TabsContent value="spot">
             <FormProvider {...spotForm}>
               <Form {...spotForm}>
-                <form
-                  onSubmit={spotForm.handleSubmit(onSubmitSpot)}
-                  className="space-y-4"
-                >
+                <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="flex space-x-4">
                     <FormField
                       control={spotForm.control}
@@ -1231,10 +1301,7 @@ export default function Trade() {
           <TabsContent value="perps">
             <FormProvider {...perpsForm}>
               <Form {...perpsForm}>
-                <form
-                  onSubmit={perpsForm.handleSubmit(onSubmitPerps)}
-                  className="space-y-4"
-                >
+                <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="flex space-x-4">
                     <FormField
                       control={perpsForm.control}

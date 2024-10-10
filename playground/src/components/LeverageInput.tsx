@@ -1,13 +1,13 @@
-import React from 'react';
-import { useController, Control } from 'react-hook-form';
+import React, { useEffect, useState } from "react";
+import { Control, useController } from "react-hook-form";
 import {
   FormControl,
   FormDescription,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import CustomSlider from './CustomSlider';  // Assuming CustomSlider is in the same directory
+} from "@/components/ui/form";
+import CustomSlider from "./CustomSlider";
 
 interface LeverageInputProps {
   name: string;
@@ -17,27 +17,52 @@ interface LeverageInputProps {
   min?: number;
   max?: number;
   step?: number;
-  defaultValue?: number;
 }
 
 export function LeverageInput({
-                                name,
-                                control,
-                                label,
-                                description,
-                                min = 0,
-                                max = 100,
-                                step = 1,
-                                defaultValue = 0,
-                              }: LeverageInputProps) {
+  name,
+  control,
+  label,
+  description,
+  min = 0,
+  max = 100,
+  step = 1,
+}: LeverageInputProps) {
   const {
     field,
     fieldState: { error },
   } = useController({
     name,
     control,
-    defaultValue,
   });
+
+  const [sliderValue, setSliderValue] = useState(field.value);
+
+  useEffect(() => {
+    console.log(`LeverageInput: field.value changed to ${field.value}`);
+    setSliderValue(field.value);
+  }, [field.value]);
+
+  useEffect(() => {
+    console.log(`LeverageInput: sliderValue changed to ${sliderValue}`);
+    const timeoutId = setTimeout(() => {
+      if (sliderValue !== field.value) {
+        console.log(`LeverageInput: Updating form value to ${sliderValue}`);
+        field.onChange(sliderValue);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [sliderValue, field]);
+
+  const handleSliderChange = (newValue: number) => {
+    console.log(`LeverageInput: CustomSlider value changed to ${newValue}`);
+    setSliderValue(newValue);
+  };
+
+  const handleValueChange = (newValue: number) => {
+    field.onChange(newValue);
+  };
 
   return (
     <FormItem className="w-full -mt-[15px]">
@@ -47,8 +72,8 @@ export function LeverageInput({
           min={min}
           max={max}
           step={step}
-          defaultValue={field.value}
-          {...field}
+          value={field.value}
+          onValueChange={handleValueChange}
         />
       </FormControl>
       {description && <FormDescription>{description}</FormDescription>}

@@ -119,6 +119,7 @@ interface DynamicFormProps {
   groups?: string[];
   onSubmit?: (data: FormData) => void;
   formData?: any;
+  columns?: 1 | 2;
 }
 
 type FormData = {
@@ -133,6 +134,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   schema,
   isNested = false,
   groups = [],
+  columns = 1,
   onSubmit = defaultOnData,
   formData = undefined,
 }) => {
@@ -140,6 +142,34 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   const [enumValues, setEnumValues] = useState<
     Record<string, { label: string; value: string | number }[]>
   >({});
+
+  const renderFields = (fields: Record<string, SchemaField>) => {
+    const sortedFields = Object.entries(fields)
+      .sort(([, a], [, b]) => (a["x-order"] || 0) - (b["x-order"] || 0))
+      .filter(([, field]) => !field["x-hidden"]); // Filter out hidden fields
+
+    if (columns === 1) {
+      return sortedFields.map(([key, field]) => renderField(key, field));
+    } else {
+      const rows = [];
+      for (let i = 0; i < sortedFields.length; i += 2) {
+        const row = (
+          <div key={i} className="flex space-x-4">
+            <div className="flex-1">
+              {renderField(sortedFields[i][0], sortedFields[i][1])}
+            </div>
+            {i + 1 < sortedFields.length && (
+              <div className="flex-1">
+                {renderField(sortedFields[i + 1][0], sortedFields[i + 1][1])}
+              </div>
+            )}
+          </div>
+        );
+        rows.push(row);
+      }
+      return rows;
+    }
+  };
 
   const validate = useMemo(() => ajv.compile(schema), [schema]);
 
@@ -626,16 +656,14 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
         {isNested && groups.length
           ? groups.map((group) =>
               schema[group]?.fields
-                ? sortedFields(schema[group].fields).map(([key, field]) =>
-                    renderField(key, field)
-                  )
-                : null
+                ? renderFields(schema[group].fields)
+
+                  : null
             )
           : formSchema.fields // Add this check
-          ? sortedFields(formSchema.fields).map(([key, field]) =>
-              renderField(key, field)
-            )
-          : null}
+            ? renderFields(formSchema.fields)
+
+              : null}
         <Button type="submit" className="w-full" disabled>
           Submit
         </Button>

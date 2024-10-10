@@ -15,7 +15,11 @@
 }
 
 .wallet-adapter-button-trigger {
-  background-color: #000000;
+  background-color: transparent;
+}
+
+.wallet-adapter-button:hover {
+  @apply bg-muted !important;
 }
 
 .wallet-adapter-button:not([disabled]):focus-visible {

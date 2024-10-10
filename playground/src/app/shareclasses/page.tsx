@@ -6,13 +6,12 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {ShareClassesList} from "./components/shareClasses-list"
 import {shareClasses} from "./data";
 import {Button} from "@/components/ui/button";
-import {PlusIcon} from "@radix-ui/react-icons";
+import { PlusIcon } from "@radix-ui/react-icons";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import ToolbarTree from "@/components/ToolbarTree";
 import * as React from "react";
 
 export default function Products() {
@@ -71,7 +70,7 @@ export default function Products() {
                               Share Class Currency
                             </Label>
                             <Input
-                              id="username"
+                              id="shareClassCurrency"
                               placeholder="SOL"
                               className="col-span-3"
                             />
@@ -106,6 +105,7 @@ export default function Products() {
             schema={schema}
             isNested={true}
             groups={["shareClass"]}
+            columns={2}
           />
         </div>
       </div>

@@ -102,7 +102,7 @@ export default function Sidebar() {
       group: "Administration",
       items: [
         { route: "/create", text: "Create", shortcut: "", Icon: PlusIcon },
-        { route: "/manage", text: "Products", shortcut: "", Icon: StackIcon },
+        { route: "/manage", text: "Product", shortcut: "", Icon: StackIcon },
         {
           route: "/shareclasses",
           text: "Share Classes",
