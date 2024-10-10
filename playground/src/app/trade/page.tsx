@@ -660,7 +660,7 @@ export default function Trade() {
                       variant="outline"
                       size="icon"
                       onClick={(event) => handleFlip(event)}
-                      className="mt-1 min-w-10"
+                      className="mt-8 min-w-10"
                     >
                       <ColumnSpacingIcon />
                     </Button>
@@ -744,45 +744,56 @@ export default function Trade() {
                             render={() => (
                               <FormItem>
                                 {isLoading // Skeleton loading state
-                                  ? Array.from({ length: 10 }).map((_, index) => (<div
-                                      key={index}
-                                      className="flex items-center space-x-3 mb-2"
-                                    >
-                                      <Skeleton className="w-4 h-4" />
-                                      <Skeleton className="w-[200px] h-[20px]" />
-                                    </div>)) : filteredItems.map((item) => (<FormField
-                                      key={item.id}
-                                      control={swapForm.control}
-                                      name="items"
-                                      render={({ field }) => (<FormItem
-                                          key={item.id}
-                                          className="flex flex-row items-start space-x-3 space-y-0 mb-2"
+                                  ? Array.from({ length: 10 }).map(
+                                      (_, index) => (
+                                        <div
+                                          key={index}
+                                          className="flex items-center space-x-3 mb-2"
                                         >
-                                          <FormControl>
-                                            <Checkbox
-                                              checked={field.value?.includes(item.id)}
-                                              onCheckedChange={(checked) => {
-                                                return checked ? field.onChange([...field.value, item.id,]) : field.onChange(field.value?.filter((value) => value !== item.id));
-                                                return checked
-                                                  ? field.onChange([
-                                                      ...field.value,
-                                                      item.id,
-                                                    ])
-                                                  : field.onChange(
-                                                      field.value?.filter(
-                                                        (value) =>
-                                                          value !== item.id
-                                                      )
-                                                    );
-                                              }}
-                                            />
-                                          </FormControl>
-                                          <FormLabel className="font-normal">
-                                            {item.label}
-                                          </FormLabel>
-                                        </FormItem>)}
-                                    />))}
-                              </FormItem>)}
+                                          <Skeleton className="w-4 h-4" />
+                                          <Skeleton className="w-[200px] h-[20px]" />
+                                        </div>
+                                      )
+                                    )
+                                  : filteredItems.map((item) => (
+                                      <FormField
+                                        key={item.id}
+                                        control={swapForm.control}
+                                        name="items"
+                                        render={({ field }) => (
+                                          <FormItem
+                                            key={item.id}
+                                            className="flex flex-row items-start space-x-3 space-y-0 mb-2"
+                                          >
+                                            <FormControl>
+                                              <Checkbox
+                                                checked={field.value?.includes(
+                                                  item.id
+                                                )}
+                                                onCheckedChange={(checked) => {
+                                                  return checked
+                                                    ? field.onChange([
+                                                        ...field.value,
+                                                        item.id,
+                                                      ])
+                                                    : field.onChange(
+                                                        field.value?.filter(
+                                                          (value) =>
+                                                            value !== item.id
+                                                        )
+                                                      );
+                                                }}
+                                              />
+                                            </FormControl>
+                                            <FormLabel className="font-normal">
+                                              {item.label}
+                                            </FormLabel>
+                                          </FormItem>
+                                        )}
+                                      />
+                                    ))}
+                              </FormItem>
+                            )}
                           />
                         </ScrollArea>
                       </div>
@@ -908,6 +919,19 @@ export default function Trade() {
                         )}
                       />
                     </div>
+                  </div>
+
+                  <div className="flex space-x-4 w-full">
+                    <Button
+                      className="w-1/2"
+                      variant="ghost"
+                      onClick={(event) => handleClear(event)}
+                    >
+                      Clear
+                    </Button>
+                    <Button className="w-1/2" type="submit">
+                      Swap
+                    </Button>
                   </div>
                 </form>
               </Form>
