@@ -1694,7 +1694,7 @@ export default function Trade() {
                   </div>
                   <div className="flex space-x-4 w-full">
                     <Button variant="secondary" className="w-1/4">Cancel All Orders</Button>
-                    <Button variant="secondary" className="w-1/4">Cancel {perpsForm.watch("perpsMarket").replace("-PERP", "")} Orders</Button>
+                    <Button variant="secondary" className="w-1/4">Cancel All &nbsp;<span className="truncate">{perpsForm.watch("perpsMarket").replace("-PERP", "")}</span></Button>
                     <Button variant="secondary" className="w-1/4">Settle P&L</Button>
                     <Button variant="secondary" className="w-1/4">Claim Rewards</Button>
                   </div>
