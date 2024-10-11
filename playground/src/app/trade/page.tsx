@@ -1212,32 +1212,33 @@ export default function Trade() {
                   ) : null}
 
                   {spotOrderType !== "Trigger Limit" && !spotReduceOnly && (
-                    <div className="flex flex-row gap-4 items-start w-full">
-                      <LeverageInput
-                        control={spotForm.control}
-                        name="leverage"
-                        label="Leverage: 100x"
-                        min={0}
-                        max={100}
-                        step={1}
-                      />
-                    </div>
+                    // <div className="flex flex-row gap-4 items-start w-full">
+                    //   <LeverageInput
+                    //     control={spotForm.control}
+                    //     name="leverage"
+                    //     label="Leverage: 100x"
+                    //     min={0}
+                    //     max={100}
+                    //     step={1}
+                    //   />
+                    // </div>
+                    <span></span>
                   )}
 
                   <div className="flex flex-row gap-4 items-start w-full">
                     <div className="w-1/2 flex h-6 items-center text-sm text-muted-foreground">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger className="flex items-center">
-                            <InfoIcon className="w-4 h-4 mr-1"></InfoIcon>
-                            <p>Margin Trading Disabled</p>
-                          </TooltipTrigger>
-                          <TooltipContent side="right">
-                            Please view the Risk Management configuration of the
-                            Venue Integration.
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      {/*<TooltipProvider>*/}
+                      {/*  <Tooltip>*/}
+                      {/*    <TooltipTrigger className="flex items-center">*/}
+                      {/*      <InfoIcon className="w-4 h-4 mr-1"></InfoIcon>*/}
+                      {/*      <p>Margin Trading Disabled</p>*/}
+                      {/*    </TooltipTrigger>*/}
+                      {/*    <TooltipContent side="right">*/}
+                      {/*      Please view the Risk Management configuration of the*/}
+                      {/*      Venue Integration.*/}
+                      {/*    </TooltipContent>*/}
+                      {/*  </Tooltip>*/}
+                      {/*</TooltipProvider>*/}
                     </div>
 
                     <div className="w-1/2 flex flex-row justify-start gap-4">
@@ -1330,8 +1331,7 @@ export default function Trade() {
                     <FormField
                       control={perpsForm.control}
                       name="venue"
-                      render={({ field }) => (
-                        <FormItem className="w-1/3">
+                      render={({ field }) => (<FormItem className="w-1/3">
                           <FormLabel>Venue</FormLabel>
                           <FormControl>
                             <Select
@@ -1342,26 +1342,20 @@ export default function Trade() {
                                 <SelectValue placeholder="Venue" />
                               </SelectTrigger>
                               <SelectContent>
-                                {perpsSchema.shape.venue._def.values.map(
-                                  (option) => (
-                                    <SelectItem key={option} value={option}>
-                                      {option}
-                                    </SelectItem>
-                                  )
-                                )}
+                                {perpsSchema.shape.venue._def.values.map((option) => (<SelectItem key={option} value={option}>
+                                    {option}
+                                  </SelectItem>))}
                               </SelectContent>
                             </Select>
                           </FormControl>
                           <FormMessage />
-                        </FormItem>
-                      )}
+                        </FormItem>)}
                     />
 
                     <FormField
                       control={perpsForm.control}
                       name="perpsMarket"
-                      render={({ field }) => (
-                        <FormItem className="w-1/3">
+                      render={({ field }) => (<FormItem className="w-1/3">
                           <FormLabel>Market</FormLabel>
                           <Popover>
                             <PopoverTrigger asChild>
@@ -1369,17 +1363,9 @@ export default function Trade() {
                                 <Button
                                   variant="outline"
                                   role="combobox"
-                                  className={cn(
-                                    "w-full justify-between",
-                                    !field.value && "text-muted-foreground"
-                                  )}
+                                  className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
                                 >
-                                  {field.value
-                                    ? perpsMarkets.find(
-                                        (perpsMarket) =>
-                                          perpsMarket.value === field.value
-                                      )?.label || "Select Market"
-                                    : "Select Market"}
+                                  {field.value ? perpsMarkets.find((perpsMarket) => perpsMarket.value === field.value)?.label || "Select Market" : "Select Market"}
                                   <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                 </Button>
                               </FormControl>
@@ -1393,43 +1379,31 @@ export default function Trade() {
                                 <CommandList>
                                   <CommandEmpty>No market found.</CommandEmpty>
                                   <CommandGroup>
-                                    {perpsMarkets.map((perpsMarket) => (
-                                      <CommandItem
+                                    {perpsMarkets.map((perpsMarket) => (<CommandItem
                                         value={perpsMarket.label}
                                         key={perpsMarket.value}
                                         onSelect={() => {
-                                          perpsForm.setValue(
-                                            "perpsMarket",
-                                            perpsMarket.value as "SOL-PERP"
-                                          );
+                                          perpsForm.setValue("perpsMarket", perpsMarket.value as "SOL-PERP");
                                         }}
                                       >
                                         <CheckIcon
-                                          className={cn(
-                                            "mr-2 h-4 w-4",
-                                            perpsMarket.value === field.value
-                                              ? "opacity-100"
-                                              : "opacity-0"
-                                          )}
+                                          className={cn("mr-2 h-4 w-4", perpsMarket.value === field.value ? "opacity-100" : "opacity-0")}
                                         />
                                         {perpsMarket.label}
-                                      </CommandItem>
-                                    ))}
+                                      </CommandItem>))}
                                   </CommandGroup>
                                 </CommandList>
                               </Command>
                             </PopoverContent>
                           </Popover>
                           <FormMessage />
-                        </FormItem>
-                      )}
+                        </FormItem>)}
                     />
 
                     <FormField
                       control={perpsForm.control}
                       name="perpsType"
-                      render={({ field }) => (
-                        <FormItem className="w-1/3">
+                      render={({ field }) => (<FormItem className="w-1/3">
                           <FormLabel>Order Type</FormLabel>
                           <FormControl>
                             <Select
@@ -1440,26 +1414,14 @@ export default function Trade() {
                                 <SelectValue placeholder="Type" />
                               </SelectTrigger>
                               <SelectContent>
-                                {perpsSchema.shape.perpsType._def.values.map(
-                                  (option) => (
-                                    <SelectItem key={option} value={option}>
-                                      {option}
-                                    </SelectItem>
-                                  )
-                                )}
+                                {perpsSchema.shape.perpsType._def.values.map((option) => (<SelectItem key={option} value={option}>
+                                    {option}
+                                  </SelectItem>))}
                               </SelectContent>
                             </Select>
                           </FormControl>
                           <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="flex">
-                    <ExplorerLink
-                      path={`https://app.drift.trade/?userAccount=${driftUserAccount}`}
-                      label={driftUserAccount}
+                        </FormItem>)}
                     />
                   </div>
 
@@ -1468,8 +1430,7 @@ export default function Trade() {
                       <FormField
                         control={perpsForm.control}
                         name="side"
-                        render={({ field }) => (
-                          <FormItem className="w-full">
+                        render={({ field }) => (<FormItem className="w-full">
                             <ToggleGroup
                               type="single"
                               value={field.value}
@@ -1493,13 +1454,11 @@ export default function Trade() {
                                 Sell
                               </ToggleGroupItem>
                             </ToggleGroup>
-                          </FormItem>
-                        )}
+                          </FormItem>)}
                       />
                     </div>
                   </div>
-                  {perpsOrderType === "Limit" ? (
-                    <>
+                  {perpsOrderType === "Limit" ? (<>
                       <div className="flex space-x-4 items-start">
                         <AssetInput
                           className="min-w-1/3 w-1/3"
@@ -1527,9 +1486,7 @@ export default function Trade() {
                           disableAssetChange={true}
                         />
                       </div>
-                    </>
-                  ) : perpsOrderType === "Trigger Limit" ? (
-                    <>
+                    </>) : perpsOrderType === "Trigger Limit" ? (<>
                       <div className="flex space-x-4 items-start">
                         <AssetInput
                           className="min-w-1/2 w-1/2"
@@ -1568,25 +1525,16 @@ export default function Trade() {
                           className="min-w-1/2 w-1/2"
                           name="notional"
                           label="Notional"
-                          assets={tokenList?.map(
-                            (t) =>
-                              ({
-                                name: t.name,
-                                symbol: t.symbol,
-                                address: t.address,
-                                decimals: t.decimals,
-                                balance: 0,
-                              } as Asset)
-                          )}
+                          assets={tokenList?.map((t) => ({
+                            name: t.name, symbol: t.symbol, address: t.address, decimals: t.decimals, balance: 0,
+                          } as Asset))}
                           balance={NaN}
                           selectedAsset={toAsset}
                           onSelectAsset={setToAsset}
                         />
                       </div>
-                    </>
-                  ) : null}
-                  {false && (
-                    <>
+                    </>) : null}
+                  {false && (<>
                       <div className="flex flex-row gap-4 items-start w-full">
                         <LeverageInput
                           control={perpsForm.control}
@@ -1617,8 +1565,7 @@ export default function Trade() {
                           <FormField
                             control={perpsForm.control}
                             name="perpsReduceOnly"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                            render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">
                                 <FormControl>
                                   <Switch
                                     checked={field.value}
@@ -1632,14 +1579,12 @@ export default function Trade() {
                                 >
                                   Reduce Only
                                 </FormLabel>
-                              </FormItem>
-                            )}
+                              </FormItem>)}
                           />
                           <FormField
                             control={spotForm.control}
                             name="post"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                            render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">
                                 <FormControl>
                                   <Switch
                                     checked={field.value}
@@ -1653,8 +1598,7 @@ export default function Trade() {
                                 >
                                   Post
                                 </FormLabel>
-                              </FormItem>
-                            )}
+                              </FormItem>)}
                           />
                         </div>
 
@@ -1678,8 +1622,7 @@ export default function Trade() {
                         {/*    </FormItem>)}*/}
                         {/*/>*/}
                       </div>
-                    </>
-                  )}
+                    </>)}
                   <div className="flex space-x-4 w-full">
                     <Button
                       className="w-1/2"
@@ -1701,9 +1644,26 @@ export default function Trade() {
                 </form>
               </Form>
             </FormProvider>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </PageContentWrapper>
-  );
-}
+            <div className="grid gap-3 text-sm mt-8">
+              <div className="font-semibold">Account Details</div>
+              <ul className="grid gap-3">
+                  <li className="border-b pb-3 flex items-center justify-between">
+                    <span className="text-muted-foreground flex items-center">
+                      Drift Page
+                    </span>
+                  <span>
+                    <p className="font-semibold">
+                      <ExplorerLink
+                        path={`https://app.drift.trade/?userAccount=${driftUserAccount}`}
+                        label={driftUserAccount}
+                      />
+                    </p>
+                  </span>
+                </li>
+                  </ul>
+                  </div>
+                  </TabsContent>
+                  </Tabs>
+                  </div>
+                  </PageContentWrapper>
+                  );}
