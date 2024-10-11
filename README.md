@@ -1,35 +1,18 @@
-**Update 2024-09-02** 
+GLAM is an onchain asset management and tokenization platform designed to facilitate the launch and management of digitally native investment products.
 
-We joined the Colosseum Radar hackathon. If you're a frontend, backend or Solana program engineer and are excited (or just curious) about fund management on Solana, [reach out to us](https://arena.colosseum.org/profiles/ascii) and let's start hacking.
+## Colosseum Hackathon Demos
 
-<!--p align="center">
- <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/glamsystems/brand_assets/main/github/github_banner_light.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/glamsystems/brand_assets/main/github/github_banner_dark.svg">
-    <img alt="GLAM *.+ The New Standard for Asset Management." src="https://raw.githubusercontent.com/glamsystems/brand_assets/main/github/github_banner_dark.svg">
-  </picture>
-<br>
-    <a href="https://glam.systems" target="_blank">Website</a> |
-    <a href="mailto:hello@glam.systems" target="_blank">Contact</a> |
-    <a href="https://x.com/glamsystems" target="_blank">X</a>
-    <br>
-    <br>
-    <br>
-</p-->
+Check out our live demo: [https://gui.glam.systems](https://gui.glam.systems)
 
----
+Watch our latest Colosseum Radar Submission:
 
-<br>
+[![GLAM Radar](https://cdn.loom.com/sessions/thumbnails/a145aa27db5c4b87a220c71b644173ed-32b128e4d76c7812.jpg
+)](https://614m.link/radar)
 
-GLAM is a decentralized on-chain asset management protocol on Solana that enables efficient management & operations of investment products, empowering investors to have greater control & equity in their financial futures.
+Watch our original Colosseum Renaissance Submission:
 
-## Demo (from Colosseum Renaissance hackathon)
-
-Check out the live demo: [https://devnet.glam.systems](https://devnet.glam.systems)
-
-Or watch our 3 min video:
-
-[![GLAM demo](https://img.youtube.com/vi/1I23sQGWvv8/0.jpg)](https://www.youtube.com/watch?v=1I23sQGWvv8)
+[![GLAM Renaissance](https://cdn.loom.com/sessions/thumbnails/15b0e87e181c425682f89f620cfd707f-1712512889851.jpg
+)](https://614m.link/renaissance)
 
 ## Features
 
