@@ -1692,6 +1692,12 @@ export default function Trade() {
                       Submit
                     </Button>
                   </div>
+                  <div className="flex space-x-4 w-full">
+                    <Button variant="secondary" className="w-1/4">Cancel All Orders</Button>
+                    <Button variant="secondary" className="w-1/4">Cancel {perpsForm.watch("perpsMarket").replace("-PERP", "")} Orders</Button>
+                    <Button variant="secondary" className="w-1/4">Settle P&L</Button>
+                    <Button variant="secondary" className="w-1/4">Claim Rewards</Button>
+                  </div>
                 </form>
               </Form>
             </FormProvider>
