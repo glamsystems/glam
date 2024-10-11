@@ -4,12 +4,12 @@ GLAM is an onchain asset management and tokenization platform designed to facili
 
 Check out our live demo: [https://gui.glam.systems](https://gui.glam.systems)
 
-Watch our latest Colosseum Radar Submission:
+Watch our latest Colosseum Radar Submission (Oct 8, 2024):
 
 [![GLAM Radar](https://cdn.loom.com/sessions/thumbnails/a145aa27db5c4b87a220c71b644173ed-32b128e4d76c7812.jpg
 )](https://614m.link/radar)
 
-Watch our original Colosseum Renaissance Submission:
+Watch our original Colosseum Renaissance Submission (Apr 8, 2024):
 
 [![GLAM Renaissance](https://cdn.loom.com/sessions/thumbnails/15b0e87e181c425682f89f620cfd707f-1712512889851.jpg
 )](https://614m.link/renaissance)
