@@ -570,12 +570,12 @@ export default function Trade() {
             <TabsTrigger value="perps" className="w-full">
               Perps
             </TabsTrigger>
-            <TabsTrigger value="options" className="w-full" disabled>
-              Options
-              <span className="opacity-50 ml-1">
-                Soon<sup className="text-[9px]">TM</sup>
-              </span>
-            </TabsTrigger>
+            {/*<TabsTrigger value="options" className="w-full" disabled>*/}
+            {/*  Options*/}
+            {/*  <span className="opacity-50 ml-1">*/}
+            {/*    Soon<sup className="text-[9px]">TM</sup>*/}
+            {/*  </span>*/}
+            {/*</TabsTrigger>*/}
           </TabsList>
 
           {/*SWAP TAB*/}
