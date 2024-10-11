@@ -23,14 +23,14 @@ export const integrations = [
     description: "",
     labels: [],
   },
-  {
-    id: 3,
-    name: "Lend",
-    active: false,
-    disabled: true,
-    description: "Coming Soon",
-    labels: [],
-  },
+  // {
+  //   id: 3,
+  //   name: "Lend",
+  //   active: false,
+  //   disabled: true,
+  //   description: "Coming Soon",
+  //   labels: [],
+  // },
 ];
 
 export type Integrations = (typeof integrations)[number];
