@@ -108,7 +108,8 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
         color: "inherit",
         height: 40,
         flex: 1,
-        paddingLeft: 80,
+        width: "263px",
+        justifyContent: "left",
       }}
     />
   ) : !activeFund ? null : (
