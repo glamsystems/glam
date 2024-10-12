@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const assetSchema = z.object({
   address: z.string(),
-  chainId: z.number(),
+  //chainId: z.number(),
   decimals: z.number(),
   name: z.string(),
   symbol: z.string(),

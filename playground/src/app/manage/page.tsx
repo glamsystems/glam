@@ -8,31 +8,26 @@ import {Input} from "@/components/ui/input";
 import {ProductsList} from "./components/products-list"
 import {products} from "./data";
 import PageContentWrapper from "@/components/PageContentWrapper";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import Sparkle from "@/utils/Sparkle";
+import { CaretSortIcon } from "@radix-ui/react-icons";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import React, { useState } from "react";
+import { useGlam } from "@glam/anchor/react";
 
-export default function Products() {
+export default function Product() {
+  const { glamClient, allFunds, walletBalances } = useGlam();
+  const [fundId, setFundId] = useState("");
+  const [open, setOpen] = React.useState(false);
+  const fund: any = fundId
+    ? (allFunds || []).find((f: any) => f.idStr === fundId)
+    : undefined;
+
   return (
     <PageContentWrapper>
-    <div className="flex">
-      <div className="w-[25%] max-w-[25%] min-w-[25%]">
-        <Tabs defaultValue="all">
-          <div>
-            <TabsList>
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="active">Managed</TabsTrigger>
-            </TabsList>
-          </div>
-          <TabsContent value="all">
-            <ProductsList items={products} />
-          </TabsContent>
-          <TabsContent value="active">
-            <ProductsList items={products.filter((item) => item.active)} />
-          </TabsContent>
-        </Tabs>
+      <div className="w-4/6 self-center">
+          <DynamicForm schema={schema} isNested={true} groups={["company", "fund", "fundManager"]} columns={2} />
       </div>
-        <div className="w-full ml-16 pt-[26px]">
-            <DynamicForm schema={schema} isNested={true} groups={["company", "fund", "fundManager"]} />
-        </div>
-      </div>
-  </PageContentWrapper>
-  );
+    </PageContentWrapper>);
 }

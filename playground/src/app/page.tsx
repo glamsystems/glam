@@ -1,31 +1,35 @@
-import Sparkle from "../utils/Sparkle";
-import SparkleBackground from "@/utils/SparkleBackground";
+"use client";
 
-export default function Home() {
-  return (<div>
-    Hello GLAM Playground
-    <Sparkle
-      address="So11111111111111111111111111111111111111111"
-      size={200}
-    />
-    <div className="border p-10">
-      <SparkleBackground rows={6} cols={42} size={24} gap={5} static={true} visibleCount={252}/>
-    </div>
-    <br />
-    <div className="border p-10">
-      <SparkleBackground fadeOut={true} rows={6} cols={42} fadeInSpeed={1} size={24} gap={5} interval={3000} randomness={10} visibleCount={189} />
-    </div>
-    <br />
-    <div className="border p-10">
-      <SparkleBackground fadeOut={false} rows={6} cols={42} size={24} fadeInSpeed={1} gap={5} randomness={5} visibleCount={189} />
-    </div>
-    <br />
-    <div className="border p-10">
-      <SparkleBackground fadeOut={true} rows={6} cols={42} fadeInSpeed={0.2} fadeOutSpeed={5} size={24} gap={5} hover={true} />
-    </div>
-    <br />
-    <div className="border p-10">
-      <SparkleBackground fadeOut={false} rows={6} cols={42} fadeInSpeed={0.2} size={24} gap={5} hover={true} />
-    </div>
-  </div>);
+import { DataTable } from "./products/components/data-table";
+import { columns } from "./products/components/columns";
+import React from "react";
+import PageContentWrapper from "@/components/PageContentWrapper";
+import { useGlam } from "@glam/anchor/react";
+
+export default function Products() {
+  const { allFunds } = useGlam();
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    if (allFunds) {
+      setIsLoading(false);
+    }
+  }, [allFunds]);
+
+  const products = (allFunds || []).map((f: any) => ({
+    id: f.idStr,
+    imageKey: f.imageKey,
+    name: f.name,
+    symbol: f.shareClasses[0]?.shareClassSymbol || "",
+    baseAsset: f.fundCurrency,
+    inception: f.fundLaunchDate,
+    status: "active",
+  }));
+
+  return (
+    <PageContentWrapper>
+      {/*@ts-ignore*/}
+      <DataTable data={products} columns={columns} isLoading={isLoading} />
+    </PageContentWrapper>
+  );
 }

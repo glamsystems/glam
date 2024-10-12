@@ -23,12 +23,12 @@ export function DataTableToolbar<TData>({
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-2">
         <Input
-          placeholder="Filter holdings..."
+          placeholder="Search holdings..."
           value={(table.getColumn("symbol")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("symbol")?.setFilterValue(event.target.value)
           }
-          className="h-8 w-[150px] lg:w-[250px]"
+          className="h-8 w-full"
         />
         {isFiltered && (
           <Button
@@ -41,7 +41,7 @@ export function DataTableToolbar<TData>({
           </Button>
         )}
       </div>
-      <DataTableRefresh table={table} />
+      {/*<DataTableRefresh table={table} />*/}
     </div>
   );
 }

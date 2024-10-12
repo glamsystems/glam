@@ -3,24 +3,43 @@
 import { DataTable } from "./components/data-table";
 import { columns } from "./components/columns";
 import React, { useMemo } from "react";
-
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";
 import { useQuery } from "@tanstack/react-query";
+import { Holding } from "./data/holdingSchema"; // Make sure to import the Holding type
+
+const SKELETON_ROW_COUNT = 5;
 
 export default function Holdings() {
   const { treasury } = useGlam();
   const solBalance = Number(treasury?.balanceLamports) / LAMPORTS_PER_SOL;
 
-  const { data: tokensInfo } = useQuery({
+  const { data: tokensInfo, isLoading: isTokensInfoLoading } = useQuery({
     queryKey: ["jupiter-api"],
     queryFn: () =>
-      fetch("https://token.jup.ag/strict").then((res) => res.json()),
+      fetch("https://tokens.jup.ag/tokens?tags=verified").then((res) => res.json()),
+  });
+
+  const isLoading = isTokensInfoLoading || !treasury;
+
+  const createSkeletonHolding = (): Holding => ({
+    name: '',
+    symbol: '',
+    mint: '',
+    ata: '',
+    balance: 0,
+    notional: 0,
+    logoURI: '',
+    location: '',
   });
 
   const tableData = useMemo(() => {
-    const tokenAccounts = [];
+    if (isLoading) {
+      return Array(SKELETON_ROW_COUNT).fill(null).map(createSkeletonHolding);
+    }
+
+    const tokenAccounts: Holding[] = [];
     if (solBalance) {
       tokenAccounts.push({
         name: "Solana",
@@ -29,6 +48,7 @@ export default function Holdings() {
         ata: "",
         balance: solBalance,
         notional: 1234.56,
+        location: "vault",
         logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
       });
     }
@@ -52,20 +72,19 @@ export default function Holdings() {
             balance: Number(ta.uiAmount),
             notional: 1234.56,
             logoURI: logoURI,
+            location: "vault",
           };
         })
       );
     }
 
     // Sort the tokenAccounts by balance in descending order
-    tokenAccounts.sort((a, b) => b.balance - a.balance);
-
-    return tokenAccounts;
-  }, [treasury, tokensInfo]);
+    return tokenAccounts.sort((a, b) => b.balance - a.balance);
+  }, [treasury, tokensInfo, isLoading, solBalance]);
 
   return (
     <PageContentWrapper>
-      <DataTable data={tableData} columns={columns} />
+      <DataTable data={tableData} columns={columns} isLoading={isLoading} />
     </PageContentWrapper>
   );
 }

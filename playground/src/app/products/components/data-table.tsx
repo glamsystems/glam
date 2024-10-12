@@ -10,12 +10,11 @@ import {
   getFacetedRowModel,
   getFacetedUniqueValues,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
   ColumnDef,
 } from "@tanstack/react-table";
-import { useRouter } from "next/navigation"; // Import useRouter
+import { useRouter } from "next/navigation";
 
 import {
   Table,
@@ -28,28 +27,41 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
-import { columns as defaultColumns } from "./columns"; // Import columns from columns.tsx
-import { Product } from "../data/productSchema"; // Import the Product type
+import { columns as defaultColumns } from "./columns";
+import { Product } from "../data/productSchema";
+
+// Number of skeleton rows to display
+const SKELETON_ROW_COUNT = 10;
 
 interface DataTableProps<TData, TValue> {
   columns?: ColumnDef<TData, TValue>[];
   data: TData[];
+  isLoading: boolean;
 }
 
-export function DataTable<TData, TValue>({
-  columns = defaultColumns as ColumnDef<TData, TValue>[], // Type cast to match the generic types
-  data,
-}: DataTableProps<TData, TValue>) {
+export function DataTable<TData extends { id: string }, TValue>({
+                                                                  columns = defaultColumns as ColumnDef<TData, TValue>[],
+                                                                  data,
+                                                                  isLoading,
+                                                                }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
+  // Create skeleton data
+  const skeletonData = React.useMemo(() =>
+      Array(SKELETON_ROW_COUNT).fill(null).map((_, index) => ({ id: `skeleton-${index}` } as TData)),
+    []
+  );
+
+  const tableData = React.useMemo(() =>
+      isLoading || data.length === 0 ? skeletonData : data,
+    [isLoading, skeletonData, data]
+  );
+
   const table = useReactTable({
-    data,
+    data: tableData,
     columns,
     state: {
       sorting,
@@ -64,13 +76,12 @@ export function DataTable<TData, TValue>({
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 
-  const router = useRouter(); // Initialize useRouter
+  const router = useRouter();
 
   const handleRowClick = (address: string) => {
     router.push(`/products/${address}`);
@@ -81,57 +92,44 @@ export function DataTable<TData, TValue>({
       <DataTableToolbar table={table} />
       <div className="rounded-md border">
         <Table>
-          <TableHeader>
+          <TableHeader className="top-0 sticky bg-background">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id} colSpan={header.colSpan}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id} colSpan={header.colSpan}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className="cursor-pointer" // Make cursor pointer
-                  onClick={() => handleRowClick((row.original as Product).id)} // Add click handler
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && "selected"}
+                // className="cursor-pointer" // Make cursor pointer
+                // onClick={() => handleRowClick((row.original as Product).id)}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(
+                      cell.column.columnDef.cell,
+                      cell.getContext()
+                    )}
+                  </TableCell>
+                ))}
               </TableRow>
-            )}
+            ))}
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination table={table} />
+      {/*<DataTablePagination table={table} />*/}
     </div>
   );
 }
