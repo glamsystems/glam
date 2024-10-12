@@ -170,7 +170,7 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="flex flex-col w-[244px] min-w-[244px] border-r min-h-screen overflow-hidden fixed">
+    <div className="flex flex-col w-[244px] min-w-[244px] border-r min-h-screen overflow-hidden fixed select-none">
       <div className="flex p-[8px]">
         <AccountMenu />
       </div>
