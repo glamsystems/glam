@@ -8,6 +8,13 @@ import { useGlam } from "@glam/anchor/react";
 
 export default function Products() {
   const { allFunds } = useGlam();
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    if (allFunds) {
+      setIsLoading(false);
+    }
+  }, [allFunds]);
 
   const products = (allFunds || []).map((f: any) => ({
     id: f.idStr,
@@ -22,7 +29,7 @@ export default function Products() {
   return (
     <PageContentWrapper>
       {/*@ts-ignore*/}
-      <DataTable data={products} columns={columns} />
+      <DataTable data={products} columns={columns} isLoading={isLoading} />
     </PageContentWrapper>
   );
 }
