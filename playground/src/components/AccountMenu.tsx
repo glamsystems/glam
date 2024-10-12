@@ -2,12 +2,7 @@
 import { EffectiveTheme } from "@/utils/EffectiveTheme";
 import * as React from "react";
 import {
-  CaretSortIcon,
-  CheckIcon,
-  ChevronDownIcon,
-  PlusCircledIcon,
-  PlusIcon,
-  UpdateIcon,
+  GearIcon, CheckIcon, ChevronDownIcon, PlusCircledIcon, PlusIcon, UpdateIcon, EnvelopeClosedIcon, ChatBubbleIcon
 } from "@radix-ui/react-icons";
 
 import { cn } from "@/lib/utils";
@@ -56,6 +51,7 @@ import Sparkle from "@/utils/Sparkle";
 import TruncateAddress from "@/utils/TruncateAddress";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useGlam } from "@glam/anchor/react";
+import Link from "next/link";
 
 const groups = [
   {
@@ -141,7 +137,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
           <ChevronDownIcon className="ml-auto h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
+      <PopoverContent className="w-full p-0 transition-all" align="start">
         <Command>
           {/*<CommandInput placeholder="Search product..." />*/}
           <CommandList className="h-fit overflow-hidden">
@@ -153,7 +149,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
                     setActiveFund(product);
                     setOpen(false);
                   }}
-                  className="text-sm"
+                  className="text-sm cursor-pointer"
                 >
                   <span className="mr-2">
                     {product ? (
@@ -181,15 +177,43 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
 
             <CommandSeparator />
 
+            <CommandGroup>
+              <CommandItem
+                className="text-sm cursor-pointer data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
+                onSelect={() => {
+                  setOpen(false);
+                }}
+              >
+                <Link href="/settings" className="flex items-center w-full">
+                  <GearIcon className="mr-3 ml-1 w-4 h-4" />
+                  <p className="text-ellipsis mr-4">Settings</p>
+                </Link>
+
+              </CommandItem>
+              <CommandItem
+                className="text-sm cursor-pointer data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
+                onSelect={() => {
+                  setOpen(false);
+                }}
+              >
+                <Link href="mailto:hello@glam.systems?subject=GLAM GUI Feedback" className="flex items-center w-full">
+                  <EnvelopeClosedIcon className="mr-3 ml-1 w-4 h-4" />
+                  <p className="text-ellipsis mr-4">Feedback</p>
+                </Link>
+
+              </CommandItem>
+
+            </CommandGroup>
+
+            <CommandSeparator />
+
             <CommandGroup
               key="Connected Account"
               heading="Connected Account"
-            ></CommandGroup>
+            >
             <WalletMultiButton
               style={{
                 width: 275,
-                marginLeft: 4,
-                marginBottom: 4,
                 color: "inherit",
                 padding: 0,
                 paddingLeft: 8,
@@ -197,6 +221,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
                 height: 36,
               }}
             />
+            </CommandGroup>
           </CommandList>
         </Command>
       </PopoverContent>
