@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ClusterProvider } from "@/components/solana-cluster-provider";
 import { GlamProvider } from "@glam/anchor/react";
 import { ReactQueryProvider } from "./react-query-provider";
+import MobileOverlay from "@/components/MobileOverlay";
 
 const AppWalletProvider = dynamic(
   () => import("@/components/wallet-provider"),
@@ -29,6 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} flex items-start justify-between`}>
+      <MobileOverlay/>
         <ReactQueryProvider>
           <ThemeProvider
             attribute="class"
