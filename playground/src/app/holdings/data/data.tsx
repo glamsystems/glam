@@ -1,7 +1,7 @@
 export const locations = [
   {
-    value: "internal",
-    label: "Internal",
+    value: "vault",
+    label: "Vault",
   },
   {
     value: "external",
