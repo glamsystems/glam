@@ -387,11 +387,21 @@ export default function ProductPage() {
         <Tabs defaultValue="overview" className="w-full">
           <TabsList className="mt-8 mb-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="holdings">Holdings</TabsTrigger>
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="policies">Policies</TabsTrigger>
-            <TabsTrigger value="integrations">Integrations</TabsTrigger>
-            <TabsTrigger value="access">Access</TabsTrigger>
+            <TabsTrigger value="holdings" disabled>
+              Holdings
+            </TabsTrigger>
+            <TabsTrigger value="details" disabled>
+              Details
+            </TabsTrigger>
+            <TabsTrigger value="policies" disabled>
+              Policies
+            </TabsTrigger>
+            <TabsTrigger value="integrations" disabled>
+              Integrations
+            </TabsTrigger>
+            <TabsTrigger value="access" disabled>
+              Access
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -672,13 +682,29 @@ export default function ProductPage() {
                             <span className="text-muted-foreground">
                               Openfunds
                             </span>
+                            <span className="flex gap-4">
                             <a
                               href={fund?.openfundsUri}
                               rel="noopener noreferrer"
                               className="link font-mono"
                             >
-                              (download)
+                              XLSX
                             </a>
+                            <a
+                              href=""
+                              rel="noopener noreferrer"
+                              className="link font-mono pointer-events-none text-muted-foreground"
+                            >
+                              CSV
+                            </a>
+                            <a
+                              href=""
+                              rel="noopener noreferrer"
+                              className="link font-mono pointer-events-none text-muted-foreground"
+                            >
+                              JSON
+                            </a>
+                              </span>
                           </li>
                         </ul>
                       </div>

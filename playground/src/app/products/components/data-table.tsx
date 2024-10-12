@@ -25,7 +25,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
 import { columns as defaultColumns } from "./columns";
 import { Product } from "../data/productSchema";
@@ -33,17 +32,17 @@ import { Product } from "../data/productSchema";
 // Number of skeleton rows to display
 const SKELETON_ROW_COUNT = 10;
 
-interface DataTableProps<TData, TValue> {
+interface DataTableProps<TData extends Product, TValue> {
   columns?: ColumnDef<TData, TValue>[];
   data: TData[];
   isLoading: boolean;
 }
 
-export function DataTable<TData extends { id: string }, TValue>({
-                                                                  columns = defaultColumns as ColumnDef<TData, TValue>[],
-                                                                  data,
-                                                                  isLoading,
-                                                                }: DataTableProps<TData, TValue>) {
+export function DataTable<TData extends Product, TValue>({
+                                                           columns = defaultColumns as ColumnDef<TData, TValue>[],
+                                                           data,
+                                                           isLoading,
+                                                         }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -113,8 +112,8 @@ export function DataTable<TData extends { id: string }, TValue>({
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
-                // className="cursor-pointer" // Make cursor pointer
-                // onClick={() => handleRowClick((row.original as Product).id)}
+                className="cursor-pointer" // Make cursor pointer
+                onClick={() => handleRowClick((row.original as Product).id)}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
