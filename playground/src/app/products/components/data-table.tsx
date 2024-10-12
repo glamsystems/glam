@@ -104,8 +104,8 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="cursor-pointer" // Make cursor pointer
-                  onClick={() => handleRowClick((row.original as Product).id)} // Add click handler
+                  // className="cursor-pointer" // Make cursor pointer
+                  // onClick={() => handleRowClick((row.original as Product).id)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
