@@ -1,9 +1,9 @@
 export const DRIFT_ORDER_TYPES: [string, ...string[]] = [
   "Market",
   "Limit",
-  "Trigger Market",
-  "Trigger Limit",
-  "Oracle",
+  // "Trigger Market",
+  // "Trigger Limit",
+  // "Oracle",
 ];
 
 export const DRIFT_PERP_MARKETS: [string, ...string[]] = [
@@ -43,17 +43,17 @@ export const DRIFT_PERP_MARKETS: [string, ...string[]] = [
   "ZEX-PERP",
   "POPCAT-PERP",
   "1KWEN-PERP",
-  "TRUMP-WIN-2024-BET",
-  "KAMALA-POPULAR-VOTE-2024-BET",
-  "FED-CUT-50-SEPT-2024-BET",
-  "REPUBLICAN-POPULAR-AND-WIN-BET",
-  "BREAKPOINT-IGGYERIC-BET",
-  "DEMOCRATS-WIN-MICHIGAN-BET",
-  "TON-PERP",
-  "LANDO-F1-SGP-WIN-BET",
-  "MOTHER-PERP",
-  "MOODENG-PERP",
-  "WARWICK-FIGHT-WIN-BET",
+  // "TRUMP-WIN-2024-BET",
+  // "KAMALA-POPULAR-VOTE-2024-BET",
+  // "FED-CUT-50-SEPT-2024-BET",
+  // "REPUBLICAN-POPULAR-AND-WIN-BET",
+  // "BREAKPOINT-IGGYERIC-BET",
+  // "DEMOCRATS-WIN-MICHIGAN-BET",
+  // "TON-PERP",
+  // "LANDO-F1-SGP-WIN-BET",
+  // "MOTHER-PERP",
+  // "MOODENG-PERP",
+  // "WARWICK-FIGHT-WIN-BET",
 ];
 
 export const DRIFT_SPOT_MARKETS: [string, ...string[]] = [
