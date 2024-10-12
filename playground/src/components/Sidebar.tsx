@@ -90,7 +90,7 @@ export default function Sidebar() {
       group: "Investment",
       items: [
         {
-          route: "/products",
+          route: "/",
           text: "Screener",
           shortcut: "",
           Icon: LayersIcon,
