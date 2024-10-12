@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { DesktopIcon, DownloadIcon } from "@radix-ui/react-icons";
+import { DesktopIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
 
 const MobileOverlay = () => {

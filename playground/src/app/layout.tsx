@@ -9,6 +9,7 @@ import { ClusterProvider } from "@/components/solana-cluster-provider";
 import { GlamProvider } from "@glam/anchor/react";
 import { ReactQueryProvider } from "./react-query-provider";
 import MobileOverlay from "@/components/MobileOverlay";
+import BetaWarning from "@/components/BetaWarning";
 
 const AppWalletProvider = dynamic(
   () => import("@/components/wallet-provider"),
@@ -29,8 +30,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} flex items-start justify-between`}>
+      <body className={`${inter.className} flex items-start justify-between select-none`}>
       <MobileOverlay/>
+      <BetaWarning />
         <ReactQueryProvider>
           <ThemeProvider
             attribute="class"
