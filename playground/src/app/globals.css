@@ -92,3 +92,11 @@
     --chart-5: 212 97% 87%;
   }
 }
+
+body {
+  overscroll-behavior: none;
+}
+
+html, body, #root {
+  overscroll-behavior: none;
+}

@@ -50,8 +50,8 @@ export const columns: ColumnDef<Asset>[] = [
     enableSorting: false,
     enableHiding: false,
   },
-  {
-    id: "actions",
-    cell: ({ row }) => <DataTableRowActions row={row} />,
-  },
+  // {
+  //   id: "actions",
+  //   cell: ({ row }) => <DataTableRowActions row={row} />,
+  // },
 ];
