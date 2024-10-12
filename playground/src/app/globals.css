@@ -105,11 +105,20 @@
   }
 }
 
-
 body {
   overscroll-behavior: none;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   overscroll-behavior: none;
+}
+
+.dev-only {
+  display: none;
+}
+.dev-only ~ * {
+  /* display: none; */
+  border: 2px dashed red;
 }
