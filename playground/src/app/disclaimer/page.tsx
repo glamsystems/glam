@@ -4,7 +4,7 @@ import PageContentWrapper from "@/components/PageContentWrapper";
 const DisclaimerPage: React.FC = () => {
   return (
     <PageContentWrapper>
-      <div className="w-2/3 mx-auto text-justify leading-loose text-sm">
+      <div className="w-2/3 mx-auto text-justify leading-loose text-sm text-muted-foreground">
         <h1 className="text-xl font-medium mb-6">GLAM GUI Beta Disclaimer</h1>
         <section className="mb-6">
           <h2 className="text-lg font-semibold mb-2">1. Introduction</h2>
