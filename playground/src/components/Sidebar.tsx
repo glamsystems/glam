@@ -3,9 +3,7 @@
 import React from "react";
 import {
   BoxModelIcon,
-  CardStackIcon,
   Component1Icon,
-  Crosshair2Icon,
   DashboardIcon,
   DiscIcon,
   DownloadIcon,
@@ -21,7 +19,6 @@ import {
   MixerVerticalIcon,
   MixIcon,
   PaddingIcon,
-  PersonIcon,
   PlusIcon,
   ShuffleIcon,
   StackIcon,
@@ -85,6 +82,9 @@ function SidebarItem({ route, text, shortcut, Icon }: SidebarItemProps) {
 }
 
 export default function Sidebar() {
+  const disabledRoutes =
+    process.env.NEXT_PUBLIC_DISABLED_ROUTES?.split(",") || [];
+
   const navList = [
     {
       group: "Investment",
@@ -183,9 +183,11 @@ export default function Sidebar() {
               </div>
             )}
             <ul className="list-none p-0 m-0">
-              {nav.items.map((item, itemIndex) => (
-                <SidebarItem key={itemIndex} {...item} />
-              ))}
+              {nav.items.map((item, itemIndex) =>
+                disabledRoutes.includes(item.route) ? null : (
+                  <SidebarItem key={itemIndex} {...item} />
+                )
+              )}
             </ul>
           </div>
         ))}
