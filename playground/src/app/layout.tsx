@@ -42,7 +42,7 @@ export default function RootLayout({
               <AppWalletProvider>
                 <GlamProvider>
                   <Sidebar />
-                  <main className="flex justify-center items-center p-[56px] ml-[280px] h-fit w-full">
+                  <main className="flex justify-center items-center p-[56px] ml-[244px] h-fit w-full">
                     {children}
                   </main>
                   <Toaster />
