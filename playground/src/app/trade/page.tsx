@@ -30,7 +30,10 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import {
-  CaretSortIcon, CheckIcon, ColumnSpacingIcon, ExternalLinkIcon
+  CaretSortIcon,
+  CheckIcon,
+  ColumnSpacingIcon,
+  ExternalLinkIcon,
 } from "@radix-ui/react-icons";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Switch } from "@/components/ui/switch";
@@ -78,6 +81,7 @@ import {
 } from "@/constants";
 import { Skeleton } from "@/components/ui/skeleton";
 import TruncateAddress from "@/utils/TruncateAddress";
+import { DevOnly } from "@/components/DevOnly";
 
 const spotMarkets = DRIFT_SPOT_MARKETS.map((x) => ({ label: x, value: x }));
 const perpsMarkets = DRIFT_PERP_MARKETS.map((x) => ({ label: x, value: x }));
@@ -1442,12 +1446,16 @@ export default function Trade() {
                                   <TooltipTrigger asChild>
                                     <a
                                       className="ml-2 text-muted-foreground inline-flex align-middle"
-                                      href={`https://app.drift.trade/?userAccount=${driftUserAccount}`} target="_blank">
-                                      <ExternalLinkIcon ></ExternalLinkIcon>
+                                      href={`https://app.drift.trade/?userAccount=${driftUserAccount}`}
+                                      target="_blank"
+                                    >
+                                      <ExternalLinkIcon></ExternalLinkIcon>
                                     </a>
                                   </TooltipTrigger>
                                   <TooltipContent side="right">
-                                    <TruncateAddress address={driftUserAccount}/>
+                                    <TruncateAddress
+                                      address={driftUserAccount}
+                                    />
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
