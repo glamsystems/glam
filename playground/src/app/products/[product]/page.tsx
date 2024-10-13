@@ -266,7 +266,7 @@ export default function ProductPage() {
                 NAV per Share
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex-grow flex items-center justify-center text-5xl">
+            <CardContent className="flex-grow flex items-center justify-center text-5xl font-mono">
               {/* <NumberFormatter
                 value={123.456789}
                 addCommas
@@ -284,7 +284,7 @@ export default function ProductPage() {
                 Assets Under Management
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex-grow flex items-center justify-center text-5xl">
+            <CardContent className="flex-grow flex items-center justify-center text-5xl  font-mono">
               {/* <NumberFormatter
                 value={987654321}
                 addCommas
@@ -410,7 +410,7 @@ export default function ProductPage() {
                 <CardContent className="flex flex-row justify-between gap-4 p-2">
                   <Tabs defaultValue="holders" className="w-full">
                     <TabsList>
-                      <TabsTrigger value="holders">Holders</TabsTrigger>
+                      <TabsTrigger value="holders">Supply</TabsTrigger>
                       <TabsTrigger
                         value="performance"
                         className="select-none"
@@ -583,7 +583,7 @@ export default function ProductPage() {
                               Share Class Asset
                             </dt>
                             <dd>
-                              {fund.shareClasses[0]?.shareClassLaunchDate}
+                              {fund.shareClasses[0]?.shareClassCurrency}
                             </dd>
                           </div>
                           <div className="flex items-center justify-between">
@@ -598,13 +598,13 @@ export default function ProductPage() {
                             <dt className="text-muted-foreground">
                               Lifecycle Stage
                             </dt>
-                            <dd>{fund.shareClasses[0]?.shareClassLifecycle}</dd>
+                            <dd>{fund.shareClasses[0]?.shareClassLifecycle?.charAt(0).toUpperCase() + fund.shareClasses[0]?.shareClassLifecycle?.slice(1)}</dd>
                           </div>
                           <div className="flex items-center justify-between">
                             <dt className="text-muted-foreground">
-                              Investment Satus
+                              Investment Status
                             </dt>
-                            <dd>{fund.shareClasses[0]?.investmentStatus}</dd>
+                            <dd>{fund.shareClasses[0]?.investmentStatus?.charAt(0).toUpperCase() + fund.shareClasses[0]?.investmentStatus?.slice(1)}</dd>
                           </div>
                           <div className="flex items-center justify-between">
                             <dt className="text-muted-foreground">
@@ -630,12 +630,7 @@ export default function ProductPage() {
                             <dt className="text-muted-foreground">
                               Distribution Policy
                             </dt>
-                            <dd>
-                              {
-                                fund.shareClasses[0]
-                                  ?.shareClassDistributionPolicy
-                              }
-                            </dd>
+                            <dd>{fund.shareClasses[0]?.shareClassDistributionPolicy?.charAt(0).toUpperCase() + fund.shareClasses[0]?.shareClassDistributionPolicy?.slice(1)}</dd>
                           </div>
                         </dl>
                       </div>
@@ -682,25 +677,25 @@ export default function ProductPage() {
                             <span className="text-muted-foreground">
                               Openfunds
                             </span>
-                            <span className="flex gap-4">
+                            <span className="flex gap-2">
                             <a
                               href={fund?.openfundsUri}
                               rel="noopener noreferrer"
-                              className="link font-mono"
+                              className="link"
                             >
                               XLSX
                             </a>
                             <a
                               href=""
                               rel="noopener noreferrer"
-                              className="link font-mono pointer-events-none text-muted-foreground"
+                              className="link pointer-events-none text-muted-foreground"
                             >
                               CSV
                             </a>
                             <a
                               href=""
                               rel="noopener noreferrer"
-                              className="link font-mono pointer-events-none text-muted-foreground"
+                              className="link pointer-events-none text-muted-foreground"
                             >
                               JSON
                             </a>
