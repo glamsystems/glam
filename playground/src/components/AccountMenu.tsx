@@ -98,16 +98,18 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
   const [open, setOpen] = React.useState(false);
 
   return !wallet ? (
+    <span className="max-h-[40px]">
     <WalletMultiButton
       style={{
         backgroundColor: "transparent",
         color: "inherit",
         height: 40,
         flex: 1,
-        width: "263px",
+        width: "228px",
         justifyContent: "left",
       }}
     />
+      </span>
   ) : !activeFund ? null : (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -123,7 +125,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
               <Sparkle address={activeFund?.imageKey} size={24} />
             ) : null}
           </span>
-          <span className="mr-2 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
+          <span className="mr-2 min-w-0 text-ellipsis whitespace-nowrap">
             {activeFund ? (
               activeFund.name ? (
                 <span>{activeFund.name}</span>
@@ -140,7 +142,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
       <PopoverContent className="w-full p-0 transition-all" align="start">
         <Command>
           {/*<CommandInput placeholder="Search product..." />*/}
-          <CommandList className="h-fit overflow-hidden">
+          <CommandList>
             <CommandGroup key="Products" heading="Products">
               {fundsList.map((product) => (
                 <CommandItem
@@ -208,19 +210,20 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
             <CommandSeparator />
 
             <CommandGroup
+              className="overflow-visible"
               key="Connected Account"
               heading="Connected Account"
             >
-            <WalletMultiButton
-              style={{
-                width: 275,
-                color: "inherit",
-                padding: 0,
-                paddingLeft: 8,
-                paddingRight: 16,
-                height: 36,
-              }}
-            />
+              <WalletMultiButton
+                style={{
+                  width: 244,
+                  color: "inherit",
+                  padding: 0,
+                  paddingLeft: 8,
+                  paddingRight: 16,
+                  height: 36,
+                }}
+              />
             </CommandGroup>
           </CommandList>
         </Command>

@@ -406,7 +406,7 @@ export default function ProductPage() {
 
           <TabsContent value="overview">
             <div className="grid grid-cols-12 grid-rows-[auto_auto] gap-4">
-              <Card className="col-span-8 row-span-1">
+              <Card className="col-span-8 row-span-1 min-h-[391px]">
                 <CardContent className="flex flex-row justify-between gap-4 p-2">
                   <Tabs defaultValue="holders" className="w-full">
                     <TabsList>
@@ -539,7 +539,7 @@ export default function ProductPage() {
                   </Tabs>
                 </CardContent>
               </Card>
-              <Card className="col-span-4 row-span-1 aspect-square">
+              <Card className="col-span-4 row-span-1 min-h-[391px]">
                 <CardContent className="p-2 text-sm">
                   <Tabs defaultValue="keyFacts" className="w-full">
                     <TabsList>
