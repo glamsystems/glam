@@ -125,7 +125,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
               <Sparkle address={activeFund?.imageKey} size={24} />
             ) : null}
           </span>
-          <span className="mr-2 min-w-0 text-ellipsis whitespace-nowrap">
+          <span className="mr-2 min-w-0 text-ellipsis whitespace-nowrap truncate">
             {activeFund ? (
               activeFund.name ? (
                 <span>{activeFund.name}</span>
