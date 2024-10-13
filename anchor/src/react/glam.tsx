@@ -85,6 +85,16 @@ const deserializeFundCache = (f: any) => {
   return f as FundCache;
 };
 
+const toFundCache = (f: FundModel) => {
+  return {
+    fund: f.id,
+    imageKey: f.imageKey,
+    addressStr: f.id.toBase58(),
+    name: f.name,
+    treasury: {},
+  } as FundCache;
+};
+
 export function GlamProvider({
   children,
 }: Readonly<{
@@ -135,31 +145,19 @@ export function GlamProvider({
     );
     setAllFunds(fundModels);
 
-    const fundList = [];
+    const fundList = [] as FundCache[];
     fundModels.forEach((f: FundModel) => {
       if (wallet?.publicKey?.equals(f.manager)) {
-        const fundCache = {
-          fund: f.id,
-          imageKey: f.imageKey,
-          addressStr: f.id.toBase58(),
-          name: f.name,
-          treasury: {},
-        } as FundCache;
+        const fundCache = toFundCache(f);
         if (!activeFund) {
           setActiveFund(fundCache);
         }
         fundList.push(fundCache);
       } else {
-        f.delegateAcls.forEach((d) => {
-          if (wallet?.publicKey?.equals(d.pubkey)) {
-            const fundCache = {
-              fund: f.id,
-              imageKey: f.imageKey,
-              addressStr: f.id.toBase58(),
-              name: f.name,
-              treasury: {},
-            } as FundCache;
-            fundList.push(fundCache);
+        // Iterate over delegateAcls to find funds that the wallet has access to
+        f.delegateAcls.forEach((acl: any) => {
+          if (wallet?.publicKey?.equals(acl.pubkey)) {
+            fundList.push(toFundCache(f));
           }
         });
       }
