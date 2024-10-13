@@ -13,6 +13,7 @@ const BetaWarning = () => {
         <p className="leading-5 text-center text-muted-foreground truncate text-nowrap">
           Active development; breaking changes. Use at your own risk. Possible losses. No guarantees. GLAM not liable for any losses.{" "}
         </p>
+        &nbsp;
         <p className="leading-5 text-center text-muted-foreground text-nowrap">
           <Link href="/disclaimer" className="underline hover:text-destructive transition-colors">
             See full disclaimer
