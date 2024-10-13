@@ -240,27 +240,27 @@ export default function ProductPage() {
       <main className="flex flex-1 flex-col gap-4">
         <div className="grid grid-cols-9 grid-rows-[auto_1fr] gap-4">
           {/* Top row */}
-          <Card className="border-transparent border-0 col-span-1 row-span-1 aspect-square shadow-none">
-            <CardContent className="p-0 h-full" ref={sparkleContainerRef}>
+          <Card className="col-span-1 row-span-1 flex flex-col items-start justify-center p-0 border-0 shadow-none overflow-hidden aspect-square">
+            <CardContent className="p-0 h-full justify-center" ref={sparkleContainerRef}>
               <Sparkle
                 address={publicKey.toBase58()}
-                size={sparkleSize}
+                size={105}
                 onColorGenerated={handleColorGenerated}
               />
             </CardContent>
           </Card>
-          <Card className="col-span-4 row-span-1 flex flex-col items-start justify-start p-2 h-[102px] overflow-hidden">
+          <Card className="col-span-4 row-span-1 flex flex-col items-start justify-start p-2 overflow-clip">
             <CardHeader className="p-0 w-full">
               <CardTitle className="text-xl font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
                 {fund.name}
               </CardTitle>
-              <CardDescription className="text-sm text-muted-foreground mt-2 line-clamp-2 overflow-hidden">
+              <CardDescription className="text-sm text-muted-foreground mt-2 line-clamp-2 overflow-clip">
                 {fund.investmentObjective}
               </CardDescription>
             </CardHeader>
           </Card>
 
-          <Card className="col-span-2 row-span-2 aspect-square p-2 flex flex-col justify-between">
+          <Card className="col-span-2 row-span-2 p-2 flex flex-col justify-between aspect-square">
             <CardHeader className="p-0">
               <CardTitle className="text-muted-foreground opacity-75 text-md font-light">
                 NAV per Share
@@ -278,7 +278,7 @@ export default function ProductPage() {
             </CardContent>
           </Card>
 
-          <Card className="col-span-2 row-span-2 aspect-square p-2 flex flex-col justify-between">
+          <Card className="col-span-2 row-span-2 p-2 flex flex-col justify-between aspect-square">
             <CardHeader className="p-0">
               <CardTitle className="text-muted-foreground opacity-75 text-md font-light">
                 Assets Under Management
@@ -298,7 +298,7 @@ export default function ProductPage() {
 
           {/* Bottom row */}
           <div className="col-span-5 row-span-1 grid grid-cols-5 gap-4">
-            <Card className="col-span-1 flex flex-col items-start justify-start font-medium text-xl gap-3 pl-2 pt-2 aspect-square">
+            <Card className="col-span-1 flex flex-col items-start justify-start font-medium text-xl gap-3 pl-2 pt-2 aspect-square ">
               <p className="text-muted-foreground opacity-75 text-xs font-light">
                 Symbol
               </p>
