@@ -232,7 +232,7 @@ export default function ProductPage() {
   }, []);
 
   if (!fund) {
-    return;
+    redirect('/');
   }
 
   return (
