@@ -670,28 +670,36 @@ export default function Trade() {
                     >
                       <ColumnSpacingIcon />
                     </Button>
-                    <FormField
-                      control={swapForm.control}
+                    {/*<FormField*/}
+                    {/*  control={swapForm.control}*/}
+                    {/*  name="slippage"*/}
+                    {/*  render={({ field }) => (*/}
+                    {/*    <FormItem>*/}
+                    {/*      <FormLabel>Slippage</FormLabel>*/}
+                    {/*      <FormControl>*/}
+                    {/*        <Input*/}
+                    {/*          placeholder="Slippage"*/}
+                    {/*          type="number"*/}
+                    {/*          min="0.1"*/}
+                    {/*          step="0.1"*/}
+                    {/*          onChange={(e) =>*/}
+                    {/*            field.onChange(parseFloat(e.target.value))*/}
+                    {/*          }*/}
+                    {/*          value={field.value}*/}
+                    {/*        />*/}
+                    {/*      </FormControl>*/}
+                    {/*      /!*<FormDescription>&nbsp;</FormDescription>*!/*/}
+                    {/*      <FormMessage />*/}
+                    {/*    </FormItem>*/}
+                    {/*  )}*/}
+                    {/*/>*/}
+                    <AssetInput
                       name="slippage"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Slippage</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Slippage"
-                              type="number"
-                              min="0.1"
-                              step="0.1"
-                              onChange={(e) =>
-                                field.onChange(parseFloat(e.target.value))
-                              }
-                              value={field.value}
-                            />
-                          </FormControl>
-                          {/*<FormDescription>&nbsp;</FormDescription>*/}
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                      label="Slippage"
+                      balance={NaN}
+                      selectedAsset="%"
+                      hideBalance={true}
+                      disableAssetChange={true}
                     />
                     <AssetInput
                       className="min-w-1/2 w-1/2"
@@ -1164,7 +1172,16 @@ export default function Trade() {
                       <>
                         <div className="flex space-x-4 items-start">
                           <AssetInput
-                            className="min-w-1/2 w-1/2"
+                            className="min-w-1/3 w-1/3"
+                            name="slippage"
+                            label="Slippage"
+                            balance={NaN}
+                            selectedAsset="%"
+                            hideBalance={true}
+                            disableAssetChange={true}
+                          />
+                          <AssetInput
+                            className="min-w-1/3 w-1/3"
                             name="size"
                             label="Size"
                             assets={fromAssetList}
@@ -1173,7 +1190,7 @@ export default function Trade() {
                             onSelectAsset={setFromAsset}
                           />
                           <AssetInput
-                            className="min-w-1/2 w-1/2"
+                            className="min-w-1/3 w-1/3"
                             name="notional"
                             label="Notional"
                             assets={tokenList?.map(
@@ -1232,19 +1249,9 @@ export default function Trade() {
                           className="min-w-1/2 w-1/2"
                           name="notional"
                           label="Notional"
-                          assets={tokenList?.map(
-                            (t) =>
-                              ({
-                                name: t.name,
-                                symbol: t.symbol,
-                                address: t.address,
-                                decimals: t.decimals,
-                                balance: 0,
-                              } as Asset)
-                          )}
+                          disableAssetChange={true}
                           balance={NaN}
                           selectedAsset={toAsset}
-                          onSelectAsset={setToAsset}
                         />
                       </div>
                     </>
@@ -1540,7 +1547,7 @@ export default function Trade() {
                           name="limitPrice"
                           label="Limit Price"
                           balance={NaN}
-                          selectedAsset="$"
+                          selectedAsset="USDC"
                           hideBalance={true}
                           disableAssetChange={true}
                         />
@@ -1565,31 +1572,30 @@ export default function Trade() {
                     <>
                       <div className="flex space-x-4 items-start">
                         <AssetInput
-                          className="min-w-1/2 w-1/2"
-                          name="size"
-                          label="Size"
-                          assets={fromAssetList}
+                          className="min-w-1/3 w-1/3"
+                          name="slippage"
+                          label="Slippage"
                           balance={NaN}
-                          selectedAsset={fromAsset}
-                          onSelectAsset={setFromAsset}
+                          selectedAsset="%"
+                          hideBalance={true}
+                          disableAssetChange={true}
                         />
                         <AssetInput
-                          className="min-w-1/2 w-1/2"
+                          className="min-w-1/3 w-1/3"
+                          name="size"
+                          label="Size"
+                          selectedAsset={perpsFromAsset}
+                          assets={fromAssetList}
+                          balance={NaN}
+                          disableAssetChange={true}
+                        />
+                        <AssetInput
+                          className="min-w-1/3 w-1/3"
                           name="notional"
                           label="Notional"
-                          assets={tokenList?.map(
-                            (t) =>
-                              ({
-                                name: t.name,
-                                symbol: t.symbol,
-                                address: t.address,
-                                decimals: t.decimals,
-                                balance: 0,
-                              } as Asset)
-                          )}
                           balance={NaN}
-                          selectedAsset={toAsset}
-                          onSelectAsset={setToAsset}
+                          selectedAsset={"USDC"}
+                          disableAssetChange={true}
                         />
                       </div>
                     </>
