@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/chart";
 import { useGlam } from "@glam/anchor/react";
 
-import { useParams } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PublicKey } from "@solana/web3.js";
 import Sparkle from "@/utils/Sparkle";
@@ -126,7 +126,7 @@ export default function ProductPage() {
   }, [product]);
 
   if (!publicKey) {
-    return <div>Error loading product</div>;
+    redirect('/');
   }
 
   const { allFunds } = useGlam();
@@ -240,8 +240,8 @@ export default function ProductPage() {
       <main className="flex flex-1 flex-col gap-4">
         <div className="grid grid-cols-9 grid-rows-[auto_1fr] gap-4">
           {/* Top row */}
-          <Card className="col-span-1 row-span-1 flex flex-col items-start justify-center p-0 border-0 shadow-none overflow-hidden aspect-square">
-            <CardContent className="p-0 h-full justify-center" ref={sparkleContainerRef}>
+          <Card className="col-span-1 row-span-1 flex flex-col items-start p-0 border-0 shadow-none overflow-hidden aspect-square">
+            <CardContent className="p-0 h-full flex items-center self-center" ref={sparkleContainerRef}>
               <Sparkle
                 address={publicKey.toBase58()}
                 size={105}
