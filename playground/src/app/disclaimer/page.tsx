@@ -113,6 +113,43 @@ const DisclaimerPage: React.FC = () => {
             We may update this disclaimer from time to time. <strong>Continued use</strong> of GLAM GUI constitutes your acceptance of any changes. Please review this disclaimer periodically for updates.
           </p>
         </section>
+
+        <section className="mb-6">
+          <h2 className="text-lg font-semibold mb-2">12. Additional Information and Disclaimers</h2>
+
+          <h3 className="text-md font-semibold mb-2">Nature of Information</h3>
+          <ul className="list-disc pl-6 mb-4">
+            <li>All content available on GLAM GUI is <span className="font-semibold">general in nature</span> and <span className="font-semibold">not tailored to any particular person</span></li>
+            <li>Information is provided for <span className="font-semibold">informational purposes only</span></li>
+            <li>Content should <span className="font-semibold">not be considered investment advice</span> or a recommendation to transact in any cryptoassets</li>
+          </ul>
+
+          <h3 className="text-md font-semibold mb-2">Informational Purposes</h3>
+          <p className="mb-4">
+            While GLAM GUI provides information about cryptoassets and related technologies, users should not rely solely on this information for making investment decisions. We encourage users to conduct their own research and seek professional advice when necessary.
+          </p>
+
+          <h3 className="text-md font-semibold mb-2">Performance Information</h3>
+          <p className="mb-4">
+            Any performance information or historical data presented on GLAM GUI must be considered in conjunction with applicable disclosures. <span className="font-semibold">Past performance is not indicative of future results.</span> The cryptoasset market is highly volatile and unpredictable.
+          </p>
+
+          <h3 className="text-md font-semibold mb-2">Third-Party Content</h3>
+          <p className="mb-4">
+            GLAM GUI may include content from third-party sources. While we strive to provide accurate and up-to-date information, we do not endorse or guarantee the accuracy, completeness, or reliability of any third-party content. Users should exercise caution and critical thinking when interpreting such information.
+          </p>
+
+          <h3 className="text-md font-semibold mb-2">Regulatory Compliance</h3>
+          <p className="mb-4">
+            Users are responsible for ensuring their use of GLAM GUI complies with all applicable laws and regulations in their jurisdiction. Cryptoasset regulations vary by country and are subject to change. GLAM does not guarantee the legality of its services in all jurisdictions.
+          </p>
+
+          <h3 className="text-md font-semibold mb-2">Consultation Recommendation</h3>
+          <p className="mb-4">
+            Given the complex nature of cryptoassets and the potential risks involved, we strongly recommend that users consult with qualified professionals, including legal and tax advisors, before making any decisions based on the information provided by GLAM GUI.
+          </p>
+        </section>
+
       </div>
     </PageContentWrapper>);
 };

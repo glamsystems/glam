@@ -1,87 +1,28 @@
 "use client";
-import { EffectiveTheme } from "@/utils/EffectiveTheme";
 import * as React from "react";
 import {
-  CaretSortIcon,
-  CheckIcon,
-  ChevronDownIcon,
-  PlusCircledIcon,
-  PlusIcon,
-  UpdateIcon,
+  GearIcon, CheckIcon, ChevronDownIcon, EnvelopeClosedIcon
 } from "@radix-ui/react-icons";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
-import { ProductNameGen } from "@/utils/ProductNameGen";
-import { toast } from "@/components/ui/use-toast";
-import { z } from "zod";
 import Sparkle from "@/utils/Sparkle";
 import TruncateAddress from "@/utils/TruncateAddress";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useGlam } from "@glam/anchor/react";
-
-const groups = [
-  {
-    label: "Products",
-    products: [
-      {
-        label: "SpaciousSchnorrSafe",
-        value: "GLAM9W754xTYpKsgZgRJ3yiyQgkpa4Zei1f6VVWohvjr",
-      },
-      {
-        label: "YummyTestVehicle",
-        value: "GLAM29gaAdXMPPxyKqGtQhyTViQzWDhiNwDSsbZPbLWz",
-      },
-      {
-        label: "TopGammaBag",
-        value: "GLAM8NJQt5bpHPqLnF4VPHKR2vnjEunfKewMEBR4eTnT",
-      },
-    ],
-  },
-  {
-    label: "Connected Account",
-    products: [],
-  },
-];
-
-type Product = (typeof groups)[number]["products"][number];
+import Link from "next/link";
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
@@ -89,29 +30,23 @@ type PopoverTriggerProps = React.ComponentPropsWithoutRef<
 
 interface ProductSwitcherProps extends PopoverTriggerProps {}
 
-const createSchema = z.object({
-  productName: z.string().min(3, {
-    message: "Product name must be at least 3 characters.",
-  }),
-});
-
-type CreateSchema = z.infer<typeof createSchema>;
-
 export default function ProductSwitcher({ className }: ProductSwitcherProps) {
   const { wallet, fundsList, activeFund, setActiveFund } = useGlam();
   const [open, setOpen] = React.useState(false);
 
   return !wallet ? (
+    <span className="max-h-[40px]">
     <WalletMultiButton
       style={{
         backgroundColor: "transparent",
         color: "inherit",
         height: 40,
         flex: 1,
-        width: "263px",
+        width: "228px",
         justifyContent: "left",
       }}
     />
+      </span>
   ) : !activeFund ? null : (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -125,14 +60,14 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
           <span className="mr-2">
             {activeFund?.fund ? (
               <Sparkle address={activeFund?.imageKey} size={24} />
-            ) : null}
+            ) : <div className="border h-6 w-6"></div>}
           </span>
-          <span className="mr-2 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
+          <span className="mr-2 min-w-0 text-ellipsis whitespace-nowrap truncate">
             {activeFund ? (
               activeFund.name ? (
                 <span>{activeFund.name}</span>
               ) : (
-                <TruncateAddress address={activeFund?.addressStr || ""} />
+                <TruncateAddress address={activeFund?.addressStr || "Select"} />
               )
             ) : (
               "..."
@@ -141,10 +76,9 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
           <ChevronDownIcon className="ml-auto h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
+      <PopoverContent className="w-full p-0 transition-all" align="start">
         <Command>
-          {/*<CommandInput placeholder="Search product..." />*/}
-          <CommandList className="h-fit overflow-hidden">
+          <CommandList>
             <CommandGroup key="Products" heading="Products">
               {fundsList.map((product) => (
                 <CommandItem
@@ -153,7 +87,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
                     setActiveFund(product);
                     setOpen(false);
                   }}
-                  className="text-sm"
+                  className="text-sm cursor-pointer"
                 >
                   <span className="mr-2">
                     {product ? (
@@ -181,22 +115,52 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
 
             <CommandSeparator />
 
+            <CommandGroup>
+              <CommandItem
+                className="text-sm cursor-pointer data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
+                onSelect={() => {
+                  setOpen(false);
+                }}
+              >
+                <Link href="/settings" className="flex items-center w-full">
+                  <GearIcon className="mr-3 ml-1 w-4 h-4" />
+                  <p className="text-ellipsis mr-4">Settings</p>
+                </Link>
+
+              </CommandItem>
+              <CommandItem
+                className="text-sm cursor-pointer data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
+                onSelect={() => {
+                  setOpen(false);
+                }}
+              >
+                <Link href="mailto:hello@glam.systems?subject=GLAM GUI Feedback" className="flex items-center w-full">
+                  <EnvelopeClosedIcon className="mr-3 ml-1 w-4 h-4" />
+                  <p className="text-ellipsis mr-4">Feedback</p>
+                </Link>
+
+              </CommandItem>
+
+            </CommandGroup>
+
+            <CommandSeparator />
+
             <CommandGroup
+              className="overflow-visible"
               key="Connected Account"
               heading="Connected Account"
-            ></CommandGroup>
-            <WalletMultiButton
-              style={{
-                width: 275,
-                marginLeft: 4,
-                marginBottom: 4,
-                color: "inherit",
-                padding: 0,
-                paddingLeft: 8,
-                paddingRight: 16,
-                height: 36,
-              }}
-            />
+            >
+              <WalletMultiButton
+                style={{
+                  width: 244,
+                  color: "inherit",
+                  padding: 0,
+                  paddingLeft: 8,
+                  paddingRight: 16,
+                  height: 36,
+                }}
+              />
+            </CommandGroup>
           </CommandList>
         </Command>
       </PopoverContent>

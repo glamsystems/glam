@@ -40,7 +40,7 @@ interface AssetInputProps {
   label: string;
   balance: number;
   assets?: Asset[];
-  selectedAsset: string;
+  selectedAsset?: string;
   onSelectAsset?: (value: string) => void;
   className?: string;
   disableAssetChange?: boolean;

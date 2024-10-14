@@ -2,11 +2,8 @@
 
 import * as React from "react";
 import {
-  CartesianGrid,
+  Cell,
   Label,
-  Line,
-  LineChart,
-  XAxis,
   Pie,
   PieChart,
 } from "recharts";
@@ -25,7 +22,7 @@ import {
 } from "@/components/ui/chart";
 import { useGlam } from "@glam/anchor/react";
 
-import { useParams } from "next/navigation";
+import { redirect, useRouter, useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PublicKey } from "@solana/web3.js";
 import Sparkle from "@/utils/Sparkle";
@@ -35,151 +32,71 @@ import SparkleColorMatcher, {
 } from "@/utils/SparkleColorMatcher";
 import TruncateAddress from "@/utils/TruncateAddress";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import {
-  CopyIcon,
-  DotsVerticalIcon,
-  DownloadIcon,
-} from "@radix-ui/react-icons";
 import { Separator } from "@/components/ui/separator"; // Adjust the import based on your setup
 import NumberFormatter from "@/utils/NumberFormatter";
 import { ExplorerLink } from "@/components/ExplorerLink";
-
-const holdersData = [
-  {
-    holder: (
-      <TruncateAddress address="x4phvuadaSxoNeJxTeeTLg5T8sGePNohR7FZ11x37n6" />
-    ),
-    shares: 689,
-    fill: "var(--color-hld0)",
-  },
-  {
-    holder: (
-      <TruncateAddress address="xC8q8zvuZwBwEL62dBsqrKPxoPA9dumgCf6dMctNWAC" />
-    ),
-    shares: 303,
-    fill: "var(--color-hld1)",
-  },
-  {
-    holder: (
-      <TruncateAddress address="xZuZNohvFdWjdDzjwLm7yFSw7dAguB3xu9ZvPc3QQk1" />
-    ),
-    shares: 130,
-    fill: "var(--color-hld2)",
-  },
-  {
-    holder: (
-      <TruncateAddress address="xzLex8zbvVHeh3TYo9udB9rJBWJVejxA1KvcXNHjTJw" />
-    ),
-    shares: 115,
-    fill: "var(--color-hld3)",
-  },
-  {
-    holder: (
-      <TruncateAddress address="xcdcMjqxs7T9wmsyNkHKeY6588xHXDm6U4op5uAz38m" />
-    ),
-    shares: 112,
-    fill: "var(--color-hld4)",
-  },
-];
-
-const headerConfig = {
-  views: {
-    label: "Overview",
-  },
-  aum: {
-    label: "Assets Under Management",
-    color: "hsl(var(--chart-1))",
-  },
-  nav: {
-    label: "NAV per Share",
-    color: "hsl(var(--chart-1))",
-  },
-  mgmtFee: {
-    label: "Management Fee",
-    color: "hsl(var(--chart-1))",
-  },
-} satisfies ChartConfig;
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProductPage() {
+  const [clientReady, setClientReady] = useState(false);
+  const [holdersData, setHoldersData] = useState(null);
+  const [sparkleColor, setSparkleColor] = useState<string>(""); // State for sparkle color
+  const [useDefaultColors, setUseDefaultColors] = useState(false); // State for default colors
+  const sparkleContainerRef = useRef<HTMLDivElement>(null); // Initialize the ref here
+  const [sparkleSize, setSparkleSize] = useState(50); // State for the size of the sparkle
+
   const params = useParams();
+  const router = useRouter();
   const { product } = params;
+  const { allFunds } = useGlam();
+
+  const isAllFundsLoading = !allFunds;
 
   const publicKey = useMemo(() => {
-    if (!product) {
-      return;
-    }
+    if (!product) return null;
     try {
       return new PublicKey(product);
     } catch (e) {
-      console.log(`Invalid public key`, e);
+      console.log("Invalid public key", e);
+      return null;
     }
   }, [product]);
 
-  if (!publicKey) {
-    return <div>Error loading product</div>;
-  }
-
-  const { allFunds } = useGlam();
   const fund = useMemo(() => {
-    const fund = (allFunds || []).find((f) => f.idStr === product);
-    console.log("fundModel", fund);
-    return fund;
-  }, [allFunds]);
+    if (!allFunds || !publicKey) return null;
+    return allFunds.find((f) => f.idStr === product);
+  }, [allFunds, publicKey, product]);
 
-  const total = React.useMemo(
-    () => ({
-      aum: 123456,
-      nav: 78.91,
-      mgmtFee: "1.00%",
-    }),
-    []
-  );
+  // Mark the client as ready once mounted (to prevent server-side rendering issues)
+  useEffect(() => {
+    setClientReady(true);
+  }, []);
 
-  let mintData = (fund?.shareClasses || []).map(
-    (shareClass: any, j: number) => ({
-      mint: shareClass?.shareClassSymbol,
-      shares:
-        Number(shareClass?.shareClassSupply) /
-          10 ** (shareClass?.shareClassDecimals || 0) || 0,
-      fill: `var(--color-sc${j})`,
-    })
-  );
-  const totalShares = mintData.reduce(
-    (acc: BigInt, cur: any) => acc + cur.shares,
-    0
-  );
-  if (totalShares === 0) {
-    if (mintData.length > 0) {
-      mintData[0].shares = 1;
-    } else {
-      mintData = [{ mint: "", shares: 0, fill: "var(--color-sc0" }];
+  // Redirect logic moved to an effect
+  useEffect(() => {
+    console.log("Effect running. ClientReady:", clientReady, "IsAllFundsLoading:", isAllFundsLoading);
+    console.log("PublicKey:", publicKey, "Fund:", fund, "AllFunds:", allFunds);
+
+    if (clientReady && !isAllFundsLoading) {
+      if (!publicKey) {
+        console.log("Redirecting: Invalid public key");
+        router.push("/");
+        return;
+      }
+      if (allFunds && allFunds.length > 0 && !fund) {
+        console.log("Redirecting: Valid public key but no matching fund");
+        router.push("/");
+      }
     }
-  }
+  }, [clientReady, publicKey, fund, isAllFundsLoading, router, allFunds]);
 
-  const [sparkleColor, setSparkleColor] = useState<string>("");
-  const [useDefaultColors, setUseDefaultColors] = React.useState(false);
-
-  const handleColorGenerated = (generatedColor: string) => {
-    setSparkleColor(generatedColor);
-  };
-
+  // Calculating color info based on sparkleColor (must be declared at the top level)
   const colorInfo: ColorInfo = useMemo(() => {
-    return getColorInfo(sparkleColor);
+    return getColorInfo(sparkleColor); // This hook runs whenever `sparkleColor` changes
   }, [sparkleColor]);
 
-  const sparkleContainerRef = useRef<HTMLDivElement>(null);
-  const [sparkleSize, setSparkleSize] = useState(50); // Default size
-
+  // Chart colors based on useDefaultColors or colorInfo
   const chartColors = useMemo(() => {
     if (useDefaultColors) {
       return [
@@ -190,18 +107,15 @@ export default function ProductPage() {
         "212 97% 87%",
       ];
     }
-    return colorInfo.colors;
+    return colorInfo.colors; // Use colors based on sparkleColor
   }, [useDefaultColors, colorInfo.colors]);
 
-  const mintConfig = useMemo(
-    () => ({
-      shares: { label: "Shares" },
-      sc0: { label: "Share Class 1", color: `hsl(${chartColors[0]})` },
-      sc1: { label: "Share Class 2", color: `hsl(${chartColors[1]})` },
-      sc2: { label: "Share Class 3", color: `hsl(${chartColors[2]})` },
-    }),
-    [chartColors]
-  );
+  const mintConfig = useMemo(() => ({
+    shares: { label: "Shares" },
+    sc0: { label: "Share Class 1", color: `hsl(${chartColors[0]})` },
+    sc1: { label: "Share Class 2", color: `hsl(${chartColors[1]})` },
+    sc2: { label: "Share Class 3", color: `hsl(${chartColors[2]})` },
+  }), [chartColors]);
 
   const holdersConfig = useMemo(
     () => ({
@@ -210,7 +124,7 @@ export default function ProductPage() {
       hld1: { label: "Holder 2", color: `hsl(${chartColors[1]})` },
       hld2: { label: "Holder 3", color: `hsl(${chartColors[2]})` },
       hld3: { label: "Holder 4", color: `hsl(${chartColors[3]})` },
-      hld4: { label: "Holder 5", color: `hsl(${chartColors[4]})` },
+      hld4: { label: "Others", color: `hsl(${chartColors[4]})` }, // Changed label to "Others"
     }),
     [chartColors]
   );
@@ -218,8 +132,7 @@ export default function ProductPage() {
   useEffect(() => {
     const updateSparkleSize = () => {
       if (sparkleContainerRef.current) {
-        const { width, height } =
-          sparkleContainerRef.current.getBoundingClientRect();
+        const { width, height } = sparkleContainerRef.current.getBoundingClientRect();
         const minDimension = Math.min(width, height);
         setSparkleSize(Math.floor(minDimension));
       }
@@ -231,8 +144,329 @@ export default function ProductPage() {
     return () => window.removeEventListener("resize", updateSparkleSize);
   }, []);
 
+  if (!clientReady || isAllFundsLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!publicKey || (allFunds && allFunds.length > 0 && !fund)) {
+    router.push("/");
+    return null;
+  }
+
+  const handleColorGenerated = (generatedColor: string) => {
+    setSparkleColor(generatedColor);
+  };
+
+  interface ShareClass {
+    shareClassId: string;
+    shareClassSymbol: string;
+    shareClassDecimals: number;  // Add this line to define 'shareClassDecimals'
+  }
+
+  interface Fund {
+    shareClasses: ShareClass[];
+  }
+
+  interface HolderData {
+    mint: string;
+    holders: Array<{ holder: React.ReactNode; shares: number; fill: string }>;
+    totalHolders: number;
+  }
+
+  const ChartComponent: React.FC<{ fund: Fund }> = ({ fund }) => {
+    const [isLoading, setIsLoading] = useState(true);
+    const [showSkeleton, setShowSkeleton] = useState(true); // **New State**
+    const [localHoldersData, setLocalHoldersData] = useState<HolderData[] | null>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          setIsLoading(true);
+          setError(null);
+          const updatedHoldersData = await updateHoldersData(fund);
+          setLocalHoldersData(updatedHoldersData);
+        } catch (err: any) {
+          setError(err.message);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchData();
+    }, [fund]);
+
+    if (isLoading) {
+      return <SkeletonChart />;
+    }
+
+    if (error) {
+      return <div className="text-red-500">Error: {error}</div>;
+    }
+
+    // Ensure we have data before rendering the chart
+    if (!localHoldersData || localHoldersData.length === 0 || !localHoldersData[0]) {
+      return <div className="text-sm text-center text-muted-foreground mt-28">No holder data available</div>;
+    }
+
+    const totalHolders = localHoldersData[0]?.totalHolders || 0;
+
+    // Determine what to display
+    const displayTotalHolders = totalHolders > 0 ? totalHolders : 0;
+
+    return (
+      <ChartContainer
+        config={holdersConfig}
+        className="flex-1 mx-auto aspect-square max-h-[256px] self-center"
+      >
+        <PieChart>
+            {totalHolders !== 0 && (
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
+              />
+            )}
+          <Pie
+            data={localHoldersData[0]?.holders || []}
+            isAnimationActive={false}
+            dataKey="shares"
+            nameKey="holder"
+            innerRadius={90}
+            strokeWidth={5}
+            paddingAngle={2}
+          >
+            <Label
+              content={({ viewBox }) => {
+                if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                  return (
+                    <text
+                      x={viewBox.cx}
+                      y={viewBox.cy}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                    >
+                      <tspan
+                        x={viewBox.cx}
+                        y={viewBox.cy}
+                        className="fill-foreground text-3xl font-medium"
+                      >
+                        {displayTotalHolders.toLocaleString()}
+                      </tspan>
+                      <tspan
+                        x={viewBox.cx}
+                        y={(viewBox.cy || 0) + 24}
+                        className="fill-muted-foreground"
+                      >
+                        Holders
+                      </tspan>
+                    </text>
+                  );
+                }
+                return null;
+              }}
+            />
+          </Pie>
+        </PieChart>
+      </ChartContainer>
+    );
+  };
+
+  async function fetchHolderData(mint: string): Promise<any> {
+    try {
+      console.log(`Fetching holder data for mint: ${mint}`);
+      const response = await fetch(`https://rpc.helius.xyz/?api-key=${process.env.NEXT_PUBLIC_HELIUS_API_KEY}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: '1',
+          method: 'getTokenAccounts',
+          params: {
+            mint: mint,
+            options: {
+              showZeroBalance: true,
+            },
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(`API error: ${data.error.message}`);
+      }
+
+      console.log('Fetched holder data:', data);
+      return data.result;
+    } catch (error) {
+      console.error('Error fetching holder data:', error);
+      return null;
+    }
+  }
+
+  function processHolderData(
+    data: any,
+    decimals: number
+  ): {
+    holders: Array<{ holder: React.ReactNode; shares: number; fill: string }>;
+    totalHolders: number;
+  } {
+    if (!data || !Array.isArray(data.token_accounts)) {
+      console.error('Invalid data format:', data);
+      return { holders: [], totalHolders: 0 };
+    }
+
+    const accounts = data.token_accounts;
+
+    // Extract holder addresses and share amounts, adjusting by decimals
+    const holdersArray = accounts
+      .reduce((acc: any[], account: any) => {
+        const amount = Number(account.amount) / 10 ** decimals; // Adjust shares
+        const address = account.owner;
+        if (amount > 0 && address) {
+          acc.push({
+            holder: <TruncateAddress address={address} start={2} end={2}/>,
+            shares: amount,
+            fill: `var(--color-hld${acc.length % 5})`, // Dynamically assign colors
+          });
+        }
+        return acc;
+      }, []);
+
+    const totalHolders = holdersArray.length;
+
+    holdersArray.sort((a: { shares: number }, b: { shares: number }) => b.shares - a.shares);
+
+    let topHolders = holdersArray.slice(0, 4);
+
+    const othersShares = holdersArray
+      .slice(4)
+      .reduce((sum: number, holder: { shares: number }) => sum + holder.shares, 0);
+
+    if (othersShares > 0) {
+      topHolders.push({
+        holder: 'Others',
+        shares: othersShares,
+        fill: `var(--color-hld4)`,
+      });
+    }
+
+    if (totalHolders === 0) {
+      topHolders = [
+        {
+          holder: 'Others',
+          shares: 1, // To allow the PieChart to render
+          fill: `var(--color-hld0)`,
+        },
+      ];
+    }
+
+    console.log('Processed holders:', topHolders);
+
+    return {
+      holders: topHolders,
+      totalHolders: totalHolders,
+    };
+  }
+
+
+  async function updateHoldersData(fund: Fund): Promise<HolderData[]> {
+    const holdersData = await Promise.all(
+      (fund.shareClasses || []).map(async (shareClass) => {
+        const mintAddress = shareClass.shareClassId;
+
+        if (!mintAddress) {
+          console.error(`Mint address not found for share class: ${shareClass.shareClassSymbol}`);
+          return null;
+        }
+
+        const holderData = await fetchHolderData(mintAddress);
+        if (!holderData) {
+          console.error(`Failed to fetch holder data for mint: ${mintAddress}`);
+          return null;
+        }
+
+        const processedData = processHolderData(holderData, shareClass?.shareClassDecimals || 0);
+
+        return {
+          mint: mintAddress,
+          holders: processedData.holders,
+          totalHolders: processedData.totalHolders,
+        };
+      })
+    );
+
+    console.log('Aggregated holders data:', holdersData);
+
+    return holdersData.filter((item) => item !== null);
+  }
+
+  let mintData = (fund?.shareClasses || []).map(
+    (shareClass: any, j: number) => ({
+      mint: shareClass?.shareClassSymbol,
+      shares:
+        Number(shareClass?.shareClassSupply) /
+        10 ** (shareClass?.shareClassDecimals || 0) || 0,
+      fill: `var(--color-sc${j})`,
+    })
+  );
+
+  const totalShares = mintData.reduce(
+    (acc: number, cur: any) => acc + cur.shares,
+    0
+  );
+
+  let displayTotalShares = totalShares;
+
+// If totalShares is 0, set shares to 1 for the first share class to render the chart
+  if (totalShares === 0 && mintData.length > 0) {
+    mintData[0].shares = 1;
+  }
+
+// If totalShares is 0, set displayTotalShares to 0
+  if (totalShares === 0) {
+    displayTotalShares = 0;
+  }
+
+  // Determine if the supply is zero
+  const isZeroSupply = displayTotalShares === 0;
+
+  // Updated Label for Shares PieChart
+  const SharesLabel = ({ viewBox }: any) => {
+    if (!viewBox || !("cx" in viewBox) || !("cy" in viewBox)) return null;
+    return displayTotalShares > 0 ? (
+      <text
+        x={viewBox.cx}
+        y={viewBox.cy}
+        textAnchor="middle"
+        dominantBaseline="middle"
+      >
+        <tspan
+          x={viewBox.cx}
+          y={viewBox.cy}
+          className="fill-foreground text-3xl font-medium"
+        >
+          {displayTotalShares.toLocaleString()}
+        </tspan>
+        <tspan
+          x={viewBox.cx}
+          y={(viewBox.cy || 0) + 24}
+          className="fill-muted-foreground"
+        >
+          Shares
+        </tspan>
+      </text>
+    ) : null; // Hide the label if displayTotalShares is 0
+  };
+
   if (!fund) {
-    return;
+    redirect('/');
   }
 
   return (
@@ -240,33 +474,34 @@ export default function ProductPage() {
       <main className="flex flex-1 flex-col gap-4">
         <div className="grid grid-cols-9 grid-rows-[auto_1fr] gap-4">
           {/* Top row */}
-          <Card className="border-transparent border-0 col-span-1 row-span-1 aspect-square shadow-none">
-            <CardContent className="p-0 h-full" ref={sparkleContainerRef}>
+          <Card className="col-span-1 row-span-1 flex flex-col items-start p-0 border-0 shadow-none overflow-hidden aspect-square">
+            <CardContent className="p-0 h-full flex items-center self-center" ref={sparkleContainerRef}>
               <Sparkle
-                address={publicKey.toBase58()}
-                size={sparkleSize}
+                address={fund?.shareClasses[0]?.shareClassId}
+                size={105}
                 onColorGenerated={handleColorGenerated}
               />
             </CardContent>
           </Card>
-          <Card className="col-span-4 row-span-1 flex flex-col items-start justify-start p-2 h-[102px] overflow-hidden">
+
+          <Card className="col-span-4 row-span-1 flex flex-col items-start justify-start p-2 overflow-clip">
             <CardHeader className="p-0 w-full">
               <CardTitle className="text-xl font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
                 {fund.name}
               </CardTitle>
-              <CardDescription className="text-sm text-muted-foreground mt-2 line-clamp-2 overflow-hidden">
+              <CardDescription className="text-sm text-muted-foreground mt-2 line-clamp-2 overflow-clip">
                 {fund.investmentObjective}
               </CardDescription>
             </CardHeader>
           </Card>
 
-          <Card className="col-span-2 row-span-2 aspect-square p-2 flex flex-col justify-between">
+          <Card className="col-span-2 row-span-2 p-2 flex flex-col justify-between aspect-square">
             <CardHeader className="p-0">
               <CardTitle className="text-muted-foreground opacity-75 text-md font-light">
                 NAV per Share
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex-grow flex items-center justify-center text-5xl">
+            <CardContent className="flex-grow flex items-center justify-center text-5xl font-mono">
               {/* <NumberFormatter
                 value={123.456789}
                 addCommas
@@ -278,13 +513,13 @@ export default function ProductPage() {
             </CardContent>
           </Card>
 
-          <Card className="col-span-2 row-span-2 aspect-square p-2 flex flex-col justify-between">
+          <Card className="col-span-2 row-span-2 p-2 flex flex-col justify-between aspect-square">
             <CardHeader className="p-0">
               <CardTitle className="text-muted-foreground opacity-75 text-md font-light">
                 Assets Under Management
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex-grow flex items-center justify-center text-5xl">
+            <CardContent className="flex-grow flex items-center justify-center text-5xl  font-mono">
               {/* <NumberFormatter
                 value={987654321}
                 addCommas
@@ -298,7 +533,7 @@ export default function ProductPage() {
 
           {/* Bottom row */}
           <div className="col-span-5 row-span-1 grid grid-cols-5 gap-4">
-            <Card className="col-span-1 flex flex-col items-start justify-start font-medium text-xl gap-3 pl-2 pt-2 aspect-square">
+            <Card className="col-span-1 flex flex-col items-start justify-start font-medium text-xl gap-3 pl-2 pt-2 aspect-square ">
               <p className="text-muted-foreground opacity-75 text-xs font-light">
                 Symbol
               </p>
@@ -382,25 +617,35 @@ export default function ProductPage() {
               </CardContent>
             </Card>
           </div>
-        </div>
+          </div>
 
         <Tabs defaultValue="overview" className="w-full">
           <TabsList className="mt-8 mb-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="holdings">Holdings</TabsTrigger>
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="policies">Policies</TabsTrigger>
-            <TabsTrigger value="integrations">Integrations</TabsTrigger>
-            <TabsTrigger value="access">Access</TabsTrigger>
+            <TabsTrigger value="holdings" disabled>
+              Holdings
+            </TabsTrigger>
+            <TabsTrigger value="details" disabled>
+              Details
+            </TabsTrigger>
+            <TabsTrigger value="policies" disabled>
+              Policies
+            </TabsTrigger>
+            <TabsTrigger value="integrations" disabled>
+              Integrations
+            </TabsTrigger>
+            <TabsTrigger value="access" disabled>
+              Access
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
             <div className="grid grid-cols-12 grid-rows-[auto_auto] gap-4">
-              <Card className="col-span-8 row-span-1">
+              <Card className="col-span-8 row-span-1 min-h-[391px]">
                 <CardContent className="flex flex-row justify-between gap-4 p-2">
                   <Tabs defaultValue="holders" className="w-full">
                     <TabsList>
-                      <TabsTrigger value="holders">Holders</TabsTrigger>
+                      <TabsTrigger value="holders">Supply</TabsTrigger>
                       <TabsTrigger
                         value="performance"
                         className="select-none"
@@ -418,10 +663,12 @@ export default function ProductPage() {
                         className="flex-1 mx-auto aspect-square max-h-[256px] self-center"
                       >
                         <PieChart>
-                          <ChartTooltip
-                            cursor={false}
-                            content={<ChartTooltipContent hideLabel />}
-                          />
+                          {totalShares !== 0 && (
+                            <ChartTooltip
+                              cursor={false}
+                              content={<ChartTooltipContent hideLabel />}
+                            />
+                          )}
                           <Pie
                             isAnimationActive={false}
                             data={mintData}
@@ -433,11 +680,7 @@ export default function ProductPage() {
                           >
                             <Label
                               content={({ viewBox }) => {
-                                if (
-                                  viewBox &&
-                                  "cx" in viewBox &&
-                                  "cy" in viewBox
-                                ) {
+                                if (viewBox && "cx" in viewBox && "cy" in viewBox) {
                                   return (
                                     <text
                                       x={viewBox.cx}
@@ -450,7 +693,7 @@ export default function ProductPage() {
                                         y={viewBox.cy}
                                         className="fill-foreground text-3xl font-medium"
                                       >
-                                        {totalShares.toLocaleString()}
+                                        {displayTotalShares.toLocaleString()}
                                       </tspan>
                                       <tspan
                                         x={viewBox.cx}
@@ -462,6 +705,7 @@ export default function ProductPage() {
                                     </text>
                                   );
                                 }
+                                return null;
                               }}
                             />
                           </Pie>
@@ -469,67 +713,15 @@ export default function ProductPage() {
                       </ChartContainer>
                       <ChartContainer
                         config={holdersConfig}
-                        className="flex-1 mx-auto aspect-square max-h-[256px]  self-center"
+                        className="flex-1 mx-auto aspect-square max-h-[256px] self-center"
                       >
-                        <PieChart>
-                          <ChartTooltip
-                            cursor={false}
-                            content={<ChartTooltipContent hideLabel />}
-                          />
-                          <Pie
-                            data={holdersData}
-                            isAnimationActive={false}
-                            dataKey="shares"
-                            nameKey="holder"
-                            innerRadius={90}
-                            strokeWidth={5}
-                            paddingAngle={2}
-                          >
-                            <Label
-                              content={({ viewBox }) => {
-                                if (
-                                  viewBox &&
-                                  "cx" in viewBox &&
-                                  "cy" in viewBox
-                                ) {
-                                  return (
-                                    <text
-                                      x={viewBox.cx}
-                                      y={viewBox.cy}
-                                      textAnchor="middle"
-                                      dominantBaseline="middle"
-                                    >
-                                      <tspan
-                                        x={viewBox.cx}
-                                        y={viewBox.cy}
-                                        className="fill-foreground text-3xl font-medium"
-                                      >
-                                        {/* {holdersData.length.toLocaleString()} */}
-                                        <ExplorerLink
-                                          path={`/token/${fund?.shareClasses[0]?.shareClassId}#holders`}
-                                          label="..."
-                                        />
-                                      </tspan>
-                                      <tspan
-                                        x={viewBox.cx}
-                                        y={(viewBox.cy || 0) + 24}
-                                        className="fill-muted-foreground"
-                                      >
-                                        Holders
-                                      </tspan>
-                                    </text>
-                                  );
-                                }
-                              }}
-                            />
-                          </Pie>
-                        </PieChart>
+                        <ChartComponent fund={fund} />
                       </ChartContainer>
                     </TabsContent>
                   </Tabs>
                 </CardContent>
               </Card>
-              <Card className="col-span-4 row-span-1 aspect-square">
+              <Card className="col-span-4 row-span-1 min-h-[391px]">
                 <CardContent className="p-2 text-sm">
                   <Tabs defaultValue="keyFacts" className="w-full">
                     <TabsList>
@@ -573,7 +765,7 @@ export default function ProductPage() {
                               Share Class Asset
                             </dt>
                             <dd>
-                              {fund.shareClasses[0]?.shareClassLaunchDate}
+                              {fund.shareClasses[0]?.shareClassCurrency}
                             </dd>
                           </div>
                           <div className="flex items-center justify-between">
@@ -588,13 +780,13 @@ export default function ProductPage() {
                             <dt className="text-muted-foreground">
                               Lifecycle Stage
                             </dt>
-                            <dd>{fund.shareClasses[0]?.shareClassLifecycle}</dd>
+                            <dd>{fund.shareClasses[0]?.shareClassLifecycle?.charAt(0).toUpperCase() + fund.shareClasses[0]?.shareClassLifecycle?.slice(1)}</dd>
                           </div>
                           <div className="flex items-center justify-between">
                             <dt className="text-muted-foreground">
-                              Investment Satus
+                              Investment Status
                             </dt>
-                            <dd>{fund.shareClasses[0]?.investmentStatus}</dd>
+                            <dd>{fund.shareClasses[0]?.investmentStatus?.charAt(0).toUpperCase() + fund.shareClasses[0]?.investmentStatus?.slice(1)}</dd>
                           </div>
                           <div className="flex items-center justify-between">
                             <dt className="text-muted-foreground">
@@ -620,12 +812,7 @@ export default function ProductPage() {
                             <dt className="text-muted-foreground">
                               Distribution Policy
                             </dt>
-                            <dd>
-                              {
-                                fund.shareClasses[0]
-                                  ?.shareClassDistributionPolicy
-                              }
-                            </dd>
+                            <dd>{fund.shareClasses[0]?.shareClassDistributionPolicy?.charAt(0).toUpperCase() + fund.shareClasses[0]?.shareClassDistributionPolicy?.slice(1)}</dd>
                           </div>
                         </dl>
                       </div>
@@ -672,13 +859,29 @@ export default function ProductPage() {
                             <span className="text-muted-foreground">
                               Openfunds
                             </span>
+                            <span className="flex gap-2">
                             <a
                               href={fund?.openfundsUri}
                               rel="noopener noreferrer"
-                              className="link font-mono"
+                              className="link"
                             >
-                              (download)
+                              XLSX
                             </a>
+                            <a
+                              href=""
+                              rel="noopener noreferrer"
+                              className="link pointer-events-none text-muted-foreground"
+                            >
+                              CSV
+                            </a>
+                            <a
+                              href=""
+                              rel="noopener noreferrer"
+                              className="link pointer-events-none text-muted-foreground"
+                            >
+                              JSON
+                            </a>
+                              </span>
                           </li>
                         </ul>
                       </div>
@@ -776,3 +979,18 @@ export default function ProductPage() {
     </PageContentWrapper>
   );
 }
+
+// Skeleton component for the chart
+const SkeletonChart = () => {
+  return (
+    <div className="relative w-[196px] h-[196px] flex mr-auto ml-auto mt-8">
+      <Skeleton className="absolute inset-0 rounded-full border-[9px] bg-transparent" />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="text-center">
+          <Skeleton className="h-8 w-8 mb-2 mt-1 mx-auto" />
+          <Skeleton className="h-3 w-12 mx-auto" />
+        </div>
+      </div>
+    </div>
+    );
+    };

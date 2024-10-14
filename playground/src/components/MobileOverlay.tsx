@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { DesktopIcon } from "@radix-ui/react-icons";
+import { DesktopIcon, MobileIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
 
 const MobileOverlay = () => {
@@ -56,7 +56,7 @@ const MobileOverlay = () => {
   return (
     <div className="fixed inset-0 bg-background z-50 flex flex-col items-center justify-center p-4">
       <div className="flex flex-col items-center justify-center gap-4 w-2/3 text-sm">
-      <DesktopIcon className="w-24 h-24 text-muted-foreground" />
+      <MobileIcon className="w-24 h-24 text-destructive" />
         <p className="text-lg font-medium">Not Accessible on Mobile</p>
         <p className="text-muted-foreground leading-5 text-center">
           GLAM is currently not available on mobile devices. Please use a desktop for the best experience.
