@@ -95,7 +95,7 @@ export const columns: ColumnDef<Holding>[] = [
   {
     accessorKey: "balance",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Balance" />
+      <DataTableColumnHeader column={column} title="Quantity" />
     ),
     cell: ({ row }) => {
       return (
@@ -114,7 +114,7 @@ export const columns: ColumnDef<Holding>[] = [
   {
     accessorKey: "notional",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="USD" />
+      <DataTableColumnHeader column={column} title="Value" />
     ),
     cell: ({ row }) => {
       return (
