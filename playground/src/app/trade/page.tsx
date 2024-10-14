@@ -715,7 +715,7 @@ export default function Trade() {
 
                   <div className="flex flex-row gap-4 items-start">
                     <FormItem>
-                      <FormLabel className="text-base">Venues</FormLabel>
+                      <FormLabel>Venues</FormLabel>
                       <div className="space-y-4">
                         <span className="flex w-full gap-4">
                           <ToggleGroup
@@ -1087,6 +1087,7 @@ export default function Trade() {
                         name="side"
                         render={({ field }) => (
                           <FormItem className="w-full">
+                            <FormLabel>Side</FormLabel>
                             <ToggleGroup
                               type="single"
                               value={field.value}
@@ -1502,6 +1503,7 @@ export default function Trade() {
                         name="side"
                         render={({ field }) => (
                           <FormItem className="w-full">
+                            <FormLabel>Side</FormLabel>
                             <ToggleGroup
                               type="single"
                               value={field.value}
@@ -1751,21 +1753,10 @@ export default function Trade() {
                     </Button>
                   </div>
                   <div className="flex space-x-4 w-full">
-                    <Button variant="secondary" className="w-1/4">
-                      Cancel All Orders
-                    </Button>
-                    <Button variant="secondary" className="w-1/4">
-                      Cancel All &nbsp;
-                      <span className="truncate">
-                        {perpsForm.watch("perpsMarket").replace("-PERP", "")}
-                      </span>
-                    </Button>
-                    <Button variant="secondary" className="w-1/4">
-                      Settle P&L
-                    </Button>
-                    <Button variant="secondary" className="w-1/4">
-                      Claim Rewards
-                    </Button>
+                    <Button variant="secondary" className="w-1/4">Cancel All Orders</Button>
+                    <Button variant="secondary" className="w-1/4">Cancel All &nbsp;<span className="truncate">{perpsForm.watch("perpsMarket").replace("-PERP", "")}</span></Button>
+                    <Button variant="secondary" className="w-1/4">Settle P&L</Button>
+                    <Button variant="secondary" className="w-1/4">Claim Rewards</Button>
                   </div>
                 </form>
               </Form>
@@ -1773,10 +1764,10 @@ export default function Trade() {
             <div className="grid gap-3 text-sm mt-8">
               <div className="font-semibold">Account Details</div>
               <ul className="grid gap-3">
-                <li className="border-b pb-3 flex items-center justify-between">
-                  <span className="text-muted-foreground flex items-center">
-                    Drift Page
-                  </span>
+                  <li className="border-b pb-3 flex items-center justify-between">
+                    <span className="text-muted-foreground flex items-center">
+                      Drift Page
+                    </span>
                   <span>
                     <p className="font-semibold">
                       <ExplorerLink
