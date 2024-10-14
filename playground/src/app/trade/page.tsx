@@ -558,6 +558,9 @@ export default function Trade() {
     }
   };
 
+  const [cancelValue, setCancelValue] = React.useState("cancelAll");
+  const [settleValue, setSettleValue] = React.useState("settlePnL");
+
   return (
     <PageContentWrapper>
       <div className="w-4/6 self-center">
@@ -1169,47 +1172,47 @@ export default function Trade() {
                       </div>
                     </>
                   ) : spotOrderType === "Market" ? (
-                      <>
-                        <div className="flex space-x-4 items-start">
-                          <AssetInput
-                            className="min-w-1/3 w-1/3"
-                            name="slippage"
-                            label="Slippage"
-                            balance={NaN}
-                            selectedAsset="%"
-                            hideBalance={true}
-                            disableAssetChange={true}
-                          />
-                          <AssetInput
-                            className="min-w-1/3 w-1/3"
-                            name="size"
-                            label="Size"
-                            assets={fromAssetList}
-                            balance={NaN}
-                            selectedAsset={fromAsset}
-                            onSelectAsset={setFromAsset}
-                          />
-                          <AssetInput
-                            className="min-w-1/3 w-1/3"
-                            name="notional"
-                            label="Notional"
-                            assets={tokenList?.map(
-                              (t) =>
-                                ({
-                                  name: t.name,
-                                  symbol: t.symbol,
-                                  address: t.address,
-                                  decimals: t.decimals,
-                                  balance: 0,
-                                } as Asset)
-                            )}
-                            balance={NaN}
-                            selectedAsset={toAsset}
-                            onSelectAsset={setToAsset}
-                          />
-                        </div>
-                      </>
-                    ) : spotOrderType === "Trigger Limit" ? (
+                    <>
+                      <div className="flex space-x-4 items-start">
+                        <AssetInput
+                          className="min-w-1/3 w-1/3"
+                          name="slippage"
+                          label="Slippage"
+                          balance={NaN}
+                          selectedAsset="%"
+                          hideBalance={true}
+                          disableAssetChange={true}
+                        />
+                        <AssetInput
+                          className="min-w-1/3 w-1/3"
+                          name="size"
+                          label="Size"
+                          assets={fromAssetList}
+                          balance={NaN}
+                          selectedAsset={fromAsset}
+                          onSelectAsset={setFromAsset}
+                        />
+                        <AssetInput
+                          className="min-w-1/3 w-1/3"
+                          name="notional"
+                          label="Notional"
+                          assets={tokenList?.map(
+                            (t) =>
+                              ({
+                                name: t.name,
+                                symbol: t.symbol,
+                                address: t.address,
+                                decimals: t.decimals,
+                                balance: 0,
+                              } as Asset)
+                          )}
+                          balance={NaN}
+                          selectedAsset={toAsset}
+                          onSelectAsset={setToAsset}
+                        />
+                      </div>
+                    </>
+                  ) : spotOrderType === "Trigger Limit" ? (
                     <>
                       <div className="flex space-x-4 items-start">
                         <AssetInput
@@ -1257,19 +1260,19 @@ export default function Trade() {
                     </>
                   ) : null}
 
-                  {spotOrderType !== "Trigger Limit" && !spotReduceOnly && (
-                    // <div className="flex flex-row gap-4 items-start w-full">
-                    //   <LeverageInput
-                    //     control={spotForm.control}
-                    //     name="leverage"
-                    //     label="Leverage: 100x"
-                    //     min={0}
-                    //     max={100}
-                    //     step={1}
-                    //   />
-                    // </div>
-                    <span></span>
-                  )}
+                  {spotOrderType !== "Trigger Limit" &&
+                    !spotReduceOnly && ( // <div className="flex flex-row gap-4 items-start w-full">
+                      //   <LeverageInput
+                      //     control={spotForm.control}
+                      //     name="leverage"
+                      //     label="Leverage: 100x"
+                      //     min={0}
+                      //     max={100}
+                      //     step={1}
+                      //   />
+                      // </div>
+                      <span></span>
+                    )}
 
                   {/*<div className="flex flex-row gap-4 items-start w-full">*/}
                   {/*  <div className="w-1/2 flex h-6 items-center text-sm text-muted-foreground">*/}
@@ -1362,6 +1365,47 @@ export default function Trade() {
                       Submit
                     </Button>
                   </div>
+                  <div className="flex space-x-4 w-full">
+                    <div className="flex w-full">
+                      <Button
+                        variant="outline"
+                        className="rounded-r-none px-8 py-2 w-1/2"
+                      >
+                        Cancel
+                      </Button>
+                      <ToggleGroup
+                        type="single"
+                        value={cancelValue}
+                        onValueChange={(value) => {
+                          if (value) setCancelValue(value);
+                        }}
+                        className="border border-l-0 rounded-l-none h-10 gap-0 w-1/2"
+                      >
+                        <ToggleGroupItem
+                          value="cancelAll"
+                          aria-label="Cancel All"
+                          className="px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
+                        >
+                          All
+                        </ToggleGroupItem>
+                        <ToggleGroupItem
+                          value="cancelMarket"
+                          aria-label="Cancel Market"
+                          className="px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
+                        >
+                          <span className="truncate">
+                            {perpsForm
+                              .watch("perpsMarket")
+                              .replace("-PERP", "")}
+                          </span>
+                        </ToggleGroupItem>
+                      </ToggleGroup>
+                    </div>
+
+                    {/*<Button variant="outline" className="w-1/2">*/}
+                    {/*  Claim Rewards*/}
+                    {/*</Button>*/}
+                  </div>
                 </form>
               </Form>
             </FormProvider>
@@ -1379,7 +1423,17 @@ export default function Trade() {
                       name="venue"
                       render={({ field }) => (
                         <FormItem className="w-1/3">
-                          <FormLabel>Venue</FormLabel>
+                          <div>
+                            <FormLabel>Venue</FormLabel>
+                            {field.value === "Drift" && (
+                              <ExplorerLink
+                                path={`https://app.drift.trade/?userAccount=${driftUserAccount}`}
+                                label={driftUserAccount}
+                                className="text-sm text-muted hover:text-foreground transition-all leading-none ml-2"
+                              />
+                            )}
+                          </div>
+
                           <FormControl>
                             <Select
                               value={field.value}
@@ -1568,7 +1622,8 @@ export default function Trade() {
                           disableAssetChange={true}
                         />
                       </div>
-                    </>) : perpsOrderType === "Market" ? (
+                    </>
+                  ) : perpsOrderType === "Market" ? (
                     <>
                       <div className="flex space-x-4 items-start">
                         <AssetInput
@@ -1599,7 +1654,8 @@ export default function Trade() {
                         />
                       </div>
                     </>
-                  ) : perpsOrderType === "Trigger Limit" ? (<>
+                  ) : perpsOrderType === "Trigger Limit" ? (
+                    <>
                       <div className="flex space-x-4 items-start">
                         <AssetInput
                           className="min-w-1/2 w-1/2"
@@ -1759,32 +1815,81 @@ export default function Trade() {
                     </Button>
                   </div>
                   <div className="flex space-x-4 w-full">
-                    <Button variant="secondary" className="w-1/4">Cancel All Orders</Button>
-                    <Button variant="secondary" className="w-1/4">Cancel All &nbsp;<span className="truncate">{perpsForm.watch("perpsMarket").replace("-PERP", "")}</span></Button>
-                    <Button variant="secondary" className="w-1/4">Settle P&L</Button>
-                    <Button variant="secondary" className="w-1/4">Claim Rewards</Button>
+                    <div className="flex w-1/2">
+                      <Button
+                        variant="outline"
+                        className="rounded-r-none px-8 py-2 w-1/2"
+                      >
+                        Cancel
+                      </Button>
+                      <ToggleGroup
+                        type="single"
+                        value={cancelValue}
+                        onValueChange={(value) => {
+                          if (value) setCancelValue(value);
+                        }}
+                        className="border border-l-0 rounded-l-none h-10 gap-0 w-1/2"
+                      >
+                        <ToggleGroupItem
+                          value="cancelAll"
+                          aria-label="Cancel All"
+                          className="px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
+                        >
+                          All
+                        </ToggleGroupItem>
+                        <ToggleGroupItem
+                          value="cancelMarket"
+                          aria-label="Cancel Market"
+                          className="px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
+                        >
+                          <span className="truncate">
+                            {perpsForm
+                              .watch("perpsMarket")
+                              .replace("-PERP", "")}
+                          </span>
+                        </ToggleGroupItem>
+                      </ToggleGroup>
+                    </div>
+
+                    <div className="flex w-1/2">
+                      <Button
+                        variant="outline"
+                        className="rounded-r-none px-8 py-2 w-1/2"
+                      >
+                        Settle
+                      </Button>
+                      <ToggleGroup
+                        type="single"
+                        value={settleValue}
+                        onValueChange={(value) => {
+                          if (value) setSettleValue(value);
+                        }}
+                        className="border border-l-0 rounded-l-none h-10 gap-0 w-1/2"
+                      >
+                        <ToggleGroupItem
+                          value="settlePnL"
+                          aria-label="Settle PnL"
+                          className="px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
+                        >
+                          P&L
+                        </ToggleGroupItem>
+                        <ToggleGroupItem
+                          value="settleFunding"
+                          aria-label="Settle Funding"
+                          className="px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
+                        >
+                          Funding
+                        </ToggleGroupItem>
+                      </ToggleGroup>
+                    </div>
+
+                    {/*<Button variant="outline" className="w-1/3">*/}
+                    {/*  Claim Rewards*/}
+                    {/*</Button>*/}
                   </div>
                 </form>
               </Form>
             </FormProvider>
-            <div className="grid gap-3 text-sm mt-8">
-              <div className="font-semibold">Account Details</div>
-              <ul className="grid gap-3">
-                  <li className="border-b pb-3 flex items-center justify-between">
-                    <span className="text-muted-foreground flex items-center">
-                      Drift Page
-                    </span>
-                  <span>
-                    <p className="font-semibold">
-                      <ExplorerLink
-                        path={`https://app.drift.trade/?userAccount=${driftUserAccount}`}
-                        label={driftUserAccount}
-                      />
-                    </p>
-                  </span>
-                </li>
-              </ul>
-            </div>
           </TabsContent>
         </Tabs>
       </div>
