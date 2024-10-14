@@ -2,7 +2,14 @@
 
 import { AnchorProvider } from "@coral-xyz/anchor";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import {
+  act,
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   AnchorWallet,
   useConnection,
@@ -95,6 +102,21 @@ const toFundCache = (f: FundModel) => {
   } as FundCache;
 };
 
+const fetchBalances = async (glamClient: GlamClient, owner: PublicKey) => {
+  const balanceLamports = await glamClient.provider.connection.getBalance(
+    owner
+  );
+  const tokenAccounts = await glamClient.listTokenAccounts(owner);
+  tokenAccounts.forEach((ta) => {
+    ta.address = ta.address.toBase58();
+  });
+
+  return {
+    balanceLamports,
+    tokenAccounts,
+  };
+};
+
 export function GlamProvider({
   children,
 }: Readonly<{
@@ -149,9 +171,6 @@ export function GlamProvider({
     fundModels.forEach((f: FundModel) => {
       if (wallet?.publicKey?.equals(f.manager)) {
         const fundCache = toFundCache(f);
-        if (!activeFund) {
-          setActiveFund(fundCache);
-        }
         fundList.push(fundCache);
       } else {
         // Iterate over delegateAcls to find funds that the wallet has access to
@@ -161,8 +180,27 @@ export function GlamProvider({
           }
         });
       }
-      setFundsList(fundList);
     });
+    if (fundList.length > 0) {
+      setFundsList(fundList);
+      if (!activeFund) {
+        setActiveFund(fundList[0]);
+      }
+    }
+
+    const fetchData = async () => {
+      if (activeFund && activeFund.fund) {
+        const treasury = glamClient.getTreasuryPDA(activeFund.fund);
+        const balances = await fetchBalances(glamClient, treasury);
+        activeFund.treasury = {
+          ...balances,
+          address: treasury,
+        };
+        setActiveFund(activeFund);
+      }
+    };
+
+    fetchData();
   }, [allFundsData, activeFund, wallet]);
 
   //
@@ -172,20 +210,7 @@ export function GlamProvider({
   const { data: walletBalances } = useQuery({
     queryKey: walletBalancesQueryKey,
     enabled: !!wallet?.publicKey,
-    queryFn: async () => {
-      console.log("fetching walletBalances");
-      const balanceLamports = await glamClient.provider.connection.getBalance(
-        wallet?.publicKey || new PublicKey(0)
-      );
-      const tokenAccounts = await glamClient.listTokenAccounts(
-        wallet?.publicKey || new PublicKey(0)
-      );
-
-      return {
-        balanceLamports,
-        tokenAccounts,
-      };
-    },
+    queryFn: () => fetchBalances(glamClient, wallet?.publicKey),
   });
 
   //

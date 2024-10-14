@@ -4,7 +4,12 @@ import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuShortcut, DropdownMenuTrigger
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { holdingSchema } from "../data/holdingSchema";
 import TruncateAddress from "../../../utils/TruncateAddress";
@@ -16,13 +21,17 @@ interface DataTableRowActionsProps<TData> {
 }
 
 export function DataTableRowActions<TData>({
-                                             row,
-                                           }: DataTableRowActionsProps<TData>) {
+  row,
+}: DataTableRowActionsProps<TData>) {
   const holding = holdingSchema.parse(row.original);
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
-  const copyToClipboard = (e: React.MouseEvent, address: string, type: string) => {
+  const copyToClipboard = (
+    e: React.MouseEvent,
+    address: string,
+    type: string
+  ) => {
     e.preventDefault();
     e.stopPropagation();
     navigator.clipboard.writeText(address).then(() => {
@@ -48,15 +57,15 @@ export function DataTableRowActions<TData>({
         <DropdownMenuItem
           className="cursor-pointer"
           onSelect={(e) => e.preventDefault()}
-          onClick={(e) => copyToClipboard(e, holding.mint, 'mint')}
-          onMouseEnter={() => setHoveredItem('mint')}
+          onClick={(e) => copyToClipboard(e, holding.mint, "mint")}
+          onMouseEnter={() => setHoveredItem("mint")}
           onMouseLeave={() => setHoveredItem(null)}
         >
-          <TruncateAddress address={holding.mint}/>
+          <TruncateAddress address={holding.mint} />
           <DropdownMenuShortcut>
-            {copiedAddress === 'mint' ? (
+            {copiedAddress === "mint" ? (
               <CheckIcon className="h-4 w-4" />
-            ) : hoveredItem === 'mint' ? (
+            ) : hoveredItem === "mint" ? (
               <CopyIcon className="h-4 w-4" />
             ) : (
               "Mint"
@@ -66,15 +75,15 @@ export function DataTableRowActions<TData>({
         <DropdownMenuItem
           className="cursor-pointer"
           onSelect={(e) => e.preventDefault()}
-          onClick={(e) => copyToClipboard(e, holding.ata, 'ata')}
-          onMouseEnter={() => setHoveredItem('ata')}
+          onClick={(e) => copyToClipboard(e, holding.ata, "ata")}
+          onMouseEnter={() => setHoveredItem("ata")}
           onMouseLeave={() => setHoveredItem(null)}
         >
-          <TruncateAddress address={holding.ata}/>
+          <TruncateAddress address={holding.ata} />
           <DropdownMenuShortcut>
-            {copiedAddress === 'ata' ? (
+            {copiedAddress === "ata" ? (
               <CheckIcon className="h-4 w-4" />
-            ) : hoveredItem === 'ata' ? (
+            ) : hoveredItem === "ata" ? (
               <CopyIcon className="h-4 w-4" />
             ) : (
               "ATA"
