@@ -243,7 +243,7 @@ export default function ProductPage() {
           <Card className="col-span-1 row-span-1 flex flex-col items-start p-0 border-0 shadow-none overflow-hidden aspect-square">
             <CardContent className="p-0 h-full flex items-center self-center" ref={sparkleContainerRef}>
               <Sparkle
-                address={publicKey.toBase58()}
+                address={fund?.shareClasses[0]?.shareClassId}
                 size={105}
                 onColorGenerated={handleColorGenerated}
               />
