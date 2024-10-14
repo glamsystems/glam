@@ -11,7 +11,7 @@ const BetaWarning = () => {
         <ExclamationTriangleIcon className="w-5 h-5 mr-2" />
         <p className="font-medium mr-2 text-nowrap">Unaudited Beta</p>
         <p className="leading-5 text-center text-muted-foreground truncate text-nowrap">
-          Active development; breaking changes. Use at your own risk. Possible losses. No guarantees. GLAM not liable for any losses.{" "}
+          Active development; breaking changes. Use at your own risk. No guarantees. GLAM not liable for any losses. Not investment advice.{" "}
         </p>
         &nbsp;
         <p className="leading-5 text-center text-muted-foreground text-nowrap">
