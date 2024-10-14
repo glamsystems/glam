@@ -1,97 +1,34 @@
 "use client";
-import { EffectiveTheme } from "@/utils/EffectiveTheme";
 import * as React from "react";
 import {
-  GearIcon, CheckIcon, ChevronDownIcon, PlusCircledIcon, PlusIcon, UpdateIcon, EnvelopeClosedIcon, ChatBubbleIcon
+  GearIcon, CheckIcon, ChevronDownIcon, EnvelopeClosedIcon
 } from "@radix-ui/react-icons";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
-import { ProductNameGen } from "@/utils/ProductNameGen";
-import { toast } from "@/components/ui/use-toast";
-import { z } from "zod";
 import Sparkle from "@/utils/Sparkle";
 import TruncateAddress from "@/utils/TruncateAddress";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useGlam } from "@glam/anchor/react";
 import Link from "next/link";
 
-const groups = [
-  {
-    label: "Products",
-    products: [
-      {
-        label: "SpaciousSchnorrSafe",
-        value: "GLAM9W754xTYpKsgZgRJ3yiyQgkpa4Zei1f6VVWohvjr",
-      },
-      {
-        label: "YummyTestVehicle",
-        value: "GLAM29gaAdXMPPxyKqGtQhyTViQzWDhiNwDSsbZPbLWz",
-      },
-      {
-        label: "TopGammaBag",
-        value: "GLAM8NJQt5bpHPqLnF4VPHKR2vnjEunfKewMEBR4eTnT",
-      },
-    ],
-  },
-  {
-    label: "Connected Account",
-    products: [],
-  },
-];
-
-type Product = (typeof groups)[number]["products"][number];
-
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
 >;
 
 interface ProductSwitcherProps extends PopoverTriggerProps {}
-
-const createSchema = z.object({
-  productName: z.string().min(3, {
-    message: "Product name must be at least 3 characters.",
-  }),
-});
-
-type CreateSchema = z.infer<typeof createSchema>;
 
 export default function ProductSwitcher({ className }: ProductSwitcherProps) {
   const { wallet, fundsList, activeFund, setActiveFund } = useGlam();
@@ -123,14 +60,14 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
           <span className="mr-2">
             {activeFund?.fund ? (
               <Sparkle address={activeFund?.imageKey} size={24} />
-            ) : null}
+            ) : <div className="border h-6 w-6"></div>}
           </span>
           <span className="mr-2 min-w-0 text-ellipsis whitespace-nowrap truncate">
             {activeFund ? (
               activeFund.name ? (
                 <span>{activeFund.name}</span>
               ) : (
-                <TruncateAddress address={activeFund?.addressStr || ""} />
+                <TruncateAddress address={activeFund?.addressStr || "Select"} />
               )
             ) : (
               "..."
@@ -141,7 +78,6 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
       </PopoverTrigger>
       <PopoverContent className="w-full p-0 transition-all" align="start">
         <Command>
-          {/*<CommandInput placeholder="Search product..." />*/}
           <CommandList>
             <CommandGroup key="Products" heading="Products">
               {fundsList.map((product) => (
