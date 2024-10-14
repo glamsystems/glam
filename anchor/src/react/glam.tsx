@@ -107,7 +107,7 @@ const fetchBalances = async (glamClient: GlamClient, owner: PublicKey) => {
     owner
   );
   const tokenAccounts = await glamClient.listTokenAccounts(owner);
-  tokenAccounts.forEach((ta) => {
+  tokenAccounts.forEach((ta: any) => {
     ta.address = ta.address.toBase58();
   });
 
@@ -210,7 +210,7 @@ export function GlamProvider({
   const { data: walletBalances } = useQuery({
     queryKey: walletBalancesQueryKey,
     enabled: !!wallet?.publicKey,
-    queryFn: () => fetchBalances(glamClient, wallet?.publicKey),
+    queryFn: () => fetchBalances(glamClient, wallet?.publicKey!),
   });
 
   //
