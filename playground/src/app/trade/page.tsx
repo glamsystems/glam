@@ -174,7 +174,7 @@ const swapSchema = z.object({
 });
 
 const spotSchema = z.object({
-  venue: z.enum(["Jupiter", "Drift"]),
+  venue: z.enum(["Drift"]),
   spotMarket: z.enum(DRIFT_SPOT_MARKETS),
   spotType: z.enum(DRIFT_ORDER_TYPES),
   side: z.enum(["Buy", "Sell"]),
@@ -1159,7 +1159,39 @@ export default function Trade() {
                         />
                       </div>
                     </>
-                  ) : spotOrderType === "Trigger Limit" ? (
+                  ) : spotOrderType === "Market" ? (
+                      <>
+                        <div className="flex space-x-4 items-start">
+                          <AssetInput
+                            className="min-w-1/2 w-1/2"
+                            name="size"
+                            label="Size"
+                            assets={fromAssetList}
+                            balance={NaN}
+                            selectedAsset={fromAsset}
+                            onSelectAsset={setFromAsset}
+                          />
+                          <AssetInput
+                            className="min-w-1/2 w-1/2"
+                            name="notional"
+                            label="Notional"
+                            assets={tokenList?.map(
+                              (t) =>
+                                ({
+                                  name: t.name,
+                                  symbol: t.symbol,
+                                  address: t.address,
+                                  decimals: t.decimals,
+                                  balance: 0,
+                                } as Asset)
+                            )}
+                            balance={NaN}
+                            selectedAsset={toAsset}
+                            onSelectAsset={setToAsset}
+                          />
+                        </div>
+                      </>
+                    ) : spotOrderType === "Trigger Limit" ? (
                     <>
                       <div className="flex space-x-4 items-start">
                         <AssetInput
@@ -1231,84 +1263,84 @@ export default function Trade() {
                     <span></span>
                   )}
 
-                  <div className="flex flex-row gap-4 items-start w-full">
-                    <div className="w-1/2 flex h-6 items-center text-sm text-muted-foreground">
-                      {/*<TooltipProvider>*/}
-                      {/*  <Tooltip>*/}
-                      {/*    <TooltipTrigger className="flex items-center">*/}
-                      {/*      <InfoIcon className="w-4 h-4 mr-1"></InfoIcon>*/}
-                      {/*      <p>Margin Trading Disabled</p>*/}
-                      {/*    </TooltipTrigger>*/}
-                      {/*    <TooltipContent side="right">*/}
-                      {/*      Please view the Risk Management configuration of the*/}
-                      {/*      Venue Integration.*/}
-                      {/*    </TooltipContent>*/}
-                      {/*  </Tooltip>*/}
-                      {/*</TooltipProvider>*/}
-                    </div>
+                  {/*<div className="flex flex-row gap-4 items-start w-full">*/}
+                  {/*  <div className="w-1/2 flex h-6 items-center text-sm text-muted-foreground">*/}
+                  {/*    <TooltipProvider>*/}
+                  {/*      <Tooltip>*/}
+                  {/*        <TooltipTrigger className="flex items-center">*/}
+                  {/*          <InfoIcon className="w-4 h-4 mr-1"></InfoIcon>*/}
+                  {/*          <p>Margin Trading Disabled</p>*/}
+                  {/*        </TooltipTrigger>*/}
+                  {/*        <TooltipContent side="right">*/}
+                  {/*          Please view the Risk Management configuration of the*/}
+                  {/*          Venue Integration.*/}
+                  {/*        </TooltipContent>*/}
+                  {/*      </Tooltip>*/}
+                  {/*    </TooltipProvider>*/}
+                  {/*  </div>*/}
 
-                    <div className="w-1/2 flex flex-row justify-start gap-4">
-                      <FormField
-                        control={spotForm.control}
-                        name="spotReduceOnly"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                                id="reduce-only"
-                              />
-                            </FormControl>
-                            <FormLabel
-                              htmlFor="reduce-only"
-                              className="font-normal"
-                            >
-                              Reduce Only
-                            </FormLabel>
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={spotForm.control}
-                        name="post"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                                id="post"
-                              />
-                            </FormControl>
-                            <FormLabel htmlFor="post" className="font-normal">
-                              Post
-                            </FormLabel>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                  {/*  <div className="w-1/2 flex flex-row justify-start gap-4">*/}
+                  {/*    <FormField*/}
+                  {/*      control={spotForm.control}*/}
+                  {/*      name="spotReduceOnly"*/}
+                  {/*      render={({ field }) => (*/}
+                  {/*        <FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
+                  {/*          <FormControl>*/}
+                  {/*            <Switch*/}
+                  {/*              checked={field.value}*/}
+                  {/*              onCheckedChange={field.onChange}*/}
+                  {/*              id="reduce-only"*/}
+                  {/*            />*/}
+                  {/*          </FormControl>*/}
+                  {/*          <FormLabel*/}
+                  {/*            htmlFor="reduce-only"*/}
+                  {/*            className="font-normal"*/}
+                  {/*          >*/}
+                  {/*            Reduce Only*/}
+                  {/*          </FormLabel>*/}
+                  {/*        </FormItem>*/}
+                  {/*      )}*/}
+                  {/*    />*/}
+                  {/*    <FormField*/}
+                  {/*      control={spotForm.control}*/}
+                  {/*      name="post"*/}
+                  {/*      render={({ field }) => (*/}
+                  {/*        <FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
+                  {/*          <FormControl>*/}
+                  {/*            <Switch*/}
+                  {/*              checked={field.value}*/}
+                  {/*              onCheckedChange={field.onChange}*/}
+                  {/*              id="post"*/}
+                  {/*            />*/}
+                  {/*          </FormControl>*/}
+                  {/*          <FormLabel htmlFor="post" className="font-normal">*/}
+                  {/*            Post*/}
+                  {/*          </FormLabel>*/}
+                  {/*        </FormItem>*/}
+                  {/*      )}*/}
+                  {/*    />*/}
+                  {/*  </div>*/}
 
-                    {/*<FormField*/}
-                    {/*  control={spotForm.control}*/}
-                    {/*  name="showConfirmation"*/}
-                    {/*  render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
-                    {/*      <FormControl>*/}
-                    {/*        <Switch*/}
-                    {/*          checked={field.value}*/}
-                    {/*          onCheckedChange={field.onChange}*/}
-                    {/*          id="show-confirmation"*/}
-                    {/*        />*/}
-                    {/*      </FormControl>*/}
-                    {/*      <FormLabel*/}
-                    {/*        htmlFor="show-confirmation"*/}
-                    {/*        className="font-normal"*/}
-                    {/*      >*/}
-                    {/*        Show Confirmation*/}
-                    {/*      </FormLabel>*/}
-                    {/*    </FormItem>)}*/}
-                    {/*/>*/}
-                  </div>
+                  {/*  <FormField*/}
+                  {/*    control={spotForm.control}*/}
+                  {/*    name="showConfirmation"*/}
+                  {/*    render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
+                  {/*        <FormControl>*/}
+                  {/*          <Switch*/}
+                  {/*            checked={field.value}*/}
+                  {/*            onCheckedChange={field.onChange}*/}
+                  {/*            id="show-confirmation"*/}
+                  {/*          />*/}
+                  {/*        </FormControl>*/}
+                  {/*        <FormLabel*/}
+                  {/*          htmlFor="show-confirmation"*/}
+                  {/*          className="font-normal"*/}
+                  {/*        >*/}
+                  {/*          Show Confirmation*/}
+                  {/*        </FormLabel>*/}
+                  {/*      </FormItem>)}*/}
+                  {/*  />*/}
+                  {/*</div>*/}
 
                   <div className="flex space-x-4 w-full">
                     <Button
@@ -1474,7 +1506,7 @@ export default function Trade() {
                               type="single"
                               value={field.value}
                               onValueChange={handleSideChange}
-                              className="w-full gap-4"
+                              className="w-full gap-4 mt-2"
                             >
                               <ToggleGroupItem
                                 value="Buy"
@@ -1527,9 +1559,39 @@ export default function Trade() {
                           disableAssetChange={true}
                         />
                       </div>
-                    </>
-                  ) : perpsOrderType === "Trigger Limit" ? (
+                    </>) : perpsOrderType === "Market" ? (
                     <>
+                      <div className="flex space-x-4 items-start">
+                        <AssetInput
+                          className="min-w-1/2 w-1/2"
+                          name="size"
+                          label="Size"
+                          assets={fromAssetList}
+                          balance={NaN}
+                          selectedAsset={fromAsset}
+                          onSelectAsset={setFromAsset}
+                        />
+                        <AssetInput
+                          className="min-w-1/2 w-1/2"
+                          name="notional"
+                          label="Notional"
+                          assets={tokenList?.map(
+                            (t) =>
+                              ({
+                                name: t.name,
+                                symbol: t.symbol,
+                                address: t.address,
+                                decimals: t.decimals,
+                                balance: 0,
+                              } as Asset)
+                          )}
+                          balance={NaN}
+                          selectedAsset={toAsset}
+                          onSelectAsset={setToAsset}
+                        />
+                      </div>
+                    </>
+                  ) : perpsOrderType === "Trigger Limit" ? (<>
                       <div className="flex space-x-4 items-start">
                         <AssetInput
                           className="min-w-1/2 w-1/2"
@@ -1613,50 +1675,46 @@ export default function Trade() {
                           </TooltipProvider>
                         </div>
 
-                        <div className="w-1/2 flex flex-row justify-start gap-4">
-                          <FormField
-                            control={perpsForm.control}
-                            name="perpsReduceOnly"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <Switch
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                    id="reduce-only"
-                                  />
-                                </FormControl>
-                                <FormLabel
-                                  htmlFor="reduce-only"
-                                  className="font-normal"
-                                >
-                                  Reduce Only
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={spotForm.control}
-                            name="post"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <Switch
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                    id="post"
-                                  />
-                                </FormControl>
-                                <FormLabel
-                                  htmlFor="post"
-                                  className="font-normal"
-                                >
-                                  Post
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+                        {/*<div className="w-1/2 flex flex-row justify-start gap-4">*/}
+                        {/*  <FormField*/}
+                        {/*    control={perpsForm.control}*/}
+                        {/*    name="perpsReduceOnly"*/}
+                        {/*    render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
+                        {/*        <FormControl>*/}
+                        {/*          <Switch*/}
+                        {/*            checked={field.value}*/}
+                        {/*            onCheckedChange={field.onChange}*/}
+                        {/*            id="reduce-only"*/}
+                        {/*          />*/}
+                        {/*        </FormControl>*/}
+                        {/*        <FormLabel*/}
+                        {/*          htmlFor="reduce-only"*/}
+                        {/*          className="font-normal"*/}
+                        {/*        >*/}
+                        {/*          Reduce Only*/}
+                        {/*        </FormLabel>*/}
+                        {/*      </FormItem>)}*/}
+                        {/*  />*/}
+                        {/*  <FormField*/}
+                        {/*    control={spotForm.control}*/}
+                        {/*    name="post"*/}
+                        {/*    render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
+                        {/*        <FormControl>*/}
+                        {/*          <Switch*/}
+                        {/*            checked={field.value}*/}
+                        {/*            onCheckedChange={field.onChange}*/}
+                        {/*            id="post"*/}
+                        {/*          />*/}
+                        {/*        </FormControl>*/}
+                        {/*        <FormLabel*/}
+                        {/*          htmlFor="post"*/}
+                        {/*          className="font-normal"*/}
+                        {/*        >*/}
+                        {/*          Post*/}
+                        {/*        </FormLabel>*/}
+                        {/*      </FormItem>)}*/}
+                        {/*  />*/}
+                        {/*</div>*/}
 
                         {/*<FormField*/}
                         {/*  control={spotForm.control}*/}
