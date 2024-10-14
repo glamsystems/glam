@@ -30,9 +30,7 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import {
-  CaretSortIcon,
-  CheckIcon,
-  ColumnSpacingIcon,
+  CaretSortIcon, CheckIcon, ColumnSpacingIcon, ExternalLinkIcon
 } from "@radix-ui/react-icons";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Switch } from "@/components/ui/switch";
@@ -79,6 +77,7 @@ import {
   DRIFT_SPOT_MARKETS,
 } from "@/constants";
 import { Skeleton } from "@/components/ui/skeleton";
+import TruncateAddress from "@/utils/TruncateAddress";
 
 const spotMarkets = DRIFT_SPOT_MARKETS.map((x) => ({ label: x, value: x }));
 const perpsMarkets = DRIFT_PERP_MARKETS.map((x) => ({ label: x, value: x }));
@@ -1438,11 +1437,20 @@ export default function Trade() {
                           <div>
                             <FormLabel>Venue</FormLabel>
                             {field.value === "Drift" && (
-                              <ExplorerLink
-                                path={`https://app.drift.trade/?userAccount=${driftUserAccount}`}
-                                label={driftUserAccount}
-                                className="text-sm text-muted hover:text-foreground transition-all leading-none ml-2"
-                              />
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <a
+                                      className="ml-2 text-muted-foreground inline-flex align-middle"
+                                      href={`https://app.drift.trade/?userAccount=${driftUserAccount}`} target="_blank">
+                                      <ExternalLinkIcon ></ExternalLinkIcon>
+                                    </a>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right">
+                                    <TruncateAddress address={driftUserAccount}/>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             )}
                           </div>
 
