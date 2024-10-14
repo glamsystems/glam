@@ -38,11 +38,6 @@ import NumberFormatter from "@/utils/NumberFormatter";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const API_CONFIG = {
-  url: 'https://rpc.helius.xyz/', // Correct Helius RPC endpoint
-  apiKey: process.env.NEXT_PUBLIC_HELIUS_API_KEY || '', // Use environment variable
-};
-
 export default function ProductPage() {
   const [clientReady, setClientReady] = useState(false);
   const [holdersData, setHoldersData] = useState(null);
@@ -279,7 +274,7 @@ export default function ProductPage() {
   async function fetchHolderData(mint: string): Promise<any> {
     try {
       console.log(`Fetching holder data for mint: ${mint}`);
-      const response = await fetch(`${API_CONFIG.url}?api-key=${API_CONFIG.apiKey}`, {
+      const response = await fetch(`https://rpc.helius.xyz/?api-key=${process.env.NEXT_PUBLIC_HELIUS_API_KEY}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
