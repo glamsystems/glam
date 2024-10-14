@@ -22,6 +22,8 @@ import type { FundModel } from "../models";
 import { GlamClient } from "../client";
 import { useAtomValue, useSetAtom } from "jotai/react";
 import { PublicKey } from "@solana/web3.js";
+import { ASSETS_MAINNET } from "../client/assets";
+import base58 from "bs58";
 
 interface JupTokenListItem {
   address: string;
@@ -29,6 +31,11 @@ interface JupTokenListItem {
   symbol: string;
   decimals: number;
   logoURI: string;
+}
+
+interface PythPrice {
+  mint: string;
+  price: number; // USD
 }
 
 interface GlamProviderContext {
@@ -43,6 +50,7 @@ interface GlamProviderContext {
   walletBalances: any;
   walletBalancesQueryKey: any[];
   refresh?: () => void;
+  prices: PythPrice[];
   setActiveFund: any;
   jupTokenList?: JupTokenListItem[];
 }
@@ -137,6 +145,7 @@ export function GlamProvider({
   );
   const [allFunds, setAllFunds] = useState([] as FundModel[]);
   const [jupTokenList, setJupTokenList] = useState([] as JupTokenListItem[]);
+  const [pythPrices, setPythPrices] = useState([] as PythPrice[]);
 
   const activeFund = deserializeFundCache(useAtomValue(fundAtom)) as FundCache;
 
@@ -204,6 +213,59 @@ export function GlamProvider({
   }, [allFundsData, activeFund, wallet]);
 
   //
+  // Fetch prices from pyth
+  //
+
+  const { data: pythData } = useQuery({
+    queryKey: ["/prices1"],
+    enabled: !!activeFund?.treasury?.tokenAccounts,
+    refetchInterval: 30 * 1000,
+    queryFn: () => {
+      const pythFeedIds = [] as string[];
+      activeFund?.treasury.tokenAccounts.forEach((ta: TokenAccount) => {
+        const hex = Buffer.from(
+          ASSETS_MAINNET.get(ta.mint)?.pricingAccount.toBytes()!
+        ).toString("hex");
+
+        pythFeedIds.push(hex);
+      });
+
+      const params = pythFeedIds.map((hex) => `ids[]=${hex}`).join("&");
+
+      return fetch(
+        `https://hermes.pyth.network/v2/updates/price/latest?${params}`
+      ).then((res) => res.json());
+    },
+  });
+  useEffect(() => {
+    if (pythData) {
+      // Build a lookup table for price account -> mint account
+      const priceToMint = new Map<string, string>([]);
+      for (let [mint, asset] of ASSETS_MAINNET) {
+        priceToMint.set(asset.pricingAccount.toBase58(), mint);
+      }
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("Pyth data:", pythData.parsed);
+        console.log("Price account to mint account:", priceToMint);
+      }
+      const prices = pythData.parsed.map((p: any) => {
+        const priceAccount = base58.encode(Buffer.from(p.id, "hex")).toString();
+
+        const price =
+          Number.parseFloat(p.price.price) *
+          10 ** Number.parseInt(p.price.expo);
+
+        return {
+          mint: priceToMint.get(priceAccount),
+          price,
+        } as PythPrice;
+      });
+      setPythPrices(prices);
+    }
+  }, [pythData]);
+
+  //
   // Balance and token accounts of the connected wallet
   //
   const walletBalancesQueryKey = ["balances", wallet?.publicKey];
@@ -250,6 +312,7 @@ export function GlamProvider({
     walletBalances,
     walletBalancesQueryKey,
     jupTokenList: jupTokenList,
+    prices: pythPrices,
     setActiveFund,
   };
 

@@ -11,7 +11,7 @@ import { Holding } from "./data/holdingSchema"; // Make sure to import the Holdi
 const SKELETON_ROW_COUNT = 5;
 
 export default function Holdings() {
-  const { activeFund, jupTokenList } = useGlam();
+  const { activeFund, jupTokenList, prices } = useGlam();
 
   const { treasury } = activeFund || {};
 
@@ -36,13 +36,15 @@ export default function Holdings() {
     const solBalance = Number(treasury?.balanceLamports) / LAMPORTS_PER_SOL;
     const tokenAccounts: Holding[] = [];
     if (solBalance) {
+      const mint = "So11111111111111111111111111111111111111112";
+      const price = prices?.find((p) => p.mint === mint)?.price || 0;
       tokenAccounts.push({
         name: "Solana",
         symbol: "SOL",
         mint: "",
         ata: "",
         balance: solBalance,
-        notional: 1234.56,
+        notional: solBalance * price || 0, // FIXME: NaN not supported by zod schema
         location: "vault",
         logoURI:
           "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
@@ -61,13 +63,14 @@ export default function Holdings() {
           const symbol =
             jupTokenList?.find((t: any) => t.address === ta.mint)?.symbol ||
             ta.mint;
+          const price = prices?.find((p) => p.mint === ta.mint)?.price || 0;
           return {
             name,
             symbol: symbol === "SOL" ? "wSOL" : symbol,
             mint: ta.mint,
             ata: ta.address,
             balance: Number(ta.uiAmount),
-            notional: 1234.56,
+            notional: Number(ta.uiAmount) * price || 0, // FIXME: NaN not supported by zod schema
             logoURI: logoURI,
             location: "vault",
           };
@@ -77,7 +80,7 @@ export default function Holdings() {
 
     // Sort the tokenAccounts by balance in descending order
     return tokenAccounts.sort((a, b) => b.balance - a.balance);
-  }, [treasury, jupTokenList, isLoading]);
+  }, [treasury, jupTokenList, isLoading, prices]);
 
   return (
     <PageContentWrapper>

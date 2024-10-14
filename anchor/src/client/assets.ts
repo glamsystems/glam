@@ -91,7 +91,7 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
     "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So",
     {
       pricingAccount: new PublicKey(
-        "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC" // state
+        "E4v1BBgoso9s64TQvmyownAVJbhbEPGyzA3qn4n46qj9" // pyth
       ),
     },
   ],
@@ -383,7 +383,7 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
     "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn",
     {
       pricingAccount: new PublicKey(
-        "Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb" // state
+        "7yyaeuJ1GGtVBLT2z2xub5ZWYKaNhF28mj1RdV4VDFVk" // pyth
       ),
     },
   ],
