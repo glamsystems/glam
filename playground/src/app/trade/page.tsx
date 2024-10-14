@@ -1384,14 +1384,26 @@ export default function Trade() {
                         <ToggleGroupItem
                           value="cancelAll"
                           aria-label="Cancel All"
-                          className="px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
+                          className="
+                          text-muted-foreground
+                          border
+                          border-l-0
+                          data-[state=on]:border
+                          data-[state=on]:border-l-0
+                          px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
                         >
                           All
                         </ToggleGroupItem>
                         <ToggleGroupItem
                           value="cancelMarket"
                           aria-label="Cancel Market"
-                          className="px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
+                          className="
+                          text-muted-foreground
+                          border
+                          border-l-0
+                          data-[state=on]:border
+                          data-[state=on]:border-l-0
+                          px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
                         >
                           <span className="truncate">
                             {perpsForm
@@ -1833,14 +1845,26 @@ export default function Trade() {
                         <ToggleGroupItem
                           value="cancelAll"
                           aria-label="Cancel All"
-                          className="px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
+                          className="
+                          text-muted-foreground
+                          border
+                          border-l-0
+                          data-[state=on]:border
+                          data-[state=on]:border-l-0
+                          px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
                         >
                           All
                         </ToggleGroupItem>
                         <ToggleGroupItem
                           value="cancelMarket"
                           aria-label="Cancel Market"
-                          className="px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
+                          className="
+                          text-muted-foreground
+                          border
+                          border-l-0
+                          data-[state=on]:border
+                          data-[state=on]:border-l-0
+                          px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
                         >
                           <span className="truncate">
                             {perpsForm
@@ -1864,19 +1888,31 @@ export default function Trade() {
                         onValueChange={(value) => {
                           if (value) setSettleValue(value);
                         }}
-                        className="border border-l-0 rounded-l-none h-10 gap-0 w-1/2"
+                        className="border border-l-0 rounded-none h-10 gap-0 w-1/2"
                       >
                         <ToggleGroupItem
                           value="settlePnL"
                           aria-label="Settle PnL"
-                          className="px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
+                          className="
+                          text-muted-foreground
+                          border
+                          border-l-0
+                          data-[state=on]:border
+                          data-[state=on]:border-l-0
+                          px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
                         >
                           P&L
                         </ToggleGroupItem>
                         <ToggleGroupItem
                           value="settleFunding"
                           aria-label="Settle Funding"
-                          className="px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
+                          className="
+                          text-muted-foreground
+                          border
+                          border-l-0
+                          data-[state=on]:border
+                          data-[state=on]:border-l-0
+                          px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
                         >
                           Funding
                         </ToggleGroupItem>
