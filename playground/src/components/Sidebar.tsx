@@ -66,11 +66,11 @@ function SidebarItem({ route, text, shortcut, Icon }: SidebarItemProps) {
 
   return (
     <li
-      className={`relative flex items-center text-sm outline-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 ml-2 mr-2 p-0 transition-all hover:bg-muted opacity-50 hover:opacity-100 cursor-pointer ${
+      className={`focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0 relative flex items-center text-sm outline-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 ml-2 mr-2 p-0 transition-all hover:bg-muted opacity-50 hover:opacity-100 cursor-pointer ${
         isActive ? "bg-muted/75" : ""
       }`}
     >
-      <Link href={route} className="p-2 flex grow items-center min-h-[40px]">
+      <Link href={route} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0 p-2 flex grow items-center min-h-[40px]">
         <Icon className="ml-1 mr-3 h-4 w-4" />
         <span className="flex-grow">{text}</span>
         <span className="ml-auto text-xs tracking-widest text-muted-foreground">
@@ -182,7 +182,7 @@ export default function Sidebar() {
                 {nav.group}
               </div>
             )}
-            <ul className="list-none p-0 m-0">
+            <ul className="list-none p-0 m-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0">
               {nav.items.map((item, itemIndex) =>
                 disabledRoutes.includes(item.route) ? null : (
                   <SidebarItem key={itemIndex} {...item} />
