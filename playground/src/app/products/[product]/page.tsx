@@ -1,12 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  Cell,
-  Label,
-  Pie,
-  PieChart,
-} from "recharts";
+import { Cell, Label, Pie, PieChart } from "recharts";
 import {
   Card,
   CardContent,
@@ -21,8 +16,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useGlam } from "@glam/anchor/react";
-
-import { redirect, useRouter, useParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PublicKey } from "@solana/web3.js";
 import Sparkle from "@/utils/Sparkle";
@@ -32,11 +26,17 @@ import SparkleColorMatcher, {
 } from "@/utils/SparkleColorMatcher";
 import TruncateAddress from "@/utils/TruncateAddress";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator"; // Adjust the import based on your setup
 import NumberFormatter from "@/utils/NumberFormatter";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { Skeleton } from "@/components/ui/skeleton";
+import SparkleBackground from "@/components/SparkleBackground";
 
 export default function ProductPage() {
   const [clientReady, setClientReady] = useState(false);
@@ -68,14 +68,27 @@ export default function ProductPage() {
     return allFunds.find((f) => f.idStr === product);
   }, [allFunds, publicKey, product]);
 
-  // Mark the client as ready once mounted (to prevent server-side rendering issues)
+  //Mark the client as ready once mounted (to prevent server-side rendering issues)
   useEffect(() => {
     setClientReady(true);
   }, []);
 
+  // Debug Loading State
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     setClientReady(true);
+  //   }, 10000); // Delay of 10000 milliseconds
+  //   return () => clearTimeout(timer);
+  // }, []);
+
   // Redirect logic moved to an effect
   useEffect(() => {
-    console.log("Effect running. ClientReady:", clientReady, "IsAllFundsLoading:", isAllFundsLoading);
+    console.log(
+      "Effect running. ClientReady:",
+      clientReady,
+      "IsAllFundsLoading:",
+      isAllFundsLoading
+    );
     console.log("PublicKey:", publicKey, "Fund:", fund, "AllFunds:", allFunds);
 
     if (clientReady && !isAllFundsLoading) {
@@ -110,12 +123,15 @@ export default function ProductPage() {
     return colorInfo.colors; // Use colors based on sparkleColor
   }, [useDefaultColors, colorInfo.colors]);
 
-  const mintConfig = useMemo(() => ({
-    shares: { label: "Shares" },
-    sc0: { label: "Share Class 1", color: `hsl(${chartColors[0]})` },
-    sc1: { label: "Share Class 2", color: `hsl(${chartColors[1]})` },
-    sc2: { label: "Share Class 3", color: `hsl(${chartColors[2]})` },
-  }), [chartColors]);
+  const mintConfig = useMemo(
+    () => ({
+      shares: { label: "Shares" },
+      sc0: { label: "Share Class 1", color: `hsl(${chartColors[0]})` },
+      sc1: { label: "Share Class 2", color: `hsl(${chartColors[1]})` },
+      sc2: { label: "Share Class 3", color: `hsl(${chartColors[2]})` },
+    }),
+    [chartColors]
+  );
 
   const holdersConfig = useMemo(
     () => ({
@@ -132,7 +148,8 @@ export default function ProductPage() {
   useEffect(() => {
     const updateSparkleSize = () => {
       if (sparkleContainerRef.current) {
-        const { width, height } = sparkleContainerRef.current.getBoundingClientRect();
+        const { width, height } =
+          sparkleContainerRef.current.getBoundingClientRect();
         const minDimension = Math.min(width, height);
         setSparkleSize(Math.floor(minDimension));
       }
@@ -144,8 +161,13 @@ export default function ProductPage() {
     return () => window.removeEventListener("resize", updateSparkleSize);
   }, []);
 
-  if (!clientReady || isAllFundsLoading) {
-    return <div>Loading...</div>;
+  if (!clientReady || isAllFundsLoading || !fund) {
+    return (
+      <div className="flex mt-[30vh] justify-center items-end">
+        {/*<SparkleBackground rows={6} cols={6} size={24} gap={5} static={false} visibleCount={252}  fadeInSpeed={1}/>*/}
+        <SparkleBackground fadeOut={true} rows={6} cols={6}  size={24} gap={5} fadeInSpeed={0.5} fadeOutSpeed={0.5} interval={200} randomness={0} visibleCount={12} />
+      </div>
+    )
   }
 
   if (!publicKey || (allFunds && allFunds.length > 0 && !fund)) {
@@ -160,11 +182,12 @@ export default function ProductPage() {
   interface ShareClass {
     shareClassId: string;
     shareClassSymbol: string;
-    shareClassDecimals: number;  // Add this line to define 'shareClassDecimals'
+    shareClassDecimals: number; // Add this line to define 'shareClassDecimals'
   }
 
   interface Fund {
     shareClasses: ShareClass[];
+    [key: string]: any; // To accommodate additional properties
   }
 
   interface HolderData {
@@ -176,7 +199,9 @@ export default function ProductPage() {
   const ChartComponent: React.FC<{ fund: Fund }> = ({ fund }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [showSkeleton, setShowSkeleton] = useState(true); // **New State**
-    const [localHoldersData, setLocalHoldersData] = useState<HolderData[] | null>(null);
+    const [localHoldersData, setLocalHoldersData] = useState<
+      HolderData[] | null
+    >(null);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -205,8 +230,16 @@ export default function ProductPage() {
     }
 
     // Ensure we have data before rendering the chart
-    if (!localHoldersData || localHoldersData.length === 0 || !localHoldersData[0]) {
-      return <div className="text-sm text-center text-muted-foreground mt-28">No holder data available</div>;
+    if (
+      !localHoldersData ||
+      localHoldersData.length === 0 ||
+      !localHoldersData[0]
+    ) {
+      return (
+        <div className="text-sm text-center text-muted-foreground mt-28">
+          No holder data available
+        </div>
+      );
     }
 
     const totalHolders = localHoldersData[0]?.totalHolders || 0;
@@ -220,12 +253,12 @@ export default function ProductPage() {
         className="flex-1 mx-auto aspect-square max-h-[256px] self-center"
       >
         <PieChart>
-            {totalHolders !== 0 && (
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent hideLabel />}
-              />
-            )}
+          {totalHolders !== 0 && (
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent hideLabel />}
+            />
+          )}
           <Pie
             data={localHoldersData[0]?.holders || []}
             isAnimationActive={false}
@@ -274,23 +307,26 @@ export default function ProductPage() {
   async function fetchHolderData(mint: string): Promise<any> {
     try {
       console.log(`Fetching holder data for mint: ${mint}`);
-      const response = await fetch(`https://rpc.helius.xyz/?api-key=${process.env.NEXT_PUBLIC_HELIUS_API_KEY}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: '1',
-          method: 'getTokenAccounts',
-          params: {
-            mint: mint,
-            options: {
-              showZeroBalance: true,
-            },
+      const response = await fetch(
+        `https://rpc.helius.xyz/?api-key=${process.env.NEXT_PUBLIC_HELIUS_API_KEY}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        }),
-      });
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: "1",
+            method: "getTokenAccounts",
+            params: {
+              mint: mint,
+              options: {
+                showZeroBalance: true,
+              },
+            },
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -302,10 +338,10 @@ export default function ProductPage() {
         throw new Error(`API error: ${data.error.message}`);
       }
 
-      console.log('Fetched holder data:', data);
+      console.log("Fetched holder data:", data);
       return data.result;
     } catch (error) {
-      console.error('Error fetching holder data:', error);
+      console.error("Error fetching holder data:", error);
       return null;
     }
   }
@@ -318,40 +354,46 @@ export default function ProductPage() {
     totalHolders: number;
   } {
     if (!data || !Array.isArray(data.token_accounts)) {
-      console.error('Invalid data format:', data);
+      console.error("Invalid data format:", data);
       return { holders: [], totalHolders: 0 };
     }
 
     const accounts = data.token_accounts;
 
     // Extract holder addresses and share amounts, adjusting by decimals
-    const holdersArray = accounts
-      .reduce((acc: any[], account: any) => {
-        const amount = Number(account.amount) / 10 ** decimals; // Adjust shares
-        const address = account.owner;
-        if (amount > 0 && address) {
-          acc.push({
-            holder: <TruncateAddress address={address} start={2} end={2}/>,
-            shares: amount,
-            fill: `var(--color-hld${acc.length % 5})`, // Dynamically assign colors
-          });
-        }
-        return acc;
-      }, []);
+    const holdersArray = accounts.reduce((acc: any[], account: any) => {
+      const amount = Number(account.amount) / 10 ** decimals; // Adjust shares
+      const address = account.owner;
+      if (amount > 0 && address) {
+        acc.push({
+          holder: (
+            <TruncateAddress address={address} start={2} end={2} />
+          ),
+          shares: amount,
+          fill: `var(--color-hld${acc.length % 5})`, // Dynamically assign colors
+        });
+      }
+      return acc;
+    }, []);
 
     const totalHolders = holdersArray.length;
 
-    holdersArray.sort((a: { shares: number }, b: { shares: number }) => b.shares - a.shares);
+    holdersArray.sort(
+      (a: { shares: number }, b: { shares: number }) => b.shares - a.shares
+    );
 
     let topHolders = holdersArray.slice(0, 4);
 
     const othersShares = holdersArray
       .slice(4)
-      .reduce((sum: number, holder: { shares: number }) => sum + holder.shares, 0);
+      .reduce(
+        (sum: number, holder: { shares: number }) => sum + holder.shares,
+        0
+      );
 
     if (othersShares > 0) {
       topHolders.push({
-        holder: 'Others',
+        holder: "Others",
         shares: othersShares,
         fill: `var(--color-hld4)`,
       });
@@ -360,14 +402,14 @@ export default function ProductPage() {
     if (totalHolders === 0) {
       topHolders = [
         {
-          holder: 'Others',
+          holder: "Others",
           shares: 1, // To allow the PieChart to render
           fill: `var(--color-hld0)`,
         },
       ];
     }
 
-    console.log('Processed holders:', topHolders);
+    console.log("Processed holders:", topHolders);
 
     return {
       holders: topHolders,
@@ -375,14 +417,15 @@ export default function ProductPage() {
     };
   }
 
-
   async function updateHoldersData(fund: Fund): Promise<HolderData[]> {
     const holdersData = await Promise.all(
       (fund.shareClasses || []).map(async (shareClass) => {
         const mintAddress = shareClass.shareClassId;
 
         if (!mintAddress) {
-          console.error(`Mint address not found for share class: ${shareClass.shareClassSymbol}`);
+          console.error(
+            `Mint address not found for share class: ${shareClass.shareClassSymbol}`
+          );
           return null;
         }
 
@@ -392,7 +435,10 @@ export default function ProductPage() {
           return null;
         }
 
-        const processedData = processHolderData(holderData, shareClass?.shareClassDecimals || 0);
+        const processedData = processHolderData(
+          holderData,
+          shareClass?.shareClassDecimals || 0
+        );
 
         return {
           mint: mintAddress,
@@ -402,9 +448,9 @@ export default function ProductPage() {
       })
     );
 
-    console.log('Aggregated holders data:', holdersData);
+    console.log("Aggregated holders data:", holdersData);
 
-    return holdersData.filter((item) => item !== null);
+    return holdersData.filter((item) => item !== null) as HolderData[];
   }
 
   let mintData = (fund?.shareClasses || []).map(
@@ -424,12 +470,12 @@ export default function ProductPage() {
 
   let displayTotalShares = totalShares;
 
-// If totalShares is 0, set shares to 1 for the first share class to render the chart
+  // If totalShares is 0, set shares to 1 for the first share class to render the chart
   if (totalShares === 0 && mintData.length > 0) {
     mintData[0].shares = 1;
   }
 
-// If totalShares is 0, set displayTotalShares to 0
+  // If totalShares is 0, set displayTotalShares to 0
   if (totalShares === 0) {
     displayTotalShares = 0;
   }
@@ -464,10 +510,6 @@ export default function ProductPage() {
       </text>
     ) : null; // Hide the label if displayTotalShares is 0
   };
-
-  if (!fund) {
-    redirect('/');
-  }
 
   return (
     <PageContentWrapper>
@@ -617,7 +659,7 @@ export default function ProductPage() {
               </CardContent>
             </Card>
           </div>
-          </div>
+        </div>
 
         <Tabs defaultValue="overview" className="w-full">
           <TabsList className="mt-8 mb-4">
@@ -796,16 +838,16 @@ export default function ProductPage() {
                               {fund.shareClasses[0]
                                 ?.minimalInitialSubscriptionInShares > 0
                                 ? fund.shareClasses[0]
-                                    ?.minimalInitialSubscriptionInShares +
-                                  " shares"
+                                  ?.minimalInitialSubscriptionInShares +
+                                " shares"
                                 : fund.shareClasses[0]
-                                    ?.minimalInitialSubscriptionInAmount > 0
-                                ? fund.shareClasses[0]
+                                  ?.minimalInitialSubscriptionInAmount > 0
+                                  ? fund.shareClasses[0]
                                     ?.minimalInitialSubscriptionInAmount +
                                   " " +
                                   fund.shareClasses[0]
                                     ?.currencyOfMinimalSubscription
-                                : "-"}
+                                  : "-"}
                             </dd>
                           </div>
                           <div className="flex items-center justify-between">
@@ -992,5 +1034,5 @@ const SkeletonChart = () => {
         </div>
       </div>
     </div>
-    );
-    };
+  );
+};
