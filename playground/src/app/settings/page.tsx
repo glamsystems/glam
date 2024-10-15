@@ -175,18 +175,42 @@ const SettingsPage: React.FC = () => {
 
   const handleMaxCapFeeBlur = (value: string | undefined) => {
     const numValue = parseFloat(value || '');
-    if (!isNaN(numValue) && numValue >= estimatedFee) {
-      saveToLocalStorage('maxCapFee', value || '');
-    } else {
-      form.setValue('maxCapFee', estimatedFee.toFixed(6), { shouldValidate: true });
-      saveToLocalStorage('maxCapFee', estimatedFee.toFixed(6));
+    if (!isNaN(numValue)) {
+      if (numValue >= estimatedFee) {
+        // Only save to localStorage if the value has changed
+        const currentValue = form.getValues('maxCapFee');
+        if (value !== currentValue) {
+          saveToLocalStorage('maxCapFee', value || '');
+        }
+      } else {
+        // If the entered value is less than the estimated fee, set it to the estimated fee
+        const newValue = estimatedFee.toFixed(6);
+        form.setValue('maxCapFee', newValue, { shouldValidate: true });
 
-      // Show destructive toast when automatically increasing the max fee
-      toast({
-        title: "Max Cap Fee Adjusted",
-        description: `Max Cap Fee has been automatically set to ${estimatedFee.toFixed(6)} to match the current estimated fee.`,
-        variant: "destructive",
-      });
+        // Only save to localStorage and show toast if the value has changed
+        if (newValue !== form.getValues('maxCapFee')) {
+          saveToLocalStorage('maxCapFee', newValue);
+          toast({
+            title: "Max Cap Fee Adjusted",
+            description: `Max Cap Fee has been automatically set to ${newValue} to match the current estimated fee.`,
+            variant: "destructive",
+          });
+        }
+      }
+    } else {
+      // If the entered value is not a valid number, reset to the estimated fee
+      const newValue = estimatedFee.toFixed(6);
+      form.setValue('maxCapFee', newValue, { shouldValidate: true });
+
+      // Only save to localStorage and show toast if the value has changed
+      if (newValue !== form.getValues('maxCapFee')) {
+        saveToLocalStorage('maxCapFee', newValue);
+        toast({
+          title: "Max Cap Fee Adjusted",
+          description: `Max Cap Fee has been automatically set to ${newValue} as the entered value was invalid.`,
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -290,6 +314,10 @@ const SettingsPage: React.FC = () => {
       title: "Custom endpoint deleted",
       description: "The selected custom endpoint has been removed.",
     });
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
   };
 
   return (
@@ -433,7 +461,7 @@ const SettingsPage: React.FC = () => {
         <Separator className="my-4" />
 
         <Form {...form}>
-          <form className="space-y-4">
+          <form onSubmit={handleFormSubmit} className="space-y-4">
             <div className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center">
@@ -444,6 +472,7 @@ const SettingsPage: React.FC = () => {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
+                          type="button"
                           variant="ghost"
                           size="sm"
                           className="ml-2 h-8 w-8 p-0"
@@ -512,6 +541,12 @@ const SettingsPage: React.FC = () => {
                             placeholder="0.00001"
                             {...field}
                             onBlur={() => handleMaxCapFeeBlur(field.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleMaxCapFeeBlur(field.value);
+                              }
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
@@ -532,6 +567,12 @@ const SettingsPage: React.FC = () => {
                           placeholder="0.0001"
                           {...field}
                           onBlur={() => handleCustomFeeBlur(field.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleCustomFeeBlur(field.value);
+                            }
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
