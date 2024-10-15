@@ -55,7 +55,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
           role="combobox"
           aria-expanded={open}
           aria-label="Select an account"
-          className={cn("w-full pl-2", className)}
+          className={cn("w-full pl-2 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0", className)}
         >
           <span className="mr-2">
             {activeFund?.fund ? (

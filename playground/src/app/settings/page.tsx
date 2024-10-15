@@ -14,10 +14,11 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useCluster } from "@/components/solana-cluster-provider";
 import { toast } from "@/components/ui/use-toast";
-import { PlusIcon } from "@radix-ui/react-icons";
+import { PlusIcon, ResetIcon } from "@radix-ui/react-icons";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const priorityFeeOptions = ['dynamic', 'elevated', 'critical', 'custom'] as const;
 type PriorityFeeType = typeof priorityFeeOptions[number];
@@ -27,15 +28,22 @@ const formSchema = z.object({
   customEndpoint: z.string().url("Must be a valid URL"),
   activeEndpoint: z.string().min(1, "Active endpoint is required"),
   priorityFee: z.enum(priorityFeeOptions),
-  maxCapFee: z.string().optional().refine(value => value === '' || !isNaN(Number(value)), {
-    message: "Must be a valid number",
-  }),
+  maxCapFee: z.string().refine(
+    (value) => {
+      const numValue = parseFloat(value);
+      return value === '' || (!isNaN(numValue) && numValue >= 0.000001);
+    },
+    {
+      message: "Max Cap Fee must be at least 0.000001",
+    }
+  ),
   customFee: z.string().optional().refine(value => value === '' || !isNaN(Number(value)), {
     message: "Must be a valid number",
   }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
 
 type Endpoint = {
   value: string;
@@ -63,13 +71,14 @@ const SettingsPage: React.FC = () => {
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [open, setOpen] = useState(false);
   const dynamicFee = 0.000001; // Example dynamic fee
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       customLabel: '',
       customEndpoint: '',
-      activeEndpoint: cluster.endpoint || '', // Provide default value if undefined
+      activeEndpoint: cluster.endpoint || '',
       priorityFee: 'dynamic',
       maxCapFee: '',
       customFee: '',
@@ -103,9 +112,84 @@ const SettingsPage: React.FC = () => {
       case "critical":
         return dynamicFee * 10;
       default:
-        return 0;
+        return dynamicFee;
     }
   }, [priorityFee, dynamicFee]);
+
+  const resetFeeValues = () => {
+    form.setValue('priorityFee', 'dynamic', { shouldValidate: true });
+    form.setValue('maxCapFee', dynamicFee.toFixed(6), { shouldValidate: true });
+    form.setValue('customFee', '', { shouldValidate: true });
+    saveToLocalStorage('priorityFee', 'dynamic');
+    saveToLocalStorage('maxCapFee', dynamicFee.toFixed(6));
+    saveToLocalStorage('customFee', '');
+    toast({
+      title: "Fee Values Reset",
+      description: "Priority fee and related values have been reset to their defaults.",
+    });
+  };
+
+  useEffect(() => {
+    if (isInitialLoad) {
+      setIsInitialLoad(false);
+      return;
+    }
+
+    const currentMaxCapFee = parseFloat(form.getValues('maxCapFee'));
+    if (isNaN(currentMaxCapFee) || currentMaxCapFee < estimatedFee) {
+      form.setValue('maxCapFee', estimatedFee.toFixed(6), { shouldValidate: true });
+      saveToLocalStorage('maxCapFee', estimatedFee.toFixed(6));
+
+      // Show destructive toast only when there's an actual change, not on initial load
+      toast({
+        title: "Max Cap Fee Increased",
+        description: `Max Cap Fee has been automatically increased to ${estimatedFee.toFixed(6)} to match the new estimated fee.`,
+        variant: "destructive",
+      });
+    }
+  }, [estimatedFee, form, isInitialLoad]);
+
+  const handlePriorityFeeChange = (value: PriorityFeeType) => {
+    if (priorityFeeOptions.includes(value)) {
+      form.setValue('priorityFee', value, { shouldValidate: true });
+      saveToLocalStorage('priorityFee', value);
+
+      const currentMaxCapFee = parseFloat(form.getValues('maxCapFee'));
+      const newEstimatedFee = value === 'dynamic' ? dynamicFee :
+        value === 'elevated' ? dynamicFee * 5 :
+          value === 'critical' ? dynamicFee * 10 : dynamicFee;
+
+      if (isNaN(currentMaxCapFee) || currentMaxCapFee < newEstimatedFee) {
+        form.setValue('maxCapFee', newEstimatedFee.toFixed(6), { shouldValidate: true });
+        saveToLocalStorage('maxCapFee', newEstimatedFee.toFixed(6));
+
+        // Show destructive toast when automatically increasing the max fee
+        toast({
+          title: "Max Cap Fee Increased",
+          description: `Max Cap Fee has been automatically increased to ${newEstimatedFee.toFixed(6)} due to the change in priority fee.`,
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleMaxCapFeeBlur = (value: string | undefined) => {
+    const numValue = parseFloat(value || '');
+    if (!isNaN(numValue) && numValue >= estimatedFee) {
+      saveToLocalStorage('maxCapFee', value || '');
+    } else {
+      form.setValue('maxCapFee', estimatedFee.toFixed(6), { shouldValidate: true });
+      saveToLocalStorage('maxCapFee', estimatedFee.toFixed(6));
+
+      // Show destructive toast when automatically increasing the max fee
+      toast({
+        title: "Max Cap Fee Adjusted",
+        description: `Max Cap Fee has been automatically set to ${estimatedFee.toFixed(6)} to match the current estimated fee.`,
+        variant: "destructive",
+      });
+    }
+  };
+
 
   useEffect(() => {
     const clusterEndpoints = clusters.map(c => ({
@@ -149,17 +233,6 @@ const SettingsPage: React.FC = () => {
       title: "Fee Settings Updated",
       description: `${capitalizeWords(key)} is updated to ${value || 'not set'}.`,
     });
-  };
-
-  const handlePriorityFeeChange = (value: PriorityFeeType) => {
-    if (priorityFeeOptions.includes(value)) {
-      form.setValue('priorityFee', value);
-      saveToLocalStorage('priorityFee', value);
-    }
-  };
-
-  const handleMaxCapFeeBlur = (value: string | undefined) => {
-    saveToLocalStorage('maxCapFee', value || ''); // Ensure non-undefined value is passed
   };
 
   const handleCustomFeeBlur = (value: string | undefined) => {
@@ -237,7 +310,7 @@ const SettingsPage: React.FC = () => {
                           variant="outline"
                           role="combobox"
                           aria-expanded={open}
-                          className="w-full justify-between"
+                          className="w-full justify-between focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0"
                         >
                           {field.value
                             ? endpoints.find(
@@ -348,7 +421,7 @@ const SettingsPage: React.FC = () => {
                   type="submit"
                   size="icon"
                   variant="outline"
-                  className="mt-8"
+                  className="mt-8 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0"
                 >
                   <PlusIcon className="w-4 h-4" />
                 </Button>
@@ -363,9 +436,31 @@ const SettingsPage: React.FC = () => {
           <form className="space-y-4">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="priority-fee" className="text-sm font-medium">
-                  Priority Fee
-                </Label>
+                <div className="flex items-center">
+                  <Label htmlFor="priority-fee" className="text-sm font-medium">
+                    Priority Fee
+                  </Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="ml-2 h-8 w-8 p-0"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            resetFeeValues();
+                          }}
+                        >
+                          <ResetIcon className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        Reset fee values to default.
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <p className="text-sm text-muted-foreground">
                   Select your priority fee preference.
                 </p>
