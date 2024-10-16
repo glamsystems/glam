@@ -3148,10 +3148,7 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "shareClass",
@@ -3219,11 +3216,183 @@ export type Glam = {
         },
         {
           "name": "treasuryAta",
-          "writable": true
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "treasury"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "asset"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
         },
         {
           "name": "signerAssetAta",
-          "writable": true
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "signer"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "asset"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
         },
         {
           "name": "signerPolicy",
@@ -3872,18 +4041,48 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "transfersDisabled",
-      "msg": "Policy violation: transfers disabled"
+      "name": "closeNotEmptyError",
+      "msg": "Error closing account: not empty"
     },
     {
       "code": 6001,
-      "name": "amountTooBig",
-      "msg": "Policy violation: amount too big"
+      "name": "notAuthorizedError",
+      "msg": "Error: not authorized"
     },
     {
       "code": 6002,
-      "name": "lockUp",
-      "msg": "Policy violation: lock-up period"
+      "name": "invalidFundName",
+      "msg": "Invalid fund name: max 30 chars"
+    },
+    {
+      "code": 6003,
+      "name": "invalidFundSymbol",
+      "msg": "Too many assets: max 50"
+    },
+    {
+      "code": 6004,
+      "name": "invalidFundUri",
+      "msg": "Too many assets: max 20"
+    },
+    {
+      "code": 6005,
+      "name": "invalidAssetsLen",
+      "msg": "Too many assets: max 100"
+    },
+    {
+      "code": 6006,
+      "name": "invalidAssetsWeights",
+      "msg": "Number of weights should match number of assets"
+    },
+    {
+      "code": 6007,
+      "name": "invalidAssetForSwap",
+      "msg": "Asset cannot be swapped"
+    },
+    {
+      "code": 6008,
+      "name": "invalidSwap",
+      "msg": "Swap failed"
     }
   ],
   "types": [

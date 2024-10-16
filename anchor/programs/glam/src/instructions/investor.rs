@@ -14,169 +14,11 @@ use solana_program::stake::state::warmup_cooldown_rate;
 
 use crate::constants::{self, WSOL};
 use crate::error::{FundError, InvestorError, PolicyError};
+use crate::state::pyth_price::PriceExt;
 use crate::{state::*, PolicyAccount};
 
 fn log_decimal(amount: u64, minus_decimals: i32) -> f64 {
     amount as f64 * 10f64.powf(minus_decimals as f64)
-}
-
-const MAX_PD_V_U64: u64 = (1 << 28) - 1;
-//
-// The Price struct in pyth-solana-receiver-sdk doesn't have add/cmul methods. We implement them here.
-// Implementation is based on the pyth-sdk-solana code:
-// https://github.com/pyth-network/pyth-sdk-rs/blob/c34d0100363c30945cf53972fab78e543f030596/pyth-sdk/src/price.rs#L471
-//
-trait PriceExt {
-    fn add(&self, other: &Price) -> Option<Price>;
-    fn cmul(&self, c: i64, e: i32) -> Option<Price>;
-    fn mul(&self, other: &Price) -> Option<Price>;
-    fn normalize(&self) -> Option<Price>;
-    fn to_unsigned(x: i64) -> (u64, i64);
-    fn scale_to_exponent(&self, target_expo: i32) -> Option<Price>;
-}
-impl PriceExt for Price {
-    /// Add `other` to this, propagating uncertainty in both prices.
-    ///
-    /// Requires both `Price`s to have the same exponent -- use `scale_to_exponent` on
-    /// the arguments if necessary.
-    ///
-    /// TODO: could generalize this method to support different exponents.
-    fn add(&self, other: &Price) -> Option<Price> {
-        assert_eq!(self.exponent, other.exponent);
-
-        let price = self.price.checked_add(other.price)?;
-        // The conf should technically be sqrt(a^2 + b^2), but that's harder to compute.
-        let conf = self.conf.checked_add(other.conf)?;
-        Some(Price {
-            price,
-            conf,
-            exponent: self.exponent,
-            publish_time: self.publish_time.min(other.publish_time),
-        })
-    }
-
-    /// Multiply this `Price` by a constant `c * 10^e`.
-    fn cmul(&self, c: i64, e: i32) -> Option<Price> {
-        self.mul(&Price {
-            price: c,
-            conf: 0,
-            exponent: e,
-            publish_time: self.publish_time,
-        })
-    }
-
-    /// Multiply this `Price` by `other`, propagating any uncertainty.
-    fn mul(&self, other: &Price) -> Option<Price> {
-        // Price is not guaranteed to store its price/confidence in normalized form.
-        // Normalize them here to bound the range of price/conf, which is required to perform
-        // arithmetic operations.
-        let base = self.normalize()?;
-        let other = other.normalize()?;
-
-        // These use at most 27 bits each
-        let (base_price, base_sign) = Price::to_unsigned(base.price);
-        let (other_price, other_sign) = Price::to_unsigned(other.price);
-
-        // Uses at most 27*2 = 54 bits
-        let midprice = base_price.checked_mul(other_price)?;
-        let midprice_expo = base.exponent.checked_add(other.exponent)?;
-
-        // Compute the confidence interval.
-        // This code uses the 1-norm instead of the 2-norm for computational reasons.
-        // Note that this simplifies: pq * (a/p + b/q) = qa + pb
-        // 27*2 + 1 bits
-        let conf = base
-            .conf
-            .checked_mul(other_price)?
-            .checked_add(other.conf.checked_mul(base_price)?)?;
-
-        Some(Price {
-            price: (midprice as i64)
-                .checked_mul(base_sign)?
-                .checked_mul(other_sign)?,
-            conf,
-            exponent: midprice_expo,
-            publish_time: self.publish_time.min(other.publish_time),
-        })
-    }
-
-    /// Get a copy of this struct where the price and confidence
-    /// have been normalized to be between `MIN_PD_V_I64` and `MAX_PD_V_I64`.
-    fn normalize(&self) -> Option<Price> {
-        // signed division is very expensive in op count
-        let (mut p, s) = Price::to_unsigned(self.price);
-        let mut c = self.conf;
-        let mut e = self.exponent;
-
-        while p > MAX_PD_V_U64 || c > MAX_PD_V_U64 {
-            p = p.checked_div(10)?;
-            c = c.checked_div(10)?;
-            e = e.checked_add(1)?;
-        }
-
-        Some(Price {
-            price: (p as i64).checked_mul(s)?,
-            conf: c,
-            exponent: e,
-            publish_time: self.publish_time,
-        })
-    }
-    /// Helper function to convert signed integers to unsigned and a sign bit, which simplifies
-    /// some of the computations above.
-    fn to_unsigned(x: i64) -> (u64, i64) {
-        if x == i64::MIN {
-            // special case because i64::MIN == -i64::MIN
-            (i64::MAX as u64 + 1, -1)
-        } else if x < 0 {
-            (-x as u64, -1)
-        } else {
-            (x as u64, 1)
-        }
-    }
-    /// Scale this price/confidence so that its exponent is `target_expo`.
-    ///
-    /// Return `None` if this number is outside the range of numbers representable in `target_expo`,
-    /// which will happen if `target_expo` is too small.
-    ///
-    /// Warning: if `target_expo` is significantly larger than the current exponent, this
-    /// function will return 0 +- 0.
-    fn scale_to_exponent(&self, target_expo: i32) -> Option<Price> {
-        let mut delta = target_expo.checked_sub(self.exponent)?;
-        if delta >= 0 {
-            let mut p = self.price;
-            let mut c = self.conf;
-            // 2nd term is a short-circuit to bound op consumption
-            while delta > 0 && (p != 0 || c != 0) {
-                p = p.checked_div(10)?;
-                c = c.checked_div(10)?;
-                delta = delta.checked_sub(1)?;
-            }
-
-            Some(Price {
-                price: p,
-                conf: c,
-                exponent: target_expo,
-                publish_time: self.publish_time,
-            })
-        } else {
-            let mut p = self.price;
-            let mut c = self.conf;
-
-            // Either p or c == None will short-circuit to bound op consumption
-            while delta < 0 {
-                p = p.checked_mul(10)?;
-                c = c.checked_mul(10)?;
-                delta = delta.checked_add(1)?;
-            }
-
-            Some(Price {
-                price: p,
-                conf: c,
-                exponent: target_expo,
-                publish_time: self.publish_time,
-            })
-        }
-    }
 }
 
 #[derive(Accounts)]
@@ -614,7 +456,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
                 let mut total_value = Price {
                     price: 0,
                     conf: 0,
-                    expo: share_expo,
+                    exponent: share_expo,
                     publish_time: 0,
                 };
                 for att in &aum_components {
@@ -627,11 +469,11 @@ pub fn redeem_handler<'c: 'info, 'info>(
                     price: ((total_value.price as u128 * amount as u128) / total_shares as u128)
                         as i64,
                     conf: 0,
-                    expo: share_expo,
+                    exponent: share_expo,
                     publish_time: 0,
                 };
                 let value = value_to_redeem
-                    .scale_to_exponent(att.asset_price.expo)
+                    .scale_to_exponent(att.asset_price.exponent)
                     .unwrap();
                 ((value.price as u128 * 10u128.pow(asset.decimals as u32))
                     / att.asset_price.price as u128) as u64
@@ -762,7 +604,12 @@ pub fn get_aum_components<'info>(
     //
     let mut aum_components: Vec<AumComponent> = Vec::new();
     let timestamp = Clock::get()?.unix_timestamp;
-    let mut price_sol_usd = Price::default();
+    let mut price_sol_usd = Price {
+        price: 0,
+        conf: 0,
+        exponent: 0,
+        publish_time: 0,
+    };
     let mut price_type = PriceDenom::USD;
     for (i, accounts) in accounts_for_pricing.chunks(num_accounts).enumerate() {
         let cur_asset = assets[i];
@@ -806,6 +653,13 @@ pub fn get_aum_components<'info>(
         // Parse pricing account
         let pricing_account = &accounts[1];
         let expected_pricing_account = cur_asset_meta.get_pricing_account();
+
+        #[cfg(not(feature = "mainnet"))]
+        msg!(
+            "pricing_account={:?} expected={:?}",
+            pricing_account.key().to_string().as_str(),
+            expected_pricing_account
+        );
         require!(
             pricing_account.key().to_string().as_str() == expected_pricing_account,
             InvestorError::InvalidPricingOracle
@@ -873,7 +727,12 @@ pub fn get_aum_components<'info>(
             cur_asset_meta.get_price(pricing_account, timestamp, action)?
         } else {
             // not used
-            Price::default()
+            Price {
+                price: 0,
+                conf: 0,
+                exponent: 0,
+                publish_time: 0,
+            }
         };
         let mut asset_price_type = cur_asset_meta.get_price_denom();
         if is_wsol {
@@ -883,7 +742,7 @@ pub fn get_aum_components<'info>(
                 asset_price = Price {
                     price: 1_000_000_000,
                     conf: 0,
-                    expo: -9,
+                    exponent: -9,
                     publish_time: 0,
                 };
                 asset_price_type = PriceDenom::SOL;
@@ -891,7 +750,7 @@ pub fn get_aum_components<'info>(
         }
 
         let asset_value = asset_price
-            .cmul(asset_amount.try_into().unwrap(), asset_price.expo)
+            .cmul(asset_amount.try_into().unwrap(), asset_price.exponent)
             .unwrap();
 
         aum_components.push(AumComponent {
@@ -981,7 +840,7 @@ pub fn get_aum_components<'info>(
             stake_rewards as u64
         );
 
-        let expo = wsol_component.asset_price.expo;
+        let expo = wsol_component.asset_price.exponent;
         let updated_asset_amount =
             wsol_component.asset_amount + external_lamports + stake_rewards as u64;
         let updated_asset_value = wsol_component
@@ -999,7 +858,7 @@ pub fn get_aum_components<'info>(
             // by divinging by the SOL price.
             // Note: wSOL price is already in SOL
             if att.price_type == PriceDenom::USD {
-                let expo = att.asset_price.expo;
+                let expo = att.asset_price.exponent;
                 att.asset_price = att.asset_price.div(&price_sol_usd).unwrap();
                 att.asset_value = att
                     .asset_price

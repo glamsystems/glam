@@ -12,7 +12,7 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
     "So11111111111111111111111111111111111111112",
     {
       pricingAccount: new PublicKey(
-        "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG" // pyth
+        "7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE" // pyth
       ),
     },
   ],
@@ -652,7 +652,7 @@ export const ASSETS_TESTS: Map<string, AssetMeta> = new Map([
     "AwRP1kuJbykXeF4hcLzfMDMY2ZTGN3cx8ErCWxVYekef",
     {
       pricingAccount: new PublicKey(
-        "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD" // pyth
+        "Dpw1EAVrSB1ibxiDQyTAW6Zip3J4Btk2x4SgApQCeFbX" // pyth
       ),
     },
   ],
@@ -661,7 +661,7 @@ export const ASSETS_TESTS: Map<string, AssetMeta> = new Map([
     "7Pz5yQdyQm64WtzxvpQZi3nD1q5mbxj4Hhcjy2kmZ7Zd",
     {
       pricingAccount: new PublicKey(
-        "Eavb8FKNoYPbHnSS8kMi4tnUh8qK8bqxTjCojer4pZrr" // pyth
+        "4cSM2e6rvbGQUFiJbqytoVMi5GgghSMr8LwVrT9VPSPo" // pyth
       ),
       programId: TOKEN_2022_PROGRAM_ID,
     },
@@ -671,7 +671,7 @@ export const ASSETS_TESTS: Map<string, AssetMeta> = new Map([
     "GRxagtBNxzjwxkKdEgW7P1oqU57Amai6ha5F3UBJzU1m",
     {
       pricingAccount: new PublicKey(
-        "JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB" // pyth
+        "42amVS4KgzR9rA28tkVYqVXjq9Qa8dcZQMbH5EYFX6XC" // pyth
       ),
     },
   ],

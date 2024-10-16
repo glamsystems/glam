@@ -47,33 +47,46 @@ bind_address = "127.0.0.1"
 ledger = ".anchor/test-ledger"
 rpc_port = 8899
 slots_per_epoch = "32"
-url = "https://api.devnet.solana.com"
+url = "https://api.mainnet-beta.solana.com"
 deactivate_feature = ["EenyoWx9UMXYKpR8mW5Jmfmy2fRjzUtM7NduYMY8bx33"]
 
 #
 # Pricing
 #
-[[test.validator.account]]
-# Pyth SOL/USD
-address = "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG"
-filename = "./fixtures/accounts/H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG.json"
-[[test.validator.account]]
-# Pyth USDC/USD
-address = "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD"
-filename = "./fixtures/accounts/Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD.json"
-[[test.validator.account]]
-# Pyth BTC/USD
-address = "Eavb8FKNoYPbHnSS8kMi4tnUh8qK8bqxTjCojer4pZrr"
-filename = "./fixtures/accounts/Eavb8FKNoYPbHnSS8kMi4tnUh8qK8bqxTjCojer4pZrr.json"
-[[test.validator.account]]
-# Pyth ETH/USD
-address = "JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB"
-filename = "./fixtures/accounts/JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB.json"
+[[test.validator.clone]] # Sponsored pyth feed SOL/USD
+address = "7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE"
 
-[[test.validator.account]]
-# WSOL
-address = "So11111111111111111111111111111111111111112"
-filename = "./fixtures/accounts/So11111111111111111111111111111111111111112.json"
+[[test.validator.clone]] # Sponsored pyth feed USDC/USD
+address = "Dpw1EAVrSB1ibxiDQyTAW6Zip3J4Btk2x4SgApQCeFbX"
+
+[[test.validator.clone]] # Sponsored pyth feed ETH/USD
+address = "42amVS4KgzR9rA28tkVYqVXjq9Qa8dcZQMbH5EYFX6XC"
+
+[[test.validator.clone]] # Sponsored pyth feed BTC/USD
+address = "4cSM2e6rvbGQUFiJbqytoVMi5GgghSMr8LwVrT9VPSPo"
+
+
+# [[test.validator.account]]
+# # Pyth SOL/USD
+# address = "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG"
+# filename = "./fixtures/accounts/H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG.json"
+# [[test.validator.account]]
+# # Pyth USDC/USD
+# address = "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD"
+# filename = "./fixtures/accounts/Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD.json"
+# [[test.validator.account]]
+# # Pyth BTC/USD
+# address = "Eavb8FKNoYPbHnSS8kMi4tnUh8qK8bqxTjCojer4pZrr"
+# filename = "./fixtures/accounts/Eavb8FKNoYPbHnSS8kMi4tnUh8qK8bqxTjCojer4pZrr.json"
+# [[test.validator.account]]
+# # Pyth ETH/USD
+# address = "JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB"
+# filename = "./fixtures/accounts/JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB.json"
+
+# [[test.validator.account]]
+# # WSOL
+# address = "So11111111111111111111111111111111111111112"
+# filename = "./fixtures/accounts/So11111111111111111111111111111111111111112.json"
 
 #
 # Drift
@@ -302,6 +315,6 @@ filename = "./fixtures/accounts/Enh5W2UMiUc8ANgjwQMuKXNQLnAEddwjBsSPibddtN7R.jso
 # Others
 #
 
-[[test.validator.account]] # USDC mainnet
-address = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
-filename = "./fixtures/accounts/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v.json"
+# [[test.validator.account]] # USDC mainnet
+# address = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+# filename = "./fixtures/accounts/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v.json"

@@ -2,16 +2,14 @@ use anchor_lang::prelude::*;
 use anchor_lang::AccountDeserialize;
 use phf::phf_map;
 
+use crate::error::InvestorError;
+use crate::state::pyth_price::PriceExt;
 use marinade::State as MarinadeState;
-use pyth_sdk_solana::state::SolanaPriceAccount;
-use pyth_sdk_solana::Price;
+use pyth_solana_receiver_sdk::price_update::{get_feed_id_from_hex, Price, PriceUpdateV2};
 use spl_stake_pool::state::StakePool;
 
-use crate::error::InvestorError;
-
-// fn _log_price(price: Price) -> f64 {
-//     price.price as f64 * 10f64.powf(price.expo as f64)
-// }
+pub const MAXIMUM_AGE: u64 = 10; // One minute
+pub const FEED_ID: &str = "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d"; // SOL/USD price feed id from https://pyth.network/developers/price-feed-ids
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum Action {
@@ -83,11 +81,14 @@ impl<'a> AssetMeta<'a> {
         _timestamp: i64,
         action: Action,
     ) -> Result<Price> {
-        // Retrieve Pyth price
-        let price_feed: pyth_sdk_solana::PriceFeed =
-            SolanaPriceAccount::account_info_to_feed(pricing_account).unwrap();
+        let data = pricing_account.try_borrow_data()?;
+        let price_update = PriceUpdateV2::try_deserialize(&mut &data[..])?;
+        let mut asset_price = price_update.get_price_no_older_than(
+            &Clock::get()?,
+            60,
+            &get_feed_id_from_hex(FEED_ID)?,
+        )?;
 
-        let mut asset_price = price_feed.get_price_unchecked();
         // On mainnet, enforce that the price is newer than 30s ago
         // In tests, ignore this check
         // #[cfg(feature = "mainnet")]
@@ -128,11 +129,12 @@ impl<'a> AssetMeta<'a> {
             state.calc_lamports_withdraw_amount(one).unwrap()
         };
 
-        let mut price = Price::default();
-        price.expo = -(self.decimals as i32);
-        price.price = price_u64 as i64;
-
-        return Ok(price);
+        Ok(Price {
+            price: price_u64 as i64,
+            conf: 0,
+            exponent: -(self.decimals as i32),
+            publish_time: 0,
+        })
     }
 }
 
@@ -144,14 +146,14 @@ static ASSETS_TESTS: phf::Map<&'static str, AssetMeta> = phf_map! {
     //
 
     // BTC (Drift)
-    "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv" =>
-    AssetMeta {
-        decimals: 8,
-        is_stable_coin: false,
-        is_token_2022: false,
-        pyth_account: "Eavb8FKNoYPbHnSS8kMi4tnUh8qK8bqxTjCojer4pZrr",
-        staking_state: "",
-    },
+    // "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv" =>
+    // AssetMeta {
+    //     decimals: 8,
+    //     is_stable_coin: false,
+    //     is_token_2022: false,
+    //     pyth_account: "Eavb8FKNoYPbHnSS8kMi4tnUh8qK8bqxTjCojer4pZrr",
+    //     staking_state: "",
+    // },
 
     // BTC (custom)
     "7Pz5yQdyQm64WtzxvpQZi3nD1q5mbxj4Hhcjy2kmZ7Zd" =>
@@ -159,7 +161,7 @@ static ASSETS_TESTS: phf::Map<&'static str, AssetMeta> = phf_map! {
         decimals: 8,
         is_stable_coin: false,
         is_token_2022: true,
-        pyth_account: "Eavb8FKNoYPbHnSS8kMi4tnUh8qK8bqxTjCojer4pZrr",
+        pyth_account: "4cSM2e6rvbGQUFiJbqytoVMi5GgghSMr8LwVrT9VPSPo",
         staking_state: "",
     },
 
@@ -169,7 +171,7 @@ static ASSETS_TESTS: phf::Map<&'static str, AssetMeta> = phf_map! {
         decimals: 6,
         is_stable_coin: true,
         is_token_2022: false,
-        pyth_account: "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD",
+        pyth_account: "Dpw1EAVrSB1ibxiDQyTAW6Zip3J4Btk2x4SgApQCeFbX",
         staking_state: "",
     },
 
@@ -179,7 +181,7 @@ static ASSETS_TESTS: phf::Map<&'static str, AssetMeta> = phf_map! {
         decimals: 8,
         is_stable_coin: false,
         is_token_2022: false,
-        pyth_account: "JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB",
+        pyth_account: "42amVS4KgzR9rA28tkVYqVXjq9Qa8dcZQMbH5EYFX6XC",
         staking_state: "",
     },
 };
@@ -195,7 +197,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
         decimals: 9,
         is_stable_coin: false,
         is_token_2022: false,
-        pyth_account: "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG",
+        pyth_account: "7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE",
         staking_state: "",
     },
     // USDC

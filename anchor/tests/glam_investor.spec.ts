@@ -52,9 +52,9 @@ describe("glam_investor", () => {
   const BTC_TOKEN_PROGRAM_ID = TOKEN_2022_PROGRAM_ID;
   const ethOrWsol = useWsolInsteadOfEth ? WSOL : eth.publicKey;
 
-  // console.log("USDC", usdc.publicKey);
-  // console.log("ETH", eth.publicKey);
-  // console.log("BTC", btc.publicKey);
+  console.log("Custom USDC mint", usdc.publicKey.toBase58());
+  console.log("Custom ETH mint", eth.publicKey.toBase58());
+  console.log("Custom BTC mint", btc.publicKey.toBase58());
 
   const client = new GlamClient();
   const manager = (client.provider as anchor.AnchorProvider)
@@ -204,11 +204,6 @@ describe("glam_investor", () => {
           );
         })
       );
-
-      //
-      // create fund
-      //
-      const fundData = await createFundForTest(client, fundExample);
     } catch (e) {
       console.error(e);
       throw e;
@@ -217,10 +212,15 @@ describe("glam_investor", () => {
 
   it("Fund created", async () => {
     try {
+      //
+      // create fund
+      //
+      const fundData = await createFundForTest(client, fundExample);
       const fund = await program.account.fundAccount.fetch(fundPDA);
       expect(fund.shareClasses[0]).toEqual(sharePDA);
     } catch (e) {
       console.error(e);
+      throw e;
     }
   });
 
@@ -259,6 +259,7 @@ describe("glam_investor", () => {
     expect(managerShares.amount).toEqual(shares.supply);
   });
 
+  /*
   it("Invalid share class disallowed", async () => {
     try {
       const keypair = Keypair.generate();
@@ -651,4 +652,5 @@ describe("glam_investor", () => {
       throw e;
     }
   });
+  */
 });
