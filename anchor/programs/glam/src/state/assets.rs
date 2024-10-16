@@ -206,7 +206,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
         decimals: 6,
         is_stable_coin: true,
         is_token_2022: false,
-        pyth_account: "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD",
+        pyth_account: "Dpw1EAVrSB1ibxiDQyTAW6Zip3J4Btk2x4SgApQCeFbX",
         staking_state: "",
     },
     // USDT
@@ -215,7 +215,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
         decimals: 6,
         is_stable_coin: true,
         is_token_2022: false,
-        pyth_account: "3vxLXJqLqF3JG5TCbYycbKWRBbCJQLxQmBGCkyqEEefL",
+        pyth_account: "HT2PLQBcG5EiCcNSaMHAjSgd9F98ecpATbk4Sk5oYuM",
         staking_state: "",
     },
     // PYUSD
@@ -233,25 +233,25 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
         decimals: 8,
         is_stable_coin: false,
         is_token_2022: false,
-        pyth_account: "Eavb8FKNoYPbHnSS8kMi4tnUh8qK8bqxTjCojer4pZrr",
+        pyth_account: "9gNX5vguzarZZPjTnE1hWze3s6UsZ7dsU3UnAmKPnMHG",
         staking_state: "",
     },
     // tBTC
-    "6DNSN2BJsaPFdFFc1zP37kkeNe4Usc1Sqkzr9C9vPWcU" =>
-    AssetMeta {
-        decimals: 8,
-        is_stable_coin: false,
-        is_token_2022: false,
-        pyth_account: "6qCHPXxQiCiM3dEE4W6fpZk17uSZW9WBpD7cyN8Tg2Ac",
-        staking_state: "",
-    },
-    // ETH (Portal)
+    // "6DNSN2BJsaPFdFFc1zP37kkeNe4Usc1Sqkzr9C9vPWcU" =>
+    // AssetMeta {
+    //     decimals: 8,
+    //     is_stable_coin: false,
+    //     is_token_2022: false,
+    //     pyth_account: "6qCHPXxQiCiM3dEE4W6fpZk17uSZW9WBpD7cyN8Tg2Ac",
+    //     staking_state: "",
+    // },
+    // wETH (Wormhole)
     "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs" =>
     AssetMeta {
         decimals: 8,
         is_stable_coin: false,
         is_token_2022: false,
-        pyth_account: "JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB",
+        pyth_account: "42amVS4KgzR9rA28tkVYqVXjq9Qa8dcZQMbH5EYFX6XC",
         staking_state: "",
     },
     // PYTH
@@ -260,7 +260,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
         decimals: 6,
         is_stable_coin: false,
         is_token_2022: false,
-        pyth_account: "nrYkQQQur7z8rYTST3G9GqATviK5SxTDkrqd21MW6Ue",
+        pyth_account: "8vjchtMuJNY4oFQdTi8yCe6mhCaNBFaUbktT482TpLPS",
         staking_state: "",
     },
     // BONK
@@ -269,21 +269,16 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
         decimals: 5,
         is_stable_coin: false,
         is_token_2022: false,
-        pyth_account: "8ihFLu5FimgTQ1Unh4dVyEHUGodJ5gJQCrQf4KUVB9bN",
+        pyth_account: "DBE3N8uNjhKPRHfANdwGvCZghWXyLPdqdSbEW2XFwBiX",
         staking_state: "",
     },
-
-    //
-    // LST
-    //
-
     // mSOL - Marinade staked SOL
     "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So" =>
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
         is_token_2022: false,
-        pyth_account: "E4v1BBgoso9s64TQvmyownAVJbhbEPGyzA3qn4n46qj9",
+        pyth_account: "5CKzb9j4ChgLUt8Gfm5CNGLN6khXKiqMbnGAW4cgXgxK",
         staking_state: "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC",
     },
 
@@ -607,7 +602,7 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
         decimals: 9,
         is_stable_coin: false,
         is_token_2022: false,
-        pyth_account: "",
+        pyth_account: "7yyaeuJ1GGtVBLT2z2xub5ZWYKaNhF28mj1RdV4VDFVk",
         staking_state: "Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb",
     },
 
