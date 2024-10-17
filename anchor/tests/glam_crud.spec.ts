@@ -85,7 +85,6 @@ describe("glam_crud", () => {
     expect(fundModel.assets).toEqual([WSOL, MSOL]);
   });
 
-  /*
   it("[integration-acl] add and update", async () => {
     const updatedFund1 = glamClient.getFundModel({
       integrationAcls: [{ name: { drift: {} }, features: [] }],
@@ -426,5 +425,4 @@ describe("glam_crud", () => {
     );
     expect(ret).toEqual([null, null, null]);
   });
-  */
 });
