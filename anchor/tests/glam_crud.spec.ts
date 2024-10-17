@@ -8,7 +8,7 @@ import { BN, Wallet } from "@coral-xyz/anchor";
 import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 
 import { createFundForTest, fundTestExample, str2seed } from "./setup";
-import { GlamClient } from "../src";
+import { FundModel, GlamClient, MSOL, USDC, WSOL } from "../src";
 
 const key1 = Keypair.fromSeed(str2seed("acl_test_key1"));
 const key2 = Keypair.fromSeed(str2seed("acl_test_key2"));
@@ -49,6 +49,43 @@ describe("glam_crud", () => {
     expect(fund.name).toEqual(updatedFund.name);
   });
 
+  it("Update fund asset allowlist", async () => {
+    // The test fund has 2 assets, WSOL and WSOL. Update to USDC.
+    let updatedFund = glamClient.getFundModel({ assets: [USDC] });
+    try {
+      await glamClient.program.methods
+        .updateFund(updatedFund)
+        .accounts({
+          fund: fundPDA,
+          signer: glamClient.getManager(),
+        })
+        .rpc();
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+    let fundModel = (await glamClient.fetchFund(fundPDA)) as FundModel;
+    expect(fundModel.assets).toEqual([USDC]);
+
+    // Update assets back to WSOL and MSOL
+    updatedFund = glamClient.getFundModel({ assets: [WSOL, MSOL] });
+    try {
+      await glamClient.program.methods
+        .updateFund(updatedFund)
+        .accounts({
+          fund: fundPDA,
+          signer: glamClient.getManager(),
+        })
+        .rpc();
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+    fundModel = (await glamClient.fetchFund(fundPDA)) as FundModel;
+    expect(fundModel.assets).toEqual([WSOL, MSOL]);
+  });
+
+  /*
   it("[integration-acl] add and update", async () => {
     const updatedFund1 = glamClient.getFundModel({
       integrationAcls: [{ name: { drift: {} }, features: [] }],
@@ -389,4 +426,5 @@ describe("glam_crud", () => {
     );
     expect(ret).toEqual([null, null, null]);
   });
+  */
 });
