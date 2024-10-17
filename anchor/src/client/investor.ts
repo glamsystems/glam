@@ -109,7 +109,9 @@ export class InvestorClient {
       return [
         { pubkey: treasuryAta, isSigner: false, isWritable: false },
         {
-          pubkey: assetMeta.pricingAccount,
+          // For some LSTs we have both state and pricing accounts
+          // The program should always prefer the state account
+          pubkey: assetMeta.stateAccount || assetMeta.pricingAccount,
           isSigner: false,
           isWritable: false,
         },
@@ -231,7 +233,9 @@ export class InvestorClient {
       return [
         { pubkey: treasuryAta, isSigner: false, isWritable: true },
         {
-          pubkey: assetMeta.pricingAccount,
+          // For some LSTs we have both state and pricing accounts
+          // The program should always prefer the state account
+          pubkey: assetMeta.stateAccount || assetMeta.pricingAccount,
           isSigner: false,
           isWritable: false,
         },
