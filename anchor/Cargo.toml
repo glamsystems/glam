@@ -12,7 +12,10 @@ incremental = false
 codegen-units = 1
 
 [workspace.dependencies]
-anchor-lang = { version = "0.30.1", features = ["init-if-needed", "interface-instructions"] }
+anchor-lang = { version = "0.30.1", features = [
+    "init-if-needed",
+    "interface-instructions",
+] }
 anchor-spl = { version = "0.30.1", features = ["stake"] }
 solana-program = "=1.18.23"
 
@@ -21,7 +24,8 @@ spl-tlv-account-resolution = "0.6.5"
 
 spl-stake-pool = { version = "1.0.0", features = ["no-entrypoint"] }
 anchor-gen = "0.3.1"
-pyth-sdk-solana = "0.10.1"
+pyth-solana-receiver-sdk = "0.3.1"
+
 strum = { version = "0.26", features = ["derive"] }
 phf = { version = "0.11", features = ["macros"] }
 

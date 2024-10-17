@@ -9,51 +9,50 @@ use anchor_spl::token_interface::{
     burn, mint_to, transfer_checked, Burn, Mint, MintTo, Token2022, TokenAccount, TransferChecked,
 };
 use marinade::state::delayed_unstake_ticket::TicketAccountData;
-use pyth_sdk_solana::Price;
+use pyth_solana_receiver_sdk::price_update::Price;
 use solana_program::stake::state::warmup_cooldown_rate;
 
 use crate::constants::{self, WSOL};
 use crate::error::{FundError, InvestorError, PolicyError};
+use crate::state::pyth_price::PriceExt;
 use crate::{state::*, PolicyAccount};
 
 fn log_decimal(amount: u64, minus_decimals: i32) -> f64 {
     amount as f64 * 10f64.powf(minus_decimals as f64)
 }
-fn _log_price(price: Price) -> f64 {
-    price.price as f64 * 10f64.powf(price.expo as f64)
-}
 
 #[derive(Accounts)]
 pub struct Subscribe<'info> {
-    #[account(has_one = treasury)]
+    #[account()]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
 
     // the shares to mint
-    #[account(mut, seeds = [
-        b"share".as_ref(),
-        &[0u8], //TODO: add share_class_idx to instruction
-        fund.key().as_ref()
-      ],
-      bump, mint::authority = share_class, mint::token_program = token_2022_program)]
-    pub share_class: Box<InterfaceAccount<'info, Mint>>, // mint
+    #[account(
+        mut,
+        seeds = [b"share".as_ref(), &[0u8], fund.key().as_ref()], //TODO: add share_class_idx to instruction
+        bump,
+        mint::authority = share_class,
+        mint::token_program = token_2022_program
+    )]
+    pub share_class: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(
-      mut,
-      associated_token::mint = share_class,
-      associated_token::authority = signer,
-      associated_token::token_program = token_2022_program
+        mut,
+        associated_token::mint = share_class,
+        associated_token::authority = signer,
+        associated_token::token_program = token_2022_program
     )]
-    pub signer_share_ata: Box<InterfaceAccount<'info, TokenAccount>>, // user account
+    pub signer_share_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
-    // the asset to transfer
+    // the asset to transfer in exchange for shares
     pub asset: Box<InterfaceAccount<'info, Mint>>,
-    #[account(mut)]
+    #[account(mut, constraint = treasury_ata.mint == asset.key())]
     pub treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
-    #[account(mut)]
-    pub signer_asset_ata: Box<InterfaceAccount<'info, TokenAccount>>, // user account
+    #[account(mut, constraint = signer_asset_ata.mint == asset.key())]
+    pub signer_asset_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     // signer_policy is required if a fund has a lock-up period.
     // it's optional, so we can avoid creating it for funds without
@@ -67,7 +66,7 @@ pub struct Subscribe<'info> {
           signer_share_ata.key().as_ref()
         ],
         bump
-      )]
+    )]
     pub signer_policy: Option<Account<'info, PolicyAccount>>,
 
     // user
@@ -89,9 +88,6 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     let fund = &ctx.accounts.fund;
     require!(fund.is_enabled(), InvestorError::FundNotActive);
 
-    let external_treasury_accounts =
-        fund.get_pubkeys_from_engine_field(EngineFieldName::ExternalTreasuryAccounts);
-
     if fund.share_classes.len() > 1 {
         // we need to define how to split the total amount into share classes
         panic!("not implemented")
@@ -101,6 +97,26 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         fund.share_classes[0] == ctx.accounts.share_class.key(),
         InvestorError::InvalidShareClass
     );
+
+    if let Some(share_class_blocklist) = fund.share_class_blocklist(0) {
+        require!(
+            share_class_blocklist.len() == 0
+                || !share_class_blocklist
+                    .iter()
+                    .any(|&k| k == ctx.accounts.signer.key()),
+            InvestorError::InvalidShareClass
+        );
+    }
+
+    if let Some(share_class_allowlist) = fund.share_class_allowlist(0) {
+        require!(
+            share_class_allowlist.len() == 0
+                || share_class_allowlist
+                    .iter()
+                    .any(|&k| k == ctx.accounts.signer.key()),
+            InvestorError::InvalidShareClass
+        );
+    }
 
     // Lock-up
     let lock_up = fund.share_class_lock_up(0);
@@ -125,47 +141,30 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         }
     }
 
-    if let Some(share_class_blocklist) = fund.share_class_blocklist(0) {
-        require!(
-            share_class_blocklist.len() == 0
-                || !share_class_blocklist
-                    .iter()
-                    .any(|&k| k == ctx.accounts.signer.key()),
-            InvestorError::InvalidShareClass
-        );
-    }
-
-    if let Some(share_class_allowlist) = fund.share_class_allowlist(0) {
-        require!(
-            share_class_allowlist.len() == 0
-                || share_class_allowlist
-                    .iter()
-                    .any(|&k| k == ctx.accounts.signer.key()),
-            InvestorError::InvalidShareClass
-        );
-    }
-
-    let assets = fund.assets().unwrap();
-    // msg!("assets: {:?}", assets);
-    let asset_info = ctx.accounts.asset.to_account_info();
-    let asset_key = asset_info.key();
-    let asset_idx = assets.iter().position(|&asset| asset == asset_key);
+    let fund_assets = fund.assets().unwrap();
+    let asset_idx = fund_assets
+        .iter()
+        .position(|&asset| asset == ctx.accounts.asset.key());
+    require!(asset_idx.is_some(), InvestorError::InvalidAssetSubscribe);
     // msg!("asset={:?} idx={:?}", asset_key, asset_idx);
 
-    require!(asset_idx.is_some(), InvestorError::InvalidAssetSubscribe);
     let asset_idx = asset_idx.unwrap();
-    let asset_base = assets[0];
+    let asset_base = fund_assets[0];
     //TODO check if in_kind is allowed, or idx must be 0
 
-    // compute amount of shares
+    //
+    // Compute amount of shares to mint
+    //
     let share_class = &ctx.accounts.share_class;
     let share_expo = -(share_class.decimals as i32);
     let total_shares = share_class.supply;
     let use_fixed_price = total_shares == 0;
 
+    let external_treasury_accounts =
+        fund.get_pubkeys_from_engine_field(EngineFieldName::ExternalTreasuryAccounts);
     let aum_components = get_aum_components(
         Action::Subscribe,
-        assets,
+        fund_assets,
         ctx.remaining_accounts,
         &ctx.accounts.treasury,
         &external_treasury_accounts,
@@ -180,7 +179,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     let mut total_value = Price {
         price: 0,
         conf: 0,
-        expo: share_expo,
+        exponent: share_expo,
         publish_time: 0,
     };
     for att in aum_components {
@@ -190,7 +189,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     }
 
     let asset_value = subscribe_asset_price
-        .cmul(amount.try_into().unwrap(), subscribe_asset_price.expo)
+        .cmul(amount.try_into().unwrap(), subscribe_asset_price.exponent)
         .unwrap()
         .scale_to_exponent(share_expo)
         .unwrap()
@@ -217,7 +216,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     } as u64;
     msg!(
         "Subscribe: {} for {} shares",
-        log_decimal(amount, subscribe_asset_price.expo),
+        log_decimal(amount, subscribe_asset_price.exponent),
         log_decimal(amount_shares, share_expo)
     );
 
@@ -449,7 +448,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
                 let mut total_value = Price {
                     price: 0,
                     conf: 0,
-                    expo: share_expo,
+                    exponent: share_expo,
                     publish_time: 0,
                 };
                 for att in &aum_components {
@@ -462,11 +461,11 @@ pub fn redeem_handler<'c: 'info, 'info>(
                     price: ((total_value.price as u128 * amount as u128) / total_shares as u128)
                         as i64,
                     conf: 0,
-                    expo: share_expo,
+                    exponent: share_expo,
                     publish_time: 0,
                 };
                 let value = value_to_redeem
-                    .scale_to_exponent(att.asset_price.expo)
+                    .scale_to_exponent(att.asset_price.exponent)
                     .unwrap();
                 ((value.price as u128 * 10u128.pow(asset.decimals as u32))
                     / att.asset_price.price as u128) as u64
@@ -597,7 +596,12 @@ pub fn get_aum_components<'info>(
     //
     let mut aum_components: Vec<AumComponent> = Vec::new();
     let timestamp = Clock::get()?.unix_timestamp;
-    let mut price_sol_usd = Price::default();
+    let mut price_sol_usd = Price {
+        price: 0,
+        conf: 0,
+        exponent: 0,
+        publish_time: 0,
+    };
     let mut price_type = PriceDenom::USD;
     for (i, accounts) in accounts_for_pricing.chunks(num_accounts).enumerate() {
         let cur_asset = assets[i];
@@ -641,6 +645,13 @@ pub fn get_aum_components<'info>(
         // Parse pricing account
         let pricing_account = &accounts[1];
         let expected_pricing_account = cur_asset_meta.get_pricing_account();
+
+        #[cfg(not(feature = "mainnet"))]
+        msg!(
+            "pricing_account={:?} expected={:?}",
+            pricing_account.key().to_string().as_str(),
+            expected_pricing_account
+        );
         require!(
             pricing_account.key().to_string().as_str() == expected_pricing_account,
             InvestorError::InvalidPricingOracle
@@ -708,7 +719,12 @@ pub fn get_aum_components<'info>(
             cur_asset_meta.get_price(pricing_account, timestamp, action)?
         } else {
             // not used
-            Price::default()
+            Price {
+                price: 0,
+                conf: 0,
+                exponent: 0,
+                publish_time: 0,
+            }
         };
         let mut asset_price_type = cur_asset_meta.get_price_denom();
         if is_wsol {
@@ -718,7 +734,7 @@ pub fn get_aum_components<'info>(
                 asset_price = Price {
                     price: 1_000_000_000,
                     conf: 0,
-                    expo: -9,
+                    exponent: -9,
                     publish_time: 0,
                 };
                 asset_price_type = PriceDenom::SOL;
@@ -726,7 +742,7 @@ pub fn get_aum_components<'info>(
         }
 
         let asset_value = asset_price
-            .cmul(asset_amount.try_into().unwrap(), asset_price.expo)
+            .cmul(asset_amount.try_into().unwrap(), asset_price.exponent)
             .unwrap();
 
         aum_components.push(AumComponent {
@@ -816,7 +832,7 @@ pub fn get_aum_components<'info>(
             stake_rewards as u64
         );
 
-        let expo = wsol_component.asset_price.expo;
+        let expo = wsol_component.asset_price.exponent;
         let updated_asset_amount =
             wsol_component.asset_amount + external_lamports + stake_rewards as u64;
         let updated_asset_value = wsol_component
@@ -834,7 +850,7 @@ pub fn get_aum_components<'info>(
             // by divinging by the SOL price.
             // Note: wSOL price is already in SOL
             if att.price_type == PriceDenom::USD {
-                let expo = att.asset_price.expo;
+                let expo = att.asset_price.exponent;
                 att.asset_price = att.asset_price.div(&price_sol_usd).unwrap();
                 att.asset_value = att
                     .asset_price
@@ -850,7 +866,7 @@ pub fn get_aum_components<'info>(
             // by multiplying their price time SOL price
             // Note: wSOL price is already in USD
             if att.price_type == PriceDenom::SOL {
-                let expo = att.asset_price.expo;
+                let expo = att.asset_price.exponent;
                 att.asset_price = att.asset_price.mul(&price_sol_usd).unwrap();
                 att.asset_value = att
                     .asset_price

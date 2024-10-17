@@ -46,6 +46,8 @@ pub enum InvestorError {
     SubscribeRedeemPaused,
     #[msg("Policy account is mandatory")]
     InvalidPolicyAccount,
+    #[msg("Price is too old")]
+    PriceTooOld,
 }
 
 #[error_code]

@@ -224,7 +224,7 @@ export function GlamProvider({
       const pythFeedIds = [] as string[];
       activeFund?.treasury.tokenAccounts.forEach((ta: TokenAccount) => {
         const hex = Buffer.from(
-          ASSETS_MAINNET.get(ta.mint)?.pricingAccount.toBytes()!
+          ASSETS_MAINNET.get(ta.mint)?.pricingAccount?.toBytes()!
         ).toString("hex");
 
         pythFeedIds.push(hex);
@@ -242,7 +242,7 @@ export function GlamProvider({
       // Build a lookup table for price account -> mint account
       const priceToMint = new Map<string, string>([]);
       for (let [mint, asset] of ASSETS_MAINNET) {
-        priceToMint.set(asset.pricingAccount.toBase58(), mint);
+        priceToMint.set(asset.pricingAccount!.toBase58(), mint);
       }
 
       if (process.env.NODE_ENV === "development") {
