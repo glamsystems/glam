@@ -32,6 +32,8 @@ router.get("/prices", async (req, res) => {
 });
 
 /**
+ * @deprecated
+ * 
  * Fetch all glam funds
  */
 router.get("/funds", async (req, res) => {
@@ -109,6 +111,10 @@ router.get("/funds", async (req, res) => {
   res.send(JSON.stringify(fundsBySubject.filter(Boolean)));
 });
 
+
+/**
+ * @deprecated
+ */
 router.get("/funds/:pubkey/perf", async (req, res) => {
   const { w_btc = 0.4, w_eth = 0, w_sol = 0.6 } = req.query;
   // TODO: validate input
@@ -164,6 +170,9 @@ router.get("/funds/:pubkey/stakes", async (req, res) => {
   res.send({ stakes });
 });
 
+/**
+ * @deprecated
+ */
 router.get("/funds/:pubkey/metadata", async (req, res) => {
   const pubkey = validatePubkey(req.params.pubkey);
   if (!pubkey) {
