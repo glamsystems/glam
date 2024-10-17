@@ -5,10 +5,10 @@ use phf::phf_map;
 use crate::error::InvestorError;
 use crate::state::pyth_price::PriceExt;
 use marinade::State as MarinadeState;
-use pyth_solana_receiver_sdk::price_update::{get_feed_id_from_hex, Price, PriceUpdateV2};
+use pyth_solana_receiver_sdk::price_update::{Price, PriceUpdateV2};
 use spl_stake_pool::state::StakePool;
 
-pub const MAXIMUM_AGE: u64 = 10; // One minute
+pub const MAXIMUM_AGE: u64 = 60; // One minute
 pub const FEED_ID: &str = "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d"; // SOL/USD price feed id from https://pyth.network/developers/price-feed-ids
 
 #[derive(Clone, Copy, PartialEq)]
@@ -83,18 +83,29 @@ impl<'a> AssetMeta<'a> {
     ) -> Result<Price> {
         let data = pricing_account.try_borrow_data()?;
         let price_update = PriceUpdateV2::try_deserialize(&mut &data[..])?;
-        let mut asset_price = price_update.get_price_no_older_than(
-            &Clock::get()?,
-            60,
-            &get_feed_id_from_hex(FEED_ID)?,
-        )?;
+        let mut asset_price = Price {
+            price: price_update.price_message.price,
+            conf: price_update.price_message.conf,
+            exponent: price_update.price_message.exponent,
+            publish_time: price_update.price_message.publish_time,
+        };
 
-        // On mainnet, enforce that the price is newer than 30s ago
-        // In tests, ignore this check
-        // #[cfg(feature = "mainnet")]
-        // if (asset_price.publish_time - _timestamp).abs() > 30 {
-        //     return Err(InvestorError::InvalidAssetPrice.into());
-        // };
+        #[cfg(not(feature = "mainnet"))]
+        msg!(
+            "Price published at {:?}, current ts {:?}",
+            asset_price.publish_time,
+            Clock::get()?.unix_timestamp
+        );
+
+        // On mainnet, enforce that the price is not older than 60s
+        #[cfg(feature = "mainnet")]
+        require!(
+            asset_price
+                .publish_time
+                .saturating_add(MAXIMUM_AGE.try_into().unwrap())
+                >= Clock::get()?.unix_timestamp,
+            InvestorError::PriceTooOld
+        );
 
         // Scale price to expected decimals
         let asset_expo = -(self.decimals as i32);

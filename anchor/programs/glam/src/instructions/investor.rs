@@ -49,17 +49,9 @@ pub struct Subscribe<'info> {
 
     // the asset to transfer in exchange for shares
     pub asset: Box<InterfaceAccount<'info, Mint>>,
-    #[account(
-        mut,
-        associated_token::mint = asset,
-        associated_token::authority = treasury,
-    )]
+    #[account(mut, constraint = treasury_ata.mint == asset.key())]
     pub treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
-    #[account(
-        mut,
-        associated_token::mint = asset,
-        associated_token::authority = signer,
-    )]
+    #[account(mut, constraint = signer_asset_ata.mint == asset.key())]
     pub signer_asset_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     // signer_policy is required if a fund has a lock-up period.
