@@ -52,9 +52,9 @@ describe("glam_investor", () => {
   const BTC_TOKEN_PROGRAM_ID = TOKEN_2022_PROGRAM_ID;
   const ethOrWsol = useWsolInsteadOfEth ? WSOL : eth.publicKey;
 
-  // console.log("USDC", usdc.publicKey);
-  // console.log("ETH", eth.publicKey);
-  // console.log("BTC", btc.publicKey);
+  console.log("Custom USDC mint", usdc.publicKey.toBase58());
+  console.log("Custom ETH mint", eth.publicKey.toBase58());
+  console.log("Custom BTC mint", btc.publicKey.toBase58());
 
   const client = new GlamClient();
   const manager = (client.provider as anchor.AnchorProvider)
@@ -204,11 +204,6 @@ describe("glam_investor", () => {
           );
         })
       );
-
-      //
-      // create fund
-      //
-      const fundData = await createFundForTest(client, fundExample);
     } catch (e) {
       console.error(e);
       throw e;
@@ -217,25 +212,33 @@ describe("glam_investor", () => {
 
   it("Fund created", async () => {
     try {
+      //
+      // create fund
+      //
+      const fundData = await createFundForTest(client, fundExample);
       const fund = await program.account.fundAccount.fetch(fundPDA);
       expect(fund.shareClasses[0]).toEqual(sharePDA);
     } catch (e) {
       console.error(e);
+      throw e;
     }
   });
 
   it("Manager tests subscribe ETH to fund", async () => {
+    // At the time of the pricing account was dumped, the SOL price is around $155,
+    // so 500 SOL ~= $77k. Fund base asset is USDC, and each share has a fixed initial
+    // value of $100. Manager should get $77k / $100 per share = ~770 shares
     const amount = useWsolInsteadOfEth
-      ? new BN(500 * 10 ** 9)
-      : new BN(10 * 10 ** 8); // 500 SOL ~= 10 ETH = $30k
-    const expectedShares = "3000"; // $10/share => 3k shares
+      ? new BN(500 * 10 ** 9) // 500 SOL ~= 10 ETH = $30k
+      : new BN(10 * 10 ** 8);
+
     try {
       const txId = await glamClient.investor.subscribe(
         fundPDA,
         ethOrWsol,
         amount
       );
-      console.log("subscribe eth:", txId);
+      console.log(`subscribe ${useWsolInsteadOfEth ? "wsol" : "eth"}:`, txId);
     } catch (e) {
       console.error(e);
       throw e;
@@ -248,7 +251,8 @@ describe("glam_investor", () => {
       TOKEN_2022_PROGRAM_ID
     );
     console.log("total shares:", shares.supply);
-    // expect((shares.supply.toString()).toEqual(expectedShares); //TODO: compare BigInt?
+    expect(shares.supply).toBeGreaterThan(770_000_000_000);
+    expect(shares.supply).toBeLessThan(773_000_000_000);
 
     const managerShares = await getAccount(
       connection,
@@ -311,8 +315,8 @@ describe("glam_investor", () => {
   });
 
   it("Manager tests subscribe BTC to fund", async () => {
-    const amount = new BN(1 * 10 ** 8); // 1 BTC = $51k
-    const expectedShares = "8100"; // 3,000 + 5,100
+    // At the time BTC price account was dumped, the BTC price is around $67k
+    const amount = new BN(1 * 10 ** 8);
     try {
       const txId = await glamClient.investor.subscribe(
         fundPDA,
@@ -485,7 +489,7 @@ describe("glam_investor", () => {
       commitment,
       TOKEN_2022_PROGRAM_ID
     );
-    const amount = new BN(shares.supply);
+    const amount = new BN(shares.supply.toString());
     try {
       const txId = await glamClient.investor.redeem(fundPDA, amount, true);
       console.log("redeem 100%:", txId);

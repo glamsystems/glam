@@ -18,9 +18,6 @@ export const JITOSOL = new PublicKey(
 export const USDC = new PublicKey(
   "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 );
-export const USDC_DEVNET = new PublicKey(
-  "8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2"
-);
 // Wrapped ETH (Wormhole), 8 decimals
 export const WETH = new PublicKey(
   "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs"
@@ -28,9 +25,6 @@ export const WETH = new PublicKey(
 // Wrapped BTC (Wormhole), 8 decimals
 export const WBTC = new PublicKey(
   "3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh"
-);
-export const WBTC_DEVNET = new PublicKey(
-  "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv"
 );
 
 /**
