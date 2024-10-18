@@ -82,8 +82,7 @@ function SidebarItem({ route, text, shortcut, Icon }: SidebarItemProps) {
 }
 
 export default function Sidebar() {
-  const disabledRoutes =
-    process.env.NEXT_PUBLIC_DISABLED_ROUTES?.split(",") || [];
+  const prodEnabledRoutes = process.env.NEXT_PUBLIC_ENABLED_ROUTES?.split(",");
 
   const navList = [
     {
@@ -184,9 +183,11 @@ export default function Sidebar() {
             )}
             <ul className="list-none p-0 m-0">
               {nav.items.map((item, itemIndex) =>
-                disabledRoutes.includes(item.route) ? null : (
+                // If prodEnabledRoutes is not set, render all routes
+                // If the route is not in the list of enabled routes, don't render it
+                !prodEnabledRoutes || prodEnabledRoutes.includes(item.route) ? (
                   <SidebarItem key={itemIndex} {...item} />
-                )
+                ) : null
               )}
             </ul>
           </div>
