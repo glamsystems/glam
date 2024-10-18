@@ -4,9 +4,16 @@ import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 export class AssetMeta {
   pricingAccount?: PublicKey;
   stateAccount?: PublicKey;
+  priceFeed?: string;
   programId?: PublicKey;
 }
 
+/**
+ * We use sponsored feed listed on https://docs.pyth.network/price-feeds/sponsored-feeds/solana for popular tokens.
+ *
+ * For PYUSD, we use the price feed from Drift.
+ * For LSTs, we use the state account to calculate the price based on the number of SOLs locked.
+ */
 export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
   [
     // wSOL
@@ -15,6 +22,8 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
       pricingAccount: new PublicKey(
         "7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE" // pyth
       ),
+      priceFeed:
+        "ef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d",
     },
   ],
   [
@@ -24,6 +33,8 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
       pricingAccount: new PublicKey(
         "Dpw1EAVrSB1ibxiDQyTAW6Zip3J4Btk2x4SgApQCeFbX" // pyth
       ),
+      priceFeed:
+        "eaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a",
     },
   ],
   [
@@ -33,15 +44,11 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
       pricingAccount: new PublicKey(
         "HT2PLQBcG5EiCcNSaMHAjSgd9F98ecpATbk4Sk5oYuM" // pyth
       ),
+      priceFeed:
+        "2b89b9dc8fdf9f34709a5b106b472f0f39bb6ca9ce04b0fd7f2e971688e2e53b",
     },
   ],
-  [
-    // PYUSD
-    "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo",
-    {
-      pricingAccount: new PublicKey(0),
-    },
-  ],
+
   [
     // wBTC (Wormhole)
     "3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh",
@@ -49,6 +56,8 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
       pricingAccount: new PublicKey(
         "9gNX5vguzarZZPjTnE1hWze3s6UsZ7dsU3UnAmKPnMHG" // pyth
       ),
+      priceFeed:
+        "c9d8b075a5c69303365ae23633d4e085199bf5c520a3b90fed1322a0342ffc33",
     },
   ],
   [
@@ -58,6 +67,8 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
       pricingAccount: new PublicKey(
         "42amVS4KgzR9rA28tkVYqVXjq9Qa8dcZQMbH5EYFX6XC" // pyth
       ),
+      priceFeed:
+        "ff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace",
     },
   ],
   [
@@ -67,6 +78,8 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
       pricingAccount: new PublicKey(
         "8vjchtMuJNY4oFQdTi8yCe6mhCaNBFaUbktT482TpLPS" // pyth
       ),
+      priceFeed:
+        "0bbf28e9a841a1cc788f6a361b17ca072d0ea3098a1e5df1c3922d06719579ff",
     },
   ],
   [
@@ -76,6 +89,8 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
       pricingAccount: new PublicKey(
         "DBE3N8uNjhKPRHfANdwGvCZghWXyLPdqdSbEW2XFwBiX" // pyth
       ),
+      priceFeed:
+        "72b021217ca3fe68922a19aaf990109cb9d84e9ad004b4d2025ad6f529314419",
     },
   ],
   [
@@ -85,6 +100,23 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
       pricingAccount: new PublicKey(
         "5CKzb9j4ChgLUt8Gfm5CNGLN6khXKiqMbnGAW4cgXgxK" // pyth
       ),
+      priceFeed:
+        "c2289a6a43d2ce91c6f55caec370f4acc38a2ed477f58813334c6d03749ff2a4",
+    },
+  ],
+
+  //
+  // Price feed from Drift
+  //
+  [
+    // PYUSD
+    "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo",
+    {
+      pricingAccount: new PublicKey(
+        "HpMoKp3TCd3QT4MWYUKk2zCBwmhr5Df45fB6wdxYqEeh"
+      ),
+      priceFeed:
+        "c1da1b73d7f01e7ddd54b3766cf7fcd644395ad14f70aa706ec5384c59e76692",
     },
   ],
 
@@ -380,6 +412,8 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
       pricingAccount: new PublicKey(
         "7yyaeuJ1GGtVBLT2z2xub5ZWYKaNhF28mj1RdV4VDFVk" // pyth
       ),
+      priceFeed:
+        "67be9f519b95cf24338801051f9a808eff0a578ccb388db73b7f6fe1de019ffb",
     },
   ],
   [

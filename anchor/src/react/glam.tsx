@@ -217,15 +217,13 @@ export function GlamProvider({
   //
 
   const { data: pythData } = useQuery({
-    queryKey: ["/prices1"],
+    queryKey: ["/prices"],
     enabled: !!activeFund?.treasury?.tokenAccounts,
     refetchInterval: 30 * 1000,
     queryFn: () => {
       const pythFeedIds = [] as string[];
       activeFund?.treasury.tokenAccounts.forEach((ta: TokenAccount) => {
-        const hex = Buffer.from(
-          ASSETS_MAINNET.get(ta.mint)?.pricingAccount?.toBytes()!
-        ).toString("hex");
+        const hex = ASSETS_MAINNET.get(ta.mint)?.priceFeed;
 
         pythFeedIds.push(hex);
       });
@@ -242,7 +240,7 @@ export function GlamProvider({
       // Build a lookup table for price account -> mint account
       const priceToMint = new Map<string, string>([]);
       for (let [mint, asset] of ASSETS_MAINNET) {
-        priceToMint.set(asset.pricingAccount!.toBase58(), mint);
+        priceToMint.set(asset.priceFeed, mint);
       }
 
       if (process.env.NODE_ENV === "development") {
@@ -250,14 +248,12 @@ export function GlamProvider({
         console.log("Price account to mint account:", priceToMint);
       }
       const prices = pythData.parsed.map((p: any) => {
-        const priceAccount = base58.encode(Buffer.from(p.id, "hex")).toString();
-
         const price =
           Number.parseFloat(p.price.price) *
           10 ** Number.parseInt(p.price.expo);
 
         return {
-          mint: priceToMint.get(priceAccount),
+          mint: priceToMint.get(p.id),
           price,
         } as PythPrice;
       });
