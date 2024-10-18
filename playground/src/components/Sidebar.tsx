@@ -29,6 +29,7 @@ import {
 import AccountMenu from "./AccountMenu";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 
 type IconType =
   | typeof BoxModelIcon
@@ -70,7 +71,10 @@ function SidebarItem({ route, text, shortcut, Icon }: SidebarItemProps) {
         isActive ? "bg-muted/75" : ""
       }`}
     >
-      <Link href={route} className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0 p-2 flex grow items-center min-h-[40px]">
+      <Link
+        href={route}
+        className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0 p-2 flex grow items-center min-h-[40px]"
+      >
         <Icon className="ml-1 mr-3 h-4 w-4" />
         <span className="flex-grow">{text}</span>
         <span className="ml-auto text-xs tracking-widest text-muted-foreground">
@@ -170,7 +174,12 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="flex flex-col w-[244px] min-w-[244px] border-r min-h-screen overflow-hidden fixed select-none z-40">
+    <motion.div
+      className="flex flex-col w-[244px] min-w-[244px] border-r min-h-screen overflow-hidden fixed select-none z-40"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ ease: "easeInOut", duration: 0.42 }}
+    >
       <div className="flex p-[8px]">
         <AccountMenu />
       </div>
@@ -195,6 +204,6 @@ export default function Sidebar() {
       <div className="min-h-[56px] h-[56px] flex justify-start items-center font-extralight text-xl p-4 select-none border-b bg-zinc-100 dark:bg-zinc-900">
         GLAM *.+
       </div>
-    </div>
+    </motion.div>
   );
 }
