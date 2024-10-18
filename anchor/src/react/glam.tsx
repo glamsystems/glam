@@ -24,6 +24,7 @@ import { useAtomValue, useSetAtom } from "jotai/react";
 import { PublicKey } from "@solana/web3.js";
 import { ASSETS_MAINNET } from "../client/assets";
 import base58 from "bs58";
+import { WSOL } from "../constants";
 
 interface JupTokenListItem {
   address: string;
@@ -221,13 +222,17 @@ export function GlamProvider({
     enabled: !!activeFund?.treasury?.tokenAccounts,
     refetchInterval: 30 * 1000,
     queryFn: () => {
-      const pythFeedIds = [] as string[];
+      const pythFeedIds = new Set([] as string[]);
       activeFund?.treasury.tokenAccounts.forEach((ta: TokenAccount) => {
         const hex = ASSETS_MAINNET.get(ta.mint)?.priceFeed!;
-        pythFeedIds.push(hex);
+        pythFeedIds.add(hex);
       });
+      // Always add wSOL feed so that we can price SOL
+      pythFeedIds.add(ASSETS_MAINNET.get(WSOL.toBase58())?.priceFeed!);
 
-      const params = pythFeedIds.map((hex) => `ids[]=${hex}`).join("&");
+      const params = Array.from(pythFeedIds)
+        .map((hex) => `ids[]=${hex}`)
+        .join("&");
 
       return fetch(
         `https://hermes.pyth.network/v2/updates/price/latest?${params}`
