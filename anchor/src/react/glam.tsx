@@ -223,8 +223,7 @@ export function GlamProvider({
     queryFn: () => {
       const pythFeedIds = [] as string[];
       activeFund?.treasury.tokenAccounts.forEach((ta: TokenAccount) => {
-        const hex = ASSETS_MAINNET.get(ta.mint)?.priceFeed;
-
+        const hex = ASSETS_MAINNET.get(ta.mint)?.priceFeed!;
         pythFeedIds.push(hex);
       });
 
@@ -240,7 +239,7 @@ export function GlamProvider({
       // Build a lookup table for price account -> mint account
       const priceToMint = new Map<string, string>([]);
       for (let [mint, asset] of ASSETS_MAINNET) {
-        priceToMint.set(asset.priceFeed, mint);
+        priceToMint.set(asset.priceFeed!, mint);
       }
 
       if (process.env.NODE_ENV === "development") {
