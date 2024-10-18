@@ -24,6 +24,7 @@ import { useAtomValue, useSetAtom } from "jotai/react";
 import { PublicKey } from "@solana/web3.js";
 import { ASSETS_MAINNET } from "../client/assets";
 import base58 from "bs58";
+import { WSOL } from "../constants";
 
 interface JupTokenListItem {
   address: string;
@@ -217,20 +218,21 @@ export function GlamProvider({
   //
 
   const { data: pythData } = useQuery({
-    queryKey: ["/prices1"],
+    queryKey: ["/prices"],
     enabled: !!activeFund?.treasury?.tokenAccounts,
     refetchInterval: 30 * 1000,
     queryFn: () => {
-      const pythFeedIds = [] as string[];
+      const pythFeedIds = new Set([] as string[]);
       activeFund?.treasury.tokenAccounts.forEach((ta: TokenAccount) => {
-        const hex = Buffer.from(
-          ASSETS_MAINNET.get(ta.mint)?.pricingAccount?.toBytes()!
-        ).toString("hex");
-
-        pythFeedIds.push(hex);
+        const hex = ASSETS_MAINNET.get(ta.mint)?.priceFeed!;
+        pythFeedIds.add(hex);
       });
+      // Always add wSOL feed so that we can price SOL
+      pythFeedIds.add(ASSETS_MAINNET.get(WSOL.toBase58())?.priceFeed!);
 
-      const params = pythFeedIds.map((hex) => `ids[]=${hex}`).join("&");
+      const params = Array.from(pythFeedIds)
+        .map((hex) => `ids[]=${hex}`)
+        .join("&");
 
       return fetch(
         `https://hermes.pyth.network/v2/updates/price/latest?${params}`
@@ -242,7 +244,7 @@ export function GlamProvider({
       // Build a lookup table for price account -> mint account
       const priceToMint = new Map<string, string>([]);
       for (let [mint, asset] of ASSETS_MAINNET) {
-        priceToMint.set(asset.pricingAccount!.toBase58(), mint);
+        priceToMint.set(asset.priceFeed!, mint);
       }
 
       if (process.env.NODE_ENV === "development") {
@@ -250,14 +252,12 @@ export function GlamProvider({
         console.log("Price account to mint account:", priceToMint);
       }
       const prices = pythData.parsed.map((p: any) => {
-        const priceAccount = base58.encode(Buffer.from(p.id, "hex")).toString();
-
         const price =
           Number.parseFloat(p.price.price) *
           10 ** Number.parseInt(p.price.expo);
 
         return {
-          mint: priceToMint.get(priceAccount),
+          mint: priceToMint.get(p.id),
           price,
         } as PythPrice;
       });
