@@ -9,7 +9,6 @@ use pyth_solana_receiver_sdk::price_update::{Price, PriceUpdateV2};
 use spl_stake_pool::state::StakePool;
 
 pub const MAXIMUM_AGE: u64 = 60; // One minute
-pub const FEED_ID: &str = "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d"; // SOL/USD price feed id from https://pyth.network/developers/price-feed-ids
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum Action {
@@ -156,16 +155,6 @@ static ASSETS_TESTS: phf::Map<&'static str, AssetMeta> = phf_map! {
     // FOR TESTS
     //
 
-    // BTC (Drift)
-    // "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv" =>
-    // AssetMeta {
-    //     decimals: 8,
-    //     is_stable_coin: false,
-    //     is_token_2022: false,
-    //     pyth_account: "Eavb8FKNoYPbHnSS8kMi4tnUh8qK8bqxTjCojer4pZrr",
-    //     staking_state: "",
-    // },
-
     // BTC (custom)
     "7Pz5yQdyQm64WtzxvpQZi3nD1q5mbxj4Hhcjy2kmZ7Zd" =>
     AssetMeta {
@@ -247,15 +236,6 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
         pyth_account: "9gNX5vguzarZZPjTnE1hWze3s6UsZ7dsU3UnAmKPnMHG",
         staking_state: "",
     },
-    // tBTC
-    // "6DNSN2BJsaPFdFFc1zP37kkeNe4Usc1Sqkzr9C9vPWcU" =>
-    // AssetMeta {
-    //     decimals: 8,
-    //     is_stable_coin: false,
-    //     is_token_2022: false,
-    //     pyth_account: "6qCHPXxQiCiM3dEE4W6fpZk17uSZW9WBpD7cyN8Tg2Ac",
-    //     staking_state: "",
-    // },
     // wETH (Wormhole)
     "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs" =>
     AssetMeta {

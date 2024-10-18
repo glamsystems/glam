@@ -51,15 +51,6 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
       ),
     },
   ],
-  // [
-  //   // tBTC
-  //   "6DNSN2BJsaPFdFFc1zP37kkeNe4Usc1Sqkzr9C9vPWcU",
-  //   {
-  //     pricingAccount: new PublicKey(
-  //       "6qCHPXxQiCiM3dEE4W6fpZk17uSZW9WBpD7cyN8Tg2Ac" // pyth
-  //     ),
-  //   },
-  // ],
   [
     // ETH
     "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs",
@@ -628,25 +619,6 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
 ]);
 
 export const ASSETS_TESTS: Map<string, AssetMeta> = new Map([
-  [
-    // USDC (Drift)
-    "8zGuJQqwhZafTah7Uc7Z4tXRnguqkn5KLFAP8oV6PHe2",
-    {
-      pricingAccount: new PublicKey(
-        "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD" // pyth
-      ),
-    },
-  ],
-  [
-    // BTC (Drift)
-    "3BZPwbcqB5kKScF3TEXxwNfx5ipV13kbRVDvfVp5c6fv",
-    {
-      pricingAccount: new PublicKey(
-        "Eavb8FKNoYPbHnSS8kMi4tnUh8qK8bqxTjCojer4pZrr" // pyth
-      ),
-    },
-  ],
-
   //
   // LOCALNET
   //

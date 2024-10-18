@@ -33,7 +33,6 @@ test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --test
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_openfunds"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_wsol"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_api_tx"
-#test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern devnet"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_sol_msol"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_policy_hook"
 
@@ -291,11 +290,3 @@ filename = "./fixtures/accounts/phaseeExd43yGjjad2FZSigdG9UTRpMdxS4aMerx821.json
 [[test.validator.account]] # validator stake account
 address = "Enh5W2UMiUc8ANgjwQMuKXNQLnAEddwjBsSPibddtN7R"
 filename = "./fixtures/accounts/Enh5W2UMiUc8ANgjwQMuKXNQLnAEddwjBsSPibddtN7R.json"
-
-#
-# Others
-#
-
-# [[test.validator.account]] # USDC mainnet
-# address = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
-# filename = "./fixtures/accounts/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v.json"
