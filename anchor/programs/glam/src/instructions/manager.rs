@@ -77,18 +77,10 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     //
     // Set engine params
     //
-    fund.params = vec![vec![
-        EngineField {
-            name: EngineFieldName::Assets,
-            value: EngineFieldValue::VecPubkey { val: model.assets },
-        },
-        EngineField {
-            name: EngineFieldName::AssetsWeights,
-            value: EngineFieldValue::VecU32 {
-                val: model.assets_weights,
-            },
-        },
-    ]];
+    fund.params = vec![vec![EngineField {
+        name: EngineFieldName::Assets,
+        value: EngineFieldValue::VecPubkey { val: model.assets },
+    }]];
 
     //
     // Initialize openfunds
@@ -443,6 +435,12 @@ pub fn update_fund_handler<'c: 'info, 'info>(
         if let Some(manager) = manager_model.pubkey {
             fund.manager = manager
         }
+    }
+
+    if !fund_model.assets.is_empty() {
+        let assets = fund.assets_mut().unwrap();
+        assets.clear();
+        assets.extend(fund_model.assets.clone());
     }
 
     // One of the engine field in `fund.params[0]` stores the existing acls of the fund,
