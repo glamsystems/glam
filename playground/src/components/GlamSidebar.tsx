@@ -44,6 +44,7 @@ import {
   TokensIcon,
   TransformIcon,
 } from "@radix-ui/react-icons";
+import { useGlam } from "@glam/anchor/react";
 
 type IconType =
   | typeof BoxModelIcon
@@ -194,6 +195,27 @@ export default function RefactoredSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isHovered, setIsHovered] = useState(false);
+  const { wallet, activeFund } = useGlam();
+
+  const getVisibleItems = (items: NavItem[]) => {
+    if (!wallet) {
+      return items.filter((item) => item.route === "/");
+    }
+
+    console.log("activeFund:", activeFund); // Debug log
+
+    // Check if activeFund is null, undefined, or an empty object
+    if (
+      !activeFund ||
+      (typeof activeFund === "object" && Object.keys(activeFund).length === 0)
+    ) {
+      return items.filter((item) =>
+        ["/", "/flows", "/create"].includes(item.route)
+      );
+    }
+
+    return items;
+  };
 
   return (
     <motion.div
@@ -210,7 +232,7 @@ export default function RefactoredSidebar() {
         </SidebarHeader>
         <SidebarContent className="grow pt-2">
           {navList.map((nav, index) => {
-            const visibleItems = nav.items.filter(
+            const visibleItems = getVisibleItems(nav.items).filter(
               (item) => !disabledRoutes.includes(item.route)
             );
             if (visibleItems.length === 0) return null;
