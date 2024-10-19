@@ -50,7 +50,7 @@ export default function RootLayout({
                     <BetaWarning />
                     <div className="relative">
                       <GlamSidebar />
-                      <SidebarTrigger />
+                      <SidebarTrigger className="z-40" />
                     </div>
                     <main className="flex justify-center items-center h-fit w-full">
                       {children}
