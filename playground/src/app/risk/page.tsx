@@ -19,7 +19,7 @@ export default function Risk() {
   // @ts-ignore
   const { allFunds, activeFund, glamClient } = useGlam();
 
-  const fundId = activeFund?.addressStr;
+  const fundId = activeFund?.address;
   const fund: any = fundId
     ? (allFunds || []).find((f: any) => f.idStr === fundId)
     : undefined;

@@ -315,7 +315,7 @@ export default function Integrations() {
   const [treeData, setTreeData] = useState<TreeNodeData>(treeDataStake);
   const [fundConfig, setFundConfig] = useState<string[][]>([]);
 
-  const fundId = activeFund?.addressStr;
+  const fundId = activeFund?.address;
   const fund: any = fundId
     ? (allFunds || []).find((f: any) => f.idStr === fundId)
     : undefined;

@@ -11,9 +11,7 @@ import { Holding } from "./data/holdingSchema";
 const SKELETON_ROW_COUNT = 5;
 
 export default function Holdings() {
-  const { activeFund, jupTokenList, prices } = useGlam();
-
-  const { treasury } = activeFund || {};
+  const { activeFund, treasury, jupTokenList, prices } = useGlam();
 
   const [isLoading, setIsLoading] = useState(false);
 

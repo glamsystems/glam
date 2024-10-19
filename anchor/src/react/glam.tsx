@@ -23,7 +23,6 @@ import { GlamClient } from "../client";
 import { useAtomValue, useSetAtom } from "jotai/react";
 import { PublicKey } from "@solana/web3.js";
 import { ASSETS_MAINNET } from "../client/assets";
-import base58 from "bs58";
 import { WSOL } from "../constants";
 
 interface JupTokenListItem {
@@ -44,7 +43,7 @@ interface GlamProviderContext {
   wallet?: PublicKey;
   activeFund?: FundCache;
   fund?: PublicKey;
-  treasury?: FundCacheTreasury;
+  treasury?: TreasuryCache;
   fundsList: FundCache[];
   //@ts-ignore
   allFunds: FundModel[];
@@ -64,18 +63,17 @@ interface TokenAccount {
   uiAmount: string;
 }
 
-interface FundCacheTreasury {
-  address: PublicKey;
+interface TreasuryCache {
+  pubkey: PublicKey;
   balanceLamports: number;
   tokenAccounts: TokenAccount[];
 }
 
 interface FundCache {
-  fund: PublicKey;
+  address: string;
+  pubkey: PublicKey;
   imageKey: string;
-  addressStr: string;
   name: string;
-  treasury: FundCacheTreasury;
 }
 
 const GlamContext = createContext<GlamProviderContext>(
@@ -94,20 +92,19 @@ const deserializeFundCache = (f: any) => {
   if (!f) {
     return undefined;
   }
-  if (typeof f.fund === "string") {
-    f.addressStr = f.fund;
-    f.fund = new PublicKey(f.fund);
+  if (typeof f.pubkey === "string") {
+    f.address = f.pubkey;
+    f.pubkey = new PublicKey(f.pubkey);
   }
   return f as FundCache;
 };
 
 const toFundCache = (f: FundModel) => {
   return {
-    fund: f.id,
+    pubkey: f.id,
     imageKey: f.imageKey,
-    addressStr: f.id.toBase58(),
+    address: f.id.toBase58(),
     name: f.name,
-    treasury: {},
   } as FundCache;
 };
 
@@ -133,8 +130,11 @@ export function GlamProvider({
 }>) {
   const setActiveFund = useSetAtom(fundAtom);
   const setFundsList = useSetAtom(fundsListAtom);
+
+  const [treasury, setTreasury] = useState({} as TreasuryCache);
   const wallet = useWallet();
   const { connection } = useConnection();
+
   const glamClient = useMemo(
     () =>
       new GlamClient({
@@ -199,14 +199,17 @@ export function GlamProvider({
     }
 
     const fetchData = async () => {
-      if (activeFund && activeFund.fund) {
-        const treasury = glamClient.getTreasuryPDA(activeFund.fund);
+      if (activeFund && activeFund.pubkey) {
+        console.log(
+          "Fetching treasury for fund:",
+          activeFund.pubkey.toBase58()
+        );
+        const treasury = glamClient.getTreasuryPDA(activeFund.pubkey);
         const balances = await fetchBalances(glamClient, treasury);
-        activeFund.treasury = {
+        setTreasury({
           ...balances,
-          address: treasury,
-        };
-        setActiveFund(activeFund);
+          pubkey: treasury,
+        } as TreasuryCache);
       }
     };
 
@@ -219,11 +222,11 @@ export function GlamProvider({
 
   const { data: pythData } = useQuery({
     queryKey: ["/prices"],
-    enabled: !!activeFund?.treasury?.tokenAccounts,
+    enabled: !!treasury?.tokenAccounts,
     refetchInterval: 30 * 1000,
     queryFn: () => {
       const pythFeedIds = new Set([] as string[]);
-      activeFund?.treasury.tokenAccounts.forEach((ta: TokenAccount) => {
+      treasury.tokenAccounts.forEach((ta: TokenAccount) => {
         const hex = ASSETS_MAINNET.get(ta.mint)?.priceFeed!;
         pythFeedIds.add(hex);
       });
@@ -305,8 +308,8 @@ export function GlamProvider({
     glamClient,
     wallet: (wallet && wallet.publicKey) || undefined,
     activeFund,
-    fund: activeFund?.fund,
-    treasury: (useAtomValue(fundAtom) as FundCache)?.treasury,
+    fund: activeFund?.pubkey,
+    treasury,
     fundsList: useAtomValue(fundsListAtom),
     allFunds,
     walletBalances,

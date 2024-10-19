@@ -107,7 +107,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
           )}
         >
           <span className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10">
-            {activeFund?.fund ? (
+            {activeFund?.pubkey ? (
               <Sparkle address={activeFund?.imageKey} size={30} />
             ) : (
               <Image
@@ -128,7 +128,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
               {activeFund.name ? (
                 <span>{activeFund.name}</span>
               ) : (
-                <TruncateAddress address={activeFund?.addressStr || "Select"} />
+                <TruncateAddress address={activeFund?.address || "Select"} />
               )}
             </span>
             <ChevronDownIcon className="ml-auto h-4 w-4 shrink-0 opacity-50" />
@@ -165,7 +165,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
                       <CheckIcon
                         className={cn(
                           "ml-auto h-4 w-4",
-                          activeFund?.addressStr === product.addressStr
+                          activeFund?.address === product.address
                             ? "opacity-100"
                             : "opacity-0"
                         )}
