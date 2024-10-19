@@ -33,7 +33,7 @@ const BetaWarning = () => {
         <p className="leading-5 text-center text-muted-foreground text-nowrap">
           <Link
             href="/disclaimer"
-            className="underline hover:text-destructive transition-colors"
+            className="underline hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0"
           >
             See full disclaimer
           </Link>

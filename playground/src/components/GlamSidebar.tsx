@@ -163,12 +163,10 @@ function SidebarNavItem({ route, text, shortcut, Icon }: NavItem) {
       <SidebarMenuButton
         asChild
         isActive={isActive}
-        className={`
-          items-center text-sm outline-none transition-all
-          hover:bg-muted opacity-50 hover:opacity-100 cursor-pointer
-          data-[active=true]:bg-muted/75 data-[active=true]:opacity-100
-          focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0
-        `}
+        className={cn(
+          "items-center text-sm outline-none opacity-50 hover:opacity-100 transition-all focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0",
+          isActive && "opacity-100"
+        )}
       >
         <Link
           href={route}
