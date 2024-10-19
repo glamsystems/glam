@@ -198,8 +198,7 @@ function SidebarNavItem({ route, text, shortcut, Icon }: NavItem) {
 }
 
 export default function RefactoredSidebar() {
-  const disabledRoutes =
-    process.env.NEXT_PUBLIC_DISABLED_ROUTES?.split(",") || [];
+  const prodEnabledRoutes = process.env.NEXT_PUBLIC_ENABLED_ROUTES?.split(",");
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isHovered, setIsHovered] = useState(false);
@@ -240,8 +239,8 @@ export default function RefactoredSidebar() {
         </SidebarHeader>
         <SidebarContent className="grow pt-2">
           {navList.map((nav, index) => {
-            const visibleItems = getVisibleItems(nav.items).filter(
-              (item) => !disabledRoutes.includes(item.route)
+            const visibleItems = getVisibleItems(nav.items).filter((item) =>
+              prodEnabledRoutes?.includes(item.route)
             );
             if (visibleItems.length === 0) return null;
             return (
