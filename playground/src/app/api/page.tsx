@@ -26,9 +26,11 @@ export default function ApiPage() {
   const [apiUrl, setApiUrl] = useState(
     "https://rest.glam.systems/v0/drift/market_configs"
   );
-  const [customHeaders, setCustomHeaders] = useState(
-    '{\n  "Accept": "application/json",\n  "Content-Type": "application/json"\n}'
-  );
+  const [customHeaders, setCustomHeaders] = useState(`
+{
+  "Accept": "*/*"
+}
+`);
   const [requestMetadata, setRequestMetadata] =
     useState<RequestMetadata | null>(null);
   const [responseMetadata, setResponseMetadata] =
@@ -44,13 +46,7 @@ export default function ApiPage() {
     const startTime = Date.now();
 
     try {
-      let headers: Record<string, string> = {};
-      try {
-        headers = JSON.parse(customHeaders);
-      } catch (e) {
-        console.error("Invalid JSON in custom headers:", e);
-        throw new Error("Invalid JSON in custom headers");
-      }
+      let headers: Record<string, string> = JSON.parse(customHeaders);
 
       setRequestMetadata({
         url: apiUrl,
