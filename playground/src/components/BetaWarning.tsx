@@ -4,11 +4,20 @@ import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useSidebar } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 
 const BetaWarning = () => {
+  const { state } = useSidebar();
+  const isCollapsed = state === "collapsed";
+
   return (
     <motion.div
-      className="fixed w-full pl-[260px] bottom-0 h-[56px] z-30 flex flex-row items-center justify-center bg-zinc-100 dark:bg-zinc-900 select-none sm:opacity-0 lg:opacity-100 pr-4"
+      className={cn(
+        "border-t fixed w-full bottom-0 h-[48px] z-0 flex flex-row items-center justify-center bg-zinc-100 dark:bg-zinc-900 select-none sm:opacity-0 lg:opacity-100 pr-4",
+        isCollapsed ? "pl-12" : "pl-[244px]",
+        "transition-all duration-200 ease-linear" // Add smooth transition
+      )}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ ease: "easeInOut", duration: 0.42 }}
