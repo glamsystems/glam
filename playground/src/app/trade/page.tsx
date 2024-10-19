@@ -224,6 +224,7 @@ export default function Trade() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("swap");
 
+  // TODO: Need to cach this API call for better perf with useQuery
   useEffect(() => {
     const fetchItems = async () => {
       setIsLoading(true);
@@ -261,7 +262,7 @@ export default function Trade() {
 
   const fromAssetList = useMemo(() => {
     const assets =
-      treasury?.tokenAccounts.map((ta) => {
+      (treasury?.tokenAccounts || []).map((ta) => {
         const name =
           tokenList?.find((t: any) => t.address === ta.mint)?.name || "Unknown";
         const symbol =
