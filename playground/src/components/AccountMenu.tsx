@@ -101,7 +101,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
           aria-expanded={open}
           aria-label="Select an account"
           className={cn(
-            "w-full focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0 relative overflow-hidden",
+            "w-full focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0 relative overflow-hidden font-normal",
             isCollapsed ? "h-8 p-0" : "h-8 pl-0 pr-2",
             className
           )}
@@ -157,7 +157,9 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
                       </span>
                       {product ? (
                         product.name ? (
-                          <p className="text-ellipsis mr-4">{product.name}</p>
+                          <p className="text-ellipsis mr-4 text-sidebar-foreground">
+                            {product.name}
+                          </p>
                         ) : (
                           <TruncateAddress address={product.name} />
                         )
@@ -184,20 +186,23 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
                   setOpen(false);
                 }}
               >
-                <Link href="/settings" className="flex items-center w-full">
+                <Link
+                  href="/settings"
+                  className="flex items-center w-full text-sidebar-foreground"
+                >
                   <GearIcon className="mr-3 ml-1 w-4 h-4" />
                   <p className="text-ellipsis mr-4">Settings</p>
                 </Link>
               </CommandItem>
               <CommandItem
-                className="text-sm cursor-pointer data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
+                className="text-sm cursor-pointer data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground text-sidebar-foreground"
                 onSelect={() => {
                   setOpen(false);
                 }}
               >
                 <Link
                   href="mailto:hello@glam.systems?subject=GLAM GUI Feedback"
-                  className="flex items-center w-full"
+                  className="flex items-center w-ful text-sidebar-foregroundl"
                 >
                   <EnvelopeClosedIcon className="mr-3 ml-1 w-4 h-4" />
                   <p className="text-ellipsis mr-4">Feedback</p>
@@ -208,7 +213,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
             <CommandSeparator />
 
             <CommandGroup
-              className="overflow-visible"
+              className="overflow-visible text-sidebar-foreground"
               key="Connected Account"
               heading="Connected Account"
             >

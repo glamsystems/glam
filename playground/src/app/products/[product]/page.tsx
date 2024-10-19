@@ -25,17 +25,13 @@ import SparkleColorMatcher, {
 } from "@/utils/SparkleColorMatcher";
 import TruncateAddress from "@/utils/TruncateAddress";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator"; // Adjust the import based on your setup
 import NumberFormatter from "@/utils/NumberFormatter";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { Skeleton } from "@/components/ui/skeleton";
 import SparkleBackground from "@/components/SparkleBackground";
+import { motion } from "framer-motion";
 
 interface ShareClass {
   shareClassId: string;
@@ -116,9 +112,7 @@ function processHolderData(
     const address = account.owner;
     if (amount > 0 && address) {
       acc.push({
-        holder: (
-          <TruncateAddress address={address} start={2} end={2} />
-        ),
+        holder: <TruncateAddress address={address} start={2} end={2} />,
         shares: amount,
         fill: `var(--color-hld${acc.length % 5})`, // Dynamically assign colors
       });
@@ -205,112 +199,112 @@ async function updateHoldersData(fund: Fund): Promise<HolderData[]> {
 
 const ChartComponent: React.FC<{ fund: Fund; holdersConfig: any }> = React.memo(
   ({ fund, holdersConfig }) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [showSkeleton, setShowSkeleton] = useState(true); // **New State**
-  const [localHoldersData, setLocalHoldersData] = useState<
-    HolderData[] | null
-  >(null);
-  const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [showSkeleton, setShowSkeleton] = useState(true); // **New State**
+    const [localHoldersData, setLocalHoldersData] = useState<
+      HolderData[] | null
+    >(null);
+    const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const updatedHoldersData = await updateHoldersData(fund);
-        setLocalHoldersData(updatedHoldersData);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          setIsLoading(true);
+          setError(null);
+          const updatedHoldersData = await updateHoldersData(fund);
+          setLocalHoldersData(updatedHoldersData);
+        } catch (err: any) {
+          setError(err.message);
+        } finally {
+          setIsLoading(false);
+        }
+      };
 
-    fetchData();
-  }, [fund]);
+      fetchData();
+    }, [fund]);
 
-  if (isLoading) {
-    return <SkeletonChart />;
-  }
+    if (isLoading) {
+      return <SkeletonChart />;
+    }
 
-  if (error) {
-    return <div className="text-red-500">Error: {error}</div>;
-  }
+    if (error) {
+      return <div className="text-red-500">Error: {error}</div>;
+    }
 
-  // Ensure we have data before rendering the chart
-  if (
-    !localHoldersData ||
-    localHoldersData.length === 0 ||
-    !localHoldersData[0]
-  ) {
+    // Ensure we have data before rendering the chart
+    if (
+      !localHoldersData ||
+      localHoldersData.length === 0 ||
+      !localHoldersData[0]
+    ) {
+      return (
+        <div className="text-sm text-center text-muted-foreground mt-28">
+          No holder data available
+        </div>
+      );
+    }
+
+    const totalHolders = localHoldersData[0]?.totalHolders || 0;
+
+    // Determine what to display
+    const displayTotalHolders = totalHolders > 0 ? totalHolders : 0;
+
     return (
-      <div className="text-sm text-center text-muted-foreground mt-28">
-        No holder data available
-      </div>
-    );
-  }
-
-  const totalHolders = localHoldersData[0]?.totalHolders || 0;
-
-  // Determine what to display
-  const displayTotalHolders = totalHolders > 0 ? totalHolders : 0;
-
-  return (
-    <ChartContainer
-      config={holdersConfig}
-      className="flex-1 mx-auto aspect-square max-h-[256px] self-center"
-    >
-      <PieChart>
-        {totalHolders !== 0 && (
-          <ChartTooltip
-            cursor={false}
-            content={<ChartTooltipContent hideLabel />}
-          />
-        )}
-        <Pie
-          data={localHoldersData[0]?.holders || []}
-          isAnimationActive={false}
-          dataKey="shares"
-          nameKey="holder"
-          innerRadius={90}
-          strokeWidth={5}
-          paddingAngle={2}
-        >
-          <Label
-            content={({ viewBox }) => {
-              if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                return (
-                  <text
-                    x={viewBox.cx}
-                    y={viewBox.cy}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                  >
-                    <tspan
+      <ChartContainer
+        config={holdersConfig}
+        className="flex-1 mx-auto aspect-square max-h-[256px] self-center"
+      >
+        <PieChart>
+          {totalHolders !== 0 && (
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent hideLabel />}
+            />
+          )}
+          <Pie
+            data={localHoldersData[0]?.holders || []}
+            isAnimationActive={false}
+            dataKey="shares"
+            nameKey="holder"
+            innerRadius={90}
+            strokeWidth={5}
+            paddingAngle={2}
+          >
+            <Label
+              content={({ viewBox }) => {
+                if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                  return (
+                    <text
                       x={viewBox.cx}
                       y={viewBox.cy}
-                      className="fill-foreground text-3xl font-medium"
+                      textAnchor="middle"
+                      dominantBaseline="middle"
                     >
-                      {displayTotalHolders.toLocaleString()}
-                    </tspan>
-                    <tspan
-                      x={viewBox.cx}
-                      y={(viewBox.cy || 0) + 24}
-                      className="fill-muted-foreground"
-                    >
-                      Holders
-                    </tspan>
-                  </text>
-                );
-              }
-              return null;
-            }}
-          />
-        </Pie>
-      </PieChart>
-    </ChartContainer>
-  );
-}
+                      <tspan
+                        x={viewBox.cx}
+                        y={viewBox.cy}
+                        className="fill-foreground text-3xl font-medium"
+                      >
+                        {displayTotalHolders.toLocaleString()}
+                      </tspan>
+                      <tspan
+                        x={viewBox.cx}
+                        y={(viewBox.cy || 0) + 24}
+                        className="fill-muted-foreground"
+                      >
+                        Holders
+                      </tspan>
+                    </text>
+                  );
+                }
+                return null;
+              }}
+            />
+          </Pie>
+        </PieChart>
+      </ChartContainer>
+    );
+  }
 );
 
 export default function ProductPage() {
@@ -437,11 +431,27 @@ export default function ProductPage() {
 
   if (!clientReady || isAllFundsLoading || !fund) {
     return (
-      <div className="flex mt-[30vh] justify-center items-end">
+      <motion.div
+        className="flex mt-[30vh] justify-center items-end"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ ease: "easeInOut", duration: 0 }}
+      >
         {/*<SparkleBackground rows={6} cols={6} size={24} gap={5} static={false} visibleCount={252}  fadeInSpeed={1}/>*/}
-        <SparkleBackground fadeOut={true} rows={6} cols={6}  size={24} gap={5} fadeInSpeed={0.5} fadeOutSpeed={0.5} interval={200} randomness={0} visibleCount={12} />
-      </div>
-    )
+        <SparkleBackground
+          fadeOut={true}
+          rows={6}
+          cols={6}
+          size={24}
+          gap={5}
+          fadeInSpeed={0.5}
+          fadeOutSpeed={0.5}
+          interval={200}
+          randomness={0}
+          visibleCount={12}
+        />
+      </motion.div>
+    );
   }
 
   if (!publicKey || (allFunds && allFunds.length > 0 && !fund)) {
@@ -458,7 +468,7 @@ export default function ProductPage() {
       mint: shareClass?.shareClassSymbol,
       shares:
         Number(shareClass?.shareClassSupply) /
-        10 ** (shareClass?.shareClassDecimals || 0) || 0,
+          10 ** (shareClass?.shareClassDecimals || 0) || 0,
       fill: `var(--color-sc${j})`,
     })
   );
@@ -517,7 +527,10 @@ export default function ProductPage() {
         <div className="grid grid-cols-9 grid-rows-[auto_1fr] gap-4">
           {/* Top row */}
           <Card className="col-span-1 row-span-1 flex flex-col items-start p-0 border-0 shadow-none overflow-hidden aspect-square">
-            <CardContent className="p-0 h-full flex items-center self-center" ref={sparkleContainerRef}>
+            <CardContent
+              className="p-0 h-full flex items-center self-center"
+              ref={sparkleContainerRef}
+            >
               <Sparkle
                 address={fund?.shareClasses[0]?.shareClassId}
                 size={105}
@@ -722,7 +735,11 @@ export default function ProductPage() {
                           >
                             <Label
                               content={({ viewBox }) => {
-                                if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                                if (
+                                  viewBox &&
+                                  "cx" in viewBox &&
+                                  "cy" in viewBox
+                                ) {
                                   return (
                                     <text
                                       x={viewBox.cx}
@@ -757,7 +774,10 @@ export default function ProductPage() {
                         config={holdersConfig}
                         className="flex-1 mx-auto aspect-square max-h-[256px] self-center"
                       >
-                        <ChartComponent fund={fund} holdersConfig={holdersConfig} />
+                        <ChartComponent
+                          fund={fund}
+                          holdersConfig={holdersConfig}
+                        />
                       </ChartContainer>
                     </TabsContent>
                   </Tabs>
@@ -806,9 +826,7 @@ export default function ProductPage() {
                             <dt className="text-muted-foreground">
                               Share Class Asset
                             </dt>
-                            <dd>
-                              {fund.shareClasses[0]?.shareClassCurrency}
-                            </dd>
+                            <dd>{fund.shareClasses[0]?.shareClassCurrency}</dd>
                           </div>
                           <div className="flex items-center justify-between">
                             <dt className="text-muted-foreground">
@@ -822,13 +840,27 @@ export default function ProductPage() {
                             <dt className="text-muted-foreground">
                               Lifecycle Stage
                             </dt>
-                            <dd>{fund.shareClasses[0]?.shareClassLifecycle?.charAt(0).toUpperCase() + fund.shareClasses[0]?.shareClassLifecycle?.slice(1)}</dd>
+                            <dd>
+                              {fund.shareClasses[0]?.shareClassLifecycle
+                                ?.charAt(0)
+                                .toUpperCase() +
+                                fund.shareClasses[0]?.shareClassLifecycle?.slice(
+                                  1
+                                )}
+                            </dd>
                           </div>
                           <div className="flex items-center justify-between">
                             <dt className="text-muted-foreground">
                               Investment Status
                             </dt>
-                            <dd>{fund.shareClasses[0]?.investmentStatus?.charAt(0).toUpperCase() + fund.shareClasses[0]?.investmentStatus?.slice(1)}</dd>
+                            <dd>
+                              {fund.shareClasses[0]?.investmentStatus
+                                ?.charAt(0)
+                                .toUpperCase() +
+                                fund.shareClasses[0]?.investmentStatus?.slice(
+                                  1
+                                )}
+                            </dd>
                           </div>
                           <div className="flex items-center justify-between">
                             <dt className="text-muted-foreground">
@@ -838,23 +870,30 @@ export default function ProductPage() {
                               {fund.shareClasses[0]
                                 ?.minimalInitialSubscriptionInShares > 0
                                 ? fund.shareClasses[0]
-                                  ?.minimalInitialSubscriptionInShares +
-                                " shares"
+                                    ?.minimalInitialSubscriptionInShares +
+                                  " shares"
                                 : fund.shareClasses[0]
-                                  ?.minimalInitialSubscriptionInAmount > 0
-                                  ? fund.shareClasses[0]
+                                    ?.minimalInitialSubscriptionInAmount > 0
+                                ? fund.shareClasses[0]
                                     ?.minimalInitialSubscriptionInAmount +
                                   " " +
                                   fund.shareClasses[0]
                                     ?.currencyOfMinimalSubscription
-                                  : "-"}
+                                : "-"}
                             </dd>
                           </div>
                           <div className="flex items-center justify-between">
                             <dt className="text-muted-foreground">
                               Distribution Policy
                             </dt>
-                            <dd>{fund.shareClasses[0]?.shareClassDistributionPolicy?.charAt(0).toUpperCase() + fund.shareClasses[0]?.shareClassDistributionPolicy?.slice(1)}</dd>
+                            <dd>
+                              {fund.shareClasses[0]?.shareClassDistributionPolicy
+                                ?.charAt(0)
+                                .toUpperCase() +
+                                fund.shareClasses[0]?.shareClassDistributionPolicy?.slice(
+                                  1
+                                )}
+                            </dd>
                           </div>
                         </dl>
                       </div>
@@ -902,28 +941,28 @@ export default function ProductPage() {
                               Openfunds
                             </span>
                             <span className="flex gap-2">
-                            <a
-                              href={fund?.openfundsUri}
-                              rel="noopener noreferrer"
-                              className="link"
-                            >
-                              XLSX
-                            </a>
-                            <a
-                              href=""
-                              rel="noopener noreferrer"
-                              className="link pointer-events-none text-muted-foreground"
-                            >
-                              CSV
-                            </a>
-                            <a
-                              href=""
-                              rel="noopener noreferrer"
-                              className="link pointer-events-none text-muted-foreground"
-                            >
-                              JSON
-                            </a>
-                              </span>
+                              <a
+                                href={fund?.openfundsUri}
+                                rel="noopener noreferrer"
+                                className="link"
+                              >
+                                XLSX
+                              </a>
+                              <a
+                                href=""
+                                rel="noopener noreferrer"
+                                className="link pointer-events-none text-muted-foreground"
+                              >
+                                CSV
+                              </a>
+                              <a
+                                href=""
+                                rel="noopener noreferrer"
+                                className="link pointer-events-none text-muted-foreground"
+                              >
+                                JSON
+                              </a>
+                            </span>
                           </li>
                         </ul>
                       </div>
