@@ -22,6 +22,7 @@ import {
 import {
   BoxModelIcon,
   Component1Icon,
+  CodeIcon,
   DashboardIcon,
   DiscIcon,
   DownloadIcon,
@@ -48,6 +49,7 @@ import { useGlam } from "@glam/anchor/react";
 
 type IconType =
   | typeof BoxModelIcon
+  | typeof CodeIcon
   | typeof Component1Icon
   | typeof DashboardIcon
   | typeof DiscIcon
@@ -139,6 +141,12 @@ const navList: NavGroup[] = [
   {
     group: "Utilities",
     items: [
+      {
+        route: "/api",
+        text: "GLAM API",
+        shortcut: "",
+        Icon: CodeIcon,
+      },
       {
         route: "/jupiter",
         text: "Jupiter Token List",
