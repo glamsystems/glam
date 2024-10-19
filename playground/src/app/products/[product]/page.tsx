@@ -54,7 +54,8 @@ async function fetchHolderData(mint: string): Promise<any> {
   try {
     console.log(`Fetching holder data for mint: ${mint}`);
     const response = await fetch(
-      `https://rpc.helius.xyz/?api-key=${process.env.NEXT_PUBLIC_HELIUS_API_KEY}`,
+      process.env.NEXT_PUBLIC_SOLANA_RPC ||
+        "https://api.mainnet-beta.solana.com",
       {
         method: "POST",
         headers: {
@@ -317,6 +318,7 @@ export default function ProductPage() {
   const params = useParams();
   const router = useRouter();
   const { product } = params;
+  // @ts-ignore
   const { allFunds } = useGlam();
 
   const isAllFundsLoading = !allFunds;
