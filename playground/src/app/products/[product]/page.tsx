@@ -53,8 +53,11 @@ interface HolderData {
 async function fetchHolderData(mint: string): Promise<any> {
   try {
     console.log(`Fetching holder data for mint: ${mint}`);
+
+    // `getTokenAccounts` is a helius only RPC endpoint, we have to hardcode the URL here
+    // We cannot use NEXT_PUBLIC_SOLANA_RPC because users may choose to use a non-helius RPC
     const response = await fetch(
-      `https://rpc.helius.xyz/?api-key=${process.env.NEXT_PUBLIC_HELIUS_API_KEY}`,
+      `https://mainnet.helius-rpc.com/?api-key=${process.env.NEXT_PUBLIC_HELIUS_API_KEY}`,
       {
         method: "POST",
         headers: {
@@ -317,6 +320,7 @@ export default function ProductPage() {
   const params = useParams();
   const router = useRouter();
   const { product } = params;
+  // @ts-ignore
   const { allFunds } = useGlam();
 
   const isAllFundsLoading = !allFunds;
