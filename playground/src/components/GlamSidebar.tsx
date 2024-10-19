@@ -209,8 +209,6 @@ export default function RefactoredSidebar() {
       return items.filter((item) => item.route === "/");
     }
 
-    console.log("activeFund:", activeFund); // Debug log
-
     // Check if activeFund is null, undefined, or an empty object
     if (
       !activeFund ||
