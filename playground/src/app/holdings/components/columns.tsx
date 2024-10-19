@@ -8,6 +8,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../
 import React, { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import NumberFormatter from "@/utils/NumberFormatter";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -35,9 +36,7 @@ const isSkeletonRow = (row: Row<Holding>) => {
 export const columns: ColumnDef<Holding>[] = [
   {
     accessorKey: "logoURI",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="" />
-    ),
+    header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: ({ row }) => {
       const [isLoading, setIsLoading] = useState(true);
       const logoURI = row.getValue("logoURI") as string;
@@ -78,7 +77,9 @@ export const columns: ColumnDef<Holding>[] = [
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="truncate cursor-default">{row.getValue("symbol")}</div>
+                  <div className="truncate cursor-default">
+                    {row.getValue("symbol")}
+                  </div>
                 </TooltipTrigger>
                 <TooltipContent side={"bottom"}>
                   <p>{row.original.name}</p>
@@ -95,7 +96,7 @@ export const columns: ColumnDef<Holding>[] = [
   {
     accessorKey: "balance",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Balance" />
+      <DataTableColumnHeader column={column} title="Quantity" />
     ),
     cell: ({ row }) => {
       return (
@@ -114,15 +115,41 @@ export const columns: ColumnDef<Holding>[] = [
   {
     accessorKey: "notional",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="USD" />
+      <DataTableColumnHeader column={column} title="Value" />
     ),
     cell: ({ row }) => {
+      // Parse the row data using holdingSchema
+      const holding = holdingSchema.parse(row.original);
+
       return (
         <div className="w-[80px]">
           {isSkeletonRow(row) ? (
             <VariableWidthSkeleton minWidth={40} maxWidth={80} height={20} />
           ) : (
-            new Intl.NumberFormat("en-US").format(row.getValue("notional"))
+            <span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-muted-foreground mr-0.5">$</span>
+                </TooltipTrigger>
+                <TooltipContent side={"left"}>
+                  <span className="text-muted-foreground mr-0.5">$</span>
+                  <NumberFormatter
+                    value={holding.price}
+                    addCommas={true}
+                    minDecimalPlaces={3}
+                    maxDecimalPlaces={3}
+                  />
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <NumberFormatter
+              value={holding.notional}
+              addCommas={true}
+              minDecimalPlaces={3}
+              maxDecimalPlaces={3}
+            />
+          </span>
           )}
         </div>
       );
@@ -141,7 +168,8 @@ export const columns: ColumnDef<Holding>[] = [
           <VariableWidthSkeleton minWidth={60} maxWidth={100} height={24} />
         ) : (
           <Badge variant="outline" className="rounded-none">
-            {((row.getValue("location") as string)?.charAt(0)?.toUpperCase() + (row.getValue("location") as string)?.slice(1)) || "N/A"}
+            {(row.getValue("location") as string)?.charAt(0)?.toUpperCase() +
+              (row.getValue("location") as string)?.slice(1) || "N/A"}
           </Badge>
         )}
       </div>

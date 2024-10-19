@@ -3,13 +3,15 @@ import dynamic from "next/dynamic";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Sidebar from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { ClusterProvider } from "@/components/solana-cluster-provider";
 import { GlamProvider } from "@glam/anchor/react";
 import { ReactQueryProvider } from "./react-query-provider";
 import MobileOverlay from "@/components/MobileOverlay";
 import BetaWarning from "@/components/BetaWarning";
+import React from "react";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import GlamSidebar from "@/components/GlamSidebar";
 
 const AppWalletProvider = dynamic(
   () => import("@/components/wallet-provider"),
@@ -30,9 +32,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} flex items-start justify-between select-none`}>
-      <MobileOverlay/>
-      <BetaWarning />
+      <body
+        className={`${inter.className} flex items-start justify-between select-none`}
+      >
+        <MobileOverlay />
         <ReactQueryProvider>
           <ThemeProvider
             attribute="class"
@@ -43,11 +46,17 @@ export default function RootLayout({
             <ClusterProvider>
               <AppWalletProvider>
                 <GlamProvider>
-                  <Sidebar />
-                  <main className="flex justify-center items-center p-[56px] ml-[244px] h-fit w-full">
-                    {children}
-                  </main>
-                  <Toaster />
+                  <SidebarProvider>
+                    <BetaWarning />
+                    <div className="relative">
+                      <GlamSidebar />
+                      <SidebarTrigger />
+                    </div>
+                    <main className="flex justify-center items-center h-fit w-full">
+                      {children}
+                    </main>
+                    <Toaster />
+                  </SidebarProvider>
                 </GlamProvider>
               </AppWalletProvider>
             </ClusterProvider>

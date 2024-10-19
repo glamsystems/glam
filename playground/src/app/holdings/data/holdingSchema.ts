@@ -5,6 +5,7 @@ export const holdingSchema = z.object({
   symbol: z.string(),
   mint: z.string(),
   ata: z.string(),
+  price: z.number(),
   balance: z.number(),
   notional: z.number(),
   logoURI: z.string(),
