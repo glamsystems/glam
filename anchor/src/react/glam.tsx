@@ -23,7 +23,7 @@ import { GlamClient } from "../client";
 import { useAtomValue, useSetAtom } from "jotai/react";
 import { PublicKey } from "@solana/web3.js";
 import { ASSETS_MAINNET } from "../client/assets";
-import base58 from "bs58";
+import { WSOL } from "../constants";
 
 interface JupTokenListItem {
   address: string;
@@ -43,7 +43,7 @@ interface GlamProviderContext {
   wallet?: PublicKey;
   activeFund?: FundCache;
   fund?: PublicKey;
-  treasury?: FundCacheTreasury;
+  treasury?: TreasuryCache;
   fundsList: FundCache[];
   //@ts-ignore
   allFunds: FundModel[];
@@ -63,18 +63,17 @@ interface TokenAccount {
   uiAmount: string;
 }
 
-interface FundCacheTreasury {
-  address: PublicKey;
+interface TreasuryCache {
+  pubkey: PublicKey;
   balanceLamports: number;
   tokenAccounts: TokenAccount[];
 }
 
 interface FundCache {
-  fund: PublicKey;
+  address: string;
+  pubkey: PublicKey;
   imageKey: string;
-  addressStr: string;
   name: string;
-  treasury: FundCacheTreasury;
 }
 
 const GlamContext = createContext<GlamProviderContext>(
@@ -93,20 +92,19 @@ const deserializeFundCache = (f: any) => {
   if (!f) {
     return undefined;
   }
-  if (typeof f.fund === "string") {
-    f.addressStr = f.fund;
-    f.fund = new PublicKey(f.fund);
+  if (typeof f.pubkey === "string") {
+    f.address = f.pubkey;
+    f.pubkey = new PublicKey(f.pubkey);
   }
   return f as FundCache;
 };
 
 const toFundCache = (f: FundModel) => {
   return {
-    fund: f.id,
+    pubkey: f.id,
     imageKey: f.imageKey,
-    addressStr: f.id.toBase58(),
+    address: f.id.toBase58(),
     name: f.name,
-    treasury: {},
   } as FundCache;
 };
 
@@ -132,8 +130,11 @@ export function GlamProvider({
 }>) {
   const setActiveFund = useSetAtom(fundAtom);
   const setFundsList = useSetAtom(fundsListAtom);
+
+  const [treasury, setTreasury] = useState({} as TreasuryCache);
   const wallet = useWallet();
   const { connection } = useConnection();
+
   const glamClient = useMemo(
     () =>
       new GlamClient({
@@ -148,6 +149,12 @@ export function GlamProvider({
   const [pythPrices, setPythPrices] = useState([] as PythPrice[]);
 
   const activeFund = deserializeFundCache(useAtomValue(fundAtom)) as FundCache;
+
+  // Build a lookup table for price account -> mint account
+  const priceFeedToMint = new Map<string, string>([]);
+  for (let [mint, asset] of ASSETS_MAINNET) {
+    priceFeedToMint.set(asset.priceFeed!, mint);
+  }
 
   //
   // Fetch all funds
@@ -198,14 +205,13 @@ export function GlamProvider({
     }
 
     const fetchData = async () => {
-      if (activeFund && activeFund.fund) {
-        const treasury = glamClient.getTreasuryPDA(activeFund.fund);
+      if (activeFund && activeFund.pubkey) {
+        const treasury = glamClient.getTreasuryPDA(activeFund.pubkey);
         const balances = await fetchBalances(glamClient, treasury);
-        activeFund.treasury = {
+        setTreasury({
           ...balances,
-          address: treasury,
-        };
-        setActiveFund(activeFund);
+          pubkey: treasury,
+        } as TreasuryCache);
       }
     };
 
@@ -217,20 +223,21 @@ export function GlamProvider({
   //
 
   const { data: pythData } = useQuery({
-    queryKey: ["/prices1"],
-    enabled: !!activeFund?.treasury?.tokenAccounts,
+    queryKey: ["/prices"],
+    enabled: !!treasury?.tokenAccounts,
     refetchInterval: 30 * 1000,
     queryFn: () => {
-      const pythFeedIds = [] as string[];
-      activeFund?.treasury.tokenAccounts.forEach((ta: TokenAccount) => {
-        const hex = Buffer.from(
-          ASSETS_MAINNET.get(ta.mint)?.pricingAccount?.toBytes()!
-        ).toString("hex");
-
-        pythFeedIds.push(hex);
+      const pythFeedIds = new Set([] as string[]);
+      treasury.tokenAccounts.forEach((ta: TokenAccount) => {
+        const hex = ASSETS_MAINNET.get(ta.mint)?.priceFeed!;
+        pythFeedIds.add(hex);
       });
+      // Always add wSOL feed so that we can price SOL
+      pythFeedIds.add(ASSETS_MAINNET.get(WSOL.toBase58())?.priceFeed!);
 
-      const params = pythFeedIds.map((hex) => `ids[]=${hex}`).join("&");
+      const params = Array.from(pythFeedIds)
+        .map((hex) => `ids[]=${hex}`)
+        .join("&");
 
       return fetch(
         `https://hermes.pyth.network/v2/updates/price/latest?${params}`
@@ -239,25 +246,17 @@ export function GlamProvider({
   });
   useEffect(() => {
     if (pythData) {
-      // Build a lookup table for price account -> mint account
-      const priceToMint = new Map<string, string>([]);
-      for (let [mint, asset] of ASSETS_MAINNET) {
-        priceToMint.set(asset.pricingAccount!.toBase58(), mint);
-      }
-
       if (process.env.NODE_ENV === "development") {
         console.log("Pyth data:", pythData.parsed);
-        console.log("Price account to mint account:", priceToMint);
+        console.log("Price account to mint account:", priceFeedToMint);
       }
       const prices = pythData.parsed.map((p: any) => {
-        const priceAccount = base58.encode(Buffer.from(p.id, "hex")).toString();
-
         const price =
           Number.parseFloat(p.price.price) *
           10 ** Number.parseInt(p.price.expo);
 
         return {
-          mint: priceToMint.get(priceAccount),
+          mint: priceFeedToMint.get(p.id),
           price,
         } as PythPrice;
       });
@@ -305,8 +304,8 @@ export function GlamProvider({
     glamClient,
     wallet: (wallet && wallet.publicKey) || undefined,
     activeFund,
-    fund: activeFund?.fund,
-    treasury: (useAtomValue(fundAtom) as FundCache)?.treasury,
+    fund: activeFund?.pubkey,
+    treasury,
     fundsList: useAtomValue(fundsListAtom),
     allFunds,
     walletBalances,

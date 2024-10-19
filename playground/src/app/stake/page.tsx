@@ -90,7 +90,7 @@ export default function Stake() {
       Promise.all([
         glamClient.marinade.getTickets(fundPDA!),
         glamClient.staking.getStakeAccountsWithStates(
-          new PublicKey(treasury!.address)
+          new PublicKey(treasury!.pubkey)
         ),
       ]),
   });
