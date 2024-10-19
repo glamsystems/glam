@@ -150,6 +150,12 @@ export function GlamProvider({
 
   const activeFund = deserializeFundCache(useAtomValue(fundAtom)) as FundCache;
 
+  // Build a lookup table for price account -> mint account
+  const priceFeedToMint = new Map<string, string>([]);
+  for (let [mint, asset] of ASSETS_MAINNET) {
+    priceFeedToMint.set(asset.priceFeed!, mint);
+  }
+
   //
   // Fetch all funds
   //
@@ -200,10 +206,6 @@ export function GlamProvider({
 
     const fetchData = async () => {
       if (activeFund && activeFund.pubkey) {
-        console.log(
-          "Fetching treasury for fund:",
-          activeFund.pubkey.toBase58()
-        );
         const treasury = glamClient.getTreasuryPDA(activeFund.pubkey);
         const balances = await fetchBalances(glamClient, treasury);
         setTreasury({
@@ -244,15 +246,9 @@ export function GlamProvider({
   });
   useEffect(() => {
     if (pythData) {
-      // Build a lookup table for price account -> mint account
-      const priceToMint = new Map<string, string>([]);
-      for (let [mint, asset] of ASSETS_MAINNET) {
-        priceToMint.set(asset.priceFeed!, mint);
-      }
-
       if (process.env.NODE_ENV === "development") {
         console.log("Pyth data:", pythData.parsed);
-        console.log("Price account to mint account:", priceToMint);
+        console.log("Price account to mint account:", priceFeedToMint);
       }
       const prices = pythData.parsed.map((p: any) => {
         const price =
@@ -260,7 +256,7 @@ export function GlamProvider({
           10 ** Number.parseInt(p.price.expo);
 
         return {
-          mint: priceToMint.get(p.id),
+          mint: priceFeedToMint.get(p.id),
           price,
         } as PythPrice;
       });
