@@ -221,44 +221,43 @@ export default function Trade() {
   } = useGlam();
   const [fromAsset, setFromAsset] = useState<string>("SOL");
   const [toAsset, setToAsset] = useState<string>("SOL");
-  const [items, setItems] = useState<{ id: string; label: string }[]>([]);
+  const [dexes, setDexes] = useState<{ id: string; label: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("swap");
 
-  useQuery({
+  const { data: jupDexes } = useQuery({
     queryKey: ["program-id-to-label"],
     staleTime: 1000 * 60 * 30, // 30 minutes, don't need to refresh too often
     queryFn: async () => {
       setIsLoading(true);
-      try {
-        const response = await fetch(
-          "https://quote-api.jup.ag/v6/program-id-to-label"
-        );
-        const data = await response.json();
-        const formattedItems = Object.entries(data).map(([id, label]) => ({
-          id,
-          label: label as string,
-        }));
+      const response = await fetch(
+        "https://quote-api.jup.ag/v6/program-id-to-label"
+      );
+      const data = await response.json();
+      const formattedItems = Object.entries(data).map(([id, label]) => ({
+        id,
+        label: label as string,
+      }));
 
-        const sortedItems = formattedItems.sort((a, b) =>
-          a.label.localeCompare(b.label)
-        );
+      const sortedItems = formattedItems.sort((a, b) =>
+        a.label.localeCompare(b.label)
+      );
 
-        setItems(sortedItems);
-        setIsLoading(false);
-        return sortedItems; // return the data that will be cached
-      } catch (error) {
-        console.error("Error fetching program ID to label mapping:", error);
-        setIsLoading(false);
-        throw error;
-      }
+      setIsLoading(false);
+      return sortedItems; // return the data that will be cached
     },
   });
+
+  useEffect(() => {
+    if (jupDexes) {
+      setDexes(jupDexes);
+    }
+  }, [jupDexes]);
 
   const [filterType, setFilterType] = useState("include");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredItems = items.filter((item) =>
+  const filteredItems = dexes.filter((item) =>
     item.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -368,13 +367,16 @@ export default function Trade() {
       }) || {};
 
     const outputMint = tokenList?.find((t) => t.symbol === toAsset)?.address;
-    if (!inputMint || !outputMint) {
+    if (!inputMint || !outputMint || inputMint === outputMint) {
       toast({
-        title: "Invalid input/output mint",
+        title: "Invalid input/output asset for swap",
         variant: "destructive",
       });
       return;
     }
+    console.log(
+      `Input mint: ${inputMint} (decimals: ${decimals}), output mint: ${outputMint}`
+    );
 
     if (!decimals) {
       toast({
@@ -385,6 +387,7 @@ export default function Trade() {
     }
 
     const amount = values.from * Math.pow(10, decimals);
+    const uiAmount = amount / Math.pow(10, decimals);
     try {
       const txId = await glamClient.jupiter.swap(fundPDA, {
         inputMint,
@@ -397,12 +400,12 @@ export default function Trade() {
         maxAccounts: values.maxAccounts,
       });
       toast({
-        title: `Swapped ${amount / LAMPORTS_PER_SOL} SOL to mSOL`,
+        title: `Swapped ${uiAmount} ${fromAsset} to ${toAsset}`,
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
       });
     } catch (error) {
       toast({
-        title: `Failed to swap ${amount / LAMPORTS_PER_SOL} SOL to mSOL`,
+        title: `Failed to swap ${uiAmount} ${fromAsset} to ${toAsset}`,
         variant: "destructive",
       });
     }
