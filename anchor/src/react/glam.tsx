@@ -246,10 +246,6 @@ export function GlamProvider({
   });
   useEffect(() => {
     if (pythData) {
-      if (process.env.NODE_ENV === "development") {
-        console.log("Pyth data:", pythData.parsed);
-        console.log("Price account to mint account:", priceFeedToMint);
-      }
       const prices = pythData.parsed.map((p: any) => {
         const price =
           Number.parseFloat(p.price.price) *
@@ -277,28 +273,28 @@ export function GlamProvider({
   //
   // Fetch token list from jupiter api
   //
-  const { data: tokens } = useQuery({
-    queryKey: ["jupiter-api"],
-    queryFn: () =>
-      fetch("https://tokens.jup.ag/tokens?tags=verified").then((res) =>
-        res.json()
-      ),
+  const { data: tokenList } = useQuery({
+    queryKey: ["jupiter-tokens-list"],
+    queryFn: async () => {
+      const response = await fetch(
+        "https://tokens.jup.ag/tokens?tags=verified"
+      );
+      const data = await response.json();
+      const tokenList = data?.map((t: any) => ({
+        address: t.address,
+        name: t.name,
+        symbol: t.symbol,
+        decimals: t.decimals,
+        logoURI: t.logoURI,
+      }));
+      return tokenList;
+    },
     staleTime: 1000 * 60 * 60, // 1 hour
   });
 
   useEffect(() => {
-    if (!tokens) {
-      return;
-    }
-    const tokenList = tokens?.map((t: any) => ({
-      address: t.address,
-      name: t.name,
-      symbol: t.symbol,
-      decimals: t.decimals,
-      logoURI: t.logoURI,
-    }));
     setJupTokenList(tokenList);
-  }, [tokens]);
+  }, [tokenList]);
 
   const value: GlamProviderContext = {
     glamClient,
@@ -310,7 +306,7 @@ export function GlamProvider({
     allFunds,
     walletBalances,
     walletBalancesQueryKey,
-    jupTokenList: jupTokenList,
+    jupTokenList,
     prices: pythPrices,
     setActiveFund,
   };
