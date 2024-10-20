@@ -4,7 +4,12 @@ import { ColumnDef, Row } from "@tanstack/react-table";
 import { Holding, holdingSchema } from "../data/holdingSchema";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../../components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../../../components/ui/tooltip";
 import React, { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +23,15 @@ const randomWidth = (min: number, max: number) => {
   return Math.floor(Math.random() * (max - min + 1) + min);
 };
 
-const VariableWidthSkeleton = ({ minWidth, maxWidth, height }: { minWidth: number; maxWidth: number; height: number }) => {
+const VariableWidthSkeleton = ({
+  minWidth,
+  maxWidth,
+  height,
+}: {
+  minWidth: number;
+  maxWidth: number;
+  height: number;
+}) => {
   const [width, setWidth] = useState(minWidth);
 
   useEffect(() => {
@@ -30,7 +43,11 @@ const VariableWidthSkeleton = ({ minWidth, maxWidth, height }: { minWidth: numbe
 
 // Helper function to check if a row is a skeleton
 const isSkeletonRow = (row: Row<Holding>) => {
-  return row.original.symbol === '' && row.original.name === '' && row.original.balance === 0;
+  return (
+    row.original.symbol === "" &&
+    row.original.name === "" &&
+    row.original.balance === 0
+  );
 };
 
 export const columns: ColumnDef<Holding>[] = [
@@ -123,33 +140,33 @@ export const columns: ColumnDef<Holding>[] = [
 
       return (
         <div className="w-[80px]">
-          {isSkeletonRow(row) ? (
+          {isSkeletonRow(row) || row.original.notional === 0 ? (
             <VariableWidthSkeleton minWidth={40} maxWidth={80} height={20} />
           ) : (
             <span>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="text-muted-foreground mr-0.5">$</span>
-                </TooltipTrigger>
-                <TooltipContent side={"left"}>
-                  <span className="text-muted-foreground mr-0.5">$</span>
-                  <NumberFormatter
-                    value={holding.price}
-                    addCommas={true}
-                    minDecimalPlaces={3}
-                    maxDecimalPlaces={3}
-                  />
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <NumberFormatter
-              value={holding.notional}
-              addCommas={true}
-              minDecimalPlaces={3}
-              maxDecimalPlaces={3}
-            />
-          </span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-muted-foreground mr-0.5">$</span>
+                  </TooltipTrigger>
+                  <TooltipContent side={"left"}>
+                    <span className="text-muted-foreground mr-0.5">$</span>
+                    <NumberFormatter
+                      value={holding.price}
+                      addCommas={true}
+                      minDecimalPlaces={3}
+                      maxDecimalPlaces={3}
+                    />
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <NumberFormatter
+                value={holding.notional}
+                addCommas={true}
+                minDecimalPlaces={3}
+                maxDecimalPlaces={3}
+              />
+            </span>
           )}
         </div>
       );

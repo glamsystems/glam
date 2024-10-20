@@ -225,7 +225,7 @@ export function GlamProvider({
   const { data: pythData } = useQuery({
     queryKey: ["/prices"],
     enabled: !!treasury?.tokenAccounts,
-    refetchInterval: 30 * 1000,
+    refetchInterval: 10 * 1000,
     queryFn: () => {
       const pythFeedIds = new Set([] as string[]);
       treasury.tokenAccounts.forEach((ta: TokenAccount) => {
