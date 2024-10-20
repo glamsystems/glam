@@ -34,6 +34,7 @@ import {
   CheckIcon,
   ColumnSpacingIcon,
   ExternalLinkIcon,
+  ReloadIcon,
 } from "@radix-ui/react-icons";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Switch } from "@/components/ui/switch";
@@ -221,15 +222,18 @@ export default function Trade() {
   } = useGlam();
   const [fromAsset, setFromAsset] = useState<string>("SOL");
   const [toAsset, setToAsset] = useState<string>("SOL");
-  const [dexes, setDexes] = useState<{ id: string; label: string }[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [dexesList, setDexesList] = useState<{ id: string; label: string }[]>(
+    []
+  );
+  const [isDexesListLoading, setIsDexesListLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("swap");
+  const [isSwapLoading, setIsSwapLoading] = useState(false);
 
   const { data: jupDexes } = useQuery({
     queryKey: ["program-id-to-label"],
     staleTime: 1000 * 60 * 30, // 30 minutes, don't need to refresh too often
     queryFn: async () => {
-      setIsLoading(true);
+      setIsDexesListLoading(true);
       const response = await fetch(
         "https://quote-api.jup.ag/v6/program-id-to-label"
       );
@@ -243,21 +247,21 @@ export default function Trade() {
         a.label.localeCompare(b.label)
       );
 
-      setIsLoading(false);
+      setIsDexesListLoading(false);
       return sortedItems; // return the data that will be cached
     },
   });
 
   useEffect(() => {
     if (jupDexes) {
-      setDexes(jupDexes);
+      setDexesList(jupDexes);
     }
   }, [jupDexes]);
 
   const [filterType, setFilterType] = useState("include");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredItems = dexes.filter((item) =>
+  const filteredItems = dexesList.filter((item) =>
     item.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -388,6 +392,7 @@ export default function Trade() {
 
     const amount = values.from * Math.pow(10, decimals);
     const uiAmount = amount / Math.pow(10, decimals);
+    setIsSwapLoading(true);
     try {
       const txId = await glamClient.jupiter.swap(fundPDA, {
         inputMint,
@@ -409,6 +414,7 @@ export default function Trade() {
         variant: "destructive",
       });
     }
+    setIsSwapLoading(false);
 
     // toast({
     //   title: "You submitted the following trade:",
@@ -760,7 +766,7 @@ export default function Trade() {
                             name="items"
                             render={() => (
                               <FormItem>
-                                {isLoading // Skeleton loading state
+                                {isDexesListLoading // Skeleton loading state
                                   ? Array.from({ length: 10 }).map(
                                       (_, index) => (
                                         <div
@@ -947,7 +953,11 @@ export default function Trade() {
                       Clear
                     </Button>
                     <Button className="w-1/2" type="submit">
-                      Swap
+                      {isSwapLoading ? (
+                        <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        "Swap"
+                      )}
                     </Button>
                   </div>
                 </form>
