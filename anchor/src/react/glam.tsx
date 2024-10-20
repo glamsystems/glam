@@ -246,10 +246,6 @@ export function GlamProvider({
   });
   useEffect(() => {
     if (pythData) {
-      if (process.env.NODE_ENV === "development") {
-        console.log("Pyth data:", pythData.parsed);
-        console.log("Price account to mint account:", priceFeedToMint);
-      }
       const prices = pythData.parsed.map((p: any) => {
         const price =
           Number.parseFloat(p.price.price) *

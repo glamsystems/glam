@@ -82,6 +82,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import TruncateAddress from "@/utils/TruncateAddress";
 import { DevOnly } from "@/components/DevOnly";
+import { useQuery } from "@tanstack/react-query";
 
 const spotMarkets = DRIFT_SPOT_MARKETS.map((x) => ({ label: x, value: x }));
 const perpsMarkets = DRIFT_PERP_MARKETS.map((x) => ({ label: x, value: x }));
@@ -224,9 +225,10 @@ export default function Trade() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("swap");
 
-  // TODO: Need to cach this API call for better perf with useQuery
-  useEffect(() => {
-    const fetchItems = async () => {
+  useQuery({
+    queryKey: ["program-id-to-label"],
+    staleTime: 1000 * 60 * 30, // 30 minutes, don't need to refresh too often
+    queryFn: async () => {
       setIsLoading(true);
       try {
         const response = await fetch(
@@ -243,15 +245,15 @@ export default function Trade() {
         );
 
         setItems(sortedItems);
+        setIsLoading(false);
+        return sortedItems; // return the data that will be cached
       } catch (error) {
         console.error("Error fetching program ID to label mapping:", error);
-      } finally {
         setIsLoading(false);
+        throw error;
       }
-    };
-
-    fetchItems();
-  }, []);
+    },
+  });
 
   const [filterType, setFilterType] = useState("include");
   const [searchQuery, setSearchQuery] = useState("");
@@ -347,15 +349,6 @@ export default function Trade() {
   const perpsReduceOnly = perpsForm.watch("perpsReduceOnly");
 
   const onSubmitSwap: SubmitHandler<SwapSchema> = async (values) => {
-    console.log("Submit Swap:", values);
-    const nativeEvent = event as unknown as React.BaseSyntheticEvent & {
-      nativeEvent: { submitter: HTMLElement };
-    };
-
-    if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") !== "submit") {
-      return;
-    }
-
     if (!fundPDA || !wallet || !treasury) {
       return;
     }
@@ -835,13 +828,13 @@ export default function Trade() {
                                 className="justify-start"
                               >
                                 <ToggleGroupItem
-                                  value="exact-in"
+                                  value="ExactIn"
                                   aria-label="Exact In"
                                 >
                                   Exact In
                                 </ToggleGroupItem>
                                 <ToggleGroupItem
-                                  value="exact-out"
+                                  value="ExactOut"
                                   aria-label="Exact Out"
                                 >
                                   Exact Out
