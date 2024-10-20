@@ -28,7 +28,6 @@ export default function Products() {
 
   return (
     <PageContentWrapper>
-      {/*@ts-ignore*/}
       <DataTable data={products} columns={columns} isLoading={isLoading} />
     </PageContentWrapper>
   );
