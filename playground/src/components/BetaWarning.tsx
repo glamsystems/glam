@@ -14,7 +14,7 @@ const BetaWarning = () => {
   return (
     <motion.div
       className={cn(
-        "border-t fixed w-full bottom-0 h-[48px] z-0 flex flex-row items-center justify-center bg-zinc-100 dark:bg-zinc-900 select-none sm:opacity-0 lg:opacity-100 pr-4",
+        "border-t fixed w-full bottom-0 h-[48px] z-0 flex flex-row items-center justify-center bg-sidebar select-none sm:opacity-0 lg:opacity-100 pr-4",
         isCollapsed ? "pl-12" : "pl-[244px]",
         "transition-all duration-200 ease-linear" // Add smooth transition
       )}
