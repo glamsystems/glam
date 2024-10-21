@@ -81,6 +81,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import TruncateAddress from "@/utils/TruncateAddress";
 import { useQuery } from "@tanstack/react-query";
+import { DevOnly } from "@/components/DevOnly";
 
 const spotMarkets = DRIFT_SPOT_MARKETS.map((x) => ({ label: x, value: x }));
 const perpsMarkets = DRIFT_PERP_MARKETS.map((x) => ({ label: x, value: x }));
@@ -292,7 +293,7 @@ export default function Trade() {
     swapType: "Swap",
     filterType: "Exclude",
     slippage: 0.1,
-    items: [""],
+    items: [],
     exactMode: "ExactIn",
     maxAccounts: 20,
     from: 0,
@@ -301,7 +302,7 @@ export default function Trade() {
     toAsset: "USDC",
     directRouteOnly: false,
     useWSOL: false,
-    versionedTransactions: false,
+    versionedTransactions: true,
   });
 
   const spotForm = usePersistedForm("spot", spotSchema, {
@@ -388,6 +389,14 @@ export default function Trade() {
       return;
     }
 
+    let dexesParam;
+    const dexes = values.items.filter((item) => item !== "");
+    if (values.filterType === "Include") {
+      dexesParam = { dexes };
+    } else {
+      dexesParam = { excludeDexes: dexes };
+    }
+
     const amount = values.from * Math.pow(10, decimals);
     const uiAmount = amount / Math.pow(10, decimals);
     setIsTxPending(true);
@@ -401,6 +410,7 @@ export default function Trade() {
         onlyDirectRoutes: values.directRouteOnly,
         asLegacyTransaction: !values.versionedTransactions,
         maxAccounts: values.maxAccounts,
+        ...dexesParam,
       });
       toast({
         title: `Swapped ${uiAmount} ${fromAsset} to ${toAsset}`,
@@ -479,14 +489,14 @@ export default function Trade() {
       swapType: "Swap",
       slippage: 0.1,
       filterType: "Exclude",
-      items: [""],
+      items: [],
       exactMode: "ExactIn",
       maxAccounts: 20,
       from: 0,
       to: 0,
       directRouteOnly: false,
       useWSOL: false,
-      versionedTransactions: false,
+      versionedTransactions: true,
       fromAsset: "SOL",
       toAsset: "SOL",
     });
@@ -585,12 +595,14 @@ export default function Trade() {
             <TabsTrigger value="perps" className="w-full">
               Perps
             </TabsTrigger>
-            {/*<TabsTrigger value="options" className="w-full" disabled>*/}
-            {/*  Options*/}
-            {/*  <span className="opacity-50 ml-1">*/}
-            {/*    Soon<sup className="text-[9px]">TM</sup>*/}
-            {/*  </span>*/}
-            {/*</TabsTrigger>*/}
+            <DevOnly>
+              <TabsTrigger value="options" className="w-full" disabled>
+                Options
+                <span className="opacity-50 ml-1">
+                  Soon<sup className="text-[9px]">TM</sup>
+                </span>
+              </TabsTrigger>
+            </DevOnly>
           </TabsList>
 
           {/*SWAP TAB*/}
@@ -771,20 +783,16 @@ export default function Trade() {
                                         <FormControl>
                                           <Checkbox
                                             checked={field.value?.includes(
-                                              item.id
+                                              item.label
                                             )}
                                             onCheckedChange={(checked) => {
-                                              return checked
-                                                ? field.onChange([
-                                                    ...field.value,
-                                                    item.id,
-                                                  ])
-                                                : field.onChange(
-                                                    field.value?.filter(
-                                                      (value) =>
-                                                        value !== item.id
-                                                    )
+                                              const val = checked
+                                                ? [...field.value, item.label]
+                                                : field.value?.filter(
+                                                    (value) =>
+                                                      value !== item.label
                                                   );
+                                              return field.onChange(val);
                                             }}
                                           />
                                         </FormControl>

@@ -27,6 +27,8 @@ type QuoteParams = {
   onlyDirectRoutes?: boolean;
   asLegacyTransaction?: boolean;
   maxAccounts?: number;
+  dexes?: string[];
+  excludeDexes?: string[];
 };
 
 type QuoteResponse = {
