@@ -279,7 +279,7 @@ export class BaseClient {
     return signature;
   }
 
-  parseProgramLogs(logs?: string[]): string {
+  parseProgramLogs(logs?: null | string[]): string {
     const errorMsgLog = (logs || []).find((log) =>
       log.includes("Error Message:")
     );

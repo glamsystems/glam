@@ -16,9 +16,5 @@ export function parseTxError(error: any): string {
     return "Transaction expired";
   }
 
-  if (error instanceof GlamError) {
-    return error.message;
-  }
-
-  return "Unknown error";
+  return error?.message || "Unknown error";
 }
