@@ -89,6 +89,7 @@ const PERSISTED_FIELDS = {
   swap: [
     "venue",
     "slippage",
+    "filterType",
     "exactMode",
     "maxAccounts",
     "directRouteOnly",
@@ -160,6 +161,7 @@ function usePersistedForm<T extends z.ZodTypeAny>(
 const swapSchema = z.object({
   venue: z.enum(["Jupiter"]),
   swapType: z.enum(["Swap"]),
+  filterType: z.enum(["Include", "Exclude"]),
   slippage: z.number().nonnegative().lte(1),
   items: z.array(z.string()).refine((value) => value.some((item) => item), {
     message: "You have to select at least one exchange.",
@@ -254,7 +256,6 @@ export default function Trade() {
     setDexesList(jupDexes || []);
   }, [jupDexes]);
 
-  const [filterType, setFilterType] = useState("include");
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredItems = dexesList.filter((item) =>
@@ -289,6 +290,7 @@ export default function Trade() {
   const swapForm = usePersistedForm("swap", swapSchema, {
     venue: "Jupiter",
     swapType: "Swap",
+    filterType: "Exclude",
     slippage: 0.1,
     items: [""],
     exactMode: "ExactIn",
@@ -476,6 +478,7 @@ export default function Trade() {
       venue: "Jupiter",
       swapType: "Swap",
       slippage: 0.1,
+      filterType: "Exclude",
       items: [""],
       exactMode: "ExactIn",
       maxAccounts: 20,
@@ -484,8 +487,8 @@ export default function Trade() {
       directRouteOnly: false,
       useWSOL: false,
       versionedTransactions: false,
-      fromAsset: "SOL", // Add this line
-      toAsset: "SOL", // Add this line
+      fromAsset: "SOL",
+      toAsset: "SOL",
     });
     setFromAsset("USDC");
     setToAsset("SOL");
@@ -493,13 +496,10 @@ export default function Trade() {
   };
 
   const handleFlip = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
+    event.preventDefault();
     const temp = fromAsset;
     setFromAsset(toAsset);
     setToAsset(temp);
-
-    const fromValue = swapForm.getValues("from");
-    const toValue = swapForm.getValues("to");
   };
 
   useEffect(() => {
@@ -712,21 +712,30 @@ export default function Trade() {
                       <FormLabel>Venues</FormLabel>
                       <div className="space-y-4">
                         <span className="flex w-full gap-4">
-                          <ToggleGroup
-                            type="single"
-                            value={filterType}
-                            onValueChange={(value) =>
-                              setFilterType(value || "include")
-                            }
-                            className="justify-start"
-                          >
-                            <ToggleGroupItem value="include">
-                              Include
-                            </ToggleGroupItem>
-                            <ToggleGroupItem value="exclude">
-                              Exclude
-                            </ToggleGroupItem>
-                          </ToggleGroup>
+                          <FormField
+                            control={swapForm.control}
+                            name="filterType"
+                            render={({ field }) => (
+                              <ToggleGroup
+                                type="single"
+                                value={field.value}
+                                onValueChange={(value) =>
+                                  swapForm.setValue(
+                                    "filterType",
+                                    value as "Include" | "Exclude"
+                                  )
+                                }
+                                className="justify-start"
+                              >
+                                <ToggleGroupItem value="Include">
+                                  Include
+                                </ToggleGroupItem>
+                                <ToggleGroupItem value="Exclude">
+                                  Exclude
+                                </ToggleGroupItem>
+                              </ToggleGroup>
+                            )}
+                          />
 
                           <Input
                             type="search"
@@ -738,63 +747,55 @@ export default function Trade() {
                         </span>
 
                         <ScrollArea className="h-[300px] w-full border p-4">
-                          <FormField
-                            control={swapForm.control}
-                            name="items"
-                            render={() => (
-                              <FormItem>
-                                {isDexesListLoading // Skeleton loading state
-                                  ? Array.from({ length: 10 }).map(
-                                      (_, index) => (
-                                        <div
-                                          key={index}
-                                          className="flex items-center space-x-3 mb-2"
-                                        >
-                                          <Skeleton className="w-4 h-4" />
-                                          <Skeleton className="w-[200px] h-[20px]" />
-                                        </div>
-                                      )
-                                    )
-                                  : filteredItems.map((item) => (
-                                      <FormField
+                          <FormItem>
+                            {isDexesListLoading // Skeleton loading state
+                              ? Array.from({ length: 10 }).map((_, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex items-center space-x-3 mb-2"
+                                  >
+                                    <Skeleton className="w-4 h-4" />
+                                    <Skeleton className="w-[200px] h-[20px]" />
+                                  </div>
+                                ))
+                              : filteredItems.map((item) => (
+                                  <FormField
+                                    key={item.id}
+                                    control={swapForm.control}
+                                    name="items"
+                                    render={({ field }) => (
+                                      <FormItem
                                         key={item.id}
-                                        control={swapForm.control}
-                                        name="items"
-                                        render={({ field }) => (
-                                          <FormItem
-                                            key={item.id}
-                                            className="flex flex-row items-start space-x-3 space-y-0 mb-2"
-                                          >
-                                            <FormControl>
-                                              <Checkbox
-                                                checked={field.value?.includes(
-                                                  item.id
-                                                )}
-                                                onCheckedChange={(checked) => {
-                                                  return checked
-                                                    ? field.onChange([
-                                                        ...field.value,
-                                                        item.id,
-                                                      ])
-                                                    : field.onChange(
-                                                        field.value?.filter(
-                                                          (value) =>
-                                                            value !== item.id
-                                                        )
-                                                      );
-                                                }}
-                                              />
-                                            </FormControl>
-                                            <FormLabel className="font-normal">
-                                              {item.label}
-                                            </FormLabel>
-                                          </FormItem>
-                                        )}
-                                      />
-                                    ))}
-                              </FormItem>
-                            )}
-                          />
+                                        className="flex flex-row items-start space-x-3 space-y-0 mb-2"
+                                      >
+                                        <FormControl>
+                                          <Checkbox
+                                            checked={field.value?.includes(
+                                              item.id
+                                            )}
+                                            onCheckedChange={(checked) => {
+                                              return checked
+                                                ? field.onChange([
+                                                    ...field.value,
+                                                    item.id,
+                                                  ])
+                                                : field.onChange(
+                                                    field.value?.filter(
+                                                      (value) =>
+                                                        value !== item.id
+                                                    )
+                                                  );
+                                            }}
+                                          />
+                                        </FormControl>
+                                        <FormLabel className="font-normal">
+                                          {item.label}
+                                        </FormLabel>
+                                      </FormItem>
+                                    )}
+                                  />
+                                ))}
+                          </FormItem>
                         </ScrollArea>
                       </div>
                     </FormItem>

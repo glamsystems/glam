@@ -7,6 +7,7 @@ import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";
 
 export default function Products() {
+  // @ts-ignore Type instantiation is excessively deep and possibly infinite.
   const { allFunds } = useGlam();
   const [isLoading, setIsLoading] = React.useState(true);
 
