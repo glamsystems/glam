@@ -31,6 +31,7 @@ export default function Wrap() {
   const [displayBalance, setDisplayBalance] = useState<number>(NaN);
   const [solBalance, setSolBalance] = useState<number>(NaN);
   const [wSolBalance, setWSolBalance] = useState<number>(NaN);
+  const [isTxPending, setIsTxPending] = useState<boolean>(false);
 
   const form = useForm<WrapSchema>({
     resolver: zodResolver(wrapSchema),
@@ -79,21 +80,32 @@ export default function Wrap() {
       return;
     }
 
-    let txId;
-    if (direction === "wrap") {
-      txId = await glamClient.wsol.wrap(
-        fundPDA,
-        new BN(values.amount * LAMPORTS_PER_SOL)
-      );
-    } else {
-      // Unwrap means unwrap all, there's no amount
-      txId = await glamClient.wsol.unwrap(fundPDA);
-    }
+    setIsTxPending(true);
+    try {
+      let txId;
+      if (direction === "wrap") {
+        txId = await glamClient.wsol.wrap(
+          fundPDA,
+          new BN(values.amount * LAMPORTS_PER_SOL)
+        );
+      } else {
+        // Unwrap means unwrap all, there's no amount
+        txId = await glamClient.wsol.unwrap(fundPDA);
+      }
 
-    toast({
-      title: `Successful ${direction}`,
-      description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
-    });
+      toast({
+        title: `Successful ${direction}`,
+        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+      });
+    } catch (error) {
+      toast({
+        title: `Failed to ${direction} ${
+          direction === "wrap" ? "SOL" : "wSOL"
+        }`,
+        variant: "destructive",
+      });
+    }
+    setIsTxPending(false);
   };
 
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -173,8 +185,12 @@ export default function Wrap() {
                 >
                   Clear
                 </Button>
-                <Button className="w-1/2" type="submit">
-                  {direction === "wrap" ? "Wrap" : "Unwrap"}
+                <Button
+                  className="w-1/2 capitalize"
+                  type="submit"
+                  loading={isTxPending}
+                >
+                  {direction}
                 </Button>
               </div>
             </form>

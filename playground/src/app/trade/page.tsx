@@ -27,14 +27,12 @@ import {
   FormField,
   FormItem,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import {
   CaretSortIcon,
   CheckIcon,
   ColumnSpacingIcon,
   ExternalLinkIcon,
-  ReloadIcon,
 } from "@radix-ui/react-icons";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Switch } from "@/components/ui/switch";
@@ -82,7 +80,6 @@ import {
 } from "@/constants";
 import { Skeleton } from "@/components/ui/skeleton";
 import TruncateAddress from "@/utils/TruncateAddress";
-import { DevOnly } from "@/components/DevOnly";
 import { useQuery } from "@tanstack/react-query";
 
 const spotMarkets = DRIFT_SPOT_MARKETS.map((x) => ({ label: x, value: x }));
@@ -227,7 +224,7 @@ export default function Trade() {
   );
   const [isDexesListLoading, setIsDexesListLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("swap");
-  const [isSwapLoading, setIsSwapLoading] = useState(false);
+  const [isTxPending, setIsTxPending] = useState(false);
 
   const { data: jupDexes } = useQuery({
     queryKey: ["program-id-to-label"],
@@ -253,9 +250,8 @@ export default function Trade() {
   });
 
   useEffect(() => {
-    if (jupDexes) {
-      setDexesList(jupDexes);
-    }
+    setIsDexesListLoading(false);
+    setDexesList(jupDexes || []);
   }, [jupDexes]);
 
   const [filterType, setFilterType] = useState("include");
@@ -392,7 +388,7 @@ export default function Trade() {
 
     const amount = values.from * Math.pow(10, decimals);
     const uiAmount = amount / Math.pow(10, decimals);
-    setIsSwapLoading(true);
+    setIsTxPending(true);
     try {
       const txId = await glamClient.jupiter.swap(fundPDA, {
         inputMint,
@@ -414,7 +410,7 @@ export default function Trade() {
         variant: "destructive",
       });
     }
-    setIsSwapLoading(false);
+    setIsTxPending(false);
 
     // toast({
     //   title: "You submitted the following trade:",
@@ -429,7 +425,9 @@ export default function Trade() {
   };
 
   const onSubmitSpot: SubmitHandler<SpotSchema> = async (values) => {
+    setIsTxPending(true);
     console.log("Submit Spot:", values);
+    setIsTxPending(false);
   };
 
   const onSubmitPerps: SubmitHandler<PerpsSchema> = async (values) => {
@@ -456,6 +454,7 @@ export default function Trade() {
     });
     console.log("Drift perps orderParams", orderParams);
 
+    setIsTxPending(true);
     try {
       const txId = await glamClient.drift.placeOrder(fundPDA, orderParams);
       toast({
@@ -468,6 +467,7 @@ export default function Trade() {
         variant: "destructive",
       });
     }
+    setIsTxPending(false);
   };
 
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -679,29 +679,6 @@ export default function Trade() {
                     >
                       <ColumnSpacingIcon />
                     </Button>
-                    {/*<FormField*/}
-                    {/*  control={swapForm.control}*/}
-                    {/*  name="slippage"*/}
-                    {/*  render={({ field }) => (*/}
-                    {/*    <FormItem>*/}
-                    {/*      <FormLabel>Slippage</FormLabel>*/}
-                    {/*      <FormControl>*/}
-                    {/*        <Input*/}
-                    {/*          placeholder="Slippage"*/}
-                    {/*          type="number"*/}
-                    {/*          min="0.1"*/}
-                    {/*          step="0.1"*/}
-                    {/*          onChange={(e) =>*/}
-                    {/*            field.onChange(parseFloat(e.target.value))*/}
-                    {/*          }*/}
-                    {/*          value={field.value}*/}
-                    {/*        />*/}
-                    {/*      </FormControl>*/}
-                    {/*      /!*<FormDescription>&nbsp;</FormDescription>*!/*/}
-                    {/*      <FormMessage />*/}
-                    {/*    </FormItem>*/}
-                    {/*  )}*/}
-                    {/*/>*/}
                     <AssetInput
                       name="slippage"
                       label="Slippage"
@@ -952,12 +929,12 @@ export default function Trade() {
                     >
                       Clear
                     </Button>
-                    <Button className="w-1/2" type="submit">
-                      {isSwapLoading ? (
-                        <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        "Swap"
-                      )}
+                    <Button
+                      className="w-1/2"
+                      type="submit"
+                      loading={isTxPending}
+                    >
+                      Swap
                     </Button>
                   </div>
                 </form>
@@ -1371,7 +1348,11 @@ export default function Trade() {
                     >
                       Clear
                     </Button>
-                    <Button className="w-1/2" type="submit">
+                    <Button
+                      className="w-1/2"
+                      type="submit"
+                      loading={isTxPending}
+                    >
                       Submit
                     </Button>
                   </div>
@@ -1845,7 +1826,11 @@ export default function Trade() {
                     >
                       Clear
                     </Button>
-                    <Button className="w-1/2" type="submit">
+                    <Button
+                      className="w-1/2"
+                      type="submit"
+                      loading={isTxPending}
+                    >
                       Submit
                     </Button>
                   </div>
