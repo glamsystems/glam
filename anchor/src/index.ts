@@ -5,3 +5,4 @@ export * from "./client";
 export * from "./utils/offchain";
 export * from "./utils/helpers";
 export * from "./constants";
+export * from "./error";

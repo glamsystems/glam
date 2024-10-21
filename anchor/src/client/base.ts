@@ -48,6 +48,7 @@ import { FundModel, FundOpenfundsModel } from "../models";
 import { AssetMeta, ASSETS_MAINNET, ASSETS_TESTS } from "./assets";
 import base58 from "bs58";
 import { MARINADE_PROGRAM_ID } from "../constants";
+import { GlamError } from "../error";
 
 // @ts-ignore
 type FundAccount = IdlAccounts<Glam>["fundAccount"];
@@ -269,13 +270,27 @@ export class BaseClient {
       const errTx = await connection.getTransaction(signature, {
         maxSupportedTransactionVersion: 0,
       });
-      const err = {
-        err: errTx?.meta?.err,
-        logs: errTx?.meta?.logMessages,
-      };
-      throw err;
+      throw {
+        rawError: errTx?.meta?.err,
+        programLogs: errTx?.meta?.logMessages,
+        message: this.parseProgramLogs(errTx?.meta?.logMessages),
+      } as GlamError;
     }
-    return signature; // when confirmed, or throw
+    return signature;
+  }
+
+  parseProgramLogs(logs?: null | string[]): string {
+    const errorMsgLog = (logs || []).find((log) =>
+      log.includes("Error Message:")
+    );
+
+    console.log("error message from program logs", errorMsgLog);
+
+    if (errorMsgLog) {
+      return errorMsgLog.split("Error Message:")[1].trim();
+    }
+
+    return "Unknown error";
   }
 
   getWallet(): Wallet {

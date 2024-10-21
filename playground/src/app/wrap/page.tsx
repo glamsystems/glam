@@ -14,6 +14,7 @@ import { BN } from "@coral-xyz/anchor";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import PageContentWrapper from "@/components/PageContentWrapper";
+import { parseTxError } from "@/lib/error";
 
 const wrapSchema = z.object({
   direction: z.enum(["wrap", "unwrap"]),
@@ -102,6 +103,7 @@ export default function Wrap() {
         title: `Failed to ${direction} ${
           direction === "wrap" ? "SOL" : "wSOL"
         }`,
+        description: parseTxError(error),
         variant: "destructive",
       });
     }
