@@ -82,6 +82,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import TruncateAddress from "@/utils/TruncateAddress";
 import { useQuery } from "@tanstack/react-query";
 import { DevOnly } from "@/components/DevOnly";
+import { parseTxError } from "@/lib/error";
 
 const spotMarkets = DRIFT_SPOT_MARKETS.map((x) => ({ label: x, value: x }));
 const perpsMarkets = DRIFT_PERP_MARKETS.map((x) => ({ label: x, value: x }));
@@ -220,7 +221,7 @@ export default function Trade() {
     glamClient,
     jupTokenList: tokenList,
   } = useGlam();
-  const [fromAsset, setFromAsset] = useState<string>("SOL");
+  const [fromAsset, setFromAsset] = useState<string>("USDC");
   const [toAsset, setToAsset] = useState<string>("SOL");
   const [dexesList, setDexesList] = useState<{ id: string; label: string }[]>(
     []
@@ -253,8 +254,10 @@ export default function Trade() {
   });
 
   useEffect(() => {
-    setIsDexesListLoading(false);
-    setDexesList(jupDexes || []);
+    if (jupDexes && jupDexes.length > 0) {
+      setIsDexesListLoading(false);
+      setDexesList(jupDexes);
+    }
   }, [jupDexes]);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -297,9 +300,9 @@ export default function Trade() {
     exactMode: "ExactIn",
     maxAccounts: 20,
     from: 0,
-    fromAsset: "SOL",
+    fromAsset: "USDC",
     to: 0,
-    toAsset: "USDC",
+    toAsset: "SOL",
     directRouteOnly: false,
     useWSOL: false,
     versionedTransactions: true,
@@ -360,7 +363,7 @@ export default function Trade() {
       fromAsset,
       toAsset,
     };
-    console.log("Submit Trade:", updatedValues);
+    console.log("Submit swap:", updatedValues);
     const { address: inputMint, decimals } =
       tokenList?.find((t) => {
         if (fromAsset === "wSOL") {
@@ -419,6 +422,7 @@ export default function Trade() {
     } catch (error) {
       toast({
         title: `Failed to swap ${uiAmount} ${fromAsset} to ${toAsset}`,
+        description: parseTxError(error),
         variant: "destructive",
       });
     }
@@ -443,7 +447,6 @@ export default function Trade() {
   };
 
   const onSubmitPerps: SubmitHandler<PerpsSchema> = async (values) => {
-    console.log("Submit Perps:", values);
     if (!fundPDA || !wallet || !treasury) {
       console.error(
         "Cannot submit perps order due to missing fund, wallet, or treasury"
@@ -451,7 +454,8 @@ export default function Trade() {
       return;
     }
 
-    console.log(values);
+    console.log("Submit Perps:", values);
+
     const orderParams = getOrderParams({
       orderType:
         values.perpsType === "Market" ? OrderType.MARKET : OrderType.LIMIT,
@@ -473,9 +477,10 @@ export default function Trade() {
         title: "Perps order submitted",
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Failed to submit perps order",
+        description: parseTxError(error),
         variant: "destructive",
       });
     }
@@ -497,7 +502,7 @@ export default function Trade() {
       directRouteOnly: false,
       useWSOL: false,
       versionedTransactions: true,
-      fromAsset: "SOL",
+      fromAsset: "USDC",
       toAsset: "SOL",
     });
     setFromAsset("USDC");
