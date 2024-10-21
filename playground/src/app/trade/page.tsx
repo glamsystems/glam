@@ -27,7 +27,6 @@ import {
   FormField,
   FormItem,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import {
   CaretSortIcon,
@@ -81,8 +80,8 @@ import {
 } from "@/constants";
 import { Skeleton } from "@/components/ui/skeleton";
 import TruncateAddress from "@/utils/TruncateAddress";
-import { DevOnly } from "@/components/DevOnly";
 import { useQuery } from "@tanstack/react-query";
+import { DevOnly } from "@/components/DevOnly";
 
 const spotMarkets = DRIFT_SPOT_MARKETS.map((x) => ({ label: x, value: x }));
 const perpsMarkets = DRIFT_PERP_MARKETS.map((x) => ({ label: x, value: x }));
@@ -91,6 +90,7 @@ const PERSISTED_FIELDS = {
   swap: [
     "venue",
     "slippage",
+    "filterType",
     "exactMode",
     "maxAccounts",
     "directRouteOnly",
@@ -162,6 +162,7 @@ function usePersistedForm<T extends z.ZodTypeAny>(
 const swapSchema = z.object({
   venue: z.enum(["Jupiter"]),
   swapType: z.enum(["Swap"]),
+  filterType: z.enum(["Include", "Exclude"]),
   slippage: z.number().nonnegative().lte(1),
   items: z.array(z.string()).refine((value) => value.some((item) => item), {
     message: "You have to select at least one exchange.",
@@ -221,15 +222,18 @@ export default function Trade() {
   } = useGlam();
   const [fromAsset, setFromAsset] = useState<string>("SOL");
   const [toAsset, setToAsset] = useState<string>("SOL");
-  const [dexes, setDexes] = useState<{ id: string; label: string }[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [dexesList, setDexesList] = useState<{ id: string; label: string }[]>(
+    []
+  );
+  const [isDexesListLoading, setIsDexesListLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("swap");
+  const [isTxPending, setIsTxPending] = useState(false);
 
   const { data: jupDexes } = useQuery({
     queryKey: ["program-id-to-label"],
     staleTime: 1000 * 60 * 30, // 30 minutes, don't need to refresh too often
     queryFn: async () => {
-      setIsLoading(true);
+      setIsDexesListLoading(true);
       const response = await fetch(
         "https://quote-api.jup.ag/v6/program-id-to-label"
       );
@@ -243,21 +247,19 @@ export default function Trade() {
         a.label.localeCompare(b.label)
       );
 
-      setIsLoading(false);
+      setIsDexesListLoading(false);
       return sortedItems; // return the data that will be cached
     },
   });
 
   useEffect(() => {
-    if (jupDexes) {
-      setDexes(jupDexes);
-    }
+    setIsDexesListLoading(false);
+    setDexesList(jupDexes || []);
   }, [jupDexes]);
 
-  const [filterType, setFilterType] = useState("include");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredItems = dexes.filter((item) =>
+  const filteredItems = dexesList.filter((item) =>
     item.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -289,8 +291,9 @@ export default function Trade() {
   const swapForm = usePersistedForm("swap", swapSchema, {
     venue: "Jupiter",
     swapType: "Swap",
+    filterType: "Exclude",
     slippage: 0.1,
-    items: [""],
+    items: [],
     exactMode: "ExactIn",
     maxAccounts: 20,
     from: 0,
@@ -299,7 +302,7 @@ export default function Trade() {
     toAsset: "USDC",
     directRouteOnly: false,
     useWSOL: false,
-    versionedTransactions: false,
+    versionedTransactions: true,
   });
 
   const spotForm = usePersistedForm("spot", spotSchema, {
@@ -386,8 +389,17 @@ export default function Trade() {
       return;
     }
 
+    let dexesParam;
+    const dexes = values.items.filter((item) => item !== "");
+    if (values.filterType === "Include") {
+      dexesParam = { dexes };
+    } else {
+      dexesParam = { excludeDexes: dexes };
+    }
+
     const amount = values.from * Math.pow(10, decimals);
     const uiAmount = amount / Math.pow(10, decimals);
+    setIsTxPending(true);
     try {
       const txId = await glamClient.jupiter.swap(fundPDA, {
         inputMint,
@@ -398,6 +410,7 @@ export default function Trade() {
         onlyDirectRoutes: values.directRouteOnly,
         asLegacyTransaction: !values.versionedTransactions,
         maxAccounts: values.maxAccounts,
+        ...dexesParam,
       });
       toast({
         title: `Swapped ${uiAmount} ${fromAsset} to ${toAsset}`,
@@ -409,6 +422,7 @@ export default function Trade() {
         variant: "destructive",
       });
     }
+    setIsTxPending(false);
 
     // toast({
     //   title: "You submitted the following trade:",
@@ -423,7 +437,9 @@ export default function Trade() {
   };
 
   const onSubmitSpot: SubmitHandler<SpotSchema> = async (values) => {
+    setIsTxPending(true);
     console.log("Submit Spot:", values);
+    setIsTxPending(false);
   };
 
   const onSubmitPerps: SubmitHandler<PerpsSchema> = async (values) => {
@@ -450,6 +466,7 @@ export default function Trade() {
     });
     console.log("Drift perps orderParams", orderParams);
 
+    setIsTxPending(true);
     try {
       const txId = await glamClient.drift.placeOrder(fundPDA, orderParams);
       toast({
@@ -462,6 +479,7 @@ export default function Trade() {
         variant: "destructive",
       });
     }
+    setIsTxPending(false);
   };
 
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -470,16 +488,17 @@ export default function Trade() {
       venue: "Jupiter",
       swapType: "Swap",
       slippage: 0.1,
-      items: [""],
+      filterType: "Exclude",
+      items: [],
       exactMode: "ExactIn",
       maxAccounts: 20,
       from: 0,
       to: 0,
       directRouteOnly: false,
       useWSOL: false,
-      versionedTransactions: false,
-      fromAsset: "SOL", // Add this line
-      toAsset: "SOL", // Add this line
+      versionedTransactions: true,
+      fromAsset: "SOL",
+      toAsset: "SOL",
     });
     setFromAsset("USDC");
     setToAsset("SOL");
@@ -487,13 +506,10 @@ export default function Trade() {
   };
 
   const handleFlip = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
+    event.preventDefault();
     const temp = fromAsset;
     setFromAsset(toAsset);
     setToAsset(temp);
-
-    const fromValue = swapForm.getValues("from");
-    const toValue = swapForm.getValues("to");
   };
 
   useEffect(() => {
@@ -579,12 +595,14 @@ export default function Trade() {
             <TabsTrigger value="perps" className="w-full">
               Perps
             </TabsTrigger>
-            {/*<TabsTrigger value="options" className="w-full" disabled>*/}
-            {/*  Options*/}
-            {/*  <span className="opacity-50 ml-1">*/}
-            {/*    Soon<sup className="text-[9px]">TM</sup>*/}
-            {/*  </span>*/}
-            {/*</TabsTrigger>*/}
+            <DevOnly>
+              <TabsTrigger value="options" className="w-full" disabled>
+                Options
+                <span className="opacity-50 ml-1">
+                  Soon<sup className="text-[9px]">TM</sup>
+                </span>
+              </TabsTrigger>
+            </DevOnly>
           </TabsList>
 
           {/*SWAP TAB*/}
@@ -673,29 +691,6 @@ export default function Trade() {
                     >
                       <ColumnSpacingIcon />
                     </Button>
-                    {/*<FormField*/}
-                    {/*  control={swapForm.control}*/}
-                    {/*  name="slippage"*/}
-                    {/*  render={({ field }) => (*/}
-                    {/*    <FormItem>*/}
-                    {/*      <FormLabel>Slippage</FormLabel>*/}
-                    {/*      <FormControl>*/}
-                    {/*        <Input*/}
-                    {/*          placeholder="Slippage"*/}
-                    {/*          type="number"*/}
-                    {/*          min="0.1"*/}
-                    {/*          step="0.1"*/}
-                    {/*          onChange={(e) =>*/}
-                    {/*            field.onChange(parseFloat(e.target.value))*/}
-                    {/*          }*/}
-                    {/*          value={field.value}*/}
-                    {/*        />*/}
-                    {/*      </FormControl>*/}
-                    {/*      /!*<FormDescription>&nbsp;</FormDescription>*!/*/}
-                    {/*      <FormMessage />*/}
-                    {/*    </FormItem>*/}
-                    {/*  )}*/}
-                    {/*/>*/}
                     <AssetInput
                       name="slippage"
                       label="Slippage"
@@ -729,21 +724,30 @@ export default function Trade() {
                       <FormLabel>Venues</FormLabel>
                       <div className="space-y-4">
                         <span className="flex w-full gap-4">
-                          <ToggleGroup
-                            type="single"
-                            value={filterType}
-                            onValueChange={(value) =>
-                              setFilterType(value || "include")
-                            }
-                            className="justify-start"
-                          >
-                            <ToggleGroupItem value="include">
-                              Include
-                            </ToggleGroupItem>
-                            <ToggleGroupItem value="exclude">
-                              Exclude
-                            </ToggleGroupItem>
-                          </ToggleGroup>
+                          <FormField
+                            control={swapForm.control}
+                            name="filterType"
+                            render={({ field }) => (
+                              <ToggleGroup
+                                type="single"
+                                value={field.value}
+                                onValueChange={(value) =>
+                                  swapForm.setValue(
+                                    "filterType",
+                                    value as "Include" | "Exclude"
+                                  )
+                                }
+                                className="justify-start"
+                              >
+                                <ToggleGroupItem value="Include">
+                                  Include
+                                </ToggleGroupItem>
+                                <ToggleGroupItem value="Exclude">
+                                  Exclude
+                                </ToggleGroupItem>
+                              </ToggleGroup>
+                            )}
+                          />
 
                           <Input
                             type="search"
@@ -755,63 +759,51 @@ export default function Trade() {
                         </span>
 
                         <ScrollArea className="h-[300px] w-full border p-4">
-                          <FormField
-                            control={swapForm.control}
-                            name="items"
-                            render={() => (
-                              <FormItem>
-                                {isLoading // Skeleton loading state
-                                  ? Array.from({ length: 10 }).map(
-                                      (_, index) => (
-                                        <div
-                                          key={index}
-                                          className="flex items-center space-x-3 mb-2"
-                                        >
-                                          <Skeleton className="w-4 h-4" />
-                                          <Skeleton className="w-[200px] h-[20px]" />
-                                        </div>
-                                      )
-                                    )
-                                  : filteredItems.map((item) => (
-                                      <FormField
+                          <FormItem>
+                            {isDexesListLoading // Skeleton loading state
+                              ? Array.from({ length: 10 }).map((_, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex items-center space-x-3 mb-2"
+                                  >
+                                    <Skeleton className="w-4 h-4" />
+                                    <Skeleton className="w-[200px] h-[20px]" />
+                                  </div>
+                                ))
+                              : filteredItems.map((item) => (
+                                  <FormField
+                                    key={item.id}
+                                    control={swapForm.control}
+                                    name="items"
+                                    render={({ field }) => (
+                                      <FormItem
                                         key={item.id}
-                                        control={swapForm.control}
-                                        name="items"
-                                        render={({ field }) => (
-                                          <FormItem
-                                            key={item.id}
-                                            className="flex flex-row items-start space-x-3 space-y-0 mb-2"
-                                          >
-                                            <FormControl>
-                                              <Checkbox
-                                                checked={field.value?.includes(
-                                                  item.id
-                                                )}
-                                                onCheckedChange={(checked) => {
-                                                  return checked
-                                                    ? field.onChange([
-                                                        ...field.value,
-                                                        item.id,
-                                                      ])
-                                                    : field.onChange(
-                                                        field.value?.filter(
-                                                          (value) =>
-                                                            value !== item.id
-                                                        )
-                                                      );
-                                                }}
-                                              />
-                                            </FormControl>
-                                            <FormLabel className="font-normal">
-                                              {item.label}
-                                            </FormLabel>
-                                          </FormItem>
-                                        )}
-                                      />
-                                    ))}
-                              </FormItem>
-                            )}
-                          />
+                                        className="flex flex-row items-start space-x-3 space-y-0 mb-2"
+                                      >
+                                        <FormControl>
+                                          <Checkbox
+                                            checked={field.value?.includes(
+                                              item.label
+                                            )}
+                                            onCheckedChange={(checked) => {
+                                              const val = checked
+                                                ? [...field.value, item.label]
+                                                : field.value?.filter(
+                                                    (value) =>
+                                                      value !== item.label
+                                                  );
+                                              return field.onChange(val);
+                                            }}
+                                          />
+                                        </FormControl>
+                                        <FormLabel className="font-normal">
+                                          {item.label}
+                                        </FormLabel>
+                                      </FormItem>
+                                    )}
+                                  />
+                                ))}
+                          </FormItem>
                         </ScrollArea>
                       </div>
                     </FormItem>
@@ -946,7 +938,11 @@ export default function Trade() {
                     >
                       Clear
                     </Button>
-                    <Button className="w-1/2" type="submit">
+                    <Button
+                      className="w-1/2"
+                      type="submit"
+                      loading={isTxPending}
+                    >
                       Swap
                     </Button>
                   </div>
@@ -1361,7 +1357,11 @@ export default function Trade() {
                     >
                       Clear
                     </Button>
-                    <Button className="w-1/2" type="submit">
+                    <Button
+                      className="w-1/2"
+                      type="submit"
+                      loading={isTxPending}
+                    >
                       Submit
                     </Button>
                   </div>
@@ -1835,7 +1835,11 @@ export default function Trade() {
                     >
                       Clear
                     </Button>
-                    <Button className="w-1/2" type="submit">
+                    <Button
+                      className="w-1/2"
+                      type="submit"
+                      loading={isTxPending}
+                    >
                       Submit
                     </Button>
                   </div>
