@@ -42,7 +42,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";
 import { ExplorerLink } from "@/components/ExplorerLink";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, VersionedTransaction } from "@solana/web3.js";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -613,9 +613,44 @@ export default function Trade() {
     }
   };
 
-  const handleSettle = (event: React.MouseEvent<HTMLButtonElement>) => {
-    console.log("Settle button clicked:", settleValue);
+  const handleSettle = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
+
+    if (!fundPDA || !wallet || !treasury) {
+      console.error(
+        "Cannot cancel orders due to missing fund, wallet, or treasury"
+      );
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "https://rest.glam.systems/v0/drift/settle_pnl",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user: glamClient.drift.getUser(fundPDA)[0].toBase58(),
+            authority: glamClient.getWallet().publicKey.toBase58(),
+            simulate: false,
+            estimatePriorityFee: true,
+          }),
+        }
+      );
+      const tx = await response.text();
+      const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
+      const txId = await glamClient.sendAndConfirm(vTx);
+      toast({
+        title: "Successfully settled PnL",
+        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to settle PnL",
+        description: parseTxError(error),
+        variant: "destructive",
+      });
+    }
   };
 
   return (
