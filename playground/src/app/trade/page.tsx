@@ -220,6 +220,7 @@ export default function Trade() {
     wallet,
     glamClient,
     jupTokenList: tokenList,
+    driftMarketConfigs,
   } = useGlam();
   const [fromAsset, setFromAsset] = useState<string>("USDC");
   const [toAsset, setToAsset] = useState<string>("SOL");
@@ -551,19 +552,6 @@ export default function Trade() {
     ? glamClient.drift.getUser(fundPDA)[0].toBase58()
     : "";
 
-  const getButtonText = () => {
-    switch (activeTab) {
-      case "swap":
-        return "Swap";
-      case "spot":
-        return "Place Spot Order";
-      case "perps":
-        return "Place Perp Order";
-      default:
-        return "Submit";
-    }
-  };
-
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     switch (activeTab) {
@@ -581,6 +569,54 @@ export default function Trade() {
 
   const [cancelValue, setCancelValue] = React.useState("cancelAll");
   const [settleValue, setSettleValue] = React.useState("settlePnL");
+
+  const handleCancelPerps = async (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+
+    if (!fundPDA || !wallet || !treasury) {
+      console.error(
+        "Cannot cancel orders due to missing fund, wallet, or treasury"
+      );
+      return;
+    }
+
+    const market = perpsForm.getValues().perpsMarket;
+    const marketConfig = driftMarketConfigs.perp.find(
+      (config) => config.symbol === market
+    );
+    if (!marketConfig) {
+      toast({
+        title: `Cannot find drift market configs for ${market}`,
+        variant: "destructive",
+      });
+    }
+
+    try {
+      const txId = await glamClient.drift.cancelOrders(
+        fundPDA,
+        MarketType.PERP,
+        marketConfig?.marketIndex!,
+        PositionDirection.LONG
+      );
+      toast({
+        title: "Orders canceled",
+        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to cancel orders",
+        description: parseTxError(error),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSettle = (event: React.MouseEvent<HTMLButtonElement>) => {
+    console.log("Settle button clicked:", settleValue);
+    event.preventDefault();
+  };
 
   return (
     <PageContentWrapper>
@@ -1853,6 +1889,7 @@ export default function Trade() {
                       <Button
                         variant="outline"
                         className="rounded-r-none px-8 py-2 w-1/2"
+                        onClick={(event) => handleCancelPerps(event)}
                       >
                         Cancel
                       </Button>
@@ -1901,6 +1938,7 @@ export default function Trade() {
                       <Button
                         variant="outline"
                         className="rounded-r-none px-8 py-2 w-1/2"
+                        onClick={(event) => handleSettle(event)}
                       >
                         Settle
                       </Button>

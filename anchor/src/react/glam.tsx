@@ -53,6 +53,7 @@ interface GlamProviderContext {
   prices: PythPrice[];
   setActiveFund: any;
   jupTokenList?: JupTokenListItem[];
+  driftMarketConfigs: DriftMarketConfigs;
 }
 
 interface TokenAccount {
@@ -74,6 +75,38 @@ interface FundCache {
   pubkey: PublicKey;
   imageKey: string;
   name: string;
+}
+
+interface PerpMarketConfig {
+  fullName: string;
+  categories: string[];
+  symbol: string;
+  baseAsset: string;
+  marketIndex: number;
+  launchTs: string;
+  oracle: string;
+  pythPullOraclePDA: string;
+  pythFeedId: string;
+  marketPDA: string;
+}
+
+interface SpotMarketConfig {
+  symbol: string;
+  marketIndex: number;
+  launchTs?: string;
+  oracle: string;
+  pythPullOraclePDA: string;
+  pythFeedId: string;
+  marketPDA: string;
+  mint: string;
+  serumMarket?: string;
+  phoenixMarket?: string;
+  openBookMarket?: string;
+}
+
+interface DriftMarketConfigs {
+  perp: PerpMarketConfig[];
+  spot: SpotMarketConfig[];
 }
 
 const GlamContext = createContext<GlamProviderContext>(
@@ -147,6 +180,9 @@ export function GlamProvider({
   const [allFunds, setAllFunds] = useState([] as FundModel[]);
   const [jupTokenList, setJupTokenList] = useState([] as JupTokenListItem[]);
   const [pythPrices, setPythPrices] = useState([] as PythPrice[]);
+  const [driftMarketConfigs, setDriftMarketConfigs] = useState(
+    {} as DriftMarketConfigs
+  );
 
   const activeFund = deserializeFundCache(useAtomValue(fundAtom)) as FundCache;
 
@@ -291,10 +327,23 @@ export function GlamProvider({
     },
     staleTime: 1000 * 60 * 60, // 1 hour
   });
+  useEffect(() => setJupTokenList(tokenList), [tokenList]);
 
-  useEffect(() => {
-    setJupTokenList(tokenList);
-  }, [tokenList]);
+  //
+  // Fetch drift market configs
+  //
+  const { data: marketConfigs } = useQuery({
+    queryKey: ["drift-market-configs"],
+    queryFn: async () => {
+      const response = await fetch(
+        "https://rest.glam.systems/v0/drift/market_configs/"
+      );
+      const data = await response.json();
+      return data;
+    },
+    staleTime: 1000 * 60 * 60, // 1 hour
+  });
+  useEffect(() => setDriftMarketConfigs(marketConfigs), [marketConfigs]);
 
   const value: GlamProviderContext = {
     glamClient,
@@ -309,6 +358,7 @@ export function GlamProvider({
     jupTokenList,
     prices: pythPrices,
     setActiveFund,
+    driftMarketConfigs,
   };
 
   return <GlamContext.Provider value={value}>{children}</GlamContext.Provider>;
