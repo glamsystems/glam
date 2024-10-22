@@ -532,6 +532,7 @@ export default function Trade() {
   const handleSideChange = (value: string) => {
     if (value) {
       spotForm.setValue("side", value as "Buy" | "Sell");
+      perpsForm.setValue("side", value as "Buy" | "Sell");
     }
   };
 
@@ -1107,7 +1108,7 @@ export default function Trade() {
                               className="w-full gap-4 mt-2"
                             >
                               <ToggleGroupItem
-                                value="buy"
+                                value="Buy"
                                 aria-label="Buy"
                                 variant="outline"
                                 className="w-full transition-all border-emerald-800 text-emerald-800 hover:border-emerald-600 hover:text-emerald-600 hover:bg-emerald-50 data-[state=on]:border-emerald-800 data-[state=on]:text-emerald-800 data-[state=on]:bg-emerald-100 dark:border-emerald-950 dark:text-emerald-950 dark:hover:border-emerald-500 dark:hover:text-emerald-500 dark:hover:bg-emerald-950 dark:data-[state=on]:border-emerald-400 dark:data-[state=on]:text-emerald-400 dark:data-[state=on]:bg-emerald-900 dark:data-[state=on]:bg-opacity-25"
@@ -1115,7 +1116,7 @@ export default function Trade() {
                                 Buy
                               </ToggleGroupItem>
                               <ToggleGroupItem
-                                value="sell"
+                                value="Sell"
                                 aria-label="Sell"
                                 variant="outline"
                                 className="transition-all w-full border-rose-800 text-rose-800 hover:border-rose-600 hover:text-rose-600 hover:bg-rose-50 data-[state=on]:border-rose-800 data-[state=on]:text-rose-800 data-[state=on]:bg-rose-100 dark:border-rose-950 dark:text-rose-950 dark:hover:border-rose-500 dark:hover:text-rose-500 dark:hover:bg-rose-950 dark:data-[state=on]:border-rose-400 dark:data-[state=on]:text-rose-400 dark:data-[state=on]:bg-rose-900 dark:data-[state=on]:bg-opacity-25"
