@@ -182,7 +182,6 @@ export class BaseClient {
     }
     latestBlockhash = await this.getLatestBlockhash();
 
-    const connection = this.provider.connection;
     const instructions = tx.instructions;
 
     // Set Jito tip or compute unit price (or nothing)
@@ -202,29 +201,37 @@ export class BaseClient {
       );
     }
 
-    // Set compute unit limit or autodetect by simulating the tx
-    let units = computeUnitLimit || null;
-    if (!computeUnitLimit) {
-      try {
-        units = await getSimulationComputeUnits(
-          connection,
-          instructions,
-          signer,
-          lookupTables
-        );
-      } catch (e) {
-        // ignore
-        // when we run tests with failure cases, this RPC call fails with
-        // an incorrect error message so we should ignore it
-        // in the regular case, if this errors the tx will have the default CUs
+    // TODO: Phantom can automatically estimates fees
+    // https://docs.phantom.app/developer-powertools/solana-priority-fees#how-phantom-applies-priority-fees-to-dapp-transactions
+    const isPhantom = false;
+    if (!isPhantom) {
+      // Set compute unit limit or autodetect by simulating the tx
+      const connection = this.provider.connection;
+      let units = computeUnitLimit || null;
+      if (!computeUnitLimit) {
+        try {
+          units = await getSimulationComputeUnits(
+            connection,
+            instructions,
+            signer,
+            lookupTables
+          );
+        } catch (e) {
+          // ignore
+          // when we run tests with failure cases, this RPC call fails with
+          // an incorrect error message so we should ignore it
+          // in the regular case, if this errors the tx will have the default CUs
+        }
       }
-    }
-    if (units) {
-      // ComputeBudgetProgram.setComputeUnitLimit costs 150 CUs
-      units += 150;
-      // More CUs for tests as logs are more verbose
-      !this.isMainnet() && (units += 10_000);
-      instructions.unshift(ComputeBudgetProgram.setComputeUnitLimit({ units }));
+      if (units) {
+        // ComputeBudgetProgram.setComputeUnitLimit costs 150 CUs
+        units += 150;
+        // More CUs for tests as logs are more verbose
+        !this.isMainnet() && (units += 10_000);
+        instructions.unshift(
+          ComputeBudgetProgram.setComputeUnitLimit({ units })
+        );
+      }
     }
 
     const messageV0 = new TransactionMessage({
@@ -407,75 +414,6 @@ export class BaseClient {
       }
       throw e;
     }
-  }
-  async getStakeAccounts(fundPDA: PublicKey): Promise<PublicKey[]> {
-    const STAKE_ACCOUNT_SIZE = 200;
-    const accounts = await this.provider.connection.getParsedProgramAccounts(
-      StakeProgram.programId,
-      {
-        filters: [
-          {
-            dataSize: STAKE_ACCOUNT_SIZE,
-          },
-          {
-            memcmp: {
-              offset: 12,
-              bytes: this.getTreasuryPDA(fundPDA).toBase58(),
-            },
-          },
-        ],
-      }
-    );
-    // order by lamports desc
-    return accounts
-      .sort((a, b) => b.account.lamports - a.account.lamports)
-      .map((a) => a.pubkey);
-  }
-
-  async getTickets(fundPDA: PublicKey): Promise<
-    {
-      address: PublicKey;
-      lamports: number;
-      createdEpoch: number;
-      isDue: boolean;
-    }[]
-  > {
-    // TicketAccount {
-    //   stateAddress: web3.PublicKey; // offset 8
-    //   beneficiary: web3.PublicKey;  // offset 40
-    //   lamportsAmount: BN;           // offset 72
-    //   createdEpoch: BN;
-    // }
-    const connection = this.provider.connection;
-    const accounts = await connection.getParsedProgramAccounts(
-      MARINADE_PROGRAM_ID,
-      {
-        filters: [
-          {
-            dataSize: 88,
-          },
-          {
-            memcmp: {
-              offset: 40,
-              bytes: this.getTreasuryPDA(fundPDA).toBase58(),
-            },
-          },
-        ],
-      }
-    );
-    const currentEpoch = await connection.getEpochInfo();
-    return accounts.map((a) => {
-      const lamports = Number((a.account.data as Buffer).readBigInt64LE(72));
-      const createdEpoch = Number(
-        (a.account.data as Buffer).readBigInt64LE(80)
-      );
-      return {
-        address: a.pubkey,
-        lamports,
-        createdEpoch,
-        isDue: currentEpoch.epoch > createdEpoch,
-      };
-    });
   }
 
   getOpenfundsPDA(fundPDA: PublicKey): PublicKey {

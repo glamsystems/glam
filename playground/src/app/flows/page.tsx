@@ -509,7 +509,7 @@ function InvestorWidget({ fundId }: { fundId: string }) {
       const asset = fund.assets[0];
       const decimals = getDecimals(asset, walletBalances?.tokenAccounts);
       const amount = new BN(values.amountIn * 10 ** decimals);
-      txId = await glamClient.investor.subscribe(fund.id, asset, amount);
+      txId = await glamClient.investor.subscribe(fund.id, asset, amount, fund);
     }
 
     queryClient.invalidateQueries({ queryKey: walletBalancesQueryKey });
@@ -704,10 +704,7 @@ export default function Flows() {
                       className="flex items-center"
                     >
                       <span className="mr-2">
-                        <Sparkle
-                          address={(f as any)?.imageKey}
-                          size={24}
-                        />
+                        <Sparkle address={(f as any)?.imageKey} size={24} />
                       </span>
                       {f.name}
                     </CommandItem>

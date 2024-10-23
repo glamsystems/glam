@@ -15,6 +15,7 @@ import {
 
 import { BaseClient, ApiTxOptions } from "./base";
 import { WSOL } from "../constants";
+import { FundModel } from "../models";
 
 export class InvestorClient {
   public constructor(readonly base: BaseClient) {}
@@ -27,6 +28,7 @@ export class InvestorClient {
     fund: PublicKey,
     asset: PublicKey,
     amount: BN,
+    fundModel: FundModel = undefined,
     shareClassId: number = 0,
     skipState: boolean = true
   ): Promise<TransactionSignature> {
@@ -34,6 +36,7 @@ export class InvestorClient {
       fund,
       asset,
       amount,
+      fundModel,
       shareClassId,
       skipState,
       {}
@@ -45,6 +48,7 @@ export class InvestorClient {
     fund: PublicKey,
     amount: BN,
     inKind: boolean = false,
+    fundModel: FundModel = undefined,
     shareClassId: number = 0,
     skipState: boolean = true
   ): Promise<TransactionSignature> {
@@ -52,6 +56,7 @@ export class InvestorClient {
       fund,
       amount,
       inKind,
+      fundModel,
       shareClassId,
       skipState,
       {}
@@ -67,6 +72,7 @@ export class InvestorClient {
     fund: PublicKey,
     asset: PublicKey,
     amount: BN,
+    fundModel: FundModel = undefined,
     shareClassId: number = 0,
     skipState: boolean = true,
     apiOptions: ApiTxOptions
@@ -97,7 +103,10 @@ export class InvestorClient {
     // 2. marinade ticket
     // 3. stake accounts
     // @ts-ignore
-    const fundModel = await this.base.fetchFund(fund);
+    if (!fundModel) {
+      //@ts-ignore
+      fundModel = await this.base.fetchFund(fund);
+    }
     const remainingAccounts = (fundModel.assets || []).flatMap((asset: any) => {
       const assetMeta = this.base.getAssetMeta(asset.toBase58());
       const treasuryAta = this.base.getTreasuryAta(
@@ -118,12 +127,8 @@ export class InvestorClient {
       ];
     });
 
-    const tickets = (await this.base.getTickets(fund)).map(
-      (ticket) => ticket.address
-    );
-    const stakes = await this.base.getStakeAccounts(fund);
-    remainingAccounts.push(
-      ...tickets.concat(stakes).map((address) => ({
+    remainingAccounts.concat(
+      (fundModel.externalTreasuryAccounts || []).map((address: PublicKey) => ({
         pubkey: address,
         isSigner: false,
         isWritable: false,
@@ -203,6 +208,7 @@ export class InvestorClient {
     fund: PublicKey,
     amount: BN,
     inKind: boolean = false,
+    fundModel: FundModel = undefined,
     shareClassId: number = 0,
     skipState: boolean = true,
     apiOptions: ApiTxOptions
@@ -215,7 +221,10 @@ export class InvestorClient {
     const signerShareAta = this.base.getShareClassAta(signer, shareClass);
 
     // remaining accounts = assets + signer atas + treasury atas + pricing to compute AUM
-    const fundModel = await this.base.fetchFund(fund);
+    if (!fundModel) {
+      //@ts-ignore
+      fundModel = await this.base.fetchFund(fund);
+    }
     const remainingAccounts = (fundModel.assets || []).flatMap((asset: any) => {
       const assetMeta = this.base.getAssetMeta(asset.toBase58());
       const treasuryAta = this.base.getTreasuryAta(
@@ -244,12 +253,8 @@ export class InvestorClient {
       ];
     });
 
-    const tickets = (await this.base.getTickets(fund)).map(
-      (ticket) => ticket.address
-    );
-    const stakes = await this.base.getStakeAccounts(fund);
-    remainingAccounts.push(
-      ...tickets.concat(stakes).map((address) => ({
+    remainingAccounts.concat(
+      (fundModel.externalTreasuryAccounts || []).map((address: PublicKey) => ({
         pubkey: address,
         isSigner: false,
         isWritable: false,
