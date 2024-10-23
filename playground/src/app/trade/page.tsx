@@ -38,6 +38,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
 import { Asset, AssetInput } from "@/components/AssetInput";
+import { SlippageInput } from "@/components/SlippageInput";
 import React, { useEffect, useMemo, useState } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";
@@ -84,7 +85,13 @@ import { useQuery } from "@tanstack/react-query";
 import { DevOnly } from "@/components/DevOnly";
 import { parseTxError } from "@/lib/error";
 
-const spotMarkets = DRIFT_SPOT_MARKETS.map((x) => ({ label: x, value: x }));
+// "USDC/USDC" is a placeholder, filter it out
+const spotMarkets = DRIFT_SPOT_MARKETS.filter((m) => m !== "USDC/USDC").map(
+  (x) => ({
+    label: x,
+    value: x,
+  })
+);
 const perpsMarkets = DRIFT_PERP_MARKETS.map((x) => ({ label: x, value: x }));
 
 const PERSISTED_FIELDS = {
@@ -96,7 +103,7 @@ const PERSISTED_FIELDS = {
     "maxAccounts",
     "directRouteOnly",
     "useWSOL",
-    "items",
+    "dexes",
     "versionedTransactions",
   ],
   spot: [
@@ -152,6 +159,10 @@ function usePersistedForm<T extends z.ZodTypeAny>(
             value[field as keyof z.infer<T>];
         }
       });
+      if (formKey === "swap") {
+        console.log("usePersistedForm", formKey, persistedValues);
+      }
+
       localStorage.setItem(formKey, JSON.stringify(persistedValues));
     });
     return () => subscription.unsubscribe();
@@ -165,7 +176,7 @@ const swapSchema = z.object({
   swapType: z.enum(["Swap"]),
   filterType: z.enum(["Include", "Exclude"]),
   slippage: z.number().nonnegative().lte(1),
-  items: z.array(z.string()).refine((value) => value.some((item) => item), {
+  dexes: z.array(z.string()).refine((value) => value.some((item) => item), {
     message: "You have to select at least one exchange.",
   }),
   exactMode: z.enum(["ExactIn", "ExactOut"]),
@@ -240,17 +251,17 @@ export default function Trade() {
         "https://quote-api.jup.ag/v6/program-id-to-label"
       );
       const data = await response.json();
-      const formattedItems = Object.entries(data).map(([id, label]) => ({
+      const formatted = Object.entries(data).map(([id, label]) => ({
         id,
         label: label as string,
       }));
 
-      const sortedItems = formattedItems.sort((a, b) =>
+      const sortedDexes = formatted.sort((a, b) =>
         a.label.localeCompare(b.label)
       );
 
       setIsDexesListLoading(false);
-      return sortedItems; // return the data that will be cached
+      return sortedDexes; // return the data that will be cached
     },
   });
 
@@ -263,7 +274,7 @@ export default function Trade() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredItems = dexesList.filter((item) =>
+  const filteredDexes = dexesList.filter((item) =>
     item.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -295,9 +306,9 @@ export default function Trade() {
   const swapForm = usePersistedForm("swap", swapSchema, {
     venue: "Jupiter",
     swapType: "Swap",
-    filterType: "Exclude",
-    slippage: 0.1,
-    items: [],
+    filterType: "Include",
+    slippage: 0.05,
+    dexes: jupDexes?.map((x) => x.label) || [],
     exactMode: "ExactIn",
     maxAccounts: 20,
     from: 0,
@@ -311,7 +322,7 @@ export default function Trade() {
 
   const spotForm = usePersistedForm("spot", spotSchema, {
     venue: "Drift",
-    spotMarket: "SOL-USDC",
+    spotMarket: "SOL/USDC",
     spotType: "Limit",
     side: "Buy",
     limitPrice: 0,
@@ -339,15 +350,15 @@ export default function Trade() {
     leverage: 0,
   });
 
-  useEffect(() => {
-    const perpsLeverageValue = perpsForm.watch("leverage");
-    console.log("Perps form leverage value:", perpsLeverageValue);
-  }, [perpsForm]);
+  // useEffect(() => {
+  //   const perpsLeverageValue = perpsForm.watch("leverage");
+  //   console.log("Perps form leverage value:", perpsLeverageValue);
+  // }, [perpsForm]);
 
-  useEffect(() => {
-    const spotLeverageValue = spotForm.watch("leverage");
-    console.log("Spot form leverage value:", spotLeverageValue);
-  }, [spotForm]);
+  // useEffect(() => {
+  //   const spotLeverageValue = spotForm.watch("leverage");
+  //   console.log("Spot form leverage value:", spotLeverageValue);
+  // }, [spotForm]);
 
   const spotOrderType = spotForm.watch("spotType");
   const spotReduceOnly = spotForm.watch("spotReduceOnly");
@@ -390,7 +401,7 @@ export default function Trade() {
     }
 
     let dexesParam;
-    const dexes = values.items.filter((item) => item !== "");
+    const dexes = values.dexes.filter((item) => item !== "");
     if (values.filterType === "Include") {
       dexesParam = { dexes };
     } else {
@@ -495,13 +506,13 @@ export default function Trade() {
   };
 
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
+    event.preventDefault();
     swapForm.reset({
       venue: "Jupiter",
       swapType: "Swap",
-      slippage: 0.1,
-      filterType: "Exclude",
-      items: [],
+      slippage: 0.05,
+      filterType: "Include",
+      dexes: jupDexes?.map((x) => x.label) || [],
       exactMode: "ExactIn",
       maxAccounts: 20,
       from: 0,
@@ -799,14 +810,7 @@ export default function Trade() {
                     >
                       <ColumnSpacingIcon />
                     </Button>
-                    <AssetInput
-                      name="slippage"
-                      label="Slippage"
-                      balance={NaN}
-                      selectedAsset="%"
-                      hideBalance={true}
-                      disableAssetChange={true}
-                    />
+                    <SlippageInput name="slippage" label="Slippage" />
                     <AssetInput
                       className="min-w-1/2 w-1/2"
                       name="to"
@@ -824,7 +828,7 @@ export default function Trade() {
                       balance={NaN}
                       selectedAsset={toAsset}
                       onSelectAsset={setToAsset}
-                    />{" "}
+                    />
                   </div>
 
                   <div className="flex flex-row gap-4 items-start">
@@ -839,12 +843,12 @@ export default function Trade() {
                               <ToggleGroup
                                 type="single"
                                 value={field.value}
-                                onValueChange={(value) =>
+                                onValueChange={(value) => {
                                   swapForm.setValue(
                                     "filterType",
                                     value as "Include" | "Exclude"
-                                  )
-                                }
+                                  );
+                                }}
                                 className="justify-start"
                               >
                                 <ToggleGroupItem value="Include">
@@ -878,11 +882,11 @@ export default function Trade() {
                                     <Skeleton className="w-[200px] h-[20px]" />
                                   </div>
                                 ))
-                              : filteredItems.map((item) => (
+                              : filteredDexes.map((item) => (
                                   <FormField
                                     key={item.id}
                                     control={swapForm.control}
-                                    name="items"
+                                    name="dexes"
                                     render={({ field }) => (
                                       <FormItem
                                         key={item.id}
@@ -1145,7 +1149,7 @@ export default function Trade() {
                                         onSelect={() => {
                                           spotForm.setValue(
                                             "spotMarket",
-                                            spotMarket.value as "SOL-USDC"
+                                            spotMarket.value
                                           );
                                         }}
                                       >
@@ -1271,15 +1275,8 @@ export default function Trade() {
                   ) : spotOrderType === "Market" ? (
                     <>
                       <div className="flex space-x-4 items-start">
-                        <AssetInput
-                          className="min-w-1/3 w-1/3"
-                          name="slippage"
-                          label="Slippage"
-                          balance={NaN}
-                          selectedAsset="%"
-                          hideBalance={true}
-                          disableAssetChange={true}
-                        />
+                        <SlippageInput name="slippage" label="Slippage" />
+
                         <AssetInput
                           className="min-w-1/3 w-1/3"
                           name="size"
@@ -1725,15 +1722,8 @@ export default function Trade() {
                   ) : perpsOrderType === "Market" ? (
                     <>
                       <div className="flex space-x-4 items-start">
-                        <AssetInput
-                          className="min-w-1/3 w-1/3"
-                          name="slippage"
-                          label="Slippage"
-                          balance={NaN}
-                          selectedAsset="%"
-                          hideBalance={true}
-                          disableAssetChange={true}
-                        />
+                        <SlippageInput name="slippage" label="Slippage" />
+
                         <AssetInput
                           className="min-w-1/3 w-1/3"
                           name="size"
