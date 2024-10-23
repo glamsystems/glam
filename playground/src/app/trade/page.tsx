@@ -33,6 +33,7 @@ import {
   CheckIcon,
   ColumnSpacingIcon,
   ExternalLinkIcon,
+  InfoCircledIcon,
 } from "@radix-ui/react-icons";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Switch } from "@/components/ui/switch";
@@ -60,7 +61,6 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-import { InfoIcon } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -90,7 +90,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Separator } from "@/components/ui/separator";
 
 // "USDC/USDC" is a placeholder, filter it out
 const spotMarkets = DRIFT_SPOT_MARKETS.filter((m) => m !== "USDC/USDC").map(
@@ -819,7 +818,7 @@ export default function Trade() {
                     </Button>
                     <SlippageInput name="slippage" label="Slippage" />
                     <AssetInput
-                      className="min-w-1/2 w-1/2"
+                      className="min-w-1/3 w-1/3"
                       name="to"
                       label="To"
                       assets={tokenList?.map(
@@ -1310,7 +1309,11 @@ export default function Trade() {
                   ) : spotOrderType === "Market" ? (
                     <>
                       <div className="flex space-x-4 items-start">
-                        <SlippageInput name="slippage" label="Slippage" />
+                        <SlippageInput
+                          name="slippage"
+                          label="Slippage"
+                          className="min-w-1/3 w-1/3"
+                        />
 
                         <AssetInput
                           className="min-w-1/3 w-1/3"
@@ -1397,7 +1400,7 @@ export default function Trade() {
                   {/*    <TooltipProvider>*/}
                   {/*      <Tooltip>*/}
                   {/*        <TooltipTrigger className="flex items-center">*/}
-                  {/*          <InfoIcon className="w-4 h-4 mr-1"></InfoIcon>*/}
+                  {/*          <InfoCircledIcon className="w-4 h-4 mr-1"></InfoCircledIcon>*/}
                   {/*          <p>Margin Trading Disabled</p>*/}
                   {/*        </TooltipTrigger>*/}
                   {/*        <TooltipContent side="right">*/}
@@ -1770,7 +1773,11 @@ export default function Trade() {
                   ) : perpsOrderType === "Market" ? (
                     <>
                       <div className="flex space-x-4 items-start">
-                        <SlippageInput name="slippage" label="Slippage" />
+                        <SlippageInput
+                          name="slippage"
+                          label="Slippage"
+                          className="min-w-1/3 w-1/3"
+                        />
 
                         <AssetInput
                           className="min-w-1/3 w-1/3"
@@ -1865,7 +1872,7 @@ export default function Trade() {
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger className="flex items-center">
-                                <InfoIcon className="w-4 h-4 mr-1"></InfoIcon>
+                                <InfoCircledIcon className="w-4 h-4 mr-1"></InfoCircledIcon>
                                 <p>Leverage Limit Enabled</p>
                               </TooltipTrigger>
                               <TooltipContent side="right">
