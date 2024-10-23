@@ -442,8 +442,43 @@ export default function Trade() {
   };
 
   const onSubmitSpot: SubmitHandler<SpotSchema> = async (values) => {
+    if (!fundPDA || !wallet || !treasury) {
+      console.error(
+        "Cannot submit perps order due to missing fund, wallet, or treasury"
+      );
+      return;
+    }
+
+    console.log("Submit spot order:", values);
+
+    const orderParams = getOrderParams({
+      orderType:
+        values.spotType === "Market" ? OrderType.MARKET : OrderType.LIMIT,
+      marketType: MarketType.SPOT,
+      direction:
+        values.side === "Buy"
+          ? PositionDirection.LONG
+          : PositionDirection.SHORT,
+      marketIndex: DRIFT_SPOT_MARKETS.indexOf(values.spotMarket),
+      baseAssetAmount: new anchor.BN(values.size * LAMPORTS_PER_SOL),
+      price: new anchor.BN(values.limitPrice * 10 ** 6),
+    });
+    console.log("Drift spot orderParams", orderParams);
+
     setIsTxPending(true);
-    console.log("Submit Spot:", values);
+    try {
+      const txId = await glamClient.drift.placeOrder(fundPDA, orderParams);
+      toast({
+        title: "Spot order submitted",
+        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Failed to submit spot order",
+        description: parseTxError(error),
+        variant: "destructive",
+      });
+    }
     setIsTxPending(false);
   };
 
@@ -571,8 +606,9 @@ export default function Trade() {
   const [cancelValue, setCancelValue] = React.useState("cancelAll");
   const [settleValue, setSettleValue] = React.useState("settlePnL");
 
-  const handleCancelPerps = async (
-    event: React.MouseEvent<HTMLButtonElement>
+  const handleCancel = async (
+    event: React.MouseEvent<HTMLButtonElement>,
+    marketType: "Perps" | "Spot"
   ) => {
     event.preventDefault();
 
@@ -583,21 +619,29 @@ export default function Trade() {
       return;
     }
 
-    const market = perpsForm.getValues().perpsMarket;
-    const marketConfig = driftMarketConfigs.perp.find(
-      (config) => config.symbol === market
-    );
+    const market =
+      marketType === "Perps"
+        ? perpsForm.getValues().perpsMarket
+        : spotForm.getValues().spotMarket;
+    const marketConfig =
+      marketType === "Perps"
+        ? driftMarketConfigs.perp.find((config) => config.symbol === market)
+        : driftMarketConfigs.spot.find(
+            (config) => config.symbol === market.replace("/USDC", "")
+          );
+
     if (!marketConfig) {
       toast({
         title: `Cannot find drift market configs for ${market}`,
         variant: "destructive",
       });
+      return;
     }
 
     try {
       const txId = await glamClient.drift.cancelOrders(
         fundPDA,
-        MarketType.PERP,
+        marketType === "Perps" ? MarketType.PERP : MarketType.SPOT,
         marketConfig?.marketIndex!,
         PositionDirection.LONG
       );
@@ -1447,6 +1491,7 @@ export default function Trade() {
                       <Button
                         variant="outline"
                         className="rounded-r-none px-8 py-2 w-1/2"
+                        onClick={(event) => handleCancel(event, "Spot")}
                       >
                         Cancel
                       </Button>
@@ -1925,7 +1970,7 @@ export default function Trade() {
                       <Button
                         variant="outline"
                         className="rounded-r-none px-8 py-2 w-1/2"
-                        onClick={(event) => handleCancelPerps(event)}
+                        onClick={(event) => handleCancel(event, "Perps")}
                       >
                         Cancel
                       </Button>

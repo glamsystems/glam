@@ -57,6 +57,7 @@ export const DRIFT_PERP_MARKETS: [string, ...string[]] = [
 ];
 
 export const DRIFT_SPOT_MARKETS: [string, ...string[]] = [
+  "USDC/USDC",
   "SOL/USDC",
   "mSOL/USDC",
   "wBTC/USDC",
