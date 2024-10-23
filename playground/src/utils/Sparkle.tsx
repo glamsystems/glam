@@ -71,9 +71,7 @@ const Sparkle: React.FC<SparkleProps> = ({
         height="100%"
         viewBox={svgViewBox}
         style={{ display: "block" }}
-      >
-        {/* Your SVG content here */}
-      </svg>
+      ></svg>
     </div>
   );
 };
