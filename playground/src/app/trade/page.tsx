@@ -355,10 +355,6 @@ export default function Trade() {
   const perpsReduceOnly = perpsForm.watch("perpsReduceOnly");
 
   const onSubmitSwap: SubmitHandler<SwapSchema> = async (values) => {
-    if (!fundPDA || !wallet || !treasury) {
-      return;
-    }
-
     const updatedValues = {
       ...values,
       fromAsset,
@@ -405,7 +401,7 @@ export default function Trade() {
     const uiAmount = amount / Math.pow(10, decimals);
     setIsTxPending(true);
     try {
-      const txId = await glamClient.jupiter.swap(fundPDA, {
+      const txId = await glamClient.jupiter.swap(fundPDA!, {
         inputMint,
         outputMint,
         amount,
@@ -428,27 +424,9 @@ export default function Trade() {
       });
     }
     setIsTxPending(false);
-
-    // toast({
-    //   title: "You submitted the following trade:",
-    //   description: (
-    //     <pre className="mt-2 w-[340px] rounded-md bg-zinc-900 p-4">
-    //       <code className="text-white">
-    //         {JSON.stringify(updatedValues, null, 2)}
-    //       </code>
-    //     </pre>
-    //   ),
-    // });
   };
 
   const onSubmitSpot: SubmitHandler<SpotSchema> = async (values) => {
-    if (!fundPDA || !wallet || !treasury) {
-      console.error(
-        "Cannot submit perps order due to missing fund, wallet, or treasury"
-      );
-      return;
-    }
-
     console.log("Submit spot order:", values);
 
     const orderParams = getOrderParams({
@@ -467,7 +445,7 @@ export default function Trade() {
 
     setIsTxPending(true);
     try {
-      const txId = await glamClient.drift.placeOrder(fundPDA, orderParams);
+      const txId = await glamClient.drift.placeOrder(fundPDA!, orderParams);
       toast({
         title: "Spot order submitted",
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
@@ -483,13 +461,6 @@ export default function Trade() {
   };
 
   const onSubmitPerps: SubmitHandler<PerpsSchema> = async (values) => {
-    if (!fundPDA || !wallet || !treasury) {
-      console.error(
-        "Cannot submit perps order due to missing fund, wallet, or treasury"
-      );
-      return;
-    }
-
     console.log("Submit Perps:", values);
 
     const orderParams = getOrderParams({
@@ -508,7 +479,7 @@ export default function Trade() {
 
     setIsTxPending(true);
     try {
-      const txId = await glamClient.drift.placeOrder(fundPDA, orderParams);
+      const txId = await glamClient.drift.placeOrder(fundPDA!, orderParams);
       toast({
         title: "Perps order submitted",
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
@@ -572,6 +543,9 @@ export default function Trade() {
     }
   };
 
+  const watchSpotMarket = spotForm.watch("spotMarket");
+  const spotMarketFromAsset = watchSpotMarket.replace("/USDC", "");
+
   const watchPerpsMarket = perpsForm.watch("perpsMarket");
   const perpsFromAsset = watchPerpsMarket
     .replace("-PERP", "")
@@ -588,8 +562,21 @@ export default function Trade() {
     ? glamClient.drift.getUser(fundPDA)[0].toBase58()
     : "";
 
+  /**
+   * All form submissions are routed through this function.
+   *
+   * We first check required fields before calling the appropriate submit function.
+   */
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
+
+    if (!fundPDA || !wallet || !treasury) {
+      console.error(
+        `Cannot submit ${activeTab} order due to missing fund, wallet, or treasury`
+      );
+      return;
+    }
+
     switch (activeTab) {
       case "swap":
         swapForm.handleSubmit(onSubmitSwap)();
@@ -1084,7 +1071,13 @@ export default function Trade() {
                       name="venue"
                       render={({ field }) => (
                         <FormItem className="w-1/3">
-                          <FormLabel>Venue</FormLabel>
+                          <div>
+                            <FormLabel>Venue</FormLabel>
+                            {field.value === "Drift" && (
+                              <DriftUserLink address={driftUserAccount} />
+                            )}
+                          </div>
+
                           <FormControl>
                             <Select
                               value={field.value}
@@ -1252,10 +1245,8 @@ export default function Trade() {
                           className="min-w-1/3 w-1/3"
                           name="limitPrice"
                           label="Limit Price"
-                          assets={fromAssetList}
                           balance={NaN}
-                          selectedAsset={fromAsset}
-                          onSelectAsset={setFromAsset}
+                          selectedAsset="USDC"
                           hideBalance={true}
                           disableAssetChange={true}
                         />
@@ -1263,28 +1254,17 @@ export default function Trade() {
                           className="min-w-1/3 w-1/3"
                           name="size"
                           label="Size"
-                          assets={fromAssetList}
                           balance={NaN}
-                          selectedAsset={fromAsset}
-                          onSelectAsset={setFromAsset}
+                          selectedAsset={spotMarketFromAsset}
+                          disableAssetChange={true}
                         />
                         <AssetInput
                           className="min-w-1/3 w-1/3"
                           name="notional"
                           label="Notional"
-                          assets={tokenList?.map(
-                            (t) =>
-                              ({
-                                name: t.name,
-                                symbol: t.symbol,
-                                address: t.address,
-                                decimals: t.decimals,
-                                balance: 0,
-                              } as Asset)
-                          )}
                           balance={NaN}
-                          selectedAsset={toAsset}
-                          onSelectAsset={setToAsset}
+                          selectedAsset="USDC"
+                          disableAssetChange={true}
                         />
                       </div>
                     </>
@@ -1304,28 +1284,17 @@ export default function Trade() {
                           className="min-w-1/3 w-1/3"
                           name="size"
                           label="Size"
-                          assets={fromAssetList}
+                          selectedAsset={spotMarketFromAsset}
                           balance={NaN}
-                          selectedAsset={fromAsset}
-                          onSelectAsset={setFromAsset}
+                          disableAssetChange={true}
                         />
                         <AssetInput
                           className="min-w-1/3 w-1/3"
                           name="notional"
                           label="Notional"
-                          assets={tokenList?.map(
-                            (t) =>
-                              ({
-                                name: t.name,
-                                symbol: t.symbol,
-                                address: t.address,
-                                decimals: t.decimals,
-                                balance: 0,
-                              } as Asset)
-                          )}
                           balance={NaN}
-                          selectedAsset={toAsset}
-                          onSelectAsset={setToAsset}
+                          selectedAsset="USDC"
+                          disableAssetChange={true}
                         />
                       </div>
                     </>
@@ -1560,24 +1529,7 @@ export default function Trade() {
                           <div>
                             <FormLabel>Venue</FormLabel>
                             {field.value === "Drift" && (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <a
-                                      className="ml-2 text-muted-foreground inline-flex align-middle"
-                                      href={`https://app.drift.trade/?userAccount=${driftUserAccount}`}
-                                      target="_blank"
-                                    >
-                                      <ExternalLinkIcon></ExternalLinkIcon>
-                                    </a>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="right">
-                                    <TruncateAddress
-                                      address={driftUserAccount}
-                                    />
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
+                              <DriftUserLink address={driftUserAccount} />
                             )}
                           </div>
 
@@ -2071,5 +2023,26 @@ export default function Trade() {
         </Tabs>
       </div>
     </PageContentWrapper>
+  );
+}
+
+function DriftUserLink({ address }: { address: string }) {
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <a
+            className="ml-2 text-muted-foreground inline-flex align-middle"
+            href={`https://app.drift.trade/?userAccount=${address}`}
+            target="_blank"
+          >
+            <ExternalLinkIcon></ExternalLinkIcon>
+          </a>
+        </TooltipTrigger>
+        <TooltipContent side="right">
+          <TruncateAddress address={address} />
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
