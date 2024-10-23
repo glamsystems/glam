@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "__WARNING__": "This is a placeholder. New dependencies should be added to the package.json in the root directory of the repo",
   "dependencies": {
+    "@radix-ui/react-accordion": "^1.2.1",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-separator": "^1.1.0",
     "@radix-ui/react-slot": "^1.1.0",
