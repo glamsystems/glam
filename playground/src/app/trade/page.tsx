@@ -42,7 +42,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";
 import { ExplorerLink } from "@/components/ExplorerLink";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, VersionedTransaction } from "@solana/web3.js";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -220,6 +220,7 @@ export default function Trade() {
     wallet,
     glamClient,
     jupTokenList: tokenList,
+    driftMarketConfigs,
   } = useGlam();
   const [fromAsset, setFromAsset] = useState<string>("USDC");
   const [toAsset, setToAsset] = useState<string>("SOL");
@@ -552,19 +553,6 @@ export default function Trade() {
     ? glamClient.drift.getUser(fundPDA)[0].toBase58()
     : "";
 
-  const getButtonText = () => {
-    switch (activeTab) {
-      case "swap":
-        return "Swap";
-      case "spot":
-        return "Place Spot Order";
-      case "perps":
-        return "Place Perp Order";
-      default:
-        return "Submit";
-    }
-  };
-
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     switch (activeTab) {
@@ -582,6 +570,89 @@ export default function Trade() {
 
   const [cancelValue, setCancelValue] = React.useState("cancelAll");
   const [settleValue, setSettleValue] = React.useState("settlePnL");
+
+  const handleCancelPerps = async (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+
+    if (!fundPDA || !wallet || !treasury) {
+      console.error(
+        "Cannot cancel orders due to missing fund, wallet, or treasury"
+      );
+      return;
+    }
+
+    const market = perpsForm.getValues().perpsMarket;
+    const marketConfig = driftMarketConfigs.perp.find(
+      (config) => config.symbol === market
+    );
+    if (!marketConfig) {
+      toast({
+        title: `Cannot find drift market configs for ${market}`,
+        variant: "destructive",
+      });
+    }
+
+    try {
+      const txId = await glamClient.drift.cancelOrders(
+        fundPDA,
+        MarketType.PERP,
+        marketConfig?.marketIndex!,
+        PositionDirection.LONG
+      );
+      toast({
+        title: "Orders canceled",
+        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to cancel orders",
+        description: parseTxError(error),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSettle = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+
+    if (!fundPDA || !wallet || !treasury) {
+      console.error(
+        "Cannot cancel orders due to missing fund, wallet, or treasury"
+      );
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "https://rest.glam.systems/v0/drift/settle_pnl",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user: glamClient.drift.getUser(fundPDA)[0].toBase58(),
+            authority: glamClient.getWallet().publicKey.toBase58(),
+            simulate: false,
+            estimatePriorityFee: true,
+          }),
+        }
+      );
+      const tx = await response.text();
+      const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
+      const txId = await glamClient.sendAndConfirm(vTx);
+      toast({
+        title: "Successfully settled PnL",
+        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to settle PnL",
+        description: parseTxError(error),
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <PageContentWrapper>
@@ -1854,6 +1925,7 @@ export default function Trade() {
                       <Button
                         variant="outline"
                         className="rounded-r-none px-8 py-2 w-1/2"
+                        onClick={(event) => handleCancelPerps(event)}
                       >
                         Cancel
                       </Button>
@@ -1902,6 +1974,7 @@ export default function Trade() {
                       <Button
                         variant="outline"
                         className="rounded-r-none px-8 py-2 w-1/2"
+                        onClick={(event) => handleSettle(event)}
                       >
                         Settle
                       </Button>
