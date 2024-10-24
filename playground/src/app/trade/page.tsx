@@ -33,6 +33,7 @@ import {
   CheckIcon,
   ColumnSpacingIcon,
   ExternalLinkIcon,
+  InfoCircledIcon,
 } from "@radix-ui/react-icons";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Switch } from "@/components/ui/switch";
@@ -60,7 +61,6 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-import { InfoIcon } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -84,6 +84,12 @@ import TruncateAddress from "@/utils/TruncateAddress";
 import { useQuery } from "@tanstack/react-query";
 import { DevOnly } from "@/components/DevOnly";
 import { parseTxError } from "@/lib/error";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 // "USDC/USDC" is a placeholder, filter it out
 const spotMarkets = DRIFT_SPOT_MARKETS.filter((m) => m !== "USDC/USDC").map(
@@ -812,7 +818,7 @@ export default function Trade() {
                     </Button>
                     <SlippageInput name="slippage" label="Slippage" />
                     <AssetInput
-                      className="min-w-1/2 w-1/2"
+                      className="min-w-1/3 w-1/3"
                       name="to"
                       label="To"
                       assets={tokenList?.map(
@@ -831,233 +837,261 @@ export default function Trade() {
                     />
                   </div>
 
-                  <div className="flex flex-row gap-4 items-start">
-                    <FormItem>
-                      <FormLabel>Venues</FormLabel>
-                      <div className="space-y-4">
-                        <span className="flex w-full gap-4">
-                          <FormField
-                            control={swapForm.control}
-                            name="filterType"
-                            render={({ field }) => (
-                              <ToggleGroup
-                                type="single"
-                                value={field.value}
-                                onValueChange={(value) => {
-                                  swapForm.setValue(
-                                    "filterType",
-                                    value as "Include" | "Exclude"
-                                  );
-                                }}
-                                className="justify-start"
-                              >
-                                <ToggleGroupItem value="Include">
-                                  Include
-                                </ToggleGroupItem>
-                                <ToggleGroupItem value="Exclude">
-                                  Exclude
-                                </ToggleGroupItem>
-                              </ToggleGroup>
-                            )}
-                          />
-
-                          <Input
-                            type="search"
-                            placeholder="Search venues..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className=""
-                          />
-                        </span>
-
-                        <ScrollArea className="h-[300px] w-full border p-4">
-                          <FormItem>
-                            {isDexesListLoading // Skeleton loading state
-                              ? Array.from({ length: 10 }).map((_, index) => (
-                                  <div
-                                    key={index}
-                                    className="flex items-center space-x-3 mb-2"
-                                  >
-                                    <Skeleton className="w-4 h-4" />
-                                    <Skeleton className="w-[200px] h-[20px]" />
-                                  </div>
-                                ))
-                              : filteredDexes.map((item) => (
-                                  <FormField
-                                    key={item.id}
-                                    control={swapForm.control}
-                                    name="dexes"
-                                    render={({ field }) => (
-                                      <FormItem
-                                        key={item.id}
-                                        className="flex flex-row items-start space-x-3 space-y-0 mb-2"
-                                      >
-                                        <FormControl>
-                                          <Checkbox
-                                            checked={field.value?.includes(
-                                              item.label
-                                            )}
-                                            onCheckedChange={(checked) => {
-                                              const val = checked
-                                                ? [...field.value, item.label]
-                                                : field.value?.filter(
-                                                    (value) =>
-                                                      value !== item.label
-                                                  );
-                                              return field.onChange(val);
-                                            }}
-                                          />
-                                        </FormControl>
-                                        <FormLabel className="font-normal">
-                                          {item.label}
-                                        </FormLabel>
-                                      </FormItem>
-                                    )}
-                                  />
-                                ))}
-                          </FormItem>
-                        </ScrollArea>
-                      </div>
-                    </FormItem>
-
-                    <div className="flex flex-col gap-4 w-1/2">
-                      <div className="flex space-x-4 items-center">
-                        <FormField
-                          control={swapForm.control}
-                          name="exactMode"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Mode</FormLabel>
-                              <ToggleGroup
-                                type="single"
-                                value={field.value}
-                                onValueChange={handleExactModeChange}
-                                className="justify-start"
-                              >
-                                <ToggleGroupItem
-                                  value="ExactIn"
-                                  aria-label="Exact In"
-                                >
-                                  Exact In
-                                </ToggleGroupItem>
-                                <ToggleGroupItem
-                                  value="ExactOut"
-                                  aria-label="Exact Out"
-                                >
-                                  Exact Out
-                                </ToggleGroupItem>
-                              </ToggleGroup>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <FormField
-                        control={swapForm.control}
-                        name="maxAccounts"
-                        render={({ field }) => (
-                          <FormItem className="w-1/2">
-                            <FormLabel>Max. Accounts</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="Max. Accounts"
-                                type="number"
-                                min="5"
-                                step="1"
-                                onChange={(e) =>
-                                  field.onChange(parseInt(e.target.value, 10))
-                                }
-                                value={field.value}
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormLabel>Advanced</FormLabel>
-                      <FormField
-                        control={swapForm.control}
-                        name="directRouteOnly"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                                id="direct-route-only"
-                              />
-                            </FormControl>
-                            <FormLabel
-                              htmlFor="direct-route-only"
-                              className="font-normal"
-                            >
-                              Direct Route Only
-                            </FormLabel>
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={swapForm.control}
-                        name="useWSOL"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                                id="use-wsol"
-                              />
-                            </FormControl>
-                            <FormLabel
-                              htmlFor="use-wsol"
-                              className="font-normal"
-                            >
-                              Use wSOL
-                            </FormLabel>
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={swapForm.control}
-                        name="versionedTransactions"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                                id="versioned-transactions"
-                              />
-                            </FormControl>
-                            <FormLabel
-                              htmlFor="versioned-transactions"
-                              className="font-normal"
-                            >
-                              Versioned Transactions
-                            </FormLabel>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex space-x-4 w-full">
+                  <div className="flex space-x-4 w-full items-end">
+                    <AssetInput
+                      className="min-w-1/3 w-1/3"
+                      name="priorityFeeOverride"
+                      label="Priority Fee"
+                      assets={fromAssetList}
+                      balance={NaN}
+                      selectedAsset="SOL"
+                      disableAssetChange={true}
+                    />
                     <Button
-                      className="w-1/2"
+                      className="w-1/3"
                       variant="ghost"
                       onClick={(event) => handleClear(event)}
                     >
                       Clear
                     </Button>
                     <Button
-                      className="w-1/2"
+                      className="w-1/3"
                       type="submit"
                       loading={isTxPending}
                     >
                       Swap
                     </Button>
                   </div>
+
+                  <Accordion type="single" collapsible>
+                    <AccordionItem value="item-1">
+                      <AccordionTrigger className="font-light text-muted-foreground text-sm hover:text-foreground transition-all hover:no-underline">
+                        Advanced Settings
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="flex flex-row gap-4 items-start">
+                          <FormItem>
+                            <FormLabel>Venues</FormLabel>
+                            <div className="space-y-4">
+                              <span className="flex w-full gap-4">
+                                <FormField
+                                  control={swapForm.control}
+                                  name="filterType"
+                                  render={({ field }) => (
+                                    <ToggleGroup
+                                      type="single"
+                                      value={field.value}
+                                      onValueChange={(value) => {
+                                        swapForm.setValue(
+                                          "filterType",
+                                          value as "Include" | "Exclude"
+                                        );
+                                      }}
+                                      className="justify-start"
+                                    >
+                                      <ToggleGroupItem value="Include">
+                                        Include
+                                      </ToggleGroupItem>
+                                      <ToggleGroupItem value="Exclude">
+                                        Exclude
+                                      </ToggleGroupItem>
+                                    </ToggleGroup>
+                                  )}
+                                />
+
+                                <Input
+                                  type="search"
+                                  placeholder="Search venues..."
+                                  value={searchQuery}
+                                  onChange={(e) =>
+                                    setSearchQuery(e.target.value)
+                                  }
+                                  className=""
+                                />
+                              </span>
+
+                              <ScrollArea className="h-[300px] w-full border p-4">
+                                <FormItem>
+                                  {isDexesListLoading // Skeleton loading state
+                                    ? Array.from({ length: 10 }).map(
+                                        (_, index) => (
+                                          <div
+                                            key={index}
+                                            className="flex items-center space-x-3 mb-2"
+                                          >
+                                            <Skeleton className="w-4 h-4" />
+                                            <Skeleton className="w-[200px] h-[20px]" />
+                                          </div>
+                                        )
+                                      )
+                                    : filteredDexes.map((item) => (
+                                        <FormField
+                                          key={item.id}
+                                          control={swapForm.control}
+                                          name="dexes"
+                                          render={({ field }) => (
+                                            <FormItem
+                                              key={item.id}
+                                              className="flex flex-row items-start space-x-3 space-y-0 mb-2"
+                                            >
+                                              <FormControl>
+                                                <Checkbox
+                                                  checked={field.value?.includes(
+                                                    item.label
+                                                  )}
+                                                  onCheckedChange={(
+                                                    checked
+                                                  ) => {
+                                                    const val = checked
+                                                      ? [
+                                                          ...field.value,
+                                                          item.label,
+                                                        ]
+                                                      : field.value?.filter(
+                                                          (value) =>
+                                                            value !== item.label
+                                                        );
+                                                    return field.onChange(val);
+                                                  }}
+                                                />
+                                              </FormControl>
+                                              <FormLabel className="font-normal">
+                                                {item.label}
+                                              </FormLabel>
+                                            </FormItem>
+                                          )}
+                                        />
+                                      ))}
+                                </FormItem>
+                              </ScrollArea>
+                            </div>
+                          </FormItem>
+
+                          <div className="flex flex-col gap-4 w-1/2">
+                            <div className="flex space-x-4 items-center">
+                              <FormField
+                                control={swapForm.control}
+                                name="exactMode"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Mode</FormLabel>
+                                    <ToggleGroup
+                                      type="single"
+                                      value={field.value}
+                                      onValueChange={handleExactModeChange}
+                                      className="justify-start"
+                                    >
+                                      <ToggleGroupItem
+                                        value="ExactIn"
+                                        aria-label="Exact In"
+                                      >
+                                        Exact In
+                                      </ToggleGroupItem>
+                                      <ToggleGroupItem
+                                        value="ExactOut"
+                                        aria-label="Exact Out"
+                                      >
+                                        Exact Out
+                                      </ToggleGroupItem>
+                                    </ToggleGroup>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+
+                            <FormField
+                              control={swapForm.control}
+                              name="maxAccounts"
+                              render={({ field }) => (
+                                <FormItem className="w-1/2">
+                                  <FormLabel>Max. Accounts</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      placeholder="Max. Accounts"
+                                      type="number"
+                                      min="5"
+                                      step="1"
+                                      onChange={(e) =>
+                                        field.onChange(
+                                          parseInt(e.target.value, 10)
+                                        )
+                                      }
+                                      value={field.value}
+                                      className="w-full"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={swapForm.control}
+                              name="directRouteOnly"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                                  <FormControl>
+                                    <Switch
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                      id="direct-route-only"
+                                    />
+                                  </FormControl>
+                                  <FormLabel
+                                    htmlFor="direct-route-only"
+                                    className="font-normal"
+                                  >
+                                    Direct Route Only
+                                  </FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={swapForm.control}
+                              name="useWSOL"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                                  <FormControl>
+                                    <Switch
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                      id="use-wsol"
+                                    />
+                                  </FormControl>
+                                  <FormLabel
+                                    htmlFor="use-wsol"
+                                    className="font-normal"
+                                  >
+                                    Use wSOL
+                                  </FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={swapForm.control}
+                              name="versionedTransactions"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                                  <FormControl>
+                                    <Switch
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                      id="versioned-transactions"
+                                    />
+                                  </FormControl>
+                                  <FormLabel
+                                    htmlFor="versioned-transactions"
+                                    className="font-normal"
+                                  >
+                                    Versioned Transactions
+                                  </FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 </form>
               </Form>
             </FormProvider>
@@ -1275,7 +1309,11 @@ export default function Trade() {
                   ) : spotOrderType === "Market" ? (
                     <>
                       <div className="flex space-x-4 items-start">
-                        <SlippageInput name="slippage" label="Slippage" />
+                        <SlippageInput
+                          name="slippage"
+                          label="Slippage"
+                          className="min-w-1/3 w-1/3"
+                        />
 
                         <AssetInput
                           className="min-w-1/3 w-1/3"
@@ -1362,7 +1400,7 @@ export default function Trade() {
                   {/*    <TooltipProvider>*/}
                   {/*      <Tooltip>*/}
                   {/*        <TooltipTrigger className="flex items-center">*/}
-                  {/*          <InfoIcon className="w-4 h-4 mr-1"></InfoIcon>*/}
+                  {/*          <InfoCircledIcon className="w-4 h-4 mr-1"></InfoCircledIcon>*/}
                   {/*          <p>Margin Trading Disabled</p>*/}
                   {/*        </TooltipTrigger>*/}
                   {/*        <TooltipContent side="right">*/}
@@ -1436,24 +1474,34 @@ export default function Trade() {
                   {/*  />*/}
                   {/*</div>*/}
 
-                  <div className="flex space-x-4 w-full">
+                  <div className="flex space-x-4 w-full items-end">
+                    <AssetInput
+                      className="min-w-1/3 w-1/3"
+                      name="priorityFeeOverride"
+                      label="Priority Fee"
+                      assets={fromAssetList}
+                      balance={NaN}
+                      selectedAsset="SOL"
+                      disableAssetChange={true}
+                    />
                     <Button
-                      className="w-1/2"
+                      className="w-1/3"
                       variant="ghost"
                       onClick={(event) => handleClear(event)}
                     >
                       Clear
                     </Button>
                     <Button
-                      className="w-1/2"
+                      className="w-1/3"
                       type="submit"
                       loading={isTxPending}
                     >
                       Submit
                     </Button>
                   </div>
+                  <br />
                   <div className="flex space-x-4 w-full">
-                    <div className="flex w-full">
+                    <div className="flex w-1/2">
                       <Button
                         variant="outline"
                         className="rounded-r-none px-8 py-2 w-1/2"
@@ -1489,8 +1537,10 @@ export default function Trade() {
                           text-muted-foreground
                           border
                           border-l-0
+                          border-r-0
                           data-[state=on]:border
                           data-[state=on]:border-l-0
+                          data-[state=on]:border-r-0
                           px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
                         >
                           <span className="truncate">
@@ -1501,6 +1551,7 @@ export default function Trade() {
                         </ToggleGroupItem>
                       </ToggleGroup>
                     </div>
+                    <div className="w-1/2"></div>
 
                     {/*<Button variant="outline" className="w-1/2">*/}
                     {/*  Claim Rewards*/}
@@ -1722,7 +1773,11 @@ export default function Trade() {
                   ) : perpsOrderType === "Market" ? (
                     <>
                       <div className="flex space-x-4 items-start">
-                        <SlippageInput name="slippage" label="Slippage" />
+                        <SlippageInput
+                          name="slippage"
+                          label="Slippage"
+                          className="min-w-1/3 w-1/3"
+                        />
 
                         <AssetInput
                           className="min-w-1/3 w-1/3"
@@ -1817,7 +1872,7 @@ export default function Trade() {
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger className="flex items-center">
-                                <InfoIcon className="w-4 h-4 mr-1"></InfoIcon>
+                                <InfoCircledIcon className="w-4 h-4 mr-1"></InfoCircledIcon>
                                 <p>Leverage Limit Enabled</p>
                               </TooltipTrigger>
                               <TooltipContent side="right">
@@ -1891,22 +1946,32 @@ export default function Trade() {
                       </div>
                     </>
                   )}
-                  <div className="flex space-x-4 w-full">
+                  <div className="flex space-x-4 w-full items-end">
+                    <AssetInput
+                      className="min-w-1/3 w-1/3"
+                      name="priorityFeeOverride"
+                      label="Priority Fee"
+                      assets={fromAssetList}
+                      balance={NaN}
+                      selectedAsset="SOL"
+                      disableAssetChange={true}
+                    />
                     <Button
-                      className="w-1/2"
+                      className="w-1/3"
                       variant="ghost"
                       onClick={(event) => handleClear(event)}
                     >
                       Clear
                     </Button>
                     <Button
-                      className="w-1/2"
+                      className="w-1/3"
                       type="submit"
                       loading={isTxPending}
                     >
                       Submit
                     </Button>
                   </div>
+                  <br />
                   <div className="flex space-x-4 w-full">
                     <div className="flex w-1/2">
                       <Button
@@ -1944,8 +2009,10 @@ export default function Trade() {
                           text-muted-foreground
                           border
                           border-l-0
+                          border-r-0
                           data-[state=on]:border
                           data-[state=on]:border-l-0
+                          data-[state=on]:border-r-0
                           px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
                         >
                           <span className="truncate">
@@ -1963,7 +2030,7 @@ export default function Trade() {
                         className="rounded-r-none px-8 py-2 w-1/2"
                         onClick={(event) => handleSettle(event)}
                       >
-                        Settle
+                        Settle P&L
                       </Button>
                       <ToggleGroup
                         type="single"
@@ -1984,20 +2051,26 @@ export default function Trade() {
                           data-[state=on]:border-l-0
                           px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
                         >
-                          P&L
+                          All
                         </ToggleGroupItem>
                         <ToggleGroupItem
-                          value="settleFunding"
-                          aria-label="Settle Funding"
+                          value="settleMarket"
+                          aria-label="Settle Market"
                           className="
                           text-muted-foreground
                           border
                           border-l-0
+                          border-r-0
                           data-[state=on]:border
                           data-[state=on]:border-l-0
+                          data-[state=on]:border-r-0
                           px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
                         >
-                          Funding
+                          <span className="truncate">
+                            {perpsForm
+                              .watch("perpsMarket")
+                              .replace("-PERP", "")}
+                          </span>
                         </ToggleGroupItem>
                       </ToggleGroup>
                     </div>

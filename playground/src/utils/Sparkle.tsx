@@ -56,22 +56,22 @@ const Sparkle: React.FC<SparkleProps> = ({
   }, [color, onColorGenerated]);
 
   return (
-    <div>
+    <div
+      style={{
+        width: size,
+        height: size,
+        padding: 0,
+        margin: 0,
+        background: conicGradient,
+      }}
+    >
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        width={size}
-        height={size}
+        width="100%"
+        height="100%"
         viewBox={svgViewBox}
-        style={{ padding: 0, margin: 0 }}
-      >
-        <foreignObject
-          width="100%"
-          height="100%"
-          style={{ margin: 0, background: conicGradient }}
-        >
-          <div></div>
-        </foreignObject>
-      </svg>
+        style={{ display: "block" }}
+      ></svg>
     </div>
   );
 };
