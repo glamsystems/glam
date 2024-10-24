@@ -302,20 +302,18 @@ export default function Trade() {
           tokenList?.find((t: any) => t.address === ta.mint)?.symbol || ta.mint;
         return {
           name,
-          symbol: symbol === "SOL" ? "wSOL" : symbol,
+          symbol: symbol,
           address: ta.mint,
           decimals: ta.decimals,
-          balance: Number(ta.uiAmount),
+          balance:
+            /* combine SOL + wSOL balances */
+            symbol === "SOL"
+              ? Number(ta.uiAmount) +
+                Number(treasury?.balanceLamports || 0) / LAMPORTS_PER_SOL
+              : Number(ta.uiAmount),
         } as Asset;
       }) || [];
-    assets.push({
-      name: "Solana",
-      symbol: "SOL",
-      address: "",
-      decimals: 9,
-      balance: (treasury?.balanceLamports || 0) / LAMPORTS_PER_SOL,
-    });
-    setFromAsset(assets[0].symbol);
+    setFromAsset(assets.length > 0 ? assets[0].symbol : "SOL");
 
     const defaultTo =
       fund?.assets && fund?.assets.length > 1
@@ -820,7 +818,11 @@ export default function Trade() {
                       name="from"
                       label="From"
                       assets={fromAssetList}
-                      balance={NaN}
+                      balance={
+                        (fromAssetList || []).find(
+                          (asset) => asset.symbol === fromAsset
+                        )?.balance || 0
+                      }
                       selectedAsset={fromAsset}
                       onSelectAsset={setFromAsset}
                     />
@@ -847,9 +849,16 @@ export default function Trade() {
                             balance: 0,
                           } as Asset)
                       )}
-                      balance={NaN}
+                      balance={
+                        /* use fromAssetList because that's the list of tokens in treasury.
+                           all other tokens have 0 balance. */
+                        (fromAssetList || []).find(
+                          (asset) => asset.symbol === toAsset
+                        )?.balance || 0
+                      }
                       selectedAsset={toAsset}
                       onSelectAsset={setToAsset}
+                      disableAmountInput={true}
                     />
                   </div>
 
