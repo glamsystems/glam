@@ -24,6 +24,7 @@ import { useAtomValue, useSetAtom } from "jotai/react";
 import { PublicKey } from "@solana/web3.js";
 import { ASSETS_MAINNET } from "../client/assets";
 import { WSOL } from "../constants";
+import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 
 interface JupTokenListItem {
   address: string;
@@ -149,6 +150,16 @@ const fetchBalances = async (glamClient: GlamClient, owner: PublicKey) => {
   tokenAccounts.forEach((ta: any) => {
     ta.address = ta.address.toBase58();
   });
+
+  // Add wSOL account if it doesn't exist, so that we can properly combine SOL and wSOL balances
+  if (!tokenAccounts.find((ta: any) => ta.mint === WSOL.toBase58())) {
+    tokenAccounts.push({
+      mint: WSOL.toBase58(),
+      address: getAssociatedTokenAddressSync(WSOL, owner, true).toBase58(),
+      amount: "0",
+      uiAmount: "0",
+    });
+  }
 
   return {
     balanceLamports,

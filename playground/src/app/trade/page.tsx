@@ -165,10 +165,6 @@ function usePersistedForm<T extends z.ZodTypeAny>(
             value[field as keyof z.infer<T>];
         }
       });
-      if (formKey === "swap") {
-        console.log("usePersistedForm", formKey, persistedValues);
-      }
-
       localStorage.setItem(formKey, JSON.stringify(persistedValues));
     });
     return () => subscription.unsubscribe();
@@ -315,11 +311,6 @@ export default function Trade() {
       }) || [];
     setFromAsset(assets.length > 0 ? assets[0].symbol : "SOL");
 
-    const defaultTo =
-      fund?.assets && fund?.assets.length > 1
-        ? getAsset(fund?.assets[1].toBase58(), tokenList)?.symbol
-        : "SOL";
-    setToAsset(defaultTo);
     return assets;
   }, [treasury, tokenList, fundPDA]);
 
