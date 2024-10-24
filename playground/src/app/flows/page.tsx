@@ -1,10 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, SubmitHandler, FormProvider } from "react-hook-form";
 import { z } from "zod";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -44,7 +43,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
+import { CaretSortIcon } from "@radix-ui/react-icons";
 import {
   Command,
   CommandEmpty,
@@ -53,8 +52,8 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { cn } from "@/lib/utils";
 import Sparkle from "@/utils/Sparkle";
+import { parseTxError } from "@/lib/error";
 
 const flowSchema = z.object({
   method: z.string(),
@@ -376,6 +375,7 @@ function InvestorWidget({ fundId }: { fundId: string }) {
   const { glamClient, allFunds, walletBalances, walletBalancesQueryKey } =
     useGlam();
   const queryClient = useQueryClient();
+  const [isTxPending, setIsTxPending] = useState(false);
 
   const fund: any = fundId
     ? (allFunds || []).find((f: any) => f.idStr === fundId)
@@ -495,28 +495,43 @@ function InvestorWidget({ fundId }: { fundId: string }) {
     // Note: there's an edge case where the user doesn't have a
     // token account, but he manually inputs a value > 0.
     // In that case we throw Error("Invalid asset or zero balance").
+    setIsTxPending(true);
     let txId;
-    if (direction === "redeem") {
-      const asset = fund.shareClasses[0].id;
-      const decimals = getDecimals(asset, walletBalances?.tokenAccounts);
-      const amount = new BN(values.amountIn * 10 ** decimals);
-      txId = await glamClient.investor.redeem(
-        fund.id,
-        amount,
-        method === "in-kind"
-      );
-    } else {
-      const asset = fund.assets[0];
-      const decimals = getDecimals(asset, walletBalances?.tokenAccounts);
-      const amount = new BN(values.amountIn * 10 ** decimals);
-      txId = await glamClient.investor.subscribe(fund.id, asset, amount, fund);
-    }
+    try {
+      if (direction === "redeem") {
+        const asset = fund.shareClasses[0].id;
+        const decimals = getDecimals(asset, walletBalances?.tokenAccounts);
+        const amount = new BN(values.amountIn * 10 ** decimals);
+        txId = await glamClient.investor.redeem(
+          fund.id,
+          amount,
+          method === "in-kind"
+        );
+      } else {
+        const asset = fund.assets[0];
+        const decimals = getDecimals(asset, walletBalances?.tokenAccounts);
+        const amount = new BN(values.amountIn * 10 ** decimals);
+        txId = await glamClient.investor.subscribe(
+          fund.id,
+          asset,
+          amount,
+          fund
+        );
+      }
 
-    queryClient.invalidateQueries({ queryKey: walletBalancesQueryKey });
-    toast({
-      title: `Successful ${direction}`,
-      description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
-    });
+      queryClient.invalidateQueries({ queryKey: walletBalancesQueryKey });
+      toast({
+        title: `Successful ${direction}`,
+        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+      });
+    } catch (error) {
+      toast({
+        title: `Failed to ${direction}`,
+        description: parseTxError(error),
+        variant: "destructive",
+      });
+    }
+    setIsTxPending(false);
   };
 
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -635,7 +650,7 @@ function InvestorWidget({ fundId }: { fundId: string }) {
               >
                 Clear
               </Button>
-              <Button className="w-1/2" type="submit">
+              <Button className="w-1/2" type="submit" loading={isTxPending}>
                 {direction.charAt(0).toUpperCase() + direction.slice(1)}
               </Button>
             </div>

@@ -97,11 +97,11 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
     // mSOL
     "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So",
     {
-      pricingAccount: new PublicKey(
-        "5CKzb9j4ChgLUt8Gfm5CNGLN6khXKiqMbnGAW4cgXgxK" // pyth
+      stateAccount: new PublicKey(
+        "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC"
       ),
       priceFeed:
-        "c2289a6a43d2ce91c6f55caec370f4acc38a2ed477f58813334c6d03749ff2a4",
+        "c2289a6a43d2ce91c6f55caec370f4acc38a2ed477f58813334c6d03749ff2a4", // for front-end to price msol holding in real-time
     },
   ],
 
