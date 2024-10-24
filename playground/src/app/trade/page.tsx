@@ -230,15 +230,24 @@ type SwapSchema = z.infer<typeof swapSchema>;
 type SpotSchema = z.infer<typeof spotSchema>;
 type PerpsSchema = z.infer<typeof perpsSchema>;
 
+const getAsset = (address: string, assetsList?: any[]) => {
+  return (assetsList || []).find((asset: any) => asset.address === address);
+};
+
 export default function Trade() {
   const {
     fund: fundPDA,
+    allFunds,
     treasury,
     wallet,
     glamClient,
     jupTokenList: tokenList,
     driftMarketConfigs,
   } = useGlam();
+  const fund: any = fundPDA
+    ? (allFunds || []).find((f: any) => f.idStr === fundPDA.toBase58())
+    : undefined;
+
   const [fromAsset, setFromAsset] = useState<string>("USDC");
   const [toAsset, setToAsset] = useState<string>("SOL");
   const [dexesList, setDexesList] = useState<{ id: string; label: string }[]>(
@@ -293,21 +302,26 @@ export default function Trade() {
           tokenList?.find((t: any) => t.address === ta.mint)?.symbol || ta.mint;
         return {
           name,
-          symbol: symbol === "SOL" ? "wSOL" : symbol,
+          symbol: symbol,
           address: ta.mint,
           decimals: ta.decimals,
-          balance: Number(ta.uiAmount),
+          balance:
+            /* combine SOL + wSOL balances */
+            symbol === "SOL"
+              ? Number(ta.uiAmount) +
+                Number(treasury?.balanceLamports || 0) / LAMPORTS_PER_SOL
+              : Number(ta.uiAmount),
         } as Asset;
       }) || [];
-    assets.push({
-      name: "Solana",
-      symbol: "SOL",
-      address: "",
-      decimals: 9,
-      balance: (treasury?.balanceLamports || 0) / LAMPORTS_PER_SOL,
-    });
+    setFromAsset(assets.length > 0 ? assets[0].symbol : "SOL");
+
+    const defaultTo =
+      fund?.assets && fund?.assets.length > 1
+        ? getAsset(fund?.assets[1].toBase58(), tokenList)?.symbol
+        : "SOL";
+    setToAsset(defaultTo);
     return assets;
-  }, [treasury, tokenList]);
+  }, [treasury, tokenList, fundPDA]);
 
   const swapForm = usePersistedForm("swap", swapSchema, {
     venue: "Jupiter",
@@ -550,6 +564,8 @@ export default function Trade() {
   const handleExactModeChange = (value: string) => {
     if (value) {
       swapForm.setValue("exactMode", value as "ExactIn" | "ExactOut");
+      swapForm.setValue("from", 0);
+      swapForm.setValue("to", 0);
     }
   };
 
@@ -702,6 +718,7 @@ export default function Trade() {
     }
   };
 
+  const exactMode = swapForm.watch("exactMode");
   return (
     <PageContentWrapper>
       <div className="w-4/6 self-center">
@@ -804,9 +821,14 @@ export default function Trade() {
                       name="from"
                       label="From"
                       assets={fromAssetList}
-                      balance={NaN}
+                      balance={
+                        (fromAssetList || []).find(
+                          (asset) => asset.symbol === fromAsset
+                        )?.balance || 0
+                      }
                       selectedAsset={fromAsset}
                       onSelectAsset={setFromAsset}
+                      disableAmountInput={exactMode === "ExactOut"}
                     />
                     <Button
                       variant="outline"
@@ -831,9 +853,16 @@ export default function Trade() {
                             balance: 0,
                           } as Asset)
                       )}
-                      balance={NaN}
+                      balance={
+                        /* use fromAssetList because that's the list of tokens in treasury.
+                           all other tokens have 0 balance. */
+                        (fromAssetList || []).find(
+                          (asset) => asset.symbol === toAsset
+                        )?.balance || 0
+                      }
                       selectedAsset={toAsset}
                       onSelectAsset={setToAsset}
+                      disableAmountInput={exactMode === "ExactIn"}
                     />
                   </div>
 
@@ -1303,6 +1332,7 @@ export default function Trade() {
                           balance={NaN}
                           selectedAsset="USDC"
                           disableAssetChange={true}
+                          disableAmountInput={true}
                         />
                       </div>
                     </>
@@ -1330,6 +1360,7 @@ export default function Trade() {
                           balance={NaN}
                           selectedAsset="USDC"
                           disableAssetChange={true}
+                          disableAmountInput={true}
                         />
                       </div>
                     </>
@@ -1376,6 +1407,7 @@ export default function Trade() {
                           disableAssetChange={true}
                           balance={NaN}
                           selectedAsset={toAsset}
+                          disableAmountInput={true}
                         />
                       </div>
                     </>
@@ -1767,6 +1799,7 @@ export default function Trade() {
                           selectedAsset={"USDC"}
                           balance={NaN}
                           disableAssetChange={true}
+                          disableAmountInput={true}
                         />
                       </div>
                     </>
@@ -1795,6 +1828,7 @@ export default function Trade() {
                           balance={NaN}
                           selectedAsset={"USDC"}
                           disableAssetChange={true}
+                          disableAmountInput={true}
                         />
                       </div>
                     </>

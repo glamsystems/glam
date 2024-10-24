@@ -237,8 +237,10 @@ export default function RefactoredSidebar() {
         </SidebarHeader>
         <SidebarContent className="grow pt-2">
           {navList.map((nav, index) => {
-            const visibleItems = getVisibleItems(nav.items).filter((item) =>
-              prodEnabledRoutes?.includes(item.route)
+            const visibleItems = getVisibleItems(nav.items).filter(
+              (item) =>
+                process.env.NODE_ENV === "development" ||
+                prodEnabledRoutes?.includes(item.route)
             );
             if (visibleItems.length === 0) return null;
             return (

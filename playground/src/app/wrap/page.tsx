@@ -45,10 +45,11 @@ export default function Wrap() {
 
   useEffect(() => {
     if (fundPDA) {
-      const solBalance = Number(treasury?.balanceLamports) / LAMPORTS_PER_SOL;
+      const solBalance =
+        Number(treasury?.balanceLamports || 0) / LAMPORTS_PER_SOL;
       const wSolBalance = Number(
         treasury?.tokenAccounts?.find((ta) => ta.mint === WSOL.toBase58())
-          ?.uiAmount
+          ?.uiAmount || 0
       );
       setSolBalance(solBalance);
       setWSolBalance(wSolBalance);

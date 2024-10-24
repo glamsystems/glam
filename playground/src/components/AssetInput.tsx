@@ -148,7 +148,11 @@ export const AssetInput: React.FC<AssetInputProps> = ({
                 type="number"
                 step="any"
                 ref={inputRef}
-                value={getValues()[name]}
+                value={
+                  disableAmountInput
+                    ? getValues()[name] || ""
+                    : getValues()[name]
+                }
                 className="pr-20"
                 placeholder=""
                 onChange={(e) => handleInputChange(e.target.value)}
