@@ -1332,6 +1332,7 @@ export default function Trade() {
                           balance={NaN}
                           selectedAsset="USDC"
                           disableAssetChange={true}
+                          disableAmountInput={true}
                         />
                       </div>
                     </>
@@ -1359,6 +1360,7 @@ export default function Trade() {
                           balance={NaN}
                           selectedAsset="USDC"
                           disableAssetChange={true}
+                          disableAmountInput={true}
                         />
                       </div>
                     </>
@@ -1405,6 +1407,7 @@ export default function Trade() {
                           disableAssetChange={true}
                           balance={NaN}
                           selectedAsset={toAsset}
+                          disableAmountInput={true}
                         />
                       </div>
                     </>
@@ -1796,6 +1799,7 @@ export default function Trade() {
                           selectedAsset={"USDC"}
                           balance={NaN}
                           disableAssetChange={true}
+                          disableAmountInput={true}
                         />
                       </div>
                     </>
@@ -1824,6 +1828,7 @@ export default function Trade() {
                           balance={NaN}
                           selectedAsset={"USDC"}
                           disableAssetChange={true}
+                          disableAmountInput={true}
                         />
                       </div>
                     </>
