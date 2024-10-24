@@ -134,11 +134,6 @@ export const AssetInput: React.FC<AssetInputProps> = ({
 
   hideBalance = hideBalance || Number.isNaN(balance);
 
-  let value = getValues()[name];
-  if (disableAmountInput && !value) {
-    value = "";
-  }
-
   return (
     <FormField
       control={control}
@@ -153,7 +148,11 @@ export const AssetInput: React.FC<AssetInputProps> = ({
                 type="number"
                 step="any"
                 ref={inputRef}
-                value={value}
+                value={
+                  disableAmountInput
+                    ? getValues()[name] || ""
+                    : getValues()[name]
+                }
                 className="pr-20"
                 placeholder=""
                 onChange={(e) => handleInputChange(e.target.value)}
