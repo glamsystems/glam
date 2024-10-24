@@ -230,15 +230,24 @@ type SwapSchema = z.infer<typeof swapSchema>;
 type SpotSchema = z.infer<typeof spotSchema>;
 type PerpsSchema = z.infer<typeof perpsSchema>;
 
+const getAsset = (address: string, assetsList?: any[]) => {
+  return (assetsList || []).find((asset: any) => asset.address === address);
+};
+
 export default function Trade() {
   const {
     fund: fundPDA,
+    allFunds,
     treasury,
     wallet,
     glamClient,
     jupTokenList: tokenList,
     driftMarketConfigs,
   } = useGlam();
+  const fund: any = fundPDA
+    ? (allFunds || []).find((f: any) => f.idStr === fundPDA.toBase58())
+    : undefined;
+
   const [fromAsset, setFromAsset] = useState<string>("USDC");
   const [toAsset, setToAsset] = useState<string>("SOL");
   const [dexesList, setDexesList] = useState<{ id: string; label: string }[]>(
@@ -306,8 +315,15 @@ export default function Trade() {
       decimals: 9,
       balance: (treasury?.balanceLamports || 0) / LAMPORTS_PER_SOL,
     });
+    setFromAsset(assets[0].symbol);
+
+    const defaultTo =
+      fund?.assets && fund?.assets.length > 1
+        ? getAsset(fund?.assets[1].toBase58(), tokenList)?.symbol
+        : "SOL";
+    setToAsset(defaultTo);
     return assets;
-  }, [treasury, tokenList]);
+  }, [treasury, tokenList, fundPDA]);
 
   const swapForm = usePersistedForm("swap", swapSchema, {
     venue: "Jupiter",
