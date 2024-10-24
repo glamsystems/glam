@@ -564,6 +564,8 @@ export default function Trade() {
   const handleExactModeChange = (value: string) => {
     if (value) {
       swapForm.setValue("exactMode", value as "ExactIn" | "ExactOut");
+      swapForm.setValue("from", 0);
+      swapForm.setValue("to", 0);
     }
   };
 
@@ -716,6 +718,7 @@ export default function Trade() {
     }
   };
 
+  const exactMode = swapForm.watch("exactMode");
   return (
     <PageContentWrapper>
       <div className="w-4/6 self-center">
@@ -825,6 +828,7 @@ export default function Trade() {
                       }
                       selectedAsset={fromAsset}
                       onSelectAsset={setFromAsset}
+                      disableAmountInput={exactMode === "ExactOut"}
                     />
                     <Button
                       variant="outline"
@@ -858,7 +862,7 @@ export default function Trade() {
                       }
                       selectedAsset={toAsset}
                       onSelectAsset={setToAsset}
-                      disableAmountInput={true}
+                      disableAmountInput={exactMode === "ExactIn"}
                     />
                   </div>
 
