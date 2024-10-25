@@ -39,7 +39,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
 import { Asset, AssetInput } from "@/components/AssetInput";
-import { SlippageInput } from "@/components/SlippageInput";
+import { FormInput } from "@/components/FormInput";
 import React, { useEffect, useMemo, useState } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";
@@ -111,6 +111,7 @@ const PERSISTED_FIELDS = {
     "useWSOL",
     "dexes",
     "versionedTransactions",
+    "priorityFeeOverride",
   ],
   spot: [
     "venue",
@@ -120,6 +121,8 @@ const PERSISTED_FIELDS = {
     "spotReduceOnly",
     "post",
     "leverage",
+    "slippage",
+    "priorityFeeOverride",
   ],
   perps: [
     "venue",
@@ -129,6 +132,8 @@ const PERSISTED_FIELDS = {
     "perpsReduceOnly",
     "post",
     "leverage",
+    "slippage",
+    "priorityFeeOverride",
   ],
 };
 
@@ -190,6 +195,7 @@ const swapSchema = z.object({
   directRouteOnly: z.boolean().optional(),
   useWSOL: z.boolean().optional(),
   versionedTransactions: z.boolean().optional(),
+  priorityFeeOverride: z.number().nonnegative().optional(),
 });
 
 const spotSchema = z.object({
@@ -205,6 +211,8 @@ const spotSchema = z.object({
   post: z.boolean().optional(),
   showConfirmation: z.boolean().optional(),
   leverage: z.number().nonnegative(),
+  slippage: z.number().nonnegative().lte(1).optional(),
+  priorityFeeOverride: z.number().nonnegative().optional(),
 });
 
 const perpsSchema = z.object({
@@ -220,29 +228,75 @@ const perpsSchema = z.object({
   post: z.boolean().optional(),
   showConfirmation: z.boolean().optional(),
   leverage: z.number().nonnegative().optional(),
+  slippage: z.number().nonnegative().lte(1).optional(),
+  priorityFeeOverride: z.number().nonnegative().optional(),
 });
 
 type SwapSchema = z.infer<typeof swapSchema>;
 type SpotSchema = z.infer<typeof spotSchema>;
 type PerpsSchema = z.infer<typeof perpsSchema>;
 
-const getAsset = (address: string, assetsList?: any[]) => {
-  return (assetsList || []).find((asset: any) => asset.address === address);
+const DEFAULT_SWAP_FORM_VALUES: SwapSchema = {
+  venue: "Jupiter",
+  swapType: "Swap",
+  filterType: "Include",
+  slippage: 0.05,
+  dexes: [],
+  exactMode: "ExactIn",
+  maxAccounts: 20,
+  from: 0,
+  fromAsset: "USDC",
+  to: 0,
+  toAsset: "SOL",
+  directRouteOnly: false,
+  useWSOL: false,
+  versionedTransactions: true,
+  priorityFeeOverride: 0,
+};
+
+const DEFAULT_SPOT_FORM_VALUES: SpotSchema = {
+  venue: "Drift",
+  spotMarket: "SOL/USDC",
+  spotType: "Limit",
+  side: "Buy",
+  limitPrice: 0,
+  size: 0,
+  notional: 0,
+  triggerPrice: 0,
+  spotReduceOnly: false,
+  post: false,
+  showConfirmation: true,
+  leverage: 0,
+  slippage: 0.05,
+  priorityFeeOverride: 0,
+};
+
+const DEFAULT_PERPS_FORM_VALUES: PerpsSchema = {
+  venue: "Drift",
+  perpsMarket: "SOL-PERP",
+  perpsType: "Limit",
+  side: "Buy",
+  limitPrice: 0,
+  size: 0,
+  notional: 0,
+  triggerPrice: 0,
+  perpsReduceOnly: false,
+  post: false,
+  showConfirmation: true,
+  leverage: 0,
+  slippage: 0.05,
+  priorityFeeOverride: 0,
 };
 
 export default function Trade() {
   const {
     fund: fundPDA,
-    allFunds,
     treasury,
     wallet,
     glamClient,
     jupTokenList: tokenList,
     driftMarketConfigs,
   } = useGlam();
-  const fund: any = fundPDA
-    ? (allFunds || []).find((f: any) => f.idStr === fundPDA.toBase58())
-    : undefined;
 
   const [fromAsset, setFromAsset] = useState<string>("USDC");
   const [toAsset, setToAsset] = useState<string>("SOL");
@@ -315,61 +369,19 @@ export default function Trade() {
   }, [treasury, tokenList, fundPDA]);
 
   const swapForm = usePersistedForm("swap", swapSchema, {
-    venue: "Jupiter",
-    swapType: "Swap",
-    filterType: "Include",
-    slippage: 0.05,
+    ...DEFAULT_SWAP_FORM_VALUES,
     dexes: jupDexes?.map((x) => x.label) || [],
-    exactMode: "ExactIn",
-    maxAccounts: 20,
-    from: 0,
-    fromAsset: "USDC",
-    to: 0,
-    toAsset: "SOL",
-    directRouteOnly: false,
-    useWSOL: false,
-    versionedTransactions: true,
   });
-
-  const spotForm = usePersistedForm("spot", spotSchema, {
-    venue: "Drift",
-    spotMarket: "SOL/USDC",
-    spotType: "Limit",
-    side: "Buy",
-    limitPrice: 0,
-    size: 0,
-    notional: 0,
-    triggerPrice: 0,
-    spotReduceOnly: false,
-    post: false,
-    showConfirmation: true,
-    leverage: 0,
-  });
-
-  const perpsForm = usePersistedForm("perps", perpsSchema, {
-    venue: "Drift",
-    perpsMarket: "SOL-PERP",
-    perpsType: "Limit",
-    side: "Buy",
-    limitPrice: 0,
-    size: 0,
-    notional: 0,
-    triggerPrice: 0,
-    perpsReduceOnly: false,
-    post: false,
-    showConfirmation: true,
-    leverage: 0,
-  });
-
-  // useEffect(() => {
-  //   const perpsLeverageValue = perpsForm.watch("leverage");
-  //   console.log("Perps form leverage value:", perpsLeverageValue);
-  // }, [perpsForm]);
-
-  // useEffect(() => {
-  //   const spotLeverageValue = spotForm.watch("leverage");
-  //   console.log("Spot form leverage value:", spotLeverageValue);
-  // }, [spotForm]);
+  const spotForm = usePersistedForm(
+    "spot",
+    spotSchema,
+    DEFAULT_SPOT_FORM_VALUES
+  );
+  const perpsForm = usePersistedForm(
+    "perps",
+    perpsSchema,
+    DEFAULT_PERPS_FORM_VALUES
+  );
 
   const spotOrderType = spotForm.watch("spotType");
   const spotReduceOnly = spotForm.watch("spotReduceOnly");
@@ -377,50 +389,73 @@ export default function Trade() {
   const perpsReduceOnly = perpsForm.watch("perpsReduceOnly");
 
   const onSubmitSwap: SubmitHandler<SwapSchema> = async (values) => {
-    const updatedValues = {
-      ...values,
-      fromAsset,
-      toAsset,
-    };
-    console.log("Submit swap:", updatedValues);
-    const { address: inputMint, decimals } =
+    if (
+      (values.exactMode === "ExactIn" && values.from === 0) ||
+      (values.exactMode === "ExactOut" && values.to === 0)
+    ) {
+      toast({
+        title: "Invalid from/to amount for swap",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log("Submit swap:", values, fromAsset, toAsset);
+
+    const getAssetMintAndDecimals = (asset: string) =>
       tokenList?.find((t) => {
-        if (fromAsset === "wSOL") {
+        if (asset === "wSOL") {
           return t.symbol === "SOL";
         }
-        return t.symbol === fromAsset;
-      }) || {};
+        return t.symbol === asset;
+      }) || ({} as any);
 
-    const outputMint = tokenList?.find((t) => t.symbol === toAsset)?.address;
-    if (!inputMint || !outputMint || inputMint === outputMint) {
+    const { address: inputMint, decimals: inputDecimals } =
+      getAssetMintAndDecimals(fromAsset);
+    const { address: outputMint, decimals: outputDecimals } =
+      getAssetMintAndDecimals(toAsset);
+
+    if (
+      !inputMint ||
+      !outputMint ||
+      !inputDecimals ||
+      !outputDecimals ||
+      inputMint === outputMint
+    ) {
       toast({
         title: "Invalid input/output asset for swap",
         variant: "destructive",
       });
       return;
     }
-    console.log(
-      `Input mint: ${inputMint} (decimals: ${decimals}), output mint: ${outputMint}`
-    );
 
-    if (!decimals) {
-      toast({
-        title: "Unknown decimals of the input mint",
-        variant: "destructive",
-      });
-      return;
-    }
+    console.log(
+      `Input mint: ${inputMint} (decimals: ${inputDecimals}), output mint: ${outputMint} (decimals: ${outputDecimals})`
+    );
 
     let dexesParam;
     const dexes = values.dexes.filter((item) => item !== "");
     if (values.filterType === "Include") {
       dexesParam = { dexes };
+      if (dexes.length === jupDexes?.length) {
+        // All dexes selected, no need to filter
+        dexesParam = {};
+      }
     } else {
       dexesParam = { excludeDexes: dexes };
     }
 
-    const amount = values.from * Math.pow(10, decimals);
-    const uiAmount = amount / Math.pow(10, decimals);
+    // maxAccounts is not accepted if exactMode is ExactOut
+    let maxAccountsParam = {};
+    if (values.exactMode === "ExactIn") {
+      maxAccountsParam = { maxAccounts: values.maxAccounts };
+    }
+
+    const amount =
+      values.exactMode === "ExactIn"
+        ? values.from * 10 ** inputDecimals
+        : values.to * 10 ** outputDecimals;
+
     setIsTxPending(true);
     try {
       const txId = await glamClient.jupiter.swap(fundPDA!, {
@@ -431,16 +466,16 @@ export default function Trade() {
         swapMode: values.exactMode,
         onlyDirectRoutes: values.directRouteOnly,
         asLegacyTransaction: !values.versionedTransactions,
-        maxAccounts: values.maxAccounts,
+        ...maxAccountsParam,
         ...dexesParam,
       });
       toast({
-        title: `Swapped ${uiAmount} ${fromAsset} to ${toAsset}`,
+        title: `Swapped ${fromAsset} to ${toAsset}`,
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
       });
     } catch (error) {
       toast({
-        title: `Failed to swap ${uiAmount} ${fromAsset} to ${toAsset}`,
+        title: `Failed to swap ${fromAsset} to ${toAsset}`,
         description: parseTxError(error),
         variant: "destructive",
       });
@@ -518,25 +553,25 @@ export default function Trade() {
 
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    swapForm.reset({
-      venue: "Jupiter",
-      swapType: "Swap",
-      slippage: 0.05,
-      filterType: "Include",
-      dexes: jupDexes?.map((x) => x.label) || [],
-      exactMode: "ExactIn",
-      maxAccounts: 20,
-      from: 0,
-      to: 0,
-      directRouteOnly: false,
-      useWSOL: false,
-      versionedTransactions: true,
-      fromAsset: "USDC",
-      toAsset: "SOL",
-    });
-    setFromAsset("USDC");
-    setToAsset("SOL");
-    console.log("Form reset:", swapForm.getValues());
+
+    // dexes: jupDexes?.map((x) => x.label) || [],
+    switch (activeTab) {
+      case "swap":
+        swapForm.reset({
+          ...DEFAULT_SWAP_FORM_VALUES,
+          dexes: jupDexes?.map((x) => x.label) || [],
+        });
+        setFromAsset("USDC");
+        setToAsset("SOL");
+        break;
+      case "spot":
+        spotForm.reset(DEFAULT_SPOT_FORM_VALUES);
+        break;
+      case "perps":
+        perpsForm.reset(DEFAULT_PERPS_FORM_VALUES);
+    }
+
+    // console.log("Form reset:", swapForm.getValues());
   };
 
   const handleFlip = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -634,6 +669,8 @@ export default function Trade() {
       marketType === "Perps"
         ? perpsForm.getValues().perpsMarket
         : spotForm.getValues().spotMarket;
+
+    console.log("driftMarketConfigs", driftMarketConfigs);
     const marketConfig =
       marketType === "Perps"
         ? driftMarketConfigs.perp.find((config) => config.symbol === market)
@@ -808,7 +845,7 @@ export default function Trade() {
 
                   <div className="flex space-x-4 items-start">
                     <AssetInput
-                      className="min-w-1/2 w-1/2"
+                      className="min-w-1/3 w-1/3"
                       name="from"
                       label="From"
                       assets={fromAssetList}
@@ -829,7 +866,12 @@ export default function Trade() {
                     >
                       <ColumnSpacingIcon />
                     </Button>
-                    <SlippageInput name="slippage" label="Slippage" />
+                    <FormInput
+                      name="slippage"
+                      label="Slippage"
+                      symbol="%"
+                      className="min-w-1/3 w-1/3"
+                    />
                     <AssetInput
                       className="min-w-1/3 w-1/3"
                       name="to"
@@ -858,14 +900,12 @@ export default function Trade() {
                   </div>
 
                   <div className="flex space-x-4 w-full items-end">
-                    <AssetInput
+                    <FormInput
                       className="min-w-1/3 w-1/3"
                       name="priorityFeeOverride"
                       label="Priority Fee"
-                      assets={fromAssetList}
-                      balance={NaN}
-                      selectedAsset="SOL"
-                      disableAssetChange={true}
+                      step="0.001"
+                      symbol="SOL"
                     />
                     <Button
                       className="w-1/3"
@@ -1330,9 +1370,10 @@ export default function Trade() {
                   ) : spotOrderType === "Market" ? (
                     <>
                       <div className="flex space-x-4 items-start">
-                        <SlippageInput
+                        <FormInput
                           name="slippage"
                           label="Slippage"
+                          symbol="%"
                           className="min-w-1/3 w-1/3"
                         />
 
@@ -1498,14 +1539,12 @@ export default function Trade() {
                   {/*</div>*/}
 
                   <div className="flex space-x-4 w-full items-end">
-                    <AssetInput
+                    <FormInput
                       className="min-w-1/3 w-1/3"
                       name="priorityFeeOverride"
                       label="Priority Fee"
-                      assets={fromAssetList}
-                      balance={NaN}
-                      selectedAsset="SOL"
-                      disableAssetChange={true}
+                      step="0.001"
+                      symbol="SOL"
                     />
                     <Button
                       className="w-1/3"
@@ -1797,9 +1836,10 @@ export default function Trade() {
                   ) : perpsOrderType === "Market" ? (
                     <>
                       <div className="flex space-x-4 items-start">
-                        <SlippageInput
+                        <FormInput
                           name="slippage"
                           label="Slippage"
+                          symbol="%"
                           className="min-w-1/3 w-1/3"
                         />
 
@@ -1972,14 +2012,12 @@ export default function Trade() {
                     </>
                   )}
                   <div className="flex space-x-4 w-full items-end">
-                    <AssetInput
+                    <FormInput
                       className="min-w-1/3 w-1/3"
                       name="priorityFeeOverride"
                       label="Priority Fee"
-                      assets={fromAssetList}
-                      balance={NaN}
-                      selectedAsset="SOL"
-                      disableAssetChange={true}
+                      step="0.001"
+                      symbol="SOL"
                     />
                     <Button
                       className="w-1/3"
