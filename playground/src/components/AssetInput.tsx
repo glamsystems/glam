@@ -43,6 +43,7 @@ interface AssetInputProps {
   selectedAsset?: string;
   onSelectAsset?: (value: string) => void;
   className?: string;
+  step?: string;
   disableAssetChange?: boolean;
   disableAmountInput?: boolean;
   useMaxAmount?: boolean;
@@ -57,6 +58,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
   selectedAsset,
   onSelectAsset = () => {},
   className,
+  step = "1",
   disableAssetChange = false,
   disableAmountInput = false,
   useMaxAmount = false,
@@ -78,12 +80,8 @@ export const AssetInput: React.FC<AssetInputProps> = ({
     setValue(name, balance);
   };
 
-  const resetAssetInput = () => {
-    setValue(name, 0);
-  };
-
   useEffect(() => {
-    resetAssetInput();
+    setValue(name, 0);
   }, [reset]);
 
   useEffect(() => {
@@ -146,7 +144,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
               <Input
                 {...field}
                 type="number"
-                step="any"
+                step={step}
                 ref={inputRef}
                 value={
                   disableAmountInput

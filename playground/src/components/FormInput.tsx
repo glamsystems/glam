@@ -13,17 +13,19 @@ import { Input } from "@/components/ui/input";
 interface Props {
   name: string;
   label: string;
+  symbol: string;
   step?: string;
   className?: string;
 }
 
-export const SlippageInput: React.FC<Props> = ({
+export const FormInput: React.FC<Props> = ({
   name,
   label,
+  symbol,
   step = 0.05,
   className,
 }) => {
-  const { control, getValues, setValue, reset } = useFormContext();
+  const { control, getValues, setValue } = useFormContext();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleInputChange = (value: string) => {
@@ -63,7 +65,7 @@ export const SlippageInput: React.FC<Props> = ({
                 className="absolute pr-2 pl-2 h-6 inset-y-0 top-2 right-2 border-l-0"
                 disabled
               >
-                %
+                {symbol}
               </Button>
             </div>
           </FormControl>
