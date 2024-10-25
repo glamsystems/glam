@@ -554,7 +554,6 @@ export default function Trade() {
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
-    // dexes: jupDexes?.map((x) => x.label) || [],
     switch (activeTab) {
       case "swap":
         swapForm.reset({
