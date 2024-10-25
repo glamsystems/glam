@@ -23,20 +23,22 @@ Fund:
 - [x] Share classes (Token 2022)
   - [x] On chain Openfunds Share Class (Metadata Extension)
   - [x] Allow/deny-list for subscription
-  - [x] Lockup period (Transfer Hook, in progress)
-  - [ ] Non-Transferable
-  - [ ] Permanent Delegate
+  - [x] Lockup period for redeem and transfer
+  - [x] Permanent delegate
 - [x] Investor subscribe & redeem
-- [ ] Investor account page
+- [x] Hot wallets / fine-grain access control
+- [ ] External/offchain assets
+   - [x] Staking accounts
+   - [ ] Drift positions
+   - [ ] Offchain assets
 - [ ] Fees
 - [ ] Subscription limits
-- [ ] External/off chain assets
 
 Integrations:
 
 - [x] User wallets (Phantom, Backpack)
 - [x] Pricing (Pyth, LST)
-- [x] Trading (Drift delegate account, deposit, withdraw)
+- [x] Trading (Drift)
 - [x] Swap (Jupiter)
 - [x] Staking (SPL, Sanctum, Marinade)
 - [ ] Alternative strategy engine (Symmetry?)
