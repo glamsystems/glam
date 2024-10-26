@@ -28,6 +28,7 @@ export class InvestorClient {
     fund: PublicKey,
     asset: PublicKey,
     amount: BN,
+    // @ts-ignore
     fundModel: FundModel = undefined,
     shareClassId: number = 0,
     skipState: boolean = true
