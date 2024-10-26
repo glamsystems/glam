@@ -486,6 +486,18 @@ export default function Trade() {
   const onSubmitSpot: SubmitHandler<SpotSchema> = async (values) => {
     console.log("Submit spot order:", values);
 
+    const market = spotForm.getValues().spotMarket;
+    const marketConfig = driftMarketConfigs.spot.find(
+      (config) => config.symbol === market.replace("/USDC", "")
+    );
+    if (!marketConfig) {
+      toast({
+        title: `Cannot find drift market configs for ${market}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     const orderParams = getOrderParams({
       orderType:
         values.spotType === "Market" ? OrderType.MARKET : OrderType.LIMIT,
@@ -494,9 +506,9 @@ export default function Trade() {
         values.side === "Buy"
           ? PositionDirection.LONG
           : PositionDirection.SHORT,
-      marketIndex: DRIFT_SPOT_MARKETS.indexOf(values.spotMarket),
+      marketIndex: marketConfig?.marketIndex!,
       baseAssetAmount: new anchor.BN(values.size * LAMPORTS_PER_SOL),
-      price: new anchor.BN(values.limitPrice * 10 ** 6),
+      price: new anchor.BN(values.limitPrice * 10 ** 6), // TODO: Skip price for a market order?
     });
     console.log("Drift spot orderParams", orderParams);
 
@@ -600,14 +612,6 @@ export default function Trade() {
       perpsForm.setValue("side", value as "Buy" | "Sell");
     }
   };
-
-  const watchSpotMarket = spotForm.watch("spotMarket");
-  const spotMarketFromAsset = watchSpotMarket.replace("/USDC", "");
-
-  const watchPerpsMarket = perpsForm.watch("perpsMarket");
-  const perpsFromAsset = watchPerpsMarket
-    .replace("-PERP", "")
-    .replace("-BET", "");
 
   const watchPerpsLimitPrice = perpsForm.watch("limitPrice");
   const watchPerpsSize = perpsForm.watch("size");
@@ -854,7 +858,12 @@ export default function Trade() {
                         )?.balance || 0
                       }
                       selectedAsset={fromAsset}
-                      onSelectAsset={setFromAsset}
+                      onSelectAsset={(from) => {
+                        setFromAsset(from);
+                        if (from === toAsset) {
+                          setToAsset(toAsset === "SOL" ? "USDC" : "SOL");
+                        }
+                      }}
                       disableAmountInput={exactMode === "ExactOut"}
                     />
                     <Button
@@ -893,7 +902,12 @@ export default function Trade() {
                         )?.balance || 0
                       }
                       selectedAsset={toAsset}
-                      onSelectAsset={setToAsset}
+                      onSelectAsset={(to) => {
+                        setToAsset(to);
+                        if (to === fromAsset) {
+                          setFromAsset(fromAsset === "SOL" ? "USDC" : "SOL");
+                        }
+                      }}
                       disableAmountInput={exactMode === "ExactIn"}
                     />
                   </div>
@@ -1335,53 +1349,35 @@ export default function Trade() {
                     </div>
                   </div>
 
-                  {spotOrderType === "Limit" ? (
+                  {["Limit", "Market"].includes(spotOrderType) ? (
                     <>
                       <div className="flex space-x-4 items-start">
-                        <AssetInput
-                          className="min-w-1/3 w-1/3"
-                          name="limitPrice"
-                          label="Limit Price"
-                          balance={NaN}
-                          selectedAsset="USDC"
-                          hideBalance={true}
-                          disableAssetChange={true}
-                        />
+                        {spotOrderType === "Limit" ? (
+                          <AssetInput
+                            className="min-w-1/3 w-1/3"
+                            name="limitPrice"
+                            label="Limit Price"
+                            balance={NaN}
+                            selectedAsset="USDC"
+                            hideBalance={true}
+                            disableAssetChange={true}
+                          />
+                        ) : (
+                          <FormInput
+                            name="slippage"
+                            label="Slippage"
+                            symbol="%"
+                            className="min-w-1/3 w-1/3"
+                          />
+                        )}
                         <AssetInput
                           className="min-w-1/3 w-1/3"
                           name="size"
                           label="Size"
                           balance={NaN}
-                          selectedAsset={spotMarketFromAsset}
-                          disableAssetChange={true}
-                        />
-                        <AssetInput
-                          className="min-w-1/3 w-1/3"
-                          name="notional"
-                          label="Notional"
-                          balance={NaN}
-                          selectedAsset="USDC"
-                          disableAssetChange={true}
-                          disableAmountInput={true}
-                        />
-                      </div>
-                    </>
-                  ) : spotOrderType === "Market" ? (
-                    <>
-                      <div className="flex space-x-4 items-start">
-                        <FormInput
-                          name="slippage"
-                          label="Slippage"
-                          symbol="%"
-                          className="min-w-1/3 w-1/3"
-                        />
-
-                        <AssetInput
-                          className="min-w-1/3 w-1/3"
-                          name="size"
-                          label="Size"
-                          selectedAsset={spotMarketFromAsset}
-                          balance={NaN}
+                          selectedAsset={spotForm
+                            .watch("spotMarket")
+                            .replace("/USDC", "")}
                           disableAssetChange={true}
                         />
                         <AssetInput
@@ -1402,10 +1398,8 @@ export default function Trade() {
                           className="min-w-1/2 w-1/2"
                           name="trigger-price"
                           label="Trigger Price"
-                          assets={fromAssetList}
                           balance={NaN}
-                          selectedAsset={fromAsset}
-                          onSelectAsset={setFromAsset}
+                          selectedAsset="USDC"
                           hideBalance={true}
                           disableAssetChange={true}
                         />
@@ -1413,10 +1407,8 @@ export default function Trade() {
                           className="min-w-1/2 w-1/2"
                           name="limitPrice"
                           label="Limit Price"
-                          assets={fromAssetList}
                           balance={NaN}
-                          selectedAsset={fromAsset}
-                          onSelectAsset={setFromAsset}
+                          selectedAsset="USDC"
                           hideBalance={true}
                           disableAssetChange={true}
                         />
@@ -1426,116 +1418,117 @@ export default function Trade() {
                           className="min-w-1/2 w-1/2"
                           name="size"
                           label="Size"
-                          assets={fromAssetList}
                           balance={NaN}
-                          selectedAsset={fromAsset}
-                          onSelectAsset={setFromAsset}
+                          selectedAsset={spotForm
+                            .watch("spotMarket")
+                            .replace("/USDC", "")}
                         />
                         <AssetInput
                           className="min-w-1/2 w-1/2"
                           name="notional"
                           label="Notional"
-                          disableAssetChange={true}
                           balance={NaN}
-                          selectedAsset={toAsset}
+                          selectedAsset="USDC"
+                          disableAssetChange={true}
                           disableAmountInput={true}
                         />
                       </div>
                     </>
                   ) : null}
 
-                  {spotOrderType !== "Trigger Limit" &&
-                    !spotReduceOnly && ( // <div className="flex flex-row gap-4 items-start w-full">
-                      //   <LeverageInput
-                      //     control={spotForm.control}
-                      //     name="leverage"
-                      //     label="Leverage: 100x"
-                      //     min={0}
-                      //     max={100}
-                      //     step={1}
-                      //   />
-                      // </div>
-                      <span></span>
-                    )}
+                  <>
+                    {spotOrderType !== "Trigger Limit" &&
+                      !spotReduceOnly && ( // <div className="flex flex-row gap-4 items-start w-full">
+                        //   <LeverageInput
+                        //     control={spotForm.control}
+                        //     name="leverage"
+                        //     label="Leverage: 100x"
+                        //     min={0}
+                        //     max={100}
+                        //     step={1}
+                        //   />
+                        // </div>
+                        <span></span>
+                      )}
+                    {/*<div className="flex flex-row gap-4 items-start w-full">*/}
+                    {/*  <div className="w-1/2 flex h-6 items-center text-sm text-muted-foreground">*/}
+                    {/*    <TooltipProvider>*/}
+                    {/*      <Tooltip>*/}
+                    {/*        <TooltipTrigger className="flex items-center">*/}
+                    {/*          <InfoCircledIcon className="w-4 h-4 mr-1"></InfoCircledIcon>*/}
+                    {/*          <p>Margin Trading Disabled</p>*/}
+                    {/*        </TooltipTrigger>*/}
+                    {/*        <TooltipContent side="right">*/}
+                    {/*          Please view the Risk Management configuration of the*/}
+                    {/*          Venue Integration.*/}
+                    {/*        </TooltipContent>*/}
+                    {/*      </Tooltip>*/}
+                    {/*    </TooltipProvider>*/}
+                    {/*  </div>*/}
 
-                  {/*<div className="flex flex-row gap-4 items-start w-full">*/}
-                  {/*  <div className="w-1/2 flex h-6 items-center text-sm text-muted-foreground">*/}
-                  {/*    <TooltipProvider>*/}
-                  {/*      <Tooltip>*/}
-                  {/*        <TooltipTrigger className="flex items-center">*/}
-                  {/*          <InfoCircledIcon className="w-4 h-4 mr-1"></InfoCircledIcon>*/}
-                  {/*          <p>Margin Trading Disabled</p>*/}
-                  {/*        </TooltipTrigger>*/}
-                  {/*        <TooltipContent side="right">*/}
-                  {/*          Please view the Risk Management configuration of the*/}
-                  {/*          Venue Integration.*/}
-                  {/*        </TooltipContent>*/}
-                  {/*      </Tooltip>*/}
-                  {/*    </TooltipProvider>*/}
-                  {/*  </div>*/}
+                    {/*  <div className="w-1/2 flex flex-row justify-start gap-4">*/}
+                    {/*    <FormField*/}
+                    {/*      control={spotForm.control}*/}
+                    {/*      name="spotReduceOnly"*/}
+                    {/*      render={({ field }) => (*/}
+                    {/*        <FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
+                    {/*          <FormControl>*/}
+                    {/*            <Switch*/}
+                    {/*              checked={field.value}*/}
+                    {/*              onCheckedChange={field.onChange}*/}
+                    {/*              id="reduce-only"*/}
+                    {/*            />*/}
+                    {/*          </FormControl>*/}
+                    {/*          <FormLabel*/}
+                    {/*            htmlFor="reduce-only"*/}
+                    {/*            className="font-normal"*/}
+                    {/*          >*/}
+                    {/*            Reduce Only*/}
+                    {/*          </FormLabel>*/}
+                    {/*        </FormItem>*/}
+                    {/*      )}*/}
+                    {/*    />*/}
+                    {/*    <FormField*/}
+                    {/*      control={spotForm.control}*/}
+                    {/*      name="post"*/}
+                    {/*      render={({ field }) => (*/}
+                    {/*        <FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
+                    {/*          <FormControl>*/}
+                    {/*            <Switch*/}
+                    {/*              checked={field.value}*/}
+                    {/*              onCheckedChange={field.onChange}*/}
+                    {/*              id="post"*/}
+                    {/*            />*/}
+                    {/*          </FormControl>*/}
+                    {/*          <FormLabel htmlFor="post" className="font-normal">*/}
+                    {/*            Post*/}
+                    {/*          </FormLabel>*/}
+                    {/*        </FormItem>*/}
+                    {/*      )}*/}
+                    {/*    />*/}
+                    {/*  </div>*/}
 
-                  {/*  <div className="w-1/2 flex flex-row justify-start gap-4">*/}
-                  {/*    <FormField*/}
-                  {/*      control={spotForm.control}*/}
-                  {/*      name="spotReduceOnly"*/}
-                  {/*      render={({ field }) => (*/}
-                  {/*        <FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
-                  {/*          <FormControl>*/}
-                  {/*            <Switch*/}
-                  {/*              checked={field.value}*/}
-                  {/*              onCheckedChange={field.onChange}*/}
-                  {/*              id="reduce-only"*/}
-                  {/*            />*/}
-                  {/*          </FormControl>*/}
-                  {/*          <FormLabel*/}
-                  {/*            htmlFor="reduce-only"*/}
-                  {/*            className="font-normal"*/}
-                  {/*          >*/}
-                  {/*            Reduce Only*/}
-                  {/*          </FormLabel>*/}
-                  {/*        </FormItem>*/}
-                  {/*      )}*/}
-                  {/*    />*/}
-                  {/*    <FormField*/}
-                  {/*      control={spotForm.control}*/}
-                  {/*      name="post"*/}
-                  {/*      render={({ field }) => (*/}
-                  {/*        <FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
-                  {/*          <FormControl>*/}
-                  {/*            <Switch*/}
-                  {/*              checked={field.value}*/}
-                  {/*              onCheckedChange={field.onChange}*/}
-                  {/*              id="post"*/}
-                  {/*            />*/}
-                  {/*          </FormControl>*/}
-                  {/*          <FormLabel htmlFor="post" className="font-normal">*/}
-                  {/*            Post*/}
-                  {/*          </FormLabel>*/}
-                  {/*        </FormItem>*/}
-                  {/*      )}*/}
-                  {/*    />*/}
-                  {/*  </div>*/}
-
-                  {/*  <FormField*/}
-                  {/*    control={spotForm.control}*/}
-                  {/*    name="showConfirmation"*/}
-                  {/*    render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
-                  {/*        <FormControl>*/}
-                  {/*          <Switch*/}
-                  {/*            checked={field.value}*/}
-                  {/*            onCheckedChange={field.onChange}*/}
-                  {/*            id="show-confirmation"*/}
-                  {/*          />*/}
-                  {/*        </FormControl>*/}
-                  {/*        <FormLabel*/}
-                  {/*          htmlFor="show-confirmation"*/}
-                  {/*          className="font-normal"*/}
-                  {/*        >*/}
-                  {/*          Show Confirmation*/}
-                  {/*        </FormLabel>*/}
-                  {/*      </FormItem>)}*/}
-                  {/*  />*/}
-                  {/*</div>*/}
+                    {/*  <FormField*/}
+                    {/*    control={spotForm.control}*/}
+                    {/*    name="showConfirmation"*/}
+                    {/*    render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
+                    {/*        <FormControl>*/}
+                    {/*          <Switch*/}
+                    {/*            checked={field.value}*/}
+                    {/*            onCheckedChange={field.onChange}*/}
+                    {/*            id="show-confirmation"*/}
+                    {/*          />*/}
+                    {/*        </FormControl>*/}
+                    {/*        <FormLabel*/}
+                    {/*          htmlFor="show-confirmation"*/}
+                    {/*          className="font-normal"*/}
+                    {/*        >*/}
+                    {/*          Show Confirmation*/}
+                    {/*        </FormLabel>*/}
+                    {/*      </FormItem>)}*/}
+                    {/*  />*/}
+                    {/*</div>*/}
+                  </>
 
                   <div className="flex space-x-4 w-full items-end">
                     <FormInput
@@ -1605,9 +1598,7 @@ export default function Trade() {
                           px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
                         >
                           <span className="truncate">
-                            {perpsForm
-                              .watch("perpsMarket")
-                              .replace("-PERP", "")}
+                            {spotForm.watch("spotMarket").replace("/USDC", "")}
                           </span>
                         </ToggleGroupItem>
                       </ToggleGroup>
@@ -1801,53 +1792,35 @@ export default function Trade() {
                       />
                     </div>
                   </div>
-                  {perpsOrderType === "Limit" ? (
+                  {["Limit", "Market"].includes(perpsOrderType) ? (
                     <>
                       <div className="flex space-x-4 items-start">
-                        <AssetInput
-                          className="min-w-1/3 w-1/3"
-                          name="limitPrice"
-                          label="Limit Price"
-                          balance={NaN}
-                          selectedAsset="USDC"
-                          hideBalance={true}
-                          disableAssetChange={true}
-                        />
-                        <AssetInput
-                          className="min-w-1/3 w-1/3"
-                          name="size"
-                          label="Size"
-                          selectedAsset={perpsFromAsset}
-                          balance={NaN}
-                          disableAssetChange={true}
-                        />
-                        <AssetInput
-                          className="min-w-1/3 w-1/3"
-                          name="notional"
-                          label="Notional"
-                          selectedAsset={"USDC"}
-                          balance={NaN}
-                          disableAssetChange={true}
-                          disableAmountInput={true}
-                        />
-                      </div>
-                    </>
-                  ) : perpsOrderType === "Market" ? (
-                    <>
-                      <div className="flex space-x-4 items-start">
-                        <FormInput
-                          name="slippage"
-                          label="Slippage"
-                          symbol="%"
-                          className="min-w-1/3 w-1/3"
-                        />
+                        {perpsOrderType === "Limit" ? (
+                          <AssetInput
+                            className="min-w-1/3 w-1/3"
+                            name="limitPrice"
+                            label="Limit Price"
+                            balance={NaN}
+                            selectedAsset="USDC"
+                            hideBalance={true}
+                            disableAssetChange={true}
+                          />
+                        ) : (
+                          <FormInput
+                            name="slippage"
+                            label="Slippage"
+                            symbol="%"
+                            className="min-w-1/3 w-1/3"
+                          />
+                        )}
 
                         <AssetInput
                           className="min-w-1/3 w-1/3"
                           name="size"
                           label="Size"
-                          selectedAsset={perpsFromAsset}
-                          assets={fromAssetList}
+                          selectedAsset={perpsForm
+                            .watch("perpsMarket")
+                            .replace("-PERP", "")}
                           balance={NaN}
                           disableAssetChange={true}
                         />
@@ -1855,8 +1828,8 @@ export default function Trade() {
                           className="min-w-1/3 w-1/3"
                           name="notional"
                           label="Notional"
-                          balance={NaN}
                           selectedAsset={"USDC"}
+                          balance={NaN}
                           disableAssetChange={true}
                           disableAmountInput={true}
                         />
@@ -1869,21 +1842,17 @@ export default function Trade() {
                           className="min-w-1/2 w-1/2"
                           name="trigger-price"
                           label="Trigger Price"
-                          assets={fromAssetList}
                           balance={NaN}
-                          selectedAsset={fromAsset}
-                          onSelectAsset={setFromAsset}
+                          selectedAsset="USDC"
                           hideBalance={true}
                           disableAssetChange={true}
                         />
                         <AssetInput
                           className="min-w-1/2 w-1/2"
-                          name="limitPrice"
-                          label="Limit Price"
-                          assets={fromAssetList}
+                          name="trigger-price"
+                          label="Trigger Price"
                           balance={NaN}
-                          selectedAsset={fromAsset}
-                          onSelectAsset={setFromAsset}
+                          selectedAsset="USDC"
                           hideBalance={true}
                           disableAssetChange={true}
                         />
@@ -1893,28 +1862,17 @@ export default function Trade() {
                           className="min-w-1/2 w-1/2"
                           name="size"
                           label="Size"
-                          assets={fromAssetList}
                           balance={NaN}
-                          selectedAsset={fromAsset}
-                          onSelectAsset={setFromAsset}
+                          selectedAsset={perpsForm
+                            .watch("perpsMarket")
+                            .replace("-PERP", "")}
                         />
                         <AssetInput
                           className="min-w-1/2 w-1/2"
                           name="notional"
                           label="Notional"
-                          assets={tokenList?.map(
-                            (t) =>
-                              ({
-                                name: t.name,
-                                symbol: t.symbol,
-                                address: t.address,
-                                decimals: t.decimals,
-                                balance: 0,
-                              } as Asset)
-                          )}
                           balance={NaN}
-                          selectedAsset={toAsset}
-                          onSelectAsset={setToAsset}
+                          selectedAsset="USDC"
                         />
                       </div>
                     </>
