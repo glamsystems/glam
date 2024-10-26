@@ -19,6 +19,7 @@ export class GlamClient extends BaseClient {
 
   public constructor(config?: GlamClientConfig) {
     super(config);
+    // @ts-ignore
     this.drift = new DriftClient(this);
     this.investor = new InvestorClient(this);
     this.jupiter = new JupiterClient(this);

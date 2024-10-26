@@ -174,6 +174,15 @@ const openfunds = async (funds, template, format, client, res) => {
     }
   }
 
+  // JSON.stringify doesn't know how to serialize a BigInt, we need to manually convert it to string
+  for (let i = 0; i < models.length; i++) {
+    const shareClasses = models[i].shareClasses;
+    for (let j = 0; j < shareClasses.length; j++) {
+      models[i].shareClasses[j].shareClassSupply =
+        models[i].shareClasses[j].shareClassSupply.toString();
+    }
+  }
+
   res.set("content-type", "application/json");
   res.send(JSON.stringify(models));
 };

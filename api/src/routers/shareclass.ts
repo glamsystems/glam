@@ -5,9 +5,7 @@ import { getTokenMetadata } from "@solana/spl-token";
 const router = Router();
 
 /**
- * Fetch share class metadata
- *
- * :pubkey - share class (aka token mint) pubkey
+ * Redirect to the rest service
  */
 router.get("/metadata/:pubkey", async (req, res) => {
   const pubkey = validatePubkey(req.params.pubkey);
@@ -15,20 +13,9 @@ router.get("/metadata/:pubkey", async (req, res) => {
     return res.sendStatus(404);
   }
 
-  const metadata = await getTokenMetadata(
-    req.client.provider.connection,
-    pubkey
-  );
-
-  res.set("content-type", "application/json");
-  res.send(
-    JSON.stringify({
-      name: metadata.name,
-      symbol: metadata.symbol,
-      description: "",
-      image: `https://api.glam.systems/image/${pubkey}.png`,
-    })
-  );
+  const targetUrl = `https://rest.glam.systems/metadata/${pubkey}`;
+  res.redirect(targetUrl);
+  return;
 });
 
 export default router;
