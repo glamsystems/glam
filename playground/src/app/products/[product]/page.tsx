@@ -946,23 +946,23 @@ export default function ProductPage() {
                             </span>
                             <span className="flex gap-2">
                               <a
-                                href={fund?.openfundsUri}
+                                href={`https://openfunds.glam.systems/v0/${product}.xlsx`}
                                 rel="noopener noreferrer"
                                 className="link"
                               >
                                 XLSX
                               </a>
                               <a
-                                href=""
+                                href={`https://openfunds.glam.systems/v0/${product}.csv`}
                                 rel="noopener noreferrer"
-                                className="link pointer-events-none text-muted-foreground"
+                                className="link text-muted-foreground"
                               >
                                 CSV
                               </a>
                               <a
-                                href=""
+                                href={`https://openfunds.glam.systems/v0/${product}.json`}
                                 rel="noopener noreferrer"
-                                className="link pointer-events-none text-muted-foreground"
+                                className="link text-muted-foreground"
                               >
                                 JSON
                               </a>

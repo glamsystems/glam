@@ -193,7 +193,7 @@ const openfunds = async (funds, template, format, client, res) => {
 
 const router = Router();
 
-router.get("/openfunds", async (req, res) => {
+router.get(["/openfunds", "/v0"], async (req, res) => {
   return openfunds(
     req.query.funds.split(","),
     req.query.template,
@@ -203,17 +203,20 @@ router.get("/openfunds", async (req, res) => {
   );
 });
 
-router.get("/openfunds/:pubkey.:ext", async (req, res) => {
-  return openfunds(
-    [req.params.pubkey],
-    "auto",
-    req.params.ext,
-    req.client,
-    res
-  );
-});
+router.get(
+  ["/openfunds/:pubkey.:ext", "/v0/:pubkey.:ext"],
+  async (req, res) => {
+    return openfunds(
+      [req.params.pubkey],
+      "auto",
+      req.params.ext,
+      req.client,
+      res
+    );
+  }
+);
 
-router.get("/openfunds/:pubkey", async (req, res) => {
+router.get(["/openfunds/:pubkey", "/v0/:pubkey"], async (req, res) => {
   return openfunds([req.params.pubkey], "auto", "json", req.client, res);
 });
 
