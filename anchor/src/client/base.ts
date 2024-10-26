@@ -12,7 +12,6 @@ import {
   Connection,
   LAMPORTS_PER_SOL,
   PublicKey,
-  StakeProgram,
   SystemProgram,
   Transaction,
   TransactionMessage,
@@ -47,7 +46,6 @@ import { ClusterOrCustom, GlamClientConfig } from "../clientConfig";
 import { FundModel, FundOpenfundsModel } from "../models";
 import { AssetMeta, ASSETS_MAINNET, ASSETS_TESTS } from "./assets";
 import base58 from "bs58";
-import { MARINADE_PROGRAM_ID } from "../constants";
 import { GlamError } from "../error";
 
 // @ts-ignore
@@ -498,10 +496,10 @@ export class BaseClient {
     // fields containing fund id / pda
     const fundPDA = this.getFundPDA(fundModel);
     fundModel.uri =
-      fundModel.uri || `https://playground.glam.systems/products/${fundPDA}`;
+      fundModel.uri || `https://gui.glam.systems/products/${fundPDA}`;
     fundModel.openfundsUri =
       fundModel.openfundsUri ||
-      `https://api.glam.systems/openfunds/${fundPDA}.xlsx`;
+      `https://rest.glam.systems/v0/openfunds?fund=${fundPDA}&format=csv`;
 
     // share classes
     fundModel.shareClasses.forEach((shareClass: any, i: number) => {
@@ -515,8 +513,8 @@ export class BaseClient {
       }
 
       const sharePDA = this.getShareClassPDA(fundPDA, i);
-      shareClass.uri = `https://api.glam.systems/metadata/${sharePDA}`;
-      shareClass.imageUri = `https://api.glam.systems/image/${sharePDA}.png`;
+      shareClass.uri = `https://rest.glam.systems/metadata/${sharePDA}`;
+      shareClass.imageUri = `https://rest.glam.systems/image/${sharePDA}.png`;
     });
 
     return fundModel;
