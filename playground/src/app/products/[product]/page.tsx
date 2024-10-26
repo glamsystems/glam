@@ -945,24 +945,30 @@ export default function ProductPage() {
                               Openfunds
                             </span>
                             <span className="flex gap-2">
-                              <a
-                                href={fund?.openfundsUri}
+                              {/*
+                               // TODO: XLSX not supported yet by rest service
+                               <a
+                                href={`https://rest.glam.systems/v0/openfunds?fund=${product}&format=xlsx`}
                                 rel="noopener noreferrer"
+                                target="_blank"
                                 className="link"
                               >
                                 XLSX
-                              </a>
+                              </a> */}
                               <a
-                                href=""
+                                href={`https://rest.glam.systems/v0/openfunds?fund=${product}&format=csv`}
                                 rel="noopener noreferrer"
-                                className="link pointer-events-none text-muted-foreground"
+                                target="_blank"
+                                className="link"
                               >
                                 CSV
                               </a>
+
                               <a
-                                href=""
+                                href={`https://rest.glam.systems/v0/openfunds?fund=${product}&format=json`}
+                                target="_blank"
                                 rel="noopener noreferrer"
-                                className="link pointer-events-none text-muted-foreground"
+                                className="link"
                               >
                                 JSON
                               </a>
