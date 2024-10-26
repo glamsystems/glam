@@ -514,7 +514,7 @@ export class BaseClient {
 
       const sharePDA = this.getShareClassPDA(fundPDA, i);
       shareClass.uri = `https://rest.glam.systems/metadata/${sharePDA}`;
-      shareClass.imageUri = `https://rest.glam.systems/image/${sharePDA}.png`;
+      shareClass.imageUri = `https://rest.glam.systems/v0/sparkle?key=${sharePDA}&format=png
     });
 
     return fundModel;
