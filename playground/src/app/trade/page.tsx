@@ -90,6 +90,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { PublicKey } from "@solana/web3.js";
 
 const spotMarkets = DRIFT_SPOT_MARKETS.map((x) => ({ label: x, value: x }));
 const perpsMarkets = DRIFT_PERP_MARKETS.map((x) => ({ label: x, value: x }));
@@ -480,7 +481,16 @@ export default function Trade() {
   const onSubmitSpot: SubmitHandler<SpotSchema> = async (values) => {
     console.log("Submit spot order:", values);
 
-    const market = spotForm.getValues().spotMarket;
+    const { limitPrice, size, spotMarket: market } = values;
+    if (!limitPrice || !size) {
+      toast({
+        title: `Invalid limit price or size for spot order`,
+        description: "Please check your input and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const marketConfig = driftMarketConfigs.spot.find(
       (config) => config.symbol === market.replace("/USDC", "")
     );
@@ -492,6 +502,8 @@ export default function Trade() {
       return;
     }
 
+    console.log("marketConfig", marketConfig);
+
     const orderParams = getOrderParams({
       orderType:
         values.spotType === "Market" ? OrderType.MARKET : OrderType.LIMIT,
@@ -501,7 +513,7 @@ export default function Trade() {
           ? PositionDirection.LONG
           : PositionDirection.SHORT,
       marketIndex: marketConfig?.marketIndex!,
-      baseAssetAmount: new anchor.BN(values.size * LAMPORTS_PER_SOL),
+      baseAssetAmount: new anchor.BN(values.size * 10 ** marketConfig.decimals),
       price:
         values.spotType === "Market"
           ? new anchor.BN(0)
@@ -511,7 +523,10 @@ export default function Trade() {
 
     setIsTxPending(true);
     try {
-      const txId = await glamClient.drift.placeOrder(fundPDA!, orderParams);
+      const txId = await glamClient.drift.placeOrder(fundPDA!, orderParams, 0, {
+        oracle: new PublicKey(marketConfig.oracle),
+        spotMarket: new PublicKey(marketConfig.marketPDA),
+      });
       toast({
         title: "Spot order submitted",
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
@@ -529,6 +544,27 @@ export default function Trade() {
   const onSubmitPerps: SubmitHandler<PerpsSchema> = async (values) => {
     console.log("Submit Perps:", values);
 
+    const { limitPrice, size, perpsMarket: market } = values;
+    if (!limitPrice || !size) {
+      toast({
+        title: `Invalid limit price or size for perps order`,
+        description: "Please check your input and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const marketConfig = driftMarketConfigs.perp.find(
+      (config) => config.symbol === market
+    );
+    if (!marketConfig) {
+      toast({
+        title: `Cannot find drift market configs for ${market}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     const orderParams = getOrderParams({
       orderType:
         values.perpsType === "Market" ? OrderType.MARKET : OrderType.LIMIT,
@@ -537,8 +573,8 @@ export default function Trade() {
         values.side === "Buy"
           ? PositionDirection.LONG
           : PositionDirection.SHORT,
-      marketIndex: DRIFT_PERP_MARKETS.indexOf(values.perpsMarket),
-      baseAssetAmount: new anchor.BN(values.size * LAMPORTS_PER_SOL),
+      marketIndex: marketConfig?.marketIndex!,
+      baseAssetAmount: new anchor.BN(values.size * 10 ** marketConfig.decimals),
       price:
         values.perpsType === "Market"
           ? new anchor.BN(0)
@@ -548,7 +584,10 @@ export default function Trade() {
 
     setIsTxPending(true);
     try {
-      const txId = await glamClient.drift.placeOrder(fundPDA!, orderParams);
+      const txId = await glamClient.drift.placeOrder(fundPDA!, orderParams, 0, {
+        oracle: new PublicKey(marketConfig.oracle),
+        perpMarket: new PublicKey(marketConfig.marketPDA),
+      });
       toast({
         title: "Perps order submitted",
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
@@ -673,7 +712,6 @@ export default function Trade() {
         ? perpsForm.getValues().perpsMarket
         : spotForm.getValues().spotMarket;
 
-    console.log("driftMarketConfigs", driftMarketConfigs);
     const marketConfig =
       marketType === "Perps"
         ? driftMarketConfigs.perp.find((config) => config.symbol === market)
@@ -689,12 +727,29 @@ export default function Trade() {
       return;
     }
 
+    console.log("Cancel orders for", marketType, marketConfig);
+
+    let marketAccounts;
+    if (marketType === "Perps") {
+      marketAccounts = {
+        oracle: new PublicKey(marketConfig.oracle),
+        perpMarket: new PublicKey(marketConfig.marketPDA),
+      };
+    } else {
+      marketAccounts = {
+        oracle: new PublicKey(marketConfig.oracle),
+        spotMarket: new PublicKey(marketConfig.marketPDA),
+      };
+    }
+
     try {
       const txId = await glamClient.drift.cancelOrders(
         fundPDA,
         marketType === "Perps" ? MarketType.PERP : MarketType.SPOT,
         marketConfig?.marketIndex!,
-        PositionDirection.LONG
+        PositionDirection.LONG,
+        0,
+        marketAccounts
       );
       toast({
         title: "Orders canceled",

@@ -2,14 +2,7 @@
 
 import { AnchorProvider } from "@coral-xyz/anchor";
 
-import {
-  act,
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import {
   AnchorWallet,
   useConnection,
@@ -83,9 +76,11 @@ interface PerpMarketConfig {
   categories: string[];
   symbol: string;
   baseAsset: string;
+  decimals: number;
   marketIndex: number;
   launchTs: string;
   oracle: string;
+  oraceSource: string;
   pythPullOraclePDA: string;
   pythFeedId: string;
   marketPDA: string;
@@ -93,9 +88,11 @@ interface PerpMarketConfig {
 
 interface SpotMarketConfig {
   symbol: string;
+  decimals: number;
   marketIndex: number;
   launchTs?: string;
   oracle: string;
+  oracleSource: string;
   pythPullOraclePDA: string;
   pythFeedId: string;
   marketPDA: string;
@@ -103,6 +100,7 @@ interface SpotMarketConfig {
   serumMarket?: string;
   phoenixMarket?: string;
   openBookMarket?: string;
+  vaultPDA: string;
 }
 
 interface DriftMarketConfigs {

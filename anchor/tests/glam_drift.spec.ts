@@ -7,6 +7,11 @@ import {
   OrderType,
   PositionDirection,
 } from "@drift-labs/sdk";
+import { PublicKey } from "@solana/web3.js";
+
+const SOL_PERP_MARKET = new PublicKey(
+  "8UJgxaiQx5nTrdDgph5FiahMmzduuLTLf5WmsPegYA6W"
+);
 
 describe("glam_drift", () => {
   const provider = anchor.AnchorProvider.env();
@@ -131,7 +136,9 @@ describe("glam_drift", () => {
     });
 
     try {
-      const txId = await glamClient.drift.placeOrder(fundPDA, orderParams);
+      const txId = await glamClient.drift.placeOrder(fundPDA, orderParams, 0, {
+        perpMarket: SOL_PERP_MARKET,
+      });
       console.log("driftPlaceOrders", txId);
     } catch (e) {
       console.error(e);
@@ -146,7 +153,9 @@ describe("glam_drift", () => {
         fundPDA,
         MarketType.PERP,
         0,
-        PositionDirection.LONG
+        PositionDirection.LONG,
+        0,
+        { perpMarket: SOL_PERP_MARKET }
       );
 
       console.log("driftCancelOrders", txId);
@@ -179,7 +188,9 @@ describe("glam_drift", () => {
     });
 
     try {
-      const txId = await glamClient.drift.placeOrder(fundPDA, orderParams);
+      const txId = await glamClient.drift.placeOrder(fundPDA, orderParams, 0, {
+        perpMarket: SOL_PERP_MARKET,
+      });
       expect(txId).toBeUndefined();
     } catch (err) {
       const errMsg = err.message + err.logs;
