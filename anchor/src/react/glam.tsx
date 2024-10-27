@@ -71,7 +71,7 @@ interface FundCache {
   name: string;
 }
 
-interface PerpMarketConfig {
+export interface PerpMarketConfig {
   fullName: string;
   categories: string[];
   symbol: string;
@@ -86,7 +86,7 @@ interface PerpMarketConfig {
   marketPDA: string;
 }
 
-interface SpotMarketConfig {
+export interface SpotMarketConfig {
   symbol: string;
   decimals: number;
   marketIndex: number;

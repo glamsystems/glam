@@ -453,7 +453,7 @@ export class DriftClient {
       isWritable: false,
       isSigner: false,
     }));
-    if (orderParams.marketType === MarketType.PERP) {
+    if (orderParams.marketType === MarketType.PERP && perpMarket) {
       remainingAccounts.push({
         pubkey: perpMarket,
         isWritable: true,
@@ -504,7 +504,7 @@ export class DriftClient {
       isWritable: false,
       isSigner: false,
     }));
-    if (marketType === MarketType.PERP) {
+    if (marketType === MarketType.PERP && perpMarket) {
       remainingAccounts.push({
         pubkey: perpMarket,
         isWritable: true,
