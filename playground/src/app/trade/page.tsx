@@ -91,13 +91,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-// "USDC/USDC" is a placeholder, filter it out
-const spotMarkets = DRIFT_SPOT_MARKETS.filter((m) => m !== "USDC/USDC").map(
-  (x) => ({
-    label: x,
-    value: x,
-  })
-);
+const spotMarkets = DRIFT_SPOT_MARKETS.map((x) => ({ label: x, value: x }));
 const perpsMarkets = DRIFT_PERP_MARKETS.map((x) => ({ label: x, value: x }));
 
 const PERSISTED_FIELDS = {
@@ -508,7 +502,10 @@ export default function Trade() {
           : PositionDirection.SHORT,
       marketIndex: marketConfig?.marketIndex!,
       baseAssetAmount: new anchor.BN(values.size * LAMPORTS_PER_SOL),
-      price: new anchor.BN(values.limitPrice * 10 ** 6), // TODO: Skip price for a market order?
+      price:
+        values.spotType === "Market"
+          ? new anchor.BN(0)
+          : new anchor.BN(values.limitPrice * 10 ** 6),
     });
     console.log("Drift spot orderParams", orderParams);
 
@@ -542,7 +539,10 @@ export default function Trade() {
           : PositionDirection.SHORT,
       marketIndex: DRIFT_PERP_MARKETS.indexOf(values.perpsMarket),
       baseAssetAmount: new anchor.BN(values.size * LAMPORTS_PER_SOL),
-      price: new anchor.BN(values.limitPrice * 10 ** 6),
+      price:
+        values.perpsType === "Market"
+          ? new anchor.BN(0)
+          : new anchor.BN(values.limitPrice * 10 ** 6),
     });
     console.log("Drift perps orderParams", orderParams);
 
