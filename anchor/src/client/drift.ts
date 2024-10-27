@@ -25,33 +25,21 @@ const DRIFT_VAULT = new PublicKey(
 );
 const DRIFT_MARGIN_PRECISION = 10_000;
 
-const remainingAccountsForOrders = [
-  {
-    pubkey: new PublicKey("BAtFj4kQttZRVep3UZS2aZRDixkGYgWsbqTBVDbnSsPF"), // sol pricing oracle
-    isWritable: false,
-    isSigner: false,
-  },
-  {
-    pubkey: new PublicKey("En8hkHLkRe9d9DraYmBTrus518BvmVH448YcvmrFM6Ce"), // usdc pricing oracle
-    isWritable: false,
-    isSigner: false,
-  },
-  {
-    pubkey: new PublicKey("3x85u7SWkmmr7YQGYhtjARgxwegTLJgkSLRprfXod6rh"), // sol spot market account
-    isWritable: true,
-    isSigner: false,
-  },
-  {
-    pubkey: new PublicKey("6gMq3mRCKf8aP3ttTyYhuijVZ2LGi14oDsBbkgubfLB3"), // usdc spot market
-    isWritable: true,
-    isSigner: false,
-  },
-  {
-    pubkey: new PublicKey("8UJgxaiQx5nTrdDgph5FiahMmzduuLTLf5WmsPegYA6W"), // sol perp market account
-    isWritable: true,
-    isSigner: false,
-  },
+const defaultOracles = [
+  new PublicKey("BAtFj4kQttZRVep3UZS2aZRDixkGYgWsbqTBVDbnSsPF"), // sol pricing oracle
+  new PublicKey("En8hkHLkRe9d9DraYmBTrus518BvmVH448YcvmrFM6Ce"), // usdc pricing oracle
 ];
+
+const defaultMarkets = [
+  new PublicKey("3x85u7SWkmmr7YQGYhtjARgxwegTLJgkSLRprfXod6rh"), // sol spot market
+  new PublicKey("6gMq3mRCKf8aP3ttTyYhuijVZ2LGi14oDsBbkgubfLB3"), // usdc spot market
+];
+
+interface MarketAccounts {
+  oracle?: PublicKey;
+  spotMarket?: PublicKey;
+  perpMarket?: PublicKey; // only for perp orders
+}
 
 export class DriftClient {
   // @ts-ignore: Property '_driftClient' has no initializer and is not definitely assigned in the constructor.
@@ -148,9 +136,15 @@ export class DriftClient {
   public async placeOrder(
     fund: PublicKey,
     orderParams: OrderParams,
-    subAccountId: number = 0
+    subAccountId: number = 0,
+    marketAccounts: MarketAccounts = {} as MarketAccounts
   ): Promise<TransactionSignature> {
-    const tx = await this.placeOrderTx(fund, orderParams, subAccountId);
+    const tx = await this.placeOrderTx(
+      fund,
+      orderParams,
+      subAccountId,
+      marketAccounts
+    );
     return await this.base.sendAndConfirm(tx);
   }
 
@@ -159,14 +153,16 @@ export class DriftClient {
     marketType: MarketType,
     marketIndex: number,
     direction: PositionDirection,
-    subAccountId: number = 0
+    subAccountId: number = 0,
+    marketAccounts: MarketAccounts = {} as MarketAccounts
   ): Promise<TransactionSignature> {
     const tx = await this.cancelOrdersTx(
       fund,
       marketType,
       marketIndex,
       direction,
-      subAccountId
+      subAccountId,
+      marketAccounts
     );
     return await this.base.sendAndConfirm(tx);
   }
@@ -439,12 +435,32 @@ export class DriftClient {
     fund: PublicKey,
     orderParams: OrderParams,
     subAccountId: number = 0,
+    marketAccounts: MarketAccounts = {} as MarketAccounts,
     apiOptions: ApiTxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
 
     const [user] = this.getUser(fund, subAccountId);
     const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
+
+    const { oracle, spotMarket, perpMarket } = marketAccounts;
+    const oracles = !oracle ? defaultOracles : defaultOracles.concat([oracle]);
+    const markets = !spotMarket
+      ? defaultMarkets
+      : defaultMarkets.concat([spotMarket]);
+    const remainingAccounts = oracles.concat(markets).map((pubkey) => ({
+      pubkey,
+      isWritable: false,
+      isSigner: false,
+    }));
+    if (orderParams.marketType === MarketType.PERP && perpMarket) {
+      remainingAccounts.push({
+        pubkey: perpMarket,
+        isWritable: true,
+        isSigner: false,
+      });
+    }
+    console.log("remainingAccounts", remainingAccounts);
 
     const tx = await this.base.program.methods
       //@ts-ignore
@@ -455,7 +471,7 @@ export class DriftClient {
         state,
         manager,
       })
-      .remainingAccounts(remainingAccountsForOrders)
+      .remainingAccounts(remainingAccounts)
       .transaction();
 
     return await this.base.intoVersionedTransaction({
@@ -470,12 +486,31 @@ export class DriftClient {
     marketIndex: number,
     direction: PositionDirection,
     subAccountId: number = 0,
+    marketAccounts: MarketAccounts = {} as MarketAccounts,
     apiOptions: ApiTxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
 
     const [user] = this.getUser(fund, subAccountId);
     const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
+
+    const { oracle, spotMarket, perpMarket } = marketAccounts;
+    const oracles = !oracle ? defaultOracles : defaultOracles.concat([oracle]);
+    const markets = !spotMarket
+      ? defaultMarkets
+      : defaultMarkets.concat([spotMarket]);
+    const remainingAccounts = oracles.concat(markets).map((pubkey) => ({
+      pubkey,
+      isWritable: false,
+      isSigner: false,
+    }));
+    if (marketType === MarketType.PERP && perpMarket) {
+      remainingAccounts.push({
+        pubkey: perpMarket,
+        isWritable: true,
+        isSigner: false,
+      });
+    }
 
     const tx = await this.base.program.methods
       //@ts-ignore
@@ -486,7 +521,7 @@ export class DriftClient {
         state,
         manager,
       })
-      .remainingAccounts(remainingAccountsForOrders)
+      .remainingAccounts(remainingAccounts)
       .transaction();
 
     return await this.base.intoVersionedTransaction({

@@ -42,7 +42,11 @@ import { Asset, AssetInput } from "@/components/AssetInput";
 import { FormInput } from "@/components/FormInput";
 import React, { useEffect, useMemo, useState } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { useGlam } from "@glam/anchor/react";
+import {
+  SpotMarketConfig,
+  PerpMarketConfig,
+  useGlam,
+} from "@glam/anchor/react";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { LAMPORTS_PER_SOL, VersionedTransaction } from "@solana/web3.js";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -90,14 +94,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { PublicKey } from "@solana/web3.js";
 
-// "USDC/USDC" is a placeholder, filter it out
-const spotMarkets = DRIFT_SPOT_MARKETS.filter((m) => m !== "USDC/USDC").map(
-  (x) => ({
-    label: x,
-    value: x,
-  })
-);
+const spotMarkets = DRIFT_SPOT_MARKETS.map((x) => ({ label: x, value: x }));
 const perpsMarkets = DRIFT_PERP_MARKETS.map((x) => ({ label: x, value: x }));
 
 const PERSISTED_FIELDS = {
@@ -200,14 +199,14 @@ const swapSchema = z.object({
 
 const spotSchema = z.object({
   venue: z.enum(["Drift"]),
-  spotMarket: z.enum(DRIFT_SPOT_MARKETS),
-  spotType: z.enum(DRIFT_ORDER_TYPES),
+  market: z.enum(DRIFT_SPOT_MARKETS),
+  orderType: z.enum(DRIFT_ORDER_TYPES),
   side: z.enum(["Buy", "Sell"]),
   limitPrice: z.number().nonnegative(),
   size: z.number().nonnegative(),
   notional: z.number().nonnegative(),
   triggerPrice: z.number().nonnegative().optional(),
-  spotReduceOnly: z.boolean().optional(),
+  reduceOnly: z.boolean().optional(),
   post: z.boolean().optional(),
   showConfirmation: z.boolean().optional(),
   leverage: z.number().nonnegative(),
@@ -217,14 +216,14 @@ const spotSchema = z.object({
 
 const perpsSchema = z.object({
   venue: z.enum(["Drift"]),
-  perpsMarket: z.enum(DRIFT_PERP_MARKETS),
-  perpsType: z.enum(DRIFT_ORDER_TYPES),
+  market: z.enum(DRIFT_PERP_MARKETS),
+  orderType: z.enum(DRIFT_ORDER_TYPES),
   side: z.enum(["Buy", "Sell"]),
   limitPrice: z.number().nonnegative(),
   size: z.number().nonnegative(),
   notional: z.number().nonnegative(),
   triggerPrice: z.number().nonnegative().optional(),
-  perpsReduceOnly: z.boolean().optional(),
+  reduceOnly: z.boolean().optional(),
   post: z.boolean().optional(),
   showConfirmation: z.boolean().optional(),
   leverage: z.number().nonnegative().optional(),
@@ -256,14 +255,14 @@ const DEFAULT_SWAP_FORM_VALUES: SwapSchema = {
 
 const DEFAULT_SPOT_FORM_VALUES: SpotSchema = {
   venue: "Drift",
-  spotMarket: "SOL/USDC",
-  spotType: "Limit",
+  market: "SOL/USDC",
+  orderType: "Limit",
   side: "Buy",
   limitPrice: 0,
   size: 0,
   notional: 0,
   triggerPrice: 0,
-  spotReduceOnly: false,
+  reduceOnly: false,
   post: false,
   showConfirmation: true,
   leverage: 0,
@@ -273,14 +272,14 @@ const DEFAULT_SPOT_FORM_VALUES: SpotSchema = {
 
 const DEFAULT_PERPS_FORM_VALUES: PerpsSchema = {
   venue: "Drift",
-  perpsMarket: "SOL-PERP",
-  perpsType: "Limit",
+  market: "SOL-PERP",
+  orderType: "Limit",
   side: "Buy",
   limitPrice: 0,
   size: 0,
   notional: 0,
   triggerPrice: 0,
-  perpsReduceOnly: false,
+  reduceOnly: false,
   post: false,
   showConfirmation: true,
   leverage: 0,
@@ -305,7 +304,8 @@ export default function Trade() {
   );
   const [isDexesListLoading, setIsDexesListLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("swap");
-  const [isTxPending, setIsTxPending] = useState(false);
+  const [isSubmitTxPending, setIsSubmitTxPending] = useState(false);
+  const [isCancelTxPending, setIsCancelTxPending] = useState(false);
 
   const { data: jupDexes } = useQuery({
     queryKey: ["program-id-to-label"],
@@ -383,10 +383,10 @@ export default function Trade() {
     DEFAULT_PERPS_FORM_VALUES
   );
 
-  const spotOrderType = spotForm.watch("spotType");
-  const spotReduceOnly = spotForm.watch("spotReduceOnly");
-  const perpsOrderType = perpsForm.watch("perpsType");
-  const perpsReduceOnly = perpsForm.watch("perpsReduceOnly");
+  const spotOrderType = spotForm.watch("orderType");
+  const spotReduceOnly = spotForm.watch("reduceOnly");
+  const perpsOrderType = perpsForm.watch("orderType");
+  const perpsReduceOnly = perpsForm.watch("reduceOnly");
 
   const onSubmitSwap: SubmitHandler<SwapSchema> = async (values) => {
     if (
@@ -395,6 +395,7 @@ export default function Trade() {
     ) {
       toast({
         title: "Invalid from/to amount for swap",
+        description: "Please check your input and try again.",
         variant: "destructive",
       });
       return;
@@ -456,7 +457,7 @@ export default function Trade() {
         ? values.from * 10 ** inputDecimals
         : values.to * 10 ** outputDecimals;
 
-    setIsTxPending(true);
+    setIsSubmitTxPending(true);
     try {
       const txId = await glamClient.jupiter.swap(fundPDA!, {
         inputMint,
@@ -480,29 +481,80 @@ export default function Trade() {
         variant: "destructive",
       });
     }
-    setIsTxPending(false);
+    setIsSubmitTxPending(false);
+  };
+
+  const validateInput = (
+    values: SpotSchema | PerpsSchema
+  ):
+    | {
+        orderType: OrderType;
+        direction: PositionDirection;
+        size: number;
+        price: number;
+        marketConfig: SpotMarketConfig | PerpMarketConfig | undefined;
+      }
+    | undefined => {
+    const { limitPrice, size, market, orderType, side } = values;
+    if (!limitPrice || !size) {
+      toast({
+        title: `Invalid limit price or size for spot order`,
+        description: "Please check your input and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const spotMarketConfig = driftMarketConfigs.spot.find(
+      (config) => config.symbol === market.replace("/USDC", "")
+    );
+    const perpsMarketConfig = driftMarketConfigs.perp.find(
+      (config) => config.symbol === market
+    );
+    if (!spotMarketConfig && !perpsMarketConfig) {
+      toast({
+        title: `Cannot find drift market configs for ${market}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // TODO: need to handle other order types in the future
+    return {
+      orderType: orderType === "Market" ? OrderType.MARKET : OrderType.LIMIT,
+      direction:
+        side === "Buy" ? PositionDirection.LONG : PositionDirection.SHORT,
+      size,
+      price: orderType === "Market" ? 0 : limitPrice,
+      marketConfig: spotMarketConfig || perpsMarketConfig,
+    };
   };
 
   const onSubmitSpot: SubmitHandler<SpotSchema> = async (values) => {
     console.log("Submit spot order:", values);
 
+    const validated = validateInput(values);
+    if (!validated) {
+      return;
+    }
+    const { orderType, direction, size, price, marketConfig } = validated;
+
     const orderParams = getOrderParams({
-      orderType:
-        values.spotType === "Market" ? OrderType.MARKET : OrderType.LIMIT,
+      orderType,
       marketType: MarketType.SPOT,
-      direction:
-        values.side === "Buy"
-          ? PositionDirection.LONG
-          : PositionDirection.SHORT,
-      marketIndex: DRIFT_SPOT_MARKETS.indexOf(values.spotMarket),
-      baseAssetAmount: new anchor.BN(values.size * LAMPORTS_PER_SOL),
-      price: new anchor.BN(values.limitPrice * 10 ** 6),
+      direction,
+      marketIndex: marketConfig?.marketIndex!,
+      baseAssetAmount: new anchor.BN(size * 10 ** marketConfig?.decimals!),
+      price: new anchor.BN(price * 10 ** 6),
     });
     console.log("Drift spot orderParams", orderParams);
 
-    setIsTxPending(true);
+    setIsSubmitTxPending(true);
     try {
-      const txId = await glamClient.drift.placeOrder(fundPDA!, orderParams);
+      const txId = await glamClient.drift.placeOrder(fundPDA!, orderParams, 0, {
+        oracle: new PublicKey(marketConfig?.oracle!),
+        spotMarket: new PublicKey(marketConfig?.marketPDA!),
+      });
       toast({
         title: "Spot order submitted",
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
@@ -514,29 +566,34 @@ export default function Trade() {
         variant: "destructive",
       });
     }
-    setIsTxPending(false);
+    setIsSubmitTxPending(false);
   };
 
   const onSubmitPerps: SubmitHandler<PerpsSchema> = async (values) => {
     console.log("Submit Perps:", values);
 
+    const validated = validateInput(values);
+    if (!validated) {
+      return;
+    }
+    const { orderType, direction, size, price, marketConfig } = validated;
+
     const orderParams = getOrderParams({
-      orderType:
-        values.perpsType === "Market" ? OrderType.MARKET : OrderType.LIMIT,
+      orderType,
       marketType: MarketType.PERP,
-      direction:
-        values.side === "Buy"
-          ? PositionDirection.LONG
-          : PositionDirection.SHORT,
-      marketIndex: DRIFT_PERP_MARKETS.indexOf(values.perpsMarket),
-      baseAssetAmount: new anchor.BN(values.size * LAMPORTS_PER_SOL),
-      price: new anchor.BN(values.limitPrice * 10 ** 6),
+      direction,
+      marketIndex: marketConfig?.marketIndex!,
+      baseAssetAmount: new anchor.BN(size * 10 ** marketConfig?.decimals!),
+      price: new anchor.BN(price * 10 ** 6),
     });
     console.log("Drift perps orderParams", orderParams);
 
-    setIsTxPending(true);
+    setIsSubmitTxPending(true);
     try {
-      const txId = await glamClient.drift.placeOrder(fundPDA!, orderParams);
+      const txId = await glamClient.drift.placeOrder(fundPDA!, orderParams, 0, {
+        oracle: new PublicKey(marketConfig?.oracle!),
+        perpMarket: new PublicKey(marketConfig?.marketPDA!),
+      });
       toast({
         title: "Perps order submitted",
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
@@ -548,7 +605,7 @@ export default function Trade() {
         variant: "destructive",
       });
     }
-    setIsTxPending(false);
+    setIsSubmitTxPending(false);
   };
 
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -600,14 +657,6 @@ export default function Trade() {
       perpsForm.setValue("side", value as "Buy" | "Sell");
     }
   };
-
-  const watchSpotMarket = spotForm.watch("spotMarket");
-  const spotMarketFromAsset = watchSpotMarket.replace("/USDC", "");
-
-  const watchPerpsMarket = perpsForm.watch("perpsMarket");
-  const perpsFromAsset = watchPerpsMarket
-    .replace("-PERP", "")
-    .replace("-BET", "");
 
   const watchPerpsLimitPrice = perpsForm.watch("limitPrice");
   const watchPerpsSize = perpsForm.watch("size");
@@ -666,10 +715,9 @@ export default function Trade() {
 
     const market =
       marketType === "Perps"
-        ? perpsForm.getValues().perpsMarket
-        : spotForm.getValues().spotMarket;
+        ? perpsForm.getValues().market
+        : spotForm.getValues().market;
 
-    console.log("driftMarketConfigs", driftMarketConfigs);
     const marketConfig =
       marketType === "Perps"
         ? driftMarketConfigs.perp.find((config) => config.symbol === market)
@@ -685,12 +733,30 @@ export default function Trade() {
       return;
     }
 
+    console.log("Cancel orders for", marketType, marketConfig);
+
+    let marketAccounts;
+    if (marketType === "Perps") {
+      marketAccounts = {
+        oracle: new PublicKey(marketConfig.oracle),
+        perpMarket: new PublicKey(marketConfig.marketPDA),
+      };
+    } else {
+      marketAccounts = {
+        oracle: new PublicKey(marketConfig.oracle),
+        spotMarket: new PublicKey(marketConfig.marketPDA),
+      };
+    }
+
+    setIsCancelTxPending(true);
     try {
       const txId = await glamClient.drift.cancelOrders(
         fundPDA,
         marketType === "Perps" ? MarketType.PERP : MarketType.SPOT,
         marketConfig?.marketIndex!,
-        PositionDirection.LONG
+        PositionDirection.LONG,
+        0,
+        marketAccounts
       );
       toast({
         title: "Orders canceled",
@@ -703,6 +769,7 @@ export default function Trade() {
         variant: "destructive",
       });
     }
+    setIsCancelTxPending(false);
   };
 
   const handleSettle = async (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -854,7 +921,12 @@ export default function Trade() {
                         )?.balance || 0
                       }
                       selectedAsset={fromAsset}
-                      onSelectAsset={setFromAsset}
+                      onSelectAsset={(from) => {
+                        setFromAsset(from);
+                        if (from === toAsset) {
+                          setToAsset(toAsset === "SOL" ? "USDC" : "SOL");
+                        }
+                      }}
                       disableAmountInput={exactMode === "ExactOut"}
                     />
                     <Button
@@ -893,7 +965,12 @@ export default function Trade() {
                         )?.balance || 0
                       }
                       selectedAsset={toAsset}
-                      onSelectAsset={setToAsset}
+                      onSelectAsset={(to) => {
+                        setToAsset(to);
+                        if (to === fromAsset) {
+                          setFromAsset(fromAsset === "SOL" ? "USDC" : "SOL");
+                        }
+                      }}
                       disableAmountInput={exactMode === "ExactIn"}
                     />
                   </div>
@@ -916,7 +993,7 @@ export default function Trade() {
                     <Button
                       className="w-1/3"
                       type="submit"
-                      loading={isTxPending}
+                      loading={isSubmitTxPending}
                     >
                       Swap
                     </Button>
@@ -1201,7 +1278,7 @@ export default function Trade() {
 
                     <FormField
                       control={spotForm.control}
-                      name="spotMarket"
+                      name="market"
                       render={({ field }) => (
                         <FormItem className="w-1/3">
                           <FormLabel>Market</FormLabel>
@@ -1241,7 +1318,7 @@ export default function Trade() {
                                         key={spotMarket.value}
                                         onSelect={() => {
                                           spotForm.setValue(
-                                            "spotMarket",
+                                            "market",
                                             spotMarket.value
                                           );
                                         }}
@@ -1269,7 +1346,7 @@ export default function Trade() {
 
                     <FormField
                       control={spotForm.control}
-                      name="spotType"
+                      name="orderType"
                       render={({ field }) => (
                         <FormItem className="w-1/3">
                           <FormLabel>Order Type</FormLabel>
@@ -1282,7 +1359,7 @@ export default function Trade() {
                                 <SelectValue placeholder="Type" />
                               </SelectTrigger>
                               <SelectContent>
-                                {spotSchema.shape.spotType._def.values.map(
+                                {spotSchema.shape.orderType._def.values.map(
                                   (option) => (
                                     <SelectItem key={option} value={option}>
                                       {option}
@@ -1335,53 +1412,35 @@ export default function Trade() {
                     </div>
                   </div>
 
-                  {spotOrderType === "Limit" ? (
+                  {["Limit", "Market"].includes(spotOrderType) ? (
                     <>
                       <div className="flex space-x-4 items-start">
-                        <AssetInput
-                          className="min-w-1/3 w-1/3"
-                          name="limitPrice"
-                          label="Limit Price"
-                          balance={NaN}
-                          selectedAsset="USDC"
-                          hideBalance={true}
-                          disableAssetChange={true}
-                        />
+                        {spotOrderType === "Limit" ? (
+                          <AssetInput
+                            className="min-w-1/3 w-1/3"
+                            name="limitPrice"
+                            label="Limit Price"
+                            balance={NaN}
+                            selectedAsset="USDC"
+                            hideBalance={true}
+                            disableAssetChange={true}
+                          />
+                        ) : (
+                          <FormInput
+                            name="slippage"
+                            label="Slippage"
+                            symbol="%"
+                            className="min-w-1/3 w-1/3"
+                          />
+                        )}
                         <AssetInput
                           className="min-w-1/3 w-1/3"
                           name="size"
                           label="Size"
                           balance={NaN}
-                          selectedAsset={spotMarketFromAsset}
-                          disableAssetChange={true}
-                        />
-                        <AssetInput
-                          className="min-w-1/3 w-1/3"
-                          name="notional"
-                          label="Notional"
-                          balance={NaN}
-                          selectedAsset="USDC"
-                          disableAssetChange={true}
-                          disableAmountInput={true}
-                        />
-                      </div>
-                    </>
-                  ) : spotOrderType === "Market" ? (
-                    <>
-                      <div className="flex space-x-4 items-start">
-                        <FormInput
-                          name="slippage"
-                          label="Slippage"
-                          symbol="%"
-                          className="min-w-1/3 w-1/3"
-                        />
-
-                        <AssetInput
-                          className="min-w-1/3 w-1/3"
-                          name="size"
-                          label="Size"
-                          selectedAsset={spotMarketFromAsset}
-                          balance={NaN}
+                          selectedAsset={spotForm
+                            .watch("market")
+                            .replace("/USDC", "")}
                           disableAssetChange={true}
                         />
                         <AssetInput
@@ -1402,10 +1461,8 @@ export default function Trade() {
                           className="min-w-1/2 w-1/2"
                           name="trigger-price"
                           label="Trigger Price"
-                          assets={fromAssetList}
                           balance={NaN}
-                          selectedAsset={fromAsset}
-                          onSelectAsset={setFromAsset}
+                          selectedAsset="USDC"
                           hideBalance={true}
                           disableAssetChange={true}
                         />
@@ -1413,10 +1470,8 @@ export default function Trade() {
                           className="min-w-1/2 w-1/2"
                           name="limitPrice"
                           label="Limit Price"
-                          assets={fromAssetList}
                           balance={NaN}
-                          selectedAsset={fromAsset}
-                          onSelectAsset={setFromAsset}
+                          selectedAsset="USDC"
                           hideBalance={true}
                           disableAssetChange={true}
                         />
@@ -1426,116 +1481,117 @@ export default function Trade() {
                           className="min-w-1/2 w-1/2"
                           name="size"
                           label="Size"
-                          assets={fromAssetList}
                           balance={NaN}
-                          selectedAsset={fromAsset}
-                          onSelectAsset={setFromAsset}
+                          selectedAsset={spotForm
+                            .watch("market")
+                            .replace("/USDC", "")}
                         />
                         <AssetInput
                           className="min-w-1/2 w-1/2"
                           name="notional"
                           label="Notional"
-                          disableAssetChange={true}
                           balance={NaN}
-                          selectedAsset={toAsset}
+                          selectedAsset="USDC"
+                          disableAssetChange={true}
                           disableAmountInput={true}
                         />
                       </div>
                     </>
                   ) : null}
 
-                  {spotOrderType !== "Trigger Limit" &&
-                    !spotReduceOnly && ( // <div className="flex flex-row gap-4 items-start w-full">
-                      //   <LeverageInput
-                      //     control={spotForm.control}
-                      //     name="leverage"
-                      //     label="Leverage: 100x"
-                      //     min={0}
-                      //     max={100}
-                      //     step={1}
-                      //   />
-                      // </div>
-                      <span></span>
-                    )}
+                  <>
+                    {spotOrderType !== "Trigger Limit" &&
+                      !spotReduceOnly && ( // <div className="flex flex-row gap-4 items-start w-full">
+                        //   <LeverageInput
+                        //     control={spotForm.control}
+                        //     name="leverage"
+                        //     label="Leverage: 100x"
+                        //     min={0}
+                        //     max={100}
+                        //     step={1}
+                        //   />
+                        // </div>
+                        <span></span>
+                      )}
+                    {/*<div className="flex flex-row gap-4 items-start w-full">*/}
+                    {/*  <div className="w-1/2 flex h-6 items-center text-sm text-muted-foreground">*/}
+                    {/*    <TooltipProvider>*/}
+                    {/*      <Tooltip>*/}
+                    {/*        <TooltipTrigger className="flex items-center">*/}
+                    {/*          <InfoCircledIcon className="w-4 h-4 mr-1"></InfoCircledIcon>*/}
+                    {/*          <p>Margin Trading Disabled</p>*/}
+                    {/*        </TooltipTrigger>*/}
+                    {/*        <TooltipContent side="right">*/}
+                    {/*          Please view the Risk Management configuration of the*/}
+                    {/*          Venue Integration.*/}
+                    {/*        </TooltipContent>*/}
+                    {/*      </Tooltip>*/}
+                    {/*    </TooltipProvider>*/}
+                    {/*  </div>*/}
 
-                  {/*<div className="flex flex-row gap-4 items-start w-full">*/}
-                  {/*  <div className="w-1/2 flex h-6 items-center text-sm text-muted-foreground">*/}
-                  {/*    <TooltipProvider>*/}
-                  {/*      <Tooltip>*/}
-                  {/*        <TooltipTrigger className="flex items-center">*/}
-                  {/*          <InfoCircledIcon className="w-4 h-4 mr-1"></InfoCircledIcon>*/}
-                  {/*          <p>Margin Trading Disabled</p>*/}
-                  {/*        </TooltipTrigger>*/}
-                  {/*        <TooltipContent side="right">*/}
-                  {/*          Please view the Risk Management configuration of the*/}
-                  {/*          Venue Integration.*/}
-                  {/*        </TooltipContent>*/}
-                  {/*      </Tooltip>*/}
-                  {/*    </TooltipProvider>*/}
-                  {/*  </div>*/}
+                    {/*  <div className="w-1/2 flex flex-row justify-start gap-4">*/}
+                    {/*    <FormField*/}
+                    {/*      control={spotForm.control}*/}
+                    {/*      name="spotReduceOnly"*/}
+                    {/*      render={({ field }) => (*/}
+                    {/*        <FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
+                    {/*          <FormControl>*/}
+                    {/*            <Switch*/}
+                    {/*              checked={field.value}*/}
+                    {/*              onCheckedChange={field.onChange}*/}
+                    {/*              id="reduce-only"*/}
+                    {/*            />*/}
+                    {/*          </FormControl>*/}
+                    {/*          <FormLabel*/}
+                    {/*            htmlFor="reduce-only"*/}
+                    {/*            className="font-normal"*/}
+                    {/*          >*/}
+                    {/*            Reduce Only*/}
+                    {/*          </FormLabel>*/}
+                    {/*        </FormItem>*/}
+                    {/*      )}*/}
+                    {/*    />*/}
+                    {/*    <FormField*/}
+                    {/*      control={spotForm.control}*/}
+                    {/*      name="post"*/}
+                    {/*      render={({ field }) => (*/}
+                    {/*        <FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
+                    {/*          <FormControl>*/}
+                    {/*            <Switch*/}
+                    {/*              checked={field.value}*/}
+                    {/*              onCheckedChange={field.onChange}*/}
+                    {/*              id="post"*/}
+                    {/*            />*/}
+                    {/*          </FormControl>*/}
+                    {/*          <FormLabel htmlFor="post" className="font-normal">*/}
+                    {/*            Post*/}
+                    {/*          </FormLabel>*/}
+                    {/*        </FormItem>*/}
+                    {/*      )}*/}
+                    {/*    />*/}
+                    {/*  </div>*/}
 
-                  {/*  <div className="w-1/2 flex flex-row justify-start gap-4">*/}
-                  {/*    <FormField*/}
-                  {/*      control={spotForm.control}*/}
-                  {/*      name="spotReduceOnly"*/}
-                  {/*      render={({ field }) => (*/}
-                  {/*        <FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
-                  {/*          <FormControl>*/}
-                  {/*            <Switch*/}
-                  {/*              checked={field.value}*/}
-                  {/*              onCheckedChange={field.onChange}*/}
-                  {/*              id="reduce-only"*/}
-                  {/*            />*/}
-                  {/*          </FormControl>*/}
-                  {/*          <FormLabel*/}
-                  {/*            htmlFor="reduce-only"*/}
-                  {/*            className="font-normal"*/}
-                  {/*          >*/}
-                  {/*            Reduce Only*/}
-                  {/*          </FormLabel>*/}
-                  {/*        </FormItem>*/}
-                  {/*      )}*/}
-                  {/*    />*/}
-                  {/*    <FormField*/}
-                  {/*      control={spotForm.control}*/}
-                  {/*      name="post"*/}
-                  {/*      render={({ field }) => (*/}
-                  {/*        <FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
-                  {/*          <FormControl>*/}
-                  {/*            <Switch*/}
-                  {/*              checked={field.value}*/}
-                  {/*              onCheckedChange={field.onChange}*/}
-                  {/*              id="post"*/}
-                  {/*            />*/}
-                  {/*          </FormControl>*/}
-                  {/*          <FormLabel htmlFor="post" className="font-normal">*/}
-                  {/*            Post*/}
-                  {/*          </FormLabel>*/}
-                  {/*        </FormItem>*/}
-                  {/*      )}*/}
-                  {/*    />*/}
-                  {/*  </div>*/}
-
-                  {/*  <FormField*/}
-                  {/*    control={spotForm.control}*/}
-                  {/*    name="showConfirmation"*/}
-                  {/*    render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
-                  {/*        <FormControl>*/}
-                  {/*          <Switch*/}
-                  {/*            checked={field.value}*/}
-                  {/*            onCheckedChange={field.onChange}*/}
-                  {/*            id="show-confirmation"*/}
-                  {/*          />*/}
-                  {/*        </FormControl>*/}
-                  {/*        <FormLabel*/}
-                  {/*          htmlFor="show-confirmation"*/}
-                  {/*          className="font-normal"*/}
-                  {/*        >*/}
-                  {/*          Show Confirmation*/}
-                  {/*        </FormLabel>*/}
-                  {/*      </FormItem>)}*/}
-                  {/*  />*/}
-                  {/*</div>*/}
+                    {/*  <FormField*/}
+                    {/*    control={spotForm.control}*/}
+                    {/*    name="showConfirmation"*/}
+                    {/*    render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
+                    {/*        <FormControl>*/}
+                    {/*          <Switch*/}
+                    {/*            checked={field.value}*/}
+                    {/*            onCheckedChange={field.onChange}*/}
+                    {/*            id="show-confirmation"*/}
+                    {/*          />*/}
+                    {/*        </FormControl>*/}
+                    {/*        <FormLabel*/}
+                    {/*          htmlFor="show-confirmation"*/}
+                    {/*          className="font-normal"*/}
+                    {/*        >*/}
+                    {/*          Show Confirmation*/}
+                    {/*        </FormLabel>*/}
+                    {/*      </FormItem>)}*/}
+                    {/*  />*/}
+                    {/*</div>*/}
+                  </>
 
                   <div className="flex space-x-4 w-full items-end">
                     <FormInput
@@ -1555,7 +1611,7 @@ export default function Trade() {
                     <Button
                       className="w-1/3"
                       type="submit"
-                      loading={isTxPending}
+                      loading={isSubmitTxPending}
                     >
                       Submit
                     </Button>
@@ -1566,6 +1622,7 @@ export default function Trade() {
                       <Button
                         variant="outline"
                         className="rounded-r-none px-8 py-2 w-1/2"
+                        loading={isCancelTxPending}
                         onClick={(event) => handleCancel(event, "Spot")}
                       >
                         Cancel
@@ -1605,9 +1662,7 @@ export default function Trade() {
                           px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
                         >
                           <span className="truncate">
-                            {perpsForm
-                              .watch("perpsMarket")
-                              .replace("-PERP", "")}
+                            {spotForm.watch("market").replace("/USDC", "")}
                           </span>
                         </ToggleGroupItem>
                       </ToggleGroup>
@@ -1668,7 +1723,7 @@ export default function Trade() {
 
                     <FormField
                       control={perpsForm.control}
-                      name="perpsMarket"
+                      name="market"
                       render={({ field }) => (
                         <FormItem className="w-1/3">
                           <FormLabel>Market</FormLabel>
@@ -1708,8 +1763,8 @@ export default function Trade() {
                                         key={perpsMarket.value}
                                         onSelect={() => {
                                           perpsForm.setValue(
-                                            "perpsMarket",
-                                            perpsMarket.value as "SOL-PERP"
+                                            "market",
+                                            perpsMarket.value
                                           );
                                         }}
                                       >
@@ -1736,7 +1791,7 @@ export default function Trade() {
 
                     <FormField
                       control={perpsForm.control}
-                      name="perpsType"
+                      name="orderType"
                       render={({ field }) => (
                         <FormItem className="w-1/3">
                           <FormLabel>Order Type</FormLabel>
@@ -1749,7 +1804,7 @@ export default function Trade() {
                                 <SelectValue placeholder="Type" />
                               </SelectTrigger>
                               <SelectContent>
-                                {perpsSchema.shape.perpsType._def.values.map(
+                                {perpsSchema.shape.orderType._def.values.map(
                                   (option) => (
                                     <SelectItem key={option} value={option}>
                                       {option}
@@ -1801,53 +1856,35 @@ export default function Trade() {
                       />
                     </div>
                   </div>
-                  {perpsOrderType === "Limit" ? (
+                  {["Limit", "Market"].includes(perpsOrderType) ? (
                     <>
                       <div className="flex space-x-4 items-start">
-                        <AssetInput
-                          className="min-w-1/3 w-1/3"
-                          name="limitPrice"
-                          label="Limit Price"
-                          balance={NaN}
-                          selectedAsset="USDC"
-                          hideBalance={true}
-                          disableAssetChange={true}
-                        />
-                        <AssetInput
-                          className="min-w-1/3 w-1/3"
-                          name="size"
-                          label="Size"
-                          selectedAsset={perpsFromAsset}
-                          balance={NaN}
-                          disableAssetChange={true}
-                        />
-                        <AssetInput
-                          className="min-w-1/3 w-1/3"
-                          name="notional"
-                          label="Notional"
-                          selectedAsset={"USDC"}
-                          balance={NaN}
-                          disableAssetChange={true}
-                          disableAmountInput={true}
-                        />
-                      </div>
-                    </>
-                  ) : perpsOrderType === "Market" ? (
-                    <>
-                      <div className="flex space-x-4 items-start">
-                        <FormInput
-                          name="slippage"
-                          label="Slippage"
-                          symbol="%"
-                          className="min-w-1/3 w-1/3"
-                        />
+                        {perpsOrderType === "Limit" ? (
+                          <AssetInput
+                            className="min-w-1/3 w-1/3"
+                            name="limitPrice"
+                            label="Limit Price"
+                            balance={NaN}
+                            selectedAsset="USDC"
+                            hideBalance={true}
+                            disableAssetChange={true}
+                          />
+                        ) : (
+                          <FormInput
+                            name="slippage"
+                            label="Slippage"
+                            symbol="%"
+                            className="min-w-1/3 w-1/3"
+                          />
+                        )}
 
                         <AssetInput
                           className="min-w-1/3 w-1/3"
                           name="size"
                           label="Size"
-                          selectedAsset={perpsFromAsset}
-                          assets={fromAssetList}
+                          selectedAsset={perpsForm
+                            .watch("market")
+                            .replace("-PERP", "")}
                           balance={NaN}
                           disableAssetChange={true}
                         />
@@ -1855,8 +1892,8 @@ export default function Trade() {
                           className="min-w-1/3 w-1/3"
                           name="notional"
                           label="Notional"
-                          balance={NaN}
                           selectedAsset={"USDC"}
+                          balance={NaN}
                           disableAssetChange={true}
                           disableAmountInput={true}
                         />
@@ -1869,21 +1906,17 @@ export default function Trade() {
                           className="min-w-1/2 w-1/2"
                           name="trigger-price"
                           label="Trigger Price"
-                          assets={fromAssetList}
                           balance={NaN}
-                          selectedAsset={fromAsset}
-                          onSelectAsset={setFromAsset}
+                          selectedAsset="USDC"
                           hideBalance={true}
                           disableAssetChange={true}
                         />
                         <AssetInput
                           className="min-w-1/2 w-1/2"
-                          name="limitPrice"
-                          label="Limit Price"
-                          assets={fromAssetList}
+                          name="trigger-price"
+                          label="Trigger Price"
                           balance={NaN}
-                          selectedAsset={fromAsset}
-                          onSelectAsset={setFromAsset}
+                          selectedAsset="USDC"
                           hideBalance={true}
                           disableAssetChange={true}
                         />
@@ -1893,28 +1926,17 @@ export default function Trade() {
                           className="min-w-1/2 w-1/2"
                           name="size"
                           label="Size"
-                          assets={fromAssetList}
                           balance={NaN}
-                          selectedAsset={fromAsset}
-                          onSelectAsset={setFromAsset}
+                          selectedAsset={perpsForm
+                            .watch("market")
+                            .replace("-PERP", "")}
                         />
                         <AssetInput
                           className="min-w-1/2 w-1/2"
                           name="notional"
                           label="Notional"
-                          assets={tokenList?.map(
-                            (t) =>
-                              ({
-                                name: t.name,
-                                symbol: t.symbol,
-                                address: t.address,
-                                decimals: t.decimals,
-                                balance: 0,
-                              } as Asset)
-                          )}
                           balance={NaN}
-                          selectedAsset={toAsset}
-                          onSelectAsset={setToAsset}
+                          selectedAsset="USDC"
                         />
                       </div>
                     </>
@@ -2028,7 +2050,7 @@ export default function Trade() {
                     <Button
                       className="w-1/3"
                       type="submit"
-                      loading={isTxPending}
+                      loading={isSubmitTxPending}
                     >
                       Submit
                     </Button>
@@ -2039,6 +2061,7 @@ export default function Trade() {
                       <Button
                         variant="outline"
                         className="rounded-r-none px-8 py-2 w-1/2"
+                        loading={isCancelTxPending}
                         onClick={(event) => handleCancel(event, "Perps")}
                       >
                         Cancel
@@ -2078,9 +2101,7 @@ export default function Trade() {
                           px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
                         >
                           <span className="truncate">
-                            {perpsForm
-                              .watch("perpsMarket")
-                              .replace("-PERP", "")}
+                            {perpsForm.watch("market").replace("-PERP", "")}
                           </span>
                         </ToggleGroupItem>
                       </ToggleGroup>
@@ -2129,9 +2150,7 @@ export default function Trade() {
                           px-4 data-[state=on]:bg-secondary data-[state=on]:text-foreground h-10 grow"
                         >
                           <span className="truncate">
-                            {perpsForm
-                              .watch("perpsMarket")
-                              .replace("-PERP", "")}
+                            {perpsForm.watch("market").replace("-PERP", "")}
                           </span>
                         </ToggleGroupItem>
                       </ToggleGroup>
