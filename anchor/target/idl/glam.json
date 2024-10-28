@@ -1,5 +1,5 @@
 {
-  "address": "GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP",
+  "address": "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc",
   "metadata": {
     "name": "glam",
     "version": "0.3.4",
@@ -3381,6 +3381,55 @@
           "type": {
             "defined": {
               "name": "FundModel"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "update_share_class",
+      "discriminator": [
+        196,
+        227,
+        109,
+        174,
+        25,
+        115,
+        15,
+        26
+      ],
+      "accounts": [
+        {
+          "name": "share_class_mint",
+          "writable": true
+        },
+        {
+          "name": "fund",
+          "writable": true
+        },
+        {
+          "name": "manager",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "fund"
+          ]
+        },
+        {
+          "name": "token_2022_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        }
+      ],
+      "args": [
+        {
+          "name": "share_class_id",
+          "type": "u8"
+        },
+        {
+          "name": "share_class_metadata",
+          "type": {
+            "defined": {
+              "name": "ShareClassModel"
             }
           }
         }

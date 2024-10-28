@@ -409,6 +409,50 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
 }
 
 #[derive(Accounts)]
+#[instruction(share_class_id: u8)]
+pub struct UpdateShareClass<'info> {
+    #[account(
+        mut,
+        seeds = [b"share".as_ref(), &[share_class_id], fund.key().as_ref()],
+        bump,
+        mint::authority = share_class_mint,
+        mint::token_program = token_2022_program
+    )]
+    share_class_mint: InterfaceAccount<'info, Mint>,
+
+    #[account(mut, has_one = manager @ ManagerError::NotAuthorizedError)]
+    pub fund: Box<Account<'info, FundAccount>>,
+
+    #[account(mut)]
+    pub manager: Signer<'info>,
+
+    pub token_2022_program: Program<'info, Token2022>,
+}
+
+pub fn update_share_class(
+    ctx: Context<UpdateShareClass>,
+    share_class_id: u8,
+    share_class_model: ShareClassModel,
+) -> Result<()> {
+    let fund = &mut ctx.accounts.fund;
+    if !share_class_model.allowlist.is_empty() {
+        let allowlist = fund.share_class_allowlist_mut(share_class_id as usize);
+        if let Some(_allowlist) = allowlist {
+            _allowlist.clear();
+            _allowlist.extend(share_class_model.allowlist.clone());
+        }
+    }
+    if !share_class_model.blocklist.is_empty() {
+        let blocklist = fund.share_class_blocklist_mut(share_class_id as usize);
+        if let Some(_blocklist) = blocklist {
+            _blocklist.clear();
+            _blocklist.extend(share_class_model.blocklist.clone());
+        }
+    }
+    Ok(())
+}
+
+#[derive(Accounts)]
 pub struct UpdateFund<'info> {
     #[account(mut, constraint = fund.manager == signer.key() @ AccessError::NotAuthorized)]
     fund: Account<'info, FundAccount>,
