@@ -56,10 +56,9 @@ describe("glam_crud", () => {
     expect(fund.name).toEqual(updatedFund.name);
   });
 
-  it("Share class", async () => {
+  it("Update share class allowlist", async () => {
     const shareClassModel = new ShareClassModel({
       allowlist: [key1.publicKey, key2.publicKey],
-      blocklist: [key1.publicKey, key2.publicKey],
     });
     try {
       const txSig = await glamClient.program.methods
@@ -75,10 +74,11 @@ describe("glam_crud", () => {
       throw e;
     }
     const fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
-    console.log(JSON.stringify(fund.params[1]));
+    const allowlist = fund.params[1][0].value.vecPubkey.val;
+    expect(allowlist.length).toEqual(2);
+    expect(allowlist).toEqual(shareClassModel.allowlist);
   });
 
-  /*
   it("Update fund asset allowlist", async () => {
     // The test fund has 2 assets, WSOL and MSOL. Update to USDC.
     let updatedFund = glamClient.getFundModel({ assets: [USDC] });
@@ -454,5 +454,4 @@ describe("glam_crud", () => {
     );
     expect(ret).toEqual([null, null, null]);
   });
-  */
 });
