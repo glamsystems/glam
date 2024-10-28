@@ -32,6 +32,12 @@ import { ExplorerLink } from "@/components/ExplorerLink";
 import { Skeleton } from "@/components/ui/skeleton";
 import SparkleBackground from "@/components/SparkleBackground";
 import { motion } from "framer-motion";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ShareClass {
   shareClassId: string;
@@ -568,7 +574,14 @@ export default function ProductPage() {
                 maxLength={7}
                 useLetterNotation
               /> */}
-              ...
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger className="text-muted-foreground/50">
+                    ...
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">Coming soon.</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </CardContent>
           </Card>
 
@@ -586,7 +599,14 @@ export default function ProductPage() {
                 maxLength={7}
                 useLetterNotation
               /> */}
-              ...
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger className="text-muted-foreground/50">
+                    ...
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">Coming soon.</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </CardContent>
           </Card>
 
@@ -623,56 +643,65 @@ export default function ProductPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0 w-full">
-                <div className="grid grid-cols-4 gap-x-4 gap-y-2">
-                  <div className="text-muted-foreground">Management</div>
-                  <div className="font-medium text-right">
-                    <NumberFormatter
-                      value={0}
-                      addCommas
-                      minDecimalPlaces={2}
-                      maxDecimalPlaces={2}
-                      maxLength={6}
-                      useLetterNotation
-                      isPercentage={true}
-                    />
-                  </div>
-                  <div className="text-muted-foreground">Subscription</div>
-                  <div className="font-medium text-right">
-                    <NumberFormatter
-                      value={0}
-                      addCommas
-                      minDecimalPlaces={2}
-                      maxDecimalPlaces={2}
-                      maxLength={6}
-                      useLetterNotation
-                      isPercentage={true}
-                    />
-                  </div>
-                  <div className="text-muted-foreground">Performance</div>
-                  <div className="font-medium text-right">
-                    <NumberFormatter
-                      value={0}
-                      addCommas
-                      minDecimalPlaces={2}
-                      maxDecimalPlaces={2}
-                      maxLength={6}
-                      useLetterNotation
-                      isPercentage={true}
-                    />
-                  </div>
-                  <div className="text-muted-foreground">Redemption</div>
-                  <div className="font-medium text-right">
-                    <NumberFormatter
-                      value={0.0}
-                      addCommas
-                      minDecimalPlaces={2}
-                      maxDecimalPlaces={2}
-                      maxLength={6}
-                      useLetterNotation
-                      isPercentage={true}
-                    />
-                  </div>
-                </div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <div className="grid grid-cols-4 gap-x-4 gap-y-2">
+                        <div className="text-muted-foreground">Management</div>
+                        <div className="font-medium text-right text-muted-foreground/50">
+                          <NumberFormatter
+                            value={0}
+                            addCommas
+                            minDecimalPlaces={2}
+                            maxDecimalPlaces={2}
+                            maxLength={6}
+                            useLetterNotation
+                            isPercentage={true}
+                          />
+                        </div>
+                        <div className="text-muted-foreground">
+                          Subscription
+                        </div>
+                        <div className="font-medium text-right text-muted-foreground/50">
+                          <NumberFormatter
+                            value={0}
+                            addCommas
+                            minDecimalPlaces={2}
+                            maxDecimalPlaces={2}
+                            maxLength={6}
+                            useLetterNotation
+                            isPercentage={true}
+                          />
+                        </div>
+                        <div className="text-muted-foreground">Performance</div>
+                        <div className="font-medium text-right text-muted-foreground/50">
+                          <NumberFormatter
+                            value={0}
+                            addCommas
+                            minDecimalPlaces={2}
+                            maxDecimalPlaces={2}
+                            maxLength={6}
+                            useLetterNotation
+                            isPercentage={true}
+                          />
+                        </div>
+                        <div className="text-muted-foreground">Redemption</div>
+                        <div className="font-medium text-right  text-muted-foreground/50">
+                          <NumberFormatter
+                            value={0.0}
+                            addCommas
+                            minDecimalPlaces={2}
+                            maxDecimalPlaces={2}
+                            maxLength={6}
+                            useLetterNotation
+                            isPercentage={true}
+                          />
+                        </div>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">Coming soon.</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </CardContent>
             </Card>
           </div>
