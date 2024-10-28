@@ -170,7 +170,7 @@ describe("glam_jupiter", () => {
         undefined,
         { signer: testSigner.publicKey }
       );
-      const txSig = await glamClient.sendAndConfirm(tx, undefined, testSigner);
+      const txSig = await glamClient.sendAndConfirm(tx, testSigner);
       expect(txSig).toBeUndefined();
     } catch (e) {
       const expectedError = e.programLogs.some((log) =>
@@ -210,7 +210,7 @@ describe("glam_jupiter", () => {
         { signer: testSigner.publicKey }
       );
       console.log("2nd attempt swap");
-      await glamClient.sendAndConfirm(tx, undefined, testSigner);
+      await glamClient.sendAndConfirm(tx, testSigner);
     } catch (e) {
       console.error(e);
       throw e;

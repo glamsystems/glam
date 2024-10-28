@@ -243,7 +243,6 @@ export class BaseClient {
 
   async sendAndConfirm(
     tx: VersionedTransaction | Transaction,
-    latestBlockhash?: BlockhashWithExpiryBlockHeight,
     signerOverride?: Keypair
   ): Promise<TransactionSignature> {
     // This is just a convenient method so that in tests we can send legacy
@@ -277,7 +276,7 @@ export class BaseClient {
     }
 
     // await confirmation
-    latestBlockhash = await this.getLatestBlockhash();
+    const latestBlockhash = await this.getLatestBlockhash();
     const res = await connection.confirmTransaction({
       ...latestBlockhash,
       signature,
