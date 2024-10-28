@@ -324,7 +324,7 @@ export class JupiterClient {
     }, new Array<AddressLookupTableAccount>());
   };
 
-  public async getQuoteResponse(quoteParams: any): Promise<any> {
+  public async getQuoteResponse(quoteParams: QuoteParams): Promise<any> {
     const res = await fetch(
       `${this.base.jupiterApi}/quote?` +
         new URLSearchParams(Object.entries(quoteParams))

@@ -306,6 +306,8 @@ export default function Trade() {
   const [activeTab, setActiveTab] = useState("swap");
   const [isSubmitTxPending, setIsSubmitTxPending] = useState(false);
   const [isCancelTxPending, setIsCancelTxPending] = useState(false);
+  const [isSwapToAmountLoading, setIsSwapToAmountLoading] = useState(false);
+  const [isSwapFromAmountLoading, setIsSwapFromAmountLoading] = useState(false);
 
   const { data: jupDexes } = useQuery({
     queryKey: ["program-id-to-label"],
@@ -452,24 +454,55 @@ export default function Trade() {
       maxAccountsParam = { maxAccounts: values.maxAccounts };
     }
 
-    const amount =
+    const amount = Math.floor(
       values.exactMode === "ExactIn"
         ? values.from * 10 ** inputDecimals
-        : values.to * 10 ** outputDecimals;
+        : values.to * 10 ** outputDecimals
+    );
 
-    setIsSubmitTxPending(true);
+    const quoteParams = {
+      inputMint,
+      outputMint,
+      amount,
+      slippageBps: values.slippage * 100,
+      swapMode: values.exactMode,
+      onlyDirectRoutes: values.directRouteOnly,
+      asLegacyTransaction: !values.versionedTransactions,
+      ...maxAccountsParam,
+      ...dexesParam,
+    };
+    const setAmountLoading =
+      values.exactMode === "ExactIn"
+        ? setIsSwapToAmountLoading
+        : setIsSwapFromAmountLoading;
     try {
-      const txId = await glamClient.jupiter.swap(fundPDA!, {
-        inputMint,
-        outputMint,
-        amount,
-        slippageBps: values.slippage * 100,
-        swapMode: values.exactMode,
-        onlyDirectRoutes: values.directRouteOnly,
-        asLegacyTransaction: !values.versionedTransactions,
-        ...maxAccountsParam,
-        ...dexesParam,
-      });
+      setAmountLoading(true);
+      const quoteResponse = await glamClient.jupiter.getQuoteResponse(
+        quoteParams
+      );
+      console.log(
+        "Quote response inAmount, outAmount:",
+        quoteResponse.inAmount,
+        quoteResponse.outAmount
+      );
+      setAmountLoading(false);
+
+      values.exactMode === "ExactIn"
+        ? swapForm.setValue(
+            "to",
+            Number(quoteResponse.outAmount) / 10 ** outputDecimals
+          )
+        : swapForm.setValue(
+            "from",
+            Number(quoteResponse.inAmount) / 10 ** inputDecimals
+          );
+
+      setIsSubmitTxPending(true);
+      const txId = await glamClient.jupiter.swap(
+        fundPDA!,
+        undefined,
+        quoteResponse
+      );
       toast({
         title: `Swapped ${fromAsset} to ${toAsset}`,
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
@@ -481,6 +514,8 @@ export default function Trade() {
         variant: "destructive",
       });
     }
+
+    setAmountLoading(false);
     setIsSubmitTxPending(false);
   };
 
@@ -928,6 +963,7 @@ export default function Trade() {
                         }
                       }}
                       disableAmountInput={exactMode === "ExactOut"}
+                      isLoading={isSwapFromAmountLoading}
                     />
                     <Button
                       variant="outline"
@@ -972,6 +1008,7 @@ export default function Trade() {
                         }
                       }}
                       disableAmountInput={exactMode === "ExactIn"}
+                      isLoading={isSwapToAmountLoading}
                     />
                   </div>
 

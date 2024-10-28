@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/command";
 
 import TruncateAddress from "../utils/TruncateAddress";
+import { Skeleton } from "./ui/skeleton";
 
 export interface Asset {
   name: string;
@@ -48,6 +49,7 @@ interface AssetInputProps {
   disableAmountInput?: boolean;
   useMaxAmount?: boolean;
   hideBalance?: boolean;
+  isLoading?: boolean;
 }
 
 export const AssetInput: React.FC<AssetInputProps> = ({
@@ -63,6 +65,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
   disableAmountInput = false,
   useMaxAmount = false,
   hideBalance = false,
+  isLoading = false,
 }) => {
   const { control, getValues, setValue, reset } = useFormContext();
   // const [displayValue, setDisplayValue] = useState<string>("0");
@@ -156,6 +159,11 @@ export const AssetInput: React.FC<AssetInputProps> = ({
                 onChange={(e) => handleInputChange(e.target.value)}
                 disabled={disableAmountInput}
               />
+              {isLoading && (
+                <div className="absolute top-0 left-0 w-full h-full flex items-center pl-2">
+                  <Skeleton className="w-3/5 h-4" />
+                </div>
+              )}
               {!disableAssetChange && (
                 <Popover open={open} onOpenChange={setOpen}>
                   <PopoverTrigger asChild>
