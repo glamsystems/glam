@@ -49,7 +49,7 @@ describe("glam_crud", () => {
   });
 
   it("Update fund asset allowlist", async () => {
-    // The test fund has 2 assets, WSOL and WSOL. Update to USDC.
+    // The test fund has 2 assets, WSOL and MSOL. Update to USDC.
     let updatedFund = glamClient.getFundModel({ assets: [USDC] });
     try {
       await glamClient.program.methods
@@ -259,8 +259,7 @@ describe("glam_crud", () => {
       console.log("Unwrap:", txId);
       expect(txId).toBeUndefined();
     } catch (e) {
-      // console.log("Error", e);
-      const expectedError = e.logs.some((log) =>
+      const expectedError = e.programLogs.some((log) =>
         log.includes("Signer is not authorized")
       );
       expect(expectedError).toBeTruthy();

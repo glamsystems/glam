@@ -143,9 +143,8 @@ pub fn jupiter_swap<'c: 'info, 'info>(
     let input_in_assets = assets.contains(&ctx.accounts.input_mint.key());
     let swap_any = !(output_in_assets && input_in_assets);
 
-    if swap_any {
-        // Manager is currently always allowed to swap_any
-
+    // Manager is currently always allowed to swap_any
+    if swap_any && fund.manager != *ctx.accounts.signer.key {
         // Delegate must have JupiterSwapAnyAsset perm
         if let Some(acls) = fund.delegate_acls() {
             // Check if the signer is allowed to swap any asset
