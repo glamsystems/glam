@@ -259,8 +259,7 @@ describe("glam_crud", () => {
       console.log("Unwrap:", txId);
       expect(txId).toBeUndefined();
     } catch (e) {
-      // console.log("Error", e);
-      const expectedError = e.logs.some((log) =>
+      const expectedError = e.programLogs.some((log) =>
         log.includes("Signer is not authorized")
       );
       expect(expectedError).toBeTruthy();

@@ -65,6 +65,7 @@ describe("glam_jupiter", () => {
     // Swap
     const amount = 50_000_000;
     try {
+      const txId0 = await glamClient.wsol.wrap(fundPDA, new BN(amount));
       const txId = await glamClient.jupiter.swap(
         fundPDA,
         undefined,
@@ -182,10 +183,8 @@ describe("glam_jupiter", () => {
       const txId = await glamClient.provider.connection.sendTransaction(tx, {
         skipPreflight: true,
       });
-      // TODO: this doesn't seem to be failing...
-      // expect(txId).toBeUndefined();
     } catch (e) {
-      expect(e.logs).toContain(
+      expect(e.programLogs).toContain(
         "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]"
       );
     }
@@ -400,8 +399,10 @@ describe("glam_jupiter", () => {
   it("Swap by providing quote params", async () => {
     const amount = 50_000_000;
     try {
-      const txId0 = await glamClient.wsol.wrap(fundPDA, new BN(amount));
-      const txId = await glamClient.jupiter.swap(fundPDA, {
+      const txIdWrap = await glamClient.wsol.wrap(fundPDA, new BN(amount));
+      console.log("wrap before swap txId", txIdWrap);
+
+      const txIdSwap = await glamClient.jupiter.swap(fundPDA, {
         inputMint: WSOL.toBase58(),
         outputMint: MSOL.toBase58(),
         amount,
@@ -412,14 +413,10 @@ describe("glam_jupiter", () => {
         asLegacyTransaction: false,
         maxAccounts: 18,
       });
-      console.log("swap txId", txId);
-      expect(txId).toBeUndefined();
+      console.log("swap txId", txIdSwap);
     } catch (e) {
-      // make sure program has reached jupiter
-      // console.error(e);
-      expect(e.logs).toContain(
-        "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]"
-      );
+      console.error(e);
+      throw e;
     }
   }, 15_000);
 
@@ -448,23 +445,21 @@ describe("glam_jupiter", () => {
       quoteResponse,
       glamClient.getManager()
     );
-    // console.log("swapInstructions", swapInstructions);
 
     try {
-      const txId0 = await glamClient.wsol.wrap(fundPDA, new BN(amount));
-      const txId = await glamClient.jupiter.swap(
+      const txIdWrap = await glamClient.wsol.wrap(fundPDA, new BN(amount));
+      console.log("wrap before swap txId", txIdWrap);
+
+      const txIdSwap = await glamClient.jupiter.swap(
         fundPDA,
         quoteParams,
         quoteResponse,
         swapInstructions
       );
-      console.log("swap txId", txId);
-      expect(txId).toBeUndefined();
+      console.log("swap txId", txIdSwap);
     } catch (e) {
-      // make sure program has reached jupiter
-      expect(e.logs).toContain(
-        "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]"
-      );
+      console.error(e);
+      throw e;
     }
   }, 15_000);
 });
