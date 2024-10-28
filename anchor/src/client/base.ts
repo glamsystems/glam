@@ -10,6 +10,7 @@ import {
   BlockhashWithExpiryBlockHeight,
   ComputeBudgetProgram,
   Connection,
+  Keypair,
   LAMPORTS_PER_SOL,
   PublicKey,
   SystemProgram,
@@ -242,34 +243,46 @@ export class BaseClient {
 
   async sendAndConfirm(
     tx: VersionedTransaction | Transaction,
-    latestBlockhash?: BlockhashWithExpiryBlockHeight
+    latestBlockhash?: BlockhashWithExpiryBlockHeight,
+    signerOverride?: Keypair
   ): Promise<TransactionSignature> {
     // This is just a convenient method so that in tests we can send legacy
     // txs, for example transfer SOL, create ATA, etc.
     if (tx instanceof Transaction) {
       return await sendAndConfirmTransaction(this.provider.connection, tx, [
-        this.getWallet().payer,
+        signerOverride || this.getWallet().payer,
       ]);
     }
 
-    latestBlockhash = await this.getLatestBlockhash();
-    // Anchor provider.sendAndConfirm forces a signature with the wallet, which we don't want
-    // https://github.com/coral-xyz/anchor/blob/v0.30.0/ts/packages/anchor/src/provider.ts#L159
-    const wallet = this.getWallet();
-    const signedTx = await wallet.signTransaction(tx);
     const connection = this.provider.connection;
-    const serializedTx = signedTx.serialize();
-    const signature = await connection.sendRawTransaction(serializedTx, {
-      // skip simulation since we just did it to compute CUs
-      // however this means that we need to reconstruct the error, if
-      // the tx fails on chain execution.
-      skipPreflight: true,
-    });
+    let signature: TransactionSignature;
+
+    if (signerOverride) {
+      tx.sign([signerOverride]);
+      signature = await connection.sendTransaction(tx, {
+        skipPreflight: true,
+      });
+    } else {
+      // Anchor provider.sendAndConfirm forces a signature with the wallet, which we don't want
+      // https://github.com/coral-xyz/anchor/blob/v0.30.0/ts/packages/anchor/src/provider.ts#L159
+      const wallet = this.getWallet();
+      const signedTx = await wallet.signTransaction(tx);
+      const serializedTx = signedTx.serialize();
+      signature = await connection.sendRawTransaction(serializedTx, {
+        // skip simulation since we just did it to compute CUs
+        // however this means that we need to reconstruct the error, if
+        // the tx fails on chain execution.
+        skipPreflight: true,
+      });
+    }
+
     // await confirmation
+    latestBlockhash = await this.getLatestBlockhash();
     const res = await connection.confirmTransaction({
       ...latestBlockhash,
       signature,
     });
+
     // if the tx fails, throw an error including logs
     if (res.value.err) {
       const errTx = await connection.getTransaction(signature, {

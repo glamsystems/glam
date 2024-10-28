@@ -3,12 +3,13 @@ import {
   quoteResponseForTest,
   str2seed,
   swapInstructionsForTest,
+  sleep,
 } from "./setup";
 import { GlamClient } from "../src";
 import { Keypair } from "@solana/web3.js";
 import { getAccount } from "@solana/spl-token";
 import { BN } from "@coral-xyz/anchor";
-import { MSOL, WSOL, USDC } from "../src";
+import { MSOL, WSOL } from "../src";
 
 describe("glam_jupiter", () => {
   const glamClient = new GlamClient();
@@ -111,7 +112,7 @@ describe("glam_jupiter", () => {
   });
 
   it("Swap access control", async () => {
-    // set up a test signer
+    // set up a test signer and airdrop 0.1 SOL
     const testSigner = Keypair.fromSeed(str2seed("test_signer"));
     const airdrop = await glamClient.provider.connection.requestAirdrop(
       testSigner.publicKey,
@@ -119,15 +120,15 @@ describe("glam_jupiter", () => {
     );
     await glamClient.provider.connection.confirmTransaction(airdrop);
 
+    // grant delegate permissions
     // testSigner is only allowed to swap fund assets
-    let acls = [
-      {
-        pubkey: testSigner.publicKey,
-        permissions: [{ jupiterSwapFundAssets: {} }, { wSolWrap: {} }],
-      },
-    ];
     try {
-      await glamClient.upsertDelegateAcls(fundPDA, acls);
+      await glamClient.upsertDelegateAcls(fundPDA, [
+        {
+          pubkey: testSigner.publicKey,
+          permissions: [{ jupiterSwapFundAssets: {} }, { wSolWrap: {} }],
+        },
+      ]);
     } catch (e) {
       console.error(e);
       throw e;
@@ -135,60 +136,88 @@ describe("glam_jupiter", () => {
     let fundModel = await glamClient.fetchFund(fundPDA);
     expect(fundModel.delegateAcls.length).toEqual(1);
 
-    // Swap tx
-    const tx = await glamClient.jupiter.swapTx(
-      fundPDA,
-      {
-        inputMint: WSOL.toBase58(),
-        outputMint: USDC.toBase58(),
-        amount: 50_000_000,
-        swapMode: "ExactIn",
-        onlyDirectRoutes: true,
-        maxAccounts: 8,
-      },
-      undefined,
-      undefined,
-      { signer: testSigner.publicKey }
-    );
-    tx.sign([testSigner]);
-
-    // 1st attempt, should fail due to InvalidAssetForSwap.
+    // The test fund has 2 assets, WSOL and MSOL. Update to WSOL only.
+    let updatedFund = glamClient.getFundModel({ assets: [WSOL] });
     try {
-      const txId = await glamClient.provider.connection.sendTransaction(tx, {
-        skipPreflight: true,
-      });
-      // TODO: this doesn't seem to be failing...
-      // expect(txId).toBeUndefined();
-    } catch (e) {
-      console.error(e);
-      expect(e.error.errorCode).toEqual({
-        code: "InvalidAssetForSwap",
-        number: 6007,
-      });
-    }
-
-    // allow testSigner to swap any assets
-    acls[0].permissions = [{ jupiterSwapAnyAsset: {} }, { wSolWrap: {} }];
-    try {
-      await glamClient.upsertDelegateAcls(fundPDA, acls);
+      await glamClient.program.methods
+        .updateFund(updatedFund)
+        .accounts({
+          fund: fundPDA,
+          signer: glamClient.getManager(),
+        })
+        .rpc();
     } catch (e) {
       console.error(e);
       throw e;
     }
     fundModel = await glamClient.fetchFund(fundPDA);
-    expect(fundModel.delegateAcls.length).toEqual(1);
+    expect(fundModel.assets).toEqual([WSOL]);
 
-    // 1st attempt, should reach jupiter
+    // 1st attempt, should fail due to InvalidAssetForSwap because MSOL is not in
+    // asset allowlist, and testSigner doesn't have permission to swap any asset
     try {
-      const txId = await glamClient.provider.connection.sendTransaction(tx, {
-        skipPreflight: true,
-      });
-    } catch (e) {
-      expect(e.programLogs).toContain(
-        "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]"
+      const tx = await glamClient.jupiter.swapTx(
+        fundPDA,
+        {
+          inputMint: WSOL.toBase58(),
+          outputMint: MSOL.toBase58(),
+          amount: 50_000_000,
+          swapMode: "ExactIn",
+          onlyDirectRoutes: true,
+          maxAccounts: 8,
+        },
+        undefined,
+        undefined,
+        { signer: testSigner.publicKey }
       );
+      const txSig = await glamClient.sendAndConfirm(tx, undefined, testSigner);
+      expect(txSig).toBeUndefined();
+    } catch (e) {
+      const expectedError = e.programLogs.some((log) =>
+        log.includes("Asset cannot be swapped")
+      );
+      expect(expectedError).toBeTruthy();
     }
-  }, 15_000);
+
+    // allow testSigner to swap any assets
+    try {
+      const txSig = await glamClient.upsertDelegateAcls(fundPDA, [
+        {
+          pubkey: testSigner.publicKey,
+          permissions: [{ jupiterSwapAnyAsset: {} }, { wSolWrap: {} }],
+        },
+      ]);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+
+    // 2nd attempt, should pass since testSigner is now allowed to swap any asset
+    // and asset list should be updated accordingly to include MSOL
+    try {
+      const tx = await glamClient.jupiter.swapTx(
+        fundPDA,
+        {
+          inputMint: WSOL.toBase58(),
+          outputMint: MSOL.toBase58(),
+          amount: 50_000_000,
+          swapMode: "ExactIn",
+          onlyDirectRoutes: true,
+          maxAccounts: 8,
+        },
+        undefined,
+        undefined,
+        { signer: testSigner.publicKey }
+      );
+      console.log("2nd attempt swap");
+      await glamClient.sendAndConfirm(tx, undefined, testSigner);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+    fundModel = await glamClient.fetchFund(fundPDA);
+    expect(fundModel.assets).toEqual([WSOL, MSOL]);
+  }, 30_000);
 
   it("Swap back end to end", async () => {
     const manager = glamClient.getManager();
@@ -393,7 +422,7 @@ describe("glam_jupiter", () => {
       glamClient.provider.connection,
       glamClient.getTreasuryAta(fundPDA, MSOL)
     );
-    expect(treasuryMsol.amount.toString()).toEqual("795954");
+    expect(treasuryMsol.amount.toString()).toEqual("42591005");
   });
 
   it("Swap by providing quote params", async () => {
@@ -415,8 +444,10 @@ describe("glam_jupiter", () => {
       });
       console.log("swap txId", txIdSwap);
     } catch (e) {
-      console.error(e);
-      throw e;
+      // make sure program has reached jupiter
+      expect(e.programLogs).toContain(
+        "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]"
+      );
     }
   }, 15_000);
 
@@ -458,8 +489,10 @@ describe("glam_jupiter", () => {
       );
       console.log("swap txId", txIdSwap);
     } catch (e) {
-      console.error(e);
-      throw e;
+      // make sure program has reached jupiter
+      expect(e.programLogs).toContain(
+        "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]"
+      );
     }
   }, 15_000);
 });
