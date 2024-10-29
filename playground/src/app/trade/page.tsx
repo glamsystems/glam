@@ -95,6 +95,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { PublicKey } from "@solana/web3.js";
+import { QuoteParams, QuoteResponse } from "anchor/src/client/jupiter";
 
 const spotMarkets = DRIFT_SPOT_MARKETS.map((x) => ({ label: x, value: x }));
 const perpsMarkets = DRIFT_PERP_MARKETS.map((x) => ({ label: x, value: x }));
@@ -297,17 +298,24 @@ export default function Trade() {
     driftMarketConfigs,
   } = useGlam();
 
-  const [fromAsset, setFromAsset] = useState<string>("USDC");
-  const [toAsset, setToAsset] = useState<string>("SOL");
-  const [dexesList, setDexesList] = useState<{ id: string; label: string }[]>(
-    []
+  const [activeTab, setActiveTab] = useState("swap");
+  const [fromAsset, setFromAsset] = useState("USDC");
+  const [toAsset, setToAsset] = useState("SOL");
+  const [dexesList, setDexesList] = useState(
+    [] as { id: string; label: string }[]
   );
   const [isDexesListLoading, setIsDexesListLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("swap");
+
   const [isSubmitTxPending, setIsSubmitTxPending] = useState(false);
   const [isCancelTxPending, setIsCancelTxPending] = useState(false);
   const [isSwapToAmountLoading, setIsSwapToAmountLoading] = useState(false);
   const [isSwapFromAmountLoading, setIsSwapFromAmountLoading] = useState(false);
+
+  // Cache swap quote params and response
+  const [swapQuoteParams, setSwapQuoteParams] = useState({} as QuoteParams);
+  const [swapQuoteResponse, setSwapQuoteResponse] = useState(
+    {} as QuoteResponse
+  );
 
   const { data: jupDexes } = useQuery({
     queryKey: ["program-id-to-label"],
@@ -390,20 +398,22 @@ export default function Trade() {
   const perpsOrderType = perpsForm.watch("orderType");
   const perpsReduceOnly = perpsForm.watch("reduceOnly");
 
-  const onSubmitSwap: SubmitHandler<SwapSchema> = async (values) => {
-    if (
-      (values.exactMode === "ExactIn" && values.from === 0) ||
-      (values.exactMode === "ExactOut" && values.to === 0)
-    ) {
-      toast({
-        title: "Invalid from/to amount for swap",
-        description: "Please check your input and try again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    console.log("Submit swap:", values, fromAsset, toAsset);
+  const getSwapQuoteParams = (): {
+    quoteParams: QuoteParams;
+    inputDecimals: number;
+    outputDecimals: number;
+  } => {
+    const {
+      dexes: selectedDexes,
+      exactMode,
+      maxAccounts,
+      filterType,
+      from,
+      to,
+      slippage,
+      versionedTransactions,
+      directRouteOnly,
+    } = swapForm.getValues();
 
     const getAssetMintAndDecimals = (asset: string) =>
       tokenList?.find((t) => {
@@ -418,27 +428,9 @@ export default function Trade() {
     const { address: outputMint, decimals: outputDecimals } =
       getAssetMintAndDecimals(toAsset);
 
-    if (
-      !inputMint ||
-      !outputMint ||
-      !inputDecimals ||
-      !outputDecimals ||
-      inputMint === outputMint
-    ) {
-      toast({
-        title: "Invalid input/output asset for swap",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    console.log(
-      `Input mint: ${inputMint} (decimals: ${inputDecimals}), output mint: ${outputMint} (decimals: ${outputDecimals})`
-    );
-
     let dexesParam;
-    const dexes = values.dexes.filter((item) => item !== "");
-    if (values.filterType === "Include") {
+    const dexes = selectedDexes.filter((item) => item !== "");
+    if (filterType === "Include") {
       dexesParam = { dexes };
       if (dexes.length === jupDexes?.length) {
         // All dexes selected, no need to filter
@@ -450,58 +442,97 @@ export default function Trade() {
 
     // maxAccounts is not accepted if exactMode is ExactOut
     let maxAccountsParam = {};
-    if (values.exactMode === "ExactIn") {
-      maxAccountsParam = { maxAccounts: values.maxAccounts };
+    if (exactMode === "ExactIn") {
+      maxAccountsParam = { maxAccounts };
     }
 
     const amount = Math.floor(
-      values.exactMode === "ExactIn"
-        ? values.from * 10 ** inputDecimals
-        : values.to * 10 ** outputDecimals
+      exactMode === "ExactIn"
+        ? from * 10 ** inputDecimals
+        : to * 10 ** outputDecimals
     );
 
     const quoteParams = {
       inputMint,
       outputMint,
       amount,
-      slippageBps: values.slippage * 100,
-      swapMode: values.exactMode,
-      onlyDirectRoutes: values.directRouteOnly,
-      asLegacyTransaction: !values.versionedTransactions,
+      slippageBps: slippage * 100,
+      swapMode: exactMode,
+      onlyDirectRoutes: directRouteOnly,
+      asLegacyTransaction: !versionedTransactions,
       ...maxAccountsParam,
       ...dexesParam,
-    };
-    const setAmountLoading =
-      values.exactMode === "ExactIn"
-        ? setIsSwapToAmountLoading
-        : setIsSwapFromAmountLoading;
+    } as QuoteParams;
+
+    return { quoteParams, inputDecimals, outputDecimals };
+  };
+
+  const getSwapQuoteResponse = async (
+    quoteParams: QuoteParams,
+    inputDecimals: number,
+    outputDecimals: number
+  ): Promise<{
+    quoteResponse: QuoteResponse;
+    uiAmountFrom: number;
+    uiAmountTo: number;
+  }> => {
     try {
-      setAmountLoading(true);
       const quoteResponse = await glamClient.jupiter.getQuoteResponse(
         quoteParams
       );
-      console.log(
-        "Quote response inAmount, outAmount:",
-        quoteResponse.inAmount,
-        quoteResponse.outAmount
+      return {
+        quoteResponse,
+        uiAmountFrom: Number(quoteResponse.inAmount) / 10 ** inputDecimals,
+        uiAmountTo: Number(quoteResponse.outAmount) / 10 ** outputDecimals,
+      };
+    } catch (error) {}
+    return {} as any;
+  };
+
+  const onSubmitSwap: SubmitHandler<SwapSchema> = async (values) => {
+    const { exactMode } = values;
+    if (
+      (exactMode === "ExactIn" && values.from === 0) ||
+      (exactMode === "ExactOut" && values.to === 0)
+    ) {
+      toast({
+        title: "Invalid from/to amount for swap",
+        description: "Please check your input and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { inputMint, outputMint } = swapQuoteResponse;
+
+    if (!inputMint || !outputMint || inputMint === outputMint) {
+      toast({
+        title: "Invalid input/output asset for swap",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    let quoteResponseForSwap = swapQuoteResponse;
+    const { quoteParams, inputDecimals, outputDecimals } = getSwapQuoteParams();
+    if (JSON.stringify(swapQuoteParams) !== JSON.stringify(quoteParams)) {
+      // Cache new quote params and re-fetch quote response
+      console.log("Quote params changed, re-fetch quote response");
+      setSwapQuoteParams(quoteParams);
+      const { quoteResponse } = await getSwapQuoteResponse(
+        quoteParams,
+        inputDecimals,
+        outputDecimals
       );
-      setAmountLoading(false);
+      quoteResponseForSwap = quoteResponse;
+    }
 
-      values.exactMode === "ExactIn"
-        ? swapForm.setValue(
-            "to",
-            Number(quoteResponse.outAmount) / 10 ** outputDecimals
-          )
-        : swapForm.setValue(
-            "from",
-            Number(quoteResponse.inAmount) / 10 ** inputDecimals
-          );
-
-      setIsSubmitTxPending(true);
+    setIsSubmitTxPending(true);
+    try {
       const txId = await glamClient.jupiter.swap(
         fundPDA!,
         undefined,
-        quoteResponse
+        quoteResponseForSwap
       );
       toast({
         title: `Swapped ${fromAsset} to ${toAsset}`,
@@ -514,8 +545,6 @@ export default function Trade() {
         variant: "destructive",
       });
     }
-
-    setAmountLoading(false);
     setIsSubmitTxPending(false);
   };
 
@@ -677,6 +706,60 @@ export default function Trade() {
     swapForm.setValue("toAsset", toAsset);
     console.log("Assets updated:", { fromAsset, toAsset });
   }, [fromAsset, toAsset, swapForm]);
+
+  const watchSwapFromAmount = swapForm.watch("from");
+  const watchSwapToAmount = swapForm.watch("to");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const exactMode = swapForm.getValues().exactMode;
+      if (exactMode === "ExactIn" && watchSwapFromAmount) {
+        setIsSwapToAmountLoading(true);
+        const { quoteParams, inputDecimals, outputDecimals } =
+          getSwapQuoteParams();
+
+        const { uiAmountTo, quoteResponse } = await getSwapQuoteResponse(
+          quoteParams,
+          inputDecimals,
+          outputDecimals
+        );
+        if (uiAmountTo) {
+          swapForm.setValue("to", uiAmountTo);
+        }
+        if (quoteResponse) {
+          setSwapQuoteParams(quoteParams);
+          setSwapQuoteResponse(quoteResponse);
+        }
+        setIsSwapToAmountLoading(false);
+      }
+    };
+    fetchData();
+  }, [watchSwapFromAmount]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const exactMode = swapForm.getValues().exactMode;
+      if (exactMode === "ExactOut" && watchSwapToAmount) {
+        setIsSwapFromAmountLoading(true);
+        const { quoteParams, inputDecimals, outputDecimals } =
+          getSwapQuoteParams();
+        const { uiAmountFrom, quoteResponse } = await getSwapQuoteResponse(
+          quoteParams,
+          inputDecimals,
+          outputDecimals
+        );
+        if (uiAmountFrom) {
+          swapForm.setValue("from", uiAmountFrom);
+        }
+        if (quoteResponse) {
+          setSwapQuoteParams(quoteParams);
+          setSwapQuoteResponse(quoteResponse);
+        }
+        setIsSwapFromAmountLoading(false);
+      }
+    };
+    fetchData();
+  }, [watchSwapToAmount]);
 
   const handleExactModeChange = (value: string) => {
     if (value) {
