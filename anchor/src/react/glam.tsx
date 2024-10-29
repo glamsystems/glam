@@ -71,6 +71,11 @@ interface FundCache {
   name: string;
 }
 
+interface OrderConstants {
+  perpBaseScale: number;
+  quoteScale: number;
+}
+
 export interface PerpMarketConfig {
   fullName: string;
   categories: string[];
@@ -104,6 +109,7 @@ export interface SpotMarketConfig {
 }
 
 interface DriftMarketConfigs {
+  orderConstants: OrderConstants;
   perp: PerpMarketConfig[];
   spot: SpotMarketConfig[];
 }

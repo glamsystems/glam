@@ -373,7 +373,6 @@ export default function Trade() {
               : Number(ta.uiAmount),
         } as Asset;
       }) || [];
-    setFromAsset(assets.length > 0 ? assets[0].symbol : "SOL");
 
     return assets;
   }, [treasury, tokenList, fundPDA]);
@@ -610,7 +609,9 @@ export default function Trade() {
       direction,
       marketIndex: marketConfig?.marketIndex!,
       baseAssetAmount: new anchor.BN(size * 10 ** marketConfig?.decimals!),
-      price: new anchor.BN(price * 10 ** 6),
+      price: new anchor.BN(
+        price * 10 ** driftMarketConfigs.orderConstants.quoteScale
+      ),
     });
     console.log("Drift spot orderParams", orderParams);
 
@@ -648,8 +649,12 @@ export default function Trade() {
       marketType: MarketType.PERP,
       direction,
       marketIndex: marketConfig?.marketIndex!,
-      baseAssetAmount: new anchor.BN(size * 10 ** marketConfig?.decimals!),
-      price: new anchor.BN(price * 10 ** 6),
+      baseAssetAmount: new anchor.BN(
+        size * 10 ** driftMarketConfigs.orderConstants.perpBaseScale
+      ),
+      price: new anchor.BN(
+        price * 10 ** driftMarketConfigs.orderConstants.quoteScale
+      ),
     });
     console.log("Drift perps orderParams", orderParams);
 

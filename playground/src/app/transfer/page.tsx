@@ -3,7 +3,6 @@
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -16,19 +15,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AssetInput } from "@/components/AssetInput";
+import * as anchor from "@coral-xyz/anchor";
+import { Asset, AssetInput } from "@/components/AssetInput";
 import { Button } from "@/components/ui/button";
-import { ColumnSpacingIcon } from "@radix-ui/react-icons";
-import { Input } from "@/components/ui/input";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/use-toast";
 import PageContentWrapper from "@/components/PageContentWrapper";
+import { useGlam } from "@glam/anchor/react";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { parseTxError } from "@/lib/error";
+import { ExplorerLink } from "@/components/ExplorerLink";
 
 const transferSchema = z.object({
   origin: z.enum(["Treasury"]),
@@ -40,7 +39,41 @@ const transferSchema = z.object({
 type TransferSchema = z.infer<typeof transferSchema>;
 
 export default function Transfer() {
+  const {
+    fund: fundPDA,
+    treasury,
+    wallet,
+    glamClient,
+    driftMarketConfigs,
+    jupTokenList: tokenList,
+  } = useGlam();
+
   const [amountAsset, setAmountAsset] = useState<string>("SOL");
+  const [isTxPending, setIsTxPending] = useState(false);
+
+  const fromAssetList = useMemo(() => {
+    const assets =
+      (treasury?.tokenAccounts || []).map((ta) => {
+        const name =
+          tokenList?.find((t: any) => t.address === ta.mint)?.name || "Unknown";
+        const symbol =
+          tokenList?.find((t: any) => t.address === ta.mint)?.symbol || ta.mint;
+        return {
+          name,
+          symbol: symbol,
+          address: ta.mint,
+          decimals: ta.decimals,
+          balance:
+            /* combine SOL + wSOL balances */
+            symbol === "SOL"
+              ? Number(ta.uiAmount) +
+                Number(treasury?.balanceLamports || 0) / LAMPORTS_PER_SOL
+              : Number(ta.uiAmount),
+        } as Asset;
+      }) || [];
+
+    return assets;
+  }, [treasury, tokenList, fundPDA]);
 
   const form = useForm<TransferSchema>({
     resolver: zodResolver(transferSchema),
@@ -52,110 +85,187 @@ export default function Transfer() {
     },
   });
 
-  const onSubmit: SubmitHandler<TransferSchema> = (values, event) => {
+  const onSubmit: SubmitHandler<TransferSchema> = async (values, event) => {
     const nativeEvent = event as unknown as React.BaseSyntheticEvent & {
       nativeEvent: { submitter: HTMLElement };
     };
-    if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") === "submit") {
-      const updatedValues = {
-        ...values,
-        amountAsset,
-      };
-
+    if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") !== "submit") {
+      return;
+    }
+    if (!fundPDA) {
       toast({
-        title: "You submitted the following trade:",
-        description: (
-          <pre className="mt-2 w-[340px] rounded-md bg-zinc-900 p-4">
-            <code className="text-white">
-              {JSON.stringify(updatedValues, null, 2)}
-            </code>
-          </pre>
-        ),
+        title: "Invalid fund",
+        description: "Please select a valid fund",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { amount } = values;
+    if (!amount) {
+      toast({
+        title: "Invalid amount",
+        description: "Please enter a valid amount",
+        variant: "destructive",
+      });
+      return;
+    }
+    const spotMarket = driftMarketConfigs.spot.find(
+      (spot) => spot.symbol === amountAsset
+    );
+    if (!spotMarket) {
+      toast({
+        title: "Drift market cannot be found for the selected asset",
+        description: "Please select an asset with a drift market.",
+        variant: "destructive",
+      });
+      return;
+    }
+    const { marketIndex, decimals } = spotMarket;
+
+    try {
+      setIsTxPending(true);
+      const txId = await glamClient.drift.deposit(
+        fundPDA,
+        new anchor.BN(amount * 10 ** decimals),
+        marketIndex
+      );
+      toast({
+        title: `Transfered ${amount} ${amountAsset} to Drift`,
+        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Failed to submit spot order",
+        description: parseTxError(error),
+        variant: "destructive",
       });
     }
+    setIsTxPending(false);
+
+    /*
+    toast({
+      title: "You submitted the following trade:",
+      description: (
+        <pre className="mt-2 w-[340px] rounded-md bg-zinc-900 p-4">
+          <code className="text-white">
+            {JSON.stringify(
+              {
+                ...values,
+                amountAsset,
+              },
+              null,
+              2
+            )}
+          </code>
+        </pre>
+      ),
+    });
+    */
   };
 
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
+    event.preventDefault();
     form.reset();
     setAmountAsset("SOL");
   };
 
-  return (<PageContentWrapper>
-    <div className="w-4/6 self-center">
-      <FormProvider {...form}>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4"
-          >
-            <div className="flex space-x-4">
-              <AssetInput
-                className="min-w-1/2 w-1/2"
-                name="amount"
-                label="Amount"
-                balance={100}
-                selectedAsset={amountAsset}
-                onSelectAsset={setAmountAsset}
-              />
-              <FormField
-                control={form.control}
-                name="origin"
-                render={({ field }) => (<FormItem className="w-1/2">
-                    <FormLabel>From</FormLabel>
-                    <FormControl>
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Treasury" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {transferSchema.shape.origin._def.values.map((option) => (<SelectItem key={option} value={option}>
-                              {option}
-                            </SelectItem>))}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>)}
-              />
-              <FormField
-                control={form.control}
-                name="destination"
-                render={({ field }) => (<FormItem className="w-1/2">
-                    <FormLabel>To</FormLabel>
-                    <FormControl>
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Drift" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {transferSchema.shape.destination._def.values.map((option) => (<SelectItem key={option} value={option}>
-                              {option}
-                            </SelectItem>))}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>)}
-              />
-            </div>
+  return (
+    <PageContentWrapper>
+      <div className="w-4/6 self-center">
+        <FormProvider {...form}>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <div className="flex space-x-4">
+                <AssetInput
+                  className="min-w-1/2 w-1/2"
+                  name="amount"
+                  label="Amount"
+                  assets={fromAssetList}
+                  balance={
+                    (fromAssetList || []).find(
+                      (asset) => asset.symbol === amountAsset
+                    )?.balance || 0
+                  }
+                  selectedAsset={amountAsset}
+                  onSelectAsset={setAmountAsset}
+                />
+                <FormField
+                  control={form.control}
+                  name="origin"
+                  render={({ field }) => (
+                    <FormItem className="w-1/2">
+                      <FormLabel>From</FormLabel>
+                      <FormControl>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Treasury" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {transferSchema.shape.origin._def.values.map(
+                              (option) => (
+                                <SelectItem key={option} value={option}>
+                                  {option}
+                                </SelectItem>
+                              )
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="destination"
+                  render={({ field }) => (
+                    <FormItem className="w-1/2">
+                      <FormLabel>To</FormLabel>
+                      <FormControl>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Drift" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {transferSchema.shape.destination._def.values.map(
+                              (option) => (
+                                <SelectItem key={option} value={option}>
+                                  {option}
+                                </SelectItem>
+                              )
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-            <div className="flex space-x-4 w-full">
-              <Button
-                className="w-1/2"
-                variant="ghost"
-                onClick={(event) => handleClear(event)}
-              >
-                Clear
-              </Button>
-              <Button className="w-1/2" type="submit">
-                Transfer
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </FormProvider>
-    </div>
-  </PageContentWrapper>
-);
+              <div className="flex space-x-4 w-full">
+                <Button
+                  className="w-1/2"
+                  variant="ghost"
+                  onClick={(event) => handleClear(event)}
+                >
+                  Clear
+                </Button>
+                <Button className="w-1/2" type="submit" loading={isTxPending}>
+                  Transfer
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </FormProvider>
+      </div>
+    </PageContentWrapper>
+  );
 }
