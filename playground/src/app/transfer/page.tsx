@@ -29,9 +29,10 @@ import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { parseTxError } from "@/lib/error";
 import { ExplorerLink } from "@/components/ExplorerLink";
 
+const venues: [string, ...string[]] = ["Treasury", "Drift"];
 const transferSchema = z.object({
-  origin: z.enum(["Treasury"]),
-  destination: z.enum(["Drift"]),
+  origin: z.enum(venues),
+  destination: z.enum(venues),
   amount: z.number(),
   amountAsset: z.string(),
 });
@@ -101,7 +102,7 @@ export default function Transfer() {
       return;
     }
 
-    const { amount } = values;
+    const { amount, origin, destination } = values;
     if (!amount) {
       toast({
         title: "Invalid amount",
@@ -125,13 +126,20 @@ export default function Transfer() {
 
     try {
       setIsTxPending(true);
-      const txId = await glamClient.drift.deposit(
-        fundPDA,
-        new anchor.BN(amount * 10 ** decimals),
-        marketIndex
-      );
+      const txId =
+        origin === "Treasury"
+          ? await glamClient.drift.deposit(
+              fundPDA,
+              new anchor.BN(amount * 10 ** decimals),
+              marketIndex
+            )
+          : await glamClient.drift.withdraw(
+              fundPDA,
+              new anchor.BN(amount * 10 ** decimals),
+              marketIndex
+            );
       toast({
-        title: `Transfered ${amount} ${amountAsset} to Drift`,
+        title: `Transfered ${amount} ${amountAsset} from ${origin} to ${destination}`,
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
       });
     } catch (error: any) {
@@ -199,7 +207,14 @@ export default function Transfer() {
                       <FormControl>
                         <Select
                           value={field.value}
-                          onValueChange={field.onChange}
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            if (value === "Treasury") {
+                              form.setValue("destination", "Drift");
+                            } else {
+                              form.setValue("destination", "Treasury");
+                            }
+                          }}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Treasury" />
@@ -228,7 +243,14 @@ export default function Transfer() {
                       <FormControl>
                         <Select
                           value={field.value}
-                          onValueChange={field.onChange}
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            if (value === "Treasury") {
+                              form.setValue("origin", "Drift");
+                            } else {
+                              form.setValue("origin", "Treasury");
+                            }
+                          }}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Drift" />

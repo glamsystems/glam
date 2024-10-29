@@ -19,6 +19,7 @@ import {
 } from "@drift-labs/sdk";
 
 import { BaseClient, ApiTxOptions } from "./base";
+import { AccountMeta } from "@solana/web3.js";
 
 const DRIFT_VAULT = new PublicKey(
   "JCNCMFXo5M5qwUPg2Utu1u6YWp3MbygxqBsBeXXJfrw"
@@ -240,6 +241,33 @@ export class DriftClient {
     };
   }
 
+  composeRemainingAccounts(
+    oracle?: PublicKey,
+    market?: PublicKey,
+    isWritable: boolean = false
+  ): AccountMeta[] {
+    const oracles =
+      !oracle || defaultOracles.find((o) => o.equals(oracle))
+        ? defaultOracles
+        : defaultOracles.concat([oracle]);
+    const markets =
+      !market || defaultMarkets.find((m) => m.equals(market))
+        ? defaultMarkets
+        : defaultMarkets.concat([market]);
+
+    const oracleMetas = oracles.map((pubkey) => ({
+      pubkey,
+      isWritable: false, // also false
+      isSigner: false,
+    }));
+    const marketMetas = markets.map((pubkey) => ({
+      pubkey,
+      isWritable, // depends on input
+      isSigner: false,
+    }));
+    return oracleMetas.concat(marketMetas);
+  }
+
   /*
    * API methods
    */
@@ -407,6 +435,12 @@ export class DriftClient {
 
     const manager = apiOptions.signer || this.base.getManager();
 
+    const remainingAccounts = this.composeRemainingAccounts(
+      oracle,
+      market,
+      true
+    );
+
     const tx = await this.base.program.methods
       .driftWithdraw(marketIndex, amount)
       .accounts({
@@ -419,10 +453,7 @@ export class DriftClient {
         manager,
         driftSigner: DRIFT_VAULT,
       })
-      .remainingAccounts([
-        { pubkey: oracle, isSigner: false, isWritable: false },
-        { pubkey: market, isSigner: false, isWritable: true },
-      ])
+      .remainingAccounts(remainingAccounts)
       .transaction();
 
     return await this.base.intoVersionedTransaction({
@@ -444,15 +475,8 @@ export class DriftClient {
     const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
     const { oracle, spotMarket, perpMarket } = marketAccounts;
-    const oracles = !oracle ? defaultOracles : defaultOracles.concat([oracle]);
-    const markets = !spotMarket
-      ? defaultMarkets
-      : defaultMarkets.concat([spotMarket]);
-    const remainingAccounts = oracles.concat(markets).map((pubkey) => ({
-      pubkey,
-      isWritable: false,
-      isSigner: false,
-    }));
+
+    const remainingAccounts = this.composeRemainingAccounts(oracle, spotMarket);
     if (orderParams.marketType === MarketType.PERP && perpMarket) {
       remainingAccounts.push({
         pubkey: perpMarket,
@@ -495,15 +519,8 @@ export class DriftClient {
     const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
     const { oracle, spotMarket, perpMarket } = marketAccounts;
-    const oracles = !oracle ? defaultOracles : defaultOracles.concat([oracle]);
-    const markets = !spotMarket
-      ? defaultMarkets
-      : defaultMarkets.concat([spotMarket]);
-    const remainingAccounts = oracles.concat(markets).map((pubkey) => ({
-      pubkey,
-      isWritable: false,
-      isSigner: false,
-    }));
+
+    const remainingAccounts = this.composeRemainingAccounts(oracle, spotMarket);
     if (marketType === MarketType.PERP && perpMarket) {
       remainingAccounts.push({
         pubkey: perpMarket,
