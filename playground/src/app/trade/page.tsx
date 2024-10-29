@@ -513,10 +513,11 @@ export default function Trade() {
       return;
     }
 
+    // At this point we should have cached quote params and response
+    // If quote params changed, we need to re-fetch quote response; otherwise, use cached response
     let quoteResponseForSwap = swapQuoteResponse;
     const { quoteParams, inputDecimals, outputDecimals } = getSwapQuoteParams();
     if (JSON.stringify(swapQuoteParams) !== JSON.stringify(quoteParams)) {
-      // Cache new quote params and re-fetch quote response
       console.log("Quote params changed, re-fetch quote response");
       setSwapQuoteParams(quoteParams);
       const { quoteResponse } = await getSwapQuoteResponse(
