@@ -16,7 +16,7 @@ import {
 import { BaseClient, ApiTxOptions } from "./base";
 import { JUPITER_PROGRAM_ID } from "../constants";
 
-type QuoteParams = {
+export type QuoteParams = {
   inputMint: string;
   outputMint: string;
   amount: number;
@@ -31,7 +31,7 @@ type QuoteParams = {
   excludeDexes?: string[];
 };
 
-type QuoteResponse = {
+export type QuoteResponse = {
   inputMint: string;
   inAmount: number | string;
   outputMint: string;
@@ -324,10 +324,12 @@ export class JupiterClient {
     }, new Array<AddressLookupTableAccount>());
   };
 
-  public async getQuoteResponse(quoteParams: any): Promise<any> {
+  public async getQuoteResponse(quoteParams: QuoteParams): Promise<any> {
     const res = await fetch(
       `${this.base.jupiterApi}/quote?` +
-        new URLSearchParams(Object.entries(quoteParams))
+        new URLSearchParams(
+          Object.entries(quoteParams).map(([key, val]) => [key, String(val)])
+        )
     );
     const data = await res.json();
     if (!res.ok) {
