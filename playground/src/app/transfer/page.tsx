@@ -93,6 +93,7 @@ export default function Transfer() {
     if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") !== "submit") {
       return;
     }
+
     if (!fundPDA) {
       toast({
         title: "Invalid fund",
@@ -131,12 +132,16 @@ export default function Transfer() {
           ? await glamClient.drift.deposit(
               fundPDA,
               new anchor.BN(amount * 10 ** decimals),
-              marketIndex
+              marketIndex,
+              0,
+              driftMarketConfigs
             )
           : await glamClient.drift.withdraw(
               fundPDA,
               new anchor.BN(amount * 10 ** decimals),
-              marketIndex
+              marketIndex,
+              0,
+              driftMarketConfigs
             );
       toast({
         title: `Transfered ${amount} ${amountAsset} from ${origin} to ${destination}`,
