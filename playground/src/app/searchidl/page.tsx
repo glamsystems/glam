@@ -238,7 +238,7 @@ export default function IDLFetch() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ ease: "easeInOut", duration: 0.42 }}
-                  className="p-4 bg-muted/25 overflow-auto max-h-96 font-mono shadow-inner shadow-zinc-950"
+                  className="p-4 bg-muted/50 dark:bg-muted/25 overflow-auto max-h-96 font-mono shadow-inner dark:shadow-zinc-950"
                 >
                   {(function renderJson(data: any) {
                     if (typeof data !== "object" || data === null) {

@@ -201,7 +201,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
                 }}
               >
                 <Link
-                  href="mailto:hello@glam.systems?subject=GLAM GUI Feedback"
+                  href="mailto:support@glam.systems?subject=GLAM GUI Feedback"
                   className="flex items-center w-ful text-sidebar-foregroundl"
                 >
                   <EnvelopeClosedIcon className="mr-3 ml-1 w-4 h-4" />
