@@ -45,10 +45,12 @@ import {
   TokensIcon,
   TransformIcon,
   LightningBoltIcon,
+  ActivityLogIcon,
 } from "@radix-ui/react-icons";
 import { useGlam } from "@glam/anchor/react";
 
 type IconType =
+  | typeof ActivityLogIcon
   | typeof BoxModelIcon
   | typeof CodeIcon
   | typeof Component1Icon
@@ -166,6 +168,12 @@ const navList: NavGroup[] = [
         text: "Component Debugger",
         shortcut: "",
         Icon: LightningBoltIcon,
+      },
+      {
+        route: "/searchidl",
+        text: "Search IDL",
+        shortcut: "",
+        Icon: ActivityLogIcon,
       },
     ],
   },
