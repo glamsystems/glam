@@ -246,18 +246,20 @@ export default function IDLFetch() {
                     }
                     return (
                       <details open>
-                        <summary className="cursor-pointer hover:bg-muted p-1">
+                        <summary className="cursor-pointer hover:bg-muted-foreground/10 dark:hover:bg-muted p-1 text-sm text-muted-foreground/50 dark:text-muted-foreground/25">
                           {Array.isArray(data) ? "Array" : "Object"} (
                           {Object.keys(data).length})
                         </summary>
                         <div className="pl-5">
                           {Object.entries(data).map(([key, value]) => (
-                            <div key={key} className="my-1">
-                              <span className="text-primary">{key}:</span>{" "}
+                            <div key={key} className="my-2">
+                              <span className="text-muted-foreground text-sm">
+                                {key}:
+                              </span>{" "}
                               {typeof value === "object" && value !== null ? (
                                 renderJson(value)
                               ) : (
-                                <span className="text-muted-foreground">
+                                <span className="text-primary text-sm font-bold">
                                   {JSON.stringify(value)}
                                 </span>
                               )}
