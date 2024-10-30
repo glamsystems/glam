@@ -42,11 +42,7 @@ import { Asset, AssetInput } from "@/components/AssetInput";
 import { FormInput } from "@/components/FormInput";
 import React, { useEffect, useMemo, useState } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import {
-  SpotMarketConfig,
-  PerpMarketConfig,
-  useGlam,
-} from "@glam/anchor/react";
+import { useGlam } from "@glam/anchor/react";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { LAMPORTS_PER_SOL, VersionedTransaction } from "@solana/web3.js";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -96,6 +92,7 @@ import {
 } from "@/components/ui/accordion";
 import { PublicKey } from "@solana/web3.js";
 import { QuoteParams, QuoteResponse } from "anchor/src/client/jupiter";
+import { PerpMarketConfig, SpotMarketConfig } from "anchor/src/client/drift";
 
 const spotMarkets = DRIFT_SPOT_MARKETS.map((x) => ({ label: x, value: x }));
 const perpsMarkets = DRIFT_PERP_MARKETS.map((x) => ({ label: x, value: x }));
@@ -308,6 +305,7 @@ export default function Trade() {
 
   const [isSubmitTxPending, setIsSubmitTxPending] = useState(false);
   const [isCancelTxPending, setIsCancelTxPending] = useState(false);
+  const [isSettleTxPending, setIsSettleTxPending] = useState(false);
   const [isSwapToAmountLoading, setIsSwapToAmountLoading] = useState(false);
   const [isSwapFromAmountLoading, setIsSwapFromAmountLoading] = useState(false);
 
@@ -373,7 +371,6 @@ export default function Trade() {
               : Number(ta.uiAmount),
         } as Asset;
       }) || [];
-    setFromAsset(assets.length > 0 ? assets[0].symbol : "SOL");
 
     return assets;
   }, [treasury, tokenList, fundPDA]);
@@ -610,16 +607,20 @@ export default function Trade() {
       direction,
       marketIndex: marketConfig?.marketIndex!,
       baseAssetAmount: new anchor.BN(size * 10 ** marketConfig?.decimals!),
-      price: new anchor.BN(price * 10 ** 6),
+      price: new anchor.BN(
+        price * 10 ** driftMarketConfigs.orderConstants.quoteScale
+      ),
     });
     console.log("Drift spot orderParams", orderParams);
 
     setIsSubmitTxPending(true);
     try {
-      const txId = await glamClient.drift.placeOrder(fundPDA!, orderParams, 0, {
-        oracle: new PublicKey(marketConfig?.oracle!),
-        spotMarket: new PublicKey(marketConfig?.marketPDA!),
-      });
+      const txId = await glamClient.drift.placeOrder(
+        fundPDA!,
+        orderParams,
+        0,
+        driftMarketConfigs
+      );
       toast({
         title: "Spot order submitted",
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
@@ -648,17 +649,23 @@ export default function Trade() {
       marketType: MarketType.PERP,
       direction,
       marketIndex: marketConfig?.marketIndex!,
-      baseAssetAmount: new anchor.BN(size * 10 ** marketConfig?.decimals!),
-      price: new anchor.BN(price * 10 ** 6),
+      baseAssetAmount: new anchor.BN(
+        size * 10 ** driftMarketConfigs.orderConstants.perpBaseScale
+      ),
+      price: new anchor.BN(
+        price * 10 ** driftMarketConfigs.orderConstants.quoteScale
+      ),
     });
     console.log("Drift perps orderParams", orderParams);
 
     setIsSubmitTxPending(true);
     try {
-      const txId = await glamClient.drift.placeOrder(fundPDA!, orderParams, 0, {
-        oracle: new PublicKey(marketConfig?.oracle!),
-        perpMarket: new PublicKey(marketConfig?.marketPDA!),
-      });
+      const txId = await glamClient.drift.placeOrder(
+        fundPDA!,
+        orderParams,
+        0,
+        driftMarketConfigs
+      );
       toast({
         title: "Perps order submitted",
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
@@ -875,7 +882,7 @@ export default function Trade() {
         marketConfig?.marketIndex!,
         PositionDirection.LONG,
         0,
-        marketAccounts
+        driftMarketConfigs
       );
       toast({
         title: "Orders canceled",
@@ -901,6 +908,7 @@ export default function Trade() {
       return;
     }
 
+    setIsSettleTxPending(true);
     try {
       const response = await fetch(
         "https://rest.glam.systems/v0/drift/settle_pnl",
@@ -929,6 +937,7 @@ export default function Trade() {
         variant: "destructive",
       });
     }
+    setIsSettleTxPending(false);
   };
 
   const exactMode = swapForm.watch("exactMode");
@@ -2232,6 +2241,7 @@ export default function Trade() {
                       <Button
                         variant="outline"
                         className="rounded-r-none px-8 py-2 w-1/2"
+                        loading={isSettleTxPending}
                         onClick={(event) => handleSettle(event)}
                       >
                         Settle P&L

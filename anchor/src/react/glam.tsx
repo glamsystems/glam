@@ -18,6 +18,7 @@ import { PublicKey } from "@solana/web3.js";
 import { ASSETS_MAINNET } from "../client/assets";
 import { WSOL } from "../constants";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
+import { DriftMarketConfigs } from "../client/drift";
 
 interface JupTokenListItem {
   address: string;
@@ -69,43 +70,6 @@ interface FundCache {
   pubkey: PublicKey;
   imageKey: string;
   name: string;
-}
-
-export interface PerpMarketConfig {
-  fullName: string;
-  categories: string[];
-  symbol: string;
-  baseAsset: string;
-  decimals: number;
-  marketIndex: number;
-  launchTs: string;
-  oracle: string;
-  oraceSource: string;
-  pythPullOraclePDA: string;
-  pythFeedId: string;
-  marketPDA: string;
-}
-
-export interface SpotMarketConfig {
-  symbol: string;
-  decimals: number;
-  marketIndex: number;
-  launchTs?: string;
-  oracle: string;
-  oracleSource: string;
-  pythPullOraclePDA: string;
-  pythFeedId: string;
-  marketPDA: string;
-  mint: string;
-  serumMarket?: string;
-  phoenixMarket?: string;
-  openBookMarket?: string;
-  vaultPDA: string;
-}
-
-interface DriftMarketConfigs {
-  perp: PerpMarketConfig[];
-  spot: SpotMarketConfig[];
 }
 
 const GlamContext = createContext<GlamProviderContext>(
