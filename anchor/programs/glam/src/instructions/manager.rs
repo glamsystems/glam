@@ -429,7 +429,7 @@ pub struct UpdateShareClass<'info> {
     pub token_2022_program: Program<'info, Token2022>,
 }
 
-pub fn update_share_class(
+pub fn update_share_class_handler(
     ctx: Context<UpdateShareClass>,
     share_class_id: u8,
     share_class_model: ShareClassModel,

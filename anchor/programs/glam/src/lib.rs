@@ -47,7 +47,7 @@ pub mod glam {
         share_class_id: u8,
         share_class_metadata: ShareClassModel,
     ) -> Result<()> {
-        manager::update_share_class(ctx, share_class_id, share_class_metadata)
+        manager::update_share_class_handler(ctx, share_class_id, share_class_metadata)
     }
 
     pub fn update_fund<'c: 'info, 'info>(
