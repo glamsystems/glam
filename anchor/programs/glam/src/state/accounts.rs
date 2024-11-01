@@ -112,6 +112,25 @@ impl FundAccount {
         return None;
     }
 
+    pub fn share_class_allowlist_mut(&mut self, share_class_id: usize) -> Option<&mut Vec<Pubkey>> {
+        // params[1]: share class 0 acls
+        // params[2]: share class 1 acls
+        // ...
+        let param_idx = share_class_id + 1;
+        self.params[param_idx]
+            .iter_mut()
+            .find_map(|EngineField { name, value }| {
+                if *name == EngineFieldName::ShareClassAllowlist {
+                    match value {
+                        EngineFieldValue::VecPubkey { val } => Some(val),
+                        _ => None,
+                    }
+                } else {
+                    None
+                }
+            })
+    }
+
     pub fn share_class_blocklist(&self, share_class_id: usize) -> Option<&Vec<Pubkey>> {
         // params[1]: share class 0 acls
         // params[2]: share class 1 acls
@@ -129,6 +148,25 @@ impl FundAccount {
             }
         }
         return None;
+    }
+
+    pub fn share_class_blocklist_mut(&mut self, share_class_id: usize) -> Option<&mut Vec<Pubkey>> {
+        // params[1]: share class 0 acls
+        // params[2]: share class 1 acls
+        // ...
+        let param_idx = share_class_id + 1;
+        self.params[param_idx]
+            .iter_mut()
+            .find_map(|EngineField { name, value }| {
+                if *name == EngineFieldName::ShareClassBlocklist {
+                    match value {
+                        EngineFieldValue::VecPubkey { val } => Some(val),
+                        _ => None,
+                    }
+                } else {
+                    None
+                }
+            })
     }
 
     pub fn assets(&self) -> Option<&Vec<Pubkey>> {

@@ -3387,6 +3387,55 @@
       ]
     },
     {
+      "name": "update_share_class",
+      "discriminator": [
+        196,
+        227,
+        109,
+        174,
+        25,
+        115,
+        15,
+        26
+      ],
+      "accounts": [
+        {
+          "name": "share_class_mint",
+          "writable": true
+        },
+        {
+          "name": "fund",
+          "writable": true
+        },
+        {
+          "name": "manager",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "fund"
+          ]
+        },
+        {
+          "name": "token_2022_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        }
+      ],
+      "args": [
+        {
+          "name": "share_class_id",
+          "type": "u8"
+        },
+        {
+          "name": "share_class_metadata",
+          "type": {
+            "defined": {
+              "name": "ShareClassModel"
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "withdraw_from_stake_accounts",
       "discriminator": [
         93,

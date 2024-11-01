@@ -7,7 +7,14 @@ import {
 import { BN, Wallet } from "@coral-xyz/anchor";
 
 import { createFundForTest, fundTestExample, str2seed } from "./setup";
-import { FundModel, GlamClient, MSOL, USDC, WSOL } from "../src";
+import {
+  FundModel,
+  GlamClient,
+  MSOL,
+  ShareClassModel,
+  USDC,
+  WSOL,
+} from "../src";
 
 const key1 = Keypair.fromSeed(str2seed("acl_test_key1"));
 const key2 = Keypair.fromSeed(str2seed("acl_test_key2"));
@@ -33,19 +40,43 @@ describe("glam_crud", () => {
   it("Update fund name", async () => {
     const updatedFund = glamClient.getFundModel({ name: "Updated fund name" });
     try {
-      await glamClient.program.methods
+      const txSig = await glamClient.program.methods
         .updateFund(updatedFund)
         .accounts({
           fund: fundPDA,
           signer: glamClient.getManager(),
         })
         .rpc();
+      console.log("Update fund name txSig", txSig);
     } catch (e) {
       console.error(e);
       throw e;
     }
     const fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
     expect(fund.name).toEqual(updatedFund.name);
+  });
+
+  it("Update share class allowlist", async () => {
+    const shareClassModel = new ShareClassModel({
+      allowlist: [key1.publicKey, key2.publicKey],
+    });
+    try {
+      const txSig = await glamClient.program.methods
+        .updateShareClass(0, shareClassModel)
+        .accounts({
+          fund: fundPDA,
+          shareClassMint: glamClient.getShareClassPDA(fundPDA, 0),
+        })
+        .rpc();
+      console.log("Update share class txSig", txSig);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+    const fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
+    const allowlist = fund.params[1][0].value.vecPubkey.val;
+    expect(allowlist.length).toEqual(2);
+    expect(allowlist).toEqual(shareClassModel.allowlist);
   });
 
   it("Update fund asset allowlist", async () => {

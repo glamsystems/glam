@@ -3393,6 +3393,55 @@ export type Glam = {
       ]
     },
     {
+      "name": "updateShareClass",
+      "discriminator": [
+        196,
+        227,
+        109,
+        174,
+        25,
+        115,
+        15,
+        26
+      ],
+      "accounts": [
+        {
+          "name": "shareClassMint",
+          "writable": true
+        },
+        {
+          "name": "fund",
+          "writable": true
+        },
+        {
+          "name": "manager",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "fund"
+          ]
+        },
+        {
+          "name": "token2022Program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        }
+      ],
+      "args": [
+        {
+          "name": "shareClassId",
+          "type": "u8"
+        },
+        {
+          "name": "shareClassMetadata",
+          "type": {
+            "defined": {
+              "name": "shareClassModel"
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "withdrawFromStakeAccounts",
       "discriminator": [
         93,
