@@ -10,7 +10,8 @@ import {
 import {
   TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
-  createAssociatedTokenAccountInstruction,
+  createAssociatedTokenAccountIdempotentInstruction,
+  getMint,
 } from "@solana/spl-token";
 
 import { BaseClient, ApiTxOptions } from "./base";
@@ -85,8 +86,7 @@ export class JupiterClient {
       fund,
       quoteParams,
       quoteResponse,
-      swapInstructions,
-      {}
+      swapInstructions
     );
     return await this.base.sendAndConfirm(tx);
   }
@@ -100,11 +100,8 @@ export class JupiterClient {
     quoteParams?: QuoteParams,
     quoteResponse?: QuoteResponse,
     swapInstructions?: SwapInstructions,
-    apiOptions?: ApiTxOptions
+    apiOptions: ApiTxOptions = {}
   ): Promise<VersionedTransaction> {
-    if (apiOptions === undefined) {
-      apiOptions = {};
-    }
     const signer = apiOptions.signer || this.base.getManager();
 
     let swapInstruction: InstructionFromJupiter;
@@ -144,12 +141,23 @@ export class JupiterClient {
     const swapIx: { data: any; keys: AccountMeta[] } =
       this.toTransactionInstruction(swapInstruction);
 
+    const inputTokenProgram = await this.getTokenProgram(inputMint);
+    const outputTokenProgram = await this.getTokenProgram(outputMint);
+    console.log(
+      `input mint ${inputMint.toBase58()} tokenProgram ${inputTokenProgram.toBase58()}`
+    );
+    console.log(
+      `output mint ${outputMint.toBase58()} tokenProgram ${outputTokenProgram.toBase58()}`
+    );
+
     const preInstructions = await this.getPreInstructions(
       fund,
       signer,
       inputMint,
       outputMint,
-      amount
+      amount,
+      inputTokenProgram,
+      outputTokenProgram
     );
     // @ts-ignore
     const tx = await this.base.program.methods
@@ -158,14 +166,32 @@ export class JupiterClient {
         fund,
         //@ts-ignore IDL ts type is unhappy
         treasury: this.base.getTreasuryPDA(fund),
-        inputTreasuryAta: this.base.getTreasuryAta(fund, inputMint),
-        outputTreasuryAta: this.base.getTreasuryAta(fund, outputMint),
-        inputSignerAta: this.base.getManagerAta(inputMint, signer),
-        outputSignerAta: this.base.getManagerAta(outputMint, signer),
+        inputTreasuryAta: this.base.getTreasuryAta(
+          fund,
+          inputMint,
+          inputTokenProgram
+        ),
+        outputTreasuryAta: this.base.getTreasuryAta(
+          fund,
+          outputMint,
+          outputTokenProgram
+        ),
+        inputSignerAta: this.base.getManagerAta(
+          inputMint,
+          signer,
+          inputTokenProgram
+        ),
+        outputSignerAta: this.base.getManagerAta(
+          outputMint,
+          signer,
+          outputTokenProgram
+        ),
         inputMint,
         outputMint,
         signer,
         jupiterProgram: JUPITER_PROGRAM_ID,
+        inputTokenProgram,
+        outputTokenProgram,
         token2022Program: TOKEN_2022_PROGRAM_ID,
       })
       .remainingAccounts(swapIx.keys)
@@ -197,35 +223,35 @@ export class JupiterClient {
     const ataParams = [
       {
         payer: manager,
-        ata: this.base.getManagerAta(inputMint, manager),
+        ata: this.base.getManagerAta(inputMint, manager, inputTokenProgram),
         owner: manager,
         mint: inputMint,
         tokenProgram: inputTokenProgram,
       },
       {
         payer: manager,
-        ata: this.base.getManagerAta(outputMint, manager),
+        ata: this.base.getManagerAta(outputMint, manager, outputTokenProgram),
         owner: manager,
         mint: outputMint,
         tokenProgram: outputTokenProgram,
       },
       {
         payer: manager,
-        ata: this.base.getTreasuryAta(fund, outputMint),
+        ata: this.base.getTreasuryAta(fund, outputMint, outputTokenProgram),
         owner: this.base.getTreasuryPDA(fund),
         mint: outputMint,
         tokenProgram: outputTokenProgram,
       },
     ];
     for (const { payer, ata, owner, mint, tokenProgram } of ataParams) {
-      const ataAccountInfo = await this.base.provider.connection.getAccountInfo(
-        ata
-      );
-      if (ataAccountInfo) {
-        continue;
-      }
+      // const ataAccountInfo = await this.base.provider.connection.getAccountInfo(
+      //   ata
+      // );
+      // if (ataAccountInfo) {
+      //   continue;
+      // }
       preInstructions.push(
-        createAssociatedTokenAccountInstruction(
+        createAssociatedTokenAccountIdempotentInstruction(
           payer,
           ata,
           owner,
@@ -280,6 +306,21 @@ export class JupiterClient {
     }
 
     return preInstructions;
+  };
+
+  getTokenProgram = async (mint: PublicKey) => {
+    const mintInfo = await this.base.provider.connection.getAccountInfo(mint);
+    if (!mintInfo) {
+      throw new Error(`AccountInfo not found for mint ${mint.toBase58()}`);
+    }
+    if (
+      ![TOKEN_PROGRAM_ID.toBase58(), TOKEN_2022_PROGRAM_ID.toBase58()].includes(
+        mintInfo.owner.toBase58()
+      )
+    ) {
+      throw new Error(`Invalid mint owner: ${mintInfo.owner.toBase58()}`);
+    }
+    return mintInfo.owner;
   };
 
   toTransactionInstruction = (ixPayload: InstructionFromJupiter) => {

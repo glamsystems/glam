@@ -331,8 +331,17 @@ export class BaseClient {
     return managerPublicKey;
   }
 
-  getManagerAta(mint: PublicKey, manager?: PublicKey): PublicKey {
-    return getAssociatedTokenAddressSync(mint, manager || this.getManager());
+  getManagerAta(
+    mint: PublicKey,
+    manager?: PublicKey,
+    tokenProgram = TOKEN_PROGRAM_ID
+  ): PublicKey {
+    return getAssociatedTokenAddressSync(
+      mint,
+      manager || this.getManager(),
+      true,
+      tokenProgram
+    );
   }
 
   getFundModel(fund: any): FundModel {
