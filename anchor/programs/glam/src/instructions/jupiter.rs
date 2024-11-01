@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::Token;
 use anchor_spl::token_interface::{
-    transfer_checked, Mint, Token2022, TokenAccount, TransferChecked,
+    transfer_checked, Mint, Token2022, TokenAccount, TokenInterface, TransferChecked,
 };
 use solana_program::{instruction::Instruction, program::invoke_signed};
 
@@ -33,7 +33,9 @@ pub struct JupiterSwap<'info> {
     #[account(
         mut,
         associated_token::mint = input_mint,
-        associated_token::authority = signer)]
+        associated_token::authority = signer,
+        associated_token::token_program = input_token_program
+    )]
     pub input_signer_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     /// CHECK: no need deser, trust Jupiter
@@ -42,7 +44,9 @@ pub struct JupiterSwap<'info> {
     #[account(
         mut,
         associated_token::mint = output_mint,
-        associated_token::authority = treasury)]
+        associated_token::authority = treasury,
+        associated_token::token_program = output_token_program
+    )]
     pub output_treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     pub input_mint: Box<InterfaceAccount<'info, Mint>>,
@@ -55,6 +59,11 @@ pub struct JupiterSwap<'info> {
     pub system_program: Program<'info, System>,
     pub jupiter_program: Program<'info, Jupiter>,
     pub associated_token_program: Program<'info, AssociatedToken>,
+
+    pub input_token_program: Interface<'info, TokenInterface>,
+    pub output_token_program: Interface<'info, TokenInterface>,
+
+    // TODO: we may not need these programs any more
     pub token_program: Program<'info, Token>,
     pub token_2022_program: Program<'info, Token2022>,
 }
