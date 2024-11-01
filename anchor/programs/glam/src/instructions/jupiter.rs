@@ -1,8 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
-use anchor_spl::token::Token;
 use anchor_spl::token_interface::{
-    transfer_checked, Mint, Token2022, TokenAccount, TokenInterface, TransferChecked,
+    transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
 };
 use solana_program::{instruction::Instruction, program::invoke_signed};
 
@@ -62,17 +61,13 @@ pub struct JupiterSwap<'info> {
 
     pub input_token_program: Interface<'info, TokenInterface>,
     pub output_token_program: Interface<'info, TokenInterface>,
-
-    // TODO: we may not need these programs any more
-    pub token_program: Program<'info, Token>,
-    pub token_2022_program: Program<'info, Token2022>,
 }
 
 fn parse_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
     let mut res = true;
     res &= ctx.remaining_accounts.len() > 9;
 
-    res &= ctx.remaining_accounts[0].key() == ctx.accounts.token_program.key();
+    res &= ctx.remaining_accounts[0].key() == ctx.accounts.output_token_program.key();
     res &= ctx.remaining_accounts[1].key() == ctx.accounts.signer.key();
     res &= ctx.remaining_accounts[2].key() == ctx.accounts.input_signer_ata.key();
     res &= ctx.remaining_accounts[3].key() == ctx.accounts.output_signer_ata.key();
@@ -90,7 +85,7 @@ fn parse_exact_out_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
     let mut res = true;
     res &= ctx.remaining_accounts.len() > 11;
 
-    res &= ctx.remaining_accounts[0].key() == ctx.accounts.token_program.key();
+    res &= ctx.remaining_accounts[0].key() == ctx.accounts.output_token_program.key();
     res &= ctx.remaining_accounts[1].key() == ctx.accounts.signer.key();
     res &= ctx.remaining_accounts[2].key() == ctx.accounts.input_signer_ata.key();
     res &= ctx.remaining_accounts[3].key() == ctx.accounts.output_signer_ata.key();
@@ -98,8 +93,9 @@ fn parse_exact_out_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
     res &= ctx.remaining_accounts[5].key() == ctx.accounts.input_mint.key();
     res &= ctx.remaining_accounts[6].key() == ctx.accounts.output_mint.key();
     res &= ctx.remaining_accounts[7].key() == Jupiter::id(); // null key
-    res &= ctx.remaining_accounts[8].key() == ctx.accounts.token_2022_program.key()
-        || ctx.remaining_accounts[8].key() == Jupiter::id(); // token2022 or null key
+    res &= ctx.remaining_accounts[8].key() == ctx.accounts.input_token_program.key()
+        || ctx.remaining_accounts[8].key() == ctx.accounts.output_token_program.key()
+        || ctx.remaining_accounts[8].key() == Jupiter::id(); // token program or null key
 
     // res &= ctx.remaining_accounts[9].key() - eventAuthority ignored
     res &= ctx.remaining_accounts[10].key() == Jupiter::id();
@@ -111,7 +107,7 @@ fn parse_shared_accounts_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
     let mut res = true;
     res &= ctx.remaining_accounts.len() > 13;
 
-    res &= ctx.remaining_accounts[0].key() == ctx.accounts.token_program.key();
+    res &= ctx.remaining_accounts[0].key() == ctx.accounts.output_token_program.key();
     // res &= ctx.remaining_accounts[1].key() - programAuthority ignored
 
     res &= ctx.remaining_accounts[2].key() == ctx.accounts.signer.key();
@@ -123,8 +119,9 @@ fn parse_shared_accounts_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
     res &= ctx.remaining_accounts[7].key() == ctx.accounts.input_mint.key();
     res &= ctx.remaining_accounts[8].key() == ctx.accounts.output_mint.key();
     res &= ctx.remaining_accounts[9].key() == Jupiter::id(); // null key
-    res &= ctx.remaining_accounts[10].key() == ctx.accounts.token_2022_program.key()
-        || ctx.remaining_accounts[10].key() == Jupiter::id(); // token2022 or null key
+    res &= ctx.remaining_accounts[10].key() == ctx.accounts.input_token_program.key()
+        || ctx.remaining_accounts[10].key() == ctx.accounts.output_token_program.key()
+        || ctx.remaining_accounts[10].key() == Jupiter::id(); // token program or null key
 
     // res &= ctx.remaining_accounts[11].key() - eventAuthority ignored
     res &= ctx.remaining_accounts[12].key() == Jupiter::id();
@@ -192,14 +189,9 @@ pub fn jupiter_swap<'c: 'info, 'info>(
     //
     // Transfer treasury -> signer
     //
-    let input_program = if ctx.accounts.input_signer_ata.owner == Token2022::id() {
-        ctx.accounts.token_2022_program.to_account_info()
-    } else {
-        ctx.accounts.token_program.to_account_info()
-    };
     transfer_checked(
         CpiContext::new_with_signer(
-            input_program,
+            ctx.accounts.input_token_program.to_account_info(),
             TransferChecked {
                 from: ctx.accounts.input_treasury_ata.to_account_info(),
                 mint: ctx.accounts.input_mint.to_account_info(),
