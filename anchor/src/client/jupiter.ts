@@ -192,7 +192,6 @@ export class JupiterClient {
         jupiterProgram: JUPITER_PROGRAM_ID,
         inputTokenProgram,
         outputTokenProgram,
-        token2022Program: TOKEN_2022_PROGRAM_ID,
       })
       .remainingAccounts(swapIx.keys)
       .preInstructions(preInstructions)
