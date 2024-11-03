@@ -239,7 +239,10 @@ export function GlamProvider({
       const pythFeedIds = new Set([] as string[]);
       treasury.tokenAccounts.forEach((ta: TokenAccount) => {
         const hex = ASSETS_MAINNET.get(ta.mint)?.priceFeed!;
-        pythFeedIds.add(hex);
+        if (hex) {
+          // we cannot price tokens without a price feed
+          pythFeedIds.add(hex);
+        }
       });
       // Always add wSOL feed so that we can price SOL
       pythFeedIds.add(ASSETS_MAINNET.get(WSOL.toBase58())?.priceFeed!);
