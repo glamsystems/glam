@@ -1,5 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
-import { FundModel } from "@glam/anchor";
+import { FundModel, WSOL } from "@glam/anchor";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { Command } from "commander";
 
@@ -318,6 +318,55 @@ fund
       console.error(e);
       process.exit(1);
     }
+  });
+
+fund
+  .command("balances")
+  .description("Get fund balances")
+  .option(
+    "-a, --all",
+    "Show all assets including token accounts with 0 balance"
+  )
+  .action(async (options) => {
+    if (!fundPDA) {
+      console.error("Error: fund not set");
+      process.exit(1);
+    }
+
+    const { all } = options;
+    const treasury = glamClient.getTreasuryPDA(fundPDA);
+    const tokenAccounts = await glamClient.listTokenAccounts(treasury);
+    const solBalance = await glamClient.provider.connection.getBalance(
+      treasury
+    );
+    const mints = tokenAccounts.map((ta) => ta.mint);
+    if (!mints.includes(WSOL.toBase58())) {
+      mints.push(WSOL.toBase58());
+    }
+    const response = await fetch(
+      `https://api.jup.ag/price/v2?ids=${mints.join(",")}`
+    );
+    const { data } = await response.json();
+
+    console.log("Token", "\t", "Amount", "\t", "Value (USD)");
+    console.log(
+      "SOL",
+      "\t",
+      solBalance / LAMPORTS_PER_SOL,
+      "\t",
+      (parseFloat(data[WSOL.toBase58()].price) * solBalance) / LAMPORTS_PER_SOL
+    );
+    tokenAccounts.forEach((ta) => {
+      if (all || parseFloat(ta.uiAmount) > 0) {
+        console.log(
+          ta.mint,
+          "\t",
+          ta.uiAmount,
+          "\t",
+          parseFloat(data[ta.mint].price) * parseFloat(ta.uiAmount)
+        );
+      }
+    });
   });
 
 fund

@@ -143,12 +143,6 @@ export class JupiterClient {
 
     const inputTokenProgram = await this.getTokenProgram(inputMint);
     const outputTokenProgram = await this.getTokenProgram(outputMint);
-    console.log(
-      `input mint ${inputMint.toBase58()} tokenProgram ${inputTokenProgram.toBase58()}`
-    );
-    console.log(
-      `output mint ${outputMint.toBase58()} tokenProgram ${outputTokenProgram.toBase58()}`
-    );
 
     const preInstructions = await this.getPreInstructions(
       fund,

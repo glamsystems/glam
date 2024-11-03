@@ -160,7 +160,7 @@ export class BaseClient {
     tx,
     lookupTables,
     computeUnitLimit,
-    computeUnitPriceMicroLamports, // fee
+    computeUnitPriceMicroLamports = 5000, // fee
     jitoTipLamports,
     signer,
     latestBlockhash,
