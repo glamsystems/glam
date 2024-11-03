@@ -1,14 +1,13 @@
 import * as anchor from "@coral-xyz/anchor";
-import { FundModel, GlamClient, MSOL, USDC, WSOL } from "@glam/anchor";
-import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
-import { ComputeBudgetProgram, PublicKey } from "@solana/web3.js";
-import * as fundJson from "../fund.json";
+import { FundModel } from "@glam/anchor";
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { Command } from "commander";
 
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { setFundToConfig } from "./utils";
+import { getGlamClient, setFundToConfig } from "./utils";
+import { QuoteParams } from "anchor/src/client/jupiter";
 
 const configPath = path.join(os.homedir(), ".config/glam/cli/config.json");
 let fundPDA;
@@ -22,11 +21,7 @@ try {
   console.error(`Could not load config at ${configPath}:`, err.message);
 }
 
-const anchorProvider = anchor.AnchorProvider.env();
-const glamClient = new GlamClient({
-  provider: anchorProvider,
-  cluster: "mainnet-beta",
-});
+const glamClient = getGlamClient();
 
 const program = new Command();
 
@@ -60,7 +55,7 @@ program
 
 const fund = program
   .command("fund")
-  .description("Manage fund configurations")
+  .description("Manage fund")
   .option("-s, --simulate", "Simulate transactions");
 
 fund
@@ -183,69 +178,208 @@ delegate
     }
   });
 
+const integration = fund
+  .command("integration")
+  .description("Manage fund integrations");
+integration
+  .command("get")
+  .description("List enabled integrations")
+  .action(async () => {
+    if (!fundPDA) {
+      console.error("Error: fund not set");
+      process.exit(1);
+    }
+
+    const fundModel = await glamClient.fetchFund(fundPDA);
+    const cnt = fundModel.integrationAcls.length;
+    console.log(
+      `Fund ${fundPDA.toBase58()} has ${cnt} integration${
+        cnt > 1 ? "s" : ""
+      } enabled`
+    );
+    for (let [i, acl] of fundModel.integrationAcls.entries()) {
+      console.log(`[${i}] ${Object.keys(acl.name)[0]}`);
+    }
+  });
+
+integration
+  .command("enable <integration>")
+  .description("Enable an integration")
+  .action(async (integration) => {
+    if (!fundPDA) {
+      console.error("Error: fund not set");
+      process.exit(1);
+    }
+
+    const fundModel = await glamClient.fetchFund(fundPDA);
+    const acl = fundModel.integrationAcls.find(
+      (integ) => Object.keys(integ.name)[0] === integration
+    );
+    if (acl) {
+      console.log(
+        `${integration} is already enabled on fund ${fundPDA.toBase58()}`
+      );
+      process.exit(0);
+    }
+
+    const updatedFund = glamClient.getFundModel({
+      integrationAcls: [
+        ...fundModel.integrationAcls,
+        { name: { [integration]: {} }, features: [] },
+      ],
+    });
+
+    try {
+      const txSig = await glamClient.program.methods
+        .updateFund(updatedFund)
+        .accounts({ fund: fundPDA })
+        .rpc();
+      console.log(`${integration} enabled on fund ${fundPDA.toBase58()}`);
+      console.log("txSig:", txSig);
+    } catch (e) {
+      console.error(e);
+      process.exit(1);
+    }
+  });
+
+integration
+  .command("disable <integration>")
+  .description("Disable an integration")
+  .action(async (integration) => {
+    if (!fundPDA) {
+      console.error("Error: fund not set");
+      process.exit(1);
+    }
+
+    const fundModel = await glamClient.fetchFund(fundPDA);
+    const acl = fundModel.integrationAcls.find(
+      (integ) => Object.keys(integ.name)[0] === integration
+    );
+    if (!acl) {
+      console.log(
+        `${integration} is not enabled on fund ${fundPDA.toBase58()}`
+      );
+      process.exit(0);
+    }
+
+    const updatedFund = glamClient.getFundModel({
+      integrationAcls: fundModel.integrationAcls.filter(
+        (integ) => Object.keys(integ.name)[0] !== integration
+      ),
+    });
+
+    try {
+      const txSig = await glamClient.program.methods
+        .updateFund(updatedFund)
+        .accounts({ fund: fundPDA })
+        .rpc();
+      console.log(`${integration} disabled on fund ${fundPDA.toBase58()}`);
+      console.log("txSig:", txSig);
+    } catch (e) {
+      console.error(e);
+      process.exit(1);
+    }
+  });
+
+fund
+  .command("wrap <amount>")
+  .description("Wrap SOL")
+  .action(async (amount) => {
+    if (!fundPDA) {
+      console.error("Error: fund not set");
+      process.exit(1);
+    }
+
+    try {
+      const txSig = await glamClient.wsol.wrap(
+        fundPDA,
+        new anchor.BN(parseInt(amount) * LAMPORTS_PER_SOL)
+      );
+      console.log(`Wrapped ${amount} SOL:`, txSig);
+    } catch (e) {
+      console.error(e);
+      process.exit(1);
+    }
+  });
+
+fund
+  .command("unwrap")
+  .description("Unwrap wSOL")
+  .action(async () => {
+    if (!fundPDA) {
+      console.error("Error: fund not set");
+      process.exit(1);
+    }
+
+    try {
+      const txSig = await glamClient.wsol.unwrap(fundPDA);
+      console.log(`All wSOL unwrapped:`, txSig);
+    } catch (e) {
+      console.error(e);
+      process.exit(1);
+    }
+  });
+
+fund
+  .command("swap <from> <to> <amount>")
+  .description("Swap fund assets")
+  .option("-m, --max-accounts <num>", "Specify max accounts allowed")
+  .option("-s, --slippage-bps <bps>", "Specify slippage bps")
+  .option("-d, --only-direct-routes", "Direct routes only")
+  .action(async (from, to, amount, options) => {
+    const { maxAccounts, slippageBps, onlyDirectRoutes } = options;
+
+    const response = await fetch("https://tokens.jup.ag/tokens?tags=verified");
+    const data = await response.json(); // an array of tokens
+
+    const tokenFrom = data.find((t) => t.address === from);
+    const tokenTo = data.find((t) => t.address === to);
+
+    if (!tokenFrom || !tokenTo) {
+      console.error("Error: cannot swap unverified token");
+      process.exit(1);
+    }
+
+    let quoteParams = {
+      inputMint: from,
+      outputMint: to,
+      amount: amount * 10 ** tokenFrom.decimals,
+      swapMode: "ExactIn",
+      slippageBps: slippageBps ? parseInt(slippageBps) : 5,
+      asLegacyTransaction: false,
+    } as QuoteParams;
+    if (maxAccounts) {
+      quoteParams = {
+        ...quoteParams,
+        maxAccounts: parseInt(maxAccounts),
+      };
+    }
+    if (onlyDirectRoutes) {
+      quoteParams = {
+        ...quoteParams,
+        onlyDirectRoutes,
+      };
+    }
+    console.log("Quote params:", quoteParams);
+    try {
+      const txSig = await glamClient.jupiter.swap(fundPDA, quoteParams);
+      console.log(`Swapped ${amount} ${from} to ${to}`);
+    } catch (e) {
+      console.error(e);
+      process.exit(1);
+    }
+  });
+
 program.parse(process.argv);
 
 //
 // For testing/debugging purpose, we can run arbitrary code in the main function
 //
 async function main(): Promise<void> {
-  console.log(JSON.stringify(fundJson));
+  console.log("Main() called");
 }
 
 if (process.argv.length === 2 && !process.argv[1].endsWith(".js")) {
   // Not called as a cli, run main function
   main();
 }
-
-// const fundPDA = new PublicKey("BkbYM6H5zag7Z15U1VvaF7aE5gQYxF6UwS5tAM7cxVxR");
-// const trader = new PublicKey("bot32VLbcjGTLCgi8aZ7Q7V8EgoNwpW4yzoqfJWZJyg");
-// try {
-//   const txId = await glamClient.drift.updateUserDelegate(fundPDA, trader);
-//   console.log("driftUpdateUserDelegate", txId);
-// } catch (e) {
-//   console.error(e);
-//   throw e;
-// }
-// Update the fund object listed above before creating the fund
-/*
-  const [txId, fundPDA] = await glamClient.createFund(fund);
-  console.log("Fund PDA:", fundPDA.toBase58());
-  console.log("txId:", txId);
-  */
-
-// Update the fund pubkey before closing the share class
-/*
-  const fundPDA = new PublicKey("Dc88inhuwymwyvVR7Sy7MdeYyxsAvPaCgYZfAQsY3skJ");
-  try {
-    const txId = await glamClient.program.methods
-      .closeShareClass(0)
-      .accounts({
-        fund: fundPDA,
-        shareClassMint: glamClient.getShareClassPDA(fundPDA, 0),
-        openfunds: glamClient.getOpenfundsPDA(fundPDA),
-      })
-      .rpc();
-    console.log("txId:", txId);
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-  */
-
-// Update the fund pubkey before closing the fund
-/*
-  const fundPDA = new PublicKey("Dc88inhuwymwyvVR7Sy7MdeYyxsAvPaCgYZfAQsY3skJ");
-  try {
-    const txId = await glamClient.program.methods
-      .closeFund()
-      .accounts({
-        fund: fundPDA,
-        openfunds: glamClient.getOpenfundsPDA(fundPDA),
-      })
-      .rpc();
-    console.log("txId:", txId);
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-  */
