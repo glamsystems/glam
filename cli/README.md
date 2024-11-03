@@ -18,7 +18,7 @@ node dist/cli/main.js -h
 
 # Setup
 
-The CLI expects a configuration file (config.json) in ~/.config/glam/cli/ with details like json_rpc_url, keypair_path, and fund address (optional, can be set later on).
+The CLI expects a configuration file at `~/.config/glam/cli/config.json` with keys like `json_rpc_url`, `keypair_path`, and `fund` address (optional, can be set later on).
 
 ```
 {
@@ -44,11 +44,15 @@ The CLI expects a configuration file (config.json) in ~/.config/glam/cli/ with d
   - Description: Manages a specific fund. All fund subcommands require the fund to be set as active using `fund set <fund>`.
   - Subcommands
     - set \<fund>
+      - Description: Sets active fund.
+      - Examples
+        - `node dist/cli/main.js fund set <pubkey>`
     - create \<fund>
     - close \<fund>
     - wrap \<amount>
     - unwrap
     - blances
+      - Description: Displays asset balances within the fund.
       - Options
         - -a, --all: Includes token accounts with zero balances
     - swap \<from> \<to> \<amount>
