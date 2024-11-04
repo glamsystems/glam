@@ -1,0 +1,60 @@
+{
+  "shareClasses": [
+    {
+      "name": "GLAM AI Managed SOL",
+      "symbol": "aiSOL",
+      "asset": "So11111111111111111111111111111111111111112",
+      "allowlist": [],
+      "blocklist": [],
+      "lockUpTime": 0,
+      "fullShareClassName": "GLAM AI Managed SOL",
+      "isin": "",
+      "cusip": "",
+      "valor": "",
+      "shareClassCurrency": "SOL",
+      "shareClassLifecycle": "active",
+      "investmentStatus": "open",
+      "shareClassDistributionPolicy": "accumulating",
+      "shareClassLaunchDate": "2024-11-02",
+      "minimalInitialSubscriptionCategory": "amount",
+      "minimalInitialSubscriptionInShares": "0",
+      "minimalInitialSubscriptionInAmount": "1",
+      "currencyOfMinimalSubscription": "USDC",
+      "minimalRedemptionCategory": "shares",
+      "minimalInitialRedemptionInShares": "1",
+      "maximumInitialRedemptionInShares": "1000",
+      "minimalInitialRedemptionInAmount": "0",
+      "maximumInitialRedemptionInAmount": null,
+      "currencyOfMinimalOrMaximumRedemption": "USDC",
+      "shareClassDividendType": "both",
+      "srri": "7",
+      "hasLockUpForRedemption": true,
+      "lockUpComment": "",
+      "lockUpPeriodInDays": "0",
+      "launchPrice": "1",
+      "launchPriceCurrency": "SOL",
+      "launchPriceDate": "2024-11-02"
+    }
+  ],
+  "isEnabled": true,
+  "assets": [
+    "So11111111111111111111111111111111111111112",
+    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+  ],
+  "fundDomicileAlpha2": "XS",
+  "legalFundNameIncludingUmbrella": "GLAM x AI",
+  "fundLaunchDate": "2024-11-02",
+  "investmentObjective": "GLAM x AI",
+  "fundCurrency": "SOL",
+  "openEndedOrClosedEndedFundStructure": "open-ended fund",
+  "fiscalYearEnd": "12-31",
+  "legalForm": "other",
+  "company": {
+    "fundGroupName": "Glam Systems",
+    "manCo": "Glam Management",
+    "domicileOfManCo": "CH",
+    "emailAddressOfManCo": "hello@glam.systems",
+    "fundWebsiteOfManCo": "https://glam.systems"
+  },
+  "manager": { "portfolioManagerName": "glam.sol" }
+}
