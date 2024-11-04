@@ -39,23 +39,29 @@ interface DataTableProps<TData extends Product, TValue> {
 }
 
 export function DataTable<TData extends Product, TValue>({
-                                                           columns = defaultColumns as ColumnDef<TData, TValue>[],
-                                                           data,
-                                                           isLoading,
-                                                         }: DataTableProps<TData, TValue>) {
+  columns = defaultColumns as ColumnDef<TData, TValue>[],
+  data,
+  isLoading,
+}: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
   // Create skeleton data
-  const skeletonData = React.useMemo(() =>
-      Array(SKELETON_ROW_COUNT).fill(null).map((_, index) => ({ id: `skeleton-${index}` } as TData)),
+  const skeletonData = React.useMemo(
+    () =>
+      Array(SKELETON_ROW_COUNT)
+        .fill(null)
+        .map((_, index) => ({ id: `skeleton-${index}` } as TData)),
     []
   );
 
-  const tableData = React.useMemo(() =>
-      isLoading || data.length === 0 ? skeletonData : data,
+  const tableData = React.useMemo(
+    () => (isLoading || data.length === 0 ? skeletonData : data),
     [isLoading, skeletonData, data]
   );
 
@@ -99,9 +105,9 @@ export function DataTable<TData extends Product, TValue>({
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -117,10 +123,7 @@ export function DataTable<TData extends Product, TValue>({
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
-                    {flexRender(
-                      cell.column.columnDef.cell,
-                      cell.getContext()
-                    )}
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
               </TableRow>
