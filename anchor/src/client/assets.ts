@@ -650,6 +650,15 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
       ),
     },
   ],
+  [
+    // bbSOL
+    "Bybit2vBJGhPF52GBdNaQfUJ6ZpThSgHBobjWZpLPb4B",
+    {
+      stateAccount: new PublicKey(
+        "2aMLkB5p5gVvCwKkdSo5eZAL1WwhZbxezQr1wxiynRhq" // state
+      ),
+    },
+  ],
 ]);
 
 export const ASSETS_TESTS: Map<string, AssetMeta> = new Map([

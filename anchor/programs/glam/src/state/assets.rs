@@ -856,4 +856,13 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
         pyth_account: "",
         staking_state: "FxhzbU8rn4MhZxmeH2u7M18qkvFH3LjkWk8z9686TE45",
     },
+
+    // bbSOL
+    "Bybit2vBJGhPF52GBdNaQfUJ6ZpThSgHBobjWZpLPb4B" => AssetMeta {
+        decimals: 9,
+        is_stable_coin: false,
+        is_token_2022: false,
+        pyth_account: "",
+        staking_state: "2aMLkB5p5gVvCwKkdSo5eZAL1WwhZbxezQr1wxiynRhq",
+    },
 };
