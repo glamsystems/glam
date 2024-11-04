@@ -160,11 +160,11 @@ pub fn jupiter_swap<'c: 'info, 'info>(
             });
             require!(can_swap_any_asset, ManagerError::InvalidAssetForSwap);
         }
+    }
 
-        // Add output mint to fund assets
-        if !output_in_assets {
-            assets.push(ctx.accounts.output_mint.key());
-        }
+    // Add output mint to fund assets
+    if !output_in_assets {
+        assets.push(ctx.accounts.output_mint.key());
     }
 
     // Parse Jupiter Swap accounts
