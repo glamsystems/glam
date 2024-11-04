@@ -1,17 +1,17 @@
 {
   "shareClasses": [
     {
-      "name": "GLAM x AI Stablecoins",
-      "symbol": "gmAI",
-      "asset": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "name": "GLAM AI Managed SOL",
+      "symbol": "aiSOL",
+      "asset": "So11111111111111111111111111111111111111112",
       "allowlist": [],
       "blocklist": [],
       "lockUpTime": 0,
-      "fullShareClassName": "GLAM x AI Stablecoins",
+      "fullShareClassName": "GLAM AI Managed SOL",
       "isin": "",
       "cusip": "",
       "valor": "",
-      "shareClassCurrency": "USDC",
+      "shareClassCurrency": "SOL",
       "shareClassLifecycle": "active",
       "investmentStatus": "open",
       "shareClassDistributionPolicy": "accumulating",
@@ -32,7 +32,7 @@
       "lockUpComment": "",
       "lockUpPeriodInDays": "0",
       "launchPrice": "1",
-      "launchPriceCurrency": "USDC",
+      "launchPriceCurrency": "SOL",
       "launchPriceDate": "2024-11-02"
     }
   ],
@@ -41,11 +41,10 @@
     "So11111111111111111111111111111111111111112",
     "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
   ],
-  "assetsWeights": [0, 100],
   "fundDomicileAlpha2": "XS",
-  "legalFundNameIncludingUmbrella": "GLAM x AI Stablecoins",
+  "legalFundNameIncludingUmbrella": "GLAM x AI",
   "fundLaunchDate": "2024-11-02",
-  "investmentObjective": "GLAM x AI Stablecoins",
+  "investmentObjective": "GLAM x AI",
   "fundCurrency": "SOL",
   "openEndedOrClosedEndedFundStructure": "open-ended fund",
   "fiscalYearEnd": "12-31",
