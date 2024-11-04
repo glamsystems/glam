@@ -16,8 +16,7 @@
     "pg-start-docker": "cd playground && npx next start",
     "api-build": "nx run api:build",
     "api-serve": "nx run api:serve",
-    "api-test": "nx run api:test",
-    "cli": "nx run cli:main"
+    "api-test": "nx run api:test"
   },
   "private": true,
   "dependencies": {
