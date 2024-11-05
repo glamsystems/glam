@@ -36,17 +36,12 @@ import {
 import { TokenMetadata, unpack } from "@solana/spl-token-metadata";
 import { WSOL, USDC } from "../constants";
 
-import {
-  Glam,
-  GlamIDL,
-  GlamProgram,
-  getGlamProgramId,
-  GLAM_FORCE_MAINNET,
-} from "../glamExports";
+import { Glam, GlamIDL, GlamProgram, getGlamProgramId } from "../glamExports";
 import { ClusterOrCustom, GlamClientConfig } from "../clientConfig";
 import { FundModel, FundOpenfundsModel } from "../models";
 import { AssetMeta, ASSETS_MAINNET, ASSETS_TESTS } from "./assets";
 import { GlamError } from "../error";
+import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 
 // @ts-ignore
 type FundAccount = IdlAccounts<Glam>["fundAccount"];
@@ -111,7 +106,7 @@ export class BaseClient {
   }
 
   isMainnet(): boolean {
-    return GLAM_FORCE_MAINNET || this.cluster === "mainnet-beta";
+    return this.cluster === "mainnet-beta";
   }
 
   getAssetMeta(asset: string): AssetMeta {
@@ -155,11 +150,37 @@ export class BaseClient {
     return await this.provider.connection.getLatestBlockhash();
   }
 
+  async getPriorityFeeEstimate(priorityLevel, transaction) {
+    const response = await fetch(
+      "https://mainnet.helius-rpc.com/?api-key=626d3925-3058-45c5-97a5-a4be014a9559",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: "1",
+          method: "getPriorityFeeEstimate",
+          params: [
+            {
+              transaction: bs58.encode(transaction.serialize()), // Pass the serialized transaction in Base58
+              options: { priorityLevel: priorityLevel },
+            },
+          ],
+        }),
+      }
+    );
+    const data = await response.json();
+    // console.log(
+    //   `priorityFeeEstimate for ${priorityLevel}: ${data.result.priorityFeeEstimate}`
+    // );
+    return data.result as { priorityFeeEstimate: number };
+  }
+
   async intoVersionedTransaction({
     tx,
     lookupTables,
     computeUnitLimit,
-    computeUnitPriceMicroLamports = 50_000, // fee
+    computeUnitPriceMicroLamports,
     jitoTipLamports,
     signer,
     latestBlockhash,
@@ -178,7 +199,6 @@ export class BaseClient {
     if (signer === undefined) {
       signer = this.getManager();
     }
-    latestBlockhash = await this.getLatestBlockhash();
 
     const instructions = tx.instructions;
 
@@ -224,20 +244,42 @@ export class BaseClient {
       if (units) {
         // ComputeBudgetProgram.setComputeUnitLimit costs 150 CUs
         units += 150;
-        // More CUs for tests as logs are more verbose
-        !this.isMainnet() && (units += 10_000);
+        // More CUs to account for logs (mainnet logs are less verbose)
+        this.isMainnet() ? (units *= 1.2) : (units *= 1.5);
         instructions.unshift(
           ComputeBudgetProgram.setComputeUnitLimit({ units })
         );
       }
     }
 
+    const recentBlockhash = latestBlockhash
+      ? latestBlockhash.blockhash
+      : (await this.getLatestBlockhash()).blockhash;
+
     const messageV0 = new TransactionMessage({
       payerKey: signer,
-      recentBlockhash: latestBlockhash.blockhash,
-      instructions: instructions,
+      recentBlockhash,
+      instructions,
     }).compileToV0Message();
-    return new VersionedTransaction(messageV0);
+    const vTx = new VersionedTransaction(messageV0);
+
+    const { priorityFeeEstimate } = await this.getPriorityFeeEstimate(
+      "High",
+      vTx
+    );
+    instructions.unshift(
+      ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: Math.ceil(priorityFeeEstimate),
+      })
+    );
+
+    return new VersionedTransaction(
+      new TransactionMessage({
+        payerKey: signer,
+        recentBlockhash,
+        instructions,
+      }).compileToV0Message()
+    );
   }
 
   async sendAndConfirm(
@@ -265,32 +307,6 @@ export class BaseClient {
       const signedTx = await wallet.signTransaction(tx);
       serializedTx = signedTx.serialize();
     }
-
-    const response = await fetch(
-      `https://mainnet.helius-rpc.com/?api-key=626d3925-3058-45c5-97a5-a4be014a9559`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          jsonrpc: "2.0",
-          id: "1",
-          method: "getTokenAccounts",
-          params: [
-            {
-              transaction: bs58.encode(serializedTx),
-              options: {
-                recommended: true,
-              },
-            },
-          ],
-        }),
-      }
-    );
-    const data = response.json();
-    console.log("priorityFeeEstimate", JSON.stringify(data, null, 2));
-    return;
 
     const txSig = await connection.sendRawTransaction(serializedTx, {
       // skip simulation since we just did it to compute CUs
@@ -742,7 +758,7 @@ export class BaseClient {
     const accounts = await this.provider.connection.getParsedProgramAccounts(
       this.programId,
       {
-        filters: [{ memcmp: { offset: 0, bytes: base58.encode(bytes) } }],
+        filters: [{ memcmp: { offset: 0, bytes: bs58.encode(bytes) } }],
       }
     );
     return accounts.map((a) => a.pubkey);

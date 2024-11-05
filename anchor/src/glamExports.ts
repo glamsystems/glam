@@ -17,10 +17,7 @@ export const GLAM_PROGRAM_ID_MAINNET = new PublicKey(
   "GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP"
 );
 
-export const GLAM_FORCE_MAINNET = false;
-
 export function getGlamProgramId(cluster: ClusterOrCustom) {
-  if (GLAM_FORCE_MAINNET) return GLAM_PROGRAM_ID_MAINNET;
   switch (cluster) {
     case "mainnet-beta":
       return GLAM_PROGRAM_ID_MAINNET;
