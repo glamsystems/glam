@@ -80,12 +80,6 @@ const defaultMarkets = [
   new PublicKey("6gMq3mRCKf8aP3ttTyYhuijVZ2LGi14oDsBbkgubfLB3"), // usdc spot market
 ];
 
-interface MarketAccounts {
-  oracle?: PublicKey;
-  spotMarket?: PublicKey;
-  perpMarket?: PublicKey; // only for perp orders
-}
-
 export class DriftClient {
   // @ts-ignore: Property '_driftClient' has no initializer and is not definitely assigned in the constructor.
   _driftClient: _DriftClient;
