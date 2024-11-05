@@ -46,7 +46,6 @@ import {
 import { ClusterOrCustom, GlamClientConfig } from "../clientConfig";
 import { FundModel, FundOpenfundsModel } from "../models";
 import { AssetMeta, ASSETS_MAINNET, ASSETS_TESTS } from "./assets";
-import base58 from "bs58";
 import { GlamError } from "../error";
 
 // @ts-ignore
@@ -267,13 +266,38 @@ export class BaseClient {
       serializedTx = signedTx.serialize();
     }
 
+    const response = await fetch(
+      `https://mainnet.helius-rpc.com/?api-key=626d3925-3058-45c5-97a5-a4be014a9559`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: "1",
+          method: "getTokenAccounts",
+          params: [
+            {
+              transaction: bs58.encode(serializedTx),
+              options: {
+                recommended: true,
+              },
+            },
+          ],
+        }),
+      }
+    );
+    const data = response.json();
+    console.log("priorityFeeEstimate", JSON.stringify(data, null, 2));
+    return;
+
     const txSig = await connection.sendRawTransaction(serializedTx, {
-        // skip simulation since we just did it to compute CUs
-        // however this means that we need to reconstruct the error, if
-        // the tx fails on chain execution.
-        skipPreflight: true,
-      });
-    }
+      // skip simulation since we just did it to compute CUs
+      // however this means that we need to reconstruct the error, if
+      // the tx fails on chain execution.
+      skipPreflight: true,
+    });
 
     // await confirmation
     const latestBlockhash = await this.getLatestBlockhash();
