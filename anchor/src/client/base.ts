@@ -160,7 +160,7 @@ export class BaseClient {
     tx,
     lookupTables,
     computeUnitLimit,
-    computeUnitPriceMicroLamports = 5000, // fee
+    computeUnitPriceMicroLamports = 50_000, // fee
     jitoTipLamports,
     signer,
     latestBlockhash,
@@ -254,20 +254,20 @@ export class BaseClient {
     }
 
     const connection = this.provider.connection;
-    let signature: TransactionSignature;
+    let serializedTx: Uint8Array;
 
     if (signerOverride) {
       tx.sign([signerOverride]);
-      signature = await connection.sendTransaction(tx, {
-        skipPreflight: true,
-      });
+      serializedTx = tx.serialize();
     } else {
       // Anchor provider.sendAndConfirm forces a signature with the wallet, which we don't want
       // https://github.com/coral-xyz/anchor/blob/v0.30.0/ts/packages/anchor/src/provider.ts#L159
       const wallet = this.getWallet();
       const signedTx = await wallet.signTransaction(tx);
-      const serializedTx = signedTx.serialize();
-      signature = await connection.sendRawTransaction(serializedTx, {
+      serializedTx = signedTx.serialize();
+    }
+
+    const txSig = await connection.sendRawTransaction(serializedTx, {
         // skip simulation since we just did it to compute CUs
         // however this means that we need to reconstruct the error, if
         // the tx fails on chain execution.
@@ -279,12 +279,12 @@ export class BaseClient {
     const latestBlockhash = await this.getLatestBlockhash();
     const res = await connection.confirmTransaction({
       ...latestBlockhash,
-      signature,
+      signature: txSig,
     });
 
     // if the tx fails, throw an error including logs
     if (res.value.err) {
-      const errTx = await connection.getTransaction(signature, {
+      const errTx = await connection.getTransaction(txSig, {
         maxSupportedTransactionVersion: 0,
       });
       throw {
@@ -293,7 +293,7 @@ export class BaseClient {
         message: this.parseProgramLogs(errTx?.meta?.logMessages),
       } as GlamError;
     }
-    return signature;
+    return txSig;
   }
 
   parseProgramLogs(logs?: null | string[]): string {

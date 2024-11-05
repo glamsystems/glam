@@ -53,10 +53,7 @@ program
       });
   });
 
-const fund = program
-  .command("fund")
-  .description("Manage fund")
-  .option("-s, --simulate", "Simulate transactions");
+const fund = program.command("fund").description("Manage fund");
 
 fund
   .command("set <fund>")
@@ -293,7 +290,7 @@ fund
     try {
       const txSig = await glamClient.wsol.wrap(
         fundPDA,
-        new anchor.BN(parseInt(amount) * LAMPORTS_PER_SOL)
+        new anchor.BN(parseFloat(amount) * LAMPORTS_PER_SOL)
       );
       console.log(`Wrapped ${amount} SOL:`, txSig);
     } catch (e) {
@@ -392,7 +389,7 @@ fund
     let quoteParams = {
       inputMint: from,
       outputMint: to,
-      amount: amount * 10 ** tokenFrom.decimals,
+      amount: parseFloat(amount) * 10 ** tokenFrom.decimals,
       swapMode: "ExactIn",
       slippageBps: slippageBps ? parseInt(slippageBps) : 5,
       asLegacyTransaction: false,
