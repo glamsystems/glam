@@ -26,24 +26,21 @@ try {
 const priorityLevel = "High";
 const cliTxOptions = {
   getPriorityFeeMicroLamports: async (tx: VersionedTransaction) => {
-    const response = await fetch(
-      "https://mainnet.helius-rpc.com/?api-key=626d3925-3058-45c5-97a5-a4be014a9559",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jsonrpc: "2.0",
-          id: "1",
-          method: "getPriorityFeeEstimate",
-          params: [
-            {
-              transaction: bs58.encode(tx.serialize()),
-              options: { priorityLevel },
-            },
-          ],
-        }),
-      }
-    );
+    const response = await fetch(process.env.ANCHOR_PROVIDER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "1",
+        method: "getPriorityFeeEstimate",
+        params: [
+          {
+            transaction: bs58.encode(tx.serialize()),
+            options: { priorityLevel },
+          },
+        ],
+      }),
+    });
     const data = await response.json();
     console.log(
       `priorityFeeEstimate for priorityLevel ${priorityLevel}: ${data.result.priorityFeeEstimate}`
