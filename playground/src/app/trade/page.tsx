@@ -93,6 +93,7 @@ import {
 import { PublicKey } from "@solana/web3.js";
 import { QuoteParams, QuoteResponse } from "anchor/src/client/jupiter";
 import { PerpMarketConfig, SpotMarketConfig } from "anchor/src/client/drift";
+import { getPriorityFeeMicroLamports } from "../settings/priorityfee";
 
 const spotMarkets = DRIFT_SPOT_MARKETS.map((x) => ({ label: x, value: x }));
 const perpsMarkets = DRIFT_PERP_MARKETS.map((x) => ({ label: x, value: x }));
@@ -530,7 +531,9 @@ export default function Trade() {
       const txId = await glamClient.jupiter.swap(
         fundPDA!,
         undefined,
-        quoteResponseForSwap
+        quoteResponseForSwap,
+        undefined,
+        { getPriorityFeeMicroLamports }
       );
       toast({
         title: `Swapped ${fromAsset} to ${toAsset}`,
@@ -619,7 +622,8 @@ export default function Trade() {
         fundPDA!,
         orderParams,
         0,
-        driftMarketConfigs
+        driftMarketConfigs,
+        { getPriorityFeeMicroLamports }
       );
       toast({
         title: "Spot order submitted",
@@ -664,7 +668,8 @@ export default function Trade() {
         fundPDA!,
         orderParams,
         0,
-        driftMarketConfigs
+        driftMarketConfigs,
+        { getPriorityFeeMicroLamports }
       );
       toast({
         title: "Perps order submitted",
@@ -882,7 +887,8 @@ export default function Trade() {
         marketConfig?.marketIndex!,
         PositionDirection.LONG,
         0,
-        driftMarketConfigs
+        driftMarketConfigs,
+        { getPriorityFeeMicroLamports }
       );
       toast({
         title: "Orders canceled",

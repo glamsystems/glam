@@ -15,6 +15,7 @@ import { ExplorerLink } from "@/components/ExplorerLink";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { parseTxError } from "@/lib/error";
+import { getPriorityFeeMicroLamports } from "../settings/priorityfee";
 
 const wrapSchema = z.object({
   direction: z.enum(["wrap", "unwrap"]),
@@ -88,11 +89,16 @@ export default function Wrap() {
       if (direction === "wrap") {
         txId = await glamClient.wsol.wrap(
           fundPDA,
-          new BN(values.amount * LAMPORTS_PER_SOL)
+          new BN(values.amount * LAMPORTS_PER_SOL),
+          {
+            getPriorityFeeMicroLamports,
+          }
         );
       } else {
         // Unwrap means unwrap all, there's no amount
-        txId = await glamClient.wsol.unwrap(fundPDA);
+        txId = await glamClient.wsol.unwrap(fundPDA, {
+          getPriorityFeeMicroLamports,
+        });
       }
 
       toast({

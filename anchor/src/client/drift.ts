@@ -157,14 +157,16 @@ export class DriftClient {
     amount: anchor.BN,
     marketIndex: number = 1,
     subAccountId: number = 0,
-    marketConfigs: DriftMarketConfigs
+    marketConfigs: DriftMarketConfigs,
+    txOptions: TxOptions = {}
   ): Promise<TransactionSignature> {
     const tx = await this.depositTx(
       fund,
       amount,
       marketIndex,
       subAccountId,
-      marketConfigs
+      marketConfigs,
+      txOptions
     );
     return await this.base.sendAndConfirm(tx);
   }
@@ -174,7 +176,8 @@ export class DriftClient {
     amount: anchor.BN,
     marketIndex: number = 1,
     subAccountId: number = 0,
-    marketConfigs: DriftMarketConfigs
+    marketConfigs: DriftMarketConfigs,
+    txOptions: TxOptions = {}
   ): Promise<TransactionSignature> {
     const tx = await this.withdrawTx(
       fund,
@@ -190,13 +193,15 @@ export class DriftClient {
     fund: PublicKey,
     orderParams: OrderParams,
     subAccountId: number = 0,
-    marketConfigs: DriftMarketConfigs
+    marketConfigs: DriftMarketConfigs,
+    txOptions: TxOptions = {}
   ): Promise<TransactionSignature> {
     const tx = await this.placeOrderTx(
       fund,
       orderParams,
       subAccountId,
-      marketConfigs
+      marketConfigs,
+      txOptions
     );
     return await this.base.sendAndConfirm(tx);
   }
@@ -207,7 +212,8 @@ export class DriftClient {
     marketIndex: number,
     direction: PositionDirection,
     subAccountId: number = 0,
-    marketConfigs: DriftMarketConfigs
+    marketConfigs: DriftMarketConfigs,
+    txOptions: TxOptions = {}
   ): Promise<TransactionSignature> {
     const tx = await this.cancelOrdersTx(
       fund,
@@ -215,7 +221,8 @@ export class DriftClient {
       marketIndex,
       direction,
       subAccountId,
-      marketConfigs
+      marketConfigs,
+      txOptions
     );
     return await this.base.sendAndConfirm(tx);
   }

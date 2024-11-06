@@ -80,13 +80,15 @@ export class JupiterClient {
     fund: PublicKey,
     quoteParams?: QuoteParams,
     quoteResponse?: QuoteResponse,
-    swapInstructions?: SwapInstructions
+    swapInstructions?: SwapInstructions,
+    txOptions: TxOptions = {}
   ): Promise<TransactionSignature> {
     const tx = await this.swapTx(
       fund,
       quoteParams,
       quoteResponse,
-      swapInstructions
+      swapInstructions,
+      txOptions
     );
     return await this.base.sendAndConfirm(tx);
   }

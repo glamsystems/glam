@@ -8,45 +8,28 @@ import os from "os";
 import path from "path";
 import { getGlamClient, setFundToConfig } from "./utils";
 import { QuoteParams } from "anchor/src/client/jupiter";
-import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 import { VersionedTransaction } from "@solana/web3.js";
+import { getPriorityFeeEstimate } from "@glam/anchor";
 
 const configPath = path.join(os.homedir(), ".config/glam/cli/config.json");
 let fundPDA;
+let heliusApiKey;
 try {
   const config = fs.readFileSync(configPath, "utf8");
-  const { json_rpc_url, keypair_path, fund } = JSON.parse(config);
+  const { json_rpc_url, keypair_path, helius_api_key, fund } =
+    JSON.parse(config);
   process.env.ANCHOR_PROVIDER_URL = json_rpc_url;
   process.env.ANCHOR_WALLET = keypair_path;
   fundPDA = new PublicKey(fund);
+  heliusApiKey = helius_api_key;
 } catch (err) {
   console.error(`Could not load config at ${configPath}:`, err.message);
 }
 
 const priorityLevel = "High";
 const cliTxOptions = {
-  getPriorityFeeMicroLamports: async (tx: VersionedTransaction) => {
-    const response = await fetch(process.env.ANCHOR_PROVIDER_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: "1",
-        method: "getPriorityFeeEstimate",
-        params: [
-          {
-            transaction: bs58.encode(tx.serialize()),
-            options: { priorityLevel },
-          },
-        ],
-      }),
-    });
-    const data = await response.json();
-    console.log(
-      `priorityFeeEstimate for priorityLevel ${priorityLevel}: ${data.result.priorityFeeEstimate}`
-    );
-    return data.result.priorityFeeEstimate;
-  },
+  getPriorityFeeMicroLamports: async (tx: VersionedTransaction) =>
+    await getPriorityFeeEstimate(priorityLevel, tx, heliusApiKey),
 };
 
 const glamClient = getGlamClient();
