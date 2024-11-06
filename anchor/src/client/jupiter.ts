@@ -14,7 +14,7 @@ import {
   getMint,
 } from "@solana/spl-token";
 
-import { BaseClient, ApiTxOptions } from "./base";
+import { BaseClient, TxOptions } from "./base";
 import { JUPITER_PROGRAM_ID } from "../constants";
 
 export type QuoteParams = {
@@ -100,7 +100,7 @@ export class JupiterClient {
     quoteParams?: QuoteParams,
     quoteResponse?: QuoteResponse,
     swapInstructions?: SwapInstructions,
-    apiOptions: ApiTxOptions = {}
+    apiOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
     const signer = apiOptions.signer || this.base.getManager();
 

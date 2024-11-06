@@ -10,7 +10,7 @@ import {
   ParsedAccountData,
 } from "@solana/web3.js";
 
-import { BaseClient, ApiTxOptions } from "./base";
+import { BaseClient, TxOptions } from "./base";
 import { getStakePoolAccount } from "@solana/spl-stake-pool";
 
 interface StakePoolAccountData {
@@ -292,7 +292,7 @@ export class StakingClient {
     fund: PublicKey,
     stakePool: PublicKey,
     amount: BN,
-    apiOptions: ApiTxOptions = {}
+    apiOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
@@ -336,7 +336,7 @@ export class StakingClient {
     fund: PublicKey,
     stakePool: PublicKey,
     stakeAccount: PublicKey,
-    apiOptions: ApiTxOptions = {}
+    apiOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
@@ -389,7 +389,7 @@ export class StakingClient {
     fund: PublicKey,
     stakePool: PublicKey,
     amount: BN,
-    apiOptions: ApiTxOptions = {}
+    apiOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
@@ -442,7 +442,7 @@ export class StakingClient {
     fund: PublicKey,
     vote: PublicKey,
     amount: BN,
-    apiOptions: ApiTxOptions = {}
+    apiOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
@@ -475,7 +475,7 @@ export class StakingClient {
   public async deactivateStakeAccountsTx(
     fund: PublicKey,
     stakeAccounts: PublicKey[],
-    apiOptions: ApiTxOptions = {}
+    apiOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
@@ -506,7 +506,7 @@ export class StakingClient {
   public async withdrawFromStakeAccountsTx(
     fund: PublicKey,
     stakeAccounts: PublicKey[],
-    apiOptions: ApiTxOptions = {}
+    apiOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
@@ -539,7 +539,7 @@ export class StakingClient {
     fund: PublicKey,
     toStake: PublicKey,
     fromStake: PublicKey,
-    apiOptions: ApiTxOptions = {}
+    apiOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
@@ -569,7 +569,7 @@ export class StakingClient {
     newStake: PublicKey,
     newStakeAccountId: string,
     newStakeAccountBump: number,
-    apiOptions: ApiTxOptions = {}
+    apiOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
@@ -599,7 +599,7 @@ export class StakingClient {
     newStake: PublicKey,
     newStakeAccountId: string,
     newStakeAccountBump: number,
-    apiOptions: ApiTxOptions = {}
+    apiOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);

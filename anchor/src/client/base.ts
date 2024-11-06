@@ -42,6 +42,7 @@ import { FundModel, FundOpenfundsModel } from "../models";
 import { AssetMeta, ASSETS_MAINNET, ASSETS_TESTS } from "./assets";
 import { GlamError } from "../error";
 import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
+import { BlockhashWithCache } from "../utils/blockhash";
 
 // @ts-ignore
 type FundAccount = IdlAccounts<Glam>["fundAccount"];
@@ -51,15 +52,16 @@ export const JUPITER_API_DEFAULT = "https://quote-api.jup.ag/v6";
 export const JITO_TIP_DEFAULT = new PublicKey(
   "96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5"
 );
+const DEFAULT_PRIORITY_FEE = 10_000; // microLamports
 
 export const isBrowser =
   process.env.ANCHOR_BROWSER ||
   (typeof window !== "undefined" && !window.process?.hasOwnProperty("type"));
 
-export type ApiTxOptions = {
+export type TxOptions = {
   signer?: PublicKey;
   computeUnitLimit?: number;
-  computeUnitPriceMicroLamports?: number;
+  getPriorityFeeMicroLamports?: (tx: VersionedTransaction) => Promise<number>;
   jitoTipLamports?: number;
 };
 
@@ -69,6 +71,7 @@ export class BaseClient {
   program: GlamProgram;
   programId: PublicKey;
   jupiterApi: string;
+  blockhashWithCache: BlockhashWithCache;
 
   public constructor(config?: GlamClientConfig) {
     if (config?.provider) {
@@ -103,6 +106,10 @@ export class BaseClient {
     this.cluster = config?.cluster || defaultCluster;
     this.programId = getGlamProgramId(this.cluster);
     this.jupiterApi = config?.jupiterApi || JUPITER_API_DEFAULT;
+    this.blockhashWithCache = new BlockhashWithCache(
+      this.provider,
+      !!isBrowser
+    );
   }
 
   isMainnet(): boolean {
@@ -118,79 +125,21 @@ export class BaseClient {
     );
   }
 
-  async getLatestBlockhash(): Promise<BlockhashWithExpiryBlockHeight> {
-    if (isBrowser) {
-      const CACHE_KEY = "/glam/blockhash/get";
-      const glamCache = await window.caches.open("glam");
-      const response = await glamCache.match(CACHE_KEY);
-      if (response) {
-        const { blockhash, expiresAt } = await response.json();
-        console.log(`blockhash ${blockhash} expires at`, expiresAt);
-        if (expiresAt > Date.now()) {
-          console.log("blockhash cache hit");
-          return blockhash;
-        }
-      }
-
-      const blockhash = await this.provider.connection.getLatestBlockhash();
-      console.log("blockhash cache miss, fetched from blockchain:", blockhash);
-      // The maximum age of a transaction's blockhash is 150 blocks (~1 minute assuming 400ms block times).
-      // We cache it for 15 seconds to be safe.
-      await glamCache.put(
-        CACHE_KEY,
-        new Response(
-          JSON.stringify({ blockhash, expiresAt: Date.now() + 1000 * 15 }),
-          { headers: { "Content-Type": "application/json" } }
-        )
-      );
-      return blockhash;
-    }
-
-    // Cache not needed in nodejs environment
-    return await this.provider.connection.getLatestBlockhash();
-  }
-
-  async getPriorityFeeEstimate(priorityLevel, transaction) {
-    const response = await fetch(
-      "https://mainnet.helius-rpc.com/?api-key=626d3925-3058-45c5-97a5-a4be014a9559",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jsonrpc: "2.0",
-          id: "1",
-          method: "getPriorityFeeEstimate",
-          params: [
-            {
-              transaction: bs58.encode(transaction.serialize()), // Pass the serialized transaction in Base58
-              options: { priorityLevel: priorityLevel },
-            },
-          ],
-        }),
-      }
-    );
-    const data = await response.json();
-    // console.log(
-    //   `priorityFeeEstimate for ${priorityLevel}: ${data.result.priorityFeeEstimate}`
-    // );
-    return data.result as { priorityFeeEstimate: number };
-  }
-
   async intoVersionedTransaction({
     tx,
     lookupTables,
-    computeUnitLimit,
-    computeUnitPriceMicroLamports,
-    jitoTipLamports,
     signer,
+    computeUnitLimit,
+    getPriorityFeeMicroLamports,
+    jitoTipLamports,
     latestBlockhash,
   }: {
     tx: Transaction;
     lookupTables?: Array<AddressLookupTableAccount> | [];
-    computeUnitLimit?: number;
-    computeUnitPriceMicroLamports?: number;
-    jitoTipLamports?: number;
     signer?: PublicKey;
+    computeUnitLimit?: number;
+    getPriorityFeeMicroLamports?: (tx: VersionedTransaction) => Promise<number>;
+    jitoTipLamports?: number;
     latestBlockhash?: BlockhashWithExpiryBlockHeight;
   }): Promise<VersionedTransaction> {
     if (lookupTables === undefined) {
@@ -202,19 +151,13 @@ export class BaseClient {
 
     const instructions = tx.instructions;
 
-    // Set Jito tip or compute unit price (or nothing)
+    // Set Jito tip if provided
     if (jitoTipLamports) {
       instructions.unshift(
         SystemProgram.transfer({
           fromPubkey: signer,
           toPubkey: JITO_TIP_DEFAULT,
           lamports: jitoTipLamports,
-        })
-      );
-    } else if (computeUnitPriceMicroLamports) {
-      instructions.unshift(
-        ComputeBudgetProgram.setComputeUnitPrice({
-          microLamports: computeUnitPriceMicroLamports,
         })
       );
     }
@@ -225,10 +168,9 @@ export class BaseClient {
     if (!isPhantom) {
       // Set compute unit limit or autodetect by simulating the tx
       const connection = this.provider.connection;
-      let units = computeUnitLimit || null;
       if (!computeUnitLimit) {
         try {
-          units = await getSimulationComputeUnits(
+          computeUnitLimit = await getSimulationComputeUnits(
             connection,
             instructions,
             signer,
@@ -241,38 +183,48 @@ export class BaseClient {
           // in the regular case, if this errors the tx will have the default CUs
         }
       }
-      if (units) {
+      if (computeUnitLimit) {
         // ComputeBudgetProgram.setComputeUnitLimit costs 150 CUs
-        units += 150;
-        // More CUs to account for logs (mainnet logs are less verbose)
-        this.isMainnet() ? (units *= 1.2) : (units *= 1.5);
+        // Add 20%/50% more CUs to account for logs (mainnet logs are less verbose)
+        computeUnitLimit += 150;
+        this.isMainnet()
+          ? (computeUnitLimit *= 1.2)
+          : (computeUnitLimit *= 1.5);
         instructions.unshift(
-          ComputeBudgetProgram.setComputeUnitLimit({ units })
+          ComputeBudgetProgram.setComputeUnitLimit({ units: computeUnitLimit })
         );
       }
     }
 
     const recentBlockhash = latestBlockhash
       ? latestBlockhash.blockhash
-      : (await this.getLatestBlockhash()).blockhash;
+      : (await this.blockhashWithCache.get()).blockhash;
 
-    const messageV0 = new TransactionMessage({
-      payerKey: signer,
-      recentBlockhash,
-      instructions,
-    }).compileToV0Message();
-    const vTx = new VersionedTransaction(messageV0);
+    let priorityFee = DEFAULT_PRIORITY_FEE;
+    try {
+      const vTx = new VersionedTransaction(
+        new TransactionMessage({
+          payerKey: signer,
+          recentBlockhash,
+          instructions,
+        }).compileToV0Message()
+      );
+      const fee = await getPriorityFeeMicroLamports(vTx);
+      priorityFee = Math.ceil(fee);
+      console.log(`Client set priority fee: ${fee} microLamports`);
+    } catch (e) {
+      console.error(
+        `Failed to get priority fee, returning default ${DEFAULT_PRIORITY_FEE}`,
+        e
+      );
+    }
 
-    const { priorityFeeEstimate } = await this.getPriorityFeeEstimate(
-      "High",
-      vTx
-    );
+    // Add the unit price instruction and return the final versioned transaction
     instructions.unshift(
       ComputeBudgetProgram.setComputeUnitPrice({
-        microLamports: Math.ceil(priorityFeeEstimate),
+        microLamports: priorityFee,
       })
     );
-
     return new VersionedTransaction(
       new TransactionMessage({
         payerKey: signer,
@@ -316,7 +268,7 @@ export class BaseClient {
     });
 
     // await confirmation
-    const latestBlockhash = await this.getLatestBlockhash();
+    const latestBlockhash = await this.blockhashWithCache.get();
     const res = await connection.confirmTransaction({
       ...latestBlockhash,
       signature: txSig,

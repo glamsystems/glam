@@ -19,7 +19,7 @@ import {
   User,
 } from "@drift-labs/sdk";
 
-import { BaseClient, ApiTxOptions } from "./base";
+import { BaseClient, TxOptions } from "./base";
 import { AccountMeta } from "@solana/web3.js";
 
 interface OrderConstants {
@@ -407,7 +407,7 @@ export class DriftClient {
 
   public async initializeTx(
     fund: PublicKey,
-    apiOptions: ApiTxOptions = {}
+    apiOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
 
@@ -436,7 +436,7 @@ export class DriftClient {
     fund: PublicKey,
     maxLeverage: number, // 1=1x, 2=2x ... 50=50x leverage
     subAccountId: number = 0,
-    apiOptions: ApiTxOptions = {}
+    apiOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const [user] = this.getUser(fund, subAccountId);
@@ -463,7 +463,7 @@ export class DriftClient {
     fund: PublicKey,
     marginTradingEnabled: boolean,
     subAccountId: number = 0,
-    apiOptions: ApiTxOptions = {}
+    apiOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const [user] = this.getUser(fund, subAccountId);
@@ -487,7 +487,7 @@ export class DriftClient {
     fund: PublicKey,
     delegate: PublicKey,
     subAccountId: number = 0,
-    apiOptions: ApiTxOptions = {}
+    apiOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const [user] = this.getUser(fund, subAccountId);
@@ -513,7 +513,7 @@ export class DriftClient {
     marketIndex: number = 1,
     subAccountId: number = 0,
     marketConfigs: DriftMarketConfigs,
-    apiOptions: ApiTxOptions = {}
+    apiOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const [user, userStats] = this.getUser(fund, subAccountId);
@@ -551,7 +551,7 @@ export class DriftClient {
     marketIndex: number = 1,
     subAccountId: number = 0,
     marketConfigs: DriftMarketConfigs,
-    apiOptions: ApiTxOptions = {}
+    apiOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const [user, userStats] = this.getUser(fund, subAccountId);
@@ -592,7 +592,7 @@ export class DriftClient {
     orderParams: OrderParams,
     subAccountId: number = 0,
     marketConfigs: DriftMarketConfigs,
-    apiOptions: ApiTxOptions = {}
+    apiOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
     const { marketIndex, marketType } = orderParams;
     const remainingAccounts = await this.composeRemainingAccounts(
@@ -633,7 +633,7 @@ export class DriftClient {
     direction: PositionDirection,
     subAccountId: number = 0,
     marketConfigs: DriftMarketConfigs,
-    apiOptions: ApiTxOptions = {}
+    apiOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const [user] = this.getUser(fund, subAccountId);

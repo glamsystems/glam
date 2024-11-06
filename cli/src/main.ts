@@ -8,6 +8,8 @@ import os from "os";
 import path from "path";
 import { getGlamClient, setFundToConfig } from "./utils";
 import { QuoteParams } from "anchor/src/client/jupiter";
+import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
+import { VersionedTransaction } from "@solana/web3.js";
 
 const configPath = path.join(os.homedir(), ".config/glam/cli/config.json");
 let fundPDA;
@@ -20,6 +22,35 @@ try {
 } catch (err) {
   console.error(`Could not load config at ${configPath}:`, err.message);
 }
+
+const priorityLevel = "High";
+const cliTxOptions = {
+  getPriorityFeeMicroLamports: async (tx: VersionedTransaction) => {
+    const response = await fetch(
+      "https://mainnet.helius-rpc.com/?api-key=626d3925-3058-45c5-97a5-a4be014a9559",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: "1",
+          method: "getPriorityFeeEstimate",
+          params: [
+            {
+              transaction: bs58.encode(tx.serialize()),
+              options: { priorityLevel },
+            },
+          ],
+        }),
+      }
+    );
+    const data = await response.json();
+    console.log(
+      `priorityFeeEstimate for priorityLevel ${priorityLevel}: ${data.result.priorityFeeEstimate}`
+    );
+    return data.result.priorityFeeEstimate;
+  },
+};
 
 const glamClient = getGlamClient();
 
@@ -290,7 +321,8 @@ fund
     try {
       const txSig = await glamClient.wsol.wrap(
         fundPDA,
-        new anchor.BN(parseFloat(amount) * LAMPORTS_PER_SOL)
+        new anchor.BN(parseFloat(amount) * LAMPORTS_PER_SOL),
+        cliTxOptions
       );
       console.log(`Wrapped ${amount} SOL:`, txSig);
     } catch (e) {
@@ -309,7 +341,7 @@ fund
     }
 
     try {
-      const txSig = await glamClient.wsol.unwrap(fundPDA);
+      const txSig = await glamClient.wsol.unwrap(fundPDA, cliTxOptions);
       console.log(`All wSOL unwrapped:`, txSig);
     } catch (e) {
       console.error(e);

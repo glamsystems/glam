@@ -14,7 +14,7 @@ import {
 } from "@solana/spl-token";
 import { Marinade } from "@marinade.finance/marinade-ts-sdk";
 
-import { BaseClient, ApiTxOptions } from "./base";
+import { BaseClient, TxOptions } from "./base";
 import { MARINADE_PROGRAM_ID, MSOL } from "../constants";
 
 export class MarinadeClient {
@@ -215,7 +215,7 @@ export class MarinadeClient {
   public async depositSolTx(
     fund: PublicKey,
     amount: BN,
-    apiOptions: ApiTxOptions
+    apiOptions: TxOptions
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
@@ -255,7 +255,7 @@ export class MarinadeClient {
   public async depositStakeTx(
     fund: PublicKey,
     stakeAccount: PublicKey,
-    apiOptions: ApiTxOptions
+    apiOptions: TxOptions
   ): Promise<any> {
     const manager = apiOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
@@ -310,7 +310,7 @@ export class MarinadeClient {
   public async delayedUnstakeTx(
     fund: PublicKey,
     amount: BN,
-    apiOptions: ApiTxOptions
+    apiOptions: TxOptions
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const ticketId = Date.now().toString();
@@ -349,7 +349,7 @@ export class MarinadeClient {
   public async claimTicketsTx(
     fund: PublicKey,
     tickets: PublicKey[],
-    apiOptions: ApiTxOptions
+    apiOptions: TxOptions
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
@@ -380,7 +380,7 @@ export class MarinadeClient {
   public async liquidUnstakeTx(
     fund: PublicKey,
     amount: BN,
-    apiOptions: ApiTxOptions
+    apiOptions: TxOptions
   ): Promise<VersionedTransaction> {
     const manager = apiOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
