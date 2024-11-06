@@ -911,7 +911,7 @@ export default function Trade() {
     setIsSettleTxPending(true);
     try {
       const response = await fetch(
-        "https://rest.glam.systems/v0/drift/settle_pnl",
+        "https://api.glam.systems/v0/drift/settle_pnl",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

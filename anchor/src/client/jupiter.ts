@@ -100,9 +100,9 @@ export class JupiterClient {
     quoteParams?: QuoteParams,
     quoteResponse?: QuoteResponse,
     swapInstructions?: SwapInstructions,
-    apiOptions: TxOptions = {}
+    txOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
-    const signer = apiOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getManager();
 
     let swapInstruction: InstructionFromJupiter;
     let addressLookupTableAddresses: string[];
@@ -194,7 +194,7 @@ export class JupiterClient {
     return this.base.intoVersionedTransaction({
       tx,
       lookupTables,
-      ...apiOptions,
+      ...txOptions,
     });
   }
 

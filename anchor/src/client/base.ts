@@ -201,23 +201,21 @@ export class BaseClient {
       : (await this.blockhashWithCache.get()).blockhash;
 
     let priorityFee = DEFAULT_PRIORITY_FEE;
-    try {
-      const vTx = new VersionedTransaction(
-        new TransactionMessage({
-          payerKey: signer,
-          recentBlockhash,
-          instructions,
-        }).compileToV0Message()
-      );
-      const fee = await getPriorityFeeMicroLamports(vTx);
-      priorityFee = Math.ceil(fee);
-      console.log(`Client set priority fee: ${fee} microLamports`);
-    } catch (e) {
-      console.error(
-        `Failed to get priority fee, returning default ${DEFAULT_PRIORITY_FEE}`,
-        e
-      );
+    if (getPriorityFeeMicroLamports) {
+      try {
+        const fee = await getPriorityFeeMicroLamports(
+          new VersionedTransaction(
+            new TransactionMessage({
+              payerKey: signer,
+              recentBlockhash,
+              instructions,
+            }).compileToV0Message(lookupTables)
+          )
+        );
+        priorityFee = Math.ceil(fee);
+      } catch (e) {}
     }
+    console.log(`Priority fee: ${priorityFee} microLamports`);
 
     // Add the unit price instruction and return the final versioned transaction
     instructions.unshift(
@@ -230,7 +228,7 @@ export class BaseClient {
         payerKey: signer,
         recentBlockhash,
         instructions,
-      }).compileToV0Message()
+      }).compileToV0Message(lookupTables)
     );
   }
 
@@ -512,7 +510,7 @@ export class BaseClient {
       fundModel.uri || `https://gui.glam.systems/products/${fundPDA}`;
     fundModel.openfundsUri =
       fundModel.openfundsUri ||
-      `https://rest.glam.systems/v0/openfunds?fund=${fundPDA}&format=csv`;
+      `https://api.glam.systems/v0/openfunds?fund=${fundPDA}&format=csv`;
 
     // share classes
     fundModel.shareClasses.forEach((shareClass: any, i: number) => {
@@ -526,8 +524,8 @@ export class BaseClient {
       }
 
       const sharePDA = this.getShareClassPDA(fundPDA, i);
-      shareClass.uri = `https://rest.glam.systems/metadata/${sharePDA}`;
-      shareClass.imageUri = `https://rest.glam.systems/v0/sparkle?key=${sharePDA}&format=png`;
+      shareClass.uri = `https://api.glam.systems/metadata/${sharePDA}`;
+      shareClass.imageUri = `https://api.glam.systems/v0/sparkle?key=${sharePDA}&format=png`;
     });
 
     return fundModel;

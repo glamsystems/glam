@@ -292,9 +292,9 @@ export class StakingClient {
     fund: PublicKey,
     stakePool: PublicKey,
     amount: BN,
-    apiOptions: TxOptions = {}
+    txOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
-    const manager = apiOptions.signer || this.base.getManager();
+    const manager = txOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
     const {
       programId: stakePoolProgram,
@@ -328,7 +328,7 @@ export class StakingClient {
 
     return await this.base.intoVersionedTransaction({
       tx,
-      ...apiOptions,
+      ...txOptions,
     });
   }
 
@@ -336,9 +336,9 @@ export class StakingClient {
     fund: PublicKey,
     stakePool: PublicKey,
     stakeAccount: PublicKey,
-    apiOptions: TxOptions = {}
+    txOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
-    const manager = apiOptions.signer || this.base.getManager();
+    const manager = txOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
     const {
       programId: stakePoolProgram,
@@ -381,7 +381,7 @@ export class StakingClient {
       .transaction();
     return await this.base.intoVersionedTransaction({
       tx,
-      ...apiOptions,
+      ...txOptions,
     });
   }
 
@@ -389,9 +389,9 @@ export class StakingClient {
     fund: PublicKey,
     stakePool: PublicKey,
     amount: BN,
-    apiOptions: TxOptions = {}
+    txOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
-    const manager = apiOptions.signer || this.base.getManager();
+    const manager = txOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
     const {
       programId: stakePoolProgram,
@@ -434,7 +434,7 @@ export class StakingClient {
       .transaction();
     return await this.base.intoVersionedTransaction({
       tx,
-      ...apiOptions,
+      ...txOptions,
     });
   }
 
@@ -442,9 +442,9 @@ export class StakingClient {
     fund: PublicKey,
     vote: PublicKey,
     amount: BN,
-    apiOptions: TxOptions = {}
+    txOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
-    const manager = apiOptions.signer || this.base.getManager();
+    const manager = txOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
     const stakeAccountId = Date.now().toString();
     const [stakeAccountPda, bump] = this.getStakeAccountPDA(
@@ -468,16 +468,16 @@ export class StakingClient {
 
     return await this.base.intoVersionedTransaction({
       tx,
-      ...apiOptions,
+      ...txOptions,
     });
   }
 
   public async deactivateStakeAccountsTx(
     fund: PublicKey,
     stakeAccounts: PublicKey[],
-    apiOptions: TxOptions = {}
+    txOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
-    const manager = apiOptions.signer || this.base.getManager();
+    const manager = txOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
     const tx = await this.base.program.methods
       .deactivateStakeAccounts()
@@ -499,16 +499,16 @@ export class StakingClient {
       .transaction();
     return await this.base.intoVersionedTransaction({
       tx,
-      ...apiOptions,
+      ...txOptions,
     });
   }
 
   public async withdrawFromStakeAccountsTx(
     fund: PublicKey,
     stakeAccounts: PublicKey[],
-    apiOptions: TxOptions = {}
+    txOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
-    const manager = apiOptions.signer || this.base.getManager();
+    const manager = txOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
     const tx = await this.base.program.methods
       .withdrawFromStakeAccounts()
@@ -531,7 +531,7 @@ export class StakingClient {
       .transaction();
     return await this.base.intoVersionedTransaction({
       tx,
-      ...apiOptions,
+      ...txOptions,
     });
   }
 
@@ -539,9 +539,9 @@ export class StakingClient {
     fund: PublicKey,
     toStake: PublicKey,
     fromStake: PublicKey,
-    apiOptions: TxOptions = {}
+    txOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
-    const manager = apiOptions.signer || this.base.getManager();
+    const manager = txOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
     const tx = await this.base.program.methods
       .mergeStakeAccounts()
@@ -558,7 +558,7 @@ export class StakingClient {
       .transaction();
     return await this.base.intoVersionedTransaction({
       tx,
-      ...apiOptions,
+      ...txOptions,
     });
   }
 
@@ -569,9 +569,9 @@ export class StakingClient {
     newStake: PublicKey,
     newStakeAccountId: string,
     newStakeAccountBump: number,
-    apiOptions: TxOptions = {}
+    txOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
-    const manager = apiOptions.signer || this.base.getManager();
+    const manager = txOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
 
     const tx = await this.base.program.methods
@@ -588,7 +588,7 @@ export class StakingClient {
       .transaction();
     return await this.base.intoVersionedTransaction({
       tx,
-      ...apiOptions,
+      ...txOptions,
     });
   }
 
@@ -599,9 +599,9 @@ export class StakingClient {
     newStake: PublicKey,
     newStakeAccountId: string,
     newStakeAccountBump: number,
-    apiOptions: TxOptions = {}
+    txOptions: TxOptions = {}
   ): Promise<VersionedTransaction> {
-    const manager = apiOptions.signer || this.base.getManager();
+    const manager = txOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
 
     const tx = await this.base.program.methods
@@ -620,7 +620,7 @@ export class StakingClient {
       .transaction();
     return await this.base.intoVersionedTransaction({
       tx,
-      ...apiOptions,
+      ...txOptions,
     });
   }
 }

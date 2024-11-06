@@ -215,9 +215,9 @@ export class MarinadeClient {
   public async depositSolTx(
     fund: PublicKey,
     amount: BN,
-    apiOptions: TxOptions
+    txOptions: TxOptions
   ): Promise<VersionedTransaction> {
-    const manager = apiOptions.signer || this.base.getManager();
+    const manager = txOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
     const marinadeState = this.getMarinadeState();
     const treasuryMsolAta = getAssociatedTokenAddressSync(
@@ -248,16 +248,16 @@ export class MarinadeClient {
 
     return await this.base.intoVersionedTransaction({
       tx,
-      ...apiOptions,
+      ...txOptions,
     });
   }
 
   public async depositStakeTx(
     fund: PublicKey,
     stakeAccount: PublicKey,
-    apiOptions: TxOptions
+    txOptions: TxOptions
   ): Promise<any> {
-    const manager = apiOptions.signer || this.base.getManager();
+    const manager = txOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
 
     const stakeAccountInfo = await this.getParsedStakeAccountInfo(stakeAccount);
@@ -303,16 +303,16 @@ export class MarinadeClient {
 
     return await this.base.intoVersionedTransaction({
       tx,
-      ...apiOptions,
+      ...txOptions,
     });
   }
 
   public async delayedUnstakeTx(
     fund: PublicKey,
     amount: BN,
-    apiOptions: TxOptions
+    txOptions: TxOptions
   ): Promise<VersionedTransaction> {
-    const manager = apiOptions.signer || this.base.getManager();
+    const manager = txOptions.signer || this.base.getManager();
     const ticketId = Date.now().toString();
     const [ticket, bump] = this.getMarinadeTicketPDA(fund, ticketId);
     const treasury = this.base.getTreasuryPDA(fund);
@@ -342,16 +342,16 @@ export class MarinadeClient {
 
     return await this.base.intoVersionedTransaction({
       tx,
-      ...apiOptions,
+      ...txOptions,
     });
   }
 
   public async claimTicketsTx(
     fund: PublicKey,
     tickets: PublicKey[],
-    apiOptions: TxOptions
+    txOptions: TxOptions
   ): Promise<VersionedTransaction> {
-    const manager = apiOptions.signer || this.base.getManager();
+    const manager = txOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
     const marinadeState = this.getMarinadeState();
 
@@ -373,16 +373,16 @@ export class MarinadeClient {
 
     return await this.base.intoVersionedTransaction({
       tx,
-      ...apiOptions,
+      ...txOptions,
     });
   }
 
   public async liquidUnstakeTx(
     fund: PublicKey,
     amount: BN,
-    apiOptions: TxOptions
+    txOptions: TxOptions
   ): Promise<VersionedTransaction> {
-    const manager = apiOptions.signer || this.base.getManager();
+    const manager = txOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
     const marinadeState = this.getMarinadeState();
     const treasuryMsolAta = getAssociatedTokenAddressSync(
@@ -411,7 +411,7 @@ export class MarinadeClient {
 
     return await this.base.intoVersionedTransaction({
       tx,
-      ...apiOptions,
+      ...txOptions,
     });
   }
 }

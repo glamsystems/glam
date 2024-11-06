@@ -312,7 +312,7 @@ export function GlamProvider({
     queryKey: ["drift-market-configs"],
     queryFn: async () => {
       const response = await fetch(
-        "https://rest.glam.systems/v0/drift/market_configs/"
+        "https://api.glam.systems/v0/drift/market_configs/"
       );
       const data = await response.json();
       return data;

@@ -122,7 +122,7 @@ export default function Holdings() {
     refetchInterval: 30 * 1000,
     queryFn: () => {
       return fetch(
-        `https://rest.glam.systems/v0/drift/user?authority=${treasury?.pubkey.toBase58()}&accountId=0`
+        `https://api.glam.systems/v0/drift/user?authority=${treasury?.pubkey.toBase58()}&accountId=0`
       ).then((res) => res.json());
     },
   });
