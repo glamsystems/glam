@@ -13,7 +13,7 @@ import {
   TOKEN_2022_PROGRAM_ID,
 } from "@solana/spl-token";
 
-import { BaseClient, ApiTxOptions } from "./base";
+import { BaseClient, TxOptions } from "./base";
 import { WSOL } from "../constants";
 import { FundModel } from "../models";
 
@@ -76,9 +76,9 @@ export class InvestorClient {
     fundModel: FundModel = undefined,
     shareClassId: number = 0,
     skipState: boolean = true,
-    apiOptions: ApiTxOptions
+    txOptions: TxOptions
   ): Promise<VersionedTransaction> {
-    const signer = apiOptions.signer || this.base.getSigner();
+    const signer = txOptions.signer || this.base.getSigner();
 
     // share class token to receive
     const shareClass = this.base.getShareClassPDA(fund, shareClassId);
@@ -202,7 +202,7 @@ export class InvestorClient {
       .preInstructions(preInstructions)
       .transaction();
 
-    return await this.base.intoVersionedTransaction({ tx, ...apiOptions });
+    return await this.base.intoVersionedTransaction({ tx, ...txOptions });
   }
 
   public async redeemTx(
@@ -212,10 +212,10 @@ export class InvestorClient {
     fundModel: FundModel = undefined,
     shareClassId: number = 0,
     skipState: boolean = true,
-    apiOptions: ApiTxOptions
+    txOptions: TxOptions
   ): Promise<VersionedTransaction> {
     const treasury = this.base.getTreasuryPDA(fund);
-    const signer = apiOptions.signer || this.base.getSigner();
+    const signer = txOptions.signer || this.base.getSigner();
 
     // share class token to receive
     const shareClass = this.base.getShareClassPDA(fund, shareClassId);
@@ -303,6 +303,6 @@ export class InvestorClient {
       .preInstructions(preInstructions)
       .transaction();
 
-    return await this.base.intoVersionedTransaction({ tx, ...apiOptions });
+    return await this.base.intoVersionedTransaction({ tx, ...txOptions });
   }
 }

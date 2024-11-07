@@ -36,18 +36,13 @@ import {
 import { TokenMetadata, unpack } from "@solana/spl-token-metadata";
 import { WSOL, USDC } from "../constants";
 
-import {
-  Glam,
-  GlamIDL,
-  GlamProgram,
-  getGlamProgramId,
-  GLAM_FORCE_MAINNET,
-} from "../glamExports";
+import { Glam, GlamIDL, GlamProgram, getGlamProgramId } from "../glamExports";
 import { ClusterOrCustom, GlamClientConfig } from "../clientConfig";
 import { FundModel, FundOpenfundsModel } from "../models";
 import { AssetMeta, ASSETS_MAINNET, ASSETS_TESTS } from "./assets";
-import base58 from "bs58";
 import { GlamError } from "../error";
+import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
+import { BlockhashWithCache } from "../utils/blockhash";
 
 // @ts-ignore
 type FundAccount = IdlAccounts<Glam>["fundAccount"];
@@ -57,15 +52,16 @@ export const JUPITER_API_DEFAULT = "https://quote-api.jup.ag/v6";
 export const JITO_TIP_DEFAULT = new PublicKey(
   "96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5"
 );
+const DEFAULT_PRIORITY_FEE = 10_000; // microLamports
 
 export const isBrowser =
   process.env.ANCHOR_BROWSER ||
   (typeof window !== "undefined" && !window.process?.hasOwnProperty("type"));
 
-export type ApiTxOptions = {
+export type TxOptions = {
   signer?: PublicKey;
   computeUnitLimit?: number;
-  computeUnitPriceMicroLamports?: number;
+  getPriorityFeeMicroLamports?: (tx: VersionedTransaction) => Promise<number>;
   jitoTipLamports?: number;
 };
 
@@ -75,6 +71,7 @@ export class BaseClient {
   program: GlamProgram;
   programId: PublicKey;
   jupiterApi: string;
+  blockhashWithCache: BlockhashWithCache;
 
   public constructor(config?: GlamClientConfig) {
     if (config?.provider) {
@@ -109,10 +106,14 @@ export class BaseClient {
     this.cluster = config?.cluster || defaultCluster;
     this.programId = getGlamProgramId(this.cluster);
     this.jupiterApi = config?.jupiterApi || JUPITER_API_DEFAULT;
+    this.blockhashWithCache = new BlockhashWithCache(
+      this.provider,
+      !!isBrowser
+    );
   }
 
   isMainnet(): boolean {
-    return GLAM_FORCE_MAINNET || this.cluster === "mainnet-beta";
+    return this.cluster === "mainnet-beta";
   }
 
   getAssetMeta(asset: string): AssetMeta {
@@ -124,53 +125,21 @@ export class BaseClient {
     );
   }
 
-  async getLatestBlockhash(): Promise<BlockhashWithExpiryBlockHeight> {
-    if (isBrowser) {
-      const CACHE_KEY = "/glam/blockhash/get";
-      const glamCache = await window.caches.open("glam");
-      const response = await glamCache.match(CACHE_KEY);
-      if (response) {
-        const { blockhash, expiresAt } = await response.json();
-        console.log(`blockhash ${blockhash} expires at`, expiresAt);
-        if (expiresAt > Date.now()) {
-          console.log("blockhash cache hit");
-          return blockhash;
-        }
-      }
-
-      const blockhash = await this.provider.connection.getLatestBlockhash();
-      console.log("blockhash cache miss, fetched from blockchain:", blockhash);
-      // The maximum age of a transaction's blockhash is 150 blocks (~1 minute assuming 400ms block times).
-      // We cache it for 15 seconds to be safe.
-      await glamCache.put(
-        CACHE_KEY,
-        new Response(
-          JSON.stringify({ blockhash, expiresAt: Date.now() + 1000 * 15 }),
-          { headers: { "Content-Type": "application/json" } }
-        )
-      );
-      return blockhash;
-    }
-
-    // Cache not needed in nodejs environment
-    return await this.provider.connection.getLatestBlockhash();
-  }
-
   async intoVersionedTransaction({
     tx,
     lookupTables,
-    computeUnitLimit,
-    computeUnitPriceMicroLamports = 5000, // fee
-    jitoTipLamports,
     signer,
+    computeUnitLimit,
+    getPriorityFeeMicroLamports,
+    jitoTipLamports,
     latestBlockhash,
   }: {
     tx: Transaction;
     lookupTables?: Array<AddressLookupTableAccount> | [];
-    computeUnitLimit?: number;
-    computeUnitPriceMicroLamports?: number;
-    jitoTipLamports?: number;
     signer?: PublicKey;
+    computeUnitLimit?: number;
+    getPriorityFeeMicroLamports?: (tx: VersionedTransaction) => Promise<number>;
+    jitoTipLamports?: number;
     latestBlockhash?: BlockhashWithExpiryBlockHeight;
   }): Promise<VersionedTransaction> {
     if (lookupTables === undefined) {
@@ -179,23 +148,16 @@ export class BaseClient {
     if (signer === undefined) {
       signer = this.getManager();
     }
-    latestBlockhash = await this.getLatestBlockhash();
 
     const instructions = tx.instructions;
 
-    // Set Jito tip or compute unit price (or nothing)
+    // Set Jito tip if provided
     if (jitoTipLamports) {
       instructions.unshift(
         SystemProgram.transfer({
           fromPubkey: signer,
           toPubkey: JITO_TIP_DEFAULT,
           lamports: jitoTipLamports,
-        })
-      );
-    } else if (computeUnitPriceMicroLamports) {
-      instructions.unshift(
-        ComputeBudgetProgram.setComputeUnitPrice({
-          microLamports: computeUnitPriceMicroLamports,
         })
       );
     }
@@ -206,10 +168,9 @@ export class BaseClient {
     if (!isPhantom) {
       // Set compute unit limit or autodetect by simulating the tx
       const connection = this.provider.connection;
-      let units = computeUnitLimit || null;
       if (!computeUnitLimit) {
         try {
-          units = await getSimulationComputeUnits(
+          computeUnitLimit = await getSimulationComputeUnits(
             connection,
             instructions,
             signer,
@@ -222,23 +183,53 @@ export class BaseClient {
           // in the regular case, if this errors the tx will have the default CUs
         }
       }
-      if (units) {
+      if (computeUnitLimit) {
         // ComputeBudgetProgram.setComputeUnitLimit costs 150 CUs
-        units += 150;
-        // More CUs for tests as logs are more verbose
-        !this.isMainnet() && (units += 10_000);
+        // Add 20%/50% more CUs to account for logs (mainnet logs are less verbose)
+        computeUnitLimit += 150;
+        this.isMainnet()
+          ? (computeUnitLimit *= 1.2)
+          : (computeUnitLimit *= 1.5);
         instructions.unshift(
-          ComputeBudgetProgram.setComputeUnitLimit({ units })
+          ComputeBudgetProgram.setComputeUnitLimit({ units: computeUnitLimit })
         );
       }
     }
 
-    const messageV0 = new TransactionMessage({
-      payerKey: signer,
-      recentBlockhash: latestBlockhash.blockhash,
-      instructions: instructions,
-    }).compileToV0Message();
-    return new VersionedTransaction(messageV0);
+    const recentBlockhash = latestBlockhash
+      ? latestBlockhash.blockhash
+      : (await this.blockhashWithCache.get()).blockhash;
+
+    let priorityFee = DEFAULT_PRIORITY_FEE;
+    if (getPriorityFeeMicroLamports) {
+      try {
+        const fee = await getPriorityFeeMicroLamports(
+          new VersionedTransaction(
+            new TransactionMessage({
+              payerKey: signer,
+              recentBlockhash,
+              instructions,
+            }).compileToV0Message(lookupTables)
+          )
+        );
+        priorityFee = Math.ceil(fee);
+      } catch (e) {}
+    }
+    console.log(`Priority fee: ${priorityFee} microLamports`);
+
+    // Add the unit price instruction and return the final versioned transaction
+    instructions.unshift(
+      ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: priorityFee,
+      })
+    );
+    return new VersionedTransaction(
+      new TransactionMessage({
+        payerKey: signer,
+        recentBlockhash,
+        instructions,
+      }).compileToV0Message(lookupTables)
+    );
   }
 
   async sendAndConfirm(
@@ -254,37 +245,36 @@ export class BaseClient {
     }
 
     const connection = this.provider.connection;
-    let signature: TransactionSignature;
+    let serializedTx: Uint8Array;
 
     if (signerOverride) {
       tx.sign([signerOverride]);
-      signature = await connection.sendTransaction(tx, {
-        skipPreflight: true,
-      });
+      serializedTx = tx.serialize();
     } else {
       // Anchor provider.sendAndConfirm forces a signature with the wallet, which we don't want
       // https://github.com/coral-xyz/anchor/blob/v0.30.0/ts/packages/anchor/src/provider.ts#L159
       const wallet = this.getWallet();
       const signedTx = await wallet.signTransaction(tx);
-      const serializedTx = signedTx.serialize();
-      signature = await connection.sendRawTransaction(serializedTx, {
-        // skip simulation since we just did it to compute CUs
-        // however this means that we need to reconstruct the error, if
-        // the tx fails on chain execution.
-        skipPreflight: true,
-      });
+      serializedTx = signedTx.serialize();
     }
 
+    const txSig = await connection.sendRawTransaction(serializedTx, {
+      // skip simulation since we just did it to compute CUs
+      // however this means that we need to reconstruct the error, if
+      // the tx fails on chain execution.
+      skipPreflight: true,
+    });
+
     // await confirmation
-    const latestBlockhash = await this.getLatestBlockhash();
+    const latestBlockhash = await this.blockhashWithCache.get();
     const res = await connection.confirmTransaction({
       ...latestBlockhash,
-      signature,
+      signature: txSig,
     });
 
     // if the tx fails, throw an error including logs
     if (res.value.err) {
-      const errTx = await connection.getTransaction(signature, {
+      const errTx = await connection.getTransaction(txSig, {
         maxSupportedTransactionVersion: 0,
       });
       throw {
@@ -293,7 +283,7 @@ export class BaseClient {
         message: this.parseProgramLogs(errTx?.meta?.logMessages),
       } as GlamError;
     }
-    return signature;
+    return txSig;
   }
 
   parseProgramLogs(logs?: null | string[]): string {
@@ -520,7 +510,7 @@ export class BaseClient {
       fundModel.uri || `https://gui.glam.systems/products/${fundPDA}`;
     fundModel.openfundsUri =
       fundModel.openfundsUri ||
-      `https://rest.glam.systems/v0/openfunds?fund=${fundPDA}&format=csv`;
+      `https://api.glam.systems/v0/openfunds?fund=${fundPDA}&format=csv`;
 
     // share classes
     fundModel.shareClasses.forEach((shareClass: any, i: number) => {
@@ -534,8 +524,8 @@ export class BaseClient {
       }
 
       const sharePDA = this.getShareClassPDA(fundPDA, i);
-      shareClass.uri = `https://rest.glam.systems/metadata/${sharePDA}`;
-      shareClass.imageUri = `https://rest.glam.systems/v0/sparkle?key=${sharePDA}&format=png`;
+      shareClass.uri = `https://api.glam.systems/metadata/${sharePDA}`;
+      shareClass.imageUri = `https://api.glam.systems/v0/sparkle?key=${sharePDA}&format=png`;
     });
 
     return fundModel;
@@ -718,7 +708,7 @@ export class BaseClient {
     const accounts = await this.provider.connection.getParsedProgramAccounts(
       this.programId,
       {
-        filters: [{ memcmp: { offset: 0, bytes: base58.encode(bytes) } }],
+        filters: [{ memcmp: { offset: 0, bytes: bs58.encode(bytes) } }],
       }
     );
     return accounts.map((a) => a.pubkey);

@@ -87,7 +87,7 @@ export default function IDLFetch() {
       }
 
       const response = await fetch(
-        `http://rest.glam.systems/v0/idl?program=${values.idlKey}`
+        `http://api.glam.systems/v0/idl?program=${values.idlKey}`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch IDL");

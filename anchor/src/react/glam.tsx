@@ -44,11 +44,11 @@ interface GlamProviderContext {
   allFunds: FundModel[];
   walletBalances: any;
   walletBalancesQueryKey: any[];
-  refresh?: () => void;
   prices: PythPrice[];
   setActiveFund: any;
   jupTokenList?: JupTokenListItem[];
   driftMarketConfigs: DriftMarketConfigs;
+  refresh: () => Promise<void>;
 }
 
 interface TokenAccount {
@@ -168,6 +168,21 @@ export function GlamProvider({
   //
   // Fetch all funds
   //
+  const refreshTreasury = async () => {
+    if (activeFund && activeFund.pubkey) {
+      console.log(
+        "fetching treasury data for fund",
+        activeFund.pubkey.toBase58()
+      );
+      const treasury = glamClient.getTreasuryPDA(activeFund.pubkey);
+      const balances = await fetchBalances(glamClient, treasury);
+      setTreasury({
+        ...balances,
+        pubkey: treasury,
+      } as TreasuryCache);
+    }
+  };
+
   const { data: allFundsData } = useQuery({
     queryKey: ["/funds"],
     queryFn: () => glamClient.fetchAllFunds(),
@@ -213,18 +228,7 @@ export function GlamProvider({
       }
     }
 
-    const fetchData = async () => {
-      if (activeFund && activeFund.pubkey) {
-        const treasury = glamClient.getTreasuryPDA(activeFund.pubkey);
-        const balances = await fetchBalances(glamClient, treasury);
-        setTreasury({
-          ...balances,
-          pubkey: treasury,
-        } as TreasuryCache);
-      }
-    };
-
-    fetchData();
+    refreshTreasury();
   }, [allFundsData, activeFund, wallet]);
 
   //
@@ -312,7 +316,7 @@ export function GlamProvider({
     queryKey: ["drift-market-configs"],
     queryFn: async () => {
       const response = await fetch(
-        "https://rest.glam.systems/v0/drift/market_configs/"
+        "https://api.glam.systems/v0/drift/market_configs/"
       );
       const data = await response.json();
       return data;
@@ -335,6 +339,10 @@ export function GlamProvider({
     prices: pythPrices,
     setActiveFund,
     driftMarketConfigs,
+    refresh: async () => {
+      console.log("glam context provider refresh");
+      refreshTreasury();
+    },
   };
 
   return <GlamContext.Provider value={value}>{children}</GlamContext.Provider>;

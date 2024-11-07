@@ -16,7 +16,7 @@ export const getSimulationComputeUnits = async (
   instructions: Array<TransactionInstruction>,
   payer: PublicKey,
   lookupTables: Array<AddressLookupTableAccount> | []
-): Promise<number | null> => {
+): Promise<number | undefined> => {
   const testInstructions = [
     // Set an arbitrarily high number in simulation
     // so we can be sure the transaction will succeed
@@ -41,7 +41,7 @@ export const getSimulationComputeUnits = async (
   });
 
   getErrorFromRPCResponse(rpcResponse);
-  return rpcResponse.value.unitsConsumed || null;
+  return rpcResponse.value.unitsConsumed || undefined;
 };
 
 const getErrorFromRPCResponse = (

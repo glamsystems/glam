@@ -8,18 +8,28 @@ import os from "os";
 import path from "path";
 import { getGlamClient, setFundToConfig } from "./utils";
 import { QuoteParams } from "anchor/src/client/jupiter";
+import { VersionedTransaction } from "@solana/web3.js";
+import { getPriorityFeeEstimate } from "@glam/anchor";
 
 const configPath = path.join(os.homedir(), ".config/glam/cli/config.json");
 let fundPDA;
+let heliusApiKey;
 try {
   const config = fs.readFileSync(configPath, "utf8");
-  const { json_rpc_url, keypair_path, fund } = JSON.parse(config);
+  const { json_rpc_url, keypair_path, helius_api_key, fund } =
+    JSON.parse(config);
   process.env.ANCHOR_PROVIDER_URL = json_rpc_url;
   process.env.ANCHOR_WALLET = keypair_path;
   fundPDA = new PublicKey(fund);
+  heliusApiKey = helius_api_key;
 } catch (err) {
   console.error(`Could not load config at ${configPath}:`, err.message);
 }
+
+const cliTxOptions = {
+  getPriorityFeeMicroLamports: async (tx: VersionedTransaction) =>
+    await getPriorityFeeEstimate(tx, heliusApiKey),
+};
 
 const glamClient = getGlamClient();
 
@@ -53,10 +63,7 @@ program
       });
   });
 
-const fund = program
-  .command("fund")
-  .description("Manage fund")
-  .option("-s, --simulate", "Simulate transactions");
+const fund = program.command("fund").description("Manage fund");
 
 fund
   .command("set <fund>")
@@ -293,7 +300,8 @@ fund
     try {
       const txSig = await glamClient.wsol.wrap(
         fundPDA,
-        new anchor.BN(parseInt(amount) * LAMPORTS_PER_SOL)
+        new anchor.BN(parseFloat(amount) * LAMPORTS_PER_SOL),
+        cliTxOptions
       );
       console.log(`Wrapped ${amount} SOL:`, txSig);
     } catch (e) {
@@ -312,7 +320,7 @@ fund
     }
 
     try {
-      const txSig = await glamClient.wsol.unwrap(fundPDA);
+      const txSig = await glamClient.wsol.unwrap(fundPDA, cliTxOptions);
       console.log(`All wSOL unwrapped:`, txSig);
     } catch (e) {
       console.error(e);
@@ -392,7 +400,7 @@ fund
     let quoteParams = {
       inputMint: from,
       outputMint: to,
-      amount: amount * 10 ** tokenFrom.decimals,
+      amount: parseFloat(amount) * 10 ** tokenFrom.decimals,
       swapMode: "ExactIn",
       slippageBps: slippageBps ? parseInt(slippageBps) : 5,
       asLegacyTransaction: false,
@@ -411,7 +419,13 @@ fund
     }
     console.log("Quote params:", quoteParams);
     try {
-      const txSig = await glamClient.jupiter.swap(fundPDA, quoteParams);
+      const txSig = await glamClient.jupiter.swap(
+        fundPDA,
+        quoteParams,
+        undefined,
+        undefined,
+        cliTxOptions
+      );
       console.log(`Swapped ${amount} ${from} to ${to}`);
     } catch (e) {
       console.error(e);

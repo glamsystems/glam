@@ -24,7 +24,7 @@ interface ResponseMetadata {
 
 export default function ApiPage() {
   const [apiUrl, setApiUrl] = useState(
-    "https://rest.glam.systems/v0/drift/market_configs"
+    "https://api.glam.systems/v0/drift/market_configs"
   );
   const [customHeaders, setCustomHeaders] = useState(`
 {
@@ -97,11 +97,11 @@ export default function ApiPage() {
 
   const prefillUrls = [
     {
-      url: "https://rest.glam.systems/v0/drift/market_configs",
+      url: "https://api.glam.systems/v0/drift/market_configs",
       label: "HTTPS",
     },
     {
-      url: "http://rest.glam.systems/v0/drift/market_configs",
+      url: "http://api.glam.systems/v0/drift/market_configs",
       label: "HTTP",
     },
     {

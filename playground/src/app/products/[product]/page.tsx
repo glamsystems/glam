@@ -977,7 +977,7 @@ export default function ProductPage() {
                               {/*
                                // TODO: XLSX not supported yet by rest service
                                <a
-                                href={`https://rest.glam.systems/v0/openfunds?fund=${product}&format=xlsx`}
+                                href={`https://api.glam.systems/v0/openfunds?fund=${product}&format=xlsx`}
                                 rel="noopener noreferrer"
                                 target="_blank"
                                 className="link"
@@ -985,7 +985,7 @@ export default function ProductPage() {
                                 XLSX
                               </a> */}
                               <a
-                                href={`https://rest.glam.systems/v0/openfunds?fund=${product}&format=csv`}
+                                href={`https://api.glam.systems/v0/openfunds?fund=${product}&format=csv`}
                                 rel="noopener noreferrer"
                                 target="_blank"
                                 className="link"
@@ -994,7 +994,7 @@ export default function ProductPage() {
                               </a>
 
                               <a
-                                href={`https://rest.glam.systems/v0/openfunds?fund=${product}&format=json`}
+                                href={`https://api.glam.systems/v0/openfunds?fund=${product}&format=json`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="link"

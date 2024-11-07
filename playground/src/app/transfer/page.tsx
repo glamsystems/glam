@@ -28,6 +28,7 @@ import { useGlam } from "@glam/anchor/react";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { parseTxError } from "@/lib/error";
 import { ExplorerLink } from "@/components/ExplorerLink";
+import { getPriorityFeeMicroLamports } from "../settings/priorityfee";
 
 const venues: [string, ...string[]] = ["Treasury", "Drift"];
 const transferSchema = z.object({
@@ -134,14 +135,16 @@ export default function Transfer() {
               new anchor.BN(amount * 10 ** decimals),
               marketIndex,
               0,
-              driftMarketConfigs
+              driftMarketConfigs,
+              { getPriorityFeeMicroLamports }
             )
           : await glamClient.drift.withdraw(
               fundPDA,
               new anchor.BN(amount * 10 ** decimals),
               marketIndex,
               0,
-              driftMarketConfigs
+              driftMarketConfigs,
+              { getPriorityFeeMicroLamports }
             );
       toast({
         title: `Transfered ${amount} ${amountAsset} from ${origin} to ${destination}`,

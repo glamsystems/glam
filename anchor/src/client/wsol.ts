@@ -5,7 +5,7 @@ import {
   TransactionSignature,
 } from "@solana/web3.js";
 
-import { BaseClient, ApiTxOptions } from "./base";
+import { BaseClient, TxOptions } from "./base";
 import { WSOL } from "../constants";
 
 export class WSolClient {
@@ -17,14 +17,18 @@ export class WSolClient {
 
   public async wrap(
     fund: PublicKey,
-    amount: BN
+    amount: BN,
+    txOptions: TxOptions = {} as TxOptions
   ): Promise<TransactionSignature> {
-    const tx = await this.wrapTx(fund, amount, {});
+    const tx = await this.wrapTx(fund, amount, txOptions);
     return await this.base.sendAndConfirm(tx);
   }
 
-  public async unwrap(fund: PublicKey): Promise<TransactionSignature> {
-    const tx = await this.unwrapTx(fund, {});
+  public async unwrap(
+    fund: PublicKey,
+    txOptions: TxOptions = {} as TxOptions
+  ): Promise<TransactionSignature> {
+    const tx = await this.unwrapTx(fund, txOptions);
     return await this.base.sendAndConfirm(tx);
   }
 
@@ -35,9 +39,9 @@ export class WSolClient {
   public async wrapTx(
     fund: PublicKey,
     amount: BN,
-    apiOptions: ApiTxOptions
+    txOptions: TxOptions
   ): Promise<VersionedTransaction> {
-    const manager = apiOptions.signer || this.base.getManager();
+    const manager = txOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
     const treasuryWsolAta = this.base.getTreasuryAta(fund, WSOL);
 
@@ -56,15 +60,15 @@ export class WSolClient {
 
     return await this.base.intoVersionedTransaction({
       tx,
-      ...apiOptions,
+      ...txOptions,
     });
   }
 
   public async unwrapTx(
     fund: PublicKey,
-    apiOptions: ApiTxOptions
+    txOptions: TxOptions
   ): Promise<VersionedTransaction> {
-    const manager = apiOptions.signer || this.base.getManager();
+    const manager = txOptions.signer || this.base.getManager();
     const treasury = this.base.getTreasuryPDA(fund);
     const treasuryWsolAta = this.base.getTreasuryAta(fund, WSOL);
 
@@ -82,7 +86,7 @@ export class WSolClient {
 
     return await this.base.intoVersionedTransaction({
       tx,
-      ...apiOptions,
+      ...txOptions,
     });
   }
 }

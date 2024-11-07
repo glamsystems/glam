@@ -7,8 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DataTableRefresh } from "./data-table-refresh";
 
-import { locations } from "../data/data";
-import { DataTableFacetedFilter } from "./data-table-faceted-filter";
+import { useGlam } from "@glam/anchor/react";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -18,6 +17,7 @@ export function DataTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
+  const { refresh } = useGlam();
 
   return (
     <div className="flex items-center justify-between">
@@ -40,8 +40,13 @@ export function DataTableToolbar<TData>({
             <Cross2Icon className="ml-2 h-4 w-4" />
           </Button>
         )}
+
+        <DataTableRefresh
+          onClick={async () => await refresh()}
+          className="h-8 px-2 lg:px-3"
+          table={table}
+        />
       </div>
-      {/*<DataTableRefresh table={table} />*/}
     </div>
   );
 }
