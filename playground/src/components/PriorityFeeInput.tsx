@@ -19,39 +19,27 @@ interface Props {
 }
 
 const LAMPORTS_PER_SOL = 1_000_000_000; // 1 billion
-const BPS_PER_PERCENT = 100; // 1% = 100 BPS
 
-export const FormInput: React.FC<Props> = ({
+export const PriorityFeeInput: React.FC<Props> = ({
   name,
   label,
   symbol,
-  step = "0.05",
   className,
 }) => {
   const { control, getValues, setValue } = useFormContext();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [currentSymbol, setCurrentSymbol] = useState(symbol);
-
-  const isConvertible =
-    symbol === "SOL" || symbol === "LMPS" || symbol === "%" || symbol === "BPS";
 
   const handleSymbolToggle = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
     const currentValue = getValues()[name] || 0;
 
-    if (currentSymbol === "SOL") {
-      setCurrentSymbol("LMPS");
+    if (symbol === "SOL") {
       setValue(name, currentValue * LAMPORTS_PER_SOL);
-    } else if (currentSymbol === "LMPS") {
-      setCurrentSymbol("SOL");
+      setValue(`${name}Unit`, "LMPS");
+    } else if (symbol === "LMPS") {
       setValue(name, currentValue / LAMPORTS_PER_SOL);
-    } else if (currentSymbol === "%") {
-      setCurrentSymbol("BPS");
-      setValue(name, currentValue * BPS_PER_PERCENT);
-    } else if (currentSymbol === "BPS") {
-      setCurrentSymbol("%");
-      setValue(name, currentValue / BPS_PER_PERCENT);
+      setValue(`${name}Unit`, "SOL");
     }
   };
 
@@ -69,11 +57,8 @@ export const FormInput: React.FC<Props> = ({
 
   // Adjust step based on symbol
   const getStep = () => {
-    if (currentSymbol === "LMPS") return "1"; // Lamports are whole numbers
-    if (currentSymbol === "BPS") return "1"; // BPS are whole numbers
-    if (currentSymbol === "SOL") return "0.000000001"; // 1 Lamport in SOL
-    if (currentSymbol === "%") return "0.01"; // Standard percentage step
-    return step;
+    if (symbol === "LMPS") return "1000"; // Lamports are whole numbers
+    if (symbol === "SOL") return "0.000001"; // 1000 Lamport in SOL
   };
 
   return (
@@ -99,10 +84,9 @@ export const FormInput: React.FC<Props> = ({
               <Button
                 variant="secondary"
                 className="absolute pr-2 pl-2 h-6 inset-y-0 top-2 right-2 border-l-0"
-                disabled={!isConvertible}
                 onClick={(e) => handleSymbolToggle(e)}
               >
-                {currentSymbol}
+                {symbol}
               </Button>
             </div>
           </FormControl>
