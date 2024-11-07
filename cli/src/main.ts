@@ -26,10 +26,9 @@ try {
   console.error(`Could not load config at ${configPath}:`, err.message);
 }
 
-const priorityLevel = "High";
 const cliTxOptions = {
   getPriorityFeeMicroLamports: async (tx: VersionedTransaction) =>
-    await getPriorityFeeEstimate(priorityLevel, tx, heliusApiKey),
+    await getPriorityFeeEstimate(tx, heliusApiKey),
 };
 
 const glamClient = getGlamClient();
@@ -420,7 +419,13 @@ fund
     }
     console.log("Quote params:", quoteParams);
     try {
-      const txSig = await glamClient.jupiter.swap(fundPDA, quoteParams);
+      const txSig = await glamClient.jupiter.swap(
+        fundPDA,
+        quoteParams,
+        undefined,
+        undefined,
+        cliTxOptions
+      );
       console.log(`Swapped ${amount} ${from} to ${to}`);
     } catch (e) {
       console.error(e);

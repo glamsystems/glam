@@ -12,10 +12,11 @@ type PriorityLevel =
   | "Default";
 
 export const getPriorityFeeEstimate = async (
-  priorityLevel: PriorityLevel,
   tx: VersionedTransaction,
-  heliusApiKey: string
+  heliusApiKey: string,
+  priorityLevel?: PriorityLevel
 ) => {
+  const options = priorityLevel ? { priorityLevel } : { recommended: true };
   const response = await fetch(
     `https://mainnet.helius-rpc.com/?api-key=${heliusApiKey}`,
     {
@@ -28,15 +29,13 @@ export const getPriorityFeeEstimate = async (
         params: [
           {
             transaction: bs58.encode(tx.serialize()),
-            options: { priorityLevel },
+            options,
           },
         ],
       }),
     }
   );
   const data = await response.json();
-  console.log(
-    `priorityFeeEstimate for priorityLevel ${priorityLevel}: ${data.result.priorityFeeEstimate}`
-  );
+  console.log("getPriorityFeeEstimate with options", options, data.result);
   return data.result.priorityFeeEstimate;
 };
