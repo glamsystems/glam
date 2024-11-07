@@ -426,6 +426,7 @@ export default function Trade() {
       from,
       to,
       slippage,
+      slippageUnit,
       versionedTransactions,
       directRouteOnly,
     } = swapForm.getValues();
@@ -470,7 +471,7 @@ export default function Trade() {
       inputMint,
       outputMint,
       amount,
-      slippageBps: slippage * 100,
+      slippageBps: slippage * (slippageUnit === "%" ? 100 : 1),
       swapMode: exactMode,
       onlyDirectRoutes: directRouteOnly,
       asLegacyTransaction: !versionedTransactions,
@@ -1132,7 +1133,9 @@ export default function Trade() {
                       className="min-w-1/3 w-1/3"
                       name="priorityFeeOverride"
                       label="Priority Fee"
-                      symbol={swapForm.watch("priorityFeeOverrideUnit")}
+                      symbol={
+                        swapForm.watch("priorityFeeOverrideUnit") || "SOL"
+                      }
                     />
                     <Button
                       className="w-1/3"
@@ -1580,7 +1583,7 @@ export default function Trade() {
                           <SlippageInput
                             name="slippage"
                             label="Slippage"
-                            symbol={spotForm.watch("slippageUnit")}
+                            symbol={spotForm.watch("slippageUnit") || "%"}
                             className="min-w-1/3 w-1/3"
                           />
                         )}
@@ -1671,7 +1674,9 @@ export default function Trade() {
                       className="min-w-1/3 w-1/3"
                       name="priorityFeeOverride"
                       label="Priority Fee"
-                      symbol={spotForm.watch("priorityFeeOverrideUnit")}
+                      symbol={
+                        spotForm.watch("priorityFeeOverrideUnit") || "SOL"
+                      }
                     />
                     <Button
                       className="w-1/3"
@@ -1945,7 +1950,7 @@ export default function Trade() {
                           <SlippageInput
                             name="slippage"
                             label="Slippage"
-                            symbol={perpsForm.watch("slippageUnit")}
+                            symbol={perpsForm.watch("slippageUnit") || "%"}
                             className="min-w-1/3 w-1/3"
                           />
                         )}
@@ -2048,7 +2053,9 @@ export default function Trade() {
                       className="min-w-1/3 w-1/3"
                       name="priorityFeeOverride"
                       label="Priority Fee"
-                      symbol={perpsForm.watch("priorityFeeOverrideUnit")}
+                      symbol={
+                        perpsForm.watch("priorityFeeOverrideUnit") || "SOL"
+                      }
                     />
                     <Button
                       className="w-1/3"
