@@ -39,7 +39,6 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
 import { Asset, AssetInput } from "@/components/AssetInput";
-import { FormInput } from "@/components/FormInput";
 import React, { useEffect, useMemo, useState } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";
@@ -94,6 +93,8 @@ import { PublicKey } from "@solana/web3.js";
 import { QuoteParams, QuoteResponse } from "anchor/src/client/jupiter";
 import { PerpMarketConfig, SpotMarketConfig } from "anchor/src/client/drift";
 import { getPriorityFeeMicroLamports } from "../settings/priorityfee";
+import { SlippageInput } from "@/components/SlippageInput";
+import { PriorityFeeInput } from "@/components/PriorityFeeInput";
 
 const spotMarkets = DRIFT_SPOT_MARKETS.map((x) => ({ label: x, value: x }));
 const perpsMarkets = DRIFT_PERP_MARKETS.map((x) => ({ label: x, value: x }));
@@ -102,6 +103,7 @@ const PERSISTED_FIELDS = {
   swap: [
     "venue",
     "slippage",
+    "slippageUnit",
     "filterType",
     "exactMode",
     "maxAccounts",
@@ -110,6 +112,7 @@ const PERSISTED_FIELDS = {
     "dexes",
     "versionedTransactions",
     "priorityFeeOverride",
+    "priorityFeeOverrideUnit",
   ],
   spot: [
     "venue",
@@ -120,7 +123,9 @@ const PERSISTED_FIELDS = {
     "post",
     "leverage",
     "slippage",
+    "slippageUnit",
     "priorityFeeOverride",
+    "priorityFeeOverrideUnit",
   ],
   perps: [
     "venue",
@@ -131,7 +136,9 @@ const PERSISTED_FIELDS = {
     "post",
     "leverage",
     "slippage",
+    "slippageUnit",
     "priorityFeeOverride",
+    "priorityFeeOverrideUnit",
   ],
 };
 
@@ -180,10 +187,9 @@ const swapSchema = z.object({
   venue: z.enum(["Jupiter"]),
   swapType: z.enum(["Swap"]),
   filterType: z.enum(["Include", "Exclude"]),
-  slippage: z.number().nonnegative().lte(1),
-  dexes: z.array(z.string()).refine((value) => value.some((item) => item), {
-    message: "You have to select at least one exchange.",
-  }),
+  slippage: z.number().nonnegative(),
+  slippageUnit: z.enum(["BPS", "%"]),
+  dexes: z.array(z.string()),
   exactMode: z.enum(["ExactIn", "ExactOut"]),
   maxAccounts: z.number().nonnegative().int(),
   from: z.number(),
@@ -194,6 +200,7 @@ const swapSchema = z.object({
   useWSOL: z.boolean().optional(),
   versionedTransactions: z.boolean().optional(),
   priorityFeeOverride: z.number().nonnegative().optional(),
+  priorityFeeOverrideUnit: z.enum(["LMPS", "SOL"]).optional(),
 });
 
 const spotSchema = z.object({
@@ -209,8 +216,10 @@ const spotSchema = z.object({
   post: z.boolean().optional(),
   showConfirmation: z.boolean().optional(),
   leverage: z.number().nonnegative(),
-  slippage: z.number().nonnegative().lte(1).optional(),
+  slippage: z.number().nonnegative().optional(),
+  slippageUnit: z.enum(["BPS", "%"]).optional(),
   priorityFeeOverride: z.number().nonnegative().optional(),
+  priorityFeeOverrideUnit: z.enum(["LMPS", "SOL"]).optional(),
 });
 
 const perpsSchema = z.object({
@@ -226,8 +235,10 @@ const perpsSchema = z.object({
   post: z.boolean().optional(),
   showConfirmation: z.boolean().optional(),
   leverage: z.number().nonnegative().optional(),
-  slippage: z.number().nonnegative().lte(1).optional(),
+  slippage: z.number().nonnegative().optional(),
+  slippageUnit: z.enum(["BPS", "%"]).optional(),
   priorityFeeOverride: z.number().nonnegative().optional(),
+  priorityFeeOverrideUnit: z.enum(["LMPS", "SOL"]).optional(),
 });
 
 type SwapSchema = z.infer<typeof swapSchema>;
@@ -237,8 +248,9 @@ type PerpsSchema = z.infer<typeof perpsSchema>;
 const DEFAULT_SWAP_FORM_VALUES: SwapSchema = {
   venue: "Jupiter",
   swapType: "Swap",
-  filterType: "Include",
+  filterType: "Exclude",
   slippage: 0.05,
+  slippageUnit: "%",
   dexes: [],
   exactMode: "ExactIn",
   maxAccounts: 20,
@@ -250,6 +262,7 @@ const DEFAULT_SWAP_FORM_VALUES: SwapSchema = {
   useWSOL: false,
   versionedTransactions: true,
   priorityFeeOverride: 0,
+  priorityFeeOverrideUnit: "SOL",
 };
 
 const DEFAULT_SPOT_FORM_VALUES: SpotSchema = {
@@ -266,7 +279,9 @@ const DEFAULT_SPOT_FORM_VALUES: SpotSchema = {
   showConfirmation: true,
   leverage: 0,
   slippage: 0.05,
+  slippageUnit: "%",
   priorityFeeOverride: 0,
+  priorityFeeOverrideUnit: "SOL",
 };
 
 const DEFAULT_PERPS_FORM_VALUES: PerpsSchema = {
@@ -283,7 +298,9 @@ const DEFAULT_PERPS_FORM_VALUES: PerpsSchema = {
   showConfirmation: true,
   leverage: 0,
   slippage: 0.05,
+  slippageUnit: "%",
   priorityFeeOverride: 0,
+  priorityFeeOverrideUnit: "SOL",
 };
 
 export default function Trade() {
@@ -378,7 +395,7 @@ export default function Trade() {
 
   const swapForm = usePersistedForm("swap", swapSchema, {
     ...DEFAULT_SWAP_FORM_VALUES,
-    dexes: jupDexes?.map((x) => x.label) || [],
+    dexes: [],
   });
   const spotForm = usePersistedForm(
     "spot",
@@ -409,6 +426,7 @@ export default function Trade() {
       from,
       to,
       slippage,
+      slippageUnit,
       versionedTransactions,
       directRouteOnly,
     } = swapForm.getValues();
@@ -428,14 +446,13 @@ export default function Trade() {
 
     let dexesParam;
     const dexes = selectedDexes.filter((item) => item !== "");
-    if (filterType === "Include") {
-      dexesParam = { dexes };
-      if (dexes.length === jupDexes?.length) {
-        // All dexes selected, no need to filter
-        dexesParam = {};
+    if (filterType === "Exclude") {
+      dexesParam = { excludeDexes: dexes };
+      if (dexes.length === 0) {
+        dexesParam = {}; // No dexes selected, don't include the param
       }
     } else {
-      dexesParam = { excludeDexes: dexes };
+      dexesParam = { dexes }; // Include only selected dexes
     }
 
     // maxAccounts is not accepted if exactMode is ExactOut
@@ -454,7 +471,7 @@ export default function Trade() {
       inputMint,
       outputMint,
       amount,
-      slippageBps: slippage * 100,
+      slippageBps: slippage * (slippageUnit === "%" ? 100 : 1),
       swapMode: exactMode,
       onlyDirectRoutes: directRouteOnly,
       asLegacyTransaction: !versionedTransactions,
@@ -483,7 +500,13 @@ export default function Trade() {
         uiAmountFrom: Number(quoteResponse.inAmount) / 10 ** inputDecimals,
         uiAmountTo: Number(quoteResponse.outAmount) / 10 ** outputDecimals,
       };
-    } catch (error) {}
+    } catch (error: any) {
+      toast({
+        title: "Failed to get swap quote",
+        description: `${error.message}. Some assets may not support ExactOut.`,
+        variant: "destructive",
+      });
+    }
     return {} as any;
   };
 
@@ -526,6 +549,17 @@ export default function Trade() {
       quoteResponseForSwap = quoteResponse;
     }
 
+    const getPriorityFee = async (tx: VersionedTransaction) => {
+      const { priorityFeeOverride, priorityFeeOverrideUnit } = values;
+      if (priorityFeeOverride) {
+        return (
+          priorityFeeOverride *
+          (priorityFeeOverrideUnit === "LMPS" ? 1 : LAMPORTS_PER_SOL)
+        );
+      }
+      return getPriorityFeeMicroLamports(tx);
+    };
+
     setIsSubmitTxPending(true);
     try {
       const txId = await glamClient.jupiter.swap(
@@ -533,7 +567,7 @@ export default function Trade() {
         undefined,
         quoteResponseForSwap,
         undefined,
-        { getPriorityFeeMicroLamports }
+        { getPriorityFeeMicroLamports: getPriorityFee }
       );
       toast({
         title: `Swapped ${fromAsset} to ${toAsset}`,
@@ -616,6 +650,17 @@ export default function Trade() {
     });
     console.log("Drift spot orderParams", orderParams);
 
+    const getPriorityFee = async (tx: VersionedTransaction) => {
+      const { priorityFeeOverride, priorityFeeOverrideUnit } = values;
+      if (priorityFeeOverride) {
+        return (
+          priorityFeeOverride *
+          (priorityFeeOverrideUnit === "LMPS" ? 1 : LAMPORTS_PER_SOL)
+        );
+      }
+      return getPriorityFeeMicroLamports(tx);
+    };
+
     setIsSubmitTxPending(true);
     try {
       const txId = await glamClient.drift.placeOrder(
@@ -623,7 +668,7 @@ export default function Trade() {
         orderParams,
         0,
         driftMarketConfigs,
-        { getPriorityFeeMicroLamports }
+        { getPriorityFeeMicroLamports: getPriorityFee }
       );
       toast({
         title: "Spot order submitted",
@@ -662,6 +707,16 @@ export default function Trade() {
     });
     console.log("Drift perps orderParams", orderParams);
 
+    const getPriorityFee = async (tx: VersionedTransaction) => {
+      const { priorityFeeOverride, priorityFeeOverrideUnit } = values;
+      if (priorityFeeOverride) {
+        return (
+          priorityFeeOverride *
+          (priorityFeeOverrideUnit === "LMPS" ? 1 : LAMPORTS_PER_SOL)
+        );
+      }
+      return getPriorityFeeMicroLamports(tx);
+    };
     setIsSubmitTxPending(true);
     try {
       const txId = await glamClient.drift.placeOrder(
@@ -669,7 +724,7 @@ export default function Trade() {
         orderParams,
         0,
         driftMarketConfigs,
-        { getPriorityFeeMicroLamports }
+        { getPriorityFeeMicroLamports: getPriorityFee }
       );
       toast({
         title: "Perps order submitted",
@@ -692,7 +747,7 @@ export default function Trade() {
       case "swap":
         swapForm.reset({
           ...DEFAULT_SWAP_FORM_VALUES,
-          dexes: jupDexes?.map((x) => x.label) || [],
+          dexes: [],
         });
         setFromAsset("USDC");
         setToAsset("SOL");
@@ -1072,10 +1127,10 @@ export default function Trade() {
                     >
                       <ColumnSpacingIcon />
                     </Button>
-                    <FormInput
+                    <SlippageInput
                       name="slippage"
                       label="Slippage"
-                      symbol="%"
+                      symbol={swapForm.watch("slippageUnit")}
                       className="min-w-1/3 w-1/3"
                     />
                     <AssetInput
@@ -1112,12 +1167,13 @@ export default function Trade() {
                   </div>
 
                   <div className="flex space-x-4 w-full items-end">
-                    <FormInput
+                    <PriorityFeeInput
                       className="min-w-1/3 w-1/3"
                       name="priorityFeeOverride"
                       label="Priority Fee"
-                      step="0.001"
-                      symbol="SOL"
+                      symbol={
+                        swapForm.watch("priorityFeeOverrideUnit") || "SOL"
+                      }
                     />
                     <Button
                       className="w-1/3"
@@ -1161,11 +1217,11 @@ export default function Trade() {
                                       }}
                                       className="justify-start"
                                     >
-                                      <ToggleGroupItem value="Include">
-                                        Include
-                                      </ToggleGroupItem>
                                       <ToggleGroupItem value="Exclude">
                                         Exclude
+                                      </ToggleGroupItem>
+                                      <ToggleGroupItem value="Include">
+                                        Include
                                       </ToggleGroupItem>
                                     </ToggleGroup>
                                   )}
@@ -1562,10 +1618,10 @@ export default function Trade() {
                             disableAssetChange={true}
                           />
                         ) : (
-                          <FormInput
+                          <SlippageInput
                             name="slippage"
                             label="Slippage"
-                            symbol="%"
+                            symbol={spotForm.watch("slippageUnit") || "%"}
                             className="min-w-1/3 w-1/3"
                           />
                         )}
@@ -1649,93 +1705,16 @@ export default function Trade() {
                         // </div>
                         <span></span>
                       )}
-                    {/*<div className="flex flex-row gap-4 items-start w-full">*/}
-                    {/*  <div className="w-1/2 flex h-6 items-center text-sm text-muted-foreground">*/}
-                    {/*    <TooltipProvider>*/}
-                    {/*      <Tooltip>*/}
-                    {/*        <TooltipTrigger className="flex items-center">*/}
-                    {/*          <InfoCircledIcon className="w-4 h-4 mr-1"></InfoCircledIcon>*/}
-                    {/*          <p>Margin Trading Disabled</p>*/}
-                    {/*        </TooltipTrigger>*/}
-                    {/*        <TooltipContent side="right">*/}
-                    {/*          Please view the Risk Management configuration of the*/}
-                    {/*          Venue Integration.*/}
-                    {/*        </TooltipContent>*/}
-                    {/*      </Tooltip>*/}
-                    {/*    </TooltipProvider>*/}
-                    {/*  </div>*/}
-
-                    {/*  <div className="w-1/2 flex flex-row justify-start gap-4">*/}
-                    {/*    <FormField*/}
-                    {/*      control={spotForm.control}*/}
-                    {/*      name="spotReduceOnly"*/}
-                    {/*      render={({ field }) => (*/}
-                    {/*        <FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
-                    {/*          <FormControl>*/}
-                    {/*            <Switch*/}
-                    {/*              checked={field.value}*/}
-                    {/*              onCheckedChange={field.onChange}*/}
-                    {/*              id="reduce-only"*/}
-                    {/*            />*/}
-                    {/*          </FormControl>*/}
-                    {/*          <FormLabel*/}
-                    {/*            htmlFor="reduce-only"*/}
-                    {/*            className="font-normal"*/}
-                    {/*          >*/}
-                    {/*            Reduce Only*/}
-                    {/*          </FormLabel>*/}
-                    {/*        </FormItem>*/}
-                    {/*      )}*/}
-                    {/*    />*/}
-                    {/*    <FormField*/}
-                    {/*      control={spotForm.control}*/}
-                    {/*      name="post"*/}
-                    {/*      render={({ field }) => (*/}
-                    {/*        <FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
-                    {/*          <FormControl>*/}
-                    {/*            <Switch*/}
-                    {/*              checked={field.value}*/}
-                    {/*              onCheckedChange={field.onChange}*/}
-                    {/*              id="post"*/}
-                    {/*            />*/}
-                    {/*          </FormControl>*/}
-                    {/*          <FormLabel htmlFor="post" className="font-normal">*/}
-                    {/*            Post*/}
-                    {/*          </FormLabel>*/}
-                    {/*        </FormItem>*/}
-                    {/*      )}*/}
-                    {/*    />*/}
-                    {/*  </div>*/}
-
-                    {/*  <FormField*/}
-                    {/*    control={spotForm.control}*/}
-                    {/*    name="showConfirmation"*/}
-                    {/*    render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
-                    {/*        <FormControl>*/}
-                    {/*          <Switch*/}
-                    {/*            checked={field.value}*/}
-                    {/*            onCheckedChange={field.onChange}*/}
-                    {/*            id="show-confirmation"*/}
-                    {/*          />*/}
-                    {/*        </FormControl>*/}
-                    {/*        <FormLabel*/}
-                    {/*          htmlFor="show-confirmation"*/}
-                    {/*          className="font-normal"*/}
-                    {/*        >*/}
-                    {/*          Show Confirmation*/}
-                    {/*        </FormLabel>*/}
-                    {/*      </FormItem>)}*/}
-                    {/*  />*/}
-                    {/*</div>*/}
                   </>
 
                   <div className="flex space-x-4 w-full items-end">
-                    <FormInput
+                    <PriorityFeeInput
                       className="min-w-1/3 w-1/3"
                       name="priorityFeeOverride"
                       label="Priority Fee"
-                      step="0.001"
-                      symbol="SOL"
+                      symbol={
+                        spotForm.watch("priorityFeeOverrideUnit") || "SOL"
+                      }
                     />
                     <Button
                       className="w-1/3"
@@ -2006,10 +1985,10 @@ export default function Trade() {
                             disableAssetChange={true}
                           />
                         ) : (
-                          <FormInput
+                          <SlippageInput
                             name="slippage"
                             label="Slippage"
-                            symbol="%"
+                            symbol={perpsForm.watch("slippageUnit") || "%"}
                             className="min-w-1/3 w-1/3"
                           />
                         )}
@@ -2104,77 +2083,17 @@ export default function Trade() {
                             </Tooltip>
                           </TooltipProvider>
                         </div>
-
-                        {/*<div className="w-1/2 flex flex-row justify-start gap-4">*/}
-                        {/*  <FormField*/}
-                        {/*    control={perpsForm.control}*/}
-                        {/*    name="perpsReduceOnly"*/}
-                        {/*    render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
-                        {/*        <FormControl>*/}
-                        {/*          <Switch*/}
-                        {/*            checked={field.value}*/}
-                        {/*            onCheckedChange={field.onChange}*/}
-                        {/*            id="reduce-only"*/}
-                        {/*          />*/}
-                        {/*        </FormControl>*/}
-                        {/*        <FormLabel*/}
-                        {/*          htmlFor="reduce-only"*/}
-                        {/*          className="font-normal"*/}
-                        {/*        >*/}
-                        {/*          Reduce Only*/}
-                        {/*        </FormLabel>*/}
-                        {/*      </FormItem>)}*/}
-                        {/*  />*/}
-                        {/*  <FormField*/}
-                        {/*    control={spotForm.control}*/}
-                        {/*    name="post"*/}
-                        {/*    render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
-                        {/*        <FormControl>*/}
-                        {/*          <Switch*/}
-                        {/*            checked={field.value}*/}
-                        {/*            onCheckedChange={field.onChange}*/}
-                        {/*            id="post"*/}
-                        {/*          />*/}
-                        {/*        </FormControl>*/}
-                        {/*        <FormLabel*/}
-                        {/*          htmlFor="post"*/}
-                        {/*          className="font-normal"*/}
-                        {/*        >*/}
-                        {/*          Post*/}
-                        {/*        </FormLabel>*/}
-                        {/*      </FormItem>)}*/}
-                        {/*  />*/}
-                        {/*</div>*/}
-
-                        {/*<FormField*/}
-                        {/*  control={spotForm.control}*/}
-                        {/*  name="showConfirmation"*/}
-                        {/*  render={({ field }) => (<FormItem className="flex flex-row items-center space-x-3 space-y-0">*/}
-                        {/*      <FormControl>*/}
-                        {/*        <Switch*/}
-                        {/*          checked={field.value}*/}
-                        {/*          onCheckedChange={field.onChange}*/}
-                        {/*          id="show-confirmation"*/}
-                        {/*        />*/}
-                        {/*      </FormControl>*/}
-                        {/*      <FormLabel*/}
-                        {/*        htmlFor="show-confirmation"*/}
-                        {/*        className="font-normal"*/}
-                        {/*      >*/}
-                        {/*        Show Confirmation*/}
-                        {/*      </FormLabel>*/}
-                        {/*    </FormItem>)}*/}
-                        {/*/>*/}
                       </div>
                     </>
                   )}
                   <div className="flex space-x-4 w-full items-end">
-                    <FormInput
+                    <PriorityFeeInput
                       className="min-w-1/3 w-1/3"
                       name="priorityFeeOverride"
                       label="Priority Fee"
-                      step="0.001"
-                      symbol="SOL"
+                      symbol={
+                        perpsForm.watch("priorityFeeOverrideUnit") || "SOL"
+                      }
                     />
                     <Button
                       className="w-1/3"
