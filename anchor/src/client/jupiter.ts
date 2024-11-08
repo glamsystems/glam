@@ -11,7 +11,6 @@ import {
   TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
   createAssociatedTokenAccountIdempotentInstruction,
-  getMint,
 } from "@solana/spl-token";
 
 import { BaseClient, TxOptions } from "./base";
@@ -369,7 +368,7 @@ export class JupiterClient {
     );
     const data = await res.json();
     if (!res.ok) {
-      throw new Error(`Failed to fetch quote: ${data}`);
+      throw new Error(data.error);
     }
     return data;
   }

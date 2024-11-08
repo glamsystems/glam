@@ -500,7 +500,13 @@ export default function Trade() {
         uiAmountFrom: Number(quoteResponse.inAmount) / 10 ** inputDecimals,
         uiAmountTo: Number(quoteResponse.outAmount) / 10 ** outputDecimals,
       };
-    } catch (error) {}
+    } catch (error: any) {
+      toast({
+        title: "Failed to get swap quote",
+        description: `${error.message}. Some assets may not support ExactOut.`,
+        variant: "destructive",
+      });
+    }
     return {} as any;
   };
 
@@ -543,6 +549,17 @@ export default function Trade() {
       quoteResponseForSwap = quoteResponse;
     }
 
+    const getPriorityFee = async (tx: VersionedTransaction) => {
+      const { priorityFeeOverride, priorityFeeOverrideUnit } = values;
+      if (priorityFeeOverride) {
+        return (
+          priorityFeeOverride *
+          (priorityFeeOverrideUnit === "LMPS" ? 1 : LAMPORTS_PER_SOL)
+        );
+      }
+      return getPriorityFeeMicroLamports(tx);
+    };
+
     setIsSubmitTxPending(true);
     try {
       const txId = await glamClient.jupiter.swap(
@@ -550,7 +567,7 @@ export default function Trade() {
         undefined,
         quoteResponseForSwap,
         undefined,
-        { getPriorityFeeMicroLamports }
+        { getPriorityFeeMicroLamports: getPriorityFee }
       );
       toast({
         title: `Swapped ${fromAsset} to ${toAsset}`,
@@ -633,6 +650,17 @@ export default function Trade() {
     });
     console.log("Drift spot orderParams", orderParams);
 
+    const getPriorityFee = async (tx: VersionedTransaction) => {
+      const { priorityFeeOverride, priorityFeeOverrideUnit } = values;
+      if (priorityFeeOverride) {
+        return (
+          priorityFeeOverride *
+          (priorityFeeOverrideUnit === "LMPS" ? 1 : LAMPORTS_PER_SOL)
+        );
+      }
+      return getPriorityFeeMicroLamports(tx);
+    };
+
     setIsSubmitTxPending(true);
     try {
       const txId = await glamClient.drift.placeOrder(
@@ -640,7 +668,7 @@ export default function Trade() {
         orderParams,
         0,
         driftMarketConfigs,
-        { getPriorityFeeMicroLamports }
+        { getPriorityFeeMicroLamports: getPriorityFee }
       );
       toast({
         title: "Spot order submitted",
@@ -679,6 +707,16 @@ export default function Trade() {
     });
     console.log("Drift perps orderParams", orderParams);
 
+    const getPriorityFee = async (tx: VersionedTransaction) => {
+      const { priorityFeeOverride, priorityFeeOverrideUnit } = values;
+      if (priorityFeeOverride) {
+        return (
+          priorityFeeOverride *
+          (priorityFeeOverrideUnit === "LMPS" ? 1 : LAMPORTS_PER_SOL)
+        );
+      }
+      return getPriorityFeeMicroLamports(tx);
+    };
     setIsSubmitTxPending(true);
     try {
       const txId = await glamClient.drift.placeOrder(
@@ -686,7 +724,7 @@ export default function Trade() {
         orderParams,
         0,
         driftMarketConfigs,
-        { getPriorityFeeMicroLamports }
+        { getPriorityFeeMicroLamports: getPriorityFee }
       );
       toast({
         title: "Perps order submitted",
