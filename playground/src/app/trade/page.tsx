@@ -95,6 +95,7 @@ import { PerpMarketConfig, SpotMarketConfig } from "anchor/src/client/drift";
 import { getPriorityFeeMicroLamports } from "../settings/priorityfee";
 import { SlippageInput } from "@/components/SlippageInput";
 import { PriorityFeeInput } from "@/components/PriorityFeeInput";
+import { ExactOutWarning } from "./warning";
 
 const spotMarkets = DRIFT_SPOT_MARKETS.map((x) => ({ label: x, value: x }));
 const perpsMarkets = DRIFT_PERP_MARKETS.map((x) => ({ label: x, value: x }));
@@ -1165,6 +1166,8 @@ export default function Trade() {
                       isLoading={isSwapToAmountLoading}
                     />
                   </div>
+
+                  {exactMode === "ExactOut" ? <ExactOutWarning /> : null}
 
                   <div className="flex space-x-4 w-full items-end">
                     <PriorityFeeInput
