@@ -1167,8 +1167,6 @@ export default function Trade() {
                     />
                   </div>
 
-                  {exactMode === "ExactOut" ? <ExactOutWarning /> : null}
-
                   <div className="flex space-x-4 w-full items-end">
                     <PriorityFeeInput
                       className="min-w-1/3 w-1/3"
@@ -1193,6 +1191,8 @@ export default function Trade() {
                       Swap
                     </Button>
                   </div>
+
+                  {exactMode === "ExactOut" ? <ExactOutWarning /> : null}
 
                   <Accordion type="single" collapsible>
                     <AccordionItem value="item-1">
