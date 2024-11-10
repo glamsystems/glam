@@ -11,6 +11,7 @@ export const getPriorityFeeMicroLamports = async (tx: VersionedTransaction) => {
     } catch (e) {
       parsedValues = {};
     }
+
     const { option } = parsedValues;
     if (option === "custom") {
       const { customFee, customFeeUnit } = parsedValues;

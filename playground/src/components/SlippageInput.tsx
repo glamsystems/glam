@@ -16,15 +16,24 @@ interface Props {
   symbol: string;
   step?: string;
   className?: string;
+  disableSubmitOnEnter?: boolean;
 }
 
 const BPS_PER_PERCENT = 100; // 1% = 100 BPS
 
+/**
+ * This input component must be used in a `FormProvider` context. The form must have two fields:
+ * - `name` for the numeric value
+ * - `${name}Unit` for the unit of the value
+ *
+ * `symbol` is the unit of the input value. It can be either "BPS" or "%".
+ */
 export const SlippageInput: React.FC<Props> = ({
   name,
   label,
   symbol,
   className,
+  disableSubmitOnEnter = true,
 }) => {
   const { control, getValues, setValue } = useFormContext();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -80,6 +89,11 @@ export const SlippageInput: React.FC<Props> = ({
                 className="pr-20"
                 placeholder=""
                 onChange={(e) => handleInputChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (disableSubmitOnEnter && e.key === "Enter") {
+                    e.preventDefault();
+                  }
+                }}
               />
 
               <Button

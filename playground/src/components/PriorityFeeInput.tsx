@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,12 +9,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-
 interface Props {
   name: string;
   label: string;
   symbol: string;
-  unit?: string;
   step?: string;
   className?: string;
   disableInput?: boolean;
@@ -23,14 +21,20 @@ interface Props {
 
 const LAMPORTS_PER_SOL = 1_000_000_000; // 1 billion
 
+/**
+ * This input component must be used in a `FormProvider` context. The form must have two fields:
+ * - `name`: form field name for the input
+ * - `${name}Unit`: for the unit of the input value
+ *
+ * `symbol` is the unit of the input value. It can be either "LMPS" or "SOL".
+ */
 export const PriorityFeeInput: React.FC<Props> = ({
   name,
   label,
   symbol,
-  unit,
   className,
   disableInput = false,
-  disableSubmitOnEnter = false,
+  disableSubmitOnEnter = true,
 }) => {
   const { control, getValues, setValue } = useFormContext();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -41,12 +45,10 @@ export const PriorityFeeInput: React.FC<Props> = ({
     const currentValue = getValues()[name] || 0;
     if (symbol === "SOL") {
       setValue(name, currentValue * LAMPORTS_PER_SOL);
-      const unitKey = unit ? unit : `${name}Unit`;
-      setValue(unitKey, "LMPS");
+      setValue(`${name}Unit`, "LMPS");
     } else if (symbol === "LMPS") {
       setValue(name, currentValue / LAMPORTS_PER_SOL);
-      const unitKey = unit ? unit : `${name}Unit`;
-      setValue(unitKey, "SOL");
+      setValue(`${name}Unit`, "SOL");
     }
   };
 
@@ -88,8 +90,8 @@ export const PriorityFeeInput: React.FC<Props> = ({
                 disabled={disableInput}
                 onChange={(e) => handleInputChange(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    disableSubmitOnEnter && e.preventDefault();
+                  if (disableSubmitOnEnter && e.key === "Enter") {
+                    e.preventDefault();
                   }
                 }}
               />

@@ -584,7 +584,6 @@ const SettingsPage: React.FC = () => {
                             name="maxCapFee"
                             label="Max Cap Fee"
                             symbol={priorityFeeForm.watch("maxCapFeeUnit")}
-                            disableSubmitOnEnter={true}
                           />
                         </FormControl>
                         <FormMessage />
@@ -603,7 +602,6 @@ const SettingsPage: React.FC = () => {
                           name="customFee"
                           label="Custom Fee"
                           symbol={priorityFeeForm.watch("customFeeUnit")}
-                          disableSubmitOnEnter={true}
                         />
                       </FormControl>
                       <FormMessage />

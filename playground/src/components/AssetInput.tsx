@@ -50,6 +50,7 @@ interface AssetInputProps {
   useMaxAmount?: boolean;
   hideBalance?: boolean;
   isLoading?: boolean;
+  disableSubmitOnEnter?: boolean;
 }
 
 export const AssetInput: React.FC<AssetInputProps> = ({
@@ -66,6 +67,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
   useMaxAmount = false,
   hideBalance = false,
   isLoading = false,
+  disableSubmitOnEnter = true,
 }) => {
   const { control, getValues, setValue, reset } = useFormContext();
   // const [displayValue, setDisplayValue] = useState<string>("0");
@@ -157,6 +159,11 @@ export const AssetInput: React.FC<AssetInputProps> = ({
                 className="pr-20"
                 placeholder=""
                 onChange={(e) => handleInputChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (disableSubmitOnEnter && e.key === "Enter") {
+                    e.preventDefault();
+                  }
+                }}
                 disabled={disableAmountInput}
               />
               {isLoading && (
