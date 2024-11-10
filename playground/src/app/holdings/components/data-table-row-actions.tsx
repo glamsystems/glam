@@ -14,7 +14,7 @@ import {
 import { holdingSchema } from "../data/holdingSchema";
 import TruncateAddress from "../../../utils/TruncateAddress";
 import { useState } from "react";
-import { CheckIcon, CopyIcon } from "lucide-react";
+import { ArrowLeftRight, CheckIcon, CopyIcon, X } from "lucide-react";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -90,6 +90,28 @@ export function DataTableRowActions<TData>({
             )}
           </DropdownMenuShortcut>
         </DropdownMenuItem>
+
+        {holding.location === "vault" && (
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={(e) => {
+              if (holding.balance > 0) {
+                console.log("Swapping token:", holding.mint);
+              } else {
+                console.log("Closing ata:", holding.ata);
+              }
+            }}
+          >
+            {holding.balance > 0 ? "Swap" : "Close"}
+            <DropdownMenuShortcut>
+              {holding.balance > 0 ? (
+                <ArrowLeftRight className="h-4 w-4" />
+              ) : (
+                <X className="h-4 w-4" />
+              )}
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

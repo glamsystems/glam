@@ -372,24 +372,28 @@ export default function Trade() {
 
   const fromAssetList = useMemo(() => {
     const assets =
-      (treasury?.tokenAccounts || []).map((ta) => {
-        const name =
-          tokenList?.find((t: any) => t.address === ta.mint)?.name || "Unknown";
-        const symbol =
-          tokenList?.find((t: any) => t.address === ta.mint)?.symbol || ta.mint;
-        return {
-          name,
-          symbol: symbol,
-          address: ta.mint,
-          decimals: ta.decimals,
-          balance:
-            /* combine SOL + wSOL balances */
-            symbol === "SOL"
-              ? Number(ta.uiAmount) +
-                Number(treasury?.balanceLamports || 0) / LAMPORTS_PER_SOL
-              : Number(ta.uiAmount),
-        } as Asset;
-      }) || [];
+      (treasury?.tokenAccounts || [])
+        .map((ta) => {
+          const name =
+            tokenList?.find((t: any) => t.address === ta.mint)?.name ||
+            "Unknown";
+          const symbol =
+            tokenList?.find((t: any) => t.address === ta.mint)?.symbol ||
+            ta.mint;
+          return {
+            name,
+            symbol: symbol,
+            address: ta.mint,
+            decimals: ta.decimals,
+            balance:
+              /* combine SOL + wSOL balances */
+              symbol === "SOL"
+                ? Number(ta.uiAmount) +
+                  Number(treasury?.balanceLamports || 0) / LAMPORTS_PER_SOL
+                : Number(ta.uiAmount),
+          } as Asset;
+        })
+        .filter((a) => a.balance > 0) || [];
 
     return assets;
   }, [treasury, tokenList, fundPDA]);

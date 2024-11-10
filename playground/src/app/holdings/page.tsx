@@ -16,6 +16,7 @@ export default function Holdings() {
   const { activeFund, treasury, driftMarketConfigs, jupTokenList, prices } =
     useGlam();
 
+  const [showZeroBalances, setShowZeroBalances] = useState(false);
   const [isLoadingData, setIsLoading] = useState(true);
   const [driftSpotPositions, setDriftSpotPositions] = useState(
     [] as SpotPosition[]
@@ -60,31 +61,29 @@ export default function Holdings() {
 
     if (treasury?.tokenAccounts) {
       tokenAccounts.push(
-        ...treasury.tokenAccounts
-          .filter((ta) => Number(ta.uiAmount) > 0)
-          .map((ta) => {
-            const logoURI =
-              jupTokenList?.find((t: any) => t.address === ta.mint)?.logoURI ||
-              "";
-            const name =
-              jupTokenList?.find((t: any) => t.address === ta.mint)?.name ||
-              "Unknown";
-            const symbol =
-              jupTokenList?.find((t: any) => t.address === ta.mint)?.symbol ||
-              ta.mint;
-            const price = prices?.find((p) => p.mint === ta.mint)?.price || 0;
-            return {
-              name,
-              symbol: symbol === "SOL" ? "wSOL" : symbol,
-              mint: ta.mint,
-              ata: ta.address,
-              price: price,
-              balance: Number(ta.uiAmount),
-              notional: Number(ta.uiAmount) * price || 0,
-              logoURI: logoURI,
-              location: "vault",
-            };
-          })
+        ...treasury.tokenAccounts.map((ta) => {
+          const logoURI =
+            jupTokenList?.find((t: any) => t.address === ta.mint)?.logoURI ||
+            "";
+          const name =
+            jupTokenList?.find((t: any) => t.address === ta.mint)?.name ||
+            "Unknown";
+          const symbol =
+            jupTokenList?.find((t: any) => t.address === ta.mint)?.symbol ||
+            ta.mint;
+          const price = prices?.find((p) => p.mint === ta.mint)?.price || 0;
+          return {
+            name,
+            symbol: symbol === "SOL" ? "wSOL" : symbol,
+            mint: ta.mint,
+            ata: ta.address,
+            price: price,
+            balance: Number(ta.uiAmount),
+            notional: Number(ta.uiAmount) * price || 0,
+            logoURI: logoURI,
+            location: "vault",
+          };
+        })
       );
     }
 
@@ -146,8 +145,15 @@ export default function Holdings() {
   return (
     <PageContentWrapper>
       <DataTable
-        data={isLoadingData ? skeletonData : tableData}
+        data={
+          isLoadingData
+            ? skeletonData
+            : showZeroBalances
+            ? tableData
+            : tableData.filter((d) => d.balance > 0)
+        }
         columns={columns}
+        setShowZeroBalances={setShowZeroBalances}
       />
     </PageContentWrapper>
   );
