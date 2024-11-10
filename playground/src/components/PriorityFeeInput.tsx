@@ -18,6 +18,7 @@ interface Props {
   step?: string;
   className?: string;
   disableInput?: boolean;
+  disableSubmitOnEnter?: boolean;
 }
 
 const LAMPORTS_PER_SOL = 1_000_000_000; // 1 billion
@@ -29,11 +30,12 @@ export const PriorityFeeInput: React.FC<Props> = ({
   unit,
   className,
   disableInput = false,
+  disableSubmitOnEnter = false,
 }) => {
   const { control, getValues, setValue } = useFormContext();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleSymbolToggle = (event: any) => {
+  const handleSymbolToggle = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
     const currentValue = getValues()[name] || 0;
@@ -85,6 +87,11 @@ export const PriorityFeeInput: React.FC<Props> = ({
                 placeholder=""
                 disabled={disableInput}
                 onChange={(e) => handleInputChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    disableSubmitOnEnter && e.preventDefault();
+                  }
+                }}
               />
 
               <Button

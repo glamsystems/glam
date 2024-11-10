@@ -71,21 +71,6 @@ const priorityFeeFormSchema = z.object({
   customFeeUnit: z.enum(feeUnitOptions),
   estimatedFee: z.number().optional(),
   estimatedFeeUnit: z.enum(feeUnitOptions),
-  // maxCapFee: z.string().refine(
-  //   (value) => {
-  //     const numValue = parseFloat(value);
-  //     return value === "" || (!isNaN(numValue) && numValue >= 0.000001);
-  //   },
-  //   {
-  //     message: "Max Cap Fee must be at least 0.000001",
-  //   }
-  // ),
-  // customFee: z
-  //   .string()
-  //   .optional()
-  //   .refine((value) => value === "" || !isNaN(Number(value)), {
-  //     message: "Must be a valid number",
-  //   }),
 });
 
 const PERSISTED_FIELDS = {
@@ -188,7 +173,6 @@ const SettingsPage: React.FC = () => {
   const { cluster, clusters, setCluster } = useCluster();
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [open, setOpen] = useState(false);
-  const [dynamicFee, setDynamicFee] = useState(0.00001);
 
   const rpcForm = useForm<RpcFormValues>({
     resolver: zodResolver(rpcFormSchema),
@@ -579,6 +563,11 @@ const SettingsPage: React.FC = () => {
                               );
                             }}
                             value={field.value}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                              }
+                            }}
                           />
                         </FormItem>
                       )}
@@ -595,6 +584,7 @@ const SettingsPage: React.FC = () => {
                             name="maxCapFee"
                             label="Max Cap Fee"
                             symbol={priorityFeeForm.watch("maxCapFeeUnit")}
+                            disableSubmitOnEnter={true}
                           />
                         </FormControl>
                         <FormMessage />
@@ -613,6 +603,7 @@ const SettingsPage: React.FC = () => {
                           name="customFee"
                           label="Custom Fee"
                           symbol={priorityFeeForm.watch("customFeeUnit")}
+                          disableSubmitOnEnter={true}
                         />
                       </FormControl>
                       <FormMessage />
