@@ -28,7 +28,7 @@ try {
 
 const cliTxOptions = {
   getPriorityFeeMicroLamports: async (tx: VersionedTransaction) =>
-    await getPriorityFeeEstimate(tx, heliusApiKey),
+    await getPriorityFeeEstimate(heliusApiKey, tx),
 };
 
 const glamClient = getGlamClient();

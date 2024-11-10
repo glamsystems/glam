@@ -12,11 +12,20 @@ type PriorityLevel =
   | "Default";
 
 export const getPriorityFeeEstimate = async (
-  tx: VersionedTransaction,
   heliusApiKey: string,
+  tx?: VersionedTransaction,
+  accountKeys?: string[],
   priorityLevel?: PriorityLevel
 ) => {
+  if (!tx && !accountKeys) {
+    throw new Error("Either tx or accountKeys must be provided");
+  }
+
   const options = priorityLevel ? { priorityLevel } : { recommended: true };
+  const param = tx
+    ? { transaction: bs58.encode(tx.serialize()) }
+    : { accountKeys };
+
   const response = await fetch(
     `https://mainnet.helius-rpc.com/?api-key=${heliusApiKey}`,
     {
@@ -28,7 +37,7 @@ export const getPriorityFeeEstimate = async (
         method: "getPriorityFeeEstimate",
         params: [
           {
-            transaction: bs58.encode(tx.serialize()),
+            ...param,
             options,
           },
         ],

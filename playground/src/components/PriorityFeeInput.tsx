@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,22 +9,32 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-
 interface Props {
   name: string;
   label: string;
   symbol: string;
   step?: string;
   className?: string;
+  disableInput?: boolean;
+  disableSubmitOnEnter?: boolean;
 }
 
 const LAMPORTS_PER_SOL = 1_000_000_000; // 1 billion
 
+/**
+ * This input component must be used in a `FormProvider` context. The form must have two fields:
+ * - `name`: form field name for the input
+ * - `${name}Unit`: for the unit of the input value
+ *
+ * `symbol` is the unit of the input value. It can be either "LMPS" or "SOL".
+ */
 export const PriorityFeeInput: React.FC<Props> = ({
   name,
   label,
   symbol,
   className,
+  disableInput = false,
+  disableSubmitOnEnter = true,
 }) => {
   const { control, getValues, setValue } = useFormContext();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -33,7 +43,6 @@ export const PriorityFeeInput: React.FC<Props> = ({
     event.preventDefault();
 
     const currentValue = getValues()[name] || 0;
-
     if (symbol === "SOL") {
       setValue(name, currentValue * LAMPORTS_PER_SOL);
       setValue(`${name}Unit`, "LMPS");
@@ -78,7 +87,13 @@ export const PriorityFeeInput: React.FC<Props> = ({
                 value={getValues()[name]}
                 className="pr-20"
                 placeholder=""
+                disabled={disableInput}
                 onChange={(e) => handleInputChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (disableSubmitOnEnter && e.key === "Enter") {
+                    e.preventDefault();
+                  }
+                }}
               />
 
               <Button

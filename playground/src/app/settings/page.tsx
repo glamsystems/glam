@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import React, { useState, useEffect } from "react";
+import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Check, ChevronsUpDown, X } from "lucide-react";
@@ -42,38 +42,97 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { PriorityFeeInput } from "@/components/PriorityFeeInput";
+import { useQuery } from "@tanstack/react-query";
+import {
+  getPriorityFeeEstimate,
+  GLAM_PROGRAM_ID_MAINNET,
+} from "@glam/anchor/react";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
-const priorityFeeOptions = [
-  "dynamic",
-  "elevated",
-  "critical",
-  "custom",
-] as const;
-type PriorityFeeType = (typeof priorityFeeOptions)[number];
-
-const formSchema = z.object({
+const rpcFormSchema = z.object({
   customLabel: z.string().min(1, "Label is required"),
   customEndpoint: z.string().url("Must be a valid URL"),
   activeEndpoint: z.string().min(1, "Active endpoint is required"),
-  priorityFee: z.enum(priorityFeeOptions),
-  maxCapFee: z.string().refine(
-    (value) => {
-      const numValue = parseFloat(value);
-      return value === "" || (!isNaN(numValue) && numValue >= 0.000001);
-    },
-    {
-      message: "Max Cap Fee must be at least 0.000001",
-    }
-  ),
-  customFee: z
-    .string()
-    .optional()
-    .refine((value) => value === "" || !isNaN(Number(value)), {
-      message: "Must be a valid number",
-    }),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+const priorityFeeOptions = ["dynamic", "multiple", "custom"] as const;
+type PriorityFeeType = (typeof priorityFeeOptions)[number];
+
+const feeUnitOptions = ["SOL", "LMPS"] as const;
+type FeeUnit = (typeof feeUnitOptions)[number];
+
+const priorityFeeFormSchema = z.object({
+  option: z.enum(priorityFeeOptions),
+  multiplier: z.string().optional(),
+  maxCapFee: z.number().optional(),
+  maxCapFeeUnit: z.enum(feeUnitOptions),
+  customFee: z.number().optional(),
+  customFeeUnit: z.enum(feeUnitOptions),
+  estimatedFee: z.number().optional(),
+  estimatedFeeUnit: z.enum(feeUnitOptions),
+});
+
+const PERSISTED_FIELDS = {
+  rpc: [],
+  priorityFee: [
+    "option",
+    "multiplier",
+    "maxCapFee",
+    "maxCapFeeUnit",
+    "customFee",
+    "customFeeUnit",
+    "estimatedFeeUnit",
+  ],
+};
+type FormKey = keyof typeof PERSISTED_FIELDS;
+
+function usePersistedForm<T extends z.ZodTypeAny>(
+  formKey: FormKey,
+  schema: T,
+  defaultValues: z.infer<T>
+): UseFormReturn<z.infer<T>> {
+  const form = useForm<z.infer<T>>({
+    resolver: zodResolver(schema),
+    defaultValues,
+  });
+
+  useEffect(() => {
+    const storedValues = localStorage.getItem(formKey);
+    if (storedValues) {
+      let parsedValues;
+      try {
+        parsedValues = JSON.parse(storedValues);
+      } catch (e) {
+        parsedValues = {};
+      }
+      Object.keys(parsedValues).forEach((key) => {
+        if ((PERSISTED_FIELDS[formKey] as string[]).includes(key)) {
+          form.setValue(key as any, parsedValues[key]);
+        }
+      });
+    }
+  }, [formKey, form]);
+
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      const persistedValues: Partial<z.infer<T>> = {};
+      PERSISTED_FIELDS[formKey].forEach((field) => {
+        if (value[field as keyof z.infer<T>] !== undefined) {
+          persistedValues[field as keyof z.infer<T>] =
+            value[field as keyof z.infer<T>];
+        }
+      });
+      localStorage.setItem(formKey, JSON.stringify(persistedValues));
+    });
+    return () => subscription.unsubscribe();
+  }, [formKey, form]);
+
+  return form;
+}
+
+type RpcFormValues = z.infer<typeof rpcFormSchema>;
+type PriorityFeeFormValues = z.infer<typeof priorityFeeFormSchema>;
 
 type Endpoint = {
   value: string;
@@ -99,68 +158,69 @@ const truncateUrl = (url: string) => {
   return `${parsedUrl.protocol}//${parsedUrl.hostname}`;
 };
 
+const PRIORITY_FEE_FORM_DEFAULT_VALUES = {
+  option: "dynamic" as PriorityFeeType,
+  multiplier: "1",
+  maxCapFee: 0.004,
+  maxCapFeeUnit: "SOL" as FeeUnit,
+  customFee: 0.001,
+  customFeeUnit: "SOL" as FeeUnit,
+  estimatedFee: 0.00001,
+  estimatedFeeUnit: "SOL" as FeeUnit,
+};
+
 const SettingsPage: React.FC = () => {
   const { cluster, clusters, setCluster } = useCluster();
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [open, setOpen] = useState(false);
-  const dynamicFee = 0.000001; // Example dynamic fee
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [isMaxCapFeeSetFromStorage, setIsMaxCapFeeSetFromStorage] =
-    useState(false);
-  const [isMaxCapFeeManuallySet, setIsMaxCapFeeManuallySet] = useState(false);
-  const prevMaxCapFee = useRef<string | null | undefined>(null);
-  const prevCustomFee = useRef<string | null | undefined>(null);
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const rpcForm = useForm<RpcFormValues>({
+    resolver: zodResolver(rpcFormSchema),
     defaultValues: {
       customLabel: "",
       customEndpoint: "",
       activeEndpoint: cluster.endpoint || "",
-      priorityFee: "dynamic",
-      maxCapFee: "",
-      customFee: "",
     },
   });
 
-  const priorityFee = useWatch({
-    control: form.control,
-    name: "priorityFee",
-    defaultValue: "dynamic", // Ensure default value is set
-  });
+  const priorityFeeForm = usePersistedForm(
+    "priorityFee",
+    priorityFeeFormSchema,
+    PRIORITY_FEE_FORM_DEFAULT_VALUES
+  );
 
-  const maxCapFee = useWatch({
-    control: form.control,
-    name: "maxCapFee",
-    defaultValue: "", // Ensure default value is set
-  });
+  const feeOption = priorityFeeForm.watch("option");
+  const multiplier = priorityFeeForm.watch("multiplier");
 
-  const customFee = useWatch({
-    control: form.control,
-    name: "customFee",
-    defaultValue: "", // Ensure default value is set
+  const { data: priorityFeeEstimate } = useQuery({
+    queryKey: ["getEstimateFee"],
+    refetchInterval: 10_000,
+    enabled: feeOption !== "custom",
+    queryFn: () =>
+      getPriorityFeeEstimate(
+        process.env.NEXT_PUBLIC_HELIUS_API_KEY!,
+        undefined,
+        [GLAM_PROGRAM_ID_MAINNET.toBase58()],
+        "High"
+      ),
   });
-
-  const estimatedFee = useMemo(() => {
-    switch (priorityFee) {
-      case "dynamic":
-        return dynamicFee;
-      case "elevated":
-        return dynamicFee * 5;
-      case "critical":
-        return dynamicFee * 10;
-      default:
-        return dynamicFee;
+  useEffect(() => {
+    if (priorityFeeEstimate) {
+      console.log("priorityFeeEstimate:", priorityFeeEstimate, "microLamports");
+      const { estimatedFeeUnit } = priorityFeeForm.getValues();
+      const val =
+        estimatedFeeUnit === "SOL"
+          ? priorityFeeEstimate / LAMPORTS_PER_SOL
+          : Math.ceil(priorityFeeEstimate);
+      priorityFeeForm.setValue("estimatedFee", val);
     }
-  }, [priorityFee, dynamicFee]);
+  }, [priorityFeeEstimate]);
 
-  const resetFeeValues = () => {
-    form.setValue("priorityFee", "dynamic", { shouldValidate: true });
-    form.setValue("maxCapFee", dynamicFee.toFixed(6), { shouldValidate: true });
-    form.setValue("customFee", "", { shouldValidate: true });
-    saveToLocalStorage("priorityFee", "dynamic");
-    saveToLocalStorage("maxCapFee", dynamicFee.toFixed(6));
-    saveToLocalStorage("customFee", "");
+  const handleResetFeeValues = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    priorityFeeForm.reset(PRIORITY_FEE_FORM_DEFAULT_VALUES);
+
     toast({
       title: "Fee Values Reset",
       description:
@@ -168,105 +228,13 @@ const SettingsPage: React.FC = () => {
     });
   };
 
-  useEffect(() => {
-    if (isInitialLoad) {
-      setIsInitialLoad(false);
+  const handlePriorityFeeOptionChange = (value: PriorityFeeType) => {
+    if (!priorityFeeOptions.includes(value)) {
       return;
     }
-
-    const currentMaxCapFee = parseFloat(form.getValues("maxCapFee"));
-    if (isNaN(currentMaxCapFee) || currentMaxCapFee < estimatedFee) {
-      form.setValue("maxCapFee", estimatedFee.toFixed(6), {
-        shouldValidate: true,
-      });
-      saveToLocalStorage("maxCapFee", estimatedFee.toFixed(6));
-
-      // Show destructive toast only when there's an actual change, not on initial load
-      toast({
-        title: "Max Cap Fee Increased",
-        description: `Max Cap Fee has been automatically increased to ${estimatedFee.toFixed(
-          6
-        )} to match the new estimated fee.`,
-        variant: "destructive",
-      });
-    }
-  }, [estimatedFee, form, isInitialLoad]);
-
-  const handlePriorityFeeChange = (value: PriorityFeeType) => {
-    if (priorityFeeOptions.includes(value)) {
-      form.setValue("priorityFee", value, { shouldValidate: true });
-      saveToLocalStorage("priorityFee", value);
-
-      const currentMaxCapFee = parseFloat(form.getValues("maxCapFee"));
-      const newEstimatedFee =
-        value === "dynamic"
-          ? dynamicFee
-          : value === "elevated"
-          ? dynamicFee * 5
-          : value === "critical"
-          ? dynamicFee * 10
-          : dynamicFee;
-
-      if (
-        !isMaxCapFeeManuallySet &&
-        (isNaN(currentMaxCapFee) || currentMaxCapFee < newEstimatedFee)
-      ) {
-        form.setValue("maxCapFee", newEstimatedFee.toFixed(6), {
-          shouldValidate: true,
-        });
-        saveToLocalStorage("maxCapFee", newEstimatedFee.toFixed(6));
-
-        // Show destructive toast only when there's an actual change and it's not the initial load
-        if (!isInitialLoad) {
-          toast({
-            title: "Max Cap Fee Increased",
-            description: `Max Cap Fee has been automatically increased to ${newEstimatedFee.toFixed(
-              6
-            )} due to the change in priority fee.`,
-            variant: "destructive",
-          });
-        }
-      }
-    }
-  };
-
-  const handleMaxCapFeeBlur = (value: string | undefined) => {
-    const numValue = parseFloat(value || "");
-    if (!isNaN(numValue)) {
-      // Handle undefined value by defaulting to an empty string
-      if (prevMaxCapFee.current !== (value || "")) {
-        if (numValue >= estimatedFee) {
-          form.setValue("maxCapFee", numValue.toFixed(6), {
-            shouldValidate: true,
-          });
-          saveToLocalStorage("maxCapFee", numValue.toFixed(6));
-          setIsMaxCapFeeManuallySet(true);
-
-          if (!isInitialLoad) {
-            toast({
-              title: "Max Cap Fee Updated",
-              description: `Max Cap Fee has been manually set to ${numValue.toFixed(
-                6
-              )}.`,
-            });
-          }
-        } else {
-          const newValue = estimatedFee.toFixed(6);
-          form.setValue("maxCapFee", newValue, { shouldValidate: true });
-          saveToLocalStorage("maxCapFee", newValue);
-          setIsMaxCapFeeManuallySet(false);
-
-          if (!isInitialLoad) {
-            toast({
-              title: "Max Cap Fee Adjusted",
-              description: `Max Cap Fee has been automatically set to ${newValue} to match the current estimated fee.`,
-              variant: "destructive",
-            });
-          }
-        }
-        prevMaxCapFee.current = value || ""; // Update previous value
-      }
-    }
+    priorityFeeForm.setValue("option", value, {
+      shouldValidate: true,
+    });
   };
 
   useEffect(() => {
@@ -291,75 +259,7 @@ const SettingsPage: React.FC = () => {
     setEndpoints([...clusterEndpoints, ...customEndpoints]);
   }, [clusters]);
 
-  useEffect(() => {
-    // Load stored priority fee settings
-    const storedPriorityFee = localStorage.getItem(
-      "priorityFee"
-    ) as PriorityFeeType;
-    const storedMaxCapFee = localStorage.getItem("maxCapFee");
-    const storedCustomFee = localStorage.getItem("customFee") || "";
-
-    if (priorityFeeOptions.includes(storedPriorityFee)) {
-      form.setValue("priorityFee", storedPriorityFee);
-    } else {
-      form.setValue("priorityFee", "dynamic");
-    }
-
-    if (storedMaxCapFee) {
-      form.setValue("maxCapFee", storedMaxCapFee);
-      setIsMaxCapFeeSetFromStorage(true);
-      setIsMaxCapFeeManuallySet(true); // Assume any stored value was manually set
-    } else {
-      // If there's no stored max cap fee, set it to the initial estimated fee
-      form.setValue("maxCapFee", dynamicFee.toFixed(6));
-    }
-
-    form.setValue("customFee", storedCustomFee);
-
-    setIsInitialLoad(false);
-  }, [form, dynamicFee]);
-
-  // Ensure value is a string (fallback to empty string if undefined)
-
-  const saveToLocalStorage = (key: string, value: string | undefined) => {
-    localStorage.setItem(key, value || ""); // Ensure non-undefined value is passed
-    if (key === "maxCapFee") {
-      setIsMaxCapFeeSetFromStorage(true);
-    }
-    // if (!isInitialLoad) {
-    //   toast({
-    //     title: "Fee Settings Updated",
-    //     description: `${capitalizeWords(key)} is updated to ${
-    //       value || "not set"
-    //     }.`,
-    //   });
-    // }
-  };
-
-  const handleCustomFeeBlur = (value: string | undefined) => {
-    const customFeeValue = value || ""; // Default to empty string if undefined
-    if (prevCustomFee.current !== customFeeValue) {
-      saveToLocalStorage("customFee", customFeeValue); // Save to localStorage
-
-      if (!isInitialLoad) {
-        if (customFeeValue === "") {
-          toast({
-            title: "Custom Fee Removed",
-            description: "Custom Fee has been cleared.",
-          });
-        } else {
-          toast({
-            title: "Custom Fee Updated",
-            description: `Custom Fee has been manually set to ${customFeeValue}.`,
-          });
-        }
-      }
-
-      prevCustomFee.current = customFeeValue; // Update the previous customFee value
-    }
-  };
-
-  const onSubmit = (data: FormValues) => {
+  const onSubmit = (data: RpcFormValues) => {
     const newCustomEndpoint = {
       value: data.customEndpoint,
       label: capitalizeWords(data.customLabel),
@@ -376,7 +276,7 @@ const SettingsPage: React.FC = () => {
     // Automatically set the new endpoint as active
     handleEndpointChange(data.customEndpoint);
 
-    form.reset({ customLabel: "", customEndpoint: "" });
+    rpcForm.reset({ customLabel: "", customEndpoint: "" });
 
     toast({
       title: "Custom endpoint added",
@@ -387,7 +287,7 @@ const SettingsPage: React.FC = () => {
   const handleEndpointChange = (value: string) => {
     const selectedEndpoint = endpoints.find((e) => e.value === value);
     if (selectedEndpoint) {
-      form.setValue("activeEndpoint", value);
+      rpcForm.setValue("activeEndpoint", value);
       const clusterEndpoint = clusters.find((c) => c.endpoint === value);
       if (clusterEndpoint) {
         setCluster(clusterEndpoint);
@@ -409,8 +309,8 @@ const SettingsPage: React.FC = () => {
       JSON.stringify(updatedEndpoints.filter((e) => e.isCustom))
     );
 
-    if (form.getValues("activeEndpoint") === endpointToDelete) {
-      form.setValue("activeEndpoint", clusters[0].endpoint);
+    if (rpcForm.getValues("activeEndpoint") === endpointToDelete) {
+      rpcForm.setValue("activeEndpoint", clusters[0].endpoint);
       setCluster(clusters[0]);
     }
 
@@ -420,18 +320,15 @@ const SettingsPage: React.FC = () => {
     });
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-  };
-
   return (
     <PageContentWrapper>
       <div className="w-4/6 self-center space-y-8">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* RPC endpoint settings */}
+        <Form {...rpcForm}>
+          <form onSubmit={rpcForm.handleSubmit(onSubmit)} className="space-y-6">
             <div>
               <FormField
-                control={form.control}
+                control={rpcForm.control}
                 name="activeEndpoint"
                 render={({ field }) => (
                   <FormItem>
@@ -525,7 +422,7 @@ const SettingsPage: React.FC = () => {
             <div>
               <div className="gap-4 flex flex-row items-start">
                 <FormField
-                  control={form.control}
+                  control={rpcForm.control}
                   name="customLabel"
                   render={({ field }) => (
                     <FormItem className="flex-grow">
@@ -538,7 +435,7 @@ const SettingsPage: React.FC = () => {
                   )}
                 />
                 <FormField
-                  control={form.control}
+                  control={rpcForm.control}
                   name="customEndpoint"
                   render={({ field }) => (
                     <FormItem className="flex-grow">
@@ -565,8 +462,15 @@ const SettingsPage: React.FC = () => {
 
         <Separator className="my-4" />
 
-        <Form {...form}>
-          <form onSubmit={handleFormSubmit} className="space-y-4">
+        {/* Priority fee settings  */}
+        <Form {...priorityFeeForm}>
+          <form
+            className="space-y-4"
+            onSubmit={(event) => {
+              console.log("submitting form");
+              event.preventDefault(); // Prevent form submission on Enter key
+            }}
+          >
             <div className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center">
@@ -581,10 +485,7 @@ const SettingsPage: React.FC = () => {
                           variant="ghost"
                           size="sm"
                           className="ml-2 h-8 w-8 p-0"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            resetFeeValues();
-                          }}
+                          onClick={(e) => handleResetFeeValues(e)}
                         >
                           <ResetIcon className="h-4 w-4" />
                         </Button>
@@ -600,8 +501,8 @@ const SettingsPage: React.FC = () => {
                 </p>
               </div>
               <FormField
-                control={form.control}
-                name="priorityFee"
+                control={priorityFeeForm.control}
+                name="option"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
@@ -609,7 +510,7 @@ const SettingsPage: React.FC = () => {
                         type="single"
                         id="priority-fee"
                         value={field.value}
-                        onValueChange={handlePriorityFeeChange}
+                        onValueChange={handlePriorityFeeOptionChange}
                         className="w-full"
                       >
                         {priorityFeeOptions.map((option) => (
@@ -628,44 +529,61 @@ const SettingsPage: React.FC = () => {
                 )}
               />
 
-              {priorityFee !== "custom" ? (
-                <div className="grid grid-cols-2 gap-4">
+              {feeOption !== "custom" ? (
+                <div
+                  className={cn(
+                    feeOption === "multiple" ? "grid-cols-3" : "grid-cols-2",
+                    "grid gap-4"
+                  )}
+                >
                   <div className="space-y-2">
-                    <Label htmlFor="est-fee" className="text-sm font-medium">
-                      Est. Fee
-                    </Label>
-                    <Input
-                      id="est-fee"
-                      value={estimatedFee.toFixed(6)}
-                      defaultValue={0.00001}
-                      disabled
-                      className="bg-muted"
+                    <PriorityFeeInput
+                      name="estimatedFee"
+                      label="Est. Fee"
+                      disableInput={true}
+                      symbol={priorityFeeForm.watch("estimatedFeeUnit")}
                     />
                   </div>
-                  <FormField
-                    control={form.control}
-                    name="maxCapFee"
-                    render={({ field }) => (
-                      <FormItem className="space-y-2">
-                        <Label
-                          htmlFor="max-cap-fee"
-                          className="text-sm font-medium"
-                        >
-                          Max Cap Fee
-                        </Label>
-                        <FormControl>
+
+                  {feeOption === "multiple" ? (
+                    <FormField
+                      control={priorityFeeForm.control}
+                      name="multiplier"
+                      render={({ field }) => (
+                        <FormItem className="space-y-2">
+                          <FormLabel>Multiplier</FormLabel>
                           <Input
-                            id="max-cap-fee"
-                            placeholder="0.00001"
-                            defaultValue={0.00001}
-                            {...field}
-                            onBlur={() => handleMaxCapFeeBlur(field.value)}
+                            id="multiplier"
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value, 10) || "";
+                              field.onChange(val.toString());
+                              priorityFeeForm.setValue(
+                                "multiplier",
+                                val.toString()
+                              );
+                            }}
+                            value={field.value}
                             onKeyDown={(e) => {
                               if (e.key === "Enter") {
                                 e.preventDefault();
-                                handleMaxCapFeeBlur(field.value);
                               }
                             }}
+                          />
+                        </FormItem>
+                      )}
+                    />
+                  ) : null}
+
+                  <FormField
+                    control={priorityFeeForm.control}
+                    name="maxCapFee"
+                    render={({ field }) => (
+                      <FormItem className="space-y-2">
+                        <FormControl>
+                          <PriorityFeeInput
+                            name="maxCapFee"
+                            label="Max Cap Fee"
+                            symbol={priorityFeeForm.watch("maxCapFeeUnit")}
                           />
                         </FormControl>
                         <FormMessage />
@@ -675,28 +593,15 @@ const SettingsPage: React.FC = () => {
                 </div>
               ) : (
                 <FormField
-                  control={form.control}
+                  control={priorityFeeForm.control}
                   name="customFee"
                   render={({ field }) => (
                     <FormItem className="space-y-2">
-                      <Label
-                        htmlFor="custom-fee"
-                        className="text-sm font-medium"
-                      >
-                        Custom Fee
-                      </Label>
                       <FormControl>
-                        <Input
-                          id="custom-fee"
-                          placeholder="0.0001"
-                          {...field}
-                          onBlur={() => handleCustomFeeBlur(field.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleCustomFeeBlur(field.value);
-                            }
-                          }}
+                        <PriorityFeeInput
+                          name="customFee"
+                          label="Custom Fee"
+                          symbol={priorityFeeForm.watch("customFeeUnit")}
                         />
                       </FormControl>
                       <FormMessage />
