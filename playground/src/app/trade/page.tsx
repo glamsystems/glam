@@ -161,6 +161,7 @@ function usePersistedForm<T extends z.ZodTypeAny>(
       const parsedValues = JSON.parse(storedValues);
       Object.keys(parsedValues).forEach((key) => {
         if (PERSISTED_FIELDS[formKey].includes(key as any)) {
+          console.log("set value:", key, parsedValues[key]);
           form.setValue(key as any, parsedValues[key]);
         }
       });

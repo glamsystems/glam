@@ -14,8 +14,10 @@ interface Props {
   name: string;
   label: string;
   symbol: string;
+  unit?: string;
   step?: string;
   className?: string;
+  disableInput?: boolean;
 }
 
 const LAMPORTS_PER_SOL = 1_000_000_000; // 1 billion
@@ -24,22 +26,25 @@ export const PriorityFeeInput: React.FC<Props> = ({
   name,
   label,
   symbol,
+  unit,
   className,
+  disableInput = false,
 }) => {
   const { control, getValues, setValue } = useFormContext();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleSymbolToggle = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleSymbolToggle = (event: any) => {
     event.preventDefault();
 
     const currentValue = getValues()[name] || 0;
-
     if (symbol === "SOL") {
       setValue(name, currentValue * LAMPORTS_PER_SOL);
-      setValue(`${name}Unit`, "LMPS");
+      const unitKey = unit ? unit : `${name}Unit`;
+      setValue(unitKey, "LMPS");
     } else if (symbol === "LMPS") {
       setValue(name, currentValue / LAMPORTS_PER_SOL);
-      setValue(`${name}Unit`, "SOL");
+      const unitKey = unit ? unit : `${name}Unit`;
+      setValue(unitKey, "SOL");
     }
   };
 
@@ -78,6 +83,7 @@ export const PriorityFeeInput: React.FC<Props> = ({
                 value={getValues()[name]}
                 className="pr-20"
                 placeholder=""
+                disabled={disableInput}
                 onChange={(e) => handleInputChange(e.target.value)}
               />
 
