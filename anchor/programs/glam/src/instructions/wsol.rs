@@ -5,6 +5,7 @@ use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::{
     close_account, sync_native, CloseAccount, Mint, SyncNative, Token, TokenAccount,
 };
+use glam_macros::treasury_signer_seeds;
 
 use crate::constants::WSOL;
 use crate::state::*;
@@ -39,15 +40,8 @@ pub struct WSolWrap<'info> {
 #[access_control(
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::WSolWrap)
 )]
+#[treasury_signer_seeds]
 pub fn wsol_wrap(ctx: Context<WSolWrap>, lamports: u64) -> Result<()> {
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        "treasury".as_bytes(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
     // Transfer SOL to token account
     transfer(
         CpiContext::new_with_signer(
@@ -56,7 +50,7 @@ pub fn wsol_wrap(ctx: Context<WSolWrap>, lamports: u64) -> Result<()> {
                 from: ctx.accounts.treasury.to_account_info(),
                 to: ctx.accounts.treasury_wsol_ata.to_account_info(),
             },
-            signer_seeds,
+            treasury_signer_seeds,
         ),
         lamports,
     )?;
@@ -67,7 +61,7 @@ pub fn wsol_wrap(ctx: Context<WSolWrap>, lamports: u64) -> Result<()> {
         SyncNative {
             account: ctx.accounts.treasury_wsol_ata.to_account_info(),
         },
-        signer_seeds,
+        treasury_signer_seeds,
     ))?;
 
     Ok(())
@@ -100,15 +94,8 @@ pub struct WSolUnwrap<'info> {
 #[access_control(
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::WSolUnwrap)
 )]
+#[treasury_signer_seeds]
 pub fn wsol_unwrap(ctx: Context<WSolUnwrap>) -> Result<()> {
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        "treasury".as_bytes(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
     close_account(CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
         CloseAccount {
@@ -116,7 +103,7 @@ pub fn wsol_unwrap(ctx: Context<WSolUnwrap>) -> Result<()> {
             destination: ctx.accounts.treasury.to_account_info(),
             authority: ctx.accounts.treasury.to_account_info(),
         },
-        signer_seeds,
+        treasury_signer_seeds,
     ))?;
 
     Ok(())

@@ -5,6 +5,7 @@ use anchor_spl::{
     stake::{Stake, StakeAccount},
     token::{Mint, Token, TokenAccount},
 };
+use glam_macros::treasury_signer_seeds;
 use marinade::cpi::accounts::{Claim, Deposit, DepositStakeAccount, LiquidUnstake, OrderUnstake};
 use marinade::cpi::{claim, deposit, deposit_stake_account, liquid_unstake, order_unstake};
 use marinade::program::MarinadeFinance;
@@ -13,6 +14,7 @@ use marinade::state::delayed_unstake_ticket::TicketAccountData;
 #[access_control(
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
 )]
+#[treasury_signer_seeds]
 pub fn marinade_deposit_sol<'c: 'info, 'info>(
     ctx: Context<MarinadeDepositSol>,
     lamports: u64,
@@ -34,14 +36,7 @@ pub fn marinade_deposit_sol<'c: 'info, 'info>(
         token_program: ctx.accounts.token_program.to_account_info(),
     };
 
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        b"treasury".as_ref(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-    let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
+    let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, treasury_signer_seeds);
     let _ = deposit(cpi_ctx, lamports);
     Ok(())
 }
@@ -49,6 +44,7 @@ pub fn marinade_deposit_sol<'c: 'info, 'info>(
 #[access_control(
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
 )]
+#[treasury_signer_seeds]
 pub fn marinade_deposit_stake<'c: 'info, 'info>(
     ctx: Context<MarinadeDepositStake>,
     validator_idx: u32,
@@ -71,14 +67,8 @@ pub fn marinade_deposit_stake<'c: 'info, 'info>(
         token_program: ctx.accounts.token_program.to_account_info(),
         stake_program: ctx.accounts.stake_program.to_account_info(),
     };
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        b"treasury".as_ref(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-    let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
+
+    let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, treasury_signer_seeds);
     let _ = deposit_stake_account(cpi_ctx, validator_idx);
     Ok(())
 }
@@ -132,13 +122,6 @@ pub fn marinade_delayed_unstake<'c: 'info, 'info>(
         token_program: ctx.accounts.token_program.to_account_info(),
     };
 
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        b"treasury".as_ref(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
     let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
     let _ = order_unstake(cpi_ctx, msol_amount);
 
@@ -155,17 +138,10 @@ pub fn marinade_delayed_unstake<'c: 'info, 'info>(
 #[access_control(
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Unstake)
 )]
+#[treasury_signer_seeds]
 pub fn marinade_claim_tickets<'info>(
     ctx: Context<'_, '_, '_, 'info, MarinadeClaimTickets<'info>>,
 ) -> Result<()> {
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        b"treasury".as_ref(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
     let fund = &mut ctx.accounts.fund;
     ctx.remaining_accounts
         .iter()
@@ -183,7 +159,7 @@ pub fn marinade_claim_tickets<'info>(
             let cpi_ctx = CpiContext::new_with_signer(
                 ctx.accounts.marinade_program.to_account_info(),
                 cpi_accounts,
-                signer_seeds,
+                treasury_signer_seeds,
             );
             let _ = claim(cpi_ctx);
 
@@ -199,6 +175,7 @@ pub fn marinade_claim_tickets<'info>(
 #[access_control(
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::LiquidUnstake)
 )]
+#[treasury_signer_seeds]
 pub fn marinade_liquid_unstake<'c: 'info, 'info>(
     ctx: Context<MarinadeLiquidUnstake>,
     msol_amount: u64,
@@ -217,14 +194,7 @@ pub fn marinade_liquid_unstake<'c: 'info, 'info>(
         token_program: ctx.accounts.token_program.to_account_info(),
     };
 
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        b"treasury".as_ref(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-    let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
+    let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, treasury_signer_seeds);
     let _ = liquid_unstake(cpi_ctx, msol_amount);
     Ok(())
 }

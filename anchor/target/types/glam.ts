@@ -3936,48 +3936,63 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "closeNotEmptyError",
-      "msg": "Error closing account: not empty"
+      "name": "fundNotActive",
+      "msg": "Fund is not active"
     },
     {
       "code": 6001,
-      "name": "notAuthorizedError",
-      "msg": "Error: not authorized"
+      "name": "invalidShareClass",
+      "msg": "Share class not allowed to subscribe"
     },
     {
       "code": 6002,
-      "name": "invalidFundName",
-      "msg": "Invalid fund name: max 30 chars"
+      "name": "invalidAssetSubscribe",
+      "msg": "Asset not allowed to subscribe"
     },
     {
       "code": 6003,
-      "name": "invalidFundSymbol",
-      "msg": "Too many assets: max 50"
+      "name": "invalidPricingOracle",
+      "msg": "Invalid oracle for asset price"
     },
     {
       "code": 6004,
-      "name": "invalidFundUri",
-      "msg": "Too many assets: max 20"
+      "name": "invalidRemainingAccounts",
+      "msg": "Invalid accounts: the transaction is malformed"
     },
     {
       "code": 6005,
-      "name": "invalidAssetsLen",
-      "msg": "Too many assets: max 100"
+      "name": "invalidTreasuryAccount",
+      "msg": "Invalid treasury ata"
     },
     {
       "code": 6006,
-      "name": "invalidAssetsWeights",
-      "msg": "Number of weights should match number of assets"
+      "name": "invalidSignerAccount",
+      "msg": "Invalid signer ata"
     },
     {
       "code": 6007,
-      "name": "invalidAssetForSwap",
-      "msg": "Asset cannot be swapped"
+      "name": "invalidAssetPrice",
+      "msg": "Invalid asset price"
     },
     {
       "code": 6008,
-      "name": "invalidSwap",
-      "msg": "Swap failed"
+      "name": "invalidStableCoinPriceForSubscribe",
+      "msg": "Subscription not allowed: invalid stable coin price"
+    },
+    {
+      "code": 6009,
+      "name": "subscribeRedeemPaused",
+      "msg": "Fund is paused for subscription and redemption"
+    },
+    {
+      "code": 6010,
+      "name": "invalidPolicyAccount",
+      "msg": "Policy account is mandatory"
+    },
+    {
+      "code": 6011,
+      "name": "priceTooOld",
+      "msg": "Price is too old"
     }
   ],
   "types": [

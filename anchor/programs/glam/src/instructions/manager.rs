@@ -16,6 +16,7 @@ use anchor_spl::{
     token_2022_extensions::spl_token_metadata_interface,
     token_interface::{Mint, Token2022},
 };
+use glam_macros::treasury_signer_seeds;
 use {
     spl_tlv_account_resolution::{
         account::ExtraAccountMeta, seeds::Seed, state::ExtraAccountMetaList,
@@ -659,16 +660,11 @@ pub struct CloseTokenAccounts<'info> {
     token_program: Program<'info, Token>,
     token_2022_program: Program<'info, Token2022>,
 }
+
+#[treasury_signer_seeds]
 pub fn close_token_accounts_handler<'info>(
     ctx: Context<'_, '_, '_, 'info, CloseTokenAccounts<'info>>,
 ) -> Result<()> {
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        b"treasury".as_ref(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
     ctx.remaining_accounts.iter().try_for_each(|account| {
         if account.owner.eq(&ctx.accounts.token_program.key()) {
             close_token_account(CpiContext::new_with_signer(
@@ -678,7 +674,7 @@ pub fn close_token_accounts_handler<'info>(
                     destination: ctx.accounts.treasury.to_account_info(),
                     authority: ctx.accounts.treasury.to_account_info(),
                 },
-                signer_seeds,
+                treasury_signer_seeds,
             ))
         } else {
             close_token_2022_account(CpiContext::new_with_signer(
@@ -688,7 +684,7 @@ pub fn close_token_accounts_handler<'info>(
                     destination: ctx.accounts.treasury.to_account_info(),
                     authority: ctx.accounts.treasury.to_account_info(),
                 },
-                signer_seeds,
+                treasury_signer_seeds,
             ))
         }
     })?;
@@ -712,19 +708,12 @@ pub struct CloseFund<'info> {
     system_program: Program<'info, System>,
 }
 
+#[treasury_signer_seeds]
 pub fn close_fund_handler(ctx: Context<CloseFund>) -> Result<()> {
     require!(
         ctx.accounts.fund.share_classes.len() == 0,
         FundError::CantCloseShareClasses
     );
-
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        "treasury".as_bytes(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
 
     if ctx.accounts.treasury.lamports() > 0 {
         solana_program::program::invoke_signed(
@@ -737,7 +726,7 @@ pub fn close_fund_handler(ctx: Context<CloseFund>) -> Result<()> {
                 ctx.accounts.treasury.to_account_info(),
                 ctx.accounts.manager.to_account_info(),
             ],
-            signer_seeds,
+            treasury_signer_seeds,
         )?;
     }
 

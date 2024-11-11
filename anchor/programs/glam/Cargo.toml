@@ -30,3 +30,4 @@ phf = { workspace = true }
 
 drift = { workspace = true }
 marinade = { workspace = true }
+glam_macros = { workspace = true }

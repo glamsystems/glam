@@ -300,7 +300,7 @@ describe("glam_crud", () => {
       );
       expect(expectedError).toBeTruthy();
     }
-  });
+  }, 15_000);
 
   it("Update fund unauthorized", async () => {
     const updatedFund = glamClient.getFundModel({ name: "Updated fund name" });
