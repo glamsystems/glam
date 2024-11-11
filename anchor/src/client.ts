@@ -6,6 +6,7 @@ import { JupiterClient } from "./client/jupiter";
 import { MarinadeClient } from "./client/marinade";
 import { WSolClient } from "./client/wsol";
 import { StakingClient } from "./client/staking";
+import { FundClient } from "./client/fund";
 
 export { JUPITER_API_DEFAULT } from "./client/base";
 
@@ -16,6 +17,7 @@ export class GlamClient extends BaseClient {
   marinade: MarinadeClient;
   wsol: WSolClient;
   staking: StakingClient;
+  fund: FundClient;
 
   public constructor(config?: GlamClientConfig) {
     super(config);
@@ -26,5 +28,6 @@ export class GlamClient extends BaseClient {
     this.marinade = new MarinadeClient(this);
     this.wsol = new WSolClient(this);
     this.staking = new StakingClient(this);
+    this.fund = new FundClient(this);
   }
 }

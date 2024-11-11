@@ -685,8 +685,8 @@ pub fn close_token_accounts_handler<'info>(
                 ctx.accounts.token_2022_program.to_account_info(),
                 CloseToken2022Account {
                     account: account.to_account_info(),
-                    destination: ctx.accounts.manager.to_account_info(),
-                    authority: account.to_account_info(),
+                    destination: ctx.accounts.treasury.to_account_info(),
+                    authority: ctx.accounts.treasury.to_account_info(),
                 },
                 signer_seeds,
             ))
