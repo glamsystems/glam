@@ -7,9 +7,11 @@ use crate::{
 };
 use anchor_lang::{prelude::*, system_program};
 use anchor_spl::{
+    token::{close_account as close_token_account, CloseAccount as CloseTokenAccount, Token},
     token_2022::{
-        self,
+        self, close_account as close_token_2022_account,
         spl_token_2022::{self, extension::ExtensionType, state::Mint as StateMint},
+        CloseAccount as CloseToken2022Account,
     },
     token_2022_extensions::spl_token_metadata_interface,
     token_interface::{Mint, Token2022},
@@ -644,6 +646,56 @@ pub fn update_fund_handler<'c: 'info, 'info>(
 }
 
 #[derive(Accounts)]
+pub struct CloseTokenAccounts<'info> {
+    #[account(mut, has_one = manager @ ManagerError::NotAuthorizedError)]
+    fund: Account<'info, FundAccount>,
+
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    treasury: SystemAccount<'info>,
+
+    #[account(mut)]
+    manager: Signer<'info>,
+
+    token_program: Program<'info, Token>,
+    token_2022_program: Program<'info, Token2022>,
+}
+pub fn close_token_accounts_handler<'info>(
+    ctx: Context<'_, '_, '_, 'info, CloseTokenAccounts<'info>>,
+) -> Result<()> {
+    let fund_key = ctx.accounts.fund.key();
+    let seeds = &[
+        b"treasury".as_ref(),
+        fund_key.as_ref(),
+        &[ctx.bumps.treasury],
+    ];
+    let signer_seeds = &[&seeds[..]];
+    ctx.remaining_accounts.iter().try_for_each(|account| {
+        if account.owner.eq(&ctx.accounts.token_program.key()) {
+            close_token_account(CpiContext::new_with_signer(
+                ctx.accounts.token_program.to_account_info(),
+                CloseTokenAccount {
+                    account: account.to_account_info(),
+                    destination: ctx.accounts.treasury.to_account_info(),
+                    authority: ctx.accounts.treasury.to_account_info(),
+                },
+                signer_seeds,
+            ))
+        } else {
+            close_token_2022_account(CpiContext::new_with_signer(
+                ctx.accounts.token_2022_program.to_account_info(),
+                CloseToken2022Account {
+                    account: account.to_account_info(),
+                    destination: ctx.accounts.manager.to_account_info(),
+                    authority: account.to_account_info(),
+                },
+                signer_seeds,
+            ))
+        }
+    })?;
+    Ok(())
+}
+
+#[derive(Accounts)]
 pub struct CloseFund<'info> {
     #[account(mut, close = manager, has_one = manager @ ManagerError::NotAuthorizedError)]
     fund: Account<'info, FundAccount>,
@@ -660,7 +712,7 @@ pub struct CloseFund<'info> {
     system_program: Program<'info, System>,
 }
 
-pub fn close_handler(ctx: Context<CloseFund>) -> Result<()> {
+pub fn close_fund_handler(ctx: Context<CloseFund>) -> Result<()> {
     require!(
         ctx.accounts.fund.share_classes.len() == 0,
         FundError::CantCloseShareClasses
@@ -698,6 +750,9 @@ pub fn close_handler(ctx: Context<CloseFund>) -> Result<()> {
 pub struct CloseShareClass<'info> {
     #[account(mut, has_one = manager @ ManagerError::NotAuthorizedError)]
     fund: Account<'info, FundAccount>,
+
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    treasury: SystemAccount<'info>,
 
     #[account(
         mut,
@@ -748,11 +803,11 @@ pub fn close_share_class_handler(ctx: Context<CloseShareClass>, share_class_id: 
         &[ctx.bumps.share_class_mint],
     ];
     let signer_seeds = &[&seeds[..]];
-    token_2022::close_account(CpiContext::new_with_signer(
+    close_token_2022_account(CpiContext::new_with_signer(
         ctx.accounts.token_2022_program.to_account_info(),
-        token_2022::CloseAccount {
+        CloseToken2022Account {
             account: ctx.accounts.share_class_mint.to_account_info(),
-            destination: ctx.accounts.manager.to_account_info(),
+            destination: ctx.accounts.treasury.to_account_info(),
             authority: ctx.accounts.share_class_mint.to_account_info(),
         },
         signer_seeds,
@@ -770,7 +825,7 @@ pub fn close_share_class_handler(ctx: Context<CloseShareClass>, share_class_id: 
 
     close_account_info(
         ctx.accounts.extra_account_meta_list.to_account_info(),
-        ctx.accounts.manager.to_account_info(),
+        ctx.accounts.treasury.to_account_info(),
     )?;
 
     msg!(

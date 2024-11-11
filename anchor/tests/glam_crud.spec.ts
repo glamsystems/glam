@@ -15,6 +15,11 @@ import {
   USDC,
   WSOL,
 } from "../src";
+import {
+  createAssociatedTokenAccount,
+  createAssociatedTokenAccountIdempotent,
+  createAssociatedTokenAccountIdempotentInstruction,
+} from "@solana/spl-token";
 
 const key1 = Keypair.fromSeed(str2seed("acl_test_key1"));
 const key2 = Keypair.fromSeed(str2seed("acl_test_key2"));
@@ -385,13 +390,57 @@ describe("glam_crud", () => {
     expect(fund.manager.toString()).toEqual(manager.toString());
   });
 
+  it("Close token accounts", async () => {
+    const treasury = glamClient.getTreasuryPDA(fundPDA);
+
+    // Create empty token accounts
+    const transaction = new Transaction();
+    for (const mint of [WSOL, MSOL]) {
+      transaction.add(
+        createAssociatedTokenAccountIdempotentInstruction(
+          glamClient.getManager(),
+          glamClient.getTreasuryAta(fundPDA, mint),
+          treasury,
+          mint
+        )
+      );
+    }
+    const txSig = await glamClient.sendAndConfirm(transaction);
+    console.log("Creating ata for treasury:", txSig);
+
+    let tokenAccounts = await glamClient.listTokenAccounts(treasury);
+    expect(tokenAccounts.length).toEqual(2);
+
+    // Close token accounts
+    try {
+      const txSig = await glamClient.program.methods
+        .closeTokenAccounts()
+        .accounts({
+          fund: fundPDA,
+        })
+        .remainingAccounts(
+          tokenAccounts.map((account) => ({
+            pubkey: account.address,
+            isSigner: false,
+            isWritable: true,
+          }))
+        )
+        .rpc();
+      console.log("Close token accounts:", txSig);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+    tokenAccounts = await glamClient.listTokenAccounts(treasury);
+    expect(tokenAccounts.length).toEqual(0);
+  });
+
   it("Close fund", async () => {
     const fund = await glamClient.program.account.fundAccount.fetchNullable(
       fundPDA
     );
     expect(fund).not.toBeNull();
 
-    const manager = glamClient.getManager();
     const treasury = glamClient.getTreasuryPDA(fundPDA);
     const openfunds = glamClient.getOpenfundsPDA(fundPDA);
     const shareClassMint = glamClient.getShareClassPDA(fundPDA, 0);
@@ -401,8 +450,6 @@ describe("glam_crud", () => {
         .closeFund()
         .accounts({
           fund: fundPDA,
-          manager,
-          treasury,
           openfunds,
         })
         .rpc();
@@ -418,7 +465,6 @@ describe("glam_crud", () => {
         .closeShareClass(0)
         .accounts({
           fund: fundPDA,
-          manager,
           openfunds,
           shareClassMint,
         })
@@ -434,8 +480,6 @@ describe("glam_crud", () => {
         .closeFund()
         .accounts({
           fund: fundPDA,
-          manager,
-          treasury,
           openfunds,
         })
         .rpc();

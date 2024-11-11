@@ -57,8 +57,14 @@ pub mod glam {
         manager::update_fund_handler(ctx, fund)
     }
 
+    pub fn close_token_accounts<'info>(
+        ctx: Context<'_, '_, '_, 'info, CloseTokenAccounts<'info>>,
+    ) -> Result<()> {
+        manager::close_token_accounts_handler(ctx)
+    }
+
     pub fn close_fund(ctx: Context<CloseFund>) -> Result<()> {
-        manager::close_handler(ctx)
+        manager::close_fund_handler(ctx)
     }
 
     pub fn close_share_class(ctx: Context<CloseShareClass>, share_class_id: u8) -> Result<()> {
