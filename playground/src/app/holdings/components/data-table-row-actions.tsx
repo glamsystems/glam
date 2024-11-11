@@ -14,7 +14,12 @@ import {
 import { holdingSchema } from "../data/holdingSchema";
 import TruncateAddress from "../../../utils/TruncateAddress";
 import { useState } from "react";
-import { CheckIcon, CopyIcon } from "lucide-react";
+import { ArrowLeftRight, CheckIcon, CopyIcon, X } from "lucide-react";
+import { useGlam } from "@glam/anchor/react";
+import { PublicKey } from "@solana/web3.js";
+import { toast } from "@/components/ui/use-toast";
+import { ExplorerLink } from "@/components/ExplorerLink";
+import { parseTxError } from "@/lib/error";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -27,6 +32,8 @@ export function DataTableRowActions<TData>({
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
+  const { glamClient, fund, refresh } = useGlam();
+
   const copyToClipboard = (
     e: React.MouseEvent,
     address: string,
@@ -38,6 +45,29 @@ export function DataTableRowActions<TData>({
       setCopiedAddress(type);
       setTimeout(() => setCopiedAddress(null), 2000);
     });
+  };
+
+  const closeAta = async (ata: string) => {
+    if (!fund) {
+      return;
+    }
+
+    try {
+      const txId = await glamClient.fund.closeTokenAccounts(fund, [
+        new PublicKey(ata),
+      ]);
+      toast({
+        title: `Closed token account`,
+        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+      });
+      await refresh();
+    } catch (error: any) {
+      toast({
+        title: "Failed to close token account",
+        description: parseTxError(error),
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -90,6 +120,29 @@ export function DataTableRowActions<TData>({
             )}
           </DropdownMenuShortcut>
         </DropdownMenuItem>
+
+        {holding.location === "vault" && (
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={async (e) => {
+              if (holding.balance > 0) {
+                console.log("Swapping token:", holding.mint);
+              } else {
+                console.log("Closing token:", holding.mint);
+                await closeAta(holding.ata);
+              }
+            }}
+          >
+            {holding.balance > 0 ? "Swap" : "Close"}
+            <DropdownMenuShortcut>
+              {holding.balance > 0 ? (
+                <ArrowLeftRight className="h-4 w-4" />
+              ) : (
+                <X className="h-4 w-4" />
+              )}
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

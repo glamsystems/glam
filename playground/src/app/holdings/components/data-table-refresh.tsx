@@ -21,7 +21,7 @@ export function DataTableRefresh<TData>({
     <Button
       variant="outline"
       size="icon"
-      className={cn(className, "ml-auto hidden h-8 lg:flex")}
+      className={cn(className, "ml-auto h-8 flex")}
       onClick={onClick}
     >
       <ReloadIcon className="h-4 w-4" />

@@ -8,13 +8,17 @@ import { Input } from "@/components/ui/input";
 import { DataTableRefresh } from "./data-table-refresh";
 
 import { useGlam } from "@glam/anchor/react";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
+  setShowZeroBalances: (showZeroBalances: boolean) => void;
 }
 
 export function DataTableToolbar<TData>({
   table,
+  setShowZeroBalances,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
   const { refresh } = useGlam();
@@ -28,8 +32,9 @@ export function DataTableToolbar<TData>({
           onChange={(event) =>
             table.getColumn("symbol")?.setFilterValue(event.target.value)
           }
-          className="h-8 w-full"
+          className="h-8 w-[150px] lg:w-1/2"
         />
+
         {isFiltered && (
           <Button
             variant="ghost"
@@ -41,12 +46,15 @@ export function DataTableToolbar<TData>({
           </Button>
         )}
 
-        <DataTableRefresh
-          onClick={async () => await refresh()}
-          className="h-8 px-2 lg:px-3"
-          table={table}
+        <Checkbox
+          id="zero-balances"
+          onCheckedChange={(checked: boolean) => {
+            setShowZeroBalances(checked);
+          }}
         />
+        <Label htmlFor="zero-balances">Show Zero Balances</Label>
       </div>
+      <DataTableRefresh onClick={async () => await refresh()} table={table} />
     </div>
   );
 }
