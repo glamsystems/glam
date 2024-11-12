@@ -76,6 +76,7 @@ pub fn marinade_deposit_stake<'c: 'info, 'info>(
 #[access_control(
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Unstake)
 )]
+#[treasury_signer_seeds]
 pub fn marinade_delayed_unstake<'c: 'info, 'info>(
     ctx: Context<MarinadeDelayedUnstake>,
     msol_amount: u64,
@@ -122,7 +123,7 @@ pub fn marinade_delayed_unstake<'c: 'info, 'info>(
         token_program: ctx.accounts.token_program.to_account_info(),
     };
 
-    let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
+    let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, treasury_signer_seeds);
     let _ = order_unstake(cpi_ctx, msol_amount);
 
     // Add new ticket account to the fund param
