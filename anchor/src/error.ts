@@ -1,9 +1,15 @@
-export class GlamError extends Error {
-  rawError: any;
-  programLogs?: string[];
-  message: string;
+import { TransactionError } from "@solana/web3.js";
 
-  constructor(message: string, rawError: any, programLogs?: string[]) {
+export class GlamError extends Error {
+  message: string;
+  rawError?: TransactionError;
+  programLogs?: string[];
+
+  constructor(
+    message: string,
+    rawError?: TransactionError,
+    programLogs?: string[]
+  ) {
     super(message);
     this.message = message;
     this.rawError = rawError;

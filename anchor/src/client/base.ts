@@ -277,11 +277,11 @@ export class BaseClient {
       const errTx = await connection.getTransaction(txSig, {
         maxSupportedTransactionVersion: 0,
       });
-      throw {
-        rawError: errTx?.meta?.err,
-        programLogs: errTx?.meta?.logMessages,
-        message: this.parseProgramLogs(errTx?.meta?.logMessages),
-      } as GlamError;
+      throw new GlamError(
+        this.parseProgramLogs(errTx?.meta?.logMessages),
+        errTx?.meta?.err || undefined,
+        errTx?.meta?.logMessages || []
+      );
     }
     return txSig;
   }

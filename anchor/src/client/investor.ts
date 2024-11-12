@@ -31,7 +31,8 @@ export class InvestorClient {
     // @ts-ignore
     fundModel: FundModel = undefined,
     shareClassId: number = 0,
-    skipState: boolean = true
+    skipState: boolean = true,
+    txOptions: TxOptions = {}
   ): Promise<TransactionSignature> {
     const tx = await this.subscribeTx(
       fund,
@@ -40,7 +41,7 @@ export class InvestorClient {
       fundModel,
       shareClassId,
       skipState,
-      {}
+      txOptions
     );
     return await this.base.sendAndConfirm(tx);
   }
@@ -51,7 +52,8 @@ export class InvestorClient {
     inKind: boolean = false,
     fundModel: FundModel = undefined,
     shareClassId: number = 0,
-    skipState: boolean = true
+    skipState: boolean = true,
+    txOptions: TxOptions = {}
   ): Promise<TransactionSignature> {
     const tx = await this.redeemTx(
       fund,
@@ -60,7 +62,7 @@ export class InvestorClient {
       fundModel,
       shareClassId,
       skipState,
-      {}
+      txOptions
     );
     return await this.base.sendAndConfirm(tx);
   }
@@ -108,7 +110,7 @@ export class InvestorClient {
       //@ts-ignore
       fundModel = await this.base.fetchFund(fund);
     }
-    const remainingAccounts = (fundModel.assets || []).flatMap((asset: any) => {
+    let remainingAccounts = (fundModel.assets || []).flatMap((asset: any) => {
       const assetMeta = this.base.getAssetMeta(asset.toBase58());
       const treasuryAta = this.base.getTreasuryAta(
         fund,
@@ -128,7 +130,7 @@ export class InvestorClient {
       ];
     });
 
-    remainingAccounts.concat(
+    remainingAccounts = remainingAccounts.concat(
       (fundModel.externalTreasuryAccounts || []).map((address: PublicKey) => ({
         pubkey: address,
         isSigner: false,
@@ -186,6 +188,12 @@ export class InvestorClient {
       }
     }
 
+    console.log(
+      "fundModel external accounts:",
+      fundModel.externalTreasuryAccounts
+    );
+    console.log("# remaining accounts:", remainingAccounts.length);
+
     const tx = await this.base.program.methods
       .subscribe(amount, skipState)
       .accounts({
@@ -226,7 +234,7 @@ export class InvestorClient {
       //@ts-ignore
       fundModel = await this.base.fetchFund(fund);
     }
-    const remainingAccounts = (fundModel.assets || []).flatMap((asset: any) => {
+    let remainingAccounts = (fundModel.assets || []).flatMap((asset: any) => {
       const assetMeta = this.base.getAssetMeta(asset.toBase58());
       const treasuryAta = this.base.getTreasuryAta(
         fund,
@@ -254,7 +262,10 @@ export class InvestorClient {
       ];
     });
 
-    remainingAccounts.concat(
+    console.log("fundModel:", fundModel);
+    console.log(fundModel.externalTreasuryAccounts);
+
+    remainingAccounts = remainingAccounts.concat(
       (fundModel.externalTreasuryAccounts || []).map((address: PublicKey) => ({
         pubkey: address,
         isSigner: false,
