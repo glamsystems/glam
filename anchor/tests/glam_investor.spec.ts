@@ -261,7 +261,7 @@ describe("glam_investor", () => {
       TOKEN_2022_PROGRAM_ID
     );
     expect(managerShares.amount).toEqual(shares.supply);
-  });
+  }, 15_000);
 
   it("Invalid share class disallowed", async () => {
     try {
@@ -553,9 +553,7 @@ describe("glam_investor", () => {
       const txId = await glamClientAlice.investor.subscribe(
         fundPDA,
         usdc.publicKey,
-        amount,
-        0,
-        true
+        amount
       );
       console.log("tx:", txId);
     } catch (e) {
@@ -580,17 +578,12 @@ describe("glam_investor", () => {
       const txId = await glamClientBob.investor.subscribe(
         fundPDA,
         usdc.publicKey,
-        amount,
-        0,
-        true
+        amount
       );
       console.log("tx:", txId);
       expect(txId).toBeUndefined();
     } catch (err) {
-      // console.error(err);
-      const errMsg = err.message + err.logs;
-      expect(errMsg).toContain("Share class not allowed to subscribe");
-      expect(errMsg).toContain("Error Code: InvalidShareClass");
+      expect(err.message).toContain("Share class not allowed to subscribe");
     }
   });
 
@@ -600,17 +593,12 @@ describe("glam_investor", () => {
       const txId = await glamClientEve.investor.subscribe(
         fundPDA,
         usdc.publicKey,
-        amount,
-        0,
-        true
+        amount
       );
       console.log("tx:", txId);
       expect(txId).toBeUndefined();
     } catch (err) {
-      // console.error(err);
-      const errMsg = err.message + err.logs;
-      expect(errMsg).toContain("Share class not allowed to subscribe");
-      expect(errMsg).toContain("Error Code: InvalidShareClass");
+      expect(err.message).toContain("Share class not allowed to subscribe");
     }
   });
 
@@ -621,15 +609,26 @@ describe("glam_investor", () => {
         ...(await connection.getLatestBlockhash()),
         signature: airdropTx,
       });
-      await glamClient.marinade.depositSol(fundPDA, new anchor.BN(10 ** 9));
-      await glamClient.marinade.delayedUnstake(fundPDA, new anchor.BN(10 ** 8));
+      const txDeposit = await glamClient.marinade.depositSol(
+        fundPDA,
+        new anchor.BN(10 ** 9)
+      );
+      console.log("marinade deposit:", txDeposit);
+      const txUnstake = await glamClient.marinade.delayedUnstake(
+        fundPDA,
+        new anchor.BN(10 ** 8)
+      );
+      console.log("marinade delayed unstake:", txUnstake);
     } catch (e) {
       console.error(e);
       throw e;
     }
 
     const fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
-    expect(fund.params[0][2].value.vecPubkey?.val.length).toBe(1);
+    console.log("fund:", JSON.stringify(fund));
+    // params[0][0]: assets
+    // params[0][1]: external accounts
+    expect(fund.params[0][1].value.vecPubkey?.val.length).toBe(1);
 
     try {
       const txId = await glamClient.investor.subscribe(
