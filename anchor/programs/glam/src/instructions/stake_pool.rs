@@ -7,6 +7,7 @@ use anchor_spl::{
     token_interface::TokenInterface,
 };
 
+use glam_macros::treasury_signer_seeds;
 use solana_program::program::invoke_signed;
 use spl_stake_pool::{
     instruction::{deposit_sol, deposit_stake, withdraw_sol, withdraw_stake},
@@ -72,18 +73,11 @@ pub struct StakePoolDepositSol<'info> {
 #[access_control(
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
 )]
+#[treasury_signer_seeds]
 pub fn stake_pool_deposit_sol<'c: 'info, 'info>(
     ctx: Context<StakePoolDepositSol>,
     lamports: u64,
 ) -> Result<()> {
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        "treasury".as_bytes(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
     let ix = deposit_sol(
         ctx.accounts.stake_pool_program.key,
         ctx.accounts.stake_pool.key,
@@ -111,7 +105,7 @@ pub fn stake_pool_deposit_sol<'c: 'info, 'info>(
             ctx.accounts.system_program.to_account_info(),
             ctx.accounts.token_program.to_account_info(),
         ],
-        signer_seeds,
+        treasury_signer_seeds,
     );
 
     Ok(())
@@ -182,17 +176,10 @@ pub struct StakePoolDepositStake<'info> {
 #[access_control(
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
 )]
+#[treasury_signer_seeds]
 pub fn stake_pool_deposit_stake<'c: 'info, 'info>(
     ctx: Context<StakePoolDepositStake>,
 ) -> Result<()> {
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        "treasury".as_bytes(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
     let vec_ix = deposit_stake(
         ctx.accounts.stake_pool_program.key,
         ctx.accounts.stake_pool.key,
@@ -229,7 +216,7 @@ pub fn stake_pool_deposit_stake<'c: 'info, 'info>(
     ];
 
     for ix in vec_ix {
-        let _ = invoke_signed(&ix, &account_infos, signer_seeds);
+        let _ = invoke_signed(&ix, &account_infos, treasury_signer_seeds);
     }
 
     let fund = &mut ctx.accounts.fund;
@@ -287,18 +274,11 @@ pub struct StakePoolWithdrawSol<'info> {
 #[access_control(
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::LiquidUnstake)
 )]
+#[treasury_signer_seeds]
 pub fn stake_pool_withdraw_sol<'c: 'info, 'info>(
     ctx: Context<StakePoolWithdrawSol>,
     pool_token_amount: u64,
 ) -> Result<()> {
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        "treasury".as_bytes(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
     let ix = withdraw_sol(
         ctx.accounts.stake_pool_program.key,
         ctx.accounts.stake_pool.key,
@@ -329,7 +309,7 @@ pub fn stake_pool_withdraw_sol<'c: 'info, 'info>(
             ctx.accounts.stake_program.to_account_info(),
             ctx.accounts.token_program.to_account_info(),
         ],
-        signer_seeds,
+        treasury_signer_seeds,
     );
 
     Ok(())
@@ -387,6 +367,7 @@ pub struct StakePoolWithdrawStake<'info> {
 #[access_control(
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Unstake)
 )]
+#[treasury_signer_seeds]
 pub fn stake_pool_withdraw_stake<'c: 'info, 'info>(
     ctx: Context<StakePoolWithdrawStake>,
     pool_token_amount: u64,
@@ -400,12 +381,8 @@ pub fn stake_pool_withdraw_stake<'c: 'info, 'info>(
         fund_key.as_ref(),
         &[stake_account_bump],
     ];
-    let treasury_seeds = &[
-        b"treasury".as_ref(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&stake_account_seeds[..], &treasury_seeds[..]];
+
+    let signer_seeds = &[&stake_account_seeds[..], (*treasury_signer_seeds)[0]];
 
     // Create stake account and leave it uninitialized
     system_program::create_account(
@@ -459,7 +436,7 @@ pub fn stake_pool_withdraw_stake<'c: 'info, 'info>(
             ctx.accounts.token_program.to_account_info(),
             ctx.accounts.stake_program.to_account_info(),
         ],
-        &[&treasury_seeds[..]],
+        treasury_signer_seeds,
     )?;
 
     // Add stake account to the fund params

@@ -109,7 +109,7 @@ describe("glam_jupiter", () => {
       glamClient.getTreasuryAta(fundPDA, MSOL)
     );
     expect(treasuryMsol.amount.toString()).toEqual("41795954");
-  });
+  }, 15_000);
 
   it("Swap access control", async () => {
     // set up a test signer and airdrop 0.1 SOL

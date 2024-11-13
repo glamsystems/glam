@@ -2,6 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::Token;
 use anchor_spl::token_interface::TokenAccount;
 use drift::{MarketType, PositionDirection};
+use glam_macros::treasury_signer_seeds;
 
 use crate::state::*;
 
@@ -45,15 +46,8 @@ pub struct DriftInitialize<'info> {
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftInitialize))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
+#[treasury_signer_seeds]
 pub fn drift_initialize_handler(ctx: Context<DriftInitialize>) -> Result<()> {
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        "treasury".as_bytes(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
     initialize_user_stats(CpiContext::new_with_signer(
         ctx.accounts.drift_program.to_account_info(),
         InitializeUserStats {
@@ -64,7 +58,7 @@ pub fn drift_initialize_handler(ctx: Context<DriftInitialize>) -> Result<()> {
             rent: ctx.accounts.rent.to_account_info(),
             system_program: ctx.accounts.system_program.to_account_info(),
         },
-        signer_seeds,
+        treasury_signer_seeds,
     ))?;
 
     let mut name = [0u8; 32];
@@ -82,7 +76,7 @@ pub fn drift_initialize_handler(ctx: Context<DriftInitialize>) -> Result<()> {
                 rent: ctx.accounts.rent.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
             },
-            signer_seeds,
+            treasury_signer_seeds,
         ),
         0,
         name,
@@ -111,19 +105,12 @@ pub struct DriftUpdate<'info> {
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftUpdateUser))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
+#[treasury_signer_seeds]
 pub fn drift_update_user_custom_margin_ratio_handler(
     ctx: Context<DriftUpdate>,
     sub_account_id: u16,
     margin_ratio: u32,
 ) -> Result<()> {
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        "treasury".as_bytes(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
     update_user_custom_margin_ratio(
         CpiContext::new_with_signer(
             ctx.accounts.drift_program.to_account_info(),
@@ -131,7 +118,7 @@ pub fn drift_update_user_custom_margin_ratio_handler(
                 user: ctx.accounts.user.to_account_info(),
                 authority: ctx.accounts.treasury.to_account_info(),
             },
-            signer_seeds,
+            treasury_signer_seeds,
         ),
         sub_account_id,
         margin_ratio,
@@ -142,19 +129,12 @@ pub fn drift_update_user_custom_margin_ratio_handler(
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftUpdateUser))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
+#[treasury_signer_seeds]
 pub fn drift_update_user_margin_trading_enabled_handler(
     ctx: Context<DriftUpdate>,
     sub_account_id: u16,
     margin_trading_enabled: bool,
 ) -> Result<()> {
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        "treasury".as_bytes(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
     update_user_margin_trading_enabled(
         CpiContext::new_with_signer(
             ctx.accounts.drift_program.to_account_info(),
@@ -162,7 +142,7 @@ pub fn drift_update_user_margin_trading_enabled_handler(
                 user: ctx.accounts.user.to_account_info(),
                 authority: ctx.accounts.treasury.to_account_info(),
             },
-            signer_seeds,
+            treasury_signer_seeds,
         ),
         sub_account_id,
         margin_trading_enabled,
@@ -173,19 +153,12 @@ pub fn drift_update_user_margin_trading_enabled_handler(
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftUpdateUser))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
+#[treasury_signer_seeds]
 pub fn drift_update_user_delegate_handler(
     ctx: Context<DriftUpdate>,
     sub_account_id: u16,
     delegate: Pubkey,
 ) -> Result<()> {
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        "treasury".as_bytes(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
     update_user_delegate(
         CpiContext::new_with_signer(
             ctx.accounts.drift_program.to_account_info(),
@@ -193,7 +166,7 @@ pub fn drift_update_user_delegate_handler(
                 user: ctx.accounts.user.to_account_info(),
                 authority: ctx.accounts.treasury.to_account_info(),
             },
-            signer_seeds,
+            treasury_signer_seeds,
         ),
         sub_account_id,
         delegate,
@@ -234,19 +207,12 @@ pub struct DriftDeposit<'info> {
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftDeposit))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
+#[treasury_signer_seeds]
 pub fn drift_deposit_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftDeposit<'info>>,
     market_index: u16,
     amount: u64,
 ) -> Result<()> {
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        "treasury".as_bytes(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
     deposit(
         CpiContext::new_with_signer(
             ctx.accounts.drift_program.to_account_info(),
@@ -259,7 +225,7 @@ pub fn drift_deposit_handler<'c: 'info, 'info>(
                 user_token_account: ctx.accounts.treasury_ata.to_account_info(),
                 token_program: ctx.accounts.token_program.to_account_info(),
             },
-            signer_seeds,
+            treasury_signer_seeds,
         )
         .with_remaining_accounts(ctx.remaining_accounts.to_vec()),
         market_index,
@@ -304,19 +270,12 @@ pub struct DriftWithdraw<'info> {
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftWithdraw))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
+#[treasury_signer_seeds]
 pub fn drift_withdraw_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftWithdraw<'info>>,
     market_index: u16,
     amount: u64,
 ) -> Result<()> {
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        "treasury".as_bytes(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
     withdraw(
         CpiContext::new_with_signer(
             ctx.accounts.drift_program.to_account_info(),
@@ -330,7 +289,7 @@ pub fn drift_withdraw_handler<'c: 'info, 'info>(
                 token_program: ctx.accounts.token_program.to_account_info(),
                 drift_signer: ctx.accounts.drift_signer.to_account_info(),
             },
-            signer_seeds,
+            treasury_signer_seeds,
         )
         .with_remaining_accounts(ctx.remaining_accounts.to_vec()),
         market_index,
@@ -368,15 +327,8 @@ pub struct DriftDeleteUser<'info> {
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftDeleteUser))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
+#[treasury_signer_seeds]
 pub fn drift_delete_user_handler(ctx: Context<DriftDeleteUser>) -> Result<()> {
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        "treasury".as_bytes(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
     delete_user(CpiContext::new_with_signer(
         ctx.accounts.drift_program.to_account_info(),
         DeleteUser {
@@ -385,7 +337,7 @@ pub fn drift_delete_user_handler(ctx: Context<DriftDeleteUser>) -> Result<()> {
             state: ctx.accounts.state.to_account_info(),
             authority: ctx.accounts.treasury.to_account_info(),
         },
-        signer_seeds,
+        treasury_signer_seeds,
     ))?;
 
     Ok(())
@@ -416,6 +368,7 @@ pub struct DriftPlaceOrders<'info> {
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftPlaceOrders))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
+#[treasury_signer_seeds]
 pub fn drift_place_orders_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftPlaceOrders<'info>>,
     order_params: Vec<OrderParams>,
@@ -460,14 +413,6 @@ pub fn drift_place_orders_handler<'c: 'info, 'info>(
         }
     }
 
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        "treasury".as_bytes(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
     place_orders(
         CpiContext::new_with_signer(
             ctx.accounts.drift_program.to_account_info(),
@@ -476,7 +421,7 @@ pub fn drift_place_orders_handler<'c: 'info, 'info>(
                 state: ctx.accounts.state.to_account_info(),
                 authority: ctx.accounts.treasury.to_account_info(),
             },
-            signer_seeds,
+            treasury_signer_seeds,
         )
         .with_remaining_accounts(ctx.remaining_accounts.to_vec()),
         order_params,
@@ -510,20 +455,13 @@ pub struct DriftCancelOrders<'info> {
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::DriftCancelOrders))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
+#[treasury_signer_seeds]
 pub fn drift_cancel_orders_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftCancelOrders<'info>>,
     market_type: Option<MarketType>,
     market_index: Option<u16>,
     direction: Option<PositionDirection>,
 ) -> Result<()> {
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        "treasury".as_bytes(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
     cancel_orders(
         CpiContext::new_with_signer(
             ctx.accounts.drift_program.to_account_info(),
@@ -532,7 +470,7 @@ pub fn drift_cancel_orders_handler<'c: 'info, 'info>(
                 state: ctx.accounts.state.to_account_info(),
                 authority: ctx.accounts.treasury.to_account_info(),
             },
-            signer_seeds,
+            treasury_signer_seeds,
         )
         .with_remaining_accounts(ctx.remaining_accounts.to_vec()),
         market_type,

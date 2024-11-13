@@ -1150,6 +1150,7 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "drift",
+ "glam_macros",
  "marinade-finance",
  "phf",
  "pyth-solana-receiver-sdk",
@@ -1158,6 +1159,14 @@ dependencies = [
  "spl-tlv-account-resolution 0.6.5",
  "spl-transfer-hook-interface 0.6.5",
  "strum",
+]
+
+[[package]]
+name = "glam_macros"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "syn 2.0.59",
 ]
 
 [[package]]

@@ -3,6 +3,7 @@ use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token_interface::{
     transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
 };
+use glam_macros::treasury_signer_seeds;
 use solana_program::{instruction::Instruction, program::invoke_signed};
 
 use crate::error::ManagerError;
@@ -136,6 +137,7 @@ fn parse_shared_accounts_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
         vec![Permission::JupiterSwapFundAssets, Permission::JupiterSwapAnyAsset]
     )
 )]
+#[treasury_signer_seeds]
 pub fn jupiter_swap<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, JupiterSwap<'info>>,
     amount: u64,
@@ -178,14 +180,6 @@ pub fn jupiter_swap<'c: 'info, 'info>(
     };
     require!(parse_result, ManagerError::InvalidSwap);
 
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        "treasury".as_bytes(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
     //
     // Transfer treasury -> signer
     //
@@ -198,7 +192,7 @@ pub fn jupiter_swap<'c: 'info, 'info>(
                 to: ctx.accounts.input_signer_ata.to_account_info(),
                 authority: ctx.accounts.treasury.to_account_info(),
             },
-            signer_seeds,
+            treasury_signer_seeds,
         ),
         amount,
         ctx.accounts.input_mint.decimals,
