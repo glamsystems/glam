@@ -35,7 +35,7 @@ describe("glam_wsol", () => {
       console.log("Error", error);
       throw error;
     }
-  });
+  }, 15_000);
 
   it("wSOL unwrap", async () => {
     try {

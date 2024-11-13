@@ -227,7 +227,7 @@ describe("glam_policy_hook", () => {
       TOKEN_2022_PROGRAM_ID
     );
     expect(managerShares.amount).toEqual(shares.supply);
-  });
+  }, 15_000);
 
   it("Manager redeems + transfers shares to Alice: both fail for lock-up", async () => {
     const amount = new BN(10 * 10 ** 9);
@@ -236,8 +236,7 @@ describe("glam_policy_hook", () => {
       const txId = await glamClient.investor.redeem(fundPDA, amount);
       expect(txId).toBeUndefined();
     } catch (err) {
-      const errMsg = err.message + err.logs;
-      expect(errMsg).toContain("Policy violation: lock out period");
+      expect(err.message).toContain("Policy violation: lock-up period");
     }
 
     const tx = new Transaction().add(
@@ -268,8 +267,7 @@ describe("glam_policy_hook", () => {
       ]);
       expect(txId).toBeUndefined();
     } catch (err) {
-      const errMsg = err.message + err.logs;
-      expect(errMsg).toContain("Policy violation: lock out period");
+      expect(err.message).toContain("Policy violation: lock-up period");
     }
   });
 

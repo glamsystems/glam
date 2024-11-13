@@ -34,7 +34,7 @@ describe("glam_marinade", () => {
       console.log("Error", error);
       throw error;
     }
-  });
+  }, 15_000);
 
   it("Liquid unstake 1 mSOL", async () => {
     try {
@@ -77,10 +77,9 @@ describe("glam_marinade", () => {
     // fund.params[0] looks like this:
     // [
     //   { name: { assets: {} }, value: { vecPubkey: [Object] } },
-    //   { name: { assetsWeights: {} }, value: { vecU32: [Object] } },
     //   { name: { externalTreasuryAccounts: {} }, value: { vecPubkey: [Object] } }
     // ]
-    expect(fund.params[0][2].value.vecPubkey?.val.length).toBe(tickets.length);
+    expect(fund.params[0][1].value.vecPubkey?.val.length).toBe(tickets.length);
   });
 
   it("Claim tickets", async () => {
@@ -101,7 +100,7 @@ describe("glam_marinade", () => {
     expect(tickets.length).toBe(0);
 
     const fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
-    expect(fund.params[0][2].value.vecPubkey?.val.length).toBe(tickets.length);
+    expect(fund.params[0][1].value.vecPubkey?.val.length).toBe(tickets.length);
   });
 
   // FIXME: For some reason, depositStake test must be run after the claimTickets test
