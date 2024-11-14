@@ -121,7 +121,10 @@ export const columns: ColumnDef<Holding>[] = [
           {isSkeletonRow(row) ? (
             <VariableWidthSkeleton minWidth={40} maxWidth={80} height={20} />
           ) : (
-            new Intl.NumberFormat("en-US").format(row.getValue("balance"))
+            new Intl.NumberFormat("en-US", {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 9,
+            }).format(row.getValue("balance"))
           )}
         </div>
       );
@@ -154,8 +157,8 @@ export const columns: ColumnDef<Holding>[] = [
                     <NumberFormatter
                       value={holding.price}
                       addCommas={true}
-                      minDecimalPlaces={3}
-                      maxDecimalPlaces={3}
+                      minDecimalPlaces={0}
+                      maxDecimalPlaces={9}
                     />
                   </TooltipContent>
                 </Tooltip>
@@ -163,8 +166,8 @@ export const columns: ColumnDef<Holding>[] = [
               <NumberFormatter
                 value={holding.notional}
                 addCommas={true}
-                minDecimalPlaces={3}
-                maxDecimalPlaces={3}
+                minDecimalPlaces={0}
+                maxDecimalPlaces={9}
               />
             </span>
           )}

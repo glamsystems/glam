@@ -97,7 +97,8 @@ export default function Holdings() {
       const driftHoldings = spotPositions.map((p) => {
         const market = spotMarkets.find((m) => m.marketIndex === p.marketIndex);
         const price = prices?.find((p) => p.mint === market?.mint)?.price || 0;
-        const balance = Number(p.scaledBalance) / 10 ** 9;
+        // @ts-ignore: balance is UI amount added by glam api, it doesn't existing in the drift sdk types
+        const balance = Number(p.balance);
         return {
           name: `${p.marketIndex}`,
           symbol: market?.symbol || "",
