@@ -184,7 +184,8 @@ export class DriftClient {
       amount,
       marketIndex,
       subAccountId,
-      marketConfigs
+      marketConfigs,
+      txOptions
     );
     return await this.base.sendAndConfirm(tx);
   }
