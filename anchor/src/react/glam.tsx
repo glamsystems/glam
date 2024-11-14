@@ -18,7 +18,7 @@ import { PublicKey } from "@solana/web3.js";
 import { ASSETS_MAINNET } from "../client/assets";
 import { WSOL } from "../constants";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
-import { DriftMarketConfigs } from "../client/drift";
+import { DriftMarketConfigs, GlamDriftUser } from "../client/drift";
 
 interface JupTokenListItem {
   address: string;
@@ -48,7 +48,7 @@ interface GlamProviderContext {
   setActiveFund: any;
   jupTokenList?: JupTokenListItem[];
   driftMarketConfigs: DriftMarketConfigs;
-  driftUser: any;
+  driftUser: GlamDriftUser;
   refresh: () => Promise<void>;
 }
 
@@ -157,7 +157,7 @@ export function GlamProvider({
   const [driftMarketConfigs, setDriftMarketConfigs] = useState(
     {} as DriftMarketConfigs
   );
-  const [driftUser, setDriftUser] = useState({} as any);
+  const [driftUser, setDriftUser] = useState({} as GlamDriftUser);
 
   const activeFund = deserializeFundCache(useAtomValue(fundAtom)) as FundCache;
 
