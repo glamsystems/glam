@@ -242,38 +242,45 @@ export class DriftClient {
   }
 
   async getPositions(fund: PublicKey, subAccountId: number = 0) {
-    const driftClient = await this.getDriftClient();
-    const userAccountPublicKey = this.getUser(fund, subAccountId)[0];
-    const driftUser = new User({
-      driftClient,
-      userAccountPublicKey,
-      accountSubscription: {
-        type: "polling",
-        accountLoader: new BulkAccountLoader(
-          this.base.provider.connection,
-          "confirmed",
-          5000
-        ),
-      },
-    });
-    if (!driftUser.isSubscribed) {
-      const res = await driftUser.subscribe();
-      console.log(
-        "Subscribed to drift user ",
-        userAccountPublicKey.toBase58(),
-        res
-      );
-    }
+    const treasury = this.base.getTreasuryPDA(fund);
+    const response = await fetch(
+      `https://api.glam.systems/v0/drift/user?authority=${treasury.toBase58()}&accountId=0`
+    );
+    const data = await response.json();
+    const { spotPositions, perpPositions } = data as any;
 
-    const perpPositions = driftUser.getActivePerpPositions();
-    const spotPositions = driftUser.getActiveSpotPositions();
+    // const driftClient = await this.getDriftClient();
+    // const userAccountPublicKey = this.getUser(fund, subAccountId)[0];
+    // const driftUser = new User({
+    //   driftClient,
+    //   userAccountPublicKey,
+    //   accountSubscription: {
+    //     type: "polling",
+    //     accountLoader: new BulkAccountLoader(
+    //       this.base.provider.connection,
+    //       "confirmed",
+    //       5000
+    //     ),
+    //   },
+    // });
+    // if (!driftUser.isSubscribed) {
+    //   const res = await driftUser.subscribe();
+    //   console.log(
+    //     "Subscribed to drift user ",
+    //     userAccountPublicKey.toBase58(),
+    //     res
+    //   );
+    // }
 
-    console.log("Perp positions", perpPositions);
-    console.log("Spot positions", spotPositions);
+    // const perpPositions = driftUser.getActivePerpPositions();
+    // const spotPositions = driftUser.getActiveSpotPositions();
 
-    // Unsubscribe to avoid subsequent RPCs
-    await driftUser.unsubscribe();
-    await driftClient.unsubscribe();
+    // console.log("Perp positions", perpPositions);
+    // console.log("Spot positions", spotPositions);
+
+    // // Unsubscribe to avoid subsequent RPCs
+    // await driftUser.unsubscribe();
+    // await driftClient.unsubscribe();
 
     return { perpPositions, spotPositions };
   }

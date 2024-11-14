@@ -95,6 +95,8 @@ export default function Transfer() {
       return;
     }
 
+    console.log("Submitting transfer", values);
+
     if (!fundPDA) {
       toast({
         title: "Invalid fund",

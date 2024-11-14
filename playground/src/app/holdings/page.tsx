@@ -7,20 +7,21 @@ import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";
 import { Holding } from "./data/holdingSchema";
-import { useQuery } from "@tanstack/react-query";
-import { SpotPosition } from "@drift-labs/sdk";
 
 const SKELETON_ROW_COUNT = 5;
 
 export default function Holdings() {
-  const { activeFund, treasury, driftMarketConfigs, jupTokenList, prices } =
-    useGlam();
+  const {
+    activeFund,
+    treasury,
+    driftMarketConfigs,
+    driftUser,
+    jupTokenList,
+    prices,
+  } = useGlam();
 
   const [showZeroBalances, setShowZeroBalances] = useState(false);
   const [isLoadingData, setIsLoading] = useState(true);
-  const [driftSpotPositions, setDriftSpotPositions] = useState(
-    [] as SpotPosition[]
-  );
 
   const createSkeletonHolding = (): Holding => ({
     name: "",
@@ -38,7 +39,9 @@ export default function Holdings() {
     return Array(SKELETON_ROW_COUNT).fill(null).map(createSkeletonHolding);
   }, []);
 
-  const tableData = useMemo(() => {
+  const [tableData, setTableData] = useState<Holding[]>([]);
+
+  useEffect(() => {
     const tokenAccounts: Holding[] = [];
 
     const solBalance = Number(treasury?.balanceLamports) / LAMPORTS_PER_SOL;
@@ -87,9 +90,11 @@ export default function Holdings() {
       );
     }
 
-    if (driftSpotPositions.length > 0) {
+    const { spotPositions } = driftUser;
+
+    if (spotPositions && spotPositions.length > 0) {
       const spotMarkets = driftMarketConfigs.spot;
-      const driftHoldings = driftSpotPositions.map((p) => {
+      const driftHoldings = spotPositions.map((p) => {
         const market = spotMarkets.find((m) => m.marketIndex === p.marketIndex);
         const price = prices?.find((p) => p.mint === market?.mint)?.price || 0;
         const balance = Number(p.scaledBalance) / 10 ** 9;
@@ -108,31 +113,13 @@ export default function Holdings() {
       tokenAccounts.push(...driftHoldings);
     }
 
-    return tokenAccounts.sort((a, b) => {
+    tokenAccounts.sort((a, b) => {
       if (b.location > a.location) return 1;
       if (b.location < a.location) return -1;
       return b.balance - a.balance;
     });
-  }, [treasury, driftSpotPositions, jupTokenList, prices]);
-
-  const { data: driftUser } = useQuery({
-    queryKey: ["/drift-user"],
-    enabled: !!treasury,
-    refetchInterval: 30 * 1000,
-    queryFn: () => {
-      return fetch(
-        `https://api.glam.systems/v0/drift/user?authority=${treasury?.pubkey.toBase58()}&accountId=0`
-      ).then((res) => res.json());
-    },
-  });
-  useEffect(() => {
-    if (driftUser) {
-      const { spotPositions } = driftUser;
-      if (spotPositions && spotPositions.length && spotPositions.length > 0) {
-        setDriftSpotPositions(spotPositions);
-      }
-    }
-  }, [driftUser]);
+    setTableData(tokenAccounts);
+  }, [treasury, driftUser, jupTokenList, prices]);
 
   useEffect(() => {
     if (activeFund && treasury && jupTokenList && prices) {
