@@ -82,6 +82,7 @@ export default function Transfer() {
     const { spotPositions } = driftUser;
     const assets =
       spotPositions.map((position: any) => {
+        // balance is a string of ui amount, needs to be converted to number
         const { marketIndex, balance } = position;
         const marketConfig = driftMarketConfigs.spot.find(
           (spot) => spot.marketIndex === marketIndex
@@ -95,7 +96,7 @@ export default function Transfer() {
           symbol,
           address: mint,
           decimals,
-          balance,
+          balance: Number(balance),
         } as Asset;
       }) || [];
     return assets;

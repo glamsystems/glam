@@ -137,7 +137,7 @@ export default function Holdings() {
             ? skeletonData
             : showZeroBalances
             ? tableData
-            : tableData.filter((d) => d.balance > 0)
+            : tableData.filter((d) => d.balance > 1e-5)
         }
         columns={columns}
         setShowZeroBalances={setShowZeroBalances}
