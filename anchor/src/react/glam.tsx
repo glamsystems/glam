@@ -18,7 +18,7 @@ import { PublicKey } from "@solana/web3.js";
 import { ASSETS_MAINNET } from "../client/assets";
 import { WSOL } from "../constants";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
-import { DriftMarketConfigs } from "../client/drift";
+import { DriftMarketConfigs, GlamDriftUser } from "../client/drift";
 
 interface JupTokenListItem {
   address: string;
@@ -48,6 +48,7 @@ interface GlamProviderContext {
   setActiveFund: any;
   jupTokenList?: JupTokenListItem[];
   driftMarketConfigs: DriftMarketConfigs;
+  driftUser: GlamDriftUser;
   refresh: () => Promise<void>;
 }
 
@@ -156,6 +157,7 @@ export function GlamProvider({
   const [driftMarketConfigs, setDriftMarketConfigs] = useState(
     {} as DriftMarketConfigs
   );
+  const [driftUser, setDriftUser] = useState({} as GlamDriftUser);
 
   const activeFund = deserializeFundCache(useAtomValue(fundAtom)) as FundCache;
 
@@ -325,6 +327,25 @@ export function GlamProvider({
   });
   useEffect(() => setDriftMarketConfigs(marketConfigs), [marketConfigs]);
 
+  //
+  // Fetch drift positions
+  //
+  const { data: driftUserData } = useQuery({
+    queryKey: ["/drift-positions"],
+    enabled: !!treasury,
+    refetchInterval: 30 * 1000,
+    queryFn: () => {
+      return fetch(
+        `https://api.glam.systems/v0/drift/user?authority=${treasury?.pubkey.toBase58()}&accountId=0`
+      ).then((res) => res.json());
+    },
+  });
+  useEffect(() => {
+    if (driftUserData) {
+      setDriftUser(driftUserData);
+    }
+  }, [driftUserData]);
+
   const value: GlamProviderContext = {
     glamClient,
     wallet: (wallet && wallet.publicKey) || undefined,
@@ -339,6 +360,7 @@ export function GlamProvider({
     prices: pythPrices,
     setActiveFund,
     driftMarketConfigs,
+    driftUser,
     refresh: async () => {
       console.log("glam context provider refresh");
       refreshTreasury();

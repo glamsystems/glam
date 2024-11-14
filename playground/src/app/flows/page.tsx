@@ -54,6 +54,7 @@ import {
 } from "@/components/ui/command";
 import Sparkle from "@/utils/Sparkle";
 import { parseTxError } from "@/lib/error";
+import { getPriorityFeeMicroLamports } from "../settings/priorityfee";
 
 const flowSchema = z.object({
   method: z.string(),
@@ -505,7 +506,13 @@ function InvestorWidget({ fundId }: { fundId: string }) {
         txId = await glamClient.investor.redeem(
           fund.id,
           amount,
-          method === "in-kind"
+          method === "in-kind",
+          undefined,
+          0,
+          true,
+          {
+            getPriorityFeeMicroLamports,
+          }
         );
       } else {
         const asset = fund.assets[0];
@@ -515,7 +522,12 @@ function InvestorWidget({ fundId }: { fundId: string }) {
           fund.id,
           asset,
           amount,
-          fund
+          fund,
+          0,
+          true,
+          {
+            getPriorityFeeMicroLamports,
+          }
         );
       }
 

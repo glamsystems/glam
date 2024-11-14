@@ -11,12 +11,10 @@ import {
   getUserStatsAccountPublicKey,
   MarketType,
   OrderParams,
-  DriftClient as _DriftClient,
-  initialize as _initialize,
   PositionDirection,
-  BulkAccountLoader,
   decodeUser,
-  User,
+  SpotPosition,
+  PerpPosition,
 } from "@drift-labs/sdk";
 
 import { BaseClient, TxOptions } from "./base";
@@ -65,6 +63,16 @@ export interface DriftMarketConfigs {
   spot: SpotMarketConfig[];
 }
 
+export interface GlamDriftUser {
+  delegate: string;
+  name: string;
+  spotPositions: SpotPosition[];
+  perpPositions: PerpPosition[];
+  marginMode: string;
+  subAccountId: number;
+  isMarginTradingEnabled: boolean;
+}
+
 const DRIFT_VAULT = new PublicKey(
   "JCNCMFXo5M5qwUPg2Utu1u6YWp3MbygxqBsBeXXJfrw"
 );
@@ -81,32 +89,7 @@ const defaultMarkets = [
 ];
 
 export class DriftClient {
-  // @ts-ignore: Property '_driftClient' has no initializer and is not definitely assigned in the constructor.
-  _driftClient: _DriftClient;
-
-  public constructor(readonly base: BaseClient) {
-    const wallet = this.base.getWallet();
-
-    // Set up the drift client if wallet is connected
-    if (wallet) {
-      const env = "mainnet-beta";
-      const sdkConfig = _initialize({ env });
-      this._driftClient = new _DriftClient({
-        connection: this.base.provider.connection,
-        wallet,
-        programID: new PublicKey(DRIFT_PROGRAM_ID),
-        env,
-        accountSubscription: {
-          type: "polling",
-          accountLoader: new BulkAccountLoader(
-            this.base.provider.connection,
-            "confirmed",
-            5000
-          ),
-        },
-      });
-    }
-  }
+  public constructor(readonly base: BaseClient) {}
 
   /*
    * Client methods
@@ -184,7 +167,8 @@ export class DriftClient {
       amount,
       marketIndex,
       subAccountId,
-      marketConfigs
+      marketConfigs,
+      txOptions
     );
     return await this.base.sendAndConfirm(tx);
   }
@@ -242,88 +226,14 @@ export class DriftClient {
   }
 
   async getPositions(fund: PublicKey, subAccountId: number = 0) {
-    const driftClient = await this.getDriftClient();
-    const userAccountPublicKey = this.getUser(fund, subAccountId)[0];
-    const driftUser = new User({
-      driftClient,
-      userAccountPublicKey,
-      accountSubscription: {
-        type: "polling",
-        accountLoader: new BulkAccountLoader(
-          this.base.provider.connection,
-          "confirmed",
-          5000
-        ),
-      },
-    });
-    if (!driftUser.isSubscribed) {
-      const res = await driftUser.subscribe();
-      console.log(
-        "Subscribed to drift user ",
-        userAccountPublicKey.toBase58(),
-        res
-      );
-    }
+    const treasury = this.base.getTreasuryPDA(fund);
+    const response = await fetch(
+      `https://api.glam.systems/v0/drift/user?authority=${treasury.toBase58()}&accountId=0`
+    );
+    const data = await response.json();
+    const { spotPositions, perpPositions } = data as GlamDriftUser;
 
-    const perpPositions = driftUser.getActivePerpPositions();
-    const spotPositions = driftUser.getActiveSpotPositions();
-
-    console.log("Perp positions", perpPositions);
-    console.log("Spot positions", spotPositions);
-
-    // Unsubscribe to avoid subsequent RPCs
-    await driftUser.unsubscribe();
-    await driftClient.unsubscribe();
-
-    return { perpPositions, spotPositions };
-  }
-
-  async getDriftClient(): Promise<_DriftClient> {
-    if (!this._driftClient.isSubscribed) {
-      await this._driftClient.subscribe();
-    }
-
-    return this._driftClient;
-  }
-
-  async getSpotMarketAccount(marketIndex: number) {
-    const drift = await this.getDriftClient();
-    const market = drift.getSpotMarketAccount(marketIndex);
-    if (!market) {
-      throw new Error(`Spot market not found: ${marketIndex}`);
-    }
-    await drift.unsubscribe();
-    return market;
-  }
-
-  async getPerpMarketAccount(marketIndex: number) {
-    const drift = await this.getDriftClient();
-    const market = drift.getPerpMarketAccount(marketIndex);
-    if (!market) {
-      throw new Error(`Perp market not found: ${marketIndex}`);
-    }
-    await drift.unsubscribe();
-    return market;
-  }
-
-  async getSpotMarketAccounts(marketIndexes: number[]) {
-    const drift = await this.getDriftClient();
-    const markets = marketIndexes.map((i) => drift.getSpotMarketAccount(i));
-    if (!markets || markets.length !== marketIndexes.length) {
-      throw new Error(`Spot markets couldn't be fetched: ${marketIndexes}`);
-    }
-    await drift.unsubscribe();
-    return markets;
-  }
-
-  async getPerpMarketAccounts(marketIndexes: number[]) {
-    const drift = await this.getDriftClient();
-    const markets = marketIndexes.map((i) => drift.getPerpMarketAccount(i));
-    if (!markets || markets.length !== marketIndexes.length) {
-      throw new Error(`Perp markets couldn't be fetched: ${marketIndexes}`);
-    }
-    await drift.unsubscribe();
-    return markets;
+    return { spotPositions, perpPositions };
   }
 
   async fetchPolicyConfig(fund: any) {

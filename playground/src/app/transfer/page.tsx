@@ -19,7 +19,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { Asset, AssetInput } from "@/components/AssetInput";
 import { Button } from "@/components/ui/button";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/use-toast";
@@ -29,6 +29,7 @@ import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { parseTxError } from "@/lib/error";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { getPriorityFeeMicroLamports } from "../settings/priorityfee";
+import { set } from "date-fns";
 
 const venues: [string, ...string[]] = ["Treasury", "Drift"];
 const transferSchema = z.object({
@@ -44,16 +45,17 @@ export default function Transfer() {
   const {
     fund: fundPDA,
     treasury,
-    wallet,
     glamClient,
     driftMarketConfigs,
+    driftUser,
     jupTokenList: tokenList,
   } = useGlam();
 
   const [amountAsset, setAmountAsset] = useState<string>("SOL");
   const [isTxPending, setIsTxPending] = useState(false);
+  const [fromAssetList, setFromAssetList] = useState<Asset[]>([]);
 
-  const fromAssetList = useMemo(() => {
+  const treasuryAssets = () => {
     const assets =
       (treasury?.tokenAccounts || []).map((ta) => {
         const name =
@@ -73,8 +75,34 @@ export default function Transfer() {
               : Number(ta.uiAmount),
         } as Asset;
       }) || [];
-
     return assets;
+  };
+
+  const driftAssets = () => {
+    const { spotPositions } = driftUser;
+    const assets =
+      spotPositions.map((position: any) => {
+        const { marketIndex, balance } = position;
+        const marketConfig = driftMarketConfigs.spot.find(
+          (spot) => spot.marketIndex === marketIndex
+        );
+        if (!marketConfig) {
+          return {} as Asset;
+        }
+        const { symbol, mint, decimals } = marketConfig;
+        return {
+          name: symbol,
+          symbol,
+          address: mint,
+          decimals,
+          balance,
+        } as Asset;
+      }) || [];
+    return assets;
+  };
+
+  useEffect(() => {
+    setFromAssetList(treasuryAssets());
   }, [treasury, tokenList, fundPDA]);
 
   const form = useForm<TransferSchema>({
@@ -87,6 +115,17 @@ export default function Transfer() {
     },
   });
 
+  const from = form.watch("origin");
+  useEffect(() => {
+    if (from === "Drift") {
+      console.log(driftUser.spotPositions);
+      setFromAssetList(driftAssets());
+      return;
+    }
+
+    setFromAssetList(treasuryAssets());
+  }, [from, driftUser, driftMarketConfigs]);
+
   const onSubmit: SubmitHandler<TransferSchema> = async (values, event) => {
     const nativeEvent = event as unknown as React.BaseSyntheticEvent & {
       nativeEvent: { submitter: HTMLElement };
@@ -94,6 +133,8 @@ export default function Transfer() {
     if (nativeEvent?.nativeEvent.submitter?.getAttribute("type") !== "submit") {
       return;
     }
+
+    console.log("Submitting transfer", values);
 
     if (!fundPDA) {
       toast({
