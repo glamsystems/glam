@@ -18,14 +18,26 @@ node dist/cli/main.js -h
 
 # Setup
 
-The CLI expects a configuration file at `~/.config/glam/cli/config.json` with keys `json_rpc_url`, `keypair_path`, and `fund` (optional, can be set later on).
+The CLI expects a configuration file at `~/.config/glam/cli/config.json` with keys `helius_api_key`, `keypair_path`, and `fund` (optional, can be set later on).
 
 ```
 {
-  "json_rpc_url": "https://mainnet.helius-rpc.com/?api-key=<api-key>",
+  "helius_api_key": "<your-api-key>",
   "keypair_path": "/path/to/keypair.json",
   "fund": "optional_fund_pubkey"
 }
+```
+
+## Docker build
+
+The image should have wallet keypair at `/root/keypair.json` and CLI config at `/root/.config/glam/cli/config.json`.
+
+Make sure `keypair.json` and `config.json` are available in the root dir of the repo before running docker build.
+
+⚠️ The produced image will have keypair in it. **NEVER** distribute it or upload to a remote image repository.
+
+```
+docker build -f ./cli/Dockerfile -t glam-cli .
 ```
 
 # Commands

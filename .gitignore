@@ -56,6 +56,10 @@ next-env.d.ts
 # Solana
 playground/RPC.ts
 
+.env
 .env.local
 .env.*.local
 **/venv
+
+keypair.json
+config.json

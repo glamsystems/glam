@@ -16,11 +16,12 @@ let fundPDA;
 let heliusApiKey;
 try {
   const config = fs.readFileSync(configPath, "utf8");
-  const { json_rpc_url, keypair_path, helius_api_key, fund } =
-    JSON.parse(config);
-  process.env.ANCHOR_PROVIDER_URL = json_rpc_url;
+  const { keypair_path, helius_api_key, fund } = JSON.parse(config);
+  process.env.ANCHOR_PROVIDER_URL = `https://mainnet.helius-rpc.com/?api-key=${helius_api_key}`;
   process.env.ANCHOR_WALLET = keypair_path;
-  fundPDA = new PublicKey(fund);
+  if (fund) {
+    fundPDA = new PublicKey(fund);
+  }
   heliusApiKey = helius_api_key;
 } catch (err) {
   console.error(`Could not load config at ${configPath}:`, err.message);
@@ -70,6 +71,7 @@ fund
   .description("Set active fund")
   .action((fund) => {
     setFundToConfig(fund, configPath);
+    console.log("Active fund set to:", fund);
   });
 
 fund
