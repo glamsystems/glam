@@ -59,3 +59,6 @@ playground/RPC.ts
 .env.local
 .env.*.local
 **/venv
+
+keypair.json
+config.json
