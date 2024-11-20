@@ -176,7 +176,7 @@ export class InvestorClient {
       }
       // const solBalance = new BN(String(await connection.getBalance(signer)));
       const delta = amount.sub(wsolBalance);
-      if (delta.gt(new BN(0)) /*&& solBalance > delta*/) {
+      if (delta.gt(new BN(0))) {
         preInstructions = preInstructions.concat([
           SystemProgram.transfer({
             fromPubkey: signer,
@@ -187,12 +187,6 @@ export class InvestorClient {
         ]);
       }
     }
-
-    console.log(
-      "fundModel external accounts:",
-      fundModel.externalTreasuryAccounts
-    );
-    console.log("# remaining accounts:", remainingAccounts.length);
 
     const tx = await this.base.program.methods
       .subscribe(amount, skipState)

@@ -106,9 +106,10 @@ fund
   .description("Close the fund")
   .action(async (f) => {
     const fundPDA = new PublicKey(f);
-    const { simulate } = fund.opts();
 
-    try {
+    const preInstructions = [];
+    const fundAccount = await glamClient.fetchFundAccount(fundPDA);
+    if (fundAccount.shareClasses.length > 0) {
       const closeShareClassIx = await glamClient.program.methods
         .closeShareClass(0)
         .accounts({
@@ -117,21 +118,19 @@ fund
           openfunds: glamClient.getOpenfundsPDA(fundPDA),
         })
         .instruction();
+      preInstructions.push(closeShareClassIx);
+    }
+    try {
       const builder = await glamClient.program.methods
         .closeFund()
         .accounts({
           fund: fundPDA,
           openfunds: glamClient.getOpenfundsPDA(fundPDA),
         })
-        .preInstructions([closeShareClassIx]);
+        .preInstructions(preInstructions);
 
-      if (simulate) {
-        const res = await builder.simulate();
-        console.log(`Simulated closing ${fundPDA.toBase58()}:`, res);
-      } else {
-        const txSig = await builder.rpc();
-        console.log(`Fund ${fundPDA.toBase58()} closed:`, txSig);
-      }
+      const txSig = await builder.rpc();
+      console.log(`Fund ${fundPDA.toBase58()} closed:`, txSig);
     } catch (e) {
       console.error(e);
       process.exit(1);
