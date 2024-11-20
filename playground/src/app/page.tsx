@@ -20,9 +20,9 @@ export default function Products() {
   const products = (allFunds || []).map((f: any) => ({
     id: f.idStr,
     imageKey: f.imageKey,
-    name: f.name,
-    symbol: f.shareClasses[0]?.shareClassSymbol || "",
-    baseAsset: f.fundCurrency,
+    name: f.name || f.idStr,
+    symbol: f.shareClasses[0]?.shareClassSymbol || "NA",
+    baseAsset: f.fundCurrency || "NA",
     inception: f.fundLaunchDate,
     status: "active",
   }));

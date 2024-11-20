@@ -143,7 +143,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
                 <CommandGroup key="Products" heading="Products">
                   {fundsList.map((product) => (
                     <CommandItem
-                      key={product.name}
+                      key={product.name || product.address}
                       onSelect={() => {
                         setActiveFund(product);
                         setOpen(false);
