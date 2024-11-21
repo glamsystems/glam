@@ -1,5 +1,5 @@
 {
-  "address": "GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP",
+  "address": "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc",
   "metadata": {
     "name": "glam",
     "version": "0.3.5",
@@ -3930,13 +3930,18 @@
   "errors": [
     {
       "code": 6000,
-      "name": "NotAuthorized",
-      "msg": "Signer is not authorized"
+      "name": "NoShareClassInFund",
+      "msg": "No share class found"
     },
     {
       "code": 6001,
-      "name": "IntegrationDisabled",
-      "msg": "Integration is disabled"
+      "name": "ShareClassNotEmpty",
+      "msg": "Share class not empty"
+    },
+    {
+      "code": 6002,
+      "name": "CantCloseShareClasses",
+      "msg": "Fund can't be closed. Close share classes first"
     }
   ],
   "types": [

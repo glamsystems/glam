@@ -24,7 +24,7 @@ export const fundTestExample = {
       blocklist: [] as PublicKey[],
       lockUpPeriodInSeconds: 0, // number or BN
       lockUpComment: "", // string
-      permanentDelegate: null, // PublicKey, new PublicKey(0) => mint
+      permanentDelegate: new PublicKey(0), // PublicKey, new PublicKey(0) => mint
       defaultAccountStateFrozen: false, // bool
 
       // Openfunds Share Class

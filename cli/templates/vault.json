@@ -1,0 +1,16 @@
+{
+  "name": "GLAM Vault XYZ",
+  "isEnabled": true,
+  "assets": [
+    "So11111111111111111111111111111111111111112",
+    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+  ],
+  "company": {
+    "fundGroupName": "Glam Systems",
+    "manCo": "Glam Management",
+    "domicileOfManCo": "CH",
+    "emailAddressOfManCo": "hello@glam.systems",
+    "fundWebsiteOfManCo": "https://glam.systems"
+  },
+  "manager": { "portfolioManagerName": "glam.sol" }
+}

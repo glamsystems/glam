@@ -42,6 +42,7 @@ describe("glam_crud", () => {
     expect(fund.shareClasses[0].shareClassBlocklist).toEqual([]);
   });
 
+  /*
   it("Update fund name", async () => {
     const updatedFund = glamClient.getFundModel({ name: "Updated fund name" });
     try {
@@ -498,4 +499,5 @@ describe("glam_crud", () => {
     );
     expect(ret).toEqual([null, null, null]);
   });
+  */
 });

@@ -3936,13 +3936,18 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "notAuthorized",
-      "msg": "Signer is not authorized"
+      "name": "noShareClassInFund",
+      "msg": "No share class found"
     },
     {
       "code": 6001,
-      "name": "integrationDisabled",
-      "msg": "Integration is disabled"
+      "name": "shareClassNotEmpty",
+      "msg": "Share class not empty"
+    },
+    {
+      "code": 6002,
+      "name": "cantCloseShareClasses",
+      "msg": "Fund can't be closed. Close share classes first"
     }
   ],
   "types": [

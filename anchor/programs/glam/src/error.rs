@@ -6,7 +6,7 @@ pub enum ManagerError {
     CloseNotEmptyError,
     #[msg("Error: not authorized")]
     NotAuthorizedError,
-    #[msg("Invalid fund name: max 30 chars")]
+    #[msg("Invalid fund name: max 50 chars")]
     InvalidFundName,
     #[msg("Too many assets: max 50")]
     InvalidFundSymbol,

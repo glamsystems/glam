@@ -14,7 +14,7 @@ use anchor_spl::{
         CloseAccount as CloseToken2022Account,
     },
     token_2022_extensions::spl_token_metadata_interface,
-    token_interface::{Mint, Token2022},
+    token_interface::{Mint, Token2022, TokenAccount},
 };
 use glam_macros::treasury_signer_seeds;
 use {
@@ -50,8 +50,6 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     // Initialize the fund
     //
     let fund = &mut ctx.accounts.fund;
-    let treasury = &mut ctx.accounts.treasury;
-    let openfunds = &mut ctx.accounts.openfunds;
 
     let model = fund_model.clone();
     if let Some(fund_name) = model.name {
@@ -73,8 +71,8 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
         fund.openfunds_uri = openfunds_uri;
     }
 
-    fund.treasury = treasury.key();
-    fund.openfunds = openfunds.key();
+    fund.treasury = ctx.accounts.treasury.key();
+    fund.openfunds = ctx.accounts.openfunds.key();
     fund.manager = ctx.accounts.manager.key();
 
     //
@@ -88,6 +86,7 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     //
     // Initialize openfunds
     //
+    let openfunds = &mut ctx.accounts.openfunds;
     let openfunds_metadata = FundMetadataAccount::from(fund_model);
     openfunds.fund_pubkey = fund.key();
     openfunds.company = openfunds_metadata.company;
@@ -190,7 +189,7 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
             },
         });
         raw_openfunds.lock_up_period_in_days =
-            Some((1 + share_class_metadata.lock_up_period_in_seconds / 24 * 60 * 60).to_string())
+            Some((1 + share_class_metadata.lock_up_period_in_seconds / 24 * 60 * 60).to_string());
     } else {
         raw_openfunds.lock_up_period_in_days = None;
         raw_openfunds.lock_up_comment = None;
@@ -200,12 +199,13 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
     share_class_metadata.raw_openfunds = Some(raw_openfunds);
     fund.params.push(share_class_params);
 
-    let openfunds_metadata = Vec::<ShareClassField>::from(&share_class_metadata.clone());
+    let share_class_fields = Vec::<ShareClassField>::from(&share_class_metadata.clone());
+
     //
-    // Add share class to openfunds
+    // Add share class data to openfunds
     //
     let openfunds = &mut ctx.accounts.openfunds;
-    openfunds.share_classes.push(openfunds_metadata.clone());
+    openfunds.share_classes.push(share_class_fields.clone());
 
     //
     // Initialize share class mint, extensions and metadata
@@ -218,6 +218,13 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
         Some(system_program::ID) => Some(share_mint.key()),
         other => other,
     };
+
+    msg!(
+        "share_class_metadata.permanent_delegate: {:?}",
+        share_class_metadata.permanent_delegate,
+    );
+    msg!("share permanent delegate: {:?}", share_permanent_delegate);
+
     let default_account_state_frozen = share_class_metadata.default_account_state_frozen;
 
     let seeds = &[
@@ -394,7 +401,7 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
         &[share_mint.clone(), share_self_authority.clone()],
         signer_seeds,
     )?;
-    let _ = openfunds_metadata.iter().take(10).try_for_each(|field| {
+    let _ = share_class_fields.iter().take(10).try_for_each(|field| {
         solana_program::program::invoke_signed(
             &spl_token_metadata_interface::instruction::update_field(
                 &spl_token_2022::id(),
@@ -452,6 +459,66 @@ pub fn update_share_class_handler(
             _blocklist.extend(share_class_model.blocklist.clone());
         }
     }
+    Ok(())
+}
+
+#[derive(Accounts)]
+#[instruction(share_class_id: u8)]
+pub struct SetTokenAccountState<'info> {
+    #[account(mut, seeds = [b"share".as_ref(), &[share_class_id], fund.key().as_ref()], bump)]
+    share_class_mint: InterfaceAccount<'info, Mint>,
+
+    #[account(mut, has_one = manager @ ManagerError::NotAuthorizedError)]
+    fund: Box<Account<'info, FundAccount>>,
+
+    #[account(mut)]
+    manager: Signer<'info>,
+
+    #[account(mut)]
+    ata: InterfaceAccount<'info, TokenAccount>,
+
+    token_2022_program: Program<'info, Token2022>,
+}
+pub fn set_token_account_state(
+    ctx: Context<SetTokenAccountState>,
+    share_class_id: u8,
+    frozen: bool,
+) -> Result<()> {
+    let fund = &ctx.accounts.fund;
+    let fund_key = fund.key();
+
+    let seeds = &[
+        "share".as_bytes(),
+        &[share_class_id],
+        fund_key.as_ref(),
+        &[ctx.bumps.share_class_mint],
+    ];
+    let signer_seeds = &[&seeds[..]];
+
+    // Thaw or freeze the account
+    // TODO: are those instructions idempotent?
+    if frozen {
+        token_2022::freeze_account(CpiContext::new_with_signer(
+            ctx.accounts.token_2022_program.to_account_info(),
+            token_2022::FreezeAccount {
+                account: ctx.accounts.ata.to_account_info(),
+                mint: ctx.accounts.share_class_mint.to_account_info(),
+                authority: ctx.accounts.share_class_mint.to_account_info(),
+            },
+            signer_seeds,
+        ))?;
+    } else {
+        token_2022::thaw_account(CpiContext::new_with_signer(
+            ctx.accounts.token_2022_program.to_account_info(),
+            token_2022::ThawAccount {
+                account: ctx.accounts.ata.to_account_info(),
+                mint: ctx.accounts.share_class_mint.to_account_info(),
+                authority: ctx.accounts.share_class_mint.to_account_info(),
+            },
+            signer_seeds,
+        ))?;
+    };
+
     Ok(())
 }
 

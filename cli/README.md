@@ -63,7 +63,7 @@ docker build -f ./cli/Dockerfile -t glam-cli .
       - Description: Sets active fund.
       - Example: `node dist/cli/main.js fund set <pubkey>`
     - create \<json>
-      - Description: Creates new fund using input from a json file. See template/example at `cli/fund.json`
+      - Description: Creates new fund using input from a json file. A few templates are available in `templates/`.
       - Example: `node dist/cli/main.js fund create <json>`
     - close \<pubkey>
       - Description: Closes a fund with the given pubkey.
@@ -74,7 +74,7 @@ docker build -f ./cli/Dockerfile -t glam-cli .
     - unwrap
       - Description: Unwraps all wSOL into SOL.
       - Example: `node dist/cli/main.js fund unwrap`
-    - blances
+    - balances
       - Description: Displays asset balances within the fund.
       - Options
         - -a, --all: Includes token accounts with zero balances
