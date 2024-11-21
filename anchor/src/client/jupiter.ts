@@ -277,15 +277,16 @@ export class JupiterClient {
         await this.base.provider.connection.getBalance(treasuryPda)
       );
       const delta = amount.sub(wsolBalance);
-      if (solBalance < delta) {
+
+      if (solBalance.lt(delta)) {
         throw new Error(
           `Insufficient balance in treasury (${treasuryPda.toBase58()}) for swap. solBalance: ${solBalance}, lamports needed: ${delta}`
         );
       }
-      if (delta > new BN(0) && solBalance > delta) {
+      if (delta.gt(new BN(0)) && solBalance.gt(delta)) {
         preInstructions.push(
           await this.base.program.methods
-            .wsolWrap(new BN(amount))
+            .wsolWrap(delta)
             .accounts({
               fund,
               //@ts-ignore IDL ts type is unhappy
