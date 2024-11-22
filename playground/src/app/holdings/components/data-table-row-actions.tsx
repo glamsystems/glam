@@ -1,5 +1,6 @@
 "use client";
 
+import { BN } from "@coral-xyz/anchor";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import { holdingSchema } from "../data/holdingSchema";
 import TruncateAddress from "../../../utils/TruncateAddress";
 import { useState } from "react";
 import { ArrowLeftRight, CheckIcon, CopyIcon, X } from "lucide-react";
-import { useGlam } from "@glam/anchor/react";
+import { MSOL, useGlam } from "@glam/anchor/react";
 import { PublicKey } from "@solana/web3.js";
 import { toast } from "@/components/ui/use-toast";
 import { ExplorerLink } from "@/components/ExplorerLink";
@@ -64,6 +65,66 @@ export function DataTableRowActions<TData>({
     } catch (error: any) {
       toast({
         title: "Failed to close token account",
+        description: parseTxError(error),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const marinadeDelayedUnstake = async (amount: number) => {
+    if (!fund) {
+      return;
+    }
+
+    try {
+      const txId = await glamClient.marinade.delayedUnstake(
+        fund,
+        new BN(amount * 1_000_000_000)
+      );
+      toast({
+        title: `Unstake success`,
+        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+      });
+      await refresh();
+    } catch (error: any) {
+      toast({
+        title: "Failed to unstake (marinade)",
+        description: parseTxError(error),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const unstake = async (mint: string, amount: number) => {
+    if (!fund) {
+      return;
+    }
+
+    const assetMeta = glamClient.getAssetMeta(mint);
+
+    console.log(
+      "fund",
+      fund.toBase58(),
+      "pool",
+      assetMeta.stateAccount?.toBase58(),
+      "amount",
+      new BN(amount * 1_000_000_000).toString()
+    );
+
+    try {
+      const txId = await glamClient.staking.stakePoolWithdrawStake(
+        fund,
+        assetMeta.stateAccount,
+        new BN(amount * 1_000_000_000)
+      );
+      toast({
+        title: `Unstake success`,
+        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+      });
+      await refresh();
+    } catch (error: any) {
+      toast({
+        title: "Failed to unstake (stake pool)",
         description: parseTxError(error),
         variant: "destructive",
       });
@@ -121,25 +182,50 @@ export function DataTableRowActions<TData>({
           </DropdownMenuShortcut>
         </DropdownMenuItem>
 
-        {holding.location === "vault" && (
+        {holding.location === "vault" && holding.balance > 0 && (
+          <>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={async (e) => {
+                console.log("Swapping token:", holding.mint);
+              }}
+            >
+              Swap
+              <DropdownMenuShortcut>
+                <ArrowLeftRight className="h-4 w-4" />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={async (e) => {
+                if (holding.mint == MSOL) {
+                  await marinadeDelayedUnstake(holding.balance);
+                } else {
+                  //pass
+                  await unstake(holding.mint, holding.balance);
+                }
+              }}
+            >
+              Unstake all
+              <DropdownMenuShortcut>
+                <ArrowLeftRight className="h-4 w-4" />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+          </>
+        )}
+
+        {holding.location === "vault" && holding.balance == 0 && (
           <DropdownMenuItem
             className="cursor-pointer"
             onClick={async (e) => {
-              if (holding.balance > 0) {
-                console.log("Swapping token:", holding.mint);
-              } else {
-                console.log("Closing token:", holding.mint);
-                await closeAta(holding.ata);
-              }
+              console.log("Closing token:", holding.mint);
+              await closeAta(holding.ata);
             }}
           >
-            {holding.balance > 0 ? "Swap" : "Close"}
+            Close
             <DropdownMenuShortcut>
-              {holding.balance > 0 ? (
-                <ArrowLeftRight className="h-4 w-4" />
-              ) : (
-                <X className="h-4 w-4" />
-              )}
+              <X className="h-4 w-4" />
             </DropdownMenuShortcut>
           </DropdownMenuItem>
         )}

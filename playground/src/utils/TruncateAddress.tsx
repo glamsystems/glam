@@ -11,11 +11,11 @@ const TruncateAddress: React.FC<TruncateAddressProps> = ({
   start = 5,
   end = 5,
 }) => {
-  const firstPart = start > 0 ? address.slice(0, start) : "";
-  const lastPart = end > 0 ? address.slice(-end) : "";
+  const firstPart = start > 0 ? (address || "").slice(0, start) : "";
+  const lastPart = end > 0 ? (address || "").slice(-end) : "";
 
   // Determine when to truncate
-  const shouldTruncate = address.length > start + end;
+  const shouldTruncate = (address || "").length > start + end;
   const truncatedAddress = shouldTruncate
     ? `${firstPart}...${lastPart}`
     : address;
