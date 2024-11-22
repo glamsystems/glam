@@ -558,6 +558,8 @@ export class BaseClient {
     await Promise.all(
       shareClasses.map(async (shareClass: any, j: number) => {
         const shareClassMint = this.getShareClassPDA(fundPDA, j);
+        console.log("shareClassMint", shareClassMint.toBase58());
+
         return await this.program.methods
           .addShareClass(shareClass)
           .accounts({

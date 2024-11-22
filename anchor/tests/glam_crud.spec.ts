@@ -15,11 +15,7 @@ import {
   USDC,
   WSOL,
 } from "../src";
-import {
-  createAssociatedTokenAccount,
-  createAssociatedTokenAccountIdempotent,
-  createAssociatedTokenAccountIdempotentInstruction,
-} from "@solana/spl-token";
+import { createAssociatedTokenAccountIdempotentInstruction } from "@solana/spl-token";
 
 const key1 = Keypair.fromSeed(str2seed("acl_test_key1"));
 const key2 = Keypair.fromSeed(str2seed("acl_test_key2"));
@@ -30,8 +26,10 @@ describe("glam_crud", () => {
   let fundPDA: PublicKey;
 
   it("Initialize fund", async () => {
-    fundTestExample.shareClasses[0].allowlist = [glamClient.getManager()];
-    const fundData = await createFundForTest(glamClient);
+    const fundForTest = { ...fundTestExample };
+    fundForTest.shareClasses[0].allowlist = [glamClient.getManager()];
+    const fundData = await createFundForTest(glamClient, fundForTest);
+
     fundPDA = fundData.fundPDA;
 
     const fund = await glamClient.fetchFund(fundPDA);
@@ -42,7 +40,6 @@ describe("glam_crud", () => {
     expect(fund.shareClasses[0].shareClassBlocklist).toEqual([]);
   });
 
-  /*
   it("Update fund name", async () => {
     const updatedFund = glamClient.getFundModel({ name: "Updated fund name" });
     try {
@@ -499,5 +496,4 @@ describe("glam_crud", () => {
     );
     expect(ret).toEqual([null, null, null]);
   });
-  */
 });

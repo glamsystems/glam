@@ -20,26 +20,47 @@ declare_id!("Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc");
 #[program]
 pub mod glam {
 
-    // use ::drift::{MarketType, OrderParams, PositionDirection};
-
     use super::*;
 
     //
-    // Manager
+    // Fund
     //
 
     pub fn initialize_fund<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, InitializeFund<'info>>,
         fund: FundModel,
     ) -> Result<()> {
-        manager::initialize_fund_handler(ctx, fund)
+        fund::initialize_fund_handler(ctx, fund)
     }
+
+    pub fn update_fund<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, UpdateFund<'info>>,
+        fund: FundModel,
+    ) -> Result<()> {
+        fund::update_fund_handler(ctx, fund)
+    }
+
+    pub fn close_fund(ctx: Context<CloseFund>) -> Result<()> {
+        fund::close_fund_handler(ctx)
+    }
+
+    //
+    // Share class
+    //
 
     pub fn add_share_class<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, AddShareClass<'info>>,
         share_class_metadata: ShareClassModel,
     ) -> Result<()> {
-        manager::add_share_class_handler(ctx, share_class_metadata)
+        share_class::add_share_class_handler(ctx, share_class_metadata)
+    }
+
+    pub fn mint_share<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, MintShare<'info>>,
+        share_class_id: u8,
+        amount: u64,
+    ) -> Result<()> {
+        share_class::mint_share_handler(ctx, share_class_id, amount)
     }
 
     pub fn update_share_class(
@@ -47,28 +68,25 @@ pub mod glam {
         share_class_id: u8,
         share_class_metadata: ShareClassModel,
     ) -> Result<()> {
-        manager::update_share_class_handler(ctx, share_class_id, share_class_metadata)
+        share_class::update_share_class_handler(ctx, share_class_id, share_class_metadata)
     }
 
-    pub fn update_fund<'c: 'info, 'info>(
-        ctx: Context<'_, '_, 'c, 'info, UpdateFund<'info>>,
-        fund: FundModel,
+    pub fn set_token_accounts_states<'info>(
+        ctx: Context<'_, '_, '_, 'info, SetTokenAccountsStates<'info>>,
+        share_class_id: u8,
+        frozen: bool,
     ) -> Result<()> {
-        manager::update_fund_handler(ctx, fund)
+        share_class::set_token_accounts_states_handler(ctx, share_class_id, frozen)
     }
 
     pub fn close_token_accounts<'info>(
         ctx: Context<'_, '_, '_, 'info, CloseTokenAccounts<'info>>,
     ) -> Result<()> {
-        manager::close_token_accounts_handler(ctx)
-    }
-
-    pub fn close_fund(ctx: Context<CloseFund>) -> Result<()> {
-        manager::close_fund_handler(ctx)
+        share_class::close_token_accounts_handler(ctx)
     }
 
     pub fn close_share_class(ctx: Context<CloseShareClass>, share_class_id: u8) -> Result<()> {
-        manager::close_share_class_handler(ctx, share_class_id)
+        share_class::close_share_class_handler(ctx, share_class_id)
     }
 
     //

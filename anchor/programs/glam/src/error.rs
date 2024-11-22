@@ -54,10 +54,16 @@ pub enum InvestorError {
 pub enum FundError {
     #[msg("No share class found")]
     NoShareClassInFund,
-    #[msg("Share class not empty")]
-    ShareClassNotEmpty,
     #[msg("Fund can't be closed. Close share classes first")]
     CantCloseShareClasses,
+}
+
+#[error_code]
+pub enum ShareClassError {
+    #[msg("Share class mint supply not zero")]
+    ShareClassNotEmpty,
+    #[msg("Invalid token account")]
+    InvalidTokenAccount,
 }
 
 #[error_code]
