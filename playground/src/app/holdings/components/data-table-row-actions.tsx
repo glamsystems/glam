@@ -1,5 +1,6 @@
 "use client";
 
+import { BN } from "@coral-xyz/anchor";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import { holdingSchema } from "../data/holdingSchema";
 import TruncateAddress from "../../../utils/TruncateAddress";
 import { useState } from "react";
 import { ArrowLeftRight, CheckIcon, CopyIcon, X } from "lucide-react";
-import { useGlam } from "@glam/anchor/react";
+import { MSOL, useGlam } from "@glam/anchor/react";
 import { PublicKey } from "@solana/web3.js";
 import { toast } from "@/components/ui/use-toast";
 import { ExplorerLink } from "@/components/ExplorerLink";
@@ -39,6 +40,7 @@ export function DataTableRowActions<TData>({
     address: string,
     type: string
   ) => {
+    console.log("row:", holding);
     e.preventDefault();
     e.stopPropagation();
     navigator.clipboard.writeText(address).then(() => {
@@ -70,13 +72,75 @@ export function DataTableRowActions<TData>({
     }
   };
 
+  const marinadeDelayedUnstake = async (amount: number) => {
+    if (!fund) {
+      return;
+    }
+
+    console.log("fund", fund.toBase58(), "delayed unstake amount", amount);
+
+    try {
+      const txId = await glamClient.marinade.delayedUnstake(
+        fund,
+        new BN(amount)
+      );
+      toast({
+        title: `Unstake success`,
+        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+      });
+      await refresh();
+    } catch (error: any) {
+      toast({
+        title: "Failed to unstake (marinade)",
+        description: parseTxError(error),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const unstake = async (mint: string, amount: number) => {
+    const assetMeta = glamClient.getAssetMeta(mint);
+
+    if (!fund || !assetMeta || !assetMeta.stateAccount) {
+      return;
+    }
+
+    console.log(
+      "fund",
+      fund.toBase58(),
+      "pool",
+      assetMeta.stateAccount.toBase58(),
+      "unstake amount",
+      amount
+    );
+
+    try {
+      const txId = await glamClient.staking.stakePoolWithdrawStake(
+        fund,
+        assetMeta.stateAccount,
+        new BN(amount)
+      );
+      toast({
+        title: `Unstake success`,
+        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+      });
+      await refresh();
+    } catch (error: any) {
+      toast({
+        title: "Failed to unstake (stake pool)",
+        description: parseTxError(error),
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
           className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
-          disabled={holding.symbol === "SOL"}
+          disabled={holding.symbol === "SOL" || holding.location === "drift"}
         >
           <DotsHorizontalIcon className="h-4 w-4" />
           <span className="sr-only">Open menu</span>
@@ -121,25 +185,55 @@ export function DataTableRowActions<TData>({
           </DropdownMenuShortcut>
         </DropdownMenuItem>
 
-        {holding.location === "vault" && (
+        {holding.location === "vault" && holding.balance > 0 && (
+          <>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={async (e) => {
+                // TODO: redirect to trade page
+                console.log("Swapping token:", holding.mint);
+              }}
+            >
+              Swap
+              <DropdownMenuShortcut>
+                <ArrowLeftRight className="h-4 w-4" />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={async (e) => {
+                if (holding.mint === MSOL.toBase58()) {
+                  await marinadeDelayedUnstake(
+                    holding.balance * 10 ** holding.decimals
+                  );
+                } else {
+                  await unstake(
+                    holding.mint,
+                    holding.balance * 10 ** holding.decimals
+                  );
+                }
+              }}
+            >
+              Unstake all
+              <DropdownMenuShortcut>
+                <ArrowLeftRight className="h-4 w-4" />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+          </>
+        )}
+
+        {holding.location === "vault" && holding.balance == 0 && (
           <DropdownMenuItem
             className="cursor-pointer"
             onClick={async (e) => {
-              if (holding.balance > 0) {
-                console.log("Swapping token:", holding.mint);
-              } else {
-                console.log("Closing token:", holding.mint);
-                await closeAta(holding.ata);
-              }
+              console.log("Closing token:", holding.mint);
+              await closeAta(holding.ata);
             }}
           >
-            {holding.balance > 0 ? "Swap" : "Close"}
+            Close
             <DropdownMenuShortcut>
-              {holding.balance > 0 ? (
-                <ArrowLeftRight className="h-4 w-4" />
-              ) : (
-                <X className="h-4 w-4" />
-              )}
+              <X className="h-4 w-4" />
             </DropdownMenuShortcut>
           </DropdownMenuItem>
         )}
