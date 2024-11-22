@@ -30,6 +30,7 @@ export default function Holdings() {
     ata: "",
     price: 0,
     balance: 0,
+    decimals: 9,
     notional: 0,
     logoURI: "",
     location: "",
@@ -55,6 +56,7 @@ export default function Holdings() {
         ata: "",
         price: price,
         balance: solBalance,
+        decimals: 9,
         notional: solBalance * price || 0,
         location: "vault",
         logoURI:
@@ -74,6 +76,9 @@ export default function Holdings() {
           const symbol =
             jupTokenList?.find((t: any) => t.address === ta.mint)?.symbol ||
             ta.mint;
+          const decimals =
+            jupTokenList?.find((t: any) => t.address === ta.mint)?.decimals ||
+            9;
           const price = prices?.find((p) => p.mint === ta.mint)?.price || 0;
           return {
             name,
@@ -82,6 +87,7 @@ export default function Holdings() {
             ata: ta.address,
             price: price,
             balance: Number(ta.uiAmount),
+            decimals: Number(decimals),
             notional: Number(ta.uiAmount) * price || 0,
             logoURI: logoURI,
             location: "vault",
@@ -106,6 +112,7 @@ export default function Holdings() {
           ata: "NA",
           price,
           balance,
+          decimals: market?.decimals || 9,
           notional: balance * price || 0,
           logoURI: "https://avatars.githubusercontent.com/u/83389928?s=48&v=4",
           location: "drift",

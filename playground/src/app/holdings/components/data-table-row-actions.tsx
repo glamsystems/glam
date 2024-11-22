@@ -40,6 +40,7 @@ export function DataTableRowActions<TData>({
     address: string,
     type: string
   ) => {
+    console.log("row:", holding);
     e.preventDefault();
     e.stopPropagation();
     navigator.clipboard.writeText(address).then(() => {
@@ -76,10 +77,12 @@ export function DataTableRowActions<TData>({
       return;
     }
 
+    console.log("fund", fund.toBase58(), "delayed unstake amount", amount);
+
     try {
       const txId = await glamClient.marinade.delayedUnstake(
         fund,
-        new BN(amount * 1_000_000_000)
+        new BN(amount)
       );
       toast({
         title: `Unstake success`,
@@ -96,26 +99,26 @@ export function DataTableRowActions<TData>({
   };
 
   const unstake = async (mint: string, amount: number) => {
-    if (!fund) {
+    const assetMeta = glamClient.getAssetMeta(mint);
+
+    if (!fund || !assetMeta || !assetMeta.stateAccount) {
       return;
     }
-
-    const assetMeta = glamClient.getAssetMeta(mint);
 
     console.log(
       "fund",
       fund.toBase58(),
       "pool",
-      assetMeta.stateAccount?.toBase58(),
-      "amount",
-      new BN(amount * 1_000_000_000).toString()
+      assetMeta.stateAccount.toBase58(),
+      "unstake amount",
+      amount
     );
 
     try {
       const txId = await glamClient.staking.stakePoolWithdrawStake(
         fund,
         assetMeta.stateAccount,
-        new BN(amount * 1_000_000_000)
+        new BN(amount)
       );
       toast({
         title: `Unstake success`,
@@ -137,7 +140,7 @@ export function DataTableRowActions<TData>({
         <Button
           variant="ghost"
           className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
-          disabled={holding.symbol === "SOL"}
+          disabled={holding.symbol === "SOL" || holding.location === "drift"}
         >
           <DotsHorizontalIcon className="h-4 w-4" />
           <span className="sr-only">Open menu</span>
@@ -187,6 +190,7 @@ export function DataTableRowActions<TData>({
             <DropdownMenuItem
               className="cursor-pointer"
               onClick={async (e) => {
+                // TODO: redirect to trade page
                 console.log("Swapping token:", holding.mint);
               }}
             >
@@ -199,11 +203,15 @@ export function DataTableRowActions<TData>({
             <DropdownMenuItem
               className="cursor-pointer"
               onClick={async (e) => {
-                if (holding.mint == MSOL) {
-                  await marinadeDelayedUnstake(holding.balance);
+                if (holding.mint === MSOL.toBase58()) {
+                  await marinadeDelayedUnstake(
+                    holding.balance * 10 ** holding.decimals
+                  );
                 } else {
-                  //pass
-                  await unstake(holding.mint, holding.balance);
+                  await unstake(
+                    holding.mint,
+                    holding.balance * 10 ** holding.decimals
+                  );
                 }
               }}
             >
