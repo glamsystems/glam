@@ -256,9 +256,6 @@ export class InvestorClient {
       ];
     });
 
-    console.log("fundModel:", fundModel);
-    console.log(fundModel.externalTreasuryAccounts);
-
     remainingAccounts = remainingAccounts.concat(
       (fundModel.externalTreasuryAccounts || []).map((address: PublicKey) => ({
         pubkey: address,

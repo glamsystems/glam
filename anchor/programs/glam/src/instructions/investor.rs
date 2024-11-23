@@ -489,7 +489,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
                 continue;
             }
 
-            // transfer asset from user to treasury
+            // transfer asset from treasury to user
             // note: we detect the token program to use from the asset
             let asset_info = asset.to_account_info();
             let asset_program = if *asset_info.owner == Token2022::id() {
@@ -498,12 +498,18 @@ pub fn redeem_handler<'c: 'info, 'info>(
                 ctx.accounts.token_program.to_account_info()
             };
 
-            // msg!(
-            //     "- {}e-{} {}",
-            //     amount_asset,
-            //     att.asset_decimals,
-            //     asset_info.key()
-            // );
+            #[cfg(not(feature = "mainnet"))]
+            msg!(
+                "Transfer {} (decimals {}) {} from treasury to user",
+                amount_asset,
+                asset.decimals,
+                asset_info.key()
+            );
+            require!(
+                !att.treasury_ata.is_none(),
+                InvestorError::InvalidTreasuryAccount
+            );
+
             let signer_asset_ata = att.signer_asset_ata.clone().unwrap();
             let treasury_ata: InterfaceAccount<TokenAccount> = att.treasury_ata.clone().unwrap();
             transfer_checked(
@@ -649,7 +655,6 @@ pub fn get_aum_components<'info>(
             &cur_asset,
             &cur_token_program_key,
         );
-        // msg!("asset={} = {}", i, cur_asset);
         require_eq!(
             treasury_ata_account.key(),
             expected_treasury_ata,
@@ -774,11 +779,10 @@ pub fn get_aum_components<'info>(
      * Calculate the external lamports of the fund. Currently only marinade tickets and stake accounts are included.
      * External lamports will be added to the wsol aum_component.
      */
-    if let Some(wsol_component) = aum_components
-        .iter_mut()
-        .find(|aum| aum.price_type == PriceDenom::SOL)
-    {
-        // msg!("wsol_component={:?}", wsol_component);
+    if let Some(wsol_component) = aum_components.iter_mut().find(|aum| {
+        !aum.asset.as_ref().is_none() && aum.asset.as_ref().unwrap().key() == constants::WSOL
+    }) {
+        msg!("wsol aum_component={:?}", wsol_component);
 
         let mut external_lamports = marinade_tickets
             .iter()

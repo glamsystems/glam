@@ -10,6 +10,7 @@ import { createFundForTest, fundTestExample, str2seed } from "./setup";
 import {
   FundModel,
   GlamClient,
+  GlamError,
   MSOL,
   ShareClassModel,
   USDC,
@@ -204,4 +205,32 @@ describe("glam_share_class", () => {
     );
     expect(tokenAccount.amount.toString()).toEqual("0");
   });
+
+  it("Subscribe and redeem disabled", async () => {
+    try {
+      const txId = await glamClient.program.methods
+        .setSubscribeRedeemEnabled(false)
+        .accounts({
+          fund: fundPDA,
+        })
+        .rpc();
+      console.log("setSubscribeRedeemEnabled txId", txId);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+
+    try {
+      const txId = await glamClient.investor.subscribe(
+        fundPDA,
+        WSOL,
+        new BN(10 ** 8)
+      );
+      console.log("subscribe:", txId);
+    } catch (e) {
+      expect((e as GlamError).message).toEqual(
+        "Fund is disabled for subscription and redemption."
+      );
+    }
+  }, 15_000);
 });
