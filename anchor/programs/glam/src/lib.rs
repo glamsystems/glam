@@ -44,6 +44,13 @@ pub mod glam {
         fund::close_fund_handler(ctx)
     }
 
+    pub fn set_subscribe_redeem_enabled(
+        ctx: Context<SetSubscribeRedeemEnabled>,
+        enabled: bool,
+    ) -> Result<()> {
+        fund::set_subscribe_redeem_enabled_handler(ctx, enabled)
+    }
+
     //
     // Share class
     //
@@ -55,6 +62,18 @@ pub mod glam {
         share_class::add_share_class_handler(ctx, share_class_metadata)
     }
 
+    pub fn update_share_class(
+        ctx: Context<UpdateShareClass>,
+        share_class_id: u8,
+        share_class_metadata: ShareClassModel,
+    ) -> Result<()> {
+        share_class::update_share_class_handler(ctx, share_class_id, share_class_metadata)
+    }
+
+    pub fn close_share_class(ctx: Context<CloseShareClass>, share_class_id: u8) -> Result<()> {
+        share_class::close_share_class_handler(ctx, share_class_id)
+    }
+
     pub fn mint_share<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, MintShare<'info>>,
         share_class_id: u8,
@@ -63,12 +82,16 @@ pub mod glam {
         share_class::mint_share_handler(ctx, share_class_id, amount)
     }
 
-    pub fn update_share_class(
-        ctx: Context<UpdateShareClass>,
+    pub fn force_transfer_share(
+        ctx: Context<ForceTransferShare>,
         share_class_id: u8,
-        share_class_metadata: ShareClassModel,
+        amount: u64,
     ) -> Result<()> {
-        share_class::update_share_class_handler(ctx, share_class_id, share_class_metadata)
+        share_class::force_transfer_share_handler(ctx, share_class_id, amount)
+    }
+
+    pub fn burn_share(ctx: Context<BurnShare>, share_class_id: u8, amount: u64) -> Result<()> {
+        share_class::burn_share_handler(ctx, share_class_id, amount)
     }
 
     pub fn set_token_accounts_states<'info>(
@@ -83,10 +106,6 @@ pub mod glam {
         ctx: Context<'_, '_, '_, 'info, CloseTokenAccounts<'info>>,
     ) -> Result<()> {
         share_class::close_token_accounts_handler(ctx)
-    }
-
-    pub fn close_share_class(ctx: Context<CloseShareClass>, share_class_id: u8) -> Result<()> {
-        share_class::close_share_class_handler(ctx, share_class_id)
     }
 
     //

@@ -24,8 +24,6 @@ pub enum ManagerError {
 
 #[error_code]
 pub enum InvestorError {
-    #[msg("Fund is not active")]
-    FundNotActive,
     #[msg("Share class not allowed to subscribe")]
     InvalidShareClass,
     #[msg("Asset not allowed to subscribe")]
@@ -42,8 +40,8 @@ pub enum InvestorError {
     InvalidAssetPrice,
     #[msg("Subscription not allowed: invalid stable coin price")]
     InvalidStableCoinPriceForSubscribe,
-    #[msg("Fund is paused for subscription and redemption")]
-    SubscribeRedeemPaused,
+    #[msg("Fund is disabled for subscription and redemption")]
+    SubscribeRedeemDisable,
     #[msg("Policy account is mandatory")]
     InvalidPolicyAccount,
     #[msg("Price is too old")]
@@ -52,6 +50,8 @@ pub enum InvestorError {
 
 #[error_code]
 pub enum FundError {
+    #[msg("Fund is not active")]
+    FundNotActive,
     #[msg("No share class found")]
     NoShareClassInFund,
     #[msg("Fund can't be closed. Close share classes first")]

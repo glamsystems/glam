@@ -86,7 +86,16 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     skip_state: bool,
 ) -> Result<()> {
     let fund = &ctx.accounts.fund;
-    require!(fund.is_enabled(), InvestorError::FundNotActive);
+    require!(fund.is_enabled(), FundError::FundNotActive);
+
+    let external_treasury_accounts =
+        fund.get_pubkeys_from_engine_field(EngineFieldName::ExternalTreasuryAccounts);
+
+    // If system program is in the external treasury accounts, it means that
+    // the fund is disabled for subscription and redemption.
+    if external_treasury_accounts.contains(&system_program::ID) {
+        return err!(InvestorError::SubscribeRedeemDisable);
+    }
 
     if fund.share_classes.len() > 1 {
         // we need to define how to split the total amount into share classes
@@ -160,8 +169,6 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     let total_shares = share_class.supply;
     let use_fixed_price = total_shares == 0;
 
-    let external_treasury_accounts =
-        fund.get_pubkeys_from_engine_field(EngineFieldName::ExternalTreasuryAccounts);
     let aum_components = get_aum_components(
         Action::Subscribe,
         fund_assets,
@@ -313,9 +320,16 @@ pub fn redeem_handler<'c: 'info, 'info>(
     skip_state: bool,
 ) -> Result<()> {
     let fund = &ctx.accounts.fund;
+    require!(fund.is_enabled(), FundError::FundNotActive);
 
     let external_treasury_accounts =
         fund.get_pubkeys_from_engine_field(EngineFieldName::ExternalTreasuryAccounts);
+
+    // If system program is in the external treasury accounts, it means that
+    // the fund is disabled for subscription and redemption.
+    if external_treasury_accounts.contains(&system_program::ID) {
+        return err!(InvestorError::SubscribeRedeemDisable);
+    }
 
     if ctx.accounts.fund.share_classes.len() > 1 {
         // we need to define how to split the total amount into share classes

@@ -13,7 +13,10 @@ use anchor_spl::{
         CloseAccount as CloseToken2022Account,
     },
     token_2022_extensions::spl_token_metadata_interface,
-    token_interface::{mint_to, Mint, MintTo, Token2022, TokenAccount},
+    token_interface::{
+        burn, mint_to, transfer_checked, Burn, Mint, MintTo, Token2022, TokenAccount,
+        TransferChecked,
+    },
 };
 use glam_macros::treasury_signer_seeds;
 use {
@@ -455,6 +458,158 @@ pub fn close_token_accounts_handler<'info>(
 
 #[derive(Accounts)]
 #[instruction(share_class_id: u8)]
+pub struct ForceTransferShare<'info> {
+    #[account(
+        mut,
+        associated_token::mint = share_class_mint,
+        associated_token::authority = from,
+        associated_token::token_program = token_2022_program
+    )]
+    pub from_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    #[account(
+        mut,
+        associated_token::mint = share_class_mint,
+        associated_token::authority = to,
+        associated_token::token_program = token_2022_program
+    )]
+    pub to_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+
+    /// CHECK: any address owned by system program
+    pub from: SystemAccount<'info>,
+
+    /// CHECK: any address owned by system program, or the system program
+    pub to: AccountInfo<'info>,
+
+    #[account(
+        mut,
+        seeds = [b"share".as_ref(), &[share_class_id], fund.key().as_ref()],
+        bump,
+        mint::authority = share_class_mint,
+        mint::token_program = token_2022_program
+    )]
+    share_class_mint: InterfaceAccount<'info, Mint>,
+
+    #[account(mut, has_one = manager @ ManagerError::NotAuthorizedError)]
+    fund: Box<Account<'info, FundAccount>>,
+
+    #[account(mut)]
+    manager: Signer<'info>,
+
+    token_2022_program: Program<'info, Token2022>,
+}
+
+pub fn force_transfer_share_handler(
+    ctx: Context<ForceTransferShare>,
+    share_class_id: u8,
+    amount: u64,
+) -> Result<()> {
+    let fund = &ctx.accounts.fund;
+    let fund_key = fund.key();
+    let seeds = &[
+        "share".as_bytes(),
+        &[share_class_id],
+        fund_key.as_ref(),
+        &[ctx.bumps.share_class_mint],
+    ];
+    let signer_seeds = &[&seeds[..]];
+
+    let decimals = ctx.accounts.share_class_mint.decimals;
+
+    msg!(
+        "Transfer {} shares from {} (ata {}) to {} (ata {})",
+        amount as f64 / 10u64.pow(decimals as u32) as f64,
+        ctx.accounts.from.key(),
+        ctx.accounts.from_ata.key(),
+        ctx.accounts.to.key(),
+        ctx.accounts.to_ata.key()
+    );
+    transfer_checked(
+        CpiContext::new_with_signer(
+            ctx.accounts.token_2022_program.to_account_info(),
+            TransferChecked {
+                from: ctx.accounts.from_ata.to_account_info(),
+                mint: ctx.accounts.share_class_mint.to_account_info(),
+                to: ctx.accounts.to_ata.to_account_info(),
+                authority: ctx.accounts.share_class_mint.to_account_info(), // permenant delegate
+            },
+            signer_seeds,
+        ),
+        amount,
+        decimals,
+    )?;
+
+    Ok(())
+}
+
+#[derive(Accounts)]
+#[instruction(share_class_id: u8)]
+pub struct BurnShare<'info> {
+    #[account(
+        mut,
+        associated_token::mint = share_class_mint,
+        associated_token::authority = from,
+        associated_token::token_program = token_2022_program
+    )]
+    pub from_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+
+    /// CHECK: any address owned by system program
+    pub from: SystemAccount<'info>,
+
+    #[account(
+        mut,
+        seeds = [b"share".as_ref(), &[share_class_id], fund.key().as_ref()],
+        bump,
+        mint::authority = share_class_mint,
+        mint::token_program = token_2022_program
+    )]
+    share_class_mint: InterfaceAccount<'info, Mint>,
+
+    #[account(mut, has_one = manager @ ManagerError::NotAuthorizedError)]
+    fund: Box<Account<'info, FundAccount>>,
+
+    #[account(mut)]
+    manager: Signer<'info>,
+
+    token_2022_program: Program<'info, Token2022>,
+}
+
+pub fn burn_share_handler(ctx: Context<BurnShare>, share_class_id: u8, amount: u64) -> Result<()> {
+    let fund = &ctx.accounts.fund;
+    let fund_key = fund.key();
+    let seeds = &[
+        "share".as_bytes(),
+        &[share_class_id],
+        fund_key.as_ref(),
+        &[ctx.bumps.share_class_mint],
+    ];
+    let signer_seeds = &[&seeds[..]];
+
+    let decimals = ctx.accounts.share_class_mint.decimals;
+
+    msg!(
+        "Burn {} shares from {} (ata {})",
+        amount as f64 / 10u64.pow(decimals as u32) as f64,
+        ctx.accounts.from.key(),
+        ctx.accounts.from_ata.key(),
+    );
+    burn(
+        CpiContext::new_with_signer(
+            ctx.accounts.token_2022_program.to_account_info(),
+            Burn {
+                mint: ctx.accounts.share_class_mint.to_account_info(),
+                from: ctx.accounts.from_ata.to_account_info(),
+                authority: ctx.accounts.share_class_mint.to_account_info(),
+            },
+            signer_seeds,
+        ),
+        amount,
+    )?;
+
+    Ok(())
+}
+
+#[derive(Accounts)]
+#[instruction(share_class_id: u8)]
 pub struct MintShare<'info> {
     #[account(
         mut,
@@ -464,8 +619,8 @@ pub struct MintShare<'info> {
     )]
     pub mint_to: Box<InterfaceAccount<'info, TokenAccount>>,
 
-    /// CHECK: can be any address
-    pub recipient: AccountInfo<'info>,
+    /// CHECK: any address owned by system program
+    pub recipient: SystemAccount<'info>,
 
     #[account(
         mut,

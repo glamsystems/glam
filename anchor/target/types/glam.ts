@@ -103,6 +103,111 @@ export type Glam = {
       ]
     },
     {
+      "name": "burnShare",
+      "discriminator": [
+        111,
+        41,
+        160,
+        233,
+        46,
+        233,
+        79,
+        62
+      ],
+      "accounts": [
+        {
+          "name": "fromAta",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "from"
+              },
+              {
+                "kind": "account",
+                "path": "token2022Program"
+              },
+              {
+                "kind": "account",
+                "path": "shareClassMint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "from"
+        },
+        {
+          "name": "shareClassMint",
+          "writable": true
+        },
+        {
+          "name": "fund",
+          "writable": true
+        },
+        {
+          "name": "manager",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "fund"
+          ]
+        },
+        {
+          "name": "token2022Program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        }
+      ],
+      "args": [
+        {
+          "name": "shareClassId",
+          "type": "u8"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "closeFund",
       "discriminator": [
         230,
@@ -1062,6 +1167,171 @@ export type Glam = {
         {
           "name": "marketIndex",
           "type": "u16"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "forceTransferShare",
+      "discriminator": [
+        71,
+        90,
+        36,
+        42,
+        220,
+        208,
+        46,
+        19
+      ],
+      "accounts": [
+        {
+          "name": "fromAta",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "from"
+              },
+              {
+                "kind": "account",
+                "path": "token2022Program"
+              },
+              {
+                "kind": "account",
+                "path": "shareClassMint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "toAta",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "to"
+              },
+              {
+                "kind": "account",
+                "path": "token2022Program"
+              },
+              {
+                "kind": "account",
+                "path": "shareClassMint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "from"
+        },
+        {
+          "name": "to"
+        },
+        {
+          "name": "shareClassMint",
+          "writable": true
+        },
+        {
+          "name": "fund",
+          "writable": true
+        },
+        {
+          "name": "manager",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "fund"
+          ]
+        },
+        {
+          "name": "token2022Program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        }
+      ],
+      "args": [
+        {
+          "name": "shareClassId",
+          "type": "u8"
         },
         {
           "name": "amount",
@@ -2540,6 +2810,39 @@ export type Glam = {
         {
           "name": "newStakeAccountBump",
           "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "setSubscribeRedeemEnabled",
+      "discriminator": [
+        189,
+        56,
+        205,
+        172,
+        201,
+        185,
+        34,
+        92
+      ],
+      "accounts": [
+        {
+          "name": "fund",
+          "writable": true
+        },
+        {
+          "name": "manager",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "fund"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "enabled",
+          "type": "bool"
         }
       ]
     },
@@ -4086,18 +4389,13 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "transfersDisabled",
-      "msg": "Policy violation: transfers disabled"
+      "name": "shareClassNotEmpty",
+      "msg": "Share class mint supply not zero"
     },
     {
       "code": 6001,
-      "name": "amountTooBig",
-      "msg": "Policy violation: amount too big"
-    },
-    {
-      "code": 6002,
-      "name": "lockUp",
-      "msg": "Policy violation: lock-up period"
+      "name": "invalidTokenAccount",
+      "msg": "Invalid token account"
     }
   ],
   "types": [

@@ -3,7 +3,7 @@ use crate::{
     error::{FundError, ManagerError},
     state::*,
 };
-use anchor_lang::prelude::*;
+use anchor_lang::{prelude::*, system_program};
 use glam_macros::treasury_signer_seeds;
 
 #[derive(Accounts)]
@@ -311,5 +311,40 @@ pub fn close_fund_handler(ctx: Context<CloseFund>) -> Result<()> {
     }
 
     msg!("Fund closed: {}", ctx.accounts.fund.key());
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct SetSubscribeRedeemEnabled<'info> {
+    #[account(mut, has_one = manager @ ManagerError::NotAuthorizedError)]
+    fund: Box<Account<'info, FundAccount>>,
+
+    #[account(mut)]
+    manager: Signer<'info>,
+}
+
+pub fn set_subscribe_redeem_enabled_handler(
+    ctx: Context<SetSubscribeRedeemEnabled>,
+    enabled: bool,
+) -> Result<()> {
+    let fund = &mut ctx.accounts.fund;
+
+    if enabled {
+        fund.delete_from_engine_field(
+            EngineFieldName::ExternalTreasuryAccounts,
+            system_program::ID,
+        );
+    } else {
+        let external_treasury_accounts =
+            fund.get_pubkeys_from_engine_field(EngineFieldName::ExternalTreasuryAccounts);
+
+        if !external_treasury_accounts.contains(&system_program::ID) {
+            fund.add_to_engine_field(
+                EngineFieldName::ExternalTreasuryAccounts,
+                system_program::ID,
+            );
+        }
+    }
+
     Ok(())
 }

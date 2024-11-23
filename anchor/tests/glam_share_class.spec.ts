@@ -33,6 +33,7 @@ describe("glam_share_class", () => {
     const fundForTest = { ...fundTestExample };
     fundForTest.shareClasses[0].allowlist = [glamClient.getManager()];
     fundForTest.shareClasses[0].defaultAccountStateFrozen = true;
+    fundForTest.shareClasses[0].permanentDelegate = new PublicKey(0); // set permanent delegate to share class itself
     const fundData = await createFundForTest(glamClient, fundForTest);
 
     fundPDA = fundData.fundPDA;
@@ -121,5 +122,86 @@ describe("glam_share_class", () => {
       TOKEN_2022_PROGRAM_ID
     );
     expect(tokenAccount.amount.toString()).toEqual(amount.toString());
+  });
+
+  it("Transfer 0.5 share", async () => {
+    const shareClassMint = glamClient.getShareClassPDA(fundPDA, 0);
+    const from = key1.publicKey;
+    const fromAta = glamClient.getShareClassAta(from, shareClassMint);
+    const to = key2.publicKey;
+    const toAta = glamClient.getShareClassAta(to, shareClassMint);
+
+    const ixCreateAta = createAssociatedTokenAccountIdempotentInstruction(
+      glamClient.getManager(),
+      toAta,
+      to,
+      shareClassMint,
+      TOKEN_2022_PROGRAM_ID
+    );
+    const ixUpdateAtaState = await glamClient.program.methods
+      .setTokenAccountsStates(0, false)
+      .accounts({
+        shareClassMint,
+        fund: fundPDA,
+      })
+      .remainingAccounts([{ pubkey: toAta, isSigner: false, isWritable: true }])
+      .instruction();
+
+    const amount = new BN(500_000_000);
+    const txId = await glamClient.program.methods
+      .forceTransferShare(0, amount)
+      .accounts({
+        from,
+        fromAta,
+        to,
+        toAta,
+        shareClassMint,
+        fund: fundPDA,
+      })
+      .preInstructions([ixCreateAta, ixUpdateAtaState])
+      .rpc();
+    console.log("forceTransferShare txId", txId);
+
+    const tokenAccount1 = await getAccount(
+      glamClient.provider.connection,
+      fromAta,
+      undefined,
+      TOKEN_2022_PROGRAM_ID
+    );
+    expect(tokenAccount1.amount.toString()).toEqual(amount.toString());
+
+    const tokenAccount2 = await getAccount(
+      glamClient.provider.connection,
+      toAta,
+      undefined,
+      TOKEN_2022_PROGRAM_ID
+    );
+    expect(tokenAccount2.amount.toString()).toEqual(amount.toString());
+  });
+
+  it("Burn 0.5 share", async () => {
+    const shareClassMint = glamClient.getShareClassPDA(fundPDA, 0);
+    const from = key1.publicKey;
+    const fromAta = glamClient.getShareClassAta(from, shareClassMint);
+
+    const amount = new BN(500_000_000);
+    const txId = await glamClient.program.methods
+      .burnShare(0, amount)
+      .accounts({
+        from,
+        fromAta,
+        shareClassMint,
+        fund: fundPDA,
+      })
+      .rpc();
+    console.log("burnShare txId", txId);
+
+    const tokenAccount = await getAccount(
+      glamClient.provider.connection,
+      fromAta,
+      undefined,
+      TOKEN_2022_PROGRAM_ID
+    );
+    expect(tokenAccount.amount.toString()).toEqual("0");
   });
 });
