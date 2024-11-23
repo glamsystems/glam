@@ -131,15 +131,25 @@ const navList: NavGroup[] = [
     group: "Management",
     items: [
       {
-        route: "/holdings",
+        route: "/vault/holdings",
         text: "Holdings",
         shortcut: "",
         Icon: ListBulletIcon,
       },
-      { route: "/wrap", text: "Wrap", shortcut: "", Icon: MarginIcon },
-      { route: "/stake", text: "Stake", shortcut: "", Icon: DownloadIcon },
-      { route: "/trade", text: "Trade", shortcut: "", Icon: ShuffleIcon },
-      { route: "/transfer", text: "Transfer", shortcut: "", Icon: ExitIcon },
+      { route: "/vault/wrap", text: "Wrap", shortcut: "", Icon: MarginIcon },
+      {
+        route: "/vault/stake",
+        text: "Stake",
+        shortcut: "",
+        Icon: DownloadIcon,
+      },
+      { route: "/vault/trade", text: "Trade", shortcut: "", Icon: ShuffleIcon },
+      {
+        route: "/vault/transfer",
+        text: "Transfer",
+        shortcut: "",
+        Icon: ExitIcon,
+      },
     ],
   },
   {
@@ -170,8 +180,8 @@ const navList: NavGroup[] = [
         Icon: LightningBoltIcon,
       },
       {
-        route: "/searchidl",
-        text: "Search IDL",
+        route: "/idl-search",
+        text: "IDL Search",
         shortcut: "",
         Icon: ActivityLogIcon,
       },

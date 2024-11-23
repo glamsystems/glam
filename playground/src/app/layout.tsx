@@ -1,22 +1,13 @@
+// app/layout.tsx
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
-import { ClusterProvider } from "@/components/solana-cluster-provider";
-import { GlamProvider } from "@glam/anchor/react";
 import { ReactQueryProvider } from "./react-query-provider";
-import MobileOverlay from "@/components/MobileOverlay";
-import BetaWarning from "@/components/BetaWarning";
 import React from "react";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import GlamSidebar from "@/components/GlamSidebar";
-
-const AppWalletProvider = dynamic(
-  () => import("@/components/wallet-provider"),
-  { ssr: false }
-);
+import MobileOverlay from "@/components/MobileOverlay";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -31,9 +22,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="h-full">
       <body
-        className={`${inter.className} flex items-start justify-between select-none`}
+        className={`${inter.className} min-h-screen h-full flex flex-col select-none`}
       >
         <MobileOverlay />
         <ReactQueryProvider>
@@ -43,23 +34,8 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <ClusterProvider>
-              <AppWalletProvider>
-                <GlamProvider>
-                  <SidebarProvider>
-                    <BetaWarning />
-                    <div className="relative">
-                      <GlamSidebar />
-                      <SidebarTrigger className="z-40" />
-                    </div>
-                    <main className="flex justify-center items-center h-fit w-full">
-                      {children}
-                    </main>
-                    <Toaster />
-                  </SidebarProvider>
-                </GlamProvider>
-              </AppWalletProvider>
-            </ClusterProvider>
+            <main className="flex-1 flex min-h-screen w-full">{children}</main>
+            <Toaster />
           </ThemeProvider>
         </ReactQueryProvider>
       </body>

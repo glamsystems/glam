@@ -1,35 +1,47 @@
 "use client";
 
-import { DataTable } from "./products/components/data-table";
-import { columns } from "./products/components/columns";
 import React from "react";
-import PageContentWrapper from "@/components/PageContentWrapper";
-import { useGlam } from "@glam/anchor/react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { DevOnly } from "@/components/DevOnly";
+import { MixIcon } from "@radix-ui/react-icons";
 
 export default function Products() {
-  // @ts-ignore Type instantiation is excessively deep and possibly infinite.
-  const { allFunds } = useGlam();
-  const [isLoading, setIsLoading] = React.useState(true);
-
-  React.useEffect(() => {
-    if (allFunds) {
-      setIsLoading(false);
-    }
-  }, [allFunds]);
-
-  const products = (allFunds || []).map((f: any) => ({
-    id: f.idStr,
-    imageKey: f.imageKey,
-    name: f.name || f.idStr,
-    symbol: f.shareClasses[0]?.shareClassSymbol || "NA",
-    baseAsset: f.fundCurrency || "NA",
-    inception: f.fundLaunchDate,
-    status: "active",
-  }));
-
   return (
-    <PageContentWrapper>
-      <DataTable data={products} columns={columns} isLoading={isLoading} />
-    </PageContentWrapper>
+    <motion.div
+      className="flex flex-col sm:flex-row justify-center w-[100dvw]"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
+      <Link
+        href={"/vault"}
+        prefetch={true}
+        className="w-full h-[50dvh] sm:h-[100dvh]"
+      >
+        <button className="text-4xl font-extralight text-muted-foreground/50 hover:text-foreground w-full h-full hover:bg-muted transition-all">
+          Vault
+        </button>
+      </Link>
+      <div className="flex justify-center items-center absolute self-center text-center text-5xl font-thin bg-background h-32 w-32">
+        <span>*.+</span>
+      </div>
+      <Link
+        href={"/mint"}
+        prefetch={true}
+        className="w-full h-[50dvh] sm:h-[100dvh]"
+      >
+        <button className="text-4xl font-extralight text-muted-foreground/50 hover:text-foreground w-full h-full hover:bg-muted transition-all">
+          Mint
+        </button>
+      </Link>
+      <DevOnly>
+        <Link
+          href="/playground"
+          className="flex justify-center items-center absolute self-center text-center text-5xl font-thin bg-background h-32 w-32 transition-all text-muted hover:text-foreground"
+        >
+          <MixIcon width={42} height={42} />
+        </Link>
+      </DevOnly>
+    </motion.div>
   );
 }
