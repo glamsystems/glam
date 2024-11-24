@@ -31,6 +31,10 @@ pub enum Permission {
     JupiterSwapAnyAsset,
     WSolWrap,
     WSolUnwrap,
+    MintShare,
+    BurnShare,
+    ForceTransferShare,
+    SetTokenAccountsStates,
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
@@ -50,6 +54,7 @@ pub enum IntegrationName {
     NativeStaking,
     Marinade,
     Jupiter,
+    Mint,
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, PartialEq, Debug)]

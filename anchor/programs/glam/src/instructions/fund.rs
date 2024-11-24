@@ -60,10 +60,18 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     //
     // Set engine params
     //
-    fund.params = vec![vec![EngineField {
-        name: EngineFieldName::Assets,
-        value: EngineFieldValue::VecPubkey { val: model.assets },
-    }]];
+    fund.params = vec![vec![
+        EngineField {
+            name: EngineFieldName::Assets,
+            value: EngineFieldValue::VecPubkey { val: model.assets },
+        },
+        EngineField {
+            name: EngineFieldName::IntegrationAcls,
+            value: EngineFieldValue::VecIntegrationAcl {
+                val: model.integration_acls,
+            },
+        },
+    ]];
 
     //
     // Initialize openfunds

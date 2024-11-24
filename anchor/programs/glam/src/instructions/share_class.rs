@@ -9,7 +9,11 @@ use anchor_spl::{
     token::{close_account as close_token_account, CloseAccount as CloseTokenAccount, Token},
     token_2022::{
         self, close_account as close_token_2022_account,
-        spl_token_2022::{self, extension::ExtensionType, state::Mint as StateMint},
+        spl_token_2022::{
+            self,
+            extension::ExtensionType,
+            state::{AccountState, Mint as StateMint},
+        },
         CloseAccount as CloseToken2022Account,
     },
     token_2022_extensions::spl_token_metadata_interface,
@@ -360,8 +364,11 @@ pub struct SetTokenAccountsStates<'info> {
 
     token_2022_program: Program<'info, Token2022>,
 }
+
+#[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::SetTokenAccountsStates))]
+#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Mint))]
 pub fn set_token_accounts_states_handler<'info>(
-    ctx: Context<'_, '_, '_, 'info, SetTokenAccountsStates<'info>>,
+    ctx: Context<'_, '_, 'info, 'info, SetTokenAccountsStates<'info>>,
     share_class_id: u8,
     frozen: bool,
 ) -> Result<()> {
@@ -382,29 +389,44 @@ pub fn set_token_accounts_states_handler<'info>(
     let signer_seeds = &[&seeds[..]];
 
     // Thaw or freeze the accounts
+    // This method is idempotent, so accounts that are already in the desired state will be skipped
     if frozen {
         ctx.remaining_accounts.iter().try_for_each(|account| {
-            token_2022::freeze_account(CpiContext::new_with_signer(
-                ctx.accounts.token_2022_program.to_account_info(),
-                token_2022::FreezeAccount {
-                    account: account.to_account_info(),
-                    mint: ctx.accounts.share_class_mint.to_account_info(),
-                    authority: ctx.accounts.share_class_mint.to_account_info(),
-                },
-                signer_seeds,
-            ))
+            let ata: InterfaceAccount<'_, TokenAccount> =
+                InterfaceAccount::<TokenAccount>::try_from(account)
+                    .expect(&format!("Invalid token 2022 account: {}", account.key()));
+            if ata.state == AccountState::Frozen {
+                Ok(()) // already frozen, skip it
+            } else {
+                token_2022::freeze_account(CpiContext::new_with_signer(
+                    ctx.accounts.token_2022_program.to_account_info(),
+                    token_2022::FreezeAccount {
+                        account: account.to_account_info(),
+                        mint: ctx.accounts.share_class_mint.to_account_info(),
+                        authority: ctx.accounts.share_class_mint.to_account_info(),
+                    },
+                    signer_seeds,
+                ))
+            }
         })?;
     } else {
         ctx.remaining_accounts.iter().try_for_each(|account| {
-            token_2022::thaw_account(CpiContext::new_with_signer(
-                ctx.accounts.token_2022_program.to_account_info(),
-                token_2022::ThawAccount {
-                    account: account.to_account_info(),
-                    mint: ctx.accounts.share_class_mint.to_account_info(),
-                    authority: ctx.accounts.share_class_mint.to_account_info(),
-                },
-                signer_seeds,
-            ))
+            let ata: InterfaceAccount<'_, TokenAccount> =
+                InterfaceAccount::<TokenAccount>::try_from(account)
+                    .expect(&format!("Invalid token 2022 account: {}", account.key()));
+            if ata.state == AccountState::Initialized {
+                Ok(()) // already initialized, skip it
+            } else {
+                token_2022::thaw_account(CpiContext::new_with_signer(
+                    ctx.accounts.token_2022_program.to_account_info(),
+                    token_2022::ThawAccount {
+                        account: account.to_account_info(),
+                        mint: ctx.accounts.share_class_mint.to_account_info(),
+                        authority: ctx.accounts.share_class_mint.to_account_info(),
+                    },
+                    signer_seeds,
+                ))
+            }
         })?;
     };
 
@@ -498,6 +520,8 @@ pub struct ForceTransferShare<'info> {
     token_2022_program: Program<'info, Token2022>,
 }
 
+#[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::ForceTransferShare))]
+#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Mint))]
 pub fn force_transfer_share_handler(
     ctx: Context<ForceTransferShare>,
     share_class_id: u8,
@@ -573,6 +597,8 @@ pub struct BurnShare<'info> {
     token_2022_program: Program<'info, Token2022>,
 }
 
+#[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::BurnShare))]
+#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Mint))]
 pub fn burn_share_handler(ctx: Context<BurnShare>, share_class_id: u8, amount: u64) -> Result<()> {
     let fund = &ctx.accounts.fund;
     let fund_key = fund.key();
@@ -639,6 +665,9 @@ pub struct MintShare<'info> {
 
     pub token_2022_program: Program<'info, Token2022>,
 }
+
+#[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::MintShare))]
+#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Mint))]
 pub fn mint_share_handler<'info>(
     ctx: Context<'_, '_, '_, 'info, MintShare<'info>>,
     share_class_id: u8,

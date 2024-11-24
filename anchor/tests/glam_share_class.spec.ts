@@ -1,21 +1,8 @@
-import {
-  Keypair,
-  PublicKey,
-  SystemProgram,
-  Transaction,
-} from "@solana/web3.js";
+import { Keypair, PublicKey } from "@solana/web3.js";
 import { BN, Wallet } from "@coral-xyz/anchor";
 
 import { createFundForTest, fundTestExample, str2seed } from "./setup";
-import {
-  FundModel,
-  GlamClient,
-  GlamError,
-  MSOL,
-  ShareClassModel,
-  USDC,
-  WSOL,
-} from "../src";
+import { GlamClient, GlamError, WSOL } from "../src";
 import {
   createAssociatedTokenAccountIdempotentInstruction,
   getAccount,
@@ -31,7 +18,10 @@ describe("glam_share_class", () => {
   let fundPDA: PublicKey;
 
   it("Initialize fund with default account state frozen", async () => {
-    const fundForTest = { ...fundTestExample };
+    const fundForTest = {
+      ...fundTestExample,
+      integrationAcls: [{ name: { mint: {} }, features: [] }],
+    };
     fundForTest.shareClasses[0].allowlist = [glamClient.getManager()];
     fundForTest.shareClasses[0].defaultAccountStateFrozen = true;
     fundForTest.shareClasses[0].permanentDelegate = new PublicKey(0); // set permanent delegate to share class itself
@@ -40,6 +30,7 @@ describe("glam_share_class", () => {
     fundPDA = fundData.fundPDA;
 
     const fund = await glamClient.fetchFund(fundPDA);
+
     expect(fund.shareClasses.length).toEqual(1);
     expect(fund.shareClasses[0].shareClassAllowlist).toEqual([
       glamClient.getManager(),
@@ -145,7 +136,11 @@ describe("glam_share_class", () => {
         shareClassMint,
         fund: fundPDA,
       })
-      .remainingAccounts([{ pubkey: toAta, isSigner: false, isWritable: true }])
+      .remainingAccounts([
+        // fromAta is already unfrozen, still add it to test the ix is idempotent
+        { pubkey: fromAta, isSigner: false, isWritable: true },
+        { pubkey: toAta, isSigner: false, isWritable: true },
+      ])
       .instruction();
 
     const amount = new BN(500_000_000);

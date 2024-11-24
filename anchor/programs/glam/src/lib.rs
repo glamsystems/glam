@@ -95,7 +95,7 @@ pub mod glam {
     }
 
     pub fn set_token_accounts_states<'info>(
-        ctx: Context<'_, '_, '_, 'info, SetTokenAccountsStates<'info>>,
+        ctx: Context<'_, '_, 'info, 'info, SetTokenAccountsStates<'info>>,
         share_class_id: u8,
         frozen: bool,
     ) -> Result<()> {
