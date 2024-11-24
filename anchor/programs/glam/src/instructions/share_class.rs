@@ -22,7 +22,7 @@ use anchor_spl::{
         TransferChecked,
     },
 };
-use glam_macros::treasury_signer_seeds;
+use glam_macros::{share_class_signer_seeds, treasury_signer_seeds};
 use {
     spl_tlv_account_resolution::{
         account::ExtraAccountMeta, seeds::Seed, state::ExtraAccountMetaList,
@@ -367,6 +367,7 @@ pub struct SetTokenAccountsStates<'info> {
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::SetTokenAccountsStates))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Mint))]
+#[share_class_signer_seeds]
 pub fn set_token_accounts_states_handler<'info>(
     ctx: Context<'_, '_, 'info, 'info, SetTokenAccountsStates<'info>>,
     share_class_id: u8,
@@ -377,16 +378,6 @@ pub fn set_token_accounts_states_handler<'info>(
             return Err(ShareClassError::InvalidTokenAccount.into());
         }
     }
-
-    let fund = &ctx.accounts.fund;
-    let fund_key = fund.key();
-    let seeds = &[
-        "share".as_bytes(),
-        &[share_class_id],
-        fund_key.as_ref(),
-        &[ctx.bumps.share_class_mint],
-    ];
-    let signer_seeds = &[&seeds[..]];
 
     // Thaw or freeze the accounts
     // This method is idempotent, so accounts that are already in the desired state will be skipped
@@ -405,7 +396,7 @@ pub fn set_token_accounts_states_handler<'info>(
                         mint: ctx.accounts.share_class_mint.to_account_info(),
                         authority: ctx.accounts.share_class_mint.to_account_info(),
                     },
-                    signer_seeds,
+                    share_class_signer_seeds,
                 ))
             }
         })?;
@@ -424,7 +415,7 @@ pub fn set_token_accounts_states_handler<'info>(
                         mint: ctx.accounts.share_class_mint.to_account_info(),
                         authority: ctx.accounts.share_class_mint.to_account_info(),
                     },
-                    signer_seeds,
+                    share_class_signer_seeds,
                 ))
             }
         })?;
@@ -522,23 +513,15 @@ pub struct ForceTransferShare<'info> {
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::ForceTransferShare))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Mint))]
+#[share_class_signer_seeds]
 pub fn force_transfer_share_handler(
     ctx: Context<ForceTransferShare>,
     share_class_id: u8,
     amount: u64,
 ) -> Result<()> {
-    let fund = &ctx.accounts.fund;
-    let fund_key = fund.key();
-    let seeds = &[
-        "share".as_bytes(),
-        &[share_class_id],
-        fund_key.as_ref(),
-        &[ctx.bumps.share_class_mint],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
     let decimals = ctx.accounts.share_class_mint.decimals;
 
+    #[cfg(not(feature = "mainnet"))]
     msg!(
         "Transfer {} shares from {} (ata {}) to {} (ata {})",
         amount as f64 / 10u64.pow(decimals as u32) as f64,
@@ -556,7 +539,7 @@ pub fn force_transfer_share_handler(
                 to: ctx.accounts.to_ata.to_account_info(),
                 authority: ctx.accounts.share_class_mint.to_account_info(), // permenant delegate
             },
-            signer_seeds,
+            share_class_signer_seeds,
         ),
         amount,
         decimals,
@@ -599,22 +582,12 @@ pub struct BurnShare<'info> {
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::BurnShare))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Mint))]
+#[share_class_signer_seeds]
 pub fn burn_share_handler(ctx: Context<BurnShare>, share_class_id: u8, amount: u64) -> Result<()> {
-    let fund = &ctx.accounts.fund;
-    let fund_key = fund.key();
-    let seeds = &[
-        "share".as_bytes(),
-        &[share_class_id],
-        fund_key.as_ref(),
-        &[ctx.bumps.share_class_mint],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
-    let decimals = ctx.accounts.share_class_mint.decimals;
-
+    #[cfg(not(feature = "mainnet"))]
     msg!(
         "Burn {} shares from {} (ata {})",
-        amount as f64 / 10u64.pow(decimals as u32) as f64,
+        amount as f64 / 10u64.pow(ctx.accounts.share_class_mint.decimals as u32) as f64,
         ctx.accounts.from.key(),
         ctx.accounts.from_ata.key(),
     );
@@ -626,7 +599,7 @@ pub fn burn_share_handler(ctx: Context<BurnShare>, share_class_id: u8, amount: u
                 from: ctx.accounts.from_ata.to_account_info(),
                 authority: ctx.accounts.share_class_mint.to_account_info(),
             },
-            signer_seeds,
+            share_class_signer_seeds,
         ),
         amount,
     )?;
@@ -668,21 +641,12 @@ pub struct MintShare<'info> {
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::MintShare))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Mint))]
+#[share_class_signer_seeds]
 pub fn mint_share_handler<'info>(
     ctx: Context<'_, '_, '_, 'info, MintShare<'info>>,
     share_class_id: u8,
     amount: u64,
 ) -> Result<()> {
-    let fund = &ctx.accounts.fund;
-    let fund_key = fund.key();
-    let seeds = &[
-        "share".as_bytes(),
-        &[share_class_id],
-        fund_key.as_ref(),
-        &[ctx.bumps.share_class_mint],
-    ];
-    let signer_seeds = &[&seeds[..]];
-
     mint_to(
         CpiContext::new_with_signer(
             ctx.accounts.token_2022_program.to_account_info(),
@@ -691,7 +655,7 @@ pub fn mint_share_handler<'info>(
                 to: ctx.accounts.mint_to.to_account_info(),
                 authority: ctx.accounts.share_class_mint.to_account_info(),
             },
-            signer_seeds,
+            share_class_signer_seeds,
         ),
         amount,
     )?;
@@ -780,6 +744,7 @@ pub struct CloseShareClass<'info> {
     token_2022_program: Program<'info, Token2022>,
 }
 
+#[share_class_signer_seeds]
 pub fn close_share_class_handler(ctx: Context<CloseShareClass>, share_class_id: u8) -> Result<()> {
     require!(
         (share_class_id as usize) < ctx.accounts.fund.share_classes.len(),
@@ -793,14 +758,6 @@ pub fn close_share_class_handler(ctx: Context<CloseShareClass>, share_class_id: 
         ShareClassError::ShareClassNotEmpty
     );
 
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        "share".as_bytes(),
-        &[share_class_id],
-        fund_key.as_ref(),
-        &[ctx.bumps.share_class_mint],
-    ];
-    let signer_seeds = &[&seeds[..]];
     close_token_2022_account(CpiContext::new_with_signer(
         ctx.accounts.token_2022_program.to_account_info(),
         CloseToken2022Account {
@@ -808,7 +765,7 @@ pub fn close_share_class_handler(ctx: Context<CloseShareClass>, share_class_id: 
             destination: ctx.accounts.treasury.to_account_info(),
             authority: ctx.accounts.share_class_mint.to_account_info(),
         },
-        signer_seeds,
+        share_class_signer_seeds,
     ))?;
 
     ctx.accounts
