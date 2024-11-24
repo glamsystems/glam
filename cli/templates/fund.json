@@ -1,13 +1,37 @@
 {
+  "name": "GLAM Fund XYZ",
+  "isEnabled": true,
+  "assets": [
+    "So11111111111111111111111111111111111111112",
+    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+  ],
+  "fundDomicileAlpha2": "XS",
+  "legalFundNameIncludingUmbrella": "[TBD]",
+  "fundLaunchDate": "2024-11-02",
+  "investmentObjective": "[TBD]",
+  "fundCurrency": "SOL",
+  "openEndedOrClosedEndedFundStructure": "open-ended fund",
+  "fiscalYearEnd": "12-31",
+  "legalForm": "other",
+  "company": {
+    "fundGroupName": "Glam Systems",
+    "manCo": "Glam Management",
+    "domicileOfManCo": "CH",
+    "emailAddressOfManCo": "hello@glam.systems",
+    "fundWebsiteOfManCo": "https://glam.systems"
+  },
+  "manager": { "portfolioManagerName": "glam.sol" },
   "shareClasses": [
     {
-      "name": "GLAM AI Managed SOL",
-      "symbol": "aiSOL",
+      "name": "GLAM Token XYZ",
+      "symbol": "[TBD]",
       "asset": "So11111111111111111111111111111111111111112",
       "allowlist": [],
       "blocklist": [],
       "lockUpTime": 0,
-      "fullShareClassName": "GLAM AI Managed SOL",
+      "permanentDelegate": "11111111111111111111111111111111",
+      "defaultAccountStateFrozen": false,
+      "fullShareClassName": "GLAM Token XYZ",
       "isin": "",
       "cusip": "",
       "valor": "",
@@ -35,26 +59,5 @@
       "launchPriceCurrency": "SOL",
       "launchPriceDate": "2024-11-02"
     }
-  ],
-  "isEnabled": true,
-  "assets": [
-    "So11111111111111111111111111111111111111112",
-    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
-  ],
-  "fundDomicileAlpha2": "XS",
-  "legalFundNameIncludingUmbrella": "GLAM x AI",
-  "fundLaunchDate": "2024-11-02",
-  "investmentObjective": "GLAM x AI",
-  "fundCurrency": "SOL",
-  "openEndedOrClosedEndedFundStructure": "open-ended fund",
-  "fiscalYearEnd": "12-31",
-  "legalForm": "other",
-  "company": {
-    "fundGroupName": "Glam Systems",
-    "manCo": "Glam Management",
-    "domicileOfManCo": "CH",
-    "emailAddressOfManCo": "hello@glam.systems",
-    "fundWebsiteOfManCo": "https://glam.systems"
-  },
-  "manager": { "portfolioManagerName": "glam.sol" }
+  ]
 }

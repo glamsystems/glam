@@ -24,7 +24,7 @@ export const fundTestExample = {
       blocklist: [] as PublicKey[],
       lockUpPeriodInSeconds: 0, // number or BN
       lockUpComment: "", // string
-      permanentDelegate: null, // PublicKey, new PublicKey(0) => mint
+      permanentDelegate: new PublicKey(0), // PublicKey, new PublicKey(0) => mint
       defaultAccountStateFrozen: false, // bool
 
       // Openfunds Share Class
@@ -82,16 +82,14 @@ export const fundTestExample = {
 };
 
 export const createFundForTest = async (
-  glamClient?: GlamClient,
-  fundTest?: any
+  glamClient: GlamClient = new GlamClient(),
+  fundTest: any = fundTestExample
 ) => {
-  const client = glamClient || new GlamClient();
-  const manager = client.getManager();
   let txId, fundPDA;
   try {
-    [txId, fundPDA] = await client.createFund({
-      ...(fundTest || fundTestExample),
-      manager,
+    [txId, fundPDA] = await glamClient.createFund({
+      ...fundTest,
+      manager: glamClient.getManager(),
     });
     console.log(`Fund ${fundPDA} initialized, txId: ${txId}`);
   } catch (e) {
@@ -101,8 +99,8 @@ export const createFundForTest = async (
 
   return {
     fundPDA,
-    treasuryPDA: client.getTreasuryPDA(fundPDA),
-    sharePDA: client.getShareClassPDA(fundPDA, 0),
+    treasuryPDA: glamClient.getTreasuryPDA(fundPDA),
+    sharePDA: glamClient.getShareClassPDA(fundPDA, 0),
   };
 };
 

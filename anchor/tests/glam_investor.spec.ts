@@ -52,10 +52,6 @@ describe("glam_investor", () => {
   const BTC_TOKEN_PROGRAM_ID = TOKEN_2022_PROGRAM_ID;
   const ethOrWsol = useWsolInsteadOfEth ? WSOL : eth.publicKey;
 
-  console.log("Custom USDC mint", usdc.publicKey.toBase58());
-  console.log("Custom ETH mint", eth.publicKey.toBase58());
-  console.log("Custom BTC mint", btc.publicKey.toBase58());
-
   const client = new GlamClient();
   const manager = (client.provider as anchor.AnchorProvider)
     .wallet as anchor.Wallet;
@@ -137,6 +133,10 @@ describe("glam_investor", () => {
   );
 
   beforeAll(async () => {
+    console.log("Custom USDC mint", usdc.publicKey.toBase58());
+    console.log("Custom ETH mint", eth.publicKey.toBase58());
+    console.log("Custom BTC mint", btc.publicKey.toBase58());
+
     try {
       await Promise.all(
         // exec in parallel, but await before ending the test
@@ -602,7 +602,7 @@ describe("glam_investor", () => {
     }
   });
 
-  it("Manager failed to subscribe/redeem due to unclaimed marinade ticket", async () => {
+  it("Manager subscribes/redeems when marinade ticket exists", async () => {
     try {
       const airdropTx = await connection.requestAirdrop(treasuryPDA, 10 ** 9);
       await connection.confirmTransaction({
@@ -625,7 +625,6 @@ describe("glam_investor", () => {
     }
 
     const fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
-    console.log("fund:", JSON.stringify(fund));
     // params[0][0]: assets
     // params[0][1]: external accounts
     expect(fund.params[0][1].value.vecPubkey?.val.length).toBe(1);
@@ -634,7 +633,7 @@ describe("glam_investor", () => {
       const txId = await glamClient.investor.subscribe(
         fundPDA,
         btc.publicKey,
-        new BN(10 ** 8)
+        new BN(10 ** 8) // 1 BTC
       );
       console.log("subscribe:", txId);
     } catch (e) {
@@ -645,10 +644,9 @@ describe("glam_investor", () => {
     try {
       const txId = await glamClient.investor.redeem(
         fundPDA,
-        new BN(10 ** 8),
-        true
+        new BN(10 ** 9) // 1 share
       );
-      console.log("redeem 50%:", txId);
+      console.log("redeem 1 share:", txId);
     } catch (e) {
       console.error(e);
       throw e;
