@@ -54,7 +54,7 @@ import {
 } from "@/components/ui/command";
 import Sparkle from "@/utils/Sparkle";
 import { parseTxError } from "@/lib/error";
-import { getPriorityFeeMicroLamports } from "../settings/priorityfee";
+import { getPriorityFeeMicroLamports } from "@/app/(shared)/settings/priorityfee";
 
 const flowSchema = z.object({
   method: z.string(),

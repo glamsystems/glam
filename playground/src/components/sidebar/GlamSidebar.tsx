@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import AccountMenu from "./AccountMenu";
+import AccountMenu from "../AccountMenu";
 import {
   Sidebar,
   SidebarContent,
@@ -19,175 +19,14 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  BoxModelIcon,
-  Component1Icon,
-  CodeIcon,
-  DashboardIcon,
-  DiscIcon,
-  DownloadIcon,
-  ExitIcon,
-  FilePlusIcon,
-  GearIcon,
-  GlobeIcon,
-  LayersIcon,
-  ListBulletIcon,
-  LoopIcon,
-  MarginIcon,
-  MixerHorizontalIcon,
-  MixerVerticalIcon,
-  MixIcon,
-  PaddingIcon,
-  PlusIcon,
-  ShuffleIcon,
-  StackIcon,
-  TargetIcon,
-  TokensIcon,
-  TransformIcon,
-  LightningBoltIcon,
-  ActivityLogIcon,
-} from "@radix-ui/react-icons";
 import { useGlam } from "@glam/anchor/react";
-
-type IconType =
-  | typeof ActivityLogIcon
-  | typeof BoxModelIcon
-  | typeof CodeIcon
-  | typeof Component1Icon
-  | typeof DashboardIcon
-  | typeof DiscIcon
-  | typeof DownloadIcon
-  | typeof ExitIcon
-  | typeof FilePlusIcon
-  | typeof GlobeIcon
-  | typeof LayersIcon
-  | typeof LightningBoltIcon
-  | typeof ListBulletIcon
-  | typeof LoopIcon
-  | typeof MarginIcon
-  | typeof MixIcon
-  | typeof MixerHorizontalIcon
-  | typeof MixerVerticalIcon
-  | typeof PaddingIcon
-  | typeof PlusIcon
-  | typeof StackIcon
-  | typeof TargetIcon
-  | typeof TransformIcon
-  | typeof TokensIcon;
-
-interface NavItem {
-  route: string;
-  text: string;
-  shortcut: string;
-  Icon: IconType;
-}
-
-interface NavGroup {
-  group: string;
-  items: NavItem[];
-}
-
-const navList: NavGroup[] = [
-  {
-    group: "Investment",
-    items: [
-      { route: "/", text: "Screener", shortcut: "", Icon: LayersIcon },
-      { route: "/flows", text: "Flows", shortcut: "", Icon: LoopIcon },
-    ],
-  },
-  {
-    group: "Administration",
-    items: [
-      { route: "/create", text: "Create", shortcut: "", Icon: PlusIcon },
-      { route: "/manage", text: "Product", shortcut: "", Icon: StackIcon },
-      {
-        route: "/shareclasses",
-        text: "Share Classes",
-        shortcut: "",
-        Icon: DashboardIcon,
-      },
-      {
-        route: "/policies",
-        text: "Policies",
-        shortcut: "",
-        Icon: TransformIcon,
-      },
-      {
-        route: "/integrations",
-        text: "Integrations",
-        shortcut: "",
-        Icon: MixIcon,
-      },
-      { route: "/risk", text: "Risk Management", shortcut: "", Icon: DiscIcon },
-      {
-        route: "/access",
-        text: "Access Control",
-        shortcut: "",
-        Icon: TargetIcon,
-      },
-    ],
-  },
-  {
-    group: "Management",
-    items: [
-      {
-        route: "/vault/holdings",
-        text: "Holdings",
-        shortcut: "",
-        Icon: ListBulletIcon,
-      },
-      { route: "/vault/wrap", text: "Wrap", shortcut: "", Icon: MarginIcon },
-      {
-        route: "/vault/stake",
-        text: "Stake",
-        shortcut: "",
-        Icon: DownloadIcon,
-      },
-      { route: "/vault/trade", text: "Trade", shortcut: "", Icon: ShuffleIcon },
-      {
-        route: "/vault/transfer",
-        text: "Transfer",
-        shortcut: "",
-        Icon: ExitIcon,
-      },
-    ],
-  },
-  {
-    group: "Utilities",
-    items: [
-      {
-        route: "/api",
-        text: "GLAM API",
-        shortcut: "",
-        Icon: CodeIcon,
-      },
-      {
-        route: "/jupiter",
-        text: "Jupiter Token List",
-        shortcut: "",
-        Icon: GlobeIcon,
-      },
-      {
-        route: "/openfunds",
-        text: "Openfunds Debugger",
-        shortcut: "",
-        Icon: GearIcon,
-      },
-      {
-        route: "/components",
-        text: "Component Debugger",
-        shortcut: "",
-        Icon: LightningBoltIcon,
-      },
-      {
-        route: "/idl-search",
-        text: "IDL Search",
-        shortcut: "",
-        Icon: ActivityLogIcon,
-      },
-    ],
-  },
-];
+import {
+  getNavigationItems,
+  isRouteEnabled,
+  type NavItem,
+} from "@/components/sidebar/sidebarConfig";
+import { DevOnly } from "@/components/DevOnly";
+import { MixIcon } from "@radix-ui/react-icons";
 
 function SidebarNavItem({ route, text, shortcut, Icon }: NavItem) {
   const pathname = usePathname();
@@ -224,18 +63,20 @@ function SidebarNavItem({ route, text, shortcut, Icon }: NavItem) {
 }
 
 export default function RefactoredSidebar() {
-  const prodEnabledRoutes = process.env.NEXT_PUBLIC_ENABLED_ROUTES?.split(",");
+  const pathname = usePathname();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isHovered, setIsHovered] = useState(false);
   const { wallet, activeFund } = useGlam();
+
+  // Get navigation items based on current path
+  const navList = getNavigationItems(pathname);
 
   const getVisibleItems = (items: NavItem[]) => {
     if (!wallet) {
       return items.filter((item) => item.route === "/");
     }
 
-    // Check if activeFund is null, undefined, or an empty object
     if (
       !activeFund ||
       (typeof activeFund === "object" && Object.keys(activeFund).length === 0)
@@ -245,7 +86,7 @@ export default function RefactoredSidebar() {
       );
     }
 
-    return items;
+    return items.filter((item) => isRouteEnabled(item.route));
   };
 
   return (
@@ -263,11 +104,7 @@ export default function RefactoredSidebar() {
         </SidebarHeader>
         <SidebarContent className="grow pt-2">
           {navList.map((nav, index) => {
-            const visibleItems = getVisibleItems(nav.items).filter(
-              (item) =>
-                process.env.NODE_ENV === "development" ||
-                prodEnabledRoutes?.includes(item.route)
-            );
+            const visibleItems = getVisibleItems(nav.items);
             if (visibleItems.length === 0) return null;
             return (
               <SidebarGroup key={index}>
@@ -284,6 +121,24 @@ export default function RefactoredSidebar() {
               </SidebarGroup>
             );
           })}
+
+          <DevOnly>
+            <SidebarMenuButton
+              className={cn(
+                "items-center text-sm outline-none opacity-50 hover:opacity-100 transition-all focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0"
+              )}
+            >
+              <Link
+                href={"/playground"}
+                className="
+            focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0
+            flex grow items-center w-full"
+              >
+                <MixIcon />
+                <span className="flex-grow">Playground</span>
+              </Link>
+            </SidebarMenuButton>
+          </DevOnly>
         </SidebarContent>
         <SidebarFooter>
           <div

@@ -15,7 +15,7 @@ import { ExplorerLink } from "@/components/ExplorerLink";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { parseTxError } from "@/lib/error";
-import { getPriorityFeeMicroLamports } from "@/app/(playground)/settings/priorityfee";
+import { getPriorityFeeMicroLamports } from "@/app/(shared)/settings/priorityfee";
 
 const wrapSchema = z.object({
   direction: z.enum(["wrap", "unwrap"]),

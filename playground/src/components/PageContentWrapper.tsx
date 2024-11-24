@@ -33,7 +33,9 @@ export default function PageContentWrapper({
 }: PageContentWrapperProps) {
   const pathname = usePathname();
   const shouldUseSidebar =
-    pathname.startsWith("/vault") || pathname.startsWith("/mint");
+    pathname.startsWith("/vault") ||
+    pathname.startsWith("/mint") ||
+    pathname.startsWith("/playground");
 
   // Component to use based on transition prop
   const Component = transition ? motion.div : "div";

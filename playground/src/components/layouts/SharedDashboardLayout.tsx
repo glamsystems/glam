@@ -1,4 +1,3 @@
-// app/components/layouts/SharedDashboardLayout.tsx
 "use client";
 
 import dynamic from "next/dynamic";
@@ -6,7 +5,7 @@ import { ClusterProvider } from "@/components/solana-cluster-provider";
 import { GlamProvider } from "@glam/anchor/react";
 import BetaWarning from "@/components/BetaWarning";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import GlamSidebar from "@/components/GlamSidebar";
+import GlamSidebar from "@/components/sidebar/GlamSidebar";
 import { motion } from "framer-motion";
 
 const AppWalletProvider = dynamic(
@@ -14,17 +13,21 @@ const AppWalletProvider = dynamic(
   { ssr: false }
 );
 
+interface SharedDashboardLayoutProps {
+  children: React.ReactNode;
+  beta?: boolean;
+}
+
 export default function SharedDashboardLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+  beta = false,
+}: SharedDashboardLayoutProps) {
   return (
     <ClusterProvider>
       <AppWalletProvider>
         <GlamProvider>
           <SidebarProvider>
-            <BetaWarning />
+            {beta && <BetaWarning />}
             <div className="relative flex min-h-screen w-[100dvw]">
               <GlamSidebar />
               <SidebarTrigger className="z-40" />

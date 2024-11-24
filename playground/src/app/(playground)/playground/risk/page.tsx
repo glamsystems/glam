@@ -6,13 +6,13 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../../../components/ui/tabs";
+} from "../../../../components/ui/tabs";
 import { IntegrationsList } from "./components/integrations-list";
 import { integrations } from "./data";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";
 import DynamicForm from "@/components/DynamicForm";
-import schema from "../../../data/glamRiskSchema.json";
+import schema from "../../../../data/glamRiskSchema.json";
 import { useForm } from "react-hook-form";
 
 export default function Risk() {

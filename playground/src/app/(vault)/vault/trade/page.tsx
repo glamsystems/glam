@@ -98,7 +98,7 @@ import {
   PerpMarketConfig,
   SpotMarketConfig,
 } from "../../../../../../anchor/src/client/drift";
-import { getPriorityFeeMicroLamports } from "@/app/(playground)/settings/priorityfee";
+import { getPriorityFeeMicroLamports } from "@/app/(shared)/settings/priorityfee";
 import { SlippageInput } from "@/components/SlippageInput";
 import { PriorityFeeInput } from "@/components/PriorityFeeInput";
 import { ExactOutWarning } from "./warning";

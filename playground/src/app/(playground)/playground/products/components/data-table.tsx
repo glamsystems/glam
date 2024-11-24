@@ -89,7 +89,7 @@ export function DataTable<TData extends Product, TValue>({
   const router = useRouter();
 
   const handleRowClick = (address: string) => {
-    router.push(`/products/${address}`);
+    router.push(`/playground/products/${address}`);
   };
 
   return (

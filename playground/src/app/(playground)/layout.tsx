@@ -1,4 +1,4 @@
-// app/(mint)/layout.tsx
+// app/(playground)/layout.tsx
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "../globals.css";
@@ -9,20 +9,20 @@ import SharedDashboardLayout from "@/components/layouts/SharedDashboardLayout";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "GLAM *.+ | Mint",
+  title: "GLAM *.+ Playground",
   description: "The New Standard for Asset Management.",
 };
 
-export default function MintLayout({
+export default function PlaygroundLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
-    <>
+    <div className={`${inter.className} select-none`}>
       <MobileOverlay />
-      <SharedDashboardLayout>{children}</SharedDashboardLayout>
+      <SharedDashboardLayout beta={false}>{children}</SharedDashboardLayout>
       <Toaster />
-    </>
+    </div>
   );
 }

@@ -5,12 +5,12 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../../../components/ui/tabs";
-import { ShareClassesList } from "@/app/(mint)/mint/shareclasses/components/shareClasses-list";
-import { shareClasses } from "@/app/(mint)/mint/shareclasses/data";
+} from "../../../../components/ui/tabs";
+import { ShareClassesList } from "@/app/(playground)/playground/shareclasses/components/shareClasses-list";
+import { shareClasses } from "@/app/(playground)/playground/shareclasses/data";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import DynamicForm from "@/components/DynamicForm";
-import schema from "../../../data/glamFormSchema.json";
+import schema from "../../../../data/glamFormSchema.json";
 
 export default function Policies() {
   return (

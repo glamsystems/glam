@@ -9,7 +9,7 @@ import SharedDashboardLayout from "@/components/layouts/SharedDashboardLayout";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "GLAM *.+ | Mint",
+  title: "GLAM *.+ Mint",
   description: "The New Standard for Asset Management.",
 };
 
@@ -21,7 +21,7 @@ export default function MintLayout({
   return (
     <div className={`${inter.className} select-none`}>
       <MobileOverlay />
-      <SharedDashboardLayout>{children}</SharedDashboardLayout>
+      <SharedDashboardLayout beta={true}>{children}</SharedDashboardLayout>
       <Toaster />
     </div>
   );

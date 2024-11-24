@@ -1,17 +1,17 @@
 import { ComponentProps } from "react";
 
 import { cn } from "@/lib/utils";
-import { Integrations } from "../data";
-import { useIntegrations } from "../use-integration";
-import { Badge } from "../../../../components/ui/badge";
-import { ScrollArea } from "../../../../components/ui/scroll-area";
+import { Products } from "../data";
+import { useProducts } from "../use-product";
+import { Badge } from "../../../../../components/ui/badge";
+import { ScrollArea } from "../../../../../components/ui/scroll-area";
 
-interface IntegrationsListProps {
-  items: Integrations[];
+interface ProductsListProps {
+  items: Products[];
 }
 
-export function IntegrationsList({ items }: IntegrationsListProps) {
-  const [integrations, setIntegrations] = useIntegrations();
+export function ProductsList({ items }: ProductsListProps) {
+  const [products, setProducts] = useProducts();
 
   return (
     <ScrollArea>
@@ -20,12 +20,12 @@ export function IntegrationsList({ items }: IntegrationsListProps) {
           <button
             key={item.id}
             className={cn(
-              "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent min-h-[70px]",
-              integrations.selected === item.id && "bg-muted"
+              "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent",
+              products.selected === item.id && "bg-muted"
             )}
             onClick={() =>
-              setIntegrations({
-                ...integrations,
+              setProducts({
+                ...products,
                 selected: item.id,
               })
             }
@@ -41,7 +41,7 @@ export function IntegrationsList({ items }: IntegrationsListProps) {
                 <div
                   className={cn(
                     "ml-auto text-xs",
-                    integrations.selected === item.id
+                    products.selected === item.id
                       ? "text-foreground"
                       : "text-muted-foreground"
                   )}

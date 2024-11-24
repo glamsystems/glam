@@ -28,7 +28,7 @@ import { useGlam } from "@glam/anchor/react";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { parseTxError } from "@/lib/error";
 import { ExplorerLink } from "@/components/ExplorerLink";
-import { getPriorityFeeMicroLamports } from "@/app/(playground)/settings/priorityfee";
+import { getPriorityFeeMicroLamports } from "@/app/(shared)/settings/priorityfee";
 import { set } from "date-fns";
 
 const venues: [string, ...string[]] = ["Treasury", "Drift"];

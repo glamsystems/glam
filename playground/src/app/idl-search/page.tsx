@@ -27,6 +27,7 @@ import SparkleBackground from "@/components/SparkleBackground";
 import { motion } from "framer-motion";
 import GlamHeader from "@/components/GlamHeader";
 import Link from "next/link";
+import { DevOnly } from "@/components/DevOnly";
 
 const header = (
   <GlamHeader>
@@ -47,6 +48,13 @@ const header = (
             Mint
           </Button>
         </Link>
+        <DevOnly>
+          <Link href="/playground">
+            <Button variant="ghost" className="font-light">
+              Playground
+            </Button>
+          </Link>
+        </DevOnly>
       </nav>
     </div>
   </GlamHeader>

@@ -1,7 +1,7 @@
 "use client";
 
 import DynamicForm from "@/components/DynamicForm";
-import schema from "../../../data/glamFormSchema.json";
+import schema from "../../../../data/glamFormSchema.json";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import React from "react";
 

@@ -7,7 +7,7 @@ import { Product } from "../data/productSchema";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
 import { statuses } from "../data/data";
-import Sparkle from "../../../../utils/Sparkle";
+import Sparkle from "../../../../../utils/Sparkle";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Function to generate a random width within a range
