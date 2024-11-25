@@ -166,12 +166,6 @@ const ALL_NAV_ITEMS = {
     shortcut: "",
     Icon: DiscIcon,
   },
-  screener: {
-    route: "/playground/screener",
-    text: "Screener",
-    shortcut: "",
-    Icon: LayersIcon,
-  },
   settings: {
     route: "/settings",
     text: "Settings",
@@ -229,7 +223,7 @@ const BASE_STRUCTURES = {
   VAULT: [
     {
       group: "Operations",
-      itemKeys: ["holdings", "wrap", "stake", "trade", "transfer"],
+      itemKeys: ["holdings", "stake", "trade", "transfer"],
     },
   ],
   MINT: [
@@ -268,9 +262,9 @@ const NAVIGATION_STRUCTURE = {
         "policies",
         "products",
         "risk",
-        "screener",
         "settings",
         "shareclasses",
+        "wrap",
       ],
     },
     {
