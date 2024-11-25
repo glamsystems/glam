@@ -5,7 +5,7 @@ anchor
 !anchor/src
 !anchor/target/idl
 !anchor/target/types
-api
+playground/src/app/(playground)/playground/api
 dist
 node_modules
 playground/.next

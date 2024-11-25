@@ -6,15 +6,24 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { usePathname } from "next/navigation";
 
 const BetaWarning = () => {
   const { state } = useSidebar();
+  const pathname = usePathname();
   const isCollapsed = state === "collapsed";
+
+  // Determine the disclaimer path based on current route
+  const disclaimerPath = pathname.startsWith("/vault")
+    ? "/vault/disclaimer"
+    : pathname.startsWith("/mint")
+    ? "/mint/disclaimer"
+    : "/disclaimer";
 
   return (
     <motion.div
       className={cn(
-        "border-t fixed w-full bottom-0 h-[48px] z-0 flex flex-row items-center justify-center bg-sidebar select-none sm:opacity-0 lg:opacity-100 pr-4",
+        "border-t fixed w-full bottom-0 h-[48px] z-30 flex flex-row items-center justify-center bg-sidebar select-none sm:opacity-0 lg:opacity-100 pr-4",
         isCollapsed ? "pl-12" : "pl-[244px]",
         "transition-all duration-200 ease-linear" // Add smooth transition
       )}
@@ -32,7 +41,7 @@ const BetaWarning = () => {
         &nbsp;
         <p className="leading-5 text-center text-muted-foreground text-nowrap">
           <Link
-            href="/disclaimer"
+            href={disclaimerPath}
             className="underline hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0"
           >
             See full disclaimer
