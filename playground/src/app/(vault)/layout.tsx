@@ -2,7 +2,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "../globals.css";
-import { Toaster } from "@/components/ui/toaster";
 import MobileOverlay from "@/components/MobileOverlay";
 import SharedDashboardLayout from "@/components/layouts/SharedDashboardLayout";
 
@@ -22,7 +21,6 @@ export default function VaultLayout({
     <>
       <MobileOverlay />
       <SharedDashboardLayout beta={true}>{children}</SharedDashboardLayout>
-      <Toaster />
     </>
   );
 }
