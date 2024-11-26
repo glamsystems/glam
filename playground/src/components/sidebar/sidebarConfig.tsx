@@ -106,6 +106,18 @@ const ALL_NAV_ITEMS = {
     shortcut: "",
     Icon: PlusIcon,
   },
+  createMint: {
+    route: "/mint/create",
+    text: "Create Mint",
+    shortcut: "",
+    Icon: PlusIcon,
+  },
+  createVault: {
+    route: "/vault/create",
+    text: "Create Vault",
+    shortcut: "",
+    Icon: PlusIcon,
+  },
   flows: {
     route: "/playground/flows",
     text: "Flows",
@@ -328,7 +340,7 @@ const NAVIGATION_STRUCTURE = {
   PLAYGROUND: [
     {
       group: "Products",
-      itemKeys: ["vault", "mint"],
+      itemKeys: ["vault", "createVault", "mint", "createMint"],
     },
     {
       group: "Vault Pages",
