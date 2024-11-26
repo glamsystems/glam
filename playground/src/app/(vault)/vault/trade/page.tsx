@@ -41,7 +41,13 @@ import { toast } from "@/components/ui/use-toast";
 import { Asset, AssetInput } from "@/components/AssetInput";
 import React, { useEffect, useMemo, useState } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { useGlam } from "@glam/anchor/react";
+import {
+  PerpMarketConfig,
+  QuoteParams,
+  QuoteResponse,
+  SpotMarketConfig,
+  useGlam,
+} from "@glam/anchor/react";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { LAMPORTS_PER_SOL, VersionedTransaction } from "@solana/web3.js";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -90,14 +96,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { PublicKey } from "@solana/web3.js";
-import {
-  QuoteParams,
-  QuoteResponse,
-} from "../../../../../../anchor/src/client/jupiter";
-import {
-  PerpMarketConfig,
-  SpotMarketConfig,
-} from "../../../../../../anchor/src/client/drift";
+
 import { getPriorityFeeMicroLamports } from "@/app/(shared)/settings/priorityfee";
 import { SlippageInput } from "@/components/SlippageInput";
 import { PriorityFeeInput } from "@/components/PriorityFeeInput";
@@ -990,13 +989,26 @@ export default function Trade() {
           body: JSON.stringify({
             user: glamClient.drift.getUser(fundPDA)[0].toBase58(),
             authority: glamClient.getWallet().publicKey.toBase58(),
-            simulate: false,
+            simulate: true,
             estimatePriorityFee: true,
           }),
         }
       );
       const tx = await response.text();
-      const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
+
+      // tx could be empty, meaning there's nothing to settle
+      if (!tx) {
+        toast({
+          title: "No PnL to settle",
+        });
+        setIsSettleTxPending(false);
+        return;
+      }
+
+      // otherwise, deserialize the tx and send it
+      const vTx = VersionedTransaction.deserialize(
+        new Uint8Array(Buffer.from(tx, "base64"))
+      );
       const txId = await glamClient.sendAndConfirm(vTx);
       toast({
         title: "Successfully settled PnL",

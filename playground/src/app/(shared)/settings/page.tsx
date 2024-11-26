@@ -30,7 +30,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useCluster } from "@/components/solana-cluster-provider";
+import { useCluster } from "@/components/providers/solana-cluster-provider";
 import { toast } from "@/components/ui/use-toast";
 import { PlusIcon, ResetIcon } from "@radix-ui/react-icons";
 import { Label } from "@/components/ui/label";

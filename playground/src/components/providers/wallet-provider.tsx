@@ -11,7 +11,7 @@ import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import {
   ClusterNetwork,
   useCluster,
-} from "@/components/solana-cluster-provider";
+} from "@/components/providers/solana-cluster-provider";
 
 // To use default styles:
 // import "@solana/wallet-adapter-react-ui/styles.css";

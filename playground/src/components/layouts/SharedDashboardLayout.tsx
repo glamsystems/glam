@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { ClusterProvider } from "@/components/solana-cluster-provider";
+import { ClusterProvider } from "@/components/providers/solana-cluster-provider";
 import { GlamProvider } from "@glam/anchor/react";
 import BetaWarning from "@/components/BetaWarning";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 import { Toaster } from "../ui/toaster";
 
 const AppWalletProvider = dynamic(
-  () => import("@/components/wallet-provider"),
+  () => import("@/components/providers/wallet-provider"),
   { ssr: false }
 );
 

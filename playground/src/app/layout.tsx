@@ -1,6 +1,6 @@
 // app/layout.tsx
 import type { Metadata } from "next";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ReactQueryProvider } from "./react-query-provider";

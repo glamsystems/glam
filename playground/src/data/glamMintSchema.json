@@ -1,0 +1,131 @@
+{
+  "$id": "https://gui.glam.systems/schemas/glamMintSchema.json",
+  "type": "object",
+  "company": {
+    "type": "object",
+    "fields": {
+      "fundGroupName": {
+        "x-id": "OFST001000",
+        "type": "string",
+        "title": "Orgnization Name",
+        "description": "Overall brand name of the organization",
+        "x-order": 1,
+        "x-tag": "essential",
+        "x-component": "input",
+        "readOnly": false,
+        "x-hidden": false,
+        "x-enforced": false,
+        "minLength": 3,
+        "maxLength": 64
+      },
+      "manCo": {
+        "x-id": "OFST001020",
+        "type": "string",
+        "title": "ManCo",
+        "description": "Name of the entity managing the Mint",
+        "x-order": 72,
+        "x-tag": "core",
+        "x-component": "input",
+        "readOnly": false,
+        "x-hidden": false,
+        "x-enforced": false,
+        "minLength": 3,
+        "maxLength": 64
+      },
+      "domicileOfManCo": {
+        "x-id": "OFST001035",
+        "type": "string",
+        "title": "Domicile Of ManCo",
+        "description": "Two-letter ISO code for the ManCo's domicile",
+        "x-order": 73,
+        "x-tag": "core",
+        "x-component": "combobox",
+        "readOnly": false,
+        "x-enumSource": "utils/openfundsConstants.tsx",
+        "x-enumValues": "countries",
+        "x-enumValuesLabel": "name_pretty",
+        "x-enumValuesValue": "code_alpha_2",
+        "x-hidden": false,
+        "x-enforced": false
+      },
+      "emailAddressOfManCo": {
+        "x-id": "OFST001021",
+        "type": "string",
+        "title": "Email Address Of ManCo",
+        "description": "Contact email for the Management Company",
+        "x-order": 74,
+        "x-tag": "full",
+        "x-component": "input",
+        "readOnly": false,
+        "x-hidden": false,
+        "x-enforced": false,
+        "minLength": 3,
+        "maxLength": 64,
+        "format": "email"
+      },
+      "fundWebsiteOfManCo": {
+        "x-id": "OFST001065",
+        "type": "string",
+        "title": "Website of ManCo",
+        "description": "URL of the Management Company's website",
+        "x-order": 75,
+        "x-tag": "full",
+        "x-component": "input",
+        "readOnly": false,
+        "x-hidden": false,
+        "x-enforced": false,
+        "minLength": 3,
+        "maxLength": 64,
+        "format": "uri"
+      }
+    }
+  },
+  "mint": {
+    "type": "object",
+    "fields": {
+      "name": {
+        "x-id": "OFST010010",
+        "type": "string",
+        "title": "Token Name",
+        "description": "Name of the token",
+        "x-order": 2,
+        "x-tag": "essential",
+        "x-component": "combobox",
+        "readOnly": false,
+        "x-enumSource": "utils/openfundsConstants.tsx",
+        "x-enumValues": "countries",
+        "x-enumValuesLabel": "name_pretty",
+        "x-enumValuesValue": "code_alpha_2",
+        "x-hidden": false,
+        "x-enforced": false
+      },
+      "ticker": {
+        "x-id": "OFST010020",
+        "type": "string",
+        "title": "Token Ticker",
+        "description": "Ticker of the token",
+        "x-order": 3,
+        "x-tag": "essential",
+        "x-component": "input",
+        "readOnly": false,
+        "x-hidden": false,
+        "x-enforced": false,
+        "minLength": 3,
+        "maxLength": 64
+      },
+      "mintLaunchDate": {
+        "x-id": "OFST010240",
+        "type": "string",
+        "title": "Mint Launch Date",
+        "description": "Date when the Mint was / will be launched",
+        "x-order": 11,
+        "x-tag": "core",
+        "x-component": "datePicker",
+        "readOnly": false,
+        "x-hidden": false,
+        "x-enforced": false,
+        "format": "date"
+      }
+    }
+  }
+}

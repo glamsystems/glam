@@ -71,10 +71,16 @@ export interface NavGroup {
 // Define all available navigation items
 const ALL_NAV_ITEMS = {
   access: {
-    route: "/playground/access",
+    route: "/access",
     text: "Access",
     shortcut: "",
     Icon: TargetIcon,
+  },
+  create: {
+    route: "/create",
+    text: "Create New",
+    shortcut: "",
+    Icon: PlusIcon,
   },
   api: {
     route: "/playground/api",
@@ -82,23 +88,11 @@ const ALL_NAV_ITEMS = {
     shortcut: "",
     Icon: CodeIcon,
   },
-  cluster: {
-    route: "/playground/cluster",
-    text: "Cluster",
-    shortcut: "",
-    Icon: MixerHorizontalIcon,
-  },
   components: {
     route: "/playground/components",
     text: "Component Debugger",
     shortcut: "",
     Icon: LightningBoltIcon,
-  },
-  create: {
-    route: "/playground/create",
-    text: "Create New",
-    shortcut: "",
-    Icon: PlusIcon,
   },
   flows: {
     route: "/playground/flows",
@@ -113,7 +107,7 @@ const ALL_NAV_ITEMS = {
     Icon: ListBulletIcon,
   },
   idlSearch: {
-    route: "/idl-search",
+    route: "/playground/idl-search",
     text: "IDL Search",
     shortcut: "",
     Icon: ActivityLogIcon,
@@ -203,10 +197,16 @@ const ALL_NAV_ITEMS = {
     Icon: Component1Icon,
   },
   wrap: {
-    route: "/playground/wrap",
+    route: "/wrap",
     text: "Wrap",
     shortcut: "",
     Icon: MarginIcon,
+  },
+  shares: {
+    route: "/mint/shares",
+    text: "Manage Shares",
+    shortcut: "",
+    Icon: DashboardIcon,
   },
 } as const;
 
@@ -222,14 +222,22 @@ export const PATH_CONTEXTS = {
 const BASE_STRUCTURES = {
   VAULT: [
     {
+      group: "Admin",
+      itemKeys: ["create", "access"],
+    },
+    {
       group: "Operations",
-      itemKeys: ["holdings", "stake", "trade", "transfer"],
+      itemKeys: ["holdings", "stake", "wrap", "trade", "transfer"],
     },
   ],
   MINT: [
     {
+      group: "Admin",
+      itemKeys: ["create", "access"],
+    },
+    {
       group: "Operations",
-      itemKeys: [],
+      itemKeys: ["shares"],
     },
   ],
 } as const;
@@ -243,6 +251,7 @@ const NAVIGATION_STRUCTURE = {
       group: "Products",
       itemKeys: ["vault", "mint"],
     },
+    /*
     {
       group: "Vault Pages",
       itemKeys: [...BASE_STRUCTURES.VAULT[0].itemKeys],
@@ -251,11 +260,12 @@ const NAVIGATION_STRUCTURE = {
       group: "Mint Pages",
       itemKeys: [...BASE_STRUCTURES.MINT[0].itemKeys],
     },
+    */
     {
       group: "Other Pages",
       itemKeys: [
-        "access",
         "create",
+        "access",
         "flows",
         "integrations",
         "manage",
@@ -269,14 +279,7 @@ const NAVIGATION_STRUCTURE = {
     },
     {
       group: "Developer Tools",
-      itemKeys: [
-        "api",
-        "cluster",
-        "components",
-        "jupiterList",
-        "openfunds",
-        "idlSearch",
-      ],
+      itemKeys: ["api", "components", "jupiterList", "openfunds", "idlSearch"],
     },
   ],
 } as const;
@@ -287,9 +290,24 @@ const getNavGroupsFromStructure = (
 ): NavGroup[] => {
   return structure.map((group) => ({
     group: group.group,
-    items: group.itemKeys.map(
-      (key) => ALL_NAV_ITEMS[key as keyof typeof ALL_NAV_ITEMS]
-    ),
+    items: group.itemKeys.map((key) => {
+      const item = ALL_NAV_ITEMS[key as keyof typeof ALL_NAV_ITEMS];
+      switch (structure) {
+        case NAVIGATION_STRUCTURE.VAULT:
+          return { ...item, route: "/vault" + item.route };
+        case NAVIGATION_STRUCTURE.MINT:
+          return { ...item, route: "/mint" + item.route };
+      }
+
+      switch (group.group) {
+        case "Other Pages":
+          if (!item.route.startsWith("/playground")) {
+            return { ...item, route: "/playground" + item.route };
+          }
+      }
+
+      return item;
+    }),
   }));
 };
 

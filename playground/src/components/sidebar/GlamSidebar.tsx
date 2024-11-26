@@ -123,21 +123,21 @@ export default function RefactoredSidebar() {
           })}
 
           <DevOnly>
-            <SidebarMenuButton
-              className={cn(
-                "items-center text-sm outline-none opacity-50 hover:opacity-100 transition-all focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0"
-              )}
-            >
-              <Link
-                href={"/playground"}
-                className="
-            focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0
-            flex grow items-center w-full"
-              >
-                <MixIcon />
-                <span className="flex-grow">Playground</span>
-              </Link>
-            </SidebarMenuButton>
+            <SidebarGroup key={"playground"}>
+              <SidebarGroupLabel className="text-muted-foreground opacity-50 text-xs">
+                {"Playground"}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="list-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0">
+                  <SidebarNavItem
+                    route="/playground"
+                    text={"Playground"}
+                    Icon={MixIcon}
+                    shortcut={""}
+                  />
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
           </DevOnly>
         </SidebarContent>
         <SidebarFooter>
