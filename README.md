@@ -1,3 +1,7 @@
+# GLAM
+
+![GLAM Tests](https://github.com/glamsystems/glam/actions/workflows/post_commit_anchor_test.yml/badge.svg)
+
 GLAM is an onchain asset management and tokenization platform designed to facilitate the launch and management of digitally native investment products.
 
 ## Colosseum Hackathon Demos
@@ -6,13 +10,11 @@ Check out our live demo: [https://gui.glam.systems](https://gui.glam.systems)
 
 Watch our latest Colosseum Radar Submission (Oct 8, 2024):
 
-[![GLAM Radar](https://cdn.loom.com/sessions/thumbnails/a145aa27db5c4b87a220c71b644173ed-32b128e4d76c7812.jpg
-)](https://614m.link/radar)
+[![GLAM Radar](https://cdn.loom.com/sessions/thumbnails/a145aa27db5c4b87a220c71b644173ed-32b128e4d76c7812.jpg)](https://614m.link/radar)
 
 Watch our original Colosseum Renaissance Submission (Apr 8, 2024):
 
-[![GLAM Renaissance](https://cdn.loom.com/sessions/thumbnails/15b0e87e181c425682f89f620cfd707f-1712512889851.jpg
-)](https://614m.link/renaissance)
+[![GLAM Renaissance](https://cdn.loom.com/sessions/thumbnails/15b0e87e181c425682f89f620cfd707f-1712512889851.jpg)](https://614m.link/renaissance)
 
 ## Features
 
@@ -28,9 +30,9 @@ Fund:
 - [x] Investor subscribe & redeem
 - [x] Hot wallets / fine-grain access control
 - [ ] External/offchain assets
-   - [x] Staking accounts
-   - [ ] Drift positions
-   - [ ] Offchain assets
+  - [x] Staking accounts
+  - [x] Drift positions
+  - [ ] Offchain assets
 - [ ] Fees
 - [ ] Subscription limits
 

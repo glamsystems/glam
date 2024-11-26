@@ -1,10 +1,8 @@
 // app/layout.tsx
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
 import { ReactQueryProvider } from "./react-query-provider";
 import React from "react";
 import MobileOverlay from "@/components/MobileOverlay";
@@ -35,7 +33,6 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <main className="flex-1 flex min-h-screen w-full">{children}</main>
-            <Toaster />
           </ThemeProvider>
         </ReactQueryProvider>
       </body>
