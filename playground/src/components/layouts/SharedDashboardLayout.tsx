@@ -4,7 +4,11 @@ import dynamic from "next/dynamic";
 import { ClusterProvider } from "@/components/solana-cluster-provider";
 import { GlamProvider } from "@glam/anchor/react";
 import BetaWarning from "@/components/BetaWarning";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import GlamSidebar from "@/components/sidebar/GlamSidebar";
 import { motion } from "framer-motion";
 import { Toaster } from "../ui/toaster";
@@ -37,7 +41,9 @@ export default function SharedDashboardLayout({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
-                {children}
+                <SidebarInset className="flex justify-start items-center">
+                  {children}
+                </SidebarInset>
               </motion.section>
               {/* Toaster must be within the Cluster Provider context*/}
               <Toaster />

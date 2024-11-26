@@ -1,12 +1,5 @@
 "use client";
-
-import React from "react";
-import PageContentWrapper from "@/components/PageContentWrapper";
-
-export default function VaultPage() {
-  return (
-    <PageContentWrapper>
-      <h1>Vault</h1>
-    </PageContentWrapper>
-  );
+import { redirect } from "next/navigation";
+export default function Products() {
+  redirect("/vault/holdings");
 }

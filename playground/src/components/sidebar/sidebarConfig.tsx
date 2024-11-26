@@ -1,6 +1,7 @@
 // config/sidebar.ts
 import {
   BoxModelIcon,
+  CardStackPlusIcon,
   Component1Icon,
   CodeIcon,
   DashboardIcon,
@@ -18,6 +19,7 @@ import {
   MixerVerticalIcon,
   MixIcon,
   PaddingIcon,
+  PersonIcon,
   PlusIcon,
   ShuffleIcon,
   StackIcon,
@@ -26,11 +28,13 @@ import {
   TransformIcon,
   LightningBoltIcon,
   ActivityLogIcon,
+  WidthIcon,
 } from "@radix-ui/react-icons";
 
 export type IconType =
   | typeof ActivityLogIcon
   | typeof BoxModelIcon
+  | typeof CardStackPlusIcon
   | typeof CodeIcon
   | typeof Component1Icon
   | typeof DashboardIcon
@@ -48,13 +52,15 @@ export type IconType =
   | typeof MixerVerticalIcon
   | typeof MixIcon
   | typeof PaddingIcon
+  | typeof PersonIcon
   | typeof PlusIcon
   | typeof ShuffleIcon
   | typeof StackIcon
   | typeof TargetIcon
   | typeof TokensIcon
   | typeof TransformIcon
-  | typeof LightningBoltIcon;
+  | typeof LightningBoltIcon
+  | typeof WidthIcon;
 
 export interface NavItem {
   route: string;
@@ -106,6 +112,12 @@ const ALL_NAV_ITEMS = {
     shortcut: "",
     Icon: LoopIcon,
   },
+  holders: {
+    route: "/mint/holders",
+    text: "Holders",
+    shortcut: "",
+    Icon: PersonIcon,
+  },
   holdings: {
     route: "/vault/holdings",
     text: "Holdings",
@@ -124,6 +136,12 @@ const ALL_NAV_ITEMS = {
     shortcut: "",
     Icon: MixIcon,
   },
+  supply: {
+    route: "/mint/supply",
+    text: "Supply",
+    shortcut: "",
+    Icon: CardStackPlusIcon,
+  },
   jupiterList: {
     route: "/playground/jupiter",
     text: "Jupiter Token List",
@@ -141,6 +159,36 @@ const ALL_NAV_ITEMS = {
     text: "Mint",
     shortcut: "",
     Icon: TokensIcon,
+  },
+  mintAccess: {
+    route: "/mint/access",
+    text: "Access",
+    shortcut: "",
+    Icon: TargetIcon,
+  },
+  mintContext: {
+    route: "/mint/context",
+    text: "Context",
+    shortcut: "",
+    Icon: BoxModelIcon,
+  },
+  mintDashboard: {
+    route: "/mint",
+    text: "Dashboard",
+    shortcut: "",
+    Icon: TokensIcon,
+  },
+  mintPolicies: {
+    route: "/mint/policies",
+    text: "Policies",
+    shortcut: "",
+    Icon: TransformIcon,
+  },
+  mintTransfers: {
+    route: "/mint/transfers",
+    text: "Transfers",
+    shortcut: "",
+    Icon: WidthIcon,
   },
   openfunds: {
     route: "/playground/openfunds",
@@ -202,6 +250,30 @@ const ALL_NAV_ITEMS = {
     shortcut: "",
     Icon: Component1Icon,
   },
+  vaultAccess: {
+    route: "/vault/access",
+    text: "Access",
+    shortcut: "",
+    Icon: TargetIcon,
+  },
+  vaultContext: {
+    route: "/vault/context",
+    text: "Context",
+    shortcut: "",
+    Icon: BoxModelIcon,
+  },
+  vaultDashboard: {
+    route: "/vault",
+    text: "Dashboard",
+    shortcut: "",
+    Icon: TokensIcon,
+  },
+  vaultIntegrations: {
+    route: "/vault/integrations",
+    text: "Integrations",
+    shortcut: "",
+    Icon: MixIcon,
+  },
   wrap: {
     route: "/playground/wrap",
     text: "Wrap",
@@ -225,14 +297,29 @@ const BASE_STRUCTURES = {
       group: "Operations",
       itemKeys: ["holdings", "stake", "trade", "transfer"],
     },
+    {
+      group: "Configuration",
+      itemKeys: ["vaultAccess", "vaultContext", "vaultIntegrations"],
+    },
   ],
   MINT: [
     {
       group: "Operations",
-      itemKeys: [],
+      itemKeys: ["supply", "mintTransfers", "holders"],
+    },
+    {
+      group: "Configuration",
+      itemKeys: ["mintAccess", "mintContext", "mintPolicies"],
     },
   ],
 } as const;
+
+// Helper function to get all item keys from a structure
+const getAllItemKeysFromStructure = (
+  structure: (typeof BASE_STRUCTURES)[keyof typeof BASE_STRUCTURES]
+) => {
+  return structure.flatMap((group) => group.itemKeys);
+};
 
 // Define navigation structure for each context
 const NAVIGATION_STRUCTURE = {
@@ -245,11 +332,11 @@ const NAVIGATION_STRUCTURE = {
     },
     {
       group: "Vault Pages",
-      itemKeys: [...BASE_STRUCTURES.VAULT[0].itemKeys],
+      itemKeys: getAllItemKeysFromStructure(BASE_STRUCTURES.VAULT),
     },
     {
       group: "Mint Pages",
-      itemKeys: [...BASE_STRUCTURES.MINT[0].itemKeys],
+      itemKeys: getAllItemKeysFromStructure(BASE_STRUCTURES.MINT),
     },
     {
       group: "Other Pages",
