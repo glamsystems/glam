@@ -376,7 +376,7 @@ export function DataTable<TData extends KeyData>({
                           setTreeData={() => {}}
                           isExpanded={isExpanded}
                           toggleExpandCollapse={toggleExpandCollapse}
-                          handleCheckedItemsChange={handleCheckedItemsChange}
+                          onCheckedItemsChange={handleCheckedItemsChange}
                         />
                       </div>
                     </div>

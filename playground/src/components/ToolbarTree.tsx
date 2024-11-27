@@ -19,7 +19,7 @@ interface ToolbarTreeProps {
   setTreeData: Dispatch<SetStateAction<TreeNodeData>>;
   isExpanded: boolean;
   toggleExpandCollapse: () => void;
-  handleCheckedItemsChange: (checkedItems: Record<string, boolean>) => void;
+  onCheckedItemsChange: (checkedItems: Record<string, boolean>) => void;
 }
 
 const ToolbarTree: React.FC<ToolbarTreeProps> = ({
@@ -27,7 +27,7 @@ const ToolbarTree: React.FC<ToolbarTreeProps> = ({
   setTreeData,
   isExpanded,
   toggleExpandCollapse,
-  handleCheckedItemsChange,
+  onCheckedItemsChange,
 }) => {
   return (
     <div className="w-full">
@@ -66,7 +66,7 @@ const ToolbarTree: React.FC<ToolbarTreeProps> = ({
         <CustomTree
           treeData={treeData}
           setTreeData={setTreeData}
-          onCheckedItemsChange={handleCheckedItemsChange}
+          onCheckedItemsChange={onCheckedItemsChange}
           isExpanded={isExpanded}
         />
       </div>

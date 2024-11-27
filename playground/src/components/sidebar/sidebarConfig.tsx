@@ -137,7 +137,7 @@ const ALL_NAV_ITEMS = {
     Icon: ListBulletIcon,
   },
   idlSearch: {
-    route: "/idl-search",
+    route: "/playground/idl-search",
     text: "IDL Search",
     shortcut: "",
     Icon: ActivityLogIcon,

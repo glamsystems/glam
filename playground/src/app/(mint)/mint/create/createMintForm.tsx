@@ -17,6 +17,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
+import { useGlam } from "@glam/anchor/react";
+import { PublicKey } from "@solana/web3.js";
+import { toast } from "@/components/ui/use-toast";
+import { ExplorerLink } from "@/components/ExplorerLink";
+import { parseTxError } from "@/lib/error";
 
 const TOTAL_STEPS = {
   OPENFUNDS: 4,
@@ -67,6 +72,7 @@ export default function MultiStepForm() {
     fundManager: {},
     shareClass: {},
   });
+  const { glamClient, setActiveFund } = useGlam();
 
   const totalSteps =
     selectedTemplate === "Basic" ? TOTAL_STEPS.BASIC : TOTAL_STEPS.OPENFUNDS;
@@ -92,12 +98,54 @@ export default function MultiStepForm() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     console.log("Form submitted!", {
       selectedTemplate,
       formData,
       openfundsData,
     });
+
+    try {
+      const fundData = {
+        name: openfundsData.fund.legalFundNameIncludingUmbrella,
+        isEnabled: true,
+        fundDomicileAlpha2: openfundsData.fund.fundDomicileAlpha2,
+        integrationAcls: [{ name: { mint: {} }, features: [] }],
+        company: {
+          fundGroupName: openfundsData.company.fundGroupName,
+          manCo: openfundsData.company.fundGroupName,
+          emailAddressOfManCo: formData.email,
+        },
+        manager: { portfolioManagerName: formData.name },
+        shareClasses: [
+          {
+            name: openfundsData.fund.legalFundNameIncludingUmbrella,
+            symbol: openfundsData.shareClass.shareClassSymbol,
+            permanentDelegate: new PublicKey(0),
+            defaultAccountStateFrozen: true,
+            isin: openfundsData.shareClass.iSIN,
+            shareClassCurrency: openfundsData.shareClass.shareClassCurrency,
+          },
+        ],
+      };
+      const [txSig, fundPDA] = await glamClient.createFund(fundData, true);
+      setActiveFund({
+        address: fundPDA.toBase58(),
+        pubkey: fundPDA,
+        imageKey: fundPDA.toBase58(),
+        name: openfundsData.fund.legalFundNameIncludingUmbrella,
+      });
+      toast({
+        title: "Fund created successfully",
+        description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to create fund",
+        description: parseTxError(error),
+        variant: "destructive",
+      });
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -350,7 +398,7 @@ function OpenfundsForm({
         isNested={true}
         groups={["company", "fund", "fundManager", "shareClass"]}
         filters={{
-          tags: ["essential"],
+          tags: ["essential", "glam"],
         }}
         columns={2}
         showSubmitButton={false}
