@@ -78,16 +78,6 @@ const DRIFT_VAULT = new PublicKey(
 );
 const DRIFT_MARGIN_PRECISION = 10_000;
 
-const defaultOracles = [
-  new PublicKey("BAtFj4kQttZRVep3UZS2aZRDixkGYgWsbqTBVDbnSsPF"), // sol pricing oracle
-  new PublicKey("En8hkHLkRe9d9DraYmBTrus518BvmVH448YcvmrFM6Ce"), // usdc pricing oracle
-];
-
-const defaultMarkets = [
-  new PublicKey("3x85u7SWkmmr7YQGYhtjARgxwegTLJgkSLRprfXod6rh"), // sol spot market
-  new PublicKey("6gMq3mRCKf8aP3ttTyYhuijVZ2LGi14oDsBbkgubfLB3"), // usdc spot market
-];
-
 export class DriftClient {
   public constructor(readonly base: BaseClient) {}
 

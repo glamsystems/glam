@@ -1,13 +1,115 @@
-import * as anchor from "@coral-xyz/anchor";
 import {
   PublicKey,
   VersionedTransaction,
   TransactionSignature,
+  ComputeBudgetProgram,
 } from "@solana/web3.js";
 import { BaseClient, TxOptions } from "./base";
 
 export class FundClient {
   public constructor(readonly base: BaseClient) {}
+
+  public async createFund(
+    fund: any
+  ): Promise<[TransactionSignature, PublicKey]> {
+    let fundModel = this.base.enrichFundModelInitialize(fund);
+
+    const fundPDA = this.base.getFundPDA(fundModel);
+    const treasury = this.base.getTreasuryPDA(fundPDA);
+    const openfunds = this.base.getOpenfundsPDA(fundPDA);
+    const manager = this.base.getManager();
+
+    const shareClasses = fundModel.shareClasses;
+    fundModel.shareClasses = [];
+
+    const txSig = await this.base.program.methods
+      .initializeFund(fundModel)
+      .accounts({
+        //@ts-ignore IDL ts type is unhappy
+        fund: fundPDA,
+        treasury,
+        openfunds,
+        manager,
+      })
+      .rpc();
+    await Promise.all(
+      shareClasses.map(async (shareClass: any, j: number) => {
+        const shareClassMint = this.base.getShareClassPDA(fundPDA, j);
+
+        return await this.base.program.methods
+          .addShareClass(shareClass)
+          .accounts({
+            fund: fundPDA,
+            shareClassMint,
+            openfunds,
+            //@ts-ignore IDL ts type is unhappy
+            manager,
+          })
+          .preInstructions([
+            ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 }),
+          ])
+          .rpc();
+      })
+    );
+    return [txSig, fundPDA];
+  }
+
+  public async updateFund(
+    fundPDA: PublicKey,
+    updated: any
+  ): Promise<TransactionSignature> {
+    let updatedFund = this.base.getFundModel(updated);
+
+    return await this.base.program.methods
+      .updateFund(updatedFund)
+      .accounts({
+        fund: fundPDA,
+        signer: this.base.getManager(),
+      })
+      .rpc();
+  }
+
+  public async closeFund(fundPDA: PublicKey): Promise<TransactionSignature> {
+    const openfunds = this.base.getOpenfundsPDA(fundPDA);
+
+    return await this.base.program.methods
+      .closeFund()
+      .accounts({
+        fund: fundPDA,
+        openfunds,
+      })
+      .rpc();
+  }
+
+  public async deleteDelegateAcls(
+    fundPDA: PublicKey,
+    keys: PublicKey[]
+  ): Promise<TransactionSignature> {
+    let updatedFund = this.base.getFundModel({
+      delegateAcls: keys.map((key) => ({ pubkey: key, permissions: [] })),
+    });
+    return await this.base.program.methods
+      .updateFund(updatedFund)
+      .accounts({
+        fund: fundPDA,
+        signer: this.base.getManager(),
+      })
+      .rpc();
+  }
+
+  public async upsertDelegateAcls(
+    fundPDA: PublicKey,
+    delegateAcls: any[]
+  ): Promise<TransactionSignature> {
+    let updatedFund = this.base.getFundModel({ delegateAcls });
+    return await this.base.program.methods
+      .updateFund(updatedFund)
+      .accounts({
+        fund: fundPDA,
+        signer: this.base.getManager(),
+      })
+      .rpc();
+  }
 
   public async closeTokenAccounts(
     fund: PublicKey,
