@@ -41,15 +41,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { TreeNodeData } from "@/components/CustomTree";
-import { DownloadIcon } from "@radix-ui/react-icons";
-import ToolbarTree from "@/components/ToolbarTree";
-import { useCallback, useState } from "react";
+import { thawAccount } from "@solana/spl-token";
+import { useGlam } from "@glam/anchor/react";
+import { PublicKey } from "@solana/web3.js";
+import { toast } from "@/components/ui/use-toast";
+import { ExplorerLink } from "@/components/ExplorerLink";
 
-// Define the type that TData should extend
 export interface HoldersData {
   pubkey: string;
   label: string;
+  frozen: boolean;
+  quantity: number;
 }
 
 // Update the DataTableProps to ensure TData extends KeyData
@@ -69,6 +71,36 @@ export function DataTable<TData extends HoldersData>({
     []
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
+
+  const { glamClient, fund: fundPDA } = useGlam();
+
+  const thawOrFreeAccount = async (publicKey: string, frozen: boolean) => {
+    if (!fundPDA || !glamClient) {
+      return;
+    }
+    const pubkey = new PublicKey(publicKey);
+
+    console.log("pubkey", pubkey, " set frozen", frozen);
+
+    try {
+      const shareClassMint = glamClient.getShareClassPDA(fundPDA, 0);
+
+      const txSig = await glamClient.program.methods
+        .setTokenAccountsStates(0, frozen)
+        .accounts({
+          shareClassMint,
+          fund: fundPDA,
+        })
+        .remainingAccounts([{ pubkey, isSigner: false, isWritable: true }])
+        .rpc();
+      toast({
+        title: "New share class holder added",
+        description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   const table = useReactTable({
     data,
@@ -91,20 +123,6 @@ export function DataTable<TData extends HoldersData>({
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
-
-  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const toggleExpandCollapse = () => {
-    setIsExpanded(!isExpanded);
-  };
-
-  const handleCheckedItemsChange = useCallback(
-    (newCheckedItems: Record<string, boolean>) => {
-      setCheckedItems(newCheckedItems);
-    },
-    []
-  );
 
   return (
     <div className="space-y-4 w-full">
@@ -164,7 +182,12 @@ export function DataTable<TData extends HoldersData>({
                         <Label htmlFor="label" className="text-right">
                           Label
                         </Label>
-                        <Input id="label" value="Jim" className="col-span-3" />
+                        <Input
+                          id="label"
+                          value={row.original.label}
+                          className="col-span-3"
+                          disabled
+                        />
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
                         <Label
@@ -175,7 +198,7 @@ export function DataTable<TData extends HoldersData>({
                         </Label>
                         <Input
                           id="pubKey"
-                          value=""
+                          value={row.original.pubkey}
                           placeholder="GLAMvRgo7cHBPjQGf8UaVnsD6TUDjq16dEUuDPAPLjyJ"
                           className="col-span-3"
                           disabled
@@ -194,8 +217,17 @@ export function DataTable<TData extends HoldersData>({
                         <Button
                           variant="outline"
                           className="hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            thawOrFreeAccount(
+                              row.original.pubkey,
+                              !row.original.frozen
+                            );
+                          }}
                         >
-                          Freeze Account
+                          {row.original.frozen
+                            ? "Thaw Account"
+                            : "Freeze Account"}
                         </Button>
                       </SheetClose>
                       <SheetClose asChild>

@@ -2,11 +2,8 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import { Key } from "../data/keySchema"; // Ensure correct import path
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
-import Sparkle from "../../../../../utils/Sparkle";
-import TruncateAddress from "@/utils/TruncateAddress";
 import { ExplorerLink } from "@/components/ExplorerLink";
 
 const tagColors: Record<string, string> = {

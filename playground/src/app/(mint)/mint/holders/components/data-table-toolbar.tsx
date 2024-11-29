@@ -1,13 +1,12 @@
 "use client";
 
-import { Cross2Icon, DownloadIcon, PlusIcon } from "@radix-ui/react-icons";
+import { Cross2Icon, PlusIcon } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DataTableRefresh } from "./data-table-refresh";
 
-import { tag } from "../data/data";
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import {
   Sheet,
@@ -20,11 +19,16 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import ToolbarTree from "@/components/ToolbarTree";
 import * as React from "react";
-import { useCallback, useState } from "react";
-import { TreeNodeData } from "@/components/CustomTree";
+import { useState } from "react";
+import { useGlam } from "@glam/anchor/react";
+import { PublicKey } from "@solana/web3.js";
+import { toast } from "@/components/ui/use-toast";
+import {
+  createAssociatedTokenAccountIdempotentInstruction,
+  TOKEN_2022_PROGRAM_ID,
+} from "@solana/spl-token";
+import { ExplorerLink } from "@/components/ExplorerLink";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -35,19 +39,62 @@ export function DataTableToolbar<TData>({
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
 
-  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [label, setLabel] = useState<string>("");
+  const [publicKey, setPublicKey] = useState<string>("");
 
-  const toggleExpandCollapse = () => {
-    setIsExpanded(!isExpanded);
+  const { glamClient, fund: fundPDA } = useGlam();
+
+  const addHolderAccount = async (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+
+    if (!fundPDA || !glamClient) {
+      return;
+    }
+
+    let pubkey;
+    try {
+      pubkey = new PublicKey(publicKey);
+    } catch (e) {
+      console.log(e);
+      toast({
+        title: "Invalid public key",
+        description: "Please enter a valid public key.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const shareClassMint = glamClient.getShareClassPDA(fundPDA, 0);
+      const mintTo = glamClient.getShareClassAta(pubkey, shareClassMint);
+      const ixCreateAta = createAssociatedTokenAccountIdempotentInstruction(
+        glamClient.getManager(),
+        mintTo,
+        pubkey,
+        shareClassMint,
+        TOKEN_2022_PROGRAM_ID
+      );
+      const txSig = await glamClient.program.methods
+        .setTokenAccountsStates(0, true)
+        .accounts({
+          shareClassMint,
+          fund: fundPDA,
+        })
+        .remainingAccounts([
+          { pubkey: mintTo, isSigner: false, isWritable: true },
+        ])
+        .preInstructions([ixCreateAta])
+        .rpc();
+      toast({
+        title: "New share class holder added",
+        description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
+      });
+    } catch (e) {
+      console.log(e);
+    }
   };
-
-  const handleCheckedItemsChange = useCallback(
-    (newCheckedItems: Record<string, boolean>) => {
-      setCheckedItems(newCheckedItems);
-    },
-    []
-  );
 
   return (
     <div className="flex items-center justify-between">
@@ -71,22 +118,31 @@ export function DataTableToolbar<TData>({
                 <Label htmlFor="label" className="text-right">
                   Label
                 </Label>
-                <Input id="label" value="" className="col-span-3" />
+                <Input
+                  id="label"
+                  value={label}
+                  onChange={(e) => setLabel(e.target.value)}
+                  className="col-span-3"
+                />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="username" className="text-right">
+                <Label htmlFor="publicKey" className="text-right">
                   Public key
                 </Label>
                 <Input
                   id="publicKey"
                   placeholder="Publ1cK3y4cc355R1gh75KqM7VxWzeA9cUjfP2y"
+                  value={publicKey}
+                  onChange={(e) => setPublicKey(e.target.value)}
                   className="col-span-3"
                 />
               </div>
             </div>
             <SheetFooter className="mt-4">
               <SheetClose asChild>
-                <Button type="submit">Add Account</Button>
+                <Button type="submit" onClick={addHolderAccount}>
+                  Add Account
+                </Button>
               </SheetClose>
             </SheetFooter>
           </SheetContent>
@@ -99,11 +155,11 @@ export function DataTableToolbar<TData>({
           }
           className="h-8 w-[150px] lg:w-[250px]"
         />
-        {table.getColumn("tags") && (
+        {table.getColumn("label") && (
           <DataTableFacetedFilter
-            column={table.getColumn("tags")}
-            title="Access"
-            options={tag}
+            column={table.getColumn("label")}
+            title="Label"
+            options={[]}
           />
         )}
         {isFiltered && (

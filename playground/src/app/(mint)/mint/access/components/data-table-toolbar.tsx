@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DataTableRefresh } from "./data-table-refresh";
 
-import { tag } from "../data/data";
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import {
   Sheet,
@@ -77,8 +76,6 @@ export function DataTableToolbar<TData>({
       return;
     }
 
-    console.log(permissions.map((p) => ({ [p]: {} })));
-
     const delegateAcls = [
       { pubkey, permissions: permissions.map((p) => ({ [p]: {} })) },
     ];
@@ -90,7 +87,7 @@ export function DataTableToolbar<TData>({
       });
     } catch (e) {
       toast({
-        title: "A new delegate key was added",
+        title: "Failed to add delegate key",
         description: parseTxError(e),
         variant: "destructive",
       });

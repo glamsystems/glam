@@ -4,11 +4,9 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
 import TruncateAddress from "@/utils/TruncateAddress";
-import { ExplorerLink } from "@/components/ExplorerLink";
 import { Badge } from "@/components/ui/badge";
 import NumberFormatter from "@/utils/NumberFormatter";
 
-// Define the type for your row data
 interface HoldersData {
   pubkey: string;
   label: string;
@@ -16,7 +14,6 @@ interface HoldersData {
   quantity: number;
 }
 
-// Use the defined type in ColumnDef
 export const columns: ColumnDef<HoldersData>[] = [
   {
     accessorKey: "label",
@@ -36,10 +33,6 @@ export const columns: ColumnDef<HoldersData>[] = [
     ),
     cell: ({ row }) => (
       <div className="text-muted-foreground">
-        {/*<ExplorerLink*/}
-        {/*  path={`/account/${row.getValue("pubkey")}`}*/}
-        {/*  label={row.getValue("pubkey")}*/}
-        {/*/>*/}
         <TruncateAddress address={row.getValue("pubkey")} />
       </div>
     ),
