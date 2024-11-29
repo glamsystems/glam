@@ -1,12 +1,11 @@
 "use client";
 
-import MultiStepForm from "./createMintForm";
 import PageContentWrapper from "@/components/PageContentWrapper";
 
 export default function Page() {
   return (
     <PageContentWrapper>
-      <MultiStepForm />
+      <p>TBD</p>
     </PageContentWrapper>
   );
 }

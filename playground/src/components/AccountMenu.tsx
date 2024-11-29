@@ -6,6 +6,8 @@ import {
   ChevronDownIcon,
   EnvelopeClosedIcon,
   EnterIcon,
+  Component1Icon,
+  TokensIcon,
 } from "@radix-ui/react-icons";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -179,6 +181,39 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
               </>
             )}
 
+            <CommandGroup key="create" heading="Create">
+              <CommandItem
+                className="text-sm cursor-pointer data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
+                onSelect={() => {
+                  setOpen(false);
+                }}
+              >
+                <Link
+                  href="/mint/create"
+                  className="flex items-center w-full text-sidebar-foreground"
+                >
+                  <TokensIcon className="mr-3 ml-1 w-4 h-4" />
+                  <p className="text-ellipsis mr-4">New Mint</p>
+                </Link>
+              </CommandItem>
+              <CommandItem
+                className="text-sm cursor-pointer data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
+                onSelect={() => {
+                  setOpen(false);
+                }}
+              >
+                <Link
+                  href="/vault/create"
+                  className="flex items-center w-full text-sidebar-foreground"
+                >
+                  <Component1Icon className="mr-3 ml-1 w-4 h-4" />
+                  <p className="text-ellipsis mr-4">New Vault</p>
+                </Link>
+              </CommandItem>
+            </CommandGroup>
+
+            <CommandSeparator />
+
             <CommandGroup>
               <CommandItem
                 className="text-sm cursor-pointer data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
@@ -195,7 +230,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
                 </Link>
               </CommandItem>
               <CommandItem
-                className="text-sm cursor-pointer data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground text-sidebar-foreground"
+                className="text-sm cursor-pointer data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
                 onSelect={() => {
                   setOpen(false);
                 }}
@@ -214,8 +249,8 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
 
             <CommandGroup
               className="overflow-visible text-sidebar-foreground"
-              key="Connected Account"
-              heading="Connected Account"
+              key="connected-wallet"
+              heading="Connected Wallet"
             >
               <WalletMultiButton
                 style={{

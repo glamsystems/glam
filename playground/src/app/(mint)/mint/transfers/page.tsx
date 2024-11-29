@@ -9,7 +9,7 @@ import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { AssetInput } from "@/components/AssetInput";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/FormInput";
-import { PublicKey } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { toast } from "@/components/ui/use-toast";
 import { useGlam } from "@glam/anchor/react";
 import {
@@ -18,6 +18,8 @@ import {
 } from "@solana/spl-token";
 import { BN } from "@coral-xyz/anchor";
 import { parseTxError } from "@/lib/error";
+import { LAMPORTS_EXP } from "@drift-labs/sdk";
+import { ExplorerLink } from "@/components/ExplorerLink";
 
 const transferSchema = z.object({
   amount: z.number().nonnegative(),
@@ -63,8 +65,64 @@ export default function TransferPage() {
       return;
     }
 
-    if (!fundPDA) {
+    if (!amount) {
+      toast({
+        title: "Invalid amount",
+        description: "Please enter a valid amount",
+        variant: "destructive",
+      });
       return;
+    }
+
+    if (!fundPDA || !glamClient) {
+      return;
+    }
+
+    const shareClassMint = glamClient.getShareClassPDA(fundPDA, 0);
+    const fromAta = glamClient.getShareClassAta(fromPubkey, shareClassMint);
+    const toAta = glamClient.getShareClassAta(toPubkey, shareClassMint);
+
+    const ixCreateAta = createAssociatedTokenAccountIdempotentInstruction(
+      glamClient.getManager(),
+      toAta,
+      toPubkey,
+      shareClassMint,
+      TOKEN_2022_PROGRAM_ID
+    );
+    const ixUpdateAtaState = await glamClient.program.methods
+      .setTokenAccountsStates(0, false)
+      .accounts({
+        shareClassMint,
+        fund: fundPDA,
+      })
+      .remainingAccounts([
+        // fromAta is already unfrozen, still add it to test the ix is idempotent
+        { pubkey: fromAta, isSigner: false, isWritable: true },
+        { pubkey: toAta, isSigner: false, isWritable: true },
+      ])
+      .instruction();
+
+    try {
+      const txId = await glamClient.program.methods
+        .forceTransferShare(0, new BN(amount * LAMPORTS_PER_SOL))
+        .accounts({
+          from: fromPubkey,
+          to: toPubkey,
+          shareClassMint,
+          fund: fundPDA,
+        })
+        .preInstructions([ixCreateAta, ixUpdateAtaState])
+        .rpc();
+      toast({
+        title: "Transfer successful",
+        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+      });
+    } catch (e) {
+      toast({
+        title: "Transfer failed",
+        description: parseTxError(e),
+        variant: "destructive",
+      });
     }
   };
 

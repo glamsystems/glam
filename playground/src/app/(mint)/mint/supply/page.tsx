@@ -143,6 +143,14 @@ export default function SupplyPage() {
                 </Button>
                 <Button
                   className="w-full capitalize"
+                  variant="ghost"
+                  type="submit"
+                  loading={isTxPending}
+                >
+                  Burn
+                </Button>
+                <Button
+                  className="w-full capitalize"
                   type="submit"
                   loading={isTxPending}
                 >
