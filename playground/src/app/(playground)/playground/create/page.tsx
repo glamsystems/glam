@@ -1,6 +1,14 @@
 "use client";
 
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
@@ -99,7 +107,7 @@ export default function Create() {
         },
       };
 
-      const [txId, fundPDA] = await glamClient.createFund(fund);
+      const [txId, fundPDA] = await glamClient.fund.createFund(fund);
 
       toast({
         title: "Fund Created",
@@ -149,7 +157,9 @@ export default function Create() {
                     <FormControl>
                       <Input placeholder="Product Name" {...field} />
                     </FormControl>
-                    <FormDescription>This is the public product name.</FormDescription>
+                    <FormDescription>
+                      This is the public product name.
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

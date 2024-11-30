@@ -10,8 +10,9 @@ export class FundClient {
   public constructor(readonly base: BaseClient) {}
 
   public async createFund(
-    fund: any
+    fund: any,
   ): Promise<[TransactionSignature, PublicKey]> {
+    // @ts-ignore Type instantiation is excessively deep and possibly infinite.
     let fundModel = this.base.enrichFundModelInitialize(fund);
 
     const fundPDA = this.base.getFundPDA(fundModel);
@@ -42,21 +43,19 @@ export class FundClient {
             fund: fundPDA,
             shareClassMint,
             openfunds,
-            //@ts-ignore IDL ts type is unhappy
-            manager,
           })
           .preInstructions([
             ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 }),
           ])
           .rpc();
-      })
+      }),
     );
     return [txSig, fundPDA];
   }
 
   public async updateFund(
     fundPDA: PublicKey,
-    updated: any
+    updated: any,
   ): Promise<TransactionSignature> {
     let updatedFund = this.base.getFundModel(updated);
 
@@ -83,7 +82,7 @@ export class FundClient {
 
   public async deleteDelegateAcls(
     fundPDA: PublicKey,
-    keys: PublicKey[]
+    keys: PublicKey[],
   ): Promise<TransactionSignature> {
     let updatedFund = this.base.getFundModel({
       delegateAcls: keys.map((key) => ({ pubkey: key, permissions: [] })),
@@ -99,7 +98,7 @@ export class FundClient {
 
   public async upsertDelegateAcls(
     fundPDA: PublicKey,
-    delegateAcls: any[]
+    delegateAcls: any[],
   ): Promise<TransactionSignature> {
     let updatedFund = this.base.getFundModel({ delegateAcls });
     return await this.base.program.methods
@@ -111,19 +110,40 @@ export class FundClient {
       .rpc();
   }
 
+  public async setSubscribeRedeemEnabled(
+    fundPDA: PublicKey,
+    enabled: boolean,
+    txOptions: TxOptions = {},
+  ): Promise<TransactionSignature> {
+    return await this.base.program.methods
+      .setSubscribeRedeemEnabled(enabled)
+      .accounts({
+        fund: fundPDA,
+      })
+      .rpc();
+  }
+
   public async closeTokenAccounts(
     fund: PublicKey,
     tokenAccounts: PublicKey[],
-    txOptions: TxOptions = {}
+    txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const tx = await this.closeTokenAccountsTx(fund, tokenAccounts, txOptions);
     return await this.base.sendAndConfirm(tx);
   }
 
+  /**
+   * Close fund treasury's token accounts
+   *
+   * @param fund
+   * @param tokenAccounts
+   * @param txOptions
+   * @returns
+   */
   public async closeTokenAccountsTx(
     fund: PublicKey,
     tokenAccounts: PublicKey[],
-    txOptions: TxOptions
+    txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
     // @ts-ignore
     const tx = await this.base.program.methods
@@ -136,7 +156,7 @@ export class FundClient {
           pubkey: account,
           isSigner: false,
           isWritable: true,
-        }))
+        })),
       )
       .transaction();
     return await this.base.intoVersionedTransaction({ tx, ...txOptions });

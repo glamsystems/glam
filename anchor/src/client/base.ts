@@ -442,7 +442,7 @@ export class BaseClient {
     return pda;
   }
 
-  getShareClassPDA(fundPDA: PublicKey, shareId: number): PublicKey {
+  getShareClassPDA(fundPDA: PublicKey, shareId: number = 0): PublicKey {
     const [pda, _bump] = PublicKey.findProgramAddressSync(
       [
         anchor.utils.bytes.utf8.encode("share"),

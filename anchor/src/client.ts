@@ -32,6 +32,7 @@ export class GlamClient extends BaseClient {
 
   get drift(): DriftClient {
     if (!this._drift) {
+      // @ts-ignore Type instantiation is excessively deep and possibly infinite.
       this._drift = new DriftClient(this);
     }
     return this._drift;
