@@ -43,13 +43,7 @@ describe("glam_crud", () => {
   it("Update fund name", async () => {
     const updatedFund = glamClient.getFundModel({ name: "Updated fund name" });
     try {
-      const txSig = await glamClient.program.methods
-        .updateFund(updatedFund)
-        .accounts({
-          fund: fundPDA,
-          signer: glamClient.getManager(),
-        })
-        .rpc();
+      const txSig = await glamClient.fund.updateFund(fundPDA, updatedFund);
       console.log("Update fund name txSig", txSig);
     } catch (e) {
       console.error(e);
@@ -86,13 +80,8 @@ describe("glam_crud", () => {
     // The test fund has 2 assets, WSOL and MSOL. Update to USDC.
     let updatedFund = glamClient.getFundModel({ assets: [USDC] });
     try {
-      await glamClient.program.methods
-        .updateFund(updatedFund)
-        .accounts({
-          fund: fundPDA,
-          signer: glamClient.getManager(),
-        })
-        .rpc();
+      const txSig = await glamClient.fund.updateFund(fundPDA, updatedFund);
+      console.log("Update fund assets (USDC) txSig", txSig);
     } catch (e) {
       console.error(e);
       throw e;
@@ -103,13 +92,8 @@ describe("glam_crud", () => {
     // Update assets back to WSOL and MSOL
     updatedFund = glamClient.getFundModel({ assets: [WSOL, MSOL] });
     try {
-      await glamClient.program.methods
-        .updateFund(updatedFund)
-        .accounts({
-          fund: fundPDA,
-          signer: glamClient.getManager(),
-        })
-        .rpc();
+      const txSig = await glamClient.fund.updateFund(fundPDA, updatedFund);
+      console.log("Update fund assets (WSOL and MSOL) txSig", txSig);
     } catch (e) {
       console.error(e);
       throw e;
@@ -123,13 +107,8 @@ describe("glam_crud", () => {
       integrationAcls: [{ name: { drift: {} }, features: [] }],
     });
     try {
-      const tx = await glamClient.program.methods
-        .updateFund(updatedFund1)
-        .accounts({
-          fund: fundPDA,
-          signer: glamClient.getManager(),
-        })
-        .rpc();
+      const txSig = await glamClient.fund.updateFund(fundPDA, updatedFund1);
+      console.log("Update integration acl txSig", txSig);
     } catch (e) {
       console.error(e);
       throw e;
@@ -148,13 +127,8 @@ describe("glam_crud", () => {
       ],
     });
     try {
-      const tx = await glamClient.program.methods
-        .updateFund(updatedFund2)
-        .accounts({
-          fund: fundPDA,
-          signer: glamClient.getManager(),
-        })
-        .rpc();
+      const txSig = await glamClient.fund.updateFund(fundPDA, updatedFund2);
+      console.log("Update integration acl txSig", txSig);
     } catch (e) {
       console.error(e);
       throw e;
@@ -171,7 +145,11 @@ describe("glam_crud", () => {
       { pubkey: key1.publicKey, permissions: [{ wSolWrap: {} }] },
     ];
     try {
-      await glamClient.upsertDelegateAcls(fundPDA, delegateAcls);
+      const txSig = await glamClient.fund.upsertDelegateAcls(
+        fundPDA,
+        delegateAcls
+      );
+      console.log("Update delegate acl txSig", txSig);
     } catch (e) {
       console.error(e);
       throw e;
@@ -183,12 +161,13 @@ describe("glam_crud", () => {
 
     // grant key1 wSolWrap and wSolUnwrap permission
     try {
-      await glamClient.upsertDelegateAcls(fundPDA, [
+      const txSig = await glamClient.fund.upsertDelegateAcls(fundPDA, [
         {
           pubkey: key1.publicKey,
           permissions: [{ wSolWrap: {} }, { wSolUnwrap: {} }],
         },
       ]);
+      console.log("Update delegate acl txSig", txSig);
     } catch (e) {
       console.error(e);
       throw e;
@@ -208,7 +187,11 @@ describe("glam_crud", () => {
       { pubkey: key2.publicKey, permissions: [{ stake: {} }] },
     ];
     try {
-      await glamClient.upsertDelegateAcls(fundPDA, delegateAcls);
+      const txSig = await glamClient.fund.upsertDelegateAcls(
+        fundPDA,
+        delegateAcls
+      );
+      console.log("Update delegate acl txSig", txSig);
     } catch (e) {
       console.error(e);
       throw e;
@@ -220,10 +203,11 @@ describe("glam_crud", () => {
 
     // remove key1 and key2 permissions
     try {
-      await glamClient.deleteDelegateAcls(fundPDA, [
+      const txSig = await glamClient.fund.deleteDelegateAcls(fundPDA, [
         key1.publicKey,
         key2.publicKey,
       ]);
+      console.log("Delete delegate acl txSig", txSig);
     } catch (e) {
       console.error(e);
       throw e;
@@ -260,13 +244,8 @@ describe("glam_crud", () => {
       ],
     });
     try {
-      await glamClient.program.methods
-        .updateFund(updatedFund)
-        .accounts({
-          fund: fundPDA,
-          signer: glamClient.getManager(),
-        })
-        .rpc();
+      const txSig = await glamClient.fund.updateFund(fundPDA, updatedFund);
+      console.log("Update delegate acl txSig", txSig);
     } catch (e) {
       console.error(e);
       throw e;
@@ -411,19 +390,10 @@ describe("glam_crud", () => {
 
     // Close token accounts
     try {
-      const txSig = await glamClient.program.methods
-        .closeTokenAccounts()
-        .accounts({
-          fund: fundPDA,
-        })
-        .remainingAccounts(
-          tokenAccounts.map((account) => ({
-            pubkey: account.address,
-            isSigner: false,
-            isWritable: true,
-          }))
-        )
-        .rpc();
+      const txSig = await glamClient.fund.closeTokenAccounts(
+        fundPDA,
+        tokenAccounts.map((ta) => ta.address)
+      );
       console.log("Close token accounts:", txSig);
     } catch (e) {
       console.error(e);
@@ -439,18 +409,8 @@ describe("glam_crud", () => {
     );
     expect(fund).not.toBeNull();
 
-    const treasury = glamClient.getTreasuryPDA(fundPDA);
-    const openfunds = glamClient.getOpenfundsPDA(fundPDA);
-    const shareClassMint = glamClient.getShareClassPDA(fundPDA, 0);
-
     try {
-      const txId = await glamClient.program.methods
-        .closeFund()
-        .accounts({
-          fund: fundPDA,
-          openfunds,
-        })
-        .rpc();
+      const txId = await glamClient.fund.closeFund(fundPDA);
       expect(txId).toBeUndefined();
     } catch (e) {
       expect(e.message).toContain(
@@ -459,14 +419,7 @@ describe("glam_crud", () => {
     }
 
     try {
-      const txId = await glamClient.program.methods
-        .closeShareClass(0)
-        .accounts({
-          fund: fundPDA,
-          openfunds,
-          shareClassMint,
-        })
-        .rpc();
+      const txId = await glamClient.shareClass.closeShareClass(fundPDA);
       console.log("Close share class txId:", txId);
     } catch (e) {
       console.error(e);
@@ -474,13 +427,7 @@ describe("glam_crud", () => {
     }
 
     try {
-      const txId = await glamClient.program.methods
-        .closeFund()
-        .accounts({
-          fund: fundPDA,
-          openfunds,
-        })
-        .rpc();
+      const txId = await glamClient.fund.closeFund(fundPDA);
       console.log("Close fund txId:", txId);
     } catch (e) {
       console.error(e);
@@ -488,6 +435,8 @@ describe("glam_crud", () => {
     }
 
     // The following accounts should no longer exist
+    const treasury = glamClient.getTreasuryPDA(fundPDA);
+    const openfunds = glamClient.getOpenfundsPDA(fundPDA);
     const ret = await Promise.all(
       [fundPDA, treasury, openfunds].map(
         async (address) =>

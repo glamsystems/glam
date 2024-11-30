@@ -116,11 +116,23 @@ export class BaseClient {
     return this.cluster === "mainnet-beta";
   }
 
-  getAssetMeta(asset: string): AssetMeta {
+  isPhantom(): boolean {
+    // TODO: Phantom can automatically estimates fees
+    // https://docs.phantom.app/developer-powertools/solana-priority-fees#how-phantom-applies-priority-fees-to-dapp-transactions
+    return false;
+  }
+
+  /**
+   * Get metadata of an asset for pricing
+   *
+   * @param assetMint Token mint of the asset
+   * @returns Metadata of the asset
+   */
+  getAssetMeta(assetMint: string): AssetMeta {
     return (
       (this.isMainnet()
-        ? ASSETS_MAINNET.get(asset)
-        : ASSETS_MAINNET.get(asset) || ASSETS_TESTS.get(asset)) ||
+        ? ASSETS_MAINNET.get(assetMint)
+        : ASSETS_MAINNET.get(assetMint) || ASSETS_TESTS.get(assetMint)) ||
       new AssetMeta()
     );
   }
@@ -162,16 +174,12 @@ export class BaseClient {
       );
     }
 
-    // TODO: Phantom can automatically estimates fees
-    // https://docs.phantom.app/developer-powertools/solana-priority-fees#how-phantom-applies-priority-fees-to-dapp-transactions
-    const isPhantom = false;
-    if (!isPhantom) {
+    if (!this.isPhantom()) {
       // Set compute unit limit or autodetect by simulating the tx
-      const connection = this.provider.connection;
       if (!computeUnitLimit) {
         try {
           computeUnitLimit = await getSimulationComputeUnits(
-            connection,
+            this.provider.connection,
             instructions,
             signer,
             lookupTables
@@ -197,9 +205,9 @@ export class BaseClient {
       }
     }
 
-    const recentBlockhash = latestBlockhash
-      ? latestBlockhash.blockhash
-      : (await this.blockhashWithCache.get()).blockhash;
+    const recentBlockhash = (
+      latestBlockhash ? latestBlockhash : await this.blockhashWithCache.get()
+    ).blockhash;
 
     let priorityFee = DEFAULT_PRIORITY_FEE;
     if (getPriorityFeeMicroLamports) {
@@ -434,7 +442,7 @@ export class BaseClient {
     return pda;
   }
 
-  getShareClassPDA(fundPDA: PublicKey, shareId: number): PublicKey {
+  getShareClassPDA(fundPDA: PublicKey, shareId: number = 0): PublicKey {
     const [pda, _bump] = PublicKey.findProgramAddressSync(
       [
         anchor.utils.bytes.utf8.encode("share"),
@@ -530,51 +538,6 @@ export class BaseClient {
     });
 
     return fundModel;
-  }
-
-  public async createFund(
-    fund: any
-  ): Promise<[TransactionSignature, PublicKey]> {
-    let fundModel = this.enrichFundModelInitialize(fund);
-
-    const fundPDA = this.getFundPDA(fundModel);
-    const treasury = this.getTreasuryPDA(fundPDA);
-    const openfunds = this.getOpenfundsPDA(fundPDA);
-    const manager = this.getManager();
-
-    const shareClasses = fundModel.shareClasses;
-    fundModel.shareClasses = [];
-
-    const txSig = await this.program.methods
-      .initializeFund(fundModel)
-      .accounts({
-        //@ts-ignore IDL ts type is unhappy
-        fund: fundPDA,
-        treasury,
-        openfunds,
-        manager,
-      })
-      .rpc();
-    await Promise.all(
-      shareClasses.map(async (shareClass: any, j: number) => {
-        const shareClassMint = this.getShareClassPDA(fundPDA, j);
-
-        return await this.program.methods
-          .addShareClass(shareClass)
-          .accounts({
-            fund: fundPDA,
-            shareClassMint,
-            openfunds,
-            //@ts-ignore IDL ts type is unhappy
-            manager,
-          })
-          .preInstructions([
-            ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 }),
-          ])
-          .rpc();
-      })
-    );
-    return [txSig, fundPDA];
   }
 
   public async fetchFundAccount(fundPDA: PublicKey): Promise<FundAccount> {
@@ -802,50 +765,5 @@ export class BaseClient {
     );
 
     return funds;
-  }
-
-  public async deleteDelegateAcls(
-    fundPDA: PublicKey,
-    keys: PublicKey[]
-  ): Promise<TransactionSignature> {
-    let updatedFund = this.getFundModel({
-      delegateAcls: keys.map((key) => ({ pubkey: key, permissions: [] })),
-    });
-    return await this.program.methods
-      .updateFund(updatedFund)
-      .accounts({
-        fund: fundPDA,
-        signer: this.getManager(),
-      })
-      .rpc();
-  }
-
-  public async upsertDelegateAcls(
-    fundPDA: PublicKey,
-    delegateAcls: any[]
-  ): Promise<TransactionSignature> {
-    let updatedFund = this.getFundModel({ delegateAcls });
-    return await this.program.methods
-      .updateFund(updatedFund)
-      .accounts({
-        fund: fundPDA,
-        signer: this.getManager(),
-      })
-      .rpc();
-  }
-
-  public async updateFund(
-    fundPDA: PublicKey,
-    updated: any
-  ): Promise<TransactionSignature> {
-    let updatedFund = this.getFundModel(updated);
-
-    return await this.program.methods
-      .updateFund(updatedFund)
-      .accounts({
-        fund: fundPDA,
-        signer: this.getManager(),
-      })
-      .rpc();
   }
 }

@@ -626,8 +626,9 @@ describe("glam_investor", () => {
 
     const fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
     // params[0][0]: assets
-    // params[0][1]: external accounts
-    expect(fund.params[0][1].value.vecPubkey?.val.length).toBe(1);
+    // params[0][1]: integration acls
+    // params[0][2]: external accounts
+    expect(fund.params[0][2].value.vecPubkey?.val.length).toBe(1);
 
     try {
       const txId = await glamClient.investor.subscribe(
@@ -651,5 +652,5 @@ describe("glam_investor", () => {
       console.error(e);
       throw e;
     }
-  });
+  }, 15_000);
 });

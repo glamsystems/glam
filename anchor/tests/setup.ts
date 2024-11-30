@@ -87,7 +87,7 @@ export const createFundForTest = async (
 ) => {
   let txId, fundPDA;
   try {
-    [txId, fundPDA] = await glamClient.createFund({
+    [txId, fundPDA] = await glamClient.fund.createFund({
       ...fundTest,
       manager: glamClient.getManager(),
     });

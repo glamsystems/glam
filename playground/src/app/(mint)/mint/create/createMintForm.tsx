@@ -1,6 +1,4 @@
-// mint/create/createMintForm.tsx
-
-import { useState, useEffect, Fragment } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -9,13 +7,7 @@ import { Input } from "@/components/ui/input";
 import DynamicForm from "@/components/DynamicForm";
 import schema from "@/data/glamFormSchema.json";
 import Link from "next/link";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { InfoIcon } from "lucide-react";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   Form,
   FormControl,

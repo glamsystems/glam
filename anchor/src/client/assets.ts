@@ -1,6 +1,9 @@
 import { PublicKey } from "@solana/web3.js";
 import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 
+/**
+ * Metadata for an asset for pricing
+ */
 export class AssetMeta {
   pricingAccount?: PublicKey;
   stateAccount?: PublicKey;
