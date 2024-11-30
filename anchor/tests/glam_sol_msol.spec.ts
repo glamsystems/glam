@@ -123,9 +123,6 @@ describe("glam_sol_msol", () => {
         fundPDA,
         WSOL,
         amount,
-        undefined,
-        0,
-        true,
       );
       console.log("tx:", txId);
     } catch (e) {
