@@ -1,24 +1,11 @@
-import * as anchor from "@coral-xyz/anchor";
 import { BN, Wallet } from "@coral-xyz/anchor";
+import { Keypair, PublicKey } from "@solana/web3.js";
 import {
-  Transaction,
-  sendAndConfirmTransaction,
-  Keypair,
-  SystemProgram,
-  PublicKey,
-} from "@solana/web3.js";
-import {
-  createMint,
-  createAssociatedTokenAccount,
   getAssociatedTokenAddressSync,
-  createAssociatedTokenAccountInstruction,
-  mintTo,
-  ASSOCIATED_TOKEN_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
   getMint,
   getAccount,
-  createTransferCheckedInstruction,
 } from "@solana/spl-token";
 
 import {
@@ -67,10 +54,10 @@ describe("glam_sol_msol", () => {
           // send 10 SOL to each user
           const airdrop = await connection.requestAirdrop(
             user.publicKey,
-            10_000_000_000
+            10_000_000_000,
           );
           return await connection.confirmTransaction(airdrop);
-        })
+        }),
       );
 
       //
@@ -81,7 +68,7 @@ describe("glam_sol_msol", () => {
       // default vote account
       const voteAccountStatus = await connection.getVoteAccounts();
       const vote = voteAccountStatus.current.sort(
-        (a, b) => b.activatedStake - a.activatedStake
+        (a, b) => b.activatedStake - a.activatedStake,
       )[0].votePubkey;
       defaultVote = new PublicKey(vote);
     } catch (e) {
@@ -106,8 +93,6 @@ describe("glam_sol_msol", () => {
         fundPDA,
         WSOL,
         amount,
-        0,
-        true
       );
       console.log("tx:", txId);
     } catch (e) {
@@ -119,14 +104,14 @@ describe("glam_sol_msol", () => {
       connection,
       sharePDA,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("1.00");
     const sharesAta = await getAccount(
       connection,
       glamClientAlice.getShareClassAta(alice.publicKey, sharePDA),
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(sharesAta.amount) / 1e9).toFixed(2)).toEqual("1.00");
   });
@@ -138,8 +123,9 @@ describe("glam_sol_msol", () => {
         fundPDA,
         WSOL,
         amount,
+        undefined,
         0,
-        true
+        true,
       );
       console.log("tx:", txId);
     } catch (e) {
@@ -151,14 +137,14 @@ describe("glam_sol_msol", () => {
       connection,
       sharePDA,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("3.00");
     const sharesAta = await getAccount(
       connection,
       glamClientBob.getShareClassAta(bob.publicKey, sharePDA),
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(sharesAta.amount) / 1e9).toFixed(2)).toEqual("2.00");
   });
@@ -170,8 +156,6 @@ describe("glam_sol_msol", () => {
         fundPDA,
         WSOL,
         amount,
-        0,
-        true
       );
       console.log("tx:", txId);
     } catch (e) {
@@ -183,14 +167,14 @@ describe("glam_sol_msol", () => {
       connection,
       sharePDA,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("6.00");
     const sharesAta = await getAccount(
       connection,
       glamClientAlice.getShareClassAta(alice.publicKey, sharePDA),
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(sharesAta.amount) / 1e9).toFixed(2)).toEqual("4.00");
   });
@@ -198,13 +182,7 @@ describe("glam_sol_msol", () => {
   it("Alice redeems 2 shares", async () => {
     const amount = new BN(2_000_000_000);
     try {
-      const txId = await glamClientAlice.investor.redeem(
-        fundPDA,
-        amount,
-        true,
-        0,
-        true
-      );
+      const txId = await glamClientAlice.investor.redeem(fundPDA, amount, true);
       console.log("tx:", txId);
     } catch (e) {
       console.error(e);
@@ -215,21 +193,21 @@ describe("glam_sol_msol", () => {
       connection,
       sharePDA,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("4.00");
     const sharesAta = await getAccount(
       connection,
       glamClientAlice.getShareClassAta(alice.publicKey, sharePDA),
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(sharesAta.amount) / 1e9).toFixed(2)).toEqual("2.00");
     const wsolAta = await getAccount(
       connection,
       getAssociatedTokenAddressSync(WSOL, alice.publicKey),
       commitment,
-      TOKEN_PROGRAM_ID
+      TOKEN_PROGRAM_ID,
     );
     expect((Number(wsolAta.amount) / 1e9).toFixed(2)).toEqual("2.00");
   });
@@ -253,8 +231,6 @@ describe("glam_sol_msol", () => {
         fundPDA,
         WSOL,
         amount,
-        0,
-        true
       );
       console.log("tx:", txId);
     } catch (e) {
@@ -266,14 +242,14 @@ describe("glam_sol_msol", () => {
       connection,
       sharePDA,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("6.00");
     const sharesAta = await getAccount(
       connection,
       glamClientAlice.getShareClassAta(alice.publicKey, sharePDA),
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(sharesAta.amount) / 1e9).toFixed(2)).toEqual("4.00");
   });
@@ -289,13 +265,7 @@ describe("glam_sol_msol", () => {
 
     const amount = new BN(1_000_000_000);
     try {
-      const txId = await glamClientAlice.investor.redeem(
-        fundPDA,
-        amount,
-        true,
-        0,
-        true
-      );
+      const txId = await glamClientAlice.investor.redeem(fundPDA, amount, true);
       console.log("tx:", txId);
     } catch (e) {
       console.error(e);
@@ -306,21 +276,21 @@ describe("glam_sol_msol", () => {
       connection,
       sharePDA,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("5.00");
     const sharesAta = await getAccount(
       connection,
       glamClientAlice.getShareClassAta(alice.publicKey, sharePDA),
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(sharesAta.amount) / 1e9).toFixed(2)).toEqual("3.00");
     const wsolAta = await getAccount(
       connection,
       getAssociatedTokenAddressSync(WSOL, alice.publicKey),
       commitment,
-      TOKEN_PROGRAM_ID
+      TOKEN_PROGRAM_ID,
     );
     expect((Number(wsolAta.amount) / 1e9).toFixed(2)).toEqual("2.00");
   });
@@ -343,7 +313,7 @@ describe("glam_sol_msol", () => {
     const swapInstructions = swapInstructionsForTest(
       manager,
       inputSignerAta,
-      outputSignerAta
+      outputSignerAta,
     );
 
     const amount = 50_000_000;
@@ -352,7 +322,7 @@ describe("glam_sol_msol", () => {
         fundPDA,
         undefined,
         quoteResponse,
-        swapInstructions
+        swapInstructions,
       );
       console.log("swap e2e txId", txId);
     } catch (e) {
@@ -362,15 +332,17 @@ describe("glam_sol_msol", () => {
   });
 
   it("Alice subscribes to fund with 3 SOL", async () => {
-    /* The fund has ~10 SOL for 5 shares. */
+    /* The fund has ~10 SOL for 5 shares.
+
+       After subscribing with 3 SOL, the fund has ~13 SOL for ~6.5 shares.
+       Alice receives ~1.5 shares */
+
     const amount = new BN(3_000_000_000);
     try {
       const txId = await glamClientAlice.investor.subscribe(
         fundPDA,
         WSOL,
         amount,
-        0,
-        true
       );
       console.log("tx:", txId);
     } catch (e) {
@@ -382,29 +354,25 @@ describe("glam_sol_msol", () => {
       connection,
       sharePDA,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("6.50");
     const sharesAta = await getAccount(
       connection,
       glamClientAlice.getShareClassAta(alice.publicKey, sharePDA),
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(sharesAta.amount) / 1e9).toFixed(2)).toEqual("4.50");
   });
 
   it("Alice redeems 1 share", async () => {
-    /* The fund has ~13 SOL for 6.5 shares. */
+    /* The fund has ~13 SOL (wSOL & mSOL) for ~6.5 shares.
+       After in-kind redeeming 1 share, alice gets <2 wSOL. */
+
     const amount = new BN(1_000_000_000);
     try {
-      const txId = await glamClientAlice.investor.redeem(
-        fundPDA,
-        amount,
-        true,
-        0,
-        true
-      );
+      const txId = await glamClientAlice.investor.redeem(fundPDA, amount, true);
       console.log("tx:", txId);
     } catch (e) {
       console.error(e);
@@ -415,37 +383,46 @@ describe("glam_sol_msol", () => {
       connection,
       sharePDA,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("5.50");
     const sharesAta = await getAccount(
       connection,
       glamClientAlice.getShareClassAta(alice.publicKey, sharePDA),
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(sharesAta.amount) / 1e9).toFixed(2)).toEqual("3.50");
+
+    // Alice gets less than 2 wSOL and some mSOL
     const wsolAta = await getAccount(
       connection,
       getAssociatedTokenAddressSync(WSOL, alice.publicKey),
       commitment,
-      TOKEN_PROGRAM_ID
+      TOKEN_PROGRAM_ID,
     );
-    expect((Number(wsolAta.amount) / 1e9).toFixed(2)).toEqual("1.99"); // rounding err because of mSOL price
+    expect((Number(wsolAta.amount) / 1e9).toFixed(2)).toEqual("1.99");
+    const msolAta = await getAccount(
+      connection,
+      getAssociatedTokenAddressSync(MSOL, alice.publicKey),
+      commitment,
+      TOKEN_PROGRAM_ID,
+    );
+    expect((Number(msolAta.amount) / 1e9).toFixed(3)).toEqual("0.006");
   });
 
   it("Manager orders marinade delayed stake and delegates stake", async () => {
     try {
       let txSig = await glamClient.marinade.delayedUnstake(
         fundPDA,
-        new BN(30_000_000)
+        new BN(30_000_000),
       );
       console.log("delayedUnstake txSig", txSig);
 
       txSig = await glamClient.staking.initializeAndDelegateStake(
         fundPDA,
         defaultVote,
-        new BN(2_000_000_000)
+        new BN(2_000_000_000),
       );
       console.log("initializeAndDelegateStake txSig", txSig);
     } catch (e) {
@@ -461,8 +438,6 @@ describe("glam_sol_msol", () => {
         fundPDA,
         WSOL,
         new BN(1_000_000_000),
-        0,
-        true
       );
       console.log("eve subscribe #0 tx:", txId);
     } catch (e) {
@@ -474,14 +449,14 @@ describe("glam_sol_msol", () => {
       connection,
       sharePDA,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("6.00");
     const sharesAtaEpoch0 = await getAccount(
       connection,
       glamClientAlice.getShareClassAta(eve.publicKey, sharePDA),
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(sharesAtaEpoch0.amount) / 1e9).toFixed(2)).toEqual("0.50");
 
@@ -493,8 +468,6 @@ describe("glam_sol_msol", () => {
         fundPDA,
         WSOL,
         new BN(1_000_000_000),
-        0,
-        true
       );
       console.log("eve subscribe #1 tx:", txId);
     } catch (e) {
@@ -506,21 +479,21 @@ describe("glam_sol_msol", () => {
       connection,
       sharePDA,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("6.50");
     const sharesAtaEpoch1 = await getAccount(
       connection,
       glamClientAlice.getShareClassAta(eve.publicKey, sharePDA),
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(sharesAtaEpoch1.amount) / 1e9).toFixed(2)).toEqual("1.00");
 
     // shares received at epoch 1 should be less than shares received at epoch 0
     // because the fund has more SOL at epoch 1 due to staking yield
     expect(sharesAtaEpoch1.amount - sharesAtaEpoch0.amount).toBeLessThan(
-      sharesAtaEpoch0.amount
+      sharesAtaEpoch0.amount,
     );
   }, 30_000);
 });

@@ -780,18 +780,24 @@ pub fn get_aum_components<'info>(
      * External lamports will be added to the wsol aum_component.
      */
     if let Some(wsol_component) = aum_components.iter_mut().find(|aum| {
-        !aum.asset.as_ref().is_none() && aum.asset.as_ref().unwrap().key() == constants::WSOL
+        !aum.treasury_ata.is_none() && aum.treasury_ata.as_ref().unwrap().mint == constants::WSOL
     }) {
         msg!("wsol aum_component={:?}", wsol_component);
 
         let mut external_lamports = marinade_tickets
             .iter()
-            .map(|account| account.lamports())
+            .map(|account_info| {
+                let mut data_slice: &[u8] = &account_info.data.borrow();
+                let data: &mut &[u8] = &mut data_slice;
+                let ticket = TicketAccountData::try_deserialize(data).unwrap();
+
+                account_info.lamports() + ticket.lamports_amount // total lamports hold by the ticket account
+            })
             .sum::<u64>();
 
         external_lamports += stake_accounts
             .iter()
-            .map(|account| account.lamports())
+            .map(|account_info| account_info.lamports())
             .sum::<u64>();
 
         /*
