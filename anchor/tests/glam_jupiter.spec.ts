@@ -123,7 +123,7 @@ describe("glam_jupiter", () => {
     // grant delegate permissions
     // testSigner is only allowed to swap fund assets
     try {
-      await glamClient.upsertDelegateAcls(fundPDA, [
+      await glamClient.fund.upsertDelegateAcls(fundPDA, [
         {
           pubkey: testSigner.publicKey,
           permissions: [{ jupiterSwapFundAssets: {} }, { wSolWrap: {} }],
@@ -181,7 +181,7 @@ describe("glam_jupiter", () => {
 
     // allow testSigner to swap any assets
     try {
-      const txSig = await glamClient.upsertDelegateAcls(fundPDA, [
+      const txSig = await glamClient.fund.upsertDelegateAcls(fundPDA, [
         {
           pubkey: testSigner.publicKey,
           permissions: [{ jupiterSwapAnyAsset: {} }, { wSolWrap: {} }],
