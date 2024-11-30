@@ -80,7 +80,10 @@ export function DataTableToolbar<TData>({
       { pubkey, permissions: permissions.map((p) => ({ [p]: {} })) },
     ];
     try {
-      const txSig = await glamClient.upsertDelegateAcls(fundPDA!, delegateAcls);
+      const txSig = await glamClient.fund.upsertDelegateAcls(
+        fundPDA!,
+        delegateAcls,
+      );
       toast({
         title: "A new delegate key was added",
         description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,

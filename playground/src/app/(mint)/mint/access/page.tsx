@@ -21,6 +21,8 @@ export default function Access() {
     tags: (acl.permissions || []).map((x: any) => Object.keys(x)[0]),
   }));
 
+  // TODO: add a row for the manager
+
   return (
     <PageContentWrapper>
       <DataTable data={data} columns={columns} />

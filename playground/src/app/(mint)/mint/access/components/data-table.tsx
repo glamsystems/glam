@@ -50,7 +50,6 @@ import { ExplorerLink } from "@/components/ExplorerLink";
 import { parseTxError } from "@/lib/error";
 import { PublicKey } from "@solana/web3.js";
 
-// Update the DataTableProps to ensure TData extends KeyData
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -64,7 +63,7 @@ export function DataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
@@ -101,7 +100,7 @@ export function DataTable<TData, TValue>({
 
   const handleModifyKey = async (
     event: React.MouseEvent<HTMLButtonElement>,
-    publicKey: string
+    publicKey: string,
   ) => {
     event.preventDefault();
     console.log("Modify key:", publicKey, " with new permissions:", treeData);
@@ -135,7 +134,10 @@ export function DataTable<TData, TValue>({
       { pubkey, permissions: permissions.map((p) => ({ [p]: {} })) },
     ];
     try {
-      const txSig = await glamClient.upsertDelegateAcls(fundPDA!, delegateAcls);
+      const txSig = await glamClient.fund.upsertDelegateAcls(
+        fundPDA!,
+        delegateAcls,
+      );
       toast({
         title: "Delegate key permissions updated",
         description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
@@ -151,7 +153,7 @@ export function DataTable<TData, TValue>({
 
   const handleDeleteKey = async (
     event: React.MouseEvent<HTMLButtonElement>,
-    publicKey: string
+    publicKey: string,
   ) => {
     event.preventDefault();
     console.log("Delete key:", publicKey);
@@ -168,9 +170,10 @@ export function DataTable<TData, TValue>({
       return;
     }
 
-    const delegateAcls = [{ pubkey, permissions: [] }];
     try {
-      const txSig = await glamClient.upsertDelegateAcls(fundPDA!, delegateAcls);
+      const txSig = await glamClient.fund.deleteDelegateAcls(fundPDA!, [
+        pubkey,
+      ]);
       toast({
         title: "Delegate key deleted",
         description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
@@ -199,7 +202,7 @@ export function DataTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -221,7 +224,7 @@ export function DataTable<TData, TValue>({
                         <TableCell key={cell.id}>
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </TableCell>
                       ))}

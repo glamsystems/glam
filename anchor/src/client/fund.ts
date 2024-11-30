@@ -80,12 +80,19 @@ export class FundClient {
       .rpc();
   }
 
+  /**
+   * Delete delegates' access to the fund
+   *
+   * @param fundPDA
+   * @param delegates Public keys of delegates to be deleted
+   * @returns
+   */
   public async deleteDelegateAcls(
     fundPDA: PublicKey,
-    keys: PublicKey[],
+    delegates: PublicKey[],
   ): Promise<TransactionSignature> {
     let updatedFund = this.base.getFundModel({
-      delegateAcls: keys.map((key) => ({ pubkey: key, permissions: [] })),
+      delegateAcls: delegates.map((pubkey) => ({ pubkey, permissions: [] })),
     });
     return await this.base.program.methods
       .updateFund(updatedFund)
