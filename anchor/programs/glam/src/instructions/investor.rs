@@ -868,36 +868,39 @@ pub fn get_aum_components<'info>(
         wsol_component.asset_value = updated_asset_value;
     }
 
-    for att in &mut aum_components {
-        if price_type == PriceDenom::SOL {
-            // Any asset priced in USD, should be converted in SOL
-            // by divinging by the SOL price.
-            // Note: wSOL price is already in SOL
-            if att.price_type == PriceDenom::USD {
-                let expo = att.asset_price.exponent;
-                att.asset_price = att.asset_price.div(&price_sol_usd).unwrap();
-                att.asset_value = att
-                    .asset_price
-                    .cmul(att.asset_amount.try_into().unwrap(), expo)
-                    .unwrap()
-                    .scale_to_exponent(expo)
-                    .unwrap()
+    // SOL <-> USD conversion not needed if skip_prices is true
+    if !skip_prices {
+        for att in &mut aum_components {
+            if price_type == PriceDenom::SOL {
+                // Any asset priced in USD, should be converted in SOL
+                // by divinging by the SOL price.
+                // Note: wSOL price is already in SOL
+                if att.price_type == PriceDenom::USD {
+                    let expo = att.asset_price.exponent;
+                    att.asset_price = att.asset_price.div(&price_sol_usd).unwrap();
+                    att.asset_value = att
+                        .asset_price
+                        .cmul(att.asset_amount.try_into().unwrap(), expo)
+                        .unwrap()
+                        .scale_to_exponent(expo)
+                        .unwrap()
+                }
             }
-        }
 
-        if price_type == PriceDenom::USD {
-            // LST (or any asset with price in SOL) should be converted to USD
-            // by multiplying their price time SOL price
-            // Note: wSOL price is already in USD
-            if att.price_type == PriceDenom::SOL {
-                let expo = att.asset_price.exponent;
-                att.asset_price = att.asset_price.mul(&price_sol_usd).unwrap();
-                att.asset_value = att
-                    .asset_price
-                    .cmul(att.asset_amount.try_into().unwrap(), expo)
-                    .unwrap()
-                    .scale_to_exponent(expo)
-                    .unwrap()
+            if price_type == PriceDenom::USD {
+                // LST (or any asset with price in SOL) should be converted to USD
+                // by multiplying their price time SOL price
+                // Note: wSOL price is already in USD
+                if att.price_type == PriceDenom::SOL {
+                    let expo = att.asset_price.exponent;
+                    att.asset_price = att.asset_price.mul(&price_sol_usd).unwrap();
+                    att.asset_value = att
+                        .asset_price
+                        .cmul(att.asset_amount.try_into().unwrap(), expo)
+                        .unwrap()
+                        .scale_to_exponent(expo)
+                        .unwrap()
+                }
             }
         }
     }
