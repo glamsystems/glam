@@ -7,8 +7,9 @@ import TruncateAddress from "@/utils/TruncateAddress";
 import { Badge } from "@/components/ui/badge";
 import NumberFormatter from "@/utils/NumberFormatter";
 
-interface HoldersData {
+export interface HoldersData {
   pubkey: string;
+  ata: string; // associated token account
   label: string;
   frozen: boolean;
   quantity: number;

@@ -27,7 +27,7 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
-import { columns as defaultColumns } from "./columns"; // Import columns from columns.tsx
+import { columns as defaultColumns, HoldersData } from "./columns"; // Import columns from columns.tsx
 import {
   Sheet,
   SheetClose,
@@ -41,64 +41,54 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { thawAccount } from "@solana/spl-token";
 import { useGlam } from "@glam/anchor/react";
 import { PublicKey } from "@solana/web3.js";
 import { toast } from "@/components/ui/use-toast";
 import { ExplorerLink } from "@/components/ExplorerLink";
+import { parseTxError } from "@/lib/error";
 
-export interface HoldersData {
-  pubkey: string;
-  label: string;
-  frozen: boolean;
-  quantity: number;
-}
-
-// Update the DataTableProps to ensure TData extends KeyData
 interface DataTableProps<TData extends HoldersData> {
   columns?: ColumnDef<TData>[];
   data: TData[];
 }
 
 export function DataTable<TData extends HoldersData>({
-  columns = defaultColumns as ColumnDef<TData>[], // Type cast to match the generic types
+  columns = defaultColumns as ColumnDef<TData>[],
   data,
 }: DataTableProps<TData>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
   const { glamClient, fund: fundPDA } = useGlam();
 
-  const thawOrFreeAccount = async (publicKey: string, frozen: boolean) => {
+  const thawOrFreeAccount = async (ata: string, frozen: boolean) => {
     if (!fundPDA || !glamClient) {
       return;
     }
-    const pubkey = new PublicKey(publicKey);
 
-    console.log("pubkey", pubkey, " set frozen", frozen);
-
+    const pubkey = new PublicKey(ata);
     try {
-      const shareClassMint = glamClient.getShareClassPDA(fundPDA, 0);
-
-      const txSig = await glamClient.program.methods
-        .setTokenAccountsStates(0, frozen)
-        .accounts({
-          shareClassMint,
-          fund: fundPDA,
-        })
-        .remainingAccounts([{ pubkey, isSigner: false, isWritable: true }])
-        .rpc();
+      const txSig = await glamClient.shareClass.setTokenAccountsStates(
+        fundPDA,
+        0,
+        [pubkey],
+        frozen,
+      );
       toast({
-        title: "New share class holder added",
+        title: `Successfully ${frozen ? "froze" : "unfroze"} token account`,
         description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
       });
     } catch (e) {
-      console.log(e);
+      toast({
+        title: `Failed to ${frozen ? "freeze" : "unfreeze"} token account`,
+        description: parseTxError(e),
+        variant: "destructive",
+      });
     }
   };
 
@@ -139,7 +129,7 @@ export function DataTable<TData extends HoldersData>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -161,7 +151,7 @@ export function DataTable<TData extends HoldersData>({
                         <TableCell key={cell.id}>
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </TableCell>
                       ))}
@@ -194,11 +184,26 @@ export function DataTable<TData extends HoldersData>({
                           htmlFor="pubKey"
                           className="text-right text-muted-foreground"
                         >
-                          Public Key
+                          Holder Public Key
                         </Label>
                         <Input
                           id="pubKey"
                           value={row.original.pubkey}
+                          placeholder="GLAMvRgo7cHBPjQGf8UaVnsD6TUDjq16dEUuDPAPLjyJ"
+                          className="col-span-3"
+                          disabled
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label
+                          htmlFor="pubKey"
+                          className="text-right text-muted-foreground"
+                        >
+                          Token Account
+                        </Label>
+                        <Input
+                          id="pubKey"
+                          value={row.original.ata}
                           placeholder="GLAMvRgo7cHBPjQGf8UaVnsD6TUDjq16dEUuDPAPLjyJ"
                           className="col-span-3"
                           disabled
@@ -220,8 +225,8 @@ export function DataTable<TData extends HoldersData>({
                           onClick={(e) => {
                             e.preventDefault();
                             thawOrFreeAccount(
-                              row.original.pubkey,
-                              !row.original.frozen
+                              row.original.ata,
+                              !row.original.frozen,
                             );
                           }}
                         >

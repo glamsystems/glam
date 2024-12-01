@@ -27,9 +27,17 @@ export default function Components() {
       <ComponentDebugWrapper header="FormInput">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            <FormInput name="Test" label="Test Label" symbol="TST" />
-            <FormInput name="SlippageTest" label="Slippage Test" symbol="%" />
-            <FormInput name="LamportsTest" label="Lamports Test" symbol="SOL" />
+            <FormInput name="Test" label="Test Label" type="string" />
+            <FormInput
+              name="SlippageTest"
+              label="Slippage Test"
+              type="number"
+            />
+            <FormInput
+              name="LamportsTest"
+              label="Lamports Test"
+              type="number"
+            />
           </form>
         </Form>
       </ComponentDebugWrapper>

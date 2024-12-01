@@ -17,14 +17,12 @@ const tagColors: Record<string, string> = {
     "bg-rose-100 text-rose-800 border-rose-800 dark:bg-rose-900 dark:text-rose-400 dark:border-rose-400",
 };
 
-// Define the type for your row data
-type KeyData = {
+export type KeyData = {
   pubkey: string;
   label: string;
   tags: ("stake" | "swap" | "trade" | "lend" | "admin")[];
 };
 
-// Use the defined type in ColumnDef
 export const columns: ColumnDef<KeyData>[] = [
   // {
   //   accessorKey: "label",

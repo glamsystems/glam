@@ -84,7 +84,7 @@ fund
     // Convert pubkey strings to PublicKey objects
     for (let i = 0; i < fundData.shareClasses.length; ++i) {
       fundData.shareClasses[i].asset = new PublicKey(
-        fundData.shareClasses[i].asset
+        fundData.shareClasses[i].asset,
       );
     }
     fundData.assets = fundData.assets.map((a) => new PublicKey(a));
@@ -150,12 +150,12 @@ delegate
     const fundModel = await glamClient.fetchFund(fundPDA);
     const cnt = fundModel.delegateAcls.length;
     console.log(
-      `Fund ${fundPDA.toBase58()} has ${cnt} delegate acl${cnt > 1 ? "s" : ""}`
+      `Fund ${fundPDA.toBase58()} has ${cnt} delegate acl${cnt > 1 ? "s" : ""}`,
     );
     for (let [i, acl] of fundModel.delegateAcls.entries()) {
       console.log(
         `[${i}] ${acl.pubkey.toBase58()}:`,
-        acl.permissions.map((p) => Object.keys(p)[0]).join(", ")
+        acl.permissions.map((p) => Object.keys(p)[0]).join(", "),
       );
     }
   });
@@ -173,7 +173,7 @@ delegate
       [p]: {},
     }));
     try {
-      const txSig = await glamClient.upsertDelegateAcls(fundPDA, [
+      const txSig = await glamClient.fund.upsertDelegateAcls(fundPDA, [
         {
           pubkey: new PublicKey(pubkey),
           permissions: glamPermissions,
@@ -203,7 +203,7 @@ integration
     console.log(
       `Fund ${fundPDA.toBase58()} has ${cnt} integration${
         cnt > 1 ? "s" : ""
-      } enabled`
+      } enabled`,
     );
     for (let [i, acl] of fundModel.integrationAcls.entries()) {
       console.log(`[${i}] ${Object.keys(acl.name)[0]}`);
@@ -221,11 +221,11 @@ integration
 
     const fundModel = await glamClient.fetchFund(fundPDA);
     const acl = fundModel.integrationAcls.find(
-      (integ) => Object.keys(integ.name)[0] === integration
+      (integ) => Object.keys(integ.name)[0] === integration,
     );
     if (acl) {
       console.log(
-        `${integration} is already enabled on fund ${fundPDA.toBase58()}`
+        `${integration} is already enabled on fund ${fundPDA.toBase58()}`,
       );
       process.exit(0);
     }
@@ -261,18 +261,18 @@ integration
 
     const fundModel = await glamClient.fetchFund(fundPDA);
     const acl = fundModel.integrationAcls.find(
-      (integ) => Object.keys(integ.name)[0] === integration
+      (integ) => Object.keys(integ.name)[0] === integration,
     );
     if (!acl) {
       console.log(
-        `${integration} is not enabled on fund ${fundPDA.toBase58()}`
+        `${integration} is not enabled on fund ${fundPDA.toBase58()}`,
       );
       process.exit(0);
     }
 
     const updatedFund = glamClient.getFundModel({
       integrationAcls: fundModel.integrationAcls.filter(
-        (integ) => Object.keys(integ.name)[0] !== integration
+        (integ) => Object.keys(integ.name)[0] !== integration,
       ),
     });
 
@@ -302,7 +302,7 @@ fund
       const txSig = await glamClient.wsol.wrap(
         fundPDA,
         new anchor.BN(parseFloat(amount) * LAMPORTS_PER_SOL),
-        cliTxOptions
+        cliTxOptions,
       );
       console.log(`Wrapped ${amount} SOL:`, txSig);
     } catch (e) {
@@ -334,7 +334,7 @@ fund
   .description("Get fund balances")
   .option(
     "-a, --all",
-    "Show all assets including token accounts with 0 balance"
+    "Show all assets including token accounts with 0 balance",
   )
   .action(async (options) => {
     if (!fundPDA) {
@@ -344,16 +344,16 @@ fund
 
     const { all } = options;
     const treasury = glamClient.getTreasuryPDA(fundPDA);
-    const tokenAccounts = await glamClient.listTokenAccounts(treasury);
-    const solBalance = await glamClient.provider.connection.getBalance(
-      treasury
-    );
-    const mints = tokenAccounts.map((ta) => ta.mint);
+    const tokenAccounts = await glamClient.getTokenAccountsByOwner(treasury);
+    const solBalance =
+      await glamClient.provider.connection.getBalance(treasury);
+
+    const mints = tokenAccounts.map((ta) => ta.mint.toBase58());
     if (!mints.includes(WSOL.toBase58())) {
       mints.push(WSOL.toBase58());
     }
     const response = await fetch(
-      `https://api.jup.ag/price/v2?ids=${mints.join(",")}`
+      `https://api.jup.ag/price/v2?ids=${mints.join(",")}`,
     );
     const { data } = await response.json();
 
@@ -363,16 +363,16 @@ fund
       "\t",
       solBalance / LAMPORTS_PER_SOL,
       "\t",
-      (parseFloat(data[WSOL.toBase58()].price) * solBalance) / LAMPORTS_PER_SOL
+      (parseFloat(data[WSOL.toBase58()].price) * solBalance) / LAMPORTS_PER_SOL,
     );
     tokenAccounts.forEach((ta) => {
-      if (all || parseFloat(ta.uiAmount) > 0) {
+      if (all || ta.uiAmount > 0) {
         console.log(
-          ta.mint,
+          ta.mint.toBase58(),
           "\t",
           ta.uiAmount,
           "\t",
-          parseFloat(data[ta.mint].price) * parseFloat(ta.uiAmount)
+          parseFloat(data[ta.mint.toBase58()].price) * ta.uiAmount,
         );
       }
     });
@@ -425,7 +425,7 @@ fund
         quoteParams,
         undefined,
         undefined,
-        cliTxOptions
+        cliTxOptions,
       );
       console.log(`Swapped ${amount} ${from} to ${to}`);
     } catch (e) {

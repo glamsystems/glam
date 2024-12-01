@@ -1,17 +1,56 @@
 import * as anchor from "@coral-xyz/anchor";
-import {
-  PublicKey,
-  VersionedTransaction,
-  TransactionSignature,
-} from "@solana/web3.js";
-import { BaseClient, TxOptions } from "./base";
+import { PublicKey, TransactionSignature } from "@solana/web3.js";
+import { BaseClient, TokenAccount, TxOptions } from "./base";
 import {
   createAssociatedTokenAccountIdempotentInstruction,
+  getMint,
   TOKEN_2022_PROGRAM_ID,
+  unpackAccount,
 } from "@solana/spl-token";
 
 export class ShareClassClient {
   public constructor(readonly base: BaseClient) {}
+
+  public async getHolders(fundPDA: PublicKey, shareClassId: number = 0) {
+    const shareClassMint = this.base.getShareClassPDA(fundPDA, shareClassId);
+    const connection = this.base.provider.connection;
+    const mint = await getMint(
+      connection,
+      shareClassMint,
+      connection.commitment,
+      TOKEN_2022_PROGRAM_ID,
+    );
+
+    // Size of a glam share class with perment delegate extension enabled
+    const dataSize = 175;
+    const accounts = await connection.getProgramAccounts(
+      TOKEN_2022_PROGRAM_ID,
+      {
+        filters: [
+          { dataSize },
+          { memcmp: { offset: 0, bytes: shareClassMint.toBase58() } },
+        ],
+      },
+    );
+    return accounts.map((a) => {
+      const { pubkey, account } = a;
+      const tokenAccount = unpackAccount(
+        pubkey,
+        account,
+        TOKEN_2022_PROGRAM_ID,
+      );
+      return {
+        owner: tokenAccount.owner,
+        pubkey: tokenAccount.address,
+        mint: tokenAccount.mint,
+        programId: TOKEN_2022_PROGRAM_ID,
+        decimals: mint.decimals,
+        amount: Number(tokenAccount.amount),
+        uiAmount: Number(tokenAccount.amount) / 10 ** mint.decimals,
+        frozen: tokenAccount.isFrozen,
+      } as TokenAccount;
+    });
+  }
 
   public async closeShareClass(
     fundPDA: PublicKey,
@@ -30,6 +69,40 @@ export class ShareClassClient {
         shareClassMint,
       })
       .rpc();
+  }
+
+  /**
+   * Create a share class token account for a specific user
+   *
+   * @param fundPDA
+   * @param owner
+   * @param shareClassId
+   * @param txOptions
+   * @returns
+   */
+  public async createTokenAccount(
+    fundPDA: PublicKey,
+    owner: PublicKey,
+    shareClassId: number = 0,
+    setFrozen: boolean = true,
+    txOptions: TxOptions = {},
+  ) {
+    const shareClassMint = this.base.getShareClassPDA(fundPDA, shareClassId);
+    const ata = this.base.getShareClassAta(owner, shareClassMint);
+    const ixCreateAta = createAssociatedTokenAccountIdempotentInstruction(
+      this.base.getManager(),
+      ata,
+      owner,
+      shareClassMint,
+      TOKEN_2022_PROGRAM_ID,
+    );
+    return await this.setTokenAccountsStates(
+      fundPDA,
+      shareClassId,
+      [ata],
+      setFrozen,
+      { preInstructions: [ixCreateAta], ...txOptions },
+    );
   }
 
   /**
@@ -62,6 +135,7 @@ export class ShareClassClient {
           isWritable: true,
         })),
       )
+      .preInstructions(txOptions.preInstructions || [])
       .rpc();
   }
 

@@ -147,7 +147,7 @@ describe("glam_crud", () => {
     try {
       const txSig = await glamClient.fund.upsertDelegateAcls(
         fundPDA,
-        delegateAcls
+        delegateAcls,
       );
       console.log("Update delegate acl txSig", txSig);
     } catch (e) {
@@ -189,7 +189,7 @@ describe("glam_crud", () => {
     try {
       const txSig = await glamClient.fund.upsertDelegateAcls(
         fundPDA,
-        delegateAcls
+        delegateAcls,
       );
       console.log("Update delegate acl txSig", txSig);
     } catch (e) {
@@ -223,7 +223,7 @@ describe("glam_crud", () => {
         fromPubkey: glamClient.getManager(),
         toPubkey: glamClient.getTreasuryPDA(fundPDA),
         lamports: 1_000_000_000,
-      })
+      }),
     );
     await glamClient.sendAndConfirm(tranferTx);
 
@@ -233,7 +233,7 @@ describe("glam_crud", () => {
         fromPubkey: glamClient.getManager(),
         toPubkey: key1.publicKey,
         lamports: 100_000_000,
-      })
+      }),
     );
     await glamClient.sendAndConfirm(tranferTx2);
 
@@ -258,7 +258,7 @@ describe("glam_crud", () => {
     try {
       const tx = await glamClientCustomWallet.wsol.wrap(
         fundPDA,
-        new BN(30_000_000)
+        new BN(30_000_000),
       );
       console.log("Wrap:", tx);
     } catch (e) {
@@ -273,7 +273,7 @@ describe("glam_crud", () => {
       expect(txId).toBeUndefined();
     } catch (e) {
       const expectedError = e.programLogs.some((log) =>
-        log.includes("Signer is not authorized")
+        log.includes("Signer is not authorized"),
       );
       expect(expectedError).toBeTruthy();
     }
@@ -378,35 +378,34 @@ describe("glam_crud", () => {
           glamClient.getManager(),
           glamClient.getTreasuryAta(fundPDA, mint),
           treasury,
-          mint
-        )
+          mint,
+        ),
       );
     }
     const txSig = await glamClient.sendAndConfirm(transaction);
     console.log("Creating ata for treasury:", txSig);
 
-    let tokenAccounts = await glamClient.listTokenAccounts(treasury);
+    let tokenAccounts = await glamClient.getTokenAccountsByOwner(treasury);
     expect(tokenAccounts.length).toEqual(2);
 
     // Close token accounts
     try {
       const txSig = await glamClient.fund.closeTokenAccounts(
         fundPDA,
-        tokenAccounts.map((ta) => ta.address)
+        tokenAccounts.map((ta) => ta.pubkey),
       );
       console.log("Close token accounts:", txSig);
     } catch (e) {
       console.error(e);
       throw e;
     }
-    tokenAccounts = await glamClient.listTokenAccounts(treasury);
+    tokenAccounts = await glamClient.getTokenAccountsByOwner(treasury);
     expect(tokenAccounts.length).toEqual(0);
   });
 
   it("Close fund", async () => {
-    const fund = await glamClient.program.account.fundAccount.fetchNullable(
-      fundPDA
-    );
+    const fund =
+      await glamClient.program.account.fundAccount.fetchNullable(fundPDA);
     expect(fund).not.toBeNull();
 
     try {
@@ -414,7 +413,7 @@ describe("glam_crud", () => {
       expect(txId).toBeUndefined();
     } catch (e) {
       expect(e.message).toContain(
-        "Fund can't be closed. Close share classes first"
+        "Fund can't be closed. Close share classes first",
       );
     }
 
@@ -440,8 +439,8 @@ describe("glam_crud", () => {
     const ret = await Promise.all(
       [fundPDA, treasury, openfunds].map(
         async (address) =>
-          await glamClient.program.account.fundAccount.fetchNullable(address)
-      )
+          await glamClient.program.account.fundAccount.fetchNullable(address),
+      ),
     );
     expect(ret).toEqual([null, null, null]);
   });

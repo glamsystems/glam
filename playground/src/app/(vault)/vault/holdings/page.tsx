@@ -44,13 +44,13 @@ export default function Holdings() {
   const [tableData, setTableData] = useState<Holding[]>([]);
 
   useEffect(() => {
-    const tokenAccounts: Holding[] = [];
+    const holdings: Holding[] = [];
 
     const solBalance = Number(treasury?.balanceLamports) / LAMPORTS_PER_SOL;
     if (solBalance > 0) {
       const mint = "So11111111111111111111111111111111111111112";
       const price = prices?.find((p) => p.mint === mint)?.price || 0;
-      tokenAccounts.push({
+      holdings.push({
         name: "Solana",
         symbol: "SOL",
         mint: "",
@@ -67,29 +67,32 @@ export default function Holdings() {
     }
 
     if (treasury?.tokenAccounts) {
-      tokenAccounts.push(
+      holdings.push(
         ...treasury.tokenAccounts.map((ta) => {
-          const asset = jupTokenList?.find((t: any) => t.address === ta.mint);
-          const logoURI = asset?.logoURI || "";
-          const name = asset?.name || "Unknown";
-          const symbol = asset?.symbol || ta.mint;
-          const decimals = asset?.decimals || 9;
-          const tags = asset?.tags || [];
-          const price = prices?.find((p) => p.mint === ta.mint)?.price || 0;
+          const jupToken = jupTokenList?.find(
+            (t) => t.address === ta.mint.toBase58(),
+          );
+          const logoURI = jupToken?.logoURI || "";
+          const name = jupToken?.name || "Unknown";
+          const symbol = jupToken?.symbol || ta.mint.toBase58();
+          const price =
+            prices?.find((p) => p.mint === ta.mint.toBase58())?.price || 0;
+          const tags = jupToken?.tags || [];
+
           return {
             name,
             symbol: symbol === "SOL" ? "wSOL" : symbol,
-            mint: ta.mint,
-            ata: ta.address,
-            price: price,
-            balance: Number(ta.uiAmount),
-            decimals: Number(decimals),
-            notional: Number(ta.uiAmount) * price || 0,
-            logoURI: logoURI,
+            mint: ta.mint.toBase58(),
+            ata: ta.pubkey.toBase58(),
+            price,
+            balance: ta.uiAmount,
+            decimals: ta.decimals,
+            notional: ta.uiAmount * price,
+            logoURI,
             location: "vault",
             lst: tags.indexOf("lst") >= 0,
           };
-        })
+        }),
       );
     }
 
@@ -116,15 +119,15 @@ export default function Holdings() {
           lst: false,
         };
       });
-      tokenAccounts.push(...driftHoldings);
+      holdings.push(...driftHoldings);
     }
 
-    tokenAccounts.sort((a, b) => {
+    holdings.sort((a, b) => {
       if (b.location > a.location) return 1;
       if (b.location < a.location) return -1;
       return b.balance - a.balance;
     });
-    setTableData(tokenAccounts);
+    setTableData(holdings);
   }, [treasury, driftUser, jupTokenList, prices]);
 
   useEffect(() => {
@@ -142,8 +145,8 @@ export default function Holdings() {
           isLoadingData
             ? skeletonData
             : showZeroBalances
-            ? tableData
-            : tableData.filter((d) => d.balance > 0)
+              ? tableData
+              : tableData.filter((d) => d.balance > 0)
         }
         columns={columns}
         setShowZeroBalances={setShowZeroBalances}

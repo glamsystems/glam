@@ -27,7 +27,7 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
-import { columns as defaultColumns } from "./columns"; // Import columns from columns.tsx
+import { columns as defaultColumns } from "./columns";
 import {
   Sheet,
   SheetClose,
@@ -46,14 +46,12 @@ import { DownloadIcon } from "@radix-ui/react-icons";
 import ToolbarTree from "@/components/ToolbarTree";
 import { useCallback, useState } from "react";
 
-// Define the type that TData should extend
 export interface KeyData {
   pubkey: string;
   label: string;
   tags: string[];
 }
 
-// Update the DataTableProps to ensure TData extends KeyData
 interface DataTableProps<TData extends KeyData> {
   columns?: ColumnDef<TData>[];
   data: TData[];
@@ -248,7 +246,7 @@ export function DataTable<TData extends KeyData>({
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
@@ -285,7 +283,7 @@ export function DataTable<TData extends KeyData>({
     (newCheckedItems: Record<string, boolean>) => {
       setCheckedItems(newCheckedItems);
     },
-    []
+    [],
   );
 
   return (
@@ -303,7 +301,7 @@ export function DataTable<TData extends KeyData>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -325,7 +323,7 @@ export function DataTable<TData extends KeyData>({
                         <TableCell key={cell.id}>
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </TableCell>
                       ))}

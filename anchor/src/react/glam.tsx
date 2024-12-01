@@ -17,8 +17,12 @@ import { useAtomValue, useSetAtom } from "jotai/react";
 import { PublicKey } from "@solana/web3.js";
 import { ASSETS_MAINNET } from "../client/assets";
 import { WSOL } from "../constants";
-import { getAssociatedTokenAddressSync } from "@solana/spl-token";
+import {
+  getAssociatedTokenAddressSync,
+  TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
 import { DriftMarketConfigs, GlamDriftUser } from "../client/drift";
+import { TokenAccount } from "../client/base";
 
 interface JupTokenListItem {
   address: string;
@@ -39,7 +43,7 @@ interface GlamProviderContext {
   wallet?: PublicKey;
   activeFund?: FundCache;
   fund?: PublicKey;
-  treasury?: TreasuryCache;
+  treasury?: Treasury;
   fundsList: FundCache[];
   //@ts-ignore
   allFunds: FundModel[];
@@ -53,15 +57,7 @@ interface GlamProviderContext {
   refresh: () => Promise<void>;
 }
 
-interface TokenAccount {
-  address: string;
-  mint: string;
-  decimals: number;
-  amount: string;
-  uiAmount: string;
-}
-
-interface TreasuryCache {
+interface Treasury {
   pubkey: PublicKey;
   balanceLamports: number;
   tokenAccounts: TokenAccount[];
@@ -75,13 +71,13 @@ interface FundCache {
 }
 
 const GlamContext = createContext<GlamProviderContext>(
-  {} as GlamProviderContext
+  {} as GlamProviderContext,
 );
 
 const fundAtom = atomWithStorage<FundCache>("active-fund", {} as FundCache);
 const fundsListAtom = atomWithStorage<FundCache[]>(
   "funds-list",
-  [] as FundCache[]
+  [] as FundCache[],
 );
 
 // In order to properly deser funds, we need to
@@ -107,21 +103,22 @@ const toFundCache = (f: FundModel) => {
 };
 
 const fetchBalances = async (glamClient: GlamClient, owner: PublicKey) => {
-  const balanceLamports = await glamClient.provider.connection.getBalance(
-    owner
-  );
-  const tokenAccounts = await glamClient.listTokenAccounts(owner);
-  tokenAccounts.forEach((ta: any) => {
-    ta.address = ta.address.toBase58();
-  });
+  const balanceLamports =
+    await glamClient.provider.connection.getBalance(owner);
+  const tokenAccounts = await glamClient.getTokenAccountsByOwner(owner);
 
   // Add wSOL account if it doesn't exist, so that we can properly combine SOL and wSOL balances
-  if (!tokenAccounts.find((ta: any) => ta.mint === WSOL.toBase58())) {
+  // FIXME: this leads to a bug on holdings page that the wSOL ata has balance 0 but cannot be closed
+  if (!tokenAccounts.find((ta) => ta.mint.equals(WSOL))) {
     tokenAccounts.push({
-      mint: WSOL.toBase58(),
-      address: getAssociatedTokenAddressSync(WSOL, owner, true).toBase58(),
-      amount: "0",
-      uiAmount: "0",
+      owner,
+      mint: WSOL,
+      programId: TOKEN_PROGRAM_ID,
+      pubkey: getAssociatedTokenAddressSync(WSOL, owner, true),
+      amount: 0,
+      uiAmount: 0,
+      decimals: 9,
+      frozen: false,
     });
   }
 
@@ -139,7 +136,7 @@ export function GlamProvider({
   const setActiveFund = useSetAtom(fundAtom);
   const setFundsList = useSetAtom(fundsListAtom);
 
-  const [treasury, setTreasury] = useState({} as TreasuryCache);
+  const [treasury, setTreasury] = useState({} as Treasury);
   const wallet = useWallet();
   const { connection } = useConnection();
 
@@ -150,13 +147,13 @@ export function GlamProvider({
           commitment: "confirmed",
         }),
       }),
-    [connection, wallet]
+    [connection, wallet],
   );
   const [allFunds, setAllFunds] = useState([] as FundModel[]);
   const [jupTokenList, setJupTokenList] = useState([] as JupTokenListItem[]);
   const [pythPrices, setPythPrices] = useState([] as PythPrice[]);
   const [driftMarketConfigs, setDriftMarketConfigs] = useState(
-    {} as DriftMarketConfigs
+    {} as DriftMarketConfigs,
   );
   const [driftUser, setDriftUser] = useState({} as GlamDriftUser);
 
@@ -175,14 +172,14 @@ export function GlamProvider({
     if (activeFund && activeFund.pubkey) {
       console.log(
         "fetching treasury data for fund",
-        activeFund.pubkey.toBase58()
+        activeFund.pubkey.toBase58(),
       );
       const treasury = glamClient.getTreasuryPDA(activeFund.pubkey);
       const balances = await fetchBalances(glamClient, treasury);
       setTreasury({
         ...balances,
         pubkey: treasury,
-      } as TreasuryCache);
+      } as Treasury);
     }
   };
 
@@ -206,7 +203,7 @@ export function GlamProvider({
           return 1;
         }
         return 0;
-      }
+      },
     );
     setAllFunds(fundModels);
 
@@ -245,7 +242,7 @@ export function GlamProvider({
     queryFn: () => {
       const pythFeedIds = new Set([] as string[]);
       treasury.tokenAccounts.forEach((ta: TokenAccount) => {
-        const hex = ASSETS_MAINNET.get(ta.mint)?.priceFeed!;
+        const hex = ASSETS_MAINNET.get(ta.mint.toBase58())?.priceFeed!;
         if (hex) {
           // we cannot price tokens without a price feed
           pythFeedIds.add(hex);
@@ -259,7 +256,7 @@ export function GlamProvider({
         .join("&");
 
       return fetch(
-        `https://hermes.pyth.network/v2/updates/price/latest?${params}`
+        `https://hermes.pyth.network/v2/updates/price/latest?${params}`,
       ).then((res) => res.json());
     },
   });
@@ -296,7 +293,7 @@ export function GlamProvider({
     queryKey: ["jupiter-tokens-list"],
     queryFn: async () => {
       const response = await fetch(
-        "https://tokens.jup.ag/tokens?tags=verified"
+        "https://tokens.jup.ag/tokens?tags=verified",
       );
       const data = await response.json();
       const tokenList = data?.map((t: any) => ({
@@ -320,7 +317,7 @@ export function GlamProvider({
     queryKey: ["drift-market-configs"],
     queryFn: async () => {
       const response = await fetch(
-        "https://api.glam.systems/v0/drift/market_configs/"
+        "https://api.glam.systems/v0/drift/market_configs/",
       );
       const data = await response.json();
       return data;
@@ -338,7 +335,7 @@ export function GlamProvider({
     refetchInterval: 30 * 1000,
     queryFn: () => {
       return fetch(
-        `https://api.glam.systems/v0/drift/user?authority=${treasury?.pubkey.toBase58()}&accountId=0`
+        `https://api.glam.systems/v0/drift/user?authority=${treasury?.pubkey.toBase58()}&accountId=0`,
       ).then((res) => res.json());
     },
   });

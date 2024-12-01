@@ -41,11 +41,29 @@ export function DataTableToolbar<TData>({
 
   const [label, setLabel] = useState<string>("");
   const [publicKey, setPublicKey] = useState<string>("");
+  const [ata, setAta] = useState<string>("");
 
   const { glamClient, fund: fundPDA } = useGlam();
 
+  React.useEffect(() => {
+    if (!glamClient || !fundPDA) {
+      return;
+    }
+    // Set ata if public key is valid
+    try {
+      const shareClassMint = glamClient.getShareClassPDA(fundPDA, 0);
+      const ata = glamClient.getShareClassAta(
+        new PublicKey(publicKey),
+        shareClassMint,
+      );
+      setAta(ata.toBase58());
+    } catch (e) {
+      setAta("");
+    }
+  }, [publicKey]);
+
   const addHolderAccount = async (
-    event: React.MouseEvent<HTMLButtonElement>
+    event: React.MouseEvent<HTMLButtonElement>,
   ) => {
     event.preventDefault();
 
@@ -67,26 +85,12 @@ export function DataTableToolbar<TData>({
     }
 
     try {
-      const shareClassMint = glamClient.getShareClassPDA(fundPDA, 0);
-      const mintTo = glamClient.getShareClassAta(pubkey, shareClassMint);
-      const ixCreateAta = createAssociatedTokenAccountIdempotentInstruction(
-        glamClient.getManager(),
-        mintTo,
+      const txSig = await glamClient.shareClass.createTokenAccount(
+        fundPDA,
         pubkey,
-        shareClassMint,
-        TOKEN_2022_PROGRAM_ID
+        0,
+        false,
       );
-      const txSig = await glamClient.program.methods
-        .setTokenAccountsStates(0, true)
-        .accounts({
-          shareClassMint,
-          fund: fundPDA,
-        })
-        .remainingAccounts([
-          { pubkey: mintTo, isSigner: false, isWritable: true },
-        ])
-        .preInstructions([ixCreateAta])
-        .rpc();
       toast({
         title: "New share class holder added",
         description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
@@ -127,7 +131,7 @@ export function DataTableToolbar<TData>({
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="publicKey" className="text-right">
-                  Public key
+                  Holder Public key
                 </Label>
                 <Input
                   id="publicKey"
@@ -135,6 +139,18 @@ export function DataTableToolbar<TData>({
                   value={publicKey}
                   onChange={(e) => setPublicKey(e.target.value)}
                   className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="publicKey" className="text-right">
+                  Token Account
+                </Label>
+                <Input
+                  id="publicKey"
+                  placeholder="Publ1cK3y4cc355R1gh75KqM7VxWzeA9cUjfP2y"
+                  value={ata}
+                  className="col-span-3"
+                  disabled
                 />
               </div>
             </div>

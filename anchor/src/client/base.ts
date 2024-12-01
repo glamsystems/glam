@@ -15,6 +15,7 @@ import {
   PublicKey,
   SystemProgram,
   Transaction,
+  TransactionInstruction,
   TransactionMessage,
   TransactionSignature,
   VersionedTransaction,
@@ -63,6 +64,18 @@ export type TxOptions = {
   computeUnitLimit?: number;
   getPriorityFeeMicroLamports?: (tx: VersionedTransaction) => Promise<number>;
   jitoTipLamports?: number;
+  preInstructions?: TransactionInstruction[];
+};
+
+export type TokenAccount = {
+  owner: PublicKey;
+  pubkey: PublicKey;
+  mint: PublicKey;
+  programId: PublicKey;
+  decimals: number;
+  amount: number;
+  uiAmount: number;
+  frozen: boolean;
 };
 
 export class BaseClient {
@@ -388,7 +401,13 @@ export class BaseClient {
     );
   }
 
-  async listTokenAccounts(owner: PublicKey): Promise<any> {
+  /**
+   * Fetch all the token accounts (including token program and token 2022 program) owned by a public key.
+   *
+   * @param owner
+   * @returns
+   */
+  async getTokenAccountsByOwner(owner: PublicKey): Promise<TokenAccount[]> {
     const [tokenAccounts, token2022Accounts] = await Promise.all(
       [TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID].map(
         async (programId) =>
@@ -397,17 +416,29 @@ export class BaseClient {
           }),
       ),
     );
-    const merged = tokenAccounts.value.concat(token2022Accounts.value);
-    return merged.map((accountInfo) => {
+    const parseTokenAccountInfo = (accountInfo: any) => {
       const accountData = accountInfo.account.data.parsed.info;
       return {
-        address: accountInfo.pubkey,
-        mint: accountData.mint,
-        decimals: accountData.tokenAmount.decimals,
-        amount: accountData.tokenAmount.amount,
-        uiAmount: accountData.tokenAmount.uiAmountString,
+        owner,
+        pubkey: new PublicKey(accountInfo.pubkey),
+        mint: new PublicKey(accountData.mint),
+        decimals: accountData.tokenAmount.decimals, // number
+        amount: accountData.tokenAmount.amount, // string
+        uiAmount: accountData.tokenAmount.uiAmount, // number
+        frozen: accountData.state === "frozen",
       };
-    });
+    };
+    return tokenAccounts.value
+      .map((accountInfo) => ({
+        ...parseTokenAccountInfo(accountInfo),
+        programId: TOKEN_PROGRAM_ID,
+      }))
+      .concat(
+        token2022Accounts.value.map((accountInfo) => ({
+          ...parseTokenAccountInfo(accountInfo),
+          programId: TOKEN_2022_PROGRAM_ID,
+        })),
+      );
   }
 
   async getTreasuryBalance(fundPDA: PublicKey): Promise<number> {

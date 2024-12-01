@@ -46,12 +46,10 @@ export default function Wrap() {
 
   useEffect(() => {
     if (fundPDA) {
-      const solBalance =
-        Number(treasury?.balanceLamports || 0) / LAMPORTS_PER_SOL;
-      const wSolBalance = Number(
-        treasury?.tokenAccounts?.find((ta) => ta.mint === WSOL.toBase58())
-          ?.uiAmount || 0
-      );
+      const solBalance = (treasury?.balanceLamports || 0) / LAMPORTS_PER_SOL;
+      const wSolBalance =
+        treasury?.tokenAccounts?.find((ta) => ta.mint.equals(WSOL))?.uiAmount ||
+        0;
       setSolBalance(solBalance);
       setWSolBalance(wSolBalance);
       setDisplayBalance(solBalance);
@@ -92,7 +90,7 @@ export default function Wrap() {
           new BN(values.amount * LAMPORTS_PER_SOL),
           {
             getPriorityFeeMicroLamports,
-          }
+          },
         );
       } else {
         // Unwrap means unwrap all, there's no amount
