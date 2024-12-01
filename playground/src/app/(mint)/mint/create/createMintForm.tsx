@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import DynamicForm from "@/components/DynamicForm";
 import schema from "@/data/glamFormSchema.json";
 import Link from "next/link";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   Form,
   FormControl,
@@ -22,10 +21,35 @@ import { PublicKey } from "@solana/web3.js";
 import { toast } from "@/components/ui/use-toast";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { parseTxError } from "@/lib/error";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+type TemplateKey = "Openfunds" | "Basic";
+type StepKey = 0 | 1 | 2 | 3 | 4;
+
+const basicInfoFormSchema = z.object({
+  name: z.string().max(100, {
+    message: "Share class name must be no more than 100 characters.",
+  }),
+  symbol: z.string().max(10, {
+    message: "Share class symbol must be no more than 10 characters.",
+  }),
+  decimals: z.number().min(6).max(9, {
+    message: "Decimals must be between 6 and 9.",
+  }),
+});
+type BasicInfoFormSchema = z.infer<typeof basicInfoFormSchema>;
+
+const policyFormSchema = z.object({
+  lockUp: z.number(),
+  permanentDelegate: z.string().optional(),
+  defaultAccountStateFrozen: z.boolean(),
+});
+type PolicyFormSchema = z.infer<typeof policyFormSchema>;
 
 const TOTAL_STEPS = {
-  OPENFUNDS: 4,
-  BASIC: 3,
+  OPENFUNDS: 5,
+  BASIC: 4,
 };
 
 interface SchemaField {
@@ -50,22 +74,28 @@ interface SchemaGroup {
 }
 
 interface ReviewStepProps {
-  selectedTemplate: string | null;
-  formData: {
-    name?: string;
-    email?: string;
-    [key: string]: any;
-  };
+  selectedTemplate: TemplateKey;
+  basicInfoFormData: BasicInfoFormSchema;
+  policyFormData: PolicyFormSchema;
   openfundsData: Record<string, Record<string, any>>;
 }
 
 export default function MultiStepForm() {
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<TemplateKey>("Basic");
+
+  const [basicInfoFormData, setBasicInfoFormData] = useState({
     name: "",
-    email: "",
+    symbol: "",
+    decimals: 9,
   });
+  const [policyFormData, setPolicyFormData] = useState({
+    lockUp: 0,
+    permanentDelegate: "",
+    defaultAccountStateFrozen: true,
+  });
+
   const [openfundsData, setOpenfundsData] = useState<Record<string, any>>({
     company: {},
     fund: {},
@@ -78,56 +108,40 @@ export default function MultiStepForm() {
     selectedTemplate === "Basic" ? TOTAL_STEPS.BASIC : TOTAL_STEPS.OPENFUNDS;
   const progress = ((currentStep + 1) / totalSteps) * 100;
 
-  const handleNext = () => {
-    if (currentStep < TOTAL_STEPS.OPENFUNDS - 1) {
-      if (selectedTemplate === "Basic" && currentStep === 1) {
-        setCurrentStep(3);
-      } else {
-        setCurrentStep(currentStep + 1);
-      }
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentStep > 0) {
-      if (selectedTemplate === "Basic" && currentStep === 3) {
-        setCurrentStep(1);
-      } else {
-        setCurrentStep(currentStep - 1);
-      }
-    }
-  };
-
   const handleSubmit = async () => {
     console.log("Form submitted!", {
       selectedTemplate,
-      formData,
+      basicInfoFormData,
       openfundsData,
     });
 
     try {
       const fundData = {
-        name: openfundsData.fund.legalFundNameIncludingUmbrella,
+        name:
+          openfundsData.fund.legalFundNameIncludingUmbrella ||
+          basicInfoFormData.name,
         isEnabled: true,
         fundDomicileAlpha2: openfundsData.fund.fundDomicileAlpha2,
         integrationAcls: [{ name: { mint: {} }, features: [] }],
         company: {
           fundGroupName: openfundsData.company.fundGroupName,
-          manCo: openfundsData.company.fundGroupName,
-          emailAddressOfManCo: formData.email,
         },
-        manager: { portfolioManagerName: formData.name },
         shareClasses: [
           {
-            name: openfundsData.fund.legalFundNameIncludingUmbrella,
-            symbol: openfundsData.shareClass.shareClassSymbol,
-            permanentDelegate: new PublicKey(0),
-            defaultAccountStateFrozen: true,
+            name: basicInfoFormData.name,
+            symbol: basicInfoFormData.symbol,
+            permanentDelegate: policyFormData.permanentDelegate
+              ? new PublicKey(policyFormData.permanentDelegate)
+              : new PublicKey(0),
+            lockUpPeriodInSeconds: policyFormData.lockUp * 3600,
+            defaultAccountStateFrozen: policyFormData.defaultAccountStateFrozen,
             isin: openfundsData.shareClass.iSIN,
             shareClassCurrency: openfundsData.shareClass.shareClassCurrency,
           },
         ],
       };
+      console.log("fundData", fundData);
+
       const [txSig, fundPDA] = await glamClient.createFund(fundData, true);
       setActiveFund({
         address: fundPDA.toBase58(),
@@ -148,12 +162,25 @@ export default function MultiStepForm() {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBasicInfoInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setBasicInfoFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Updated handleOpenfundsChange to properly structure the data
+  const handleDefaultAccountStateChange = (defaultFrozen: boolean) => {
+    setPolicyFormData((prev) => ({
+      ...prev,
+      defaultAccountStateFrozen: defaultFrozen,
+    }));
+  };
+
+  const handlePolicyInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPolicyFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
   const handleOpenfundsChange = (data: Record<string, any>) => {
     // Create a new object to store grouped data
     const groupedData: Record<string, any> = {
@@ -183,53 +210,76 @@ export default function MultiStepForm() {
     setOpenfundsData(groupedData);
   };
 
+  const templateSelectionStep = (
+    <TemplateSelection
+      selectedTemplate={selectedTemplate}
+      setSelectedTemplate={setSelectedTemplate}
+    />
+  );
+  const basicInfoStep = (
+    <BasicInfoForm
+      formData={basicInfoFormData}
+      handleInputChange={handleBasicInfoInputChange}
+    />
+  );
+  const policyStep = (
+    <PolicyForm
+      formData={policyFormData}
+      handleInputChange={handlePolicyInputChange}
+      handleDefaultAccountStateChange={handleDefaultAccountStateChange}
+    />
+  );
+  const reviewStep = (
+    <ReviewStep
+      selectedTemplate={selectedTemplate}
+      basicInfoFormData={basicInfoFormData}
+      policyFormData={policyFormData}
+      openfundsData={openfundsData}
+    />
+  );
+  const templateStepsMap: Record<TemplateKey, Record<StepKey, JSX.Element>> = {
+    Openfunds: {
+      0: templateSelectionStep,
+      1: basicInfoStep,
+      2: (
+        <OpenfundsForm
+          openfundsData={openfundsData}
+          onChange={handleOpenfundsChange}
+        />
+      ),
+      3: policyStep,
+      4: reviewStep,
+    },
+    Basic: {
+      0: templateSelectionStep,
+      1: basicInfoStep,
+      2: policyStep,
+      3: reviewStep,
+      4: <></>,
+    },
+  };
+
   return (
     <div className="w-full max-w-2xl mx-auto p-6 bg-background">
       <Progress value={progress} className="mb-6 rounded-none" />
       <div className="mt-6 space-y-6">
-        {currentStep === 0 && (
-          <TemplateSelection
-            selectedTemplate={selectedTemplate}
-            setSelectedTemplate={setSelectedTemplate}
-          />
-        )}
-        {currentStep === 1 && (
-          <DetailForm
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
-        )}
-        {currentStep === 2 && selectedTemplate === "Openfunds" && (
-          <OpenfundsForm
-            openfundsData={openfundsData}
-            onChange={handleOpenfundsChange}
-          />
-        )}
-        {currentStep === 3 && (
-          <ReviewStep
-            selectedTemplate={selectedTemplate}
-            formData={formData}
-            openfundsData={openfundsData}
-          />
-        )}
+        {/* Dynamically render the form based on the current step and selected template */}
+        {currentStep >= 0 &&
+          currentStep <= 4 &&
+          templateStepsMap[selectedTemplate][currentStep as StepKey]}
       </div>
       <div className="flex justify-between mt-6">
         <Button
-          onClick={handlePrevious}
+          onClick={() => setCurrentStep(currentStep - 1)}
           disabled={currentStep === 0}
           variant="outline"
         >
           Back
         </Button>
-        {currentStep === TOTAL_STEPS.OPENFUNDS - 1 ? (
+        {progress === 100 ? (
           <Button onClick={handleSubmit}>Submit</Button>
         ) : (
-          <Button
-            onClick={handleNext}
-            disabled={currentStep === 0 && !selectedTemplate}
-          >
-            Next
-          </Button>
+          <Button onClick={() => setCurrentStep(currentStep + 1)}>Next</Button>
         )}
       </div>
     </div>
@@ -240,8 +290,8 @@ function TemplateSelection({
   selectedTemplate,
   setSelectedTemplate,
 }: {
-  selectedTemplate: string | null;
-  setSelectedTemplate: (template: string) => void;
+  selectedTemplate: string;
+  setSelectedTemplate: (template: TemplateKey) => void;
 }) {
   const templates = [
     {
@@ -263,10 +313,7 @@ function TemplateSelection({
       <h2 className="text-xl mb-6 text-muted-foreground font-extralight">
         Select a Template
       </h2>
-      <RadioGroup
-        value={selectedTemplate || ""}
-        onValueChange={setSelectedTemplate}
-      >
+      <RadioGroup value={selectedTemplate} onValueChange={setSelectedTemplate}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {templates.map((template) => (
             <div key={template.id}>
@@ -302,18 +349,16 @@ function TemplateSelection({
   );
 }
 
-function DetailForm({
+function BasicInfoForm({
   formData,
   handleInputChange,
 }: {
-  formData: any;
+  formData: BasicInfoFormSchema;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
-  const form = useForm({
-    defaultValues: {
-      name: formData.name,
-      email: formData.email,
-    },
+  const form = useForm<BasicInfoFormSchema>({
+    resolver: zodResolver(basicInfoFormSchema),
+    defaultValues: formData,
   });
 
   return (
@@ -332,14 +377,15 @@ function DetailForm({
                 <FormControl>
                   <Input
                     {...field}
-                    onChange={(e) => {
+                    onChange={async (e) => {
                       field.onChange(e);
                       handleInputChange(e);
+                      await form.trigger("name");
                     }}
                   />
                 </FormControl>
                 <FormMessage className="text-gray-500">
-                  Please enter your name.
+                  Share class name
                 </FormMessage>
               </FormItem>
             )}
@@ -347,22 +393,47 @@ function DetailForm({
 
           <FormField
             control={form.control}
-            name="email"
+            name="symbol"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="flex items-center">Email</FormLabel>
+                <FormLabel className="flex items-center">Symbol</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
-                    type="email"
-                    onChange={(e) => {
+                    onChange={async (e) => {
+                      e.target.value;
                       field.onChange(e);
                       handleInputChange(e);
+                      await form.trigger("symbol");
                     }}
                   />
                 </FormControl>
                 <FormMessage className="text-gray-500">
-                  Please enter your email address.
+                  Share class symbol
+                </FormMessage>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="decimals"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center">Decimals</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    {...field}
+                    onChange={async (e) => {
+                      field.onChange(e);
+                      handleInputChange(e);
+                    }}
+                    disabled // FIXME: support other decimals
+                  />
+                </FormControl>
+                <FormMessage className="text-gray-500">
+                  Share class decimals (9 is recommended)
                 </FormMessage>
               </FormItem>
             )}
@@ -385,7 +456,7 @@ function OpenfundsForm({
     (acc, [group, fields]) => {
       return { ...acc, ...fields };
     },
-    {}
+    {},
   );
 
   return (
@@ -409,70 +480,212 @@ function OpenfundsForm({
   );
 }
 
+function PolicyForm({
+  formData,
+  handleInputChange,
+  handleDefaultAccountStateChange,
+}: {
+  formData: PolicyFormSchema;
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleDefaultAccountStateChange: (value: boolean) => void;
+}) {
+  const form = useForm<PolicyFormSchema>({
+    resolver: zodResolver(policyFormSchema),
+    defaultValues: formData,
+  });
+
+  return (
+    <div>
+      <h2 className="text-xl mb-6 text-muted-foreground font-extralight">
+        Policy
+      </h2>
+      <Form {...form}>
+        <form className="space-y-8">
+          <FormField
+            control={form.control}
+            name="lockUp"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center">
+                  Lock-Up Period
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      handleInputChange(e);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage className="text-gray-500">
+                  Lock-up period in hours
+                </FormMessage>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="permanentDelegate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center">
+                  Permanent Delegate (optional)
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      handleInputChange(e);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage className="text-gray-500">
+                  The public key of the permanent delegate who will be able to
+                  mint, burn, and force transfer share class tokens
+                </FormMessage>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="defaultAccountStateFrozen"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center">
+                  Default Account State
+                </FormLabel>
+                <FormControl>
+                  <RadioGroup
+                    value={
+                      formData.defaultAccountStateFrozen ? "frozen" : "active"
+                    }
+                    onValueChange={(v) => {
+                      handleDefaultAccountStateChange(v === "frozen");
+                    }}
+                  >
+                    <div className="grid grid-cols-2 gap-4">
+                      <div key="frozen">
+                        <RadioGroupItem
+                          className="peer sr-only cursor-pointer"
+                          value="frozen"
+                          id="frozen"
+                        />
+                        <Label
+                          htmlFor="frozen"
+                          className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                        >
+                          Frozen
+                        </Label>
+                      </div>
+                      <div key="active">
+                        <RadioGroupItem
+                          className="peer sr-only cursor-pointer"
+                          value="active"
+                          id="active"
+                        />
+                        <Label
+                          htmlFor="active"
+                          className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                        >
+                          Active
+                        </Label>
+                      </div>
+                    </div>
+                  </RadioGroup>
+                </FormControl>
+                <FormMessage className="text-gray-500">
+                  Whether the default account state is frozen or not
+                </FormMessage>
+              </FormItem>
+            )}
+          />
+        </form>
+      </Form>
+    </div>
+  );
+}
+
 function ReviewStep({
   selectedTemplate,
-  formData,
+  basicInfoFormData,
+  policyFormData,
   openfundsData,
 }: ReviewStepProps) {
   return (
-    <TooltipProvider>
-      <div className="grid gap-3 text-sm">
-        <h2 className="text-xl mb-6 text-muted-foreground font-extralight">
-          Review
-        </h2>
-        <ul className="grid gap-3">
-          <li className="border-b pb-3 flex items-center justify-between">
+    <div className="grid gap-3 text-sm">
+      <h2 className="text-xl mb-6 text-muted-foreground font-extralight">
+        Review
+      </h2>
+      <ul className="grid gap-3">
+        {/* Basic info of the share class */}
+        {[
+          ["Template", selectedTemplate],
+          ["Name", basicInfoFormData.name],
+          ["Symbol", basicInfoFormData.symbol],
+          ["Decimals", basicInfoFormData.decimals],
+        ].map(([label, value]) => (
+          <li
+            key={label}
+            className="border-b pb-3 flex items-center justify-between"
+          >
             <span className="text-muted-foreground flex items-center">
-              Template
+              {label}
             </span>
             <span>
-              <p className="font-semibold">{selectedTemplate || "N/A"}</p>
+              <p className="font-semibold">{value || "N/A"}</p>
             </span>
           </li>
+        ))}
 
-          <li className="border-b pb-3 flex items-center justify-between">
+        {selectedTemplate === "Openfunds" &&
+          Object.entries(openfundsData).map(([group, fields]) =>
+            Object.entries(fields as Record<string, any>).map(
+              ([field, value]) => (
+                <li
+                  key={`${group}-${field}`}
+                  className="border-b pb-3 flex items-center justify-between"
+                >
+                  <span className="text-muted-foreground flex items-center">
+                    {(schema[group as keyof typeof schema] as SchemaGroup)
+                      ?.fields[field]?.title || field}
+                  </span>
+                  <span>
+                    <p className="font-semibold">
+                      {value !== null && value !== undefined
+                        ? String(value)
+                        : "N/A"}
+                    </p>
+                  </span>
+                </li>
+              ),
+            ),
+          )}
+
+        {[
+          ["Lock-Up Period (hours)", policyFormData.lockUp],
+          ["Permanent Delegate", policyFormData.permanentDelegate || "N/A"],
+          [
+            "Default Account State",
+            policyFormData.defaultAccountStateFrozen ? "Frozen" : "Active",
+          ],
+        ].map(([label, value]) => (
+          <li
+            key={label}
+            className="border-b pb-3 flex items-center justify-between"
+          >
             <span className="text-muted-foreground flex items-center">
-              Name
+              {label}
             </span>
             <span>
-              <p className="font-semibold">{formData.name || "N/A"}</p>
+              <p className="font-semibold">{value}</p>
             </span>
           </li>
-
-          <li className="border-b pb-3 flex items-center justify-between">
-            <span className="text-muted-foreground flex items-center">
-              Email
-            </span>
-            <span>
-              <p className="font-semibold">{formData.email || "N/A"}</p>
-            </span>
-          </li>
-
-          {selectedTemplate === "Openfunds" &&
-            Object.entries(openfundsData).map(([group, fields]) =>
-              Object.entries(fields as Record<string, any>).map(
-                ([field, value]) => (
-                  <li
-                    key={`${group}-${field}`}
-                    className="border-b pb-3 flex items-center justify-between"
-                  >
-                    <span className="text-muted-foreground flex items-center">
-                      {(schema[group as keyof typeof schema] as SchemaGroup)
-                        ?.fields[field]?.title || field}
-                    </span>
-                    <span>
-                      <p className="font-semibold">
-                        {value !== null && value !== undefined
-                          ? String(value)
-                          : "N/A"}
-                      </p>
-                    </span>
-                  </li>
-                )
-              )
-            )}
-        </ul>
-      </div>
-    </TooltipProvider>
+        ))}
+      </ul>
+    </div>
   );
 }

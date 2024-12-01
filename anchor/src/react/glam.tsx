@@ -48,7 +48,7 @@ interface GlamProviderContext {
   allFunds: FundModel[];
   userWallet: UserWallet;
   prices: PythPrice[];
-  setActiveFund: any;
+  setActiveFund: (f: FundCache) => void;
   jupTokenList?: JupTokenListItem[];
   driftMarketConfigs: DriftMarketConfigs;
   driftUser: GlamDriftUser;
@@ -363,10 +363,10 @@ export function GlamProvider({
   const value: GlamProviderContext = {
     glamClient,
     activeFund,
-    fund: activeFund?.pubkey,
+    fund: activeFund?.pubkey, // TODO: no longer needed, should use activeFund instead
     treasury,
     fundsList: useAtomValue(fundsListAtom),
-    allFunds,
+    allFunds, // TODO: only keep one of allFunds or fundsList
     userWallet,
     jupTokenList,
     prices: pythPrices,

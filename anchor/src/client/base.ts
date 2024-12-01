@@ -600,7 +600,6 @@ export class BaseClient {
             fund: fundPDA,
             treasury,
             openfunds,
-            manager,
           })
           .instruction();
 
@@ -611,8 +610,6 @@ export class BaseClient {
             fund: fundPDA,
             shareClassMint,
             openfunds,
-            //@ts-ignore IDL ts type is unhappy
-            manager,
           })
           .preInstructions([initFundIx])
           .transaction();
@@ -641,8 +638,6 @@ export class BaseClient {
           fund: fundPDA,
           shareClassMint,
           openfunds,
-          //@ts-ignore IDL ts type is unhappy
-          manager,
         })
         .preInstructions([
           ComputeBudgetProgram.setComputeUnitLimit({ units: 1_000_000 }),
