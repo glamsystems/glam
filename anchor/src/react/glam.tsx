@@ -40,21 +40,26 @@ interface PythPrice {
 
 interface GlamProviderContext {
   glamClient: GlamClient;
-  wallet?: PublicKey;
   activeFund?: FundCache;
   fund?: PublicKey;
   treasury?: Treasury;
   fundsList: FundCache[];
   //@ts-ignore
   allFunds: FundModel[];
-  walletBalances: any;
-  walletBalancesQueryKey: any[];
+  userWallet: UserWallet;
   prices: PythPrice[];
   setActiveFund: any;
   jupTokenList?: JupTokenListItem[];
   driftMarketConfigs: DriftMarketConfigs;
   driftUser: GlamDriftUser;
   refresh: () => Promise<void>;
+}
+
+interface UserWallet {
+  queryKey: string[];
+  pubkey: PublicKey;
+  balanceLamports: number;
+  tokenAccounts: TokenAccount[];
 }
 
 interface Treasury {
@@ -137,6 +142,7 @@ export function GlamProvider({
   const setFundsList = useSetAtom(fundsListAtom);
 
   const [treasury, setTreasury] = useState({} as Treasury);
+  const [userWallet, setUserWallet] = useState({} as UserWallet);
   const wallet = useWallet();
   const { connection } = useConnection();
 
@@ -285,6 +291,15 @@ export function GlamProvider({
     enabled: !!wallet?.publicKey,
     queryFn: () => fetchBalances(glamClient, wallet?.publicKey!),
   });
+  useEffect(() => {
+    if (walletBalances) {
+      setUserWallet({
+        queryKey: walletBalancesQueryKey,
+        pubkey: wallet.publicKey,
+        ...walletBalances,
+      } as UserWallet);
+    }
+  }, [walletBalances]);
 
   //
   // Fetch token list from jupiter api
@@ -347,14 +362,12 @@ export function GlamProvider({
 
   const value: GlamProviderContext = {
     glamClient,
-    wallet: (wallet && wallet.publicKey) || undefined,
     activeFund,
     fund: activeFund?.pubkey,
     treasury,
     fundsList: useAtomValue(fundsListAtom),
     allFunds,
-    walletBalances,
-    walletBalancesQueryKey,
+    userWallet,
     jupTokenList,
     prices: pythPrices,
     setActiveFund,

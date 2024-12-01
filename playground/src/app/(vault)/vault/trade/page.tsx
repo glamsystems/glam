@@ -314,7 +314,7 @@ export default function Trade() {
   const {
     fund: fundPDA,
     treasury,
-    wallet,
+    userWallet,
     glamClient,
     jupTokenList,
     driftMarketConfigs,
@@ -871,7 +871,7 @@ export default function Trade() {
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!fundPDA || !wallet || !treasury) {
+    if (!fundPDA || !userWallet.pubkey || !treasury) {
       console.error(
         `Cannot submit ${activeTab} order due to missing fund, wallet, or treasury`,
       );
@@ -900,7 +900,7 @@ export default function Trade() {
   ) => {
     event.preventDefault();
 
-    if (!fundPDA || !wallet || !treasury) {
+    if (!fundPDA || !userWallet.pubkey || !treasury) {
       console.error(
         "Cannot cancel orders due to missing fund, wallet, or treasury",
       );
@@ -970,7 +970,7 @@ export default function Trade() {
   const handleSettle = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
-    if (!fundPDA || !wallet || !treasury) {
+    if (!fundPDA || !userWallet.pubkey || !treasury) {
       console.error(
         "Cannot cancel orders due to missing fund, wallet, or treasury",
       );
@@ -993,7 +993,9 @@ export default function Trade() {
         },
       );
       const tx = await response.text();
-      const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
+      const vTx = VersionedTransaction.deserialize(
+        new Uint8Array(Buffer.from(tx, "base64")),
+      );
       const txId = await glamClient.sendAndConfirm(vTx);
       toast({
         title: "Successfully settled PnL",
@@ -1650,8 +1652,8 @@ export default function Trade() {
                           className="min-w-1/3 w-1/3"
                           name="notional"
                           label="Notional"
-                          balance={NaN}
                           selectedAsset="USDC"
+                          balance={NaN}
                           disableAssetChange={true}
                           disableAmountInput={true}
                         />

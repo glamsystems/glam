@@ -65,7 +65,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 
 export default function Stake() {
-  const { fund: fundPDA, treasury, wallet, glamClient } = useGlam();
+  const { fund: fundPDA, treasury, userWallet, glamClient } = useGlam();
 
   const [ticketsAndStakes, setTicketsAndStakes] = useState<TicketOrStake[]>([]);
   const [isLoadingTableData, setIsLoadingTableData] = useState<boolean>(true); // New loading state
@@ -77,7 +77,7 @@ export default function Stake() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isStakepoolPopoverOpen, setIsStakepoolPopoverOpen] = useState(false);
   const [selectedStakepool, setSelectedStakepool] = useState<string | null>(
-    null
+    null,
   );
 
   const openSheet = () => setIsSheetOpen(true);
@@ -90,7 +90,7 @@ export default function Stake() {
       Promise.all([
         glamClient.marinade.getTickets(fundPDA!),
         glamClient.staking.getStakeAccountsWithStates(
-          new PublicKey(treasury!.pubkey)
+          new PublicKey(treasury!.pubkey),
         ),
       ]),
   });
@@ -137,7 +137,7 @@ export default function Stake() {
 
   const onSubmit: SubmitHandler<StakeService> = async (
     values: StakeService,
-    event
+    event,
   ) => {
     const nativeEvent = event as React.BaseSyntheticEvent & {
       nativeEvent: { submitter: HTMLElement };
@@ -155,7 +155,7 @@ export default function Stake() {
       return;
     }
 
-    if (!wallet) {
+    if (!userWallet.pubkey) {
       toast({
         title: "Please connected your wallet.",
         variant: "destructive",
@@ -193,7 +193,7 @@ export default function Stake() {
           fundPDA,
           new PublicKey(values.validatorAddress!),
           // new PublicKey("J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp"), // phantom validator
-          new BN(values.amountIn * LAMPORTS_PER_SOL)
+          new BN(values.amountIn * LAMPORTS_PER_SOL),
         );
       },
       "Marinade Native": async () => {
@@ -205,13 +205,13 @@ export default function Stake() {
           return await glamClient.staking.stakePoolDepositSol(
             fundPDA,
             JITO_STAKE_POOL,
-            new BN(values.amountIn * LAMPORTS_PER_SOL)
+            new BN(values.amountIn * LAMPORTS_PER_SOL),
           );
         }
         if (selectedStakepool === "Marinade") {
           return await glamClient.marinade.depositSol(
             fundPDA,
-            new BN(values.amountIn * LAMPORTS_PER_SOL)
+            new BN(values.amountIn * LAMPORTS_PER_SOL),
           );
         }
       },
@@ -250,7 +250,7 @@ export default function Stake() {
   return (
     <PageContentWrapper>
       <div>
-        {wallet && fundPDA ? (
+        {userWallet.pubkey && fundPDA ? (
           <DataTable
             columns={columns}
             data={ticketsAndStakes}
@@ -290,7 +290,7 @@ export default function Stake() {
                                 value={field.value}
                                 onValueChange={(value) =>
                                   handleServiceChange(
-                                    value as StakeService["service"]
+                                    value as StakeService["service"],
                                   )
                                 }
                               >
@@ -362,7 +362,7 @@ export default function Stake() {
                                       role="combobox"
                                       className={cn(
                                         "w-full justify-between",
-                                        !field.value && "text-muted-foreground"
+                                        !field.value && "text-muted-foreground",
                                       )}
                                     >
                                       {selectedStakepool || "Select Stakepool"}

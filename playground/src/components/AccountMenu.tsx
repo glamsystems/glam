@@ -39,12 +39,12 @@ type PopoverTriggerProps = React.ComponentPropsWithoutRef<
 interface ProductSwitcherProps extends PopoverTriggerProps {}
 
 export default function ProductSwitcher({ className }: ProductSwitcherProps) {
-  const { wallet, fundsList, activeFund, setActiveFund } = useGlam();
+  const { userWallet, fundsList, activeFund, setActiveFund } = useGlam();
   const [open, setOpen] = React.useState(false);
   const { state } = useSidebar();
   const { theme, systemTheme } = useTheme();
   const [defaultSparkleImage, setDefaultSparkleImage] = React.useState(
-    "/default-sparkle-light.svg"
+    "/default-sparkle-light.svg",
   );
 
   React.useEffect(() => {
@@ -52,13 +52,13 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
     setDefaultSparkleImage(
       currentTheme === "dark"
         ? "/default-sparkle-light.svg"
-        : "/default-sparkle-dark.svg"
+        : "/default-sparkle-dark.svg",
     );
   }, [theme, systemTheme]);
 
   const isCollapsed = state === "collapsed";
 
-  if (!wallet) {
+  if (!userWallet.pubkey) {
     return (
       <span className="max-h-[32px] focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0 relative">
         <WalletMultiButton
@@ -81,7 +81,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
                 "flex-1 h-full flex items-center transition-all duration-200 ease-linear focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0 relative",
                 isCollapsed
                   ? "opacity-0 translate-x-[-100%]"
-                  : "opacity-100 translate-x-0"
+                  : "opacity-100 translate-x-0",
               )}
             >
               <span className="-ml-3">Connect</span>
@@ -105,7 +105,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
           className={cn(
             "w-full focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0 relative overflow-hidden font-normal",
             isCollapsed ? "h-8 p-0" : "h-8 pl-0 pr-2",
-            className
+            className,
           )}
         >
           <span className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10">
@@ -123,7 +123,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
           <div
             className={cn(
               "flex items-center w-full transition-all duration-200 ease-linear",
-              isCollapsed ? "opacity-0 pl-0" : "opacity-100 pl-9"
+              isCollapsed ? "opacity-0 pl-0" : "opacity-100 pl-9",
             )}
           >
             <span className="min-w-0 text-ellipsis whitespace-nowrap truncate">
@@ -171,7 +171,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
                           "ml-auto h-4 w-4",
                           activeFund?.address === product.address
                             ? "opacity-100"
-                            : "opacity-0"
+                            : "opacity-0",
                         )}
                       />
                     </CommandItem>

@@ -373,8 +373,7 @@ function InvestorDisclaimers({
 
 function InvestorWidget({ fundId }: { fundId: string }) {
   //@ts-ignore
-  const { glamClient, allFunds, walletBalances, walletBalancesQueryKey } =
-    useGlam();
+  const { glamClient, allFunds, userWallet } = useGlam();
   const queryClient = useQueryClient();
   const [isTxPending, setIsTxPending] = useState(false);
 
@@ -388,7 +387,7 @@ function InvestorWidget({ fundId }: { fundId: string }) {
 
   const [amountInAsset, setAmountInAsset] = useState<string>("SOL");
   const [balance, setBalance] = useState<number>(
-    Number(walletBalances?.balanceLamports || 0) / LAMPORTS_PER_SOL
+    (userWallet?.balanceLamports || 0) / LAMPORTS_PER_SOL,
   );
 
   const form = useForm<FlowSchema>({
@@ -401,47 +400,42 @@ function InvestorWidget({ fundId }: { fundId: string }) {
 
   // reset form values when fundId changes
   useEffect(() => {
+    setAmountIn(0);
+    setBalance(0);
+
     if (direction === "redeem") {
       // keep method as is
-      setAmountIn(0);
-      setAmountInAsset("Shares");
+      setAmountInAsset("Shares"); // TODO: use share class symbol here
 
       // update balance
       const mint = fund?.shareClasses[0]?.id;
       if (mint) {
-        const tokenAccount = (walletBalances?.tokenAccounts || []).find(
-          (a: any) => a.mint === mint.toBase58()
+        const tokenAccount = (userWallet?.tokenAccounts || []).find(
+          (a) => a.mint.toBase58() === mint.toBase58(),
         );
         if (tokenAccount) {
-          setBalance(Number(tokenAccount.amount) / 10 ** tokenAccount.decimals);
-        } else {
-          setBalance(0);
+          setBalance(tokenAccount.uiAmount);
         }
-      } else {
-        setBalance(0);
       }
-    } else {
-      setAmountIn(0);
-      setAmountInAsset(fund?.fundCurrency || "SOL");
+      return;
+    }
 
-      // update balance
-      const mint = fund?.assets[0] || WSOL;
-      if (WSOL.equals(mint)) {
-        setBalance(
-          Number(walletBalances?.balanceLamports || 0) / LAMPORTS_PER_SOL
-        );
-      } else {
-        const tokenAccount = (walletBalances?.tokenAccounts || []).find(
-          (a: any) => a.mint === mint.toBase58()
-        );
-        if (tokenAccount) {
-          setBalance(Number(tokenAccount.amount) / 10 ** tokenAccount.decimals);
-        } else {
-          setBalance(0);
-        }
+    // direction === "subscribe"
+    setAmountInAsset(fund?.fundCurrency || "SOL");
+
+    // update balance
+    const mint = fund?.assets[0] || WSOL;
+    if (WSOL.equals(mint)) {
+      setBalance((userWallet?.balanceLamports || 0) / LAMPORTS_PER_SOL);
+    } else {
+      const tokenAccount = (userWallet?.tokenAccounts || []).find(
+        (a) => a.mint.toBase58() === mint.toBase58(),
+      );
+      if (tokenAccount) {
+        setBalance(tokenAccount.uiAmount);
       }
     }
-  }, [fundId, direction, walletBalances]);
+  }, [fundId, direction, userWallet]);
 
   const getDecimals = (asset: PublicKey, mintsList: any[]) => {
     if (WSOL.equals(asset)) {
@@ -457,7 +451,7 @@ function InvestorWidget({ fundId }: { fundId: string }) {
 
   const onSubmit: SubmitHandler<FlowSchema> = async (
     values: FlowSchema,
-    event
+    event,
   ) => {
     const nativeEvent = event as React.BaseSyntheticEvent & {
       nativeEvent: { submitter: HTMLElement };
@@ -500,9 +494,12 @@ function InvestorWidget({ fundId }: { fundId: string }) {
     let txId;
     try {
       if (direction === "redeem") {
-        const asset = fund.shareClasses[0].id;
-        const decimals = getDecimals(asset, walletBalances?.tokenAccounts);
-        const amount = new BN(values.amountIn * 10 ** decimals);
+        const asset = fund.shareClasses[0].id as PublicKey;
+        const ata = (userWallet?.tokenAccounts || []).find((a) =>
+          a.mint.equals(asset),
+        )!;
+        const amount = new BN(values.amountIn * 10 ** ata.decimals);
+
         txId = await glamClient.investor.redeem(
           fund.id,
           amount,
@@ -512,12 +509,15 @@ function InvestorWidget({ fundId }: { fundId: string }) {
           true,
           {
             getPriorityFeeMicroLamports,
-          }
+          },
         );
       } else {
         const asset = fund.assets[0];
-        const decimals = getDecimals(asset, walletBalances?.tokenAccounts);
-        const amount = new BN(values.amountIn * 10 ** decimals);
+        const ata = (userWallet?.tokenAccounts || []).find((a) =>
+          a.mint.equals(asset),
+        )!;
+
+        const amount = new BN(values.amountIn * 10 ** ata.decimals);
         txId = await glamClient.investor.subscribe(
           fund.id,
           asset,
@@ -527,11 +527,11 @@ function InvestorWidget({ fundId }: { fundId: string }) {
           true,
           {
             getPriorityFeeMicroLamports,
-          }
+          },
         );
       }
 
-      queryClient.invalidateQueries({ queryKey: walletBalancesQueryKey });
+      queryClient.invalidateQueries({ queryKey: userWallet?.queryKey });
       toast({
         title: `Successful ${direction}`,
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
@@ -608,7 +608,7 @@ function InvestorWidget({ fundId }: { fundId: string }) {
                         onValueChange={(value) => {
                           form.setValue(
                             "method",
-                            value as FlowSchema["method"]
+                            value as FlowSchema["method"],
                           );
                           setMethod(value);
                         }}
@@ -622,7 +622,7 @@ function InvestorWidget({ fundId }: { fundId: string }) {
                                   .map(
                                     (word) =>
                                       word.charAt(0).toUpperCase() +
-                                      word.slice(1)
+                                      word.slice(1),
                                   )
                                   .join(" ")}
                           </SelectValue>

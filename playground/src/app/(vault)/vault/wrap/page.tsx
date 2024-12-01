@@ -26,7 +26,7 @@ const wrapSchema = z.object({
 type WrapSchema = z.infer<typeof wrapSchema>;
 
 export default function Wrap() {
-  const { fund: fundPDA, treasury, wallet, glamClient } = useGlam();
+  const { fund: fundPDA, treasury, userWallet, glamClient } = useGlam();
 
   const [amountAsset, setAmountAsset] = useState<string>("SOL");
   const [direction, setDirection] = useState<string>("wrap");
@@ -65,7 +65,7 @@ export default function Wrap() {
       return;
     }
 
-    if (!wallet) {
+    if (!userWallet.pubkey) {
       toast({
         title: "Please connected your wallet.",
         variant: "destructive",
