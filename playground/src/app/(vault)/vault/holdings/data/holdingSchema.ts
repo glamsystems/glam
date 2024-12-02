@@ -11,6 +11,7 @@ export const holdingSchema = z.object({
   notional: z.number(),
   logoURI: z.string(),
   location: z.string(),
+  lst: z.boolean().optional().default(false),
 });
 
 export type Holding = z.infer<typeof holdingSchema>;

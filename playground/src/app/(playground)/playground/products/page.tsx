@@ -21,8 +21,8 @@ export default function Products() {
     id: f.idStr,
     imageKey: f.imageKey,
     name: f.name || f.idStr,
-    symbol: f.shareClasses[0]?.shareClassSymbol || "NA",
-    baseAsset: f.fundCurrency || "NA",
+    symbol: f.shareClasses[0]?.shareClassSymbol || "-",
+    baseAsset: f.fundCurrency || "SOL",
     inception: f.fundLaunchDate,
     status: "active",
   }));

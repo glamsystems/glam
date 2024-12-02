@@ -34,6 +34,7 @@ export default function Holdings() {
     notional: 0,
     logoURI: "",
     location: "",
+    lst: false,
   });
 
   const skeletonData = useMemo(() => {
@@ -61,24 +62,19 @@ export default function Holdings() {
         location: "vault",
         logoURI:
           "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
+        lst: false,
       });
     }
 
     if (treasury?.tokenAccounts) {
       tokenAccounts.push(
         ...treasury.tokenAccounts.map((ta) => {
-          const logoURI =
-            jupTokenList?.find((t: any) => t.address === ta.mint)?.logoURI ||
-            "";
-          const name =
-            jupTokenList?.find((t: any) => t.address === ta.mint)?.name ||
-            "Unknown";
-          const symbol =
-            jupTokenList?.find((t: any) => t.address === ta.mint)?.symbol ||
-            ta.mint;
-          const decimals =
-            jupTokenList?.find((t: any) => t.address === ta.mint)?.decimals ||
-            9;
+          const asset = jupTokenList?.find((t: any) => t.address === ta.mint);
+          const logoURI = asset?.logoURI || "";
+          const name = asset?.name || "Unknown";
+          const symbol = asset?.symbol || ta.mint;
+          const decimals = asset?.decimals || 9;
+          const tags = asset?.tags || [];
           const price = prices?.find((p) => p.mint === ta.mint)?.price || 0;
           return {
             name,
@@ -91,6 +87,7 @@ export default function Holdings() {
             notional: Number(ta.uiAmount) * price || 0,
             logoURI: logoURI,
             location: "vault",
+            lst: tags.indexOf("lst") >= 0,
           };
         })
       );
@@ -116,6 +113,7 @@ export default function Holdings() {
           notional: balance * price || 0,
           logoURI: "https://avatars.githubusercontent.com/u/83389928?s=48&v=4",
           location: "drift",
+          lst: false,
         };
       });
       tokenAccounts.push(...driftHoldings);
