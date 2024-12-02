@@ -117,9 +117,7 @@ export default function MultiStepForm() {
 
     try {
       const fundData = {
-        name:
-          openfundsData.fund.legalFundNameIncludingUmbrella ||
-          basicInfoFormData.name,
+        name: basicInfoFormData.name,
         isEnabled: true,
         fundDomicileAlpha2: openfundsData.fund.fundDomicileAlpha2,
         integrationAcls: [{ name: { mint: {} }, features: [] }],
@@ -140,14 +138,13 @@ export default function MultiStepForm() {
           },
         ],
       };
-      console.log("fundData", fundData);
 
       const [txSig, fundPDA] = await glamClient.createFund(fundData, true);
       setActiveFund({
         address: fundPDA.toBase58(),
         pubkey: fundPDA,
         imageKey: fundPDA.toBase58(),
-        name: openfundsData.fund.legalFundNameIncludingUmbrella,
+        name: fundData.name,
       });
       toast({
         title: "Fund created successfully",

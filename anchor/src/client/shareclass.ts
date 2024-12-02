@@ -202,9 +202,28 @@ export class ShareClassClient {
     shareClassId: number,
     amount: anchor.BN,
     from: PublicKey,
+    forceThaw: boolean = false,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const shareClassMint = this.base.getShareClassPDA(fundPDA, shareClassId);
+    const ata = this.base.getShareClassAta(from, shareClassMint);
+
+    const preInstructions = [];
+    if (forceThaw) {
+      preInstructions.push(
+        await this.base.program.methods
+          .setTokenAccountsStates(shareClassId, false)
+          .accounts({
+            shareClassMint,
+            fund: fundPDA,
+          })
+          .remainingAccounts([
+            { pubkey: ata, isSigner: false, isWritable: true },
+          ])
+          .instruction(),
+      );
+    }
+
     return await this.base.program.methods
       .burnShare(shareClassId, amount)
       .accounts({
@@ -212,6 +231,7 @@ export class ShareClassClient {
         shareClassMint,
         fund: fundPDA,
       })
+      .preInstructions(preInstructions)
       .rpc();
   }
 

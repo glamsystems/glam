@@ -1,56 +1,84 @@
 "use client";
 
-import React from "react";
+import React, { use, useEffect } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { AssetInput } from "@/components/AssetInput";
+import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/FormInput";
 import { PublicKey } from "@solana/web3.js";
 import { toast } from "@/components/ui/use-toast";
 import { useGlam } from "@glam/anchor/react";
-import {
-  createAssociatedTokenAccountIdempotentInstruction,
-  TOKEN_2022_PROGRAM_ID,
-} from "@solana/spl-token";
+
 import { BN } from "@coral-xyz/anchor";
 import { parseTxError } from "@/lib/error";
 import { ExplorerLink } from "@/components/ExplorerLink";
 
+import { PubkeySelector } from "@/components/PubkeySelector";
+import { WarningCard } from "@/components/WarningCard";
+
 const supplySchema = z.object({
-  amount: z.number().nonnegative(),
-  recipient: z.string().min(32),
+  amount: z.number().gt(0),
+  address: z.string(),
 });
 
 type SupplySchema = z.infer<typeof supplySchema>;
 
 export default function SupplyPage() {
-  const [isTxPending, setIsTxPending] = React.useState(false);
   const { fund: fundPDA, glamClient } = useGlam();
+
+  const [txStates, setTxStates] = React.useState({
+    mintTxPending: false,
+    burnTxPending: false,
+  });
+
+  const [tokenHolders, setTokenHolders] = React.useState<
+    { value: string; label: string }[]
+  >([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const tokenAccounts = await glamClient.shareClass.getHolders(fundPDA!, 0);
+      const tokenHolders = tokenAccounts.map((ta) => ({
+        value: ta.owner.toBase58(),
+        label: `Token holder ${Math.floor(Math.random() * 10000)}`,
+      }));
+      setTokenHolders(tokenHolders);
+    };
+    fundPDA && fetchData();
+  }, [glamClient, fundPDA]);
 
   const form = useForm<SupplySchema>({
     resolver: zodResolver(supplySchema),
     defaultValues: {
       amount: 0,
-      recipient: "",
+      address: "",
     },
   });
 
-  const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    form.reset();
-  };
+  const onSubmit: SubmitHandler<SupplySchema> = async (values, event) => {
+    const submitter = (event?.nativeEvent as SubmitEvent)?.submitter?.id;
+    if (!submitter || !fundPDA) {
+      return;
+    }
 
-  const onSubmit: SubmitHandler<SupplySchema> = async (values, _event) => {
-    const { amount, recipient } = values;
-    console.log(`Minting ${amount} shares to ${recipient}`);
+    if (submitter === "clear") {
+      form.reset();
+      return;
+    }
+
+    if (submitter !== "burn" && submitter !== "mint") {
+      console.log("Invalid submitter", submitter);
+      return;
+    }
+
+    const { amount, address } = values;
 
     let pubkey;
     try {
-      pubkey = new PublicKey(recipient);
+      pubkey = new PublicKey(address);
     } catch (e) {
       console.log(e);
       toast({
@@ -61,52 +89,40 @@ export default function SupplyPage() {
       return;
     }
 
-    if (!fundPDA) {
-      return;
-    }
-
-    const shareClassMint = glamClient.getShareClassPDA(fundPDA, 0);
-    const mintTo = glamClient.getShareClassAta(pubkey, shareClassMint);
-
-    const ixCreateAta = createAssociatedTokenAccountIdempotentInstruction(
-      glamClient.getManager(),
-      mintTo,
-      pubkey,
-      shareClassMint,
-      TOKEN_2022_PROGRAM_ID
-    );
-    const ixUpdateAtaState = await glamClient.program.methods
-      .setTokenAccountsStates(0, false)
-      .accounts({
-        shareClassMint,
-        fund: fundPDA,
-      })
-      .remainingAccounts([
-        { pubkey: mintTo, isSigner: false, isWritable: true },
-      ])
-      .instruction();
-
+    setTxStates({
+      mintTxPending: submitter === "mint",
+      burnTxPending: submitter === "burn",
+    });
     try {
-      const txSig = await glamClient.program.methods
-        .mintShare(0, new BN(amount * 10 ** 9))
-        .accounts({
-          recipient: pubkey,
-          shareClassMint,
-          fund: fundPDA,
-        })
-        .preInstructions([ixCreateAta, ixUpdateAtaState])
-        .rpc();
+      const txSig =
+        submitter === "mint"
+          ? await glamClient.shareClass.mintShare(
+              fundPDA,
+              0,
+              pubkey,
+              new BN(amount * 10 ** 9),
+              true, // force thawing token account if it's frozen
+            )
+          : await glamClient.shareClass.burnShare(
+              fundPDA,
+              0,
+              new BN(amount * 10 ** 9),
+              pubkey,
+              true, // force thawing token account if it's frozen
+            );
+
       toast({
-        title: "Successfully minted shares",
+        title: `Successfully ${submitter}ed ${amount} shares`,
         description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
       });
     } catch (e) {
       toast({
-        title: "Failed to mint shares",
+        title: `Failed to ${submitter} shares`,
         description: parseTxError(e),
         variant: "destructive",
       });
     }
+    setTxStates({ mintTxPending: false, burnTxPending: false });
   };
 
   return (
@@ -123,21 +139,26 @@ export default function SupplyPage() {
                   type="number"
                 />
 
-                <FormInput
+                <PubkeySelector
                   className="min-w-2/3 w-2/3"
-                  name="recipient"
-                  label="Recipient"
-                  type="string"
-                  placeholder="Enter recipient address"
+                  name="address"
+                  label="Public Key"
+                  pubkeys={tokenHolders}
                 />
               </div>
+
+              <WarningCard
+                className="p-2"
+                message="Burning or minting shares automatically thaws a frozen token
+                account."
+              />
 
               <div className="flex space-x-4 w-full">
                 <Button
                   variant="ghost"
                   className="w-full capitalize"
                   type="submit"
-                  onClick={handleClear}
+                  id="clear"
                 >
                   Clear
                 </Button>
@@ -145,14 +166,16 @@ export default function SupplyPage() {
                   className="w-full capitalize"
                   variant="ghost"
                   type="submit"
-                  loading={isTxPending}
+                  id="burn"
+                  loading={txStates.burnTxPending}
                 >
                   Burn
                 </Button>
                 <Button
                   className="w-full capitalize"
                   type="submit"
-                  loading={isTxPending}
+                  id="mint"
+                  loading={txStates.mintTxPending}
                 >
                   Mint
                 </Button>
