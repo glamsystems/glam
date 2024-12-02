@@ -468,6 +468,7 @@ export class BaseClient {
       // @ts-ignore
       fundModel.name ||
       fundModel.rawOpenfunds?.legalFundNameIncludingUmbrella ||
+      fundModel.legalFundNameIncludingUmbrella ||
       fundModel.shareClasses[0]?.name ||
       ""
     );
@@ -708,6 +709,7 @@ export class BaseClient {
         firstShareClass,
       ]),
     };
+    fund.name = this.getFundName(fund);
 
     //TODO: this is no longer FundModel, we should create a proper type
     return fund;
