@@ -26,6 +26,7 @@ interface JupTokenListItem {
   symbol: string;
   decimals: number;
   logoURI: string;
+  tags: string[];
 }
 
 interface PythPrice {
@@ -304,6 +305,7 @@ export function GlamProvider({
         symbol: t.symbol,
         decimals: t.decimals,
         logoURI: t.logoURI,
+        tags: t.tags,
       }));
       return tokenList;
     },
