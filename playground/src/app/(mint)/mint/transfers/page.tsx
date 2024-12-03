@@ -139,7 +139,7 @@ export default function TransferPage() {
 
               <WarningCard
                 className="p-2"
-                message="Transfering shares automatically thaws token tokens involved."
+                message="Transfering shares automatically thaws account tokens involved."
               />
 
               <div className="flex space-x-4 w-full">

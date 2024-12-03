@@ -1,10 +1,18 @@
 import {
   PublicKey,
   VersionedTransaction,
+  Transaction,
   TransactionSignature,
   ComputeBudgetProgram,
 } from "@solana/web3.js";
+import { BN } from "@coral-xyz/anchor";
 import { BaseClient, TxOptions } from "./base";
+import {
+  createAssociatedTokenAccountIdempotentInstruction,
+  createTransferCheckedInstruction,
+  TOKEN_PROGRAM_ID,
+  unpackMint,
+} from "@solana/spl-token";
 
 export class FundClient {
   public constructor(readonly base: BaseClient) {}
@@ -166,6 +174,109 @@ export class FundClient {
         })),
       )
       .transaction();
+    return await this.base.intoVersionedTransaction({ tx, ...txOptions });
+  }
+
+  /* Deposit & Withdraw */
+
+  public async deposit(
+    fund: PublicKey,
+    asset: PublicKey,
+    amount: number | BN,
+    txOptions: TxOptions = {} as TxOptions,
+  ): Promise<TransactionSignature> {
+    const tx = await this.depositTx(fund, asset, amount, txOptions);
+    return await this.base.sendAndConfirm(tx);
+  }
+
+  public async withdraw(
+    fund: PublicKey,
+    asset: PublicKey,
+    amount: number | BN,
+    txOptions: TxOptions = {} as TxOptions,
+  ): Promise<TransactionSignature> {
+    const tx = await this.withdrawTx(fund, asset, amount, txOptions);
+    return await this.base.sendAndConfirm(tx);
+  }
+
+  async fetchMintWithOwner(asset: PublicKey) {
+    const connection = this.base.provider.connection;
+    const commitment = "confirmed";
+    const info = await connection.getAccountInfo(asset, { commitment });
+    const tokenProgram = info?.owner || TOKEN_PROGRAM_ID;
+    let mint = unpackMint(asset, info, tokenProgram);
+    return { mint, tokenProgram };
+  }
+
+  public async depositTx(
+    fund: PublicKey,
+    asset: PublicKey,
+    amount: number | BN,
+    txOptions: TxOptions,
+  ): Promise<VersionedTransaction> {
+    const manager = txOptions.signer || this.base.getManager();
+    const treasury = this.base.getTreasuryPDA(fund);
+
+    const { mint, tokenProgram } = await this.fetchMintWithOwner(asset);
+
+    const managerAta = this.base.getManagerAta(asset, manager, tokenProgram);
+    const treasuryAta = this.base.getTreasuryAta(fund, asset, tokenProgram);
+
+    // @ts-ignore
+    const tx = new Transaction().add(
+      createAssociatedTokenAccountIdempotentInstruction(
+        manager,
+        treasuryAta,
+        treasury,
+        asset,
+        tokenProgram,
+      ),
+      createTransferCheckedInstruction(
+        managerAta,
+        asset,
+        treasuryAta,
+        manager,
+        new BN(amount).toNumber(),
+        mint.decimals,
+        [],
+        tokenProgram,
+      ),
+    );
+
+    return await this.base.intoVersionedTransaction({ tx, ...txOptions });
+  }
+
+  public async withdrawTx(
+    fund: PublicKey,
+    asset: PublicKey,
+    amount: number | BN,
+    txOptions: TxOptions,
+  ): Promise<VersionedTransaction> {
+    const manager = txOptions.signer || this.base.getManager();
+    const { mint, tokenProgram } = await this.fetchMintWithOwner(asset);
+    const managerAta = this.base.getManagerAta(asset, manager, tokenProgram);
+
+    // @ts-ignore
+    const tx = await this.base.program.methods
+      .withdraw(new BN(amount))
+      .accounts({
+        fund,
+        asset,
+        //@ts-ignore
+        manager,
+        tokenProgram,
+      })
+      .preInstructions([
+        createAssociatedTokenAccountIdempotentInstruction(
+          manager,
+          managerAta,
+          manager,
+          asset,
+          tokenProgram,
+        ),
+      ])
+      .transaction();
+
     return await this.base.intoVersionedTransaction({ tx, ...txOptions });
   }
 }

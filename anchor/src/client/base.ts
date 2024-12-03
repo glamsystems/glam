@@ -805,7 +805,7 @@ export class BaseClient {
     fundPDA: PublicKey,
     fundAccount: FundAccount,
     openfundsAccount: FundMetadataAccount,
-    firstShareClass: Mint,
+    firstShareClass?: Mint,
   ): FundModel {
     //TODO rebuild model from accounts
     let fundModel = this.getFundModel(fundAccount);
@@ -839,7 +839,12 @@ export class BaseClient {
   public async fetchFund(fundPDA: PublicKey): Promise<FundModel> {
     const fundAccount = await this.fetchFundAccount(fundPDA);
     const openfundsAccount = await this.fetchFundMetadataAccount(fundPDA);
-    const firstShareClass = await this.fetchShareClassAccount(fundPDA, 0);
+    let firstShareClass;
+    try {
+      firstShareClass = await this.fetchShareClassAccount(fundPDA, 0);
+    } catch (_) {
+      // pass - for vaults
+    }
     return this.fundModelFromAccounts(
       fundPDA,
       fundAccount,
@@ -863,8 +868,9 @@ export class BaseClient {
     const mintAddresses = (fundAccounts || [])
       .map((f) => f.account.shareClasses[0])
       .filter((addr) => !!addr);
-    const mintAccounts =
-      await connection.getMultipleAccountsInfo(mintAddresses);
+    const mintAccounts = await connection.getMultipleAccountsInfo(
+      mintAddresses,
+    );
     (mintAccounts || []).forEach((info, j) => {
       const mintInfo = unpackMint(
         mintAddresses[j],
