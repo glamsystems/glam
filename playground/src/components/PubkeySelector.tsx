@@ -58,10 +58,7 @@ export const PubkeySelector: React.FC<Props> = ({
                     type="button"
                     className="w-full justify-between"
                   >
-                    {field.value
-                      ? pubkeys.find((pubkey) => pubkey.value === field.value)
-                          ?.value
-                      : "Select token holder public key"}
+                    {field.value || "Select token holder public key"}
                     <ChevronsUpDown className="w-4 h-4 opacity-50" />
                   </Button>
                 </div>
@@ -74,6 +71,7 @@ export const PubkeySelector: React.FC<Props> = ({
               className="w-max p-0"
             >
               <Command>
+                {/* Only supports search by label */}
                 <CommandInput
                   placeholder="Search token holder ..."
                   className="h-9"

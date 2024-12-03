@@ -81,25 +81,24 @@ export default function Transfer() {
 
   const driftAssets = () => {
     const { spotPositions } = driftUser;
-    const assets =
-      spotPositions.map((position: any) => {
-        // balance is a string of ui amount, needs to be converted to number
-        const { marketIndex, balance } = position;
-        const marketConfig = driftMarketConfigs.spot.find(
-          (spot) => spot.marketIndex === marketIndex,
-        );
-        if (!marketConfig) {
-          return {} as Asset;
-        }
-        const { symbol, mint, decimals } = marketConfig;
-        return {
-          name: symbol,
-          symbol,
-          address: mint,
-          decimals,
-          balance: Number(balance),
-        } as Asset;
-      }) || [];
+    const assets = (spotPositions || []).map((position: any) => {
+      // balance is a string of ui amount, needs to be converted to number
+      const { marketIndex, balance } = position;
+      const marketConfig = driftMarketConfigs.spot.find(
+        (spot) => spot.marketIndex === marketIndex,
+      );
+      if (!marketConfig) {
+        return {} as Asset;
+      }
+      const { symbol, mint, decimals } = marketConfig;
+      return {
+        name: symbol,
+        symbol,
+        address: mint,
+        decimals,
+        balance: Number(balance),
+      } as Asset;
+    });
     return assets;
   };
 

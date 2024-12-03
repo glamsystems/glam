@@ -38,7 +38,7 @@ export default function TransferPage() {
       const tokenAccounts = await glamClient.shareClass.getHolders(fundPDA!, 0);
       const tokenHolders = tokenAccounts.map((ta) => ({
         value: ta.owner.toBase58(),
-        label: ta.frozen ? "Frozen" : "Active",
+        label: ta.owner.toBase58(), // PubkeySelector only supports search by label
       }));
       setTokenHolders(tokenHolders);
     };
@@ -77,6 +77,15 @@ export default function TransferPage() {
       return;
     }
 
+    if (fromPubkey.equals(toPubkey)) {
+      toast({
+        title: "Invalid addresses",
+        description: "Please use different from and to addresses",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!amount) {
       toast({
         title: "Invalid amount",
@@ -90,6 +99,7 @@ export default function TransferPage() {
       return;
     }
 
+    setIsTxPending(true);
     try {
       const txId = await glamClient.shareClass.forceTransferShare(
         fundPDA,
@@ -111,6 +121,7 @@ export default function TransferPage() {
         variant: "destructive",
       });
     }
+    setIsTxPending(false);
   };
 
   return (
