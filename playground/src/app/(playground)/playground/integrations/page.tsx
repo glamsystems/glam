@@ -434,7 +434,7 @@ export default function Integrations() {
             setTreeData={setTreeData}
             isExpanded={isExpanded}
             toggleExpandCollapse={toggleExpandCollapse}
-            handleCheckedItemsChange={handleCheckedItemsChange}
+            onCheckedItemsChange={handleCheckedItemsChange}
           />
         </div>
       </div>

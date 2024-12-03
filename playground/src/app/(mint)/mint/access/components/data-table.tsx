@@ -27,7 +27,6 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
-import { columns as defaultColumns } from "./columns";
 import {
   Sheet,
   SheetClose,
@@ -42,204 +41,23 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { TreeNodeData } from "@/components/CustomTree";
-import { DownloadIcon } from "@radix-ui/react-icons";
 import ToolbarTree from "@/components/ToolbarTree";
-import { useCallback, useState } from "react";
-
-export interface KeyData {
-  pubkey: string;
-  label: string;
-  tags: string[];
-}
+import { useState } from "react";
+import { treeDataPermissions } from "../data/permissions";
+import { toast } from "@/components/ui/use-toast";
+import { useGlam } from "@glam/anchor/react";
+import { ExplorerLink } from "@/components/ExplorerLink";
+import { parseTxError } from "@/lib/error";
+import { PublicKey } from "@solana/web3.js";
+import { KeyData } from "./columns";
 
 interface DataTableProps<TData extends KeyData> {
-  columns?: ColumnDef<TData>[];
+  columns: ColumnDef<TData>[];
   data: TData[];
 }
 
-const treeData: TreeNodeData = {
-  id: "all",
-  label: "All",
-  description: "",
-  collapsed: false,
-  children: [
-    {
-      id: "native",
-      label: "Native",
-      description: "",
-      collapsed: true,
-      children: [
-        {
-          id: "initialize_and_delegate_stake",
-          label: "Initialize and delegate stake",
-          description: "",
-          icon: <DownloadIcon className="w-4 h-4" />,
-        },
-        {
-          id: "deactivate_stake_accounts",
-          label: "Deactivate stake accounts",
-          description: "",
-          icon: <DownloadIcon className="w-4 h-4" />,
-        },
-        {
-          id: "withdraw_from_stake_accounts",
-          label: "Withdraw from stake accounts",
-          description: "",
-          icon: <DownloadIcon className="w-4 h-4" />,
-        },
-      ],
-    },
-    {
-      id: "marinade_staking",
-      label: "Marinade Staking",
-      description: "",
-      collapsed: false,
-      children: [
-        {
-          id: "marinade_staking_deposit",
-          label: "Deposit",
-          description: "",
-          collapsed: true,
-          children: [
-            {
-              id: "marinade_deposit_sol",
-              label: "Deposit SOL",
-              description: "Deposit SOL directly into Marinade.",
-              icon: <DownloadIcon className="w-4 h-4" />,
-            },
-            {
-              id: "marinade_deposit_stake",
-              label: "Deposit stake",
-              description: "Deposit existing stake accounts into Marinade.",
-              icon: <DownloadIcon className="w-4 h-4" />,
-            },
-          ],
-        },
-        {
-          id: "marinade_staking_withdraw",
-          label: "Withdraw",
-          description: "",
-          collapsed: true,
-          children: [
-            {
-              id: "marinade_delayed_unstake",
-              label: "Delayed unstake",
-              description: "Unstake SOL with a delay.",
-              icon: <DownloadIcon className="w-4 h-4" />,
-            },
-            {
-              id: "marinade_claim_tickets",
-              label: "Claim tickets",
-              description: "Claim tickets after delayed unstaking.",
-              icon: <DownloadIcon className="w-4 h-4" />,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: "splStakePool",
-      label: "SPL Stake Pool",
-      description: "",
-      collapsed: false,
-      children: [
-        {
-          id: "splStakePool_deposit",
-          label: "Deposit",
-          description: "",
-          collapsed: true,
-          children: [
-            {
-              id: "spl_stake_pool_deposit_sol",
-              label: "Deposit SOL",
-              description: "Deposit SOL into the SPL Stake Pool.",
-              icon: <DownloadIcon className="w-4 h-4" />,
-            },
-            {
-              id: "spl_stake_pool_deposit_stake",
-              label: "Deposit stake",
-              description: "Deposit stake accounts into the SPL Stake Pool.",
-              icon: <DownloadIcon className="w-4 h-4" />,
-            },
-          ],
-        },
-        {
-          id: "splStakePool_withdraw",
-          label: "Withdraw",
-          description: "",
-          collapsed: true,
-          children: [
-            {
-              id: "spl_stake_pool_withdraw_sol",
-              label: "Withdraw SOL",
-              description: "Withdraw SOL from the SPL Stake Pool.",
-              icon: <DownloadIcon className="w-4 h-4" />,
-            },
-            {
-              id: "spl_stake_pool_withdraw_stake",
-              label: "Withdraw stake",
-              description: "Withdraw stake accounts from the SPL Stake Pool.",
-              icon: <DownloadIcon className="w-4 h-4" />,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: "sanctumStakePool",
-      label: "Sanctum Stake Pool",
-      description: "",
-      collapsed: false,
-      children: [
-        {
-          id: "sanctumStakePool_deposit",
-          label: "Deposit",
-          description: "",
-          collapsed: true,
-          children: [
-            {
-              id: "sanctum_stake_pool_deposit_sol",
-              label: "Deposit SOL",
-              description: "Deposit SOL into the Sanctum Stake Pool.",
-              icon: <DownloadIcon className="w-4 h-4" />,
-            },
-            {
-              id: "sanctum_stake_pool_deposit_stake",
-              label: "Deposit stake",
-              description:
-                "Deposit stake accounts into the Sanctum Stake Pool.",
-              icon: <DownloadIcon className="w-4 h-4" />,
-            },
-          ],
-        },
-        {
-          id: "sanctumStakePool_withdraw",
-          label: "Withdraw",
-          description: "",
-          collapsed: true,
-          children: [
-            {
-              id: "sanctum_stake_pool_withdraw_sol",
-              label: "Withdraw SOL",
-              description: "Withdraw SOL from the Sanctum Stake Pool.",
-              icon: <DownloadIcon className="w-4 h-4" />,
-            },
-            {
-              id: "sanctum_stake_pool_withdraw_stake",
-              label: "Withdraw stake",
-              description:
-                "Withdraw stake accounts from the Sanctum Stake Pool.",
-              icon: <DownloadIcon className="w-4 h-4" />,
-            },
-          ],
-        },
-      ],
-    },
-  ],
-};
-
 export function DataTable<TData extends KeyData>({
-  columns = defaultColumns as ColumnDef<TData>[], // Type cast to match the generic types
+  columns,
   data,
 }: DataTableProps<TData>) {
   const [rowSelection, setRowSelection] = React.useState({});
@@ -272,19 +90,103 @@ export function DataTable<TData extends KeyData>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 
-  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
+  const [treeData, setTreeData] = useState<TreeNodeData>(treeDataPermissions);
 
   const toggleExpandCollapse = () => {
     setIsExpanded(!isExpanded);
   };
 
-  const handleCheckedItemsChange = useCallback(
-    (newCheckedItems: Record<string, boolean>) => {
-      setCheckedItems(newCheckedItems);
-    },
-    [],
-  );
+  const { glamClient, fund: fundPDA } = useGlam();
+
+  const handleModifyKey = async (
+    event: React.MouseEvent<HTMLButtonElement>,
+    publicKey: string,
+  ) => {
+    event.preventDefault();
+    console.log("Modify key:", publicKey, " with new permissions:", treeData);
+
+    const permissions = treeData.children
+      ?.filter((node) => node.checked)
+      .map((node) => node.id);
+
+    if (!permissions || permissions.length === 0) {
+      toast({
+        title: "No permissions selected",
+        description: "Please select at least one permission.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    let pubkey;
+    try {
+      pubkey = new PublicKey(publicKey);
+    } catch (e) {
+      toast({
+        title: "Invalid public key",
+        description: "Please enter a valid public key.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const delegateAcls = [
+      { pubkey, permissions: permissions.map((p) => ({ [p]: {} })) },
+    ];
+    try {
+      const txSig = await glamClient.fund.upsertDelegateAcls(
+        fundPDA!,
+        delegateAcls,
+      );
+      toast({
+        title: "Delegate key permissions updated",
+        description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
+      });
+    } catch (e) {
+      toast({
+        title: "Failed to update delegate key",
+        description: parseTxError(e),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteKey = async (
+    event: React.MouseEvent<HTMLButtonElement>,
+    publicKey: string,
+  ) => {
+    event.preventDefault();
+    console.log("Delete key:", publicKey);
+
+    let pubkey;
+    try {
+      pubkey = new PublicKey(publicKey);
+    } catch (e) {
+      toast({
+        title: "Invalid public key",
+        description: "Please enter a valid public key.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const txSig = await glamClient.fund.deleteDelegateAcls(fundPDA!, [
+        pubkey,
+      ]);
+      toast({
+        title: "Delegate key deleted",
+        description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
+      });
+    } catch (e) {
+      toast({
+        title: "Failed to delete delegate key",
+        description: parseTxError(e),
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="space-y-4 w-full">
@@ -344,7 +246,11 @@ export function DataTable<TData extends KeyData>({
                         <Label htmlFor="label" className="text-right">
                           Label
                         </Label>
-                        <Input id="label" value="Jim" className="col-span-3" />
+                        <Input
+                          id="label"
+                          placeholder="Label"
+                          className="col-span-3"
+                        />
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
                         <Label
@@ -355,8 +261,7 @@ export function DataTable<TData extends KeyData>({
                         </Label>
                         <Input
                           id="pubKey"
-                          value=""
-                          placeholder="GLAMvRgo7cHBPjQGf8UaVnsD6TUDjq16dEUuDPAPLjyJ"
+                          value={row.original.pubkey}
                           className="col-span-3"
                           disabled
                         />
@@ -371,10 +276,10 @@ export function DataTable<TData extends KeyData>({
                       <div className="col-span-3">
                         <ToolbarTree
                           treeData={treeData}
-                          setTreeData={() => {}}
+                          setTreeData={setTreeData}
                           isExpanded={isExpanded}
                           toggleExpandCollapse={toggleExpandCollapse}
-                          onCheckedItemsChange={handleCheckedItemsChange}
+                          onCheckedItemsChange={() => {}}
                         />
                       </div>
                     </div>
@@ -382,11 +287,19 @@ export function DataTable<TData extends KeyData>({
                       <Button
                         variant="outline"
                         className="hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
+                        onClick={(e) => handleDeleteKey(e, row.original.pubkey)}
                       >
                         Delete Key
                       </Button>
                       <SheetClose asChild>
-                        <Button type="submit">Modify Key</Button>
+                        <Button
+                          type="submit"
+                          onClick={(e) =>
+                            handleModifyKey(e, row.original.pubkey)
+                          }
+                        >
+                          Modify Key
+                        </Button>
                       </SheetClose>
                     </SheetFooter>
                   </SheetContent>

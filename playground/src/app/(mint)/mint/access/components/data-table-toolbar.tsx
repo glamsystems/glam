@@ -19,16 +19,16 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
+import ToolbarTree from "@/components/ToolbarTree";
 import * as React from "react";
 import { useState } from "react";
-import { useGlam } from "@glam/anchor/react";
-import { PublicKey } from "@solana/web3.js";
+import { TreeNodeData } from "@/components/CustomTree";
+import { mintPermissions, treeDataPermissions } from "../data/permissions";
 import { toast } from "@/components/ui/use-toast";
-import {
-  createAssociatedTokenAccountIdempotentInstruction,
-  TOKEN_2022_PROGRAM_ID,
-} from "@solana/spl-token";
+import { PublicKey } from "@solana/web3.js";
+import { useGlam } from "@glam/anchor/react";
 import { ExplorerLink } from "@/components/ExplorerLink";
+import { parseTxError } from "@/lib/error";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -39,35 +39,28 @@ export function DataTableToolbar<TData>({
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
 
-  const [label, setLabel] = useState<string>("");
-  const [publicKey, setPublicKey] = useState<string>("");
-  const [ata, setAta] = useState<string>("");
+  const [publicKey, setPublicKey] = useState("");
+  const [isExpanded, setIsExpanded] = useState(true);
+  const [treeData, setTreeData] = useState<TreeNodeData>(treeDataPermissions);
 
+  const toggleExpandCollapse = () => {
+    setIsExpanded(!isExpanded);
+  };
   const { glamClient, fund: fundPDA } = useGlam();
 
-  React.useEffect(() => {
-    if (!glamClient || !fundPDA) {
-      return;
-    }
-    // Set ata if public key is valid
-    try {
-      const shareClassMint = glamClient.getShareClassPDA(fundPDA, 0);
-      const ata = glamClient.getShareClassAta(
-        new PublicKey(publicKey),
-        shareClassMint,
-      );
-      setAta(ata.toBase58());
-    } catch (e) {
-      setAta("");
-    }
-  }, [publicKey]);
-
-  const addHolderAccount = async (
-    event: React.MouseEvent<HTMLButtonElement>,
-  ) => {
+  const handleAddKey = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
+    console.log("Add key with permissions:", treeData);
+    const permissions = treeData.children
+      ?.filter((node) => node.checked)
+      .map((node) => node.id);
 
-    if (!fundPDA || !glamClient) {
+    if (!permissions || permissions.length === 0) {
+      toast({
+        title: "No permissions selected",
+        description: "Please select at least one permission.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -75,7 +68,6 @@ export function DataTableToolbar<TData>({
     try {
       pubkey = new PublicKey(publicKey);
     } catch (e) {
-      console.log(e);
       toast({
         title: "Invalid public key",
         description: "Please enter a valid public key.",
@@ -84,19 +76,24 @@ export function DataTableToolbar<TData>({
       return;
     }
 
+    const delegateAcls = [
+      { pubkey, permissions: permissions.map((p) => ({ [p]: {} })) },
+    ];
     try {
-      const txSig = await glamClient.shareClass.createTokenAccount(
-        fundPDA,
-        pubkey,
-        0,
-        false,
+      const txSig = await glamClient.fund.upsertDelegateAcls(
+        fundPDA!,
+        delegateAcls,
       );
       toast({
-        title: "New share class holder added",
+        title: "A new delegate key was added",
         description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
       });
     } catch (e) {
-      console.log(e);
+      toast({
+        title: "Failed to add delegate key",
+        description: parseTxError(e),
+        variant: "destructive",
+      });
     }
   };
 
@@ -107,14 +104,14 @@ export function DataTableToolbar<TData>({
           <SheetTrigger asChild>
             <Button variant="default" size="sm" className="h-8">
               <PlusIcon className="mr-2" />
-              Add Account
+              Add Key
             </Button>
           </SheetTrigger>
           <SheetContent side="right" className="p-12 sm:max-w-none w-1/2">
             <SheetHeader>
-              <SheetTitle>Add Account</SheetTitle>
+              <SheetTitle>Add Key</SheetTitle>
               <SheetDescription>
-                Add a new account to the allowlist.
+                Add a new key with access rights.
               </SheetDescription>
             </SheetHeader>
             <div className="grid gap-4 py-4">
@@ -122,60 +119,59 @@ export function DataTableToolbar<TData>({
                 <Label htmlFor="label" className="text-right">
                   Label
                 </Label>
-                <Input
-                  id="label"
-                  value={label}
-                  onChange={(e) => setLabel(e.target.value)}
-                  className="col-span-3"
-                />
+                <Input id="label" value="" className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="publicKey" className="text-right">
-                  Holder Public key
+                <Label htmlFor="pubkey" className="text-right">
+                  Public key
                 </Label>
                 <Input
-                  id="publicKey"
+                  id="pubkey"
                   placeholder="Publ1cK3y4cc355R1gh75KqM7VxWzeA9cUjfP2y"
                   value={publicKey}
                   onChange={(e) => setPublicKey(e.target.value)}
                   className="col-span-3"
                 />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="publicKey" className="text-right">
-                  Token Account
+            </div>
+            <div className="grid grid-cols-4 gap-4">
+              <div className="col-spar-3 text-right pt-1">
+                <Label htmlFor="accessRights" className="text-right">
+                  Access rights
                 </Label>
-                <Input
-                  id="publicKey"
-                  placeholder="Publ1cK3y4cc355R1gh75KqM7VxWzeA9cUjfP2y"
-                  value={ata}
-                  className="col-span-3"
-                  disabled
+              </div>
+              <div className="col-span-3">
+                <ToolbarTree
+                  treeData={treeData}
+                  isExpanded={isExpanded}
+                  toggleExpandCollapse={toggleExpandCollapse}
+                  setTreeData={setTreeData}
+                  onCheckedItemsChange={() => {}}
                 />
               </div>
             </div>
             <SheetFooter className="mt-4">
               <SheetClose asChild>
-                <Button type="submit" onClick={addHolderAccount}>
-                  Add Account
+                <Button type="submit" onClick={handleAddKey}>
+                  Add Key
                 </Button>
               </SheetClose>
             </SheetFooter>
           </SheetContent>
         </Sheet>
         <Input
-          placeholder="Search account..."
+          placeholder="Filter keys..."
           value={(table.getColumn("pubkey")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("pubkey")?.setFilterValue(event.target.value)
           }
           className="h-8 w-[150px] lg:w-[250px]"
         />
-        {table.getColumn("label") && (
+        {table.getColumn("tags") && (
           <DataTableFacetedFilter
-            column={table.getColumn("label")}
-            title="Label"
-            options={[]}
+            column={table.getColumn("tags")}
+            title="Access"
+            options={mintPermissions}
           />
         )}
         {isFiltered && (

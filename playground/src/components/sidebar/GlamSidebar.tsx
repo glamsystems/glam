@@ -39,7 +39,7 @@ function SidebarNavItem({ route, text, shortcut, Icon }: NavItem) {
         isActive={isActive}
         className={cn(
           "items-center text-sm outline-none opacity-50 hover:opacity-100 transition-all focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0",
-          isActive && "opacity-100"
+          isActive && "opacity-100",
         )}
       >
         <Link
@@ -67,13 +67,13 @@ export default function RefactoredSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isHovered, setIsHovered] = useState(false);
-  const { wallet, activeFund } = useGlam();
+  const { userWallet, activeFund } = useGlam();
 
   // Get navigation items based on current path
   const navList = getNavigationItems(pathname);
 
   const getVisibleItems = (items: NavItem[]) => {
-    if (!wallet) {
+    if (!userWallet.pubkey) {
       return items.filter((item) => item.route === "/");
     }
 
@@ -82,7 +82,7 @@ export default function RefactoredSidebar() {
       (typeof activeFund === "object" && Object.keys(activeFund).length === 0)
     ) {
       return items.filter((item) =>
-        ["/", "/flows", "/create"].includes(item.route)
+        ["/", "/flows", "/create"].includes(item.route),
       );
     }
 
@@ -123,21 +123,21 @@ export default function RefactoredSidebar() {
           })}
 
           <DevOnly>
-            <SidebarMenuButton
-              className={cn(
-                "items-center text-sm outline-none opacity-50 hover:opacity-100 transition-all focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0"
-              )}
-            >
-              <Link
-                href={"/playground"}
-                className="
-            focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0
-            flex grow items-center w-full"
-              >
-                <MixIcon />
-                <span className="flex-grow">Playground</span>
-              </Link>
-            </SidebarMenuButton>
+            <SidebarGroup key={"playground"}>
+              <SidebarGroupLabel className="text-muted-foreground opacity-50 text-xs">
+                {"Playground"}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="list-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0">
+                  <SidebarNavItem
+                    route="/playground"
+                    text={"Playground"}
+                    Icon={MixIcon}
+                    shortcut={""}
+                  />
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
           </DevOnly>
         </SidebarContent>
         <SidebarFooter>
@@ -146,7 +146,7 @@ export default function RefactoredSidebar() {
               "min-h-[40px] h-[40px] flex items-center relative overflow-hidden",
               "select-none transition-all duration-200 ease-linear",
               isCollapsed ? "justify-center" : "justify-start px-2",
-              isHovered ? "opacity-100" : "opacity-20"
+              isHovered ? "opacity-100" : "opacity-20",
             )}
           >
             <div className="flex items-center relative w-full">
@@ -155,7 +155,7 @@ export default function RefactoredSidebar() {
                   "flex items-center transition-all duration-200 ease-linear absolute left-0",
                   isCollapsed
                     ? "opacity-0 translate-x-[-100%]"
-                    : "opacity-100 translate-x-0"
+                    : "opacity-100 translate-x-0",
                 )}
               >
                 <span className="font-thin text-2xl whitespace-nowrap">
@@ -165,13 +165,13 @@ export default function RefactoredSidebar() {
               <div
                 className={cn(
                   "flex items-center transition-all duration-200 ease-linear",
-                  isCollapsed ? "ml-0" : "ml-[4.2rem]"
+                  isCollapsed ? "ml-0" : "ml-[4.2rem]",
                 )}
               >
                 <span
                   className={cn(
                     "font-thin text-2xl transition-all duration-200 ease-linear",
-                    isCollapsed ? "ml-0.5" : "ml-2"
+                    isCollapsed ? "ml-0.5" : "ml-2",
                   )}
                 >
                   *.+

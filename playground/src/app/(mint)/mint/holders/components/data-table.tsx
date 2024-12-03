@@ -27,7 +27,7 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
-import { columns as defaultColumns } from "./columns"; // Import columns from columns.tsx
+import { columns as defaultColumns, HoldersData } from "./columns"; // Import columns from columns.tsx
 import {
   Sheet,
   SheetClose,
@@ -41,34 +41,56 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { TreeNodeData } from "@/components/CustomTree";
-import { DownloadIcon } from "@radix-ui/react-icons";
-import ToolbarTree from "@/components/ToolbarTree";
-import { useCallback, useState } from "react";
+import { useGlam } from "@glam/anchor/react";
+import { PublicKey } from "@solana/web3.js";
+import { toast } from "@/components/ui/use-toast";
+import { ExplorerLink } from "@/components/ExplorerLink";
+import { parseTxError } from "@/lib/error";
 
-// Define the type that TData should extend
-export interface HoldersData {
-  pubkey: string;
-  label: string;
-}
-
-// Update the DataTableProps to ensure TData extends KeyData
 interface DataTableProps<TData extends HoldersData> {
   columns?: ColumnDef<TData>[];
   data: TData[];
 }
 
 export function DataTable<TData extends HoldersData>({
-  columns = defaultColumns as ColumnDef<TData>[], // Type cast to match the generic types
+  columns = defaultColumns as ColumnDef<TData>[],
   data,
 }: DataTableProps<TData>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
+
+  const { glamClient, fund: fundPDA } = useGlam();
+
+  const thawOrFreeAccount = async (ata: string, frozen: boolean) => {
+    if (!fundPDA || !glamClient) {
+      return;
+    }
+
+    const pubkey = new PublicKey(ata);
+    try {
+      const txSig = await glamClient.shareClass.setTokenAccountsStates(
+        fundPDA,
+        0,
+        [pubkey],
+        frozen,
+      );
+      toast({
+        title: `Successfully ${frozen ? "froze" : "unfroze"} token account`,
+        description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
+      });
+    } catch (e) {
+      toast({
+        title: `Failed to ${frozen ? "freeze" : "unfreeze"} token account`,
+        description: parseTxError(e),
+        variant: "destructive",
+      });
+    }
+  };
 
   const table = useReactTable({
     data,
@@ -92,20 +114,6 @@ export function DataTable<TData extends HoldersData>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 
-  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const toggleExpandCollapse = () => {
-    setIsExpanded(!isExpanded);
-  };
-
-  const handleCheckedItemsChange = useCallback(
-    (newCheckedItems: Record<string, boolean>) => {
-      setCheckedItems(newCheckedItems);
-    },
-    []
-  );
-
   return (
     <div className="space-y-4 w-full">
       <DataTableToolbar table={table} />
@@ -121,7 +129,7 @@ export function DataTable<TData extends HoldersData>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -143,7 +151,7 @@ export function DataTable<TData extends HoldersData>({
                         <TableCell key={cell.id}>
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </TableCell>
                       ))}
@@ -164,18 +172,38 @@ export function DataTable<TData extends HoldersData>({
                         <Label htmlFor="label" className="text-right">
                           Label
                         </Label>
-                        <Input id="label" value="Jim" className="col-span-3" />
+                        <Input
+                          id="label"
+                          value={row.original.label}
+                          className="col-span-3"
+                          disabled
+                        />
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
                         <Label
                           htmlFor="pubKey"
                           className="text-right text-muted-foreground"
                         >
-                          Public Key
+                          Holder Public Key
                         </Label>
                         <Input
                           id="pubKey"
-                          value=""
+                          value={row.original.pubkey}
+                          placeholder="GLAMvRgo7cHBPjQGf8UaVnsD6TUDjq16dEUuDPAPLjyJ"
+                          className="col-span-3"
+                          disabled
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label
+                          htmlFor="pubKey"
+                          className="text-right text-muted-foreground"
+                        >
+                          Token Account
+                        </Label>
+                        <Input
+                          id="pubKey"
+                          value={row.original.ata}
                           placeholder="GLAMvRgo7cHBPjQGf8UaVnsD6TUDjq16dEUuDPAPLjyJ"
                           className="col-span-3"
                           disabled
@@ -194,8 +222,17 @@ export function DataTable<TData extends HoldersData>({
                         <Button
                           variant="outline"
                           className="hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            thawOrFreeAccount(
+                              row.original.ata,
+                              !row.original.frozen,
+                            );
+                          }}
                         >
-                          Freeze Account
+                          {row.original.frozen
+                            ? "Thaw Account"
+                            : "Freeze Account"}
                         </Button>
                       </SheetClose>
                       <SheetClose asChild>

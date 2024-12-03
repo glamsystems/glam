@@ -137,7 +137,7 @@ const ALL_NAV_ITEMS = {
     Icon: ListBulletIcon,
   },
   idlSearch: {
-    route: "/idl-search",
+    route: "/playground/idl-search",
     text: "IDL Search",
     shortcut: "",
     Icon: ActivityLogIcon,
@@ -287,7 +287,7 @@ const ALL_NAV_ITEMS = {
     Icon: MixIcon,
   },
   wrap: {
-    route: "/playground/wrap",
+    route: "/vault/wrap",
     text: "Wrap",
     shortcut: "",
     Icon: MarginIcon,
@@ -307,7 +307,7 @@ const BASE_STRUCTURES = {
   VAULT: [
     {
       group: "Operations",
-      itemKeys: ["holdings", "stake", "trade", "transfer"],
+      itemKeys: ["holdings", "stake", "trade", "transfer", "wrap"],
     },
     {
       group: "Configuration",
@@ -328,7 +328,7 @@ const BASE_STRUCTURES = {
 
 // Helper function to get all item keys from a structure
 const getAllItemKeysFromStructure = (
-  structure: (typeof BASE_STRUCTURES)[keyof typeof BASE_STRUCTURES]
+  structure: (typeof BASE_STRUCTURES)[keyof typeof BASE_STRUCTURES],
 ) => {
   return structure.flatMap((group) => group.itemKeys);
 };
@@ -363,7 +363,6 @@ const NAVIGATION_STRUCTURE = {
         "risk",
         "settings",
         "shareclasses",
-        "wrap",
       ],
     },
     {
@@ -382,12 +381,12 @@ const NAVIGATION_STRUCTURE = {
 
 // Function to get navigation items from structure
 const getNavGroupsFromStructure = (
-  structure: (typeof NAVIGATION_STRUCTURE)[keyof typeof NAVIGATION_STRUCTURE]
+  structure: (typeof NAVIGATION_STRUCTURE)[keyof typeof NAVIGATION_STRUCTURE],
 ): NavGroup[] => {
   return structure.map((group) => ({
     group: group.group,
     items: group.itemKeys.map(
-      (key) => ALL_NAV_ITEMS[key as keyof typeof ALL_NAV_ITEMS]
+      (key) => ALL_NAV_ITEMS[key as keyof typeof ALL_NAV_ITEMS],
     ),
   }));
 };

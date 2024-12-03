@@ -5,19 +5,8 @@ import React, {
   Dispatch,
   SetStateAction,
 } from "react";
-import {
-  ChevronDownIcon,
-  ChevronRightIcon,
-  InfoCircledIcon,
-} from "@radix-ui/react-icons";
+import { ChevronDownIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 export interface TreeNodeData {
   id: string;
@@ -106,16 +95,11 @@ const TreeNode: React.FC<TreeNodeProps> = ({
   }, [onToggle, node.id]);
 
   const handleCheck = useCallback(
-    (nodeId: string, checked: boolean) => {
-      setTreeData((prevData) => updateTree(prevData, nodeId, checked));
+    (checked: boolean) => {
+      onCheck(node.id, checked);
     },
-    [setTreeData, updateTree]
+    [onCheck, node.id]
   );
-
-  // Handle click on the entire div
-  const handleDivClick = useCallback(() => {
-    handleCheck(node.id, !node.checked);
-  }, [handleCheck, node.id, node.checked]);
 
   const getIcon = () => {
     if (node.icon) {
@@ -128,14 +112,13 @@ const TreeNode: React.FC<TreeNodeProps> = ({
         <ChevronRightIcon className="w-4 h-4" />
       );
     }
-    return node.children ? <span></span> : <span></span>;
+    return null;
   };
 
   const checkedState: boolean | "indeterminate" = node.indeterminate
     ? "indeterminate"
     : !!node.checked;
 
-  // Determine class based on level and if node has children
   let labelClass = "text-sm";
   if (hasChildren) {
     if (level === 1) {
@@ -148,15 +131,14 @@ const TreeNode: React.FC<TreeNodeProps> = ({
   }
 
   return (
-    <div key={node.id + node.checked} className="select-none">
+    <div key={node.id} className="select-none">
       <div
-        className="flex items-center py-1 px-2 cursor-pointer border-b transition-colors hover:bg-muted/50 opacity-75 hover:opacity-100 cursor-pointer"
+        className="flex items-center py-1 px-2 cursor-pointer border-b transition-colors hover:bg-muted/50 opacity-75 hover:opacity-100"
         style={{ paddingLeft: `${level * 20 + 4}px` }}
-        onClick={handleDivClick} // Added: click handler for the entire div
       >
         <span
           onClick={(e) => {
-            e.stopPropagation(); // Prevent toggling the checkbox when clicking the icon
+            e.stopPropagation();
             handleToggle();
           }}
           className={`mr-1 ${hasChildren ? "cursor-pointer" : ""}`}
@@ -165,23 +147,11 @@ const TreeNode: React.FC<TreeNodeProps> = ({
         </span>
         <Checkbox
           checked={checkedState}
-          onCheckedChange={(checked: boolean | "indeterminate") =>
-            handleCheck(node.id, checked === true)
-          }
+          onCheckedChange={(checked) => handleCheck(checked === true)}
           className="mr-2"
         />
         <span className={labelClass}>{node.label}</span>
         {node.description && (
-          // <TooltipProvider>
-          //   <Tooltip>
-          //     <TooltipTrigger>
-          //   <InfoCircledIcon className="ml-2 h-4 w-4 text-muted-foreground"></InfoCircledIcon>
-          //     </TooltipTrigger>
-          //     <TooltipContent side="right">
-          //       <p>{node.description}</p>
-          //     </TooltipContent>
-          //   </Tooltip>
-          // </TooltipProvider>
           <div className="ml-4 text-muted-foreground text-xs">
             {node.description}
           </div>
@@ -191,6 +161,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({
         <div>
           {node.children!.map((child) => (
             <TreeNode
+              key={child.id}
               node={child}
               level={level + 1}
               onToggle={onToggle}
@@ -285,9 +256,13 @@ const CustomTree: React.FC<CustomTreeProps> = ({
     expandAllNodes,
     collapseAllNodes,
   } = useExpandedNodes({ data: treeData });
-  const handleCheck = useCallback((nodeId: string, checked: boolean) => {
-    setTreeData((prevData) => updateTree(prevData, nodeId, checked));
-  }, []);
+
+  const handleCheck = useCallback(
+    (nodeId: string, checked: boolean) => {
+      setTreeData((prevData) => updateTree(prevData, nodeId, checked));
+    },
+    [setTreeData]
+  );
 
   useEffect(() => {
     const getCheckedItems = (node: TreeNodeData): Record<string, boolean> => {

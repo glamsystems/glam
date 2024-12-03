@@ -154,7 +154,7 @@ type FormKey = keyof typeof PERSISTED_FIELDS;
 function usePersistedForm<T extends z.ZodTypeAny>(
   formKey: FormKey,
   schema: T,
-  defaultValues: z.infer<T>
+  defaultValues: z.infer<T>,
 ): UseFormReturn<z.infer<T>> {
   const form = useForm<z.infer<T>>({
     resolver: zodResolver(schema),
@@ -314,9 +314,9 @@ export default function Trade() {
   const {
     fund: fundPDA,
     treasury,
-    wallet,
+    userWallet,
     glamClient,
-    jupTokenList: tokenList,
+    jupTokenList,
     driftMarketConfigs,
   } = useGlam();
 
@@ -324,7 +324,7 @@ export default function Trade() {
   const [fromAsset, setFromAsset] = useState("USDC");
   const [toAsset, setToAsset] = useState("SOL");
   const [dexesList, setDexesList] = useState(
-    [] as { id: string; label: string }[]
+    [] as { id: string; label: string }[],
   );
   const [isDexesListLoading, setIsDexesListLoading] = useState(true);
 
@@ -337,7 +337,7 @@ export default function Trade() {
   // Cache swap quote params and response
   const [swapQuoteParams, setSwapQuoteParams] = useState({} as QuoteParams);
   const [swapQuoteResponse, setSwapQuoteResponse] = useState(
-    {} as QuoteResponse
+    {} as QuoteResponse,
   );
 
   const { data: jupDexes } = useQuery({
@@ -346,7 +346,7 @@ export default function Trade() {
     queryFn: async () => {
       setIsDexesListLoading(true);
       const response = await fetch(
-        "https://quote-api.jup.ag/v6/program-id-to-label"
+        "https://quote-api.jup.ag/v6/program-id-to-label",
       );
       const data = await response.json();
       const formatted = Object.entries(data).map(([id, label]) => ({
@@ -355,7 +355,7 @@ export default function Trade() {
       }));
 
       const sortedDexes = formatted.sort((a, b) =>
-        a.label.localeCompare(b.label)
+        a.label.localeCompare(b.label),
       );
 
       setIsDexesListLoading(false);
@@ -373,36 +373,34 @@ export default function Trade() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredDexes = dexesList.filter((item) =>
-    item.label.toLowerCase().includes(searchQuery.toLowerCase())
+    item.label.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const fromAssetList = useMemo(() => {
-    const assets =
-      (treasury?.tokenAccounts || [])
-        .map((ta) => {
-          const name =
-            tokenList?.find((t: any) => t.address === ta.mint)?.name ||
-            "Unknown";
-          const symbol =
-            tokenList?.find((t: any) => t.address === ta.mint)?.symbol ||
-            ta.mint;
-          return {
-            name,
-            symbol: symbol,
-            address: ta.mint,
-            decimals: ta.decimals,
-            balance:
-              /* combine SOL + wSOL balances */
-              symbol === "SOL"
-                ? Number(ta.uiAmount) +
-                  Number(treasury?.balanceLamports || 0) / LAMPORTS_PER_SOL
-                : Number(ta.uiAmount),
-          } as Asset;
-        })
-        .filter((a) => a.balance > 0) || [];
+    const assets = (treasury?.tokenAccounts || [])
+      .map((ta) => {
+        const jupToken = jupTokenList?.find(
+          (t) => t.address === ta.mint.toBase58(),
+        );
+        const name = jupToken?.name || "Unknown";
+        const symbol = jupToken?.symbol || ta.mint.toBase58();
+        return {
+          name,
+          symbol,
+          address: ta.mint.toBase58(),
+          decimals: ta.decimals,
+          balance:
+            /* combine SOL + wSOL balances */
+            symbol === "SOL"
+              ? ta.uiAmount +
+                (treasury?.balanceLamports || 0) / LAMPORTS_PER_SOL
+              : ta.uiAmount,
+        } as Asset;
+      })
+      .filter((a) => a.balance > 0);
 
     return assets;
-  }, [treasury, tokenList, fundPDA]);
+  }, [treasury, jupTokenList, fundPDA]);
 
   const swapForm = usePersistedForm("swap", swapSchema, {
     ...DEFAULT_SWAP_FORM_VALUES,
@@ -411,12 +409,12 @@ export default function Trade() {
   const spotForm = usePersistedForm(
     "spot",
     spotSchema,
-    DEFAULT_SPOT_FORM_VALUES
+    DEFAULT_SPOT_FORM_VALUES,
   );
   const perpsForm = usePersistedForm(
     "perps",
     perpsSchema,
-    DEFAULT_PERPS_FORM_VALUES
+    DEFAULT_PERPS_FORM_VALUES,
   );
 
   const spotOrderType = spotForm.watch("orderType");
@@ -443,7 +441,7 @@ export default function Trade() {
     } = swapForm.getValues();
 
     const getAssetMintAndDecimals = (asset: string) =>
-      tokenList?.find((t) => {
+      jupTokenList?.find((t) => {
         if (asset === "wSOL") {
           return t.symbol === "SOL";
         }
@@ -475,7 +473,7 @@ export default function Trade() {
     const amount = Math.floor(
       exactMode === "ExactIn"
         ? from * 10 ** inputDecimals
-        : to * 10 ** outputDecimals
+        : to * 10 ** outputDecimals,
     );
 
     const quoteParams = {
@@ -496,16 +494,15 @@ export default function Trade() {
   const getSwapQuoteResponse = async (
     quoteParams: QuoteParams,
     inputDecimals: number,
-    outputDecimals: number
+    outputDecimals: number,
   ): Promise<{
     quoteResponse: QuoteResponse;
     uiAmountFrom: number;
     uiAmountTo: number;
   }> => {
     try {
-      const quoteResponse = await glamClient.jupiter.getQuoteResponse(
-        quoteParams
-      );
+      const quoteResponse =
+        await glamClient.jupiter.getQuoteResponse(quoteParams);
       return {
         quoteResponse,
         uiAmountFrom: Number(quoteResponse.inAmount) / 10 ** inputDecimals,
@@ -555,7 +552,7 @@ export default function Trade() {
       const { quoteResponse } = await getSwapQuoteResponse(
         quoteParams,
         inputDecimals,
-        outputDecimals
+        outputDecimals,
       );
       quoteResponseForSwap = quoteResponse;
     }
@@ -578,7 +575,7 @@ export default function Trade() {
         undefined,
         quoteResponseForSwap,
         undefined,
-        { getPriorityFeeMicroLamports: getPriorityFee }
+        { getPriorityFeeMicroLamports: getPriorityFee },
       );
       toast({
         title: `Swapped ${fromAsset} to ${toAsset}`,
@@ -595,7 +592,7 @@ export default function Trade() {
   };
 
   const validateInput = (
-    values: SpotSchema | PerpsSchema
+    values: SpotSchema | PerpsSchema,
   ):
     | {
         orderType: OrderType;
@@ -616,10 +613,10 @@ export default function Trade() {
     }
 
     const spotMarketConfig = driftMarketConfigs.spot.find(
-      (config) => config.symbol === market.replace("/USDC", "")
+      (config) => config.symbol === market.replace("/USDC", ""),
     );
     const perpsMarketConfig = driftMarketConfigs.perp.find(
-      (config) => config.symbol === market
+      (config) => config.symbol === market,
     );
     if (!spotMarketConfig && !perpsMarketConfig) {
       toast({
@@ -656,7 +653,7 @@ export default function Trade() {
       marketIndex: marketConfig?.marketIndex!,
       baseAssetAmount: new anchor.BN(size * 10 ** marketConfig?.decimals!),
       price: new anchor.BN(
-        price * 10 ** driftMarketConfigs.orderConstants.quoteScale
+        price * 10 ** driftMarketConfigs.orderConstants.quoteScale,
       ),
     });
     console.log("Drift spot orderParams", orderParams);
@@ -679,7 +676,7 @@ export default function Trade() {
         orderParams,
         0,
         driftMarketConfigs,
-        { getPriorityFeeMicroLamports: getPriorityFee }
+        { getPriorityFeeMicroLamports: getPriorityFee },
       );
       toast({
         title: "Spot order submitted",
@@ -710,10 +707,10 @@ export default function Trade() {
       direction,
       marketIndex: marketConfig?.marketIndex!,
       baseAssetAmount: new anchor.BN(
-        size * 10 ** driftMarketConfigs.orderConstants.perpBaseScale
+        size * 10 ** driftMarketConfigs.orderConstants.perpBaseScale,
       ),
       price: new anchor.BN(
-        price * 10 ** driftMarketConfigs.orderConstants.quoteScale
+        price * 10 ** driftMarketConfigs.orderConstants.quoteScale,
       ),
     });
     console.log("Drift perps orderParams", orderParams);
@@ -735,7 +732,7 @@ export default function Trade() {
         orderParams,
         0,
         driftMarketConfigs,
-        { getPriorityFeeMicroLamports: getPriorityFee }
+        { getPriorityFeeMicroLamports: getPriorityFee },
       );
       toast({
         title: "Perps order submitted",
@@ -800,7 +797,7 @@ export default function Trade() {
         const { uiAmountTo, quoteResponse } = await getSwapQuoteResponse(
           quoteParams,
           inputDecimals,
-          outputDecimals
+          outputDecimals,
         );
         if (uiAmountTo) {
           swapForm.setValue("to", uiAmountTo);
@@ -825,7 +822,7 @@ export default function Trade() {
         const { uiAmountFrom, quoteResponse } = await getSwapQuoteResponse(
           quoteParams,
           inputDecimals,
-          outputDecimals
+          outputDecimals,
         );
         if (uiAmountFrom) {
           swapForm.setValue("from", uiAmountFrom);
@@ -874,9 +871,9 @@ export default function Trade() {
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!fundPDA || !wallet || !treasury) {
+    if (!fundPDA || !userWallet.pubkey || !treasury) {
       console.error(
-        `Cannot submit ${activeTab} order due to missing fund, wallet, or treasury`
+        `Cannot submit ${activeTab} order due to missing fund, wallet, or treasury`,
       );
       return;
     }
@@ -899,13 +896,13 @@ export default function Trade() {
 
   const handleCancel = async (
     event: React.MouseEvent<HTMLButtonElement>,
-    marketType: "Perps" | "Spot"
+    marketType: "Perps" | "Spot",
   ) => {
     event.preventDefault();
 
-    if (!fundPDA || !wallet || !treasury) {
+    if (!fundPDA || !userWallet.pubkey || !treasury) {
       console.error(
-        "Cannot cancel orders due to missing fund, wallet, or treasury"
+        "Cannot cancel orders due to missing fund, wallet, or treasury",
       );
       return;
     }
@@ -919,7 +916,7 @@ export default function Trade() {
       marketType === "Perps"
         ? driftMarketConfigs.perp.find((config) => config.symbol === market)
         : driftMarketConfigs.spot.find(
-            (config) => config.symbol === market.replace("/USDC", "")
+            (config) => config.symbol === market.replace("/USDC", ""),
           );
 
     if (!marketConfig) {
@@ -954,7 +951,7 @@ export default function Trade() {
         PositionDirection.LONG,
         0,
         driftMarketConfigs,
-        { getPriorityFeeMicroLamports }
+        { getPriorityFeeMicroLamports },
       );
       toast({
         title: "Orders canceled",
@@ -973,9 +970,9 @@ export default function Trade() {
   const handleSettle = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
-    if (!fundPDA || !wallet || !treasury) {
+    if (!fundPDA || !userWallet.pubkey || !treasury) {
       console.error(
-        "Cannot cancel orders due to missing fund, wallet, or treasury"
+        "Cannot cancel orders due to missing fund, wallet, or treasury",
       );
       return;
     }
@@ -993,10 +990,12 @@ export default function Trade() {
             simulate: false,
             estimatePriorityFee: true,
           }),
-        }
+        },
       );
       const tx = await response.text();
-      const vTx = VersionedTransaction.deserialize(Buffer.from(tx, "base64"));
+      const vTx = VersionedTransaction.deserialize(
+        new Uint8Array(Buffer.from(tx, "base64")),
+      );
       const txId = await glamClient.sendAndConfirm(vTx);
       toast({
         title: "Successfully settled PnL",
@@ -1068,7 +1067,7 @@ export default function Trade() {
                                     <SelectItem key={option} value={option}>
                                       {option}
                                     </SelectItem>
-                                  )
+                                  ),
                                 )}
                               </SelectContent>
                             </Select>
@@ -1098,7 +1097,7 @@ export default function Trade() {
                                     <SelectItem key={option} value={option}>
                                       {option}
                                     </SelectItem>
-                                  )
+                                  ),
                                 )}
                               </SelectContent>
                             </Select>
@@ -1117,7 +1116,7 @@ export default function Trade() {
                       assets={fromAssetList}
                       balance={
                         (fromAssetList || []).find(
-                          (asset) => asset.symbol === fromAsset
+                          (asset) => asset.symbol === fromAsset,
                         )?.balance || 0
                       }
                       selectedAsset={fromAsset}
@@ -1148,7 +1147,7 @@ export default function Trade() {
                       className="min-w-1/3 w-1/3"
                       name="to"
                       label="To"
-                      assets={tokenList?.map(
+                      assets={jupTokenList?.map(
                         (t) =>
                           ({
                             name: t.name,
@@ -1156,13 +1155,13 @@ export default function Trade() {
                             address: t.address,
                             decimals: t.decimals,
                             balance: 0,
-                          } as Asset)
+                          }) as Asset,
                       )}
                       balance={
                         /* use fromAssetList because that's the list of tokens in treasury.
                            all other tokens have 0 balance. */
                         (fromAssetList || []).find(
-                          (asset) => asset.symbol === toAsset
+                          (asset) => asset.symbol === toAsset,
                         )?.balance || 0
                       }
                       selectedAsset={toAsset}
@@ -1225,7 +1224,7 @@ export default function Trade() {
                                       onValueChange={(value) => {
                                         swapForm.setValue(
                                           "filterType",
-                                          value as "Include" | "Exclude"
+                                          value as "Include" | "Exclude",
                                         );
                                       }}
                                       className="justify-start"
@@ -1263,7 +1262,7 @@ export default function Trade() {
                                             <Skeleton className="w-4 h-4" />
                                             <Skeleton className="w-[200px] h-[20px]" />
                                           </div>
-                                        )
+                                        ),
                                       )
                                     : filteredDexes.map((item) => (
                                         <FormField
@@ -1278,10 +1277,10 @@ export default function Trade() {
                                               <FormControl>
                                                 <Checkbox
                                                   checked={field.value?.includes(
-                                                    item.label
+                                                    item.label,
                                                   )}
                                                   onCheckedChange={(
-                                                    checked
+                                                    checked,
                                                   ) => {
                                                     const val = checked
                                                       ? [
@@ -1290,7 +1289,8 @@ export default function Trade() {
                                                         ]
                                                       : field.value?.filter(
                                                           (value) =>
-                                                            value !== item.label
+                                                            value !==
+                                                            item.label,
                                                         );
                                                     return field.onChange(val);
                                                   }}
@@ -1354,7 +1354,7 @@ export default function Trade() {
                                       step="1"
                                       onChange={(e) =>
                                         field.onChange(
-                                          parseInt(e.target.value, 10)
+                                          parseInt(e.target.value, 10),
                                         )
                                       }
                                       value={field.value}
@@ -1471,7 +1471,7 @@ export default function Trade() {
                                     <SelectItem key={option} value={option}>
                                       {option}
                                     </SelectItem>
-                                  )
+                                  ),
                                 )}
                               </SelectContent>
                             </Select>
@@ -1495,13 +1495,13 @@ export default function Trade() {
                                   role="combobox"
                                   className={cn(
                                     "w-full justify-between",
-                                    !field.value && "text-muted-foreground"
+                                    !field.value && "text-muted-foreground",
                                   )}
                                 >
                                   {field.value
                                     ? spotMarkets.find(
                                         (spotMarket) =>
-                                          spotMarket.value === field.value
+                                          spotMarket.value === field.value,
                                       )?.label || "Select Market"
                                     : "Select Market"}
                                   <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -1524,7 +1524,7 @@ export default function Trade() {
                                         onSelect={() => {
                                           spotForm.setValue(
                                             "market",
-                                            spotMarket.value
+                                            spotMarket.value,
                                           );
                                         }}
                                       >
@@ -1533,7 +1533,7 @@ export default function Trade() {
                                             "mr-2 h-4 w-4",
                                             spotMarket.value === field.value
                                               ? "opacity-100"
-                                              : "opacity-0"
+                                              : "opacity-0",
                                           )}
                                         />
                                         {spotMarket.label}
@@ -1569,7 +1569,7 @@ export default function Trade() {
                                     <SelectItem key={option} value={option}>
                                       {option}
                                     </SelectItem>
-                                  )
+                                  ),
                                 )}
                               </SelectContent>
                             </Select>
@@ -1652,8 +1652,8 @@ export default function Trade() {
                           className="min-w-1/3 w-1/3"
                           name="notional"
                           label="Notional"
-                          balance={NaN}
                           selectedAsset="USDC"
+                          balance={NaN}
                           disableAssetChange={true}
                           disableAmountInput={true}
                         />
@@ -1839,7 +1839,7 @@ export default function Trade() {
                                     <SelectItem key={option} value={option}>
                                       {option}
                                     </SelectItem>
-                                  )
+                                  ),
                                 )}
                               </SelectContent>
                             </Select>
@@ -1863,13 +1863,13 @@ export default function Trade() {
                                   role="combobox"
                                   className={cn(
                                     "w-full justify-between",
-                                    !field.value && "text-muted-foreground"
+                                    !field.value && "text-muted-foreground",
                                   )}
                                 >
                                   {field.value
                                     ? perpsMarkets.find(
                                         (perpsMarket) =>
-                                          perpsMarket.value === field.value
+                                          perpsMarket.value === field.value,
                                       )?.label || "Select Market"
                                     : "Select Market"}
                                   <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -1892,7 +1892,7 @@ export default function Trade() {
                                         onSelect={() => {
                                           perpsForm.setValue(
                                             "market",
-                                            perpsMarket.value
+                                            perpsMarket.value,
                                           );
                                         }}
                                       >
@@ -1901,7 +1901,7 @@ export default function Trade() {
                                             "mr-2 h-4 w-4",
                                             perpsMarket.value === field.value
                                               ? "opacity-100"
-                                              : "opacity-0"
+                                              : "opacity-0",
                                           )}
                                         />
                                         {perpsMarket.label}
@@ -1937,7 +1937,7 @@ export default function Trade() {
                                     <SelectItem key={option} value={option}>
                                       {option}
                                     </SelectItem>
-                                  )
+                                  ),
                                 )}
                               </SelectContent>
                             </Select>

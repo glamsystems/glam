@@ -277,7 +277,7 @@ export function DataTableToolbar<TData>({
                   setTreeData={() => {}}
                   isExpanded={isExpanded}
                   toggleExpandCollapse={toggleExpandCollapse}
-                  handleCheckedItemsChange={handleCheckedItemsChange}
+                  onCheckedItemsChange={handleCheckedItemsChange}
                 />
               </div>
             </div>

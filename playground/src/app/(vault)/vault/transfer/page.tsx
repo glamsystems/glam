@@ -19,7 +19,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { Asset, AssetInput } from "@/components/AssetInput";
 import { Button } from "@/components/ui/button";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/use-toast";
@@ -29,7 +29,6 @@ import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { parseTxError } from "@/lib/error";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { getPriorityFeeMicroLamports } from "@/app/(shared)/settings/priorityfee";
-import { set } from "date-fns";
 
 const venues: [string, ...string[]] = ["Treasury", "Drift"];
 const transferSchema = z.object({
@@ -48,7 +47,7 @@ export default function Transfer() {
     glamClient,
     driftMarketConfigs,
     driftUser,
-    jupTokenList: tokenList,
+    jupTokenList,
   } = useGlam();
 
   const [amountAsset, setAmountAsset] = useState<string>("SOL");
@@ -56,25 +55,24 @@ export default function Transfer() {
   const [fromAssetList, setFromAssetList] = useState<Asset[]>([]);
 
   const treasuryAssets = () => {
-    const assets =
-      (treasury?.tokenAccounts || []).map((ta) => {
-        const name =
-          tokenList?.find((t: any) => t.address === ta.mint)?.name || "Unknown";
-        const symbol =
-          tokenList?.find((t: any) => t.address === ta.mint)?.symbol || ta.mint;
-        return {
-          name,
-          symbol: symbol,
-          address: ta.mint,
-          decimals: ta.decimals,
-          balance:
-            /* combine SOL + wSOL balances */
-            symbol === "SOL"
-              ? Number(ta.uiAmount) +
-                Number(treasury?.balanceLamports || 0) / LAMPORTS_PER_SOL
-              : Number(ta.uiAmount),
-        } as Asset;
-      }) || [];
+    const assets = (treasury?.tokenAccounts || []).map((ta) => {
+      const jupToken = jupTokenList?.find(
+        (t) => t.address === ta.mint.toBase58(),
+      );
+      const name = jupToken?.name || "Unknown";
+      const symbol = jupToken?.symbol || ta.mint.toBase58();
+      return {
+        name,
+        symbol,
+        address: ta.mint.toBase58(),
+        decimals: ta.decimals,
+        balance:
+          /* combine SOL + wSOL balances */
+          symbol === "SOL"
+            ? ta.uiAmount + (treasury?.balanceLamports || 0) / LAMPORTS_PER_SOL
+            : ta.uiAmount,
+      } as Asset;
+    });
     return assets;
   };
 
@@ -85,7 +83,7 @@ export default function Transfer() {
         // balance is a string of ui amount, needs to be converted to number
         const { marketIndex, balance } = position;
         const marketConfig = driftMarketConfigs.spot.find(
-          (spot) => spot.marketIndex === marketIndex
+          (spot) => spot.marketIndex === marketIndex,
         );
         if (!marketConfig) {
           return {} as Asset;
@@ -104,7 +102,7 @@ export default function Transfer() {
 
   useEffect(() => {
     setFromAssetList(treasuryAssets());
-  }, [treasury, tokenList, fundPDA]);
+  }, [treasury, jupTokenList, fundPDA]);
 
   const form = useForm<TransferSchema>({
     resolver: zodResolver(transferSchema),
@@ -156,7 +154,7 @@ export default function Transfer() {
       return;
     }
     const spotMarket = driftMarketConfigs.spot.find(
-      (spot) => spot.symbol === amountAsset
+      (spot) => spot.symbol === amountAsset,
     );
     if (!spotMarket) {
       toast({
@@ -178,7 +176,7 @@ export default function Transfer() {
               marketIndex,
               0,
               driftMarketConfigs,
-              { getPriorityFeeMicroLamports }
+              { getPriorityFeeMicroLamports },
             )
           : await glamClient.drift.withdraw(
               fundPDA,
@@ -186,7 +184,7 @@ export default function Transfer() {
               marketIndex,
               0,
               driftMarketConfigs,
-              { getPriorityFeeMicroLamports }
+              { getPriorityFeeMicroLamports },
             );
       toast({
         title: `Transfered ${amount} ${amountAsset} from ${origin} to ${destination}`,
@@ -242,7 +240,7 @@ export default function Transfer() {
                   assets={fromAssetList}
                   balance={
                     (fromAssetList || []).find(
-                      (asset) => asset.symbol === amountAsset
+                      (asset) => asset.symbol === amountAsset,
                     )?.balance || 0
                   }
                   selectedAsset={amountAsset}
@@ -275,7 +273,7 @@ export default function Transfer() {
                                 <SelectItem key={option} value={option}>
                                   {option}
                                 </SelectItem>
-                              )
+                              ),
                             )}
                           </SelectContent>
                         </Select>
@@ -311,7 +309,7 @@ export default function Transfer() {
                                 <SelectItem key={option} value={option}>
                                   {option}
                                 </SelectItem>
-                              )
+                              ),
                             )}
                           </SelectContent>
                         </Select>

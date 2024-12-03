@@ -15,6 +15,7 @@ import {
   PublicKey,
   SystemProgram,
   Transaction,
+  TransactionInstruction,
   TransactionMessage,
   TransactionSignature,
   VersionedTransaction,
@@ -50,7 +51,7 @@ type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
 
 export const JUPITER_API_DEFAULT = "https://quote-api.jup.ag/v6";
 export const JITO_TIP_DEFAULT = new PublicKey(
-  "96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5"
+  "96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5",
 );
 const DEFAULT_PRIORITY_FEE = 10_000; // microLamports
 
@@ -63,6 +64,18 @@ export type TxOptions = {
   computeUnitLimit?: number;
   getPriorityFeeMicroLamports?: (tx: VersionedTransaction) => Promise<number>;
   jitoTipLamports?: number;
+  preInstructions?: TransactionInstruction[];
+};
+
+export type TokenAccount = {
+  owner: PublicKey;
+  pubkey: PublicKey;
+  mint: PublicKey;
+  programId: PublicKey;
+  decimals: number;
+  amount: number;
+  uiAmount: number;
+  frozen: boolean;
 };
 
 export class BaseClient {
@@ -91,7 +104,7 @@ export class BaseClient {
           ...defaultProvider.opts,
           commitment: "confirmed",
           preflightCommitment: "confirmed",
-        }
+        },
       );
       anchor.setProvider(this.provider);
       this.program = anchor.workspace.Glam as GlamProgram;
@@ -99,7 +112,7 @@ export class BaseClient {
 
     // autodetect mainnet
     const defaultCluster = this.provider.connection.rpcEndpoint.includes(
-      "mainnet"
+      "mainnet",
     )
       ? "mainnet-beta"
       : "devnet";
@@ -108,7 +121,7 @@ export class BaseClient {
     this.jupiterApi = config?.jupiterApi || JUPITER_API_DEFAULT;
     this.blockhashWithCache = new BlockhashWithCache(
       this.provider,
-      !!isBrowser
+      !!isBrowser,
     );
   }
 
@@ -170,7 +183,7 @@ export class BaseClient {
           fromPubkey: signer,
           toPubkey: JITO_TIP_DEFAULT,
           lamports: jitoTipLamports,
-        })
+        }),
       );
     }
 
@@ -182,7 +195,7 @@ export class BaseClient {
             this.provider.connection,
             instructions,
             signer,
-            lookupTables
+            lookupTables,
           );
         } catch (e) {
           console.error(e);
@@ -200,7 +213,7 @@ export class BaseClient {
           ? (computeUnitLimit *= 1.2)
           : (computeUnitLimit *= 1.5);
         instructions.unshift(
-          ComputeBudgetProgram.setComputeUnitLimit({ units: computeUnitLimit })
+          ComputeBudgetProgram.setComputeUnitLimit({ units: computeUnitLimit }),
         );
       }
     }
@@ -218,8 +231,8 @@ export class BaseClient {
               payerKey: signer,
               recentBlockhash,
               instructions,
-            }).compileToV0Message(lookupTables)
-          )
+            }).compileToV0Message(lookupTables),
+          ),
         );
         priorityFee = Math.ceil(fee);
       } catch (e) {}
@@ -230,20 +243,20 @@ export class BaseClient {
     instructions.unshift(
       ComputeBudgetProgram.setComputeUnitPrice({
         microLamports: priorityFee,
-      })
+      }),
     );
     return new VersionedTransaction(
       new TransactionMessage({
         payerKey: signer,
         recentBlockhash,
         instructions,
-      }).compileToV0Message(lookupTables)
+      }).compileToV0Message(lookupTables),
     );
   }
 
   async sendAndConfirm(
     tx: VersionedTransaction | Transaction,
-    signerOverride?: Keypair
+    signerOverride?: Keypair,
   ): Promise<TransactionSignature> {
     // This is just a convenient method so that in tests we can send legacy
     // txs, for example transfer SOL, create ATA, etc.
@@ -289,7 +302,7 @@ export class BaseClient {
       throw new GlamError(
         this.parseProgramLogs(errTx?.meta?.logMessages),
         errTx?.meta?.err || undefined,
-        errTx?.meta?.logMessages || []
+        errTx?.meta?.logMessages || [],
       );
     }
     return txSig;
@@ -297,7 +310,7 @@ export class BaseClient {
 
   parseProgramLogs(logs?: null | string[]): string {
     const errorMsgLog = (logs || []).find((log) =>
-      log.includes("Error Message:")
+      log.includes("Error Message:"),
     );
 
     console.log("error message from program logs", errorMsgLog);
@@ -333,13 +346,13 @@ export class BaseClient {
   getManagerAta(
     mint: PublicKey,
     manager?: PublicKey,
-    tokenProgram = TOKEN_PROGRAM_ID
+    tokenProgram = TOKEN_PROGRAM_ID,
   ): PublicKey {
     return getAssociatedTokenAddressSync(
       mint,
       manager || this.getManager(),
       true,
-      tokenProgram
+      tokenProgram,
     );
   }
 
@@ -351,7 +364,7 @@ export class BaseClient {
   getFundPDA(fundModel: FundModel): PublicKey {
     const createdKey = fundModel?.created?.key || [
       ...Buffer.from(
-        anchor.utils.sha256.hash(this.getFundName(fundModel))
+        anchor.utils.sha256.hash(this.getFundName(fundModel)),
       ).subarray(0, 8),
     ];
 
@@ -362,7 +375,7 @@ export class BaseClient {
         manager.toBuffer(),
         Uint8Array.from(createdKey),
       ],
-      this.programId
+      this.programId,
     );
     return pda;
   }
@@ -370,7 +383,7 @@ export class BaseClient {
   getTreasuryPDA(fundPDA: PublicKey): PublicKey {
     const [pda, _bump] = PublicKey.findProgramAddressSync(
       [anchor.utils.bytes.utf8.encode("treasury"), fundPDA.toBuffer()],
-      this.programId
+      this.programId,
     );
     return pda;
   }
@@ -378,36 +391,54 @@ export class BaseClient {
   getTreasuryAta(
     fundPDA: PublicKey,
     mint: PublicKey,
-    programId?: PublicKey
+    programId?: PublicKey,
   ): PublicKey {
     return getAssociatedTokenAddressSync(
       mint,
       this.getTreasuryPDA(fundPDA),
       true,
-      programId
+      programId,
     );
   }
 
-  async listTokenAccounts(owner: PublicKey): Promise<any> {
+  /**
+   * Fetch all the token accounts (including token program and token 2022 program) owned by a public key.
+   *
+   * @param owner
+   * @returns
+   */
+  async getTokenAccountsByOwner(owner: PublicKey): Promise<TokenAccount[]> {
     const [tokenAccounts, token2022Accounts] = await Promise.all(
       [TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID].map(
         async (programId) =>
           await this.provider.connection.getParsedTokenAccountsByOwner(owner, {
             programId,
-          })
-      )
+          }),
+      ),
     );
-    const merged = tokenAccounts.value.concat(token2022Accounts.value);
-    return merged.map((accountInfo) => {
+    const parseTokenAccountInfo = (accountInfo: any) => {
       const accountData = accountInfo.account.data.parsed.info;
       return {
-        address: accountInfo.pubkey,
-        mint: accountData.mint,
-        decimals: accountData.tokenAmount.decimals,
-        amount: accountData.tokenAmount.amount,
-        uiAmount: accountData.tokenAmount.uiAmountString,
+        owner,
+        pubkey: new PublicKey(accountInfo.pubkey),
+        mint: new PublicKey(accountData.mint),
+        decimals: accountData.tokenAmount.decimals, // number
+        amount: accountData.tokenAmount.amount, // string
+        uiAmount: accountData.tokenAmount.uiAmount, // number
+        frozen: accountData.state === "frozen",
       };
-    });
+    };
+    return tokenAccounts.value
+      .map((accountInfo) => ({
+        ...parseTokenAccountInfo(accountInfo),
+        programId: TOKEN_PROGRAM_ID,
+      }))
+      .concat(
+        token2022Accounts.value.map((accountInfo) => ({
+          ...parseTokenAccountInfo(accountInfo),
+          programId: TOKEN_2022_PROGRAM_ID,
+        })),
+      );
   }
 
   async getTreasuryBalance(fundPDA: PublicKey): Promise<number> {
@@ -419,7 +450,7 @@ export class BaseClient {
   async getTreasuryTokenBalance(
     fundPDA: PublicKey,
     mint: PublicKey,
-    programId?: PublicKey
+    programId?: PublicKey,
   ): Promise<number> {
     const ata = this.getTreasuryAta(fundPDA, mint);
     const _mint = await getMint(this.provider.connection, mint);
@@ -437,7 +468,7 @@ export class BaseClient {
   getOpenfundsPDA(fundPDA: PublicKey): PublicKey {
     const [pda, _bump] = PublicKey.findProgramAddressSync(
       [anchor.utils.bytes.utf8.encode("openfunds"), fundPDA.toBuffer()],
-      this.programId
+      this.programId,
     );
     return pda;
   }
@@ -449,7 +480,7 @@ export class BaseClient {
         Uint8Array.from([shareId % 256]),
         fundPDA.toBuffer(),
       ],
-      this.programId
+      this.programId,
     );
     return pda;
   }
@@ -459,7 +490,7 @@ export class BaseClient {
       shareClassPDA,
       user,
       true,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
   }
 
@@ -480,7 +511,7 @@ export class BaseClient {
     // createdKey = hash fund name and get first 8 bytes
     const createdKey = [
       ...Buffer.from(
-        anchor.utils.sha256.hash(this.getFundName(fundModel))
+        anchor.utils.sha256.hash(this.getFundName(fundModel)),
       ).subarray(0, 8),
     ];
     fundModel.created = {
@@ -541,12 +572,102 @@ export class BaseClient {
     return fundModel;
   }
 
+  public async createFund(
+    fund: any,
+    singleTx: boolean = false,
+    txOpitons = {},
+  ): Promise<[TransactionSignature, PublicKey]> {
+    let fundModel = this.enrichFundModelInitialize(fund);
+
+    const fundPDA = this.getFundPDA(fundModel);
+    const treasury = this.getTreasuryPDA(fundPDA);
+    const openfunds = this.getOpenfundsPDA(fundPDA);
+    const manager = this.getManager();
+
+    const shareClasses = fundModel.shareClasses;
+    fundModel.shareClasses = [];
+
+    if (shareClasses.length > 1) {
+      throw new Error("Multiple share classes not supported");
+    }
+
+    if (shareClasses.length == 1) {
+      if (singleTx) {
+        const initFundIx = await this.program.methods
+          .initializeFund(fundModel)
+          .accounts({
+            //@ts-ignore IDL ts type is unhappy
+            fund: fundPDA,
+            treasury,
+            openfunds,
+          })
+          .instruction();
+
+        const shareClassMint = this.getShareClassPDA(fundPDA, 0);
+        const tx = await this.program.methods
+          .addShareClass(shareClasses[0])
+          .accounts({
+            fund: fundPDA,
+            shareClassMint,
+            openfunds,
+          })
+          .preInstructions([initFundIx])
+          .transaction();
+
+        const vTx = await this.intoVersionedTransaction({ tx, ...txOpitons });
+        const txSig = await this.sendAndConfirm(vTx);
+
+        return [txSig, fundPDA];
+      }
+
+      const createFundTxSig = await this.program.methods
+        .initializeFund(fundModel)
+        .accounts({
+          //@ts-ignore IDL ts type is unhappy
+          fund: fundPDA,
+          treasury,
+          openfunds,
+          manager,
+        })
+        .rpc();
+
+      const shareClassMint = this.getShareClassPDA(fundPDA, 0);
+      const createSharClassTxSig = await this.program.methods
+        .addShareClass(shareClasses[0])
+        .accounts({
+          fund: fundPDA,
+          shareClassMint,
+          openfunds,
+        })
+        .preInstructions([
+          ComputeBudgetProgram.setComputeUnitLimit({ units: 1_000_000 }),
+        ])
+        .rpc();
+      return [createFundTxSig, fundPDA];
+    }
+
+    // No share classes, only initialize the fund
+    const tx = await this.program.methods
+      .initializeFund(fundModel)
+      .accounts({
+        //@ts-ignore IDL ts type is unhappy
+        fund: fundPDA,
+        treasury,
+        openfunds,
+        manager,
+      })
+      .transaction();
+    const vTx = await this.intoVersionedTransaction({ tx, ...txOpitons });
+    const txSig = await this.sendAndConfirm(vTx);
+    return [txSig, fundPDA];
+  }
+
   public async fetchFundAccount(fundPDA: PublicKey): Promise<FundAccount> {
     return this.program.account.fundAccount.fetch(fundPDA);
   }
 
   public async fetchFundMetadataAccount(
-    fundPDA: PublicKey
+    fundPDA: PublicKey,
   ): Promise<FundMetadataAccount> {
     const openfunds = this.getOpenfundsPDA(fundPDA);
     return this.program.account.fundMetadataAccount.fetch(openfunds);
@@ -554,7 +675,7 @@ export class BaseClient {
 
   public async fetchShareClassAccount(
     fundPDA: PublicKey,
-    shareId: number
+    shareId: number,
   ): Promise<Mint> {
     const shareClassMint = this.getShareClassPDA(fundPDA, shareId);
     const connection = this.provider.connection;
@@ -562,7 +683,7 @@ export class BaseClient {
       connection,
       shareClassMint,
       connection.commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
   }
 
@@ -588,7 +709,7 @@ export class BaseClient {
   getOpenfundsFromAccounts(
     fundAccount: FundAccount,
     openfundsAccount: FundMetadataAccount,
-    mints: any[]
+    mints: any[],
   ): any {
     let shareClasses = fundAccount.shareClasses.map(
       (_shareClassFromFund, i) => {
@@ -604,12 +725,12 @@ export class BaseClient {
         if (mint) {
           const data = getExtensionData(
             ExtensionType.TokenMetadata,
-            mint.tlvData
+            mint.tlvData,
           );
           const metadata = data ? unpack(data) : ({} as TokenMetadata);
           permanentDelegate = getExtensionData(
             ExtensionType.PermanentDelegate,
-            mint.tlvData
+            mint.tlvData,
           );
 
           shareClassSymbol = metadata?.symbol;
@@ -620,7 +741,7 @@ export class BaseClient {
 
         const remapped = this.remapKeyValueArray(shareClassMeta);
         shareClassCurrencyId = this.getAssetIdFromCurrency(
-          remapped?.shareClassCurrency || ""
+          remapped?.shareClassCurrency || "",
         );
 
         (fundAccount.params[i + 1] || []).forEach((param) => {
@@ -646,7 +767,7 @@ export class BaseClient {
           lockUpPeriodInSeconds: remapped.lockUp,
           ...remapped,
         };
-      }
+      },
     );
     let fundManagers = openfundsAccount.fundManagers.map((fundManager) => ({
       pubkey: fundAccount.manager,
@@ -675,7 +796,7 @@ export class BaseClient {
       this.programId,
       {
         filters: [{ memcmp: { offset: 0, bytes: bs58.encode(bytes) } }],
-      }
+      },
     );
     return accounts.map((a) => a.pubkey);
   }
@@ -684,7 +805,7 @@ export class BaseClient {
     fundPDA: PublicKey,
     fundAccount: FundAccount,
     openfundsAccount: FundMetadataAccount,
-    firstShareClass: Mint
+    firstShareClass: Mint,
   ): FundModel {
     //TODO rebuild model from accounts
     let fundModel = this.getFundModel(fundAccount);
@@ -723,7 +844,7 @@ export class BaseClient {
       fundPDA,
       fundAccount,
       openfundsAccount,
-      firstShareClass
+      firstShareClass,
     );
   }
 
@@ -742,14 +863,13 @@ export class BaseClient {
     const mintAddresses = (fundAccounts || [])
       .map((f) => f.account.shareClasses[0])
       .filter((addr) => !!addr);
-    const mintAccounts = await connection.getMultipleAccountsInfo(
-      mintAddresses
-    );
+    const mintAccounts =
+      await connection.getMultipleAccountsInfo(mintAddresses);
     (mintAccounts || []).forEach((info, j) => {
       const mintInfo = unpackMint(
         mintAddresses[j],
         info,
-        TOKEN_2022_PROGRAM_ID
+        TOKEN_2022_PROGRAM_ID,
       );
       mintCache.set(mintAddresses[j].toBase58(), mintInfo);
     });
@@ -761,9 +881,9 @@ export class BaseClient {
         openfundsCache.get(f.account.openfunds.toBase58()) ||
           ({} as FundMetadataAccount),
         mintCache.get(
-          f.account.shareClasses[0] ? f.account.shareClasses[0].toBase58() : ""
-        ) || ({} as Mint)
-      )
+          f.account.shareClasses[0] ? f.account.shareClasses[0].toBase58() : "",
+        ) || ({} as Mint),
+      ),
     );
 
     return funds;

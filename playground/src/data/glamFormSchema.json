@@ -435,6 +435,10 @@
         "x-order": 25,
         "x-tag": "essential",
         "x-component": "combobox",
+        "x-enumSource": "utils/openfundsConstants.tsx",
+        "x-enumValues": "currencies",
+        "x-enumValuesLabel": "name_pretty",
+        "x-enumValuesValue": "code_alpha_3",
         "readOnly": false,
         "x-hidden": false,
         "x-enforced": false
