@@ -51,6 +51,10 @@ pub mod glam {
         fund::set_subscribe_redeem_enabled_handler(ctx, enabled)
     }
 
+    pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
+        fund::withdraw(ctx, amount)
+    }
+
     //
     // Share class
     //

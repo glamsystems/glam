@@ -56,6 +56,8 @@ pub enum FundError {
     NoShareClassInFund,
     #[msg("Fund can't be closed. Close share classes first")]
     CantCloseShareClasses,
+    #[msg("Withdraw denied. Only vaults allow withdraws (funds and mints don't).")]
+    WithdrawDenied,
 }
 
 #[error_code]

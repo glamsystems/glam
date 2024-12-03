@@ -4,6 +4,9 @@ use crate::{
     state::*,
 };
 use anchor_lang::{prelude::*, system_program};
+use anchor_spl::token_interface::{
+    transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
+};
 use glam_macros::treasury_signer_seeds;
 
 #[derive(Accounts)]
@@ -353,6 +356,66 @@ pub fn set_subscribe_redeem_enabled_handler(
             );
         }
     }
+
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct Withdraw<'info> {
+    #[account(mut, has_one = manager @ ManagerError::NotAuthorizedError)]
+    fund: Account<'info, FundAccount>,
+
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    treasury: SystemAccount<'info>,
+
+    pub asset: Box<InterfaceAccount<'info, Mint>>,
+
+    #[account(
+        mut,
+        associated_token::mint = asset,
+        associated_token::authority = treasury,
+        associated_token::token_program = token_program
+    )]
+    pub treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+
+    #[account(
+        mut,
+        associated_token::mint = asset,
+        associated_token::authority = manager,
+        associated_token::token_program = token_program
+    )]
+    pub manager_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+
+    #[account(mut)]
+    manager: Signer<'info>,
+
+    token_program: Interface<'info, TokenInterface>,
+}
+
+#[treasury_signer_seeds]
+pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
+    //TODO: atm we allow transfers only from vaults (to their manager),
+    //      i.e. funds with no share classes.
+    //      We may want to enable transfers for funds with external assets.
+    require!(
+        ctx.accounts.fund.share_classes.len() == 0,
+        FundError::WithdrawDenied
+    );
+
+    transfer_checked(
+        CpiContext::new_with_signer(
+            ctx.accounts.token_program.to_account_info(),
+            TransferChecked {
+                from: ctx.accounts.treasury_ata.to_account_info(),
+                mint: ctx.accounts.asset.to_account_info(),
+                to: ctx.accounts.manager_ata.to_account_info(),
+                authority: ctx.accounts.treasury.to_account_info(),
+            },
+            treasury_signer_seeds,
+        ),
+        amount,
+        ctx.accounts.asset.decimals,
+    )?;
 
     Ok(())
 }

@@ -29,8 +29,10 @@ import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { parseTxError } from "@/lib/error";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { getPriorityFeeMicroLamports } from "@/app/(shared)/settings/priorityfee";
+import { WarningCard } from "@/components/WarningCard";
+import { PublicKey } from "@solana/web3.js";
 
-const venues: [string, ...string[]] = ["Treasury", "Drift"];
+const venues: [string, ...string[]] = ["Treasury", "Drift", "Manager"];
 const transferSchema = z.object({
   origin: z.enum(venues),
   destination: z.enum(venues),
@@ -53,6 +55,7 @@ export default function Transfer() {
   const [amountAsset, setAmountAsset] = useState<string>("SOL");
   const [isTxPending, setIsTxPending] = useState(false);
   const [fromAssetList, setFromAssetList] = useState<Asset[]>([]);
+  const [warning, setWarning] = useState<string>("");
 
   const treasuryAssets = () => {
     const assets = (treasury?.tokenAccounts || []).map((ta) => {
@@ -116,6 +119,16 @@ export default function Transfer() {
 
   const from = form.watch("origin");
   useEffect(() => {
+    if (from === "Manager") {
+      setWarning(
+        "Sending FROM Manager is currently not implemented. You can just transfer any asset from any wallet to " +
+          treasury?.pubkey.toString(),
+      );
+      return;
+    } else {
+      setWarning("");
+    }
+
     if (from === "Drift") {
       console.log(driftUser.spotPositions);
       setFromAssetList(driftAssets());
@@ -124,6 +137,30 @@ export default function Transfer() {
 
     setFromAssetList(treasuryAssets());
   }, [from, driftUser, driftMarketConfigs]);
+
+  const transferTreasuryManager = async (asset: string, amount: number) => {
+    if (!fundPDA) return; // already checked, to avoid type issue
+
+    try {
+      setIsTxPending(true);
+      const txId = await glamClient.fund.withdraw(
+        fundPDA,
+        new PublicKey(asset),
+        amount,
+      );
+      toast({
+        title: `Transfered ${amount} ${asset} from treasury to manager`,
+        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Failed to transfer to manager",
+        description: parseTxError(error),
+        variant: "destructive",
+      });
+    }
+    setIsTxPending(false);
+  };
 
   const onSubmit: SubmitHandler<TransferSchema> = async (values, event) => {
     const nativeEvent = event as unknown as React.BaseSyntheticEvent & {
@@ -153,6 +190,20 @@ export default function Transfer() {
       });
       return;
     }
+
+    if (origin === "Manager") {
+      toast({
+        title: "Invalid 'From'",
+        description: "Not yet implemented",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (origin === "Treasury" && destination === "Manager") {
+      return transferTreasuryManager(amountAsset, amount);
+    }
+
     const spotMarket = driftMarketConfigs.spot.find(
       (spot) => spot.symbol === amountAsset,
     );
@@ -319,6 +370,8 @@ export default function Transfer() {
                   )}
                 />
               </div>
+
+              {warning && <WarningCard className="p-2" message={warning} />}
 
               <div className="flex space-x-4 w-full">
                 <Button
