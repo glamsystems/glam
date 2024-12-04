@@ -43,7 +43,7 @@ export default function SupplyPage() {
       const tokenAccounts = await glamClient.shareClass.getHolders(fundPDA!, 0);
       const tokenHolders = tokenAccounts.map((ta) => ({
         value: ta.owner.toBase58(),
-        label: `Token holder ${Math.floor(Math.random() * 10000)}`,
+        label: ta.owner.toBase58(), // PubkeySelector only supports search by label
       }));
       setTokenHolders(tokenHolders);
     };

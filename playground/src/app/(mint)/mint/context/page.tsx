@@ -136,9 +136,6 @@ function OpenfundsForm({
         schema={schema}
         isNested={true}
         groups={["company", "fund", "fundManager", "shareClass"]}
-        filters={{
-          tags: ["essential"],
-        }}
         columns={2}
         showSubmitButton={false}
         onChange={onChange}
