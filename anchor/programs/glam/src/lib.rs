@@ -335,6 +335,10 @@ pub mod glam {
         jupiter::jupiter_swap(ctx, amount, data)
     }
 
+    pub fn init_locked_voter_escrow<'info>(ctx: Context<InitLockedVoterEscrow>) -> Result<()> {
+        jupiter::init_locked_voter_escrow(ctx)
+    }
+
     //
     // wSOL
     //

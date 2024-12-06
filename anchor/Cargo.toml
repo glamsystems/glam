@@ -30,6 +30,7 @@ strum = { version = "0.26", features = ["derive"] }
 phf = { version = "0.11", features = ["macros"] }
 
 drift = { path = "./deps/drift" }
+jup_locked_voter = { path = "./deps/jup_locked_voter" }
 marinade = { package = "marinade-finance", git = "https://github.com/glamsystems/liquid-staking-program", branch = "anchor-0.30.1", features = [
     "cpi",
 ] }

@@ -10,6 +10,14 @@ import { Keypair } from "@solana/web3.js";
 import { getAccount } from "@solana/spl-token";
 import { BN } from "@coral-xyz/anchor";
 import { MSOL, WSOL } from "../src";
+import { PublicKey } from "@solana/web3.js";
+
+const JUP_STAKE_LOCKER = new PublicKey(
+  "CVMdMd79no569tjc5Sq7kzz8isbfCcFyBS5TLGsrZ5dN",
+);
+const JUP_VOTE_PROGRAM = new PublicKey(
+  "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj",
+);
 
 describe("glam_jupiter", () => {
   const glamClient = new GlamClient();
@@ -25,11 +33,35 @@ describe("glam_jupiter", () => {
     // Airdrop some SOL to the treasury
     const airdrop = await glamClient.provider.connection.requestAirdrop(
       glamClient.getTreasuryPDA(fundPDA),
-      1_000_000_000
+      1_000_000_000,
     );
     await glamClient.provider.connection.confirmTransaction(airdrop);
   });
 
+  it("Create escrow", async () => {
+    const treasury = glamClient.getTreasuryPDA(fundPDA);
+    const [escrow] = PublicKey.findProgramAddressSync(
+      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), treasury.toBuffer()],
+      JUP_VOTE_PROGRAM,
+    );
+    try {
+      const txId = await glamClient.program.methods
+        .initLockedVoterEscrow()
+        .accounts({
+          fund: fundPDA,
+          locker: JUP_STAKE_LOCKER,
+          escrow,
+          lockedVoterProgram: JUP_VOTE_PROGRAM,
+        })
+        .rpc();
+      console.log("init escrow txId", txId);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  });
+
+  /*
   it("Swap end to end", async () => {
     const treasury = glamClient.getTreasuryPDA(fundPDA);
 
@@ -495,4 +527,5 @@ describe("glam_jupiter", () => {
       );
     }
   }, 15_000);
+  */
 });

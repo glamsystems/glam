@@ -1,5 +1,5 @@
 {
-  "address": "GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP",
+  "address": "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc",
   "metadata": {
     "name": "glam",
     "version": "0.3.6",
@@ -1332,6 +1332,72 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "init_locked_voter_escrow",
+      "discriminator": [
+        148,
+        74,
+        247,
+        66,
+        206,
+        51,
+        119,
+        243
+      ],
+      "accounts": [
+        {
+          "name": "fund",
+          "writable": true
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "locker",
+          "writable": true
+        },
+        {
+          "name": "escrow",
+          "writable": true
+        },
+        {
+          "name": "locked_voter_program",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
     },
     {
       "name": "initialize_and_delegate_stake",
@@ -4561,13 +4627,23 @@
   "errors": [
     {
       "code": 6000,
-      "name": "NotAuthorized",
-      "msg": "Signer is not authorized"
+      "name": "FundNotActive",
+      "msg": "Fund is not active"
     },
     {
       "code": 6001,
-      "name": "IntegrationDisabled",
-      "msg": "Integration is disabled"
+      "name": "NoShareClassInFund",
+      "msg": "No share class found"
+    },
+    {
+      "code": 6002,
+      "name": "CantCloseShareClasses",
+      "msg": "Fund can't be closed. Close share classes first"
+    },
+    {
+      "code": 6003,
+      "name": "WithdrawDenied",
+      "msg": "Withdraw denied. Only vaults allow withdraws (funds and mints don't)."
     }
   ],
   "types": [

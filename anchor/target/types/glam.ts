@@ -1340,6 +1340,72 @@ export type Glam = {
       ]
     },
     {
+      "name": "initLockedVoterEscrow",
+      "discriminator": [
+        148,
+        74,
+        247,
+        66,
+        206,
+        51,
+        119,
+        243
+      ],
+      "accounts": [
+        {
+          "name": "fund",
+          "writable": true
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "locker",
+          "writable": true
+        },
+        {
+          "name": "escrow",
+          "writable": true
+        },
+        {
+          "name": "lockedVoterProgram",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "initializeAndDelegateStake",
       "discriminator": [
         71,
@@ -4567,13 +4633,23 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "notAuthorized",
-      "msg": "Signer is not authorized"
+      "name": "fundNotActive",
+      "msg": "Fund is not active"
     },
     {
       "code": 6001,
-      "name": "integrationDisabled",
-      "msg": "Integration is disabled"
+      "name": "noShareClassInFund",
+      "msg": "No share class found"
+    },
+    {
+      "code": 6002,
+      "name": "cantCloseShareClasses",
+      "msg": "Fund can't be closed. Close share classes first"
+    },
+    {
+      "code": 6003,
+      "name": "withdrawDenied",
+      "msg": "Withdraw denied. Only vaults allow withdraws (funds and mints don't)."
     }
   ],
   "types": [

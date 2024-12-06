@@ -4,6 +4,8 @@ use anchor_spl::token_interface::{
     transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
 };
 use glam_macros::treasury_signer_seeds;
+use jup_locked_voter::cpi::{accounts::NewEscrow, new_escrow};
+use jup_locked_voter::program::LockedVoter;
 use solana_program::{instruction::Instruction, program::invoke_signed};
 
 use crate::error::ManagerError;
@@ -239,4 +241,89 @@ pub fn jupiter_swap<'c: 'info, 'info>(
     );
 
     Ok(())
+}
+
+#[derive(Accounts)]
+pub struct InitLockedVoterEscrow<'info> {
+    #[account(mut)]
+    pub fund: Box<Account<'info, FundAccount>>,
+
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    /// CHECK: does the voter program check it?
+    #[account(mut)]
+    pub locker: AccountInfo<'info>,
+
+    /// CHECK: does the voter program check it?
+    #[account(mut)]
+    //, seeds = [b"Escrow".as_ref(), locker.key().as_ref(), treasury.key().as_ref()], bump)]
+    pub escrow: AccountInfo<'info>,
+
+    pub locked_voter_program: Program<'info, LockedVoter>,
+    pub system_program: Program<'info, System>,
+}
+
+/**
+ * Initialize voter escrow
+ * Create JUP token accountowned by the escrow
+ */
+#[treasury_signer_seeds]
+pub fn init_locked_voter_escrow<'info>(ctx: Context<InitLockedVoterEscrow>) -> Result<()> {
+    new_escrow(CpiContext::new_with_signer(
+        ctx.accounts.locked_voter_program.to_account_info(),
+        NewEscrow {
+            locker: ctx.accounts.locker.to_account_info(),
+            escrow: ctx.accounts.escrow.to_account_info(),
+            escrow_owner: ctx.accounts.treasury.to_account_info(),
+            payer: ctx.accounts.treasury.to_account_info(),
+            system_program: ctx.accounts.system_program.to_account_info(),
+        },
+        treasury_signer_seeds,
+    ))?;
+
+    Ok(())
+}
+
+/**
+ * Toggle max lock
+ * Increase locked amount
+ */
+#[derive(Accounts)]
+pub struct IncreaseLockedAmount<'info> {
+    #[account(mut)]
+    pub fund: Box<Account<'info, FundAccount>>,
+
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct NewVote<'info> {
+    #[account(mut)]
+    pub fund: Box<Account<'info, FundAccount>>,
+
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct CastVote<'info> {
+    #[account(mut)]
+    pub fund: Box<Account<'info, FundAccount>>,
+
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
 }
