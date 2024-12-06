@@ -339,6 +339,21 @@ pub mod glam {
         jupiter::init_locked_voter_escrow(ctx)
     }
 
+    pub fn increase_locked_amount<'info>(
+        ctx: Context<IncreaseLockedAmount>,
+        amount: u64,
+    ) -> Result<()> {
+        jupiter::increase_locked_amount(ctx, amount)
+    }
+
+    pub fn new_vote<'info>(ctx: Context<NewVote>) -> Result<()> {
+        jupiter::new_vote(ctx)
+    }
+
+    pub fn cast_vote<'info>(ctx: Context<CastVote>, side: u8) -> Result<()> {
+        jupiter::cast_vote(ctx, side)
+    }
+
     //
     // wSOL
     //

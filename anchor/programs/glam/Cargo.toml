@@ -29,6 +29,7 @@ strum = { workspace = true }
 phf = { workspace = true }
 
 jup_locked_voter = { workspace = true }
+jup_governance = { workspace = true }
 drift = { workspace = true }
 marinade = { workspace = true }
 glam_macros = { workspace = true }

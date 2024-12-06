@@ -24,13 +24,13 @@ cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-#test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_crud"
+test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_crud"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_share_class"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_investor"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_drift"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_marinade"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_staking"
-test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_jupiter"
+#test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_jupiter"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_openfunds"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_wsol"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_api_tx"
@@ -156,7 +156,7 @@ address = "GJQjnyhSG9jN1AdMHTSyTxUR44hJHEGCmNzkidw9z3y8"
 filename = "./fixtures/accounts/GJQjnyhSG9jN1AdMHTSyTxUR44hJHEGCmNzkidw9z3y8.json"
 
 #
-# Jupiter swap
+# Jupiter
 #
 [[test.genesis]]
 address = "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"
@@ -193,29 +193,6 @@ filename = "./fixtures/accounts/91bUbswo6Di8235jAPwim1At4cPZLbG2pkpneyqKg4NQ.jso
 [[test.validator.account]] # for e2e swap test
 address = "BWdb6kE1yLzSDocaoJ9VWCEHG6fEnfGCUxguJ3VgEjtx"
 filename = "./fixtures/accounts/BWdb6kE1yLzSDocaoJ9VWCEHG6fEnfGCUxguJ3VgEjtx.json"
-
-#
-# Jupiter vote
-#
-[[test.genesis]]
-address = "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
-program = "./fixtures/programs/jup_locked_voter.so"
-
-[[test.validator.account]] # Locker
-address = "CVMdMd79no569tjc5Sq7kzz8isbfCcFyBS5TLGsrZ5dN"
-filename = "./fixtures/accounts/jupiter_vote/CVMdMd79no569tjc5Sq7kzz8isbfCcFyBS5TLGsrZ5dN.json"
-
-[[test.validator.account]] # JUP token
-address = "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"
-filename = "./fixtures/accounts/jupiter_vote/JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN.json"
-
-[[test.validator.account]] # Proposal
-address = "xMLsw7zzBfRXNiQQo42aUohRsibgrmWcPt2mD8HdUUr"
-filename = "./fixtures/accounts/jupiter_vote/xMLsw7zzBfRXNiQQo42aUohRsibgrmWcPt2mD8HdUUr.json"
-
-[[test.validator.account]] # Governor
-address = "EZjEbaSd1KrTUKHNGhyHj42PxnoK742aGaNNqb9Rcpgu"
-filename = "./fixtures/accounts/jupiter_vote/EZjEbaSd1KrTUKHNGhyHj42PxnoK742aGaNNqb9Rcpgu.json"
 
 #
 # Stake pool - Spl
