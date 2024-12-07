@@ -11,10 +11,17 @@ import {
   TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
   createAssociatedTokenAccountIdempotentInstruction,
+  getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
 
 import { BaseClient, TxOptions } from "./base";
-import { JUPITER_PROGRAM_ID } from "../constants";
+import {
+  GOVERNANCE_PROGRAM_ID,
+  JUP,
+  JUP_STAKE_LOCKER,
+  JUP_VOTE_PROGRAM,
+  JUPITER_PROGRAM_ID,
+} from "../constants";
 
 export type QuoteParams = {
   inputMint: string;
@@ -80,16 +87,136 @@ export class JupiterClient {
     quoteParams?: QuoteParams,
     quoteResponse?: QuoteResponse,
     swapInstructions?: SwapInstructions,
-    txOptions: TxOptions = {}
+    txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const tx = await this.swapTx(
       fund,
       quoteParams,
       quoteResponse,
       swapInstructions,
-      txOptions
+      txOptions,
     );
     return await this.base.sendAndConfirm(tx);
+  }
+
+  /**
+   * Stake JUP. The escrow account will be created if it doesn't exist.
+   *
+   * @param fund
+   * @param amount
+   * @param txOptions
+   * @returns
+   */
+  public async stakeJup(
+    fund: PublicKey,
+    amount: BN,
+    txOptions: TxOptions = {},
+  ): Promise<TransactionSignature> {
+    const treasury = this.base.getTreasuryPDA(fund);
+    const [escrow] = PublicKey.findProgramAddressSync(
+      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), treasury.toBuffer()],
+      JUP_VOTE_PROGRAM,
+    );
+    const escrowJupAta = getAssociatedTokenAddressSync(JUP, escrow, true);
+    const treasuryJupAta = getAssociatedTokenAddressSync(JUP, treasury, true);
+
+    const escrowAccountInfo =
+      await this.base.provider.connection.getAccountInfo(escrow);
+    const escrowCreated = escrowAccountInfo ? true : false;
+    const preInstructions = [];
+    if (!escrowCreated) {
+      console.log("Will create escrow account:", escrow.toBase58());
+      preInstructions.push(
+        // @ts-ignore
+        await this.base.program.methods
+          .initLockedVoterEscrow()
+          .accounts({
+            fund,
+            locker: JUP_STAKE_LOCKER,
+            escrow,
+          })
+          .instruction(),
+      );
+    }
+    preInstructions.push(
+      createAssociatedTokenAccountIdempotentInstruction(
+        this.base.getManager(),
+        escrowJupAta,
+        escrow,
+        JUP,
+      ),
+    );
+
+    return await this.base.program.methods
+      .increaseLockedAmount(amount)
+      .accounts({
+        fund,
+        locker: JUP_STAKE_LOCKER,
+        escrow,
+        escrowJupAta,
+        treasuryJupAta,
+      })
+      .preInstructions(preInstructions)
+      .rpc();
+  }
+
+  /**
+   * Vote on a proposal. The vote account will be created if it doesn't exist.
+   *
+   * @param fund
+   * @param proposal
+   * @param governor
+   * @param side
+   * @param txOptions
+   * @returns
+   */
+  public async voteOnProposal(
+    fund: PublicKey,
+    proposal: PublicKey,
+    governor: PublicKey,
+    side: number,
+    txOptions: TxOptions = {},
+  ): Promise<TransactionSignature> {
+    const treasury = this.base.getTreasuryPDA(fund);
+    const [vote] = PublicKey.findProgramAddressSync(
+      [Buffer.from("Vote"), proposal.toBuffer(), treasury.toBuffer()],
+      GOVERNANCE_PROGRAM_ID,
+    );
+
+    const voteAccountInfo =
+      await this.base.provider.connection.getAccountInfo(vote);
+    const voteCreated = voteAccountInfo ? true : false;
+    const preInstructions = [];
+    if (!voteCreated) {
+      console.log("Will create vote account:", vote.toBase58());
+      // @ts-ignore
+      preInstructions.push(
+        await this.base.program.methods
+          .newVote()
+          .accounts({
+            fund,
+            vote,
+            proposal,
+          })
+          .instruction(),
+      );
+    }
+
+    const [escrow] = PublicKey.findProgramAddressSync(
+      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), treasury.toBuffer()],
+      JUP_VOTE_PROGRAM,
+    );
+    return await this.base.program.methods
+      .castVote(side)
+      .accounts({
+        fund,
+        escrow,
+        proposal,
+        vote,
+        locker: JUP_STAKE_LOCKER,
+        governor,
+      })
+      .rpc();
   }
 
   /*
@@ -101,17 +228,17 @@ export class JupiterClient {
     quoteParams?: QuoteParams,
     quoteResponse?: QuoteResponse,
     swapInstructions?: SwapInstructions,
-    txOptions: TxOptions = {}
+    txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getManager();
 
     let swapInstruction: InstructionFromJupiter;
     let addressLookupTableAddresses: string[];
     const inputMint = new PublicKey(
-      quoteParams?.inputMint || quoteResponse!.inputMint
+      quoteParams?.inputMint || quoteResponse!.inputMint,
     );
     const outputMint = new PublicKey(
-      quoteParams?.outputMint || quoteResponse!.outputMint
+      quoteParams?.outputMint || quoteResponse!.outputMint,
     );
     const amount = new BN(quoteParams?.amount || quoteResponse!.inAmount);
 
@@ -120,7 +247,7 @@ export class JupiterClient {
       if (quoteResponse === undefined) {
         if (quoteParams === undefined) {
           throw new Error(
-            "quoteParams must be specified when quoteResponse and swapInstruction are not specified."
+            "quoteParams must be specified when quoteResponse and swapInstruction are not specified.",
           );
         }
         quoteResponse = await this.getQuoteResponse(quoteParams);
@@ -136,7 +263,7 @@ export class JupiterClient {
     }
 
     const lookupTables = await this.getAdressLookupTableAccounts(
-      addressLookupTableAddresses
+      addressLookupTableAddresses,
     );
 
     const swapIx: { data: any; keys: AccountMeta[] } =
@@ -152,7 +279,7 @@ export class JupiterClient {
       outputMint,
       amount,
       inputTokenProgram,
-      outputTokenProgram
+      outputTokenProgram,
     );
     // @ts-ignore
     const tx = await this.base.program.methods
@@ -164,22 +291,22 @@ export class JupiterClient {
         inputTreasuryAta: this.base.getTreasuryAta(
           fund,
           inputMint,
-          inputTokenProgram
+          inputTokenProgram,
         ),
         outputTreasuryAta: this.base.getTreasuryAta(
           fund,
           outputMint,
-          outputTokenProgram
+          outputTokenProgram,
         ),
         inputSignerAta: this.base.getManagerAta(
           inputMint,
           signer,
-          inputTokenProgram
+          inputTokenProgram,
         ),
         outputSignerAta: this.base.getManagerAta(
           outputMint,
           signer,
-          outputTokenProgram
+          outputTokenProgram,
         ),
         inputMint,
         outputMint,
@@ -210,7 +337,7 @@ export class JupiterClient {
     outputMint: PublicKey,
     amount: BN,
     inputTokenProgram: PublicKey = TOKEN_PROGRAM_ID,
-    outputTokenProgram: PublicKey = TOKEN_PROGRAM_ID
+    outputTokenProgram: PublicKey = TOKEN_PROGRAM_ID,
   ): Promise<TransactionInstruction[]> => {
     let preInstructions = [];
 
@@ -250,8 +377,8 @@ export class JupiterClient {
           ata,
           owner,
           mint,
-          tokenProgram
-        )
+          tokenProgram,
+        ),
       );
     }
 
@@ -266,21 +393,21 @@ export class JupiterClient {
         wsolBalance = new BN(
           (
             await this.base.provider.connection.getTokenAccountBalance(
-              treasuryWsolAta
+              treasuryWsolAta,
             )
-          ).value.amount
+          ).value.amount,
         );
       } catch (err) {
         wsolBalance = new BN(0);
       }
       const solBalance = new BN(
-        await this.base.provider.connection.getBalance(treasuryPda)
+        await this.base.provider.connection.getBalance(treasuryPda),
       );
       const delta = amount.sub(wsolBalance);
 
       if (solBalance.lt(delta)) {
         throw new Error(
-          `Insufficient balance in treasury (${treasuryPda.toBase58()}) for swap. solBalance: ${solBalance}, lamports needed: ${delta}`
+          `Insufficient balance in treasury (${treasuryPda.toBase58()}) for swap. solBalance: ${solBalance}, lamports needed: ${delta}`,
         );
       }
       if (delta.gt(new BN(0)) && solBalance.gt(delta)) {
@@ -295,7 +422,7 @@ export class JupiterClient {
               wsolMint: inputMint,
               signer: manager,
             })
-            .instruction()
+            .instruction(),
         );
       }
     }
@@ -310,7 +437,7 @@ export class JupiterClient {
     }
     if (
       ![TOKEN_PROGRAM_ID.toBase58(), TOKEN_2022_PROGRAM_ID.toBase58()].includes(
-        mintInfo.owner.toBase58()
+        mintInfo.owner.toBase58(),
       )
     ) {
       throw new Error(`Invalid mint owner: ${mintInfo.owner.toBase58()}`);
@@ -335,7 +462,7 @@ export class JupiterClient {
   };
 
   getAdressLookupTableAccounts = async (
-    keys?: string[]
+    keys?: string[],
   ): Promise<AddressLookupTableAccount[]> => {
     if (!keys) {
       throw new Error("addressLookupTableAddresses is undefined");
@@ -343,7 +470,7 @@ export class JupiterClient {
 
     const addressLookupTableAccountInfos =
       await this.base.provider.connection.getMultipleAccountsInfo(
-        keys.map((key) => new PublicKey(key))
+        keys.map((key) => new PublicKey(key)),
       );
 
     return addressLookupTableAccountInfos.reduce((acc, accountInfo, index) => {
@@ -364,8 +491,8 @@ export class JupiterClient {
     const res = await fetch(
       `${this.base.jupiterApi}/quote?` +
         new URLSearchParams(
-          Object.entries(quoteParams).map(([key, val]) => [key, String(val)])
-        )
+          Object.entries(quoteParams).map(([key, val]) => [key, String(val)]),
+        ),
     );
     const data = await res.json();
     if (!res.ok) {
