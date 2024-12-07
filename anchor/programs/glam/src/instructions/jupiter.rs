@@ -459,7 +459,7 @@ pub struct CastVote<'info> {
 pub fn cast_vote<'info>(ctx: Context<CastVote>, side: u8) -> Result<()> {
     jup_cast_vote(
         CpiContext::new_with_signer(
-            ctx.accounts.governance_program.to_account_info(),
+            ctx.accounts.locked_voter_program.to_account_info(),
             JupCastVote {
                 locker: ctx.accounts.locker.to_account_info(),
                 escrow: ctx.accounts.escrow.to_account_info(),
