@@ -278,10 +278,12 @@ pub struct InitLockedVoterEscrow<'info> {
     pub system_program: Program<'info, System>,
 }
 
-/**
- * Initialize voter escrow
- * Create JUP token accountowned by the escrow
- */
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::StakeJup)
+)]
+#[access_control(
+    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
+)]
 #[treasury_signer_seeds]
 pub fn init_locked_voter_escrow<'info>(ctx: Context<InitLockedVoterEscrow>) -> Result<()> {
     new_escrow(CpiContext::new_with_signer(
@@ -327,10 +329,12 @@ pub struct IncreaseLockedAmount<'info> {
     pub token_program: Program<'info, Token>,
 }
 
-/**
- * Toggle max lock
- * Increase locked amount
- */
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::StakeJup)
+)]
+#[access_control(
+    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
+)]
 #[treasury_signer_seeds]
 pub fn increase_locked_amount<'info>(
     ctx: Context<IncreaseLockedAmount>,
@@ -390,6 +394,12 @@ pub struct NewVote<'info> {
     pub system_program: Program<'info, System>,
 }
 
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::VoteOnProposal)
+)]
+#[access_control(
+    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
+)]
 #[treasury_signer_seeds]
 pub fn new_vote<'info>(ctx: Context<NewVote>) -> Result<()> {
     jup_new_vote(
@@ -439,9 +449,16 @@ pub struct CastVote<'info> {
     pub governance_program: Program<'info, Govern>,
 }
 
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::VoteOnProposal)
+)]
+#[access_control(
+    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
+)]
+#[treasury_signer_seeds]
 pub fn cast_vote<'info>(ctx: Context<CastVote>, side: u8) -> Result<()> {
     jup_cast_vote(
-        CpiContext::new(
+        CpiContext::new_with_signer(
             ctx.accounts.governance_program.to_account_info(),
             JupCastVote {
                 locker: ctx.accounts.locker.to_account_info(),
@@ -452,6 +469,7 @@ pub fn cast_vote<'info>(ctx: Context<CastVote>, side: u8) -> Result<()> {
                 governor: ctx.accounts.governor.to_account_info(),
                 govern_program: ctx.accounts.governance_program.to_account_info(),
             },
+            treasury_signer_seeds,
         ),
         side,
     )?;
