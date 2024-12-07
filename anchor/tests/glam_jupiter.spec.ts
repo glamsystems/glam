@@ -10,6 +10,14 @@ import { Keypair } from "@solana/web3.js";
 import { getAccount } from "@solana/spl-token";
 import { BN } from "@coral-xyz/anchor";
 import { MSOL, WSOL } from "../src";
+import { PublicKey } from "@solana/web3.js";
+
+const JUP_STAKE_LOCKER = new PublicKey(
+  "CVMdMd79no569tjc5Sq7kzz8isbfCcFyBS5TLGsrZ5dN",
+);
+const JUP_VOTE_PROGRAM = new PublicKey(
+  "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj",
+);
 
 describe("glam_jupiter", () => {
   const glamClient = new GlamClient();
@@ -25,9 +33,32 @@ describe("glam_jupiter", () => {
     // Airdrop some SOL to the treasury
     const airdrop = await glamClient.provider.connection.requestAirdrop(
       glamClient.getTreasuryPDA(fundPDA),
-      1_000_000_000
+      1_000_000_000,
     );
     await glamClient.provider.connection.confirmTransaction(airdrop);
+  });
+
+  it("Create escrow", async () => {
+    const treasury = glamClient.getTreasuryPDA(fundPDA);
+    const [escrow] = PublicKey.findProgramAddressSync(
+      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), treasury.toBuffer()],
+      JUP_VOTE_PROGRAM,
+    );
+    try {
+      const txId = await glamClient.program.methods
+        .initLockedVoterEscrow()
+        .accounts({
+          fund: fundPDA,
+          locker: JUP_STAKE_LOCKER,
+          escrow,
+          lockedVoterProgram: JUP_VOTE_PROGRAM,
+        })
+        .rpc();
+      console.log("initLockedVoterEscrow txId", txId);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
   });
 
   it("Swap end to end", async () => {
@@ -41,7 +72,7 @@ describe("glam_jupiter", () => {
     const swapInstructions = swapInstructionsForTest(
       manager,
       inputSignerAta,
-      outputSignerAta
+      outputSignerAta,
     );
 
     // Pre-checks: the following accounts should not exist
@@ -71,7 +102,7 @@ describe("glam_jupiter", () => {
         fundPDA,
         undefined,
         quoteResponse,
-        swapInstructions
+        swapInstructions,
       );
       console.log("swap e2e txId", txId);
     } catch (e) {
@@ -90,7 +121,7 @@ describe("glam_jupiter", () => {
         const acc = await getAccount(
           glamClient.provider.connection,
           account,
-          "confirmed"
+          "confirmed",
         );
         expect(acc.amount.toString()).toEqual("0");
       } catch (e) {
@@ -106,7 +137,7 @@ describe("glam_jupiter", () => {
     // treasury: more mSOL
     const treasuryMsol = await getAccount(
       glamClient.provider.connection,
-      glamClient.getTreasuryAta(fundPDA, MSOL)
+      glamClient.getTreasuryAta(fundPDA, MSOL),
     );
     expect(treasuryMsol.amount.toString()).toEqual("41795954");
   }, 15_000);
@@ -116,7 +147,7 @@ describe("glam_jupiter", () => {
     const testSigner = Keypair.fromSeed(str2seed("test_signer"));
     const airdrop = await glamClient.provider.connection.requestAirdrop(
       testSigner.publicKey,
-      100_000_000
+      100_000_000,
     );
     await glamClient.provider.connection.confirmTransaction(airdrop);
 
@@ -168,13 +199,13 @@ describe("glam_jupiter", () => {
         },
         undefined,
         undefined,
-        { signer: testSigner.publicKey }
+        { signer: testSigner.publicKey },
       );
       const txSig = await glamClient.sendAndConfirm(tx, testSigner);
       expect(txSig).toBeUndefined();
     } catch (e) {
       const expectedError = e.programLogs.some((log) =>
-        log.includes("Asset cannot be swapped")
+        log.includes("Asset cannot be swapped"),
       );
       expect(expectedError).toBeTruthy();
     }
@@ -207,7 +238,7 @@ describe("glam_jupiter", () => {
         },
         undefined,
         undefined,
-        { signer: testSigner.publicKey }
+        { signer: testSigner.publicKey },
       );
       console.log("2nd attempt swap");
       await glamClient.sendAndConfirm(tx, testSigner);
@@ -409,7 +440,7 @@ describe("glam_jupiter", () => {
           maxAccounts: 8,
         },
         undefined,
-        swapInstructions
+        swapInstructions,
       );
       console.log("swap back e2e txId", txId);
     } catch (e) {
@@ -420,7 +451,7 @@ describe("glam_jupiter", () => {
     // treasury: more mSOL
     const treasuryMsol = await getAccount(
       glamClient.provider.connection,
-      glamClient.getTreasuryAta(fundPDA, MSOL)
+      glamClient.getTreasuryAta(fundPDA, MSOL),
     );
     expect(treasuryMsol.amount.toString()).toEqual("42591005");
   });
@@ -446,7 +477,7 @@ describe("glam_jupiter", () => {
     } catch (e) {
       // make sure program has reached jupiter
       expect(e.programLogs).toContain(
-        "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]"
+        "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]",
       );
     }
   }, 15_000);
@@ -468,13 +499,13 @@ describe("glam_jupiter", () => {
     const quoteResponse = await (
       await fetch(
         `${glamClient.jupiterApi}/quote?${new URLSearchParams(
-          Object.entries(quoteParams)
-        )}`
+          Object.entries(quoteParams),
+        )}`,
       )
     ).json();
     const swapInstructions = await glamClient.jupiter.getSwapInstructions(
       quoteResponse,
-      glamClient.getManager()
+      glamClient.getManager(),
     );
 
     try {
@@ -485,13 +516,13 @@ describe("glam_jupiter", () => {
         fundPDA,
         quoteParams,
         quoteResponse,
-        swapInstructions
+        swapInstructions,
       );
       console.log("swap txId", txIdSwap);
     } catch (e) {
       // make sure program has reached jupiter
       expect(e.programLogs).toContain(
-        "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]"
+        "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]",
       );
     }
   }, 15_000);

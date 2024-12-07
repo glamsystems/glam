@@ -35,6 +35,8 @@ pub enum Permission {
     BurnShare,
     ForceTransferShare,
     SetTokenAccountsStates,
+    StakeJup,       // Initialize locked voter escrow and stake JUP
+    VoteOnProposal, // New vote and cast vote
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
@@ -53,8 +55,9 @@ pub enum IntegrationName {
     SanctumStakePool,
     NativeStaking,
     Marinade,
-    Jupiter,
-    Mint,
+    Jupiter,     // Jupiter Swap
+    Mint,        // GLAM Mint
+    JupiterVote, // Jupiter Vote
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, PartialEq, Debug)]

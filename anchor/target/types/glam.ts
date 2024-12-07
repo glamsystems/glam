@@ -208,6 +208,86 @@ export type Glam = {
       ]
     },
     {
+      "name": "castVote",
+      "discriminator": [
+        20,
+        212,
+        15,
+        189,
+        69,
+        180,
+        69,
+        151
+      ],
+      "accounts": [
+        {
+          "name": "fund",
+          "writable": true
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "locker"
+        },
+        {
+          "name": "escrow"
+        },
+        {
+          "name": "proposal",
+          "writable": true
+        },
+        {
+          "name": "vote",
+          "writable": true
+        },
+        {
+          "name": "governor"
+        },
+        {
+          "name": "lockedVoterProgram",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "governanceProgram",
+          "address": "GovaE4iu227srtG2s3tZzB4RmWBzw8sTwrCLZz7kN7rY"
+        }
+      ],
+      "args": [
+        {
+          "name": "side",
+          "type": "u8"
+        }
+      ]
+    },
+    {
       "name": "closeFund",
       "discriminator": [
         230,
@@ -1338,6 +1418,149 @@ export type Glam = {
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "increaseLockedAmount",
+      "discriminator": [
+        5,
+        168,
+        118,
+        53,
+        72,
+        46,
+        203,
+        146
+      ],
+      "accounts": [
+        {
+          "name": "fund"
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "locker",
+          "writable": true
+        },
+        {
+          "name": "escrowJupAta",
+          "writable": true
+        },
+        {
+          "name": "treasuryJupAta",
+          "writable": true
+        },
+        {
+          "name": "escrow",
+          "writable": true
+        },
+        {
+          "name": "lockedVoterProgram",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "initLockedVoterEscrow",
+      "discriminator": [
+        148,
+        74,
+        247,
+        66,
+        206,
+        51,
+        119,
+        243
+      ],
+      "accounts": [
+        {
+          "name": "fund"
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "locker",
+          "writable": true
+        },
+        {
+          "name": "escrow",
+          "writable": true
+        },
+        {
+          "name": "lockedVoterProgram",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
     },
     {
       "name": "initializeAndDelegateStake",
@@ -2610,6 +2833,71 @@ export type Glam = {
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "newVote",
+      "discriminator": [
+        163,
+        108,
+        157,
+        189,
+        140,
+        80,
+        13,
+        143
+      ],
+      "accounts": [
+        {
+          "name": "fund"
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "proposal",
+          "writable": true
+        },
+        {
+          "name": "vote",
+          "writable": true
+        },
+        {
+          "name": "governanceProgram",
+          "address": "GovaE4iu227srtG2s3tZzB4RmWBzw8sTwrCLZz7kN7rY"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
     },
     {
       "name": "redeem",
@@ -4525,6 +4813,19 @@ export type Glam = {
   ],
   "accounts": [
     {
+      "name": "escrow",
+      "discriminator": [
+        31,
+        213,
+        123,
+        187,
+        186,
+        22,
+        218,
+        155
+      ]
+    },
+    {
       "name": "fundAccount",
       "discriminator": [
         49,
@@ -4551,6 +4852,32 @@ export type Glam = {
       ]
     },
     {
+      "name": "governor",
+      "discriminator": [
+        37,
+        136,
+        44,
+        80,
+        68,
+        85,
+        213,
+        178
+      ]
+    },
+    {
+      "name": "locker",
+      "discriminator": [
+        74,
+        246,
+        6,
+        113,
+        249,
+        228,
+        75,
+        169
+      ]
+    },
+    {
       "name": "policyAccount",
       "discriminator": [
         218,
@@ -4561,6 +4888,32 @@ export type Glam = {
         127,
         81,
         175
+      ]
+    },
+    {
+      "name": "proposal",
+      "discriminator": [
+        26,
+        94,
+        189,
+        187,
+        116,
+        136,
+        53,
+        33
+      ]
+    },
+    {
+      "name": "vote",
+      "discriminator": [
+        96,
+        91,
+        104,
+        57,
+        145,
+        35,
+        172,
+        155
       ]
     }
   ],
@@ -5016,6 +5369,70 @@ export type Glam = {
                 }
               }
             ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "escrow",
+      "docs": [
+        "Account: Escrow"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "locker",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "tokens",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "escrowStartedAt",
+            "type": "i64"
+          },
+          {
+            "name": "escrowEndsAt",
+            "type": "i64"
+          },
+          {
+            "name": "voteDelegate",
+            "type": "pubkey"
+          },
+          {
+            "name": "isMaxLock",
+            "type": "bool"
+          },
+          {
+            "name": "partialUnstakingAmount",
+            "type": "u64"
+          },
+          {
+            "name": "padding",
+            "type": "u64"
+          },
+          {
+            "name": "buffers",
+            "type": {
+              "array": [
+                "u128",
+                9
+              ]
+            }
           }
         ]
       }
@@ -5580,6 +5997,86 @@ export type Glam = {
       }
     },
     {
+      "name": "governanceParameters",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "votingDelay",
+            "type": "u64"
+          },
+          {
+            "name": "votingPeriod",
+            "type": "u64"
+          },
+          {
+            "name": "quorumVotes",
+            "type": "u64"
+          },
+          {
+            "name": "timelockDelaySeconds",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "governor",
+      "docs": [
+        "Account: Governor"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "base",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "proposalCount",
+            "type": "u64"
+          },
+          {
+            "name": "locker",
+            "type": "pubkey"
+          },
+          {
+            "name": "smartWallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "params",
+            "type": {
+              "defined": {
+                "name": "governanceParameters"
+              }
+            }
+          },
+          {
+            "name": "votingReward",
+            "type": {
+              "defined": {
+                "name": "votingReward"
+              }
+            }
+          },
+          {
+            "name": "buffers",
+            "type": {
+              "array": [
+                "u128",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "integrationAcl",
       "type": {
         "kind": "struct",
@@ -5644,6 +6141,85 @@ export type Glam = {
           },
           {
             "name": "mint"
+          },
+          {
+            "name": "jupiterVote"
+          }
+        ]
+      }
+    },
+    {
+      "name": "locker",
+      "docs": [
+        "Account: Locker"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "base",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "tokenMint",
+            "type": "pubkey"
+          },
+          {
+            "name": "lockedSupply",
+            "type": "u64"
+          },
+          {
+            "name": "totalEscrow",
+            "type": "u64"
+          },
+          {
+            "name": "governor",
+            "type": "pubkey"
+          },
+          {
+            "name": "params",
+            "type": {
+              "defined": {
+                "name": "lockerParams"
+              }
+            }
+          },
+          {
+            "name": "buffers",
+            "type": {
+              "array": [
+                "u128",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "lockerParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "maxStakeVoteMultiplier",
+            "type": "u8"
+          },
+          {
+            "name": "minStakeDuration",
+            "type": "u64"
+          },
+          {
+            "name": "maxStakeDuration",
+            "type": "u64"
+          },
+          {
+            "name": "proposalActivationMinVotes",
+            "type": "u64"
           }
         ]
       }
@@ -5924,6 +6500,12 @@ export type Glam = {
           },
           {
             "name": "setTokenAccountsStates"
+          },
+          {
+            "name": "stakeJup"
+          },
+          {
+            "name": "voteOnProposal"
           }
         ]
       }
@@ -5970,6 +6552,152 @@ export type Glam = {
           },
           {
             "name": "slide"
+          }
+        ]
+      }
+    },
+    {
+      "name": "proposal",
+      "docs": [
+        "Account: Proposal"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "governor",
+            "type": "pubkey"
+          },
+          {
+            "name": "index",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "proposer",
+            "type": "pubkey"
+          },
+          {
+            "name": "quorumVotes",
+            "type": "u64"
+          },
+          {
+            "name": "maxOption",
+            "type": "u8"
+          },
+          {
+            "name": "optionVotes",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "canceledAt",
+            "type": "i64"
+          },
+          {
+            "name": "createdAt",
+            "type": "i64"
+          },
+          {
+            "name": "activatedAt",
+            "type": "i64"
+          },
+          {
+            "name": "votingEndsAt",
+            "type": "i64"
+          },
+          {
+            "name": "queuedAt",
+            "type": "i64"
+          },
+          {
+            "name": "queuedTransaction",
+            "type": "pubkey"
+          },
+          {
+            "name": "votingReward",
+            "type": {
+              "defined": {
+                "name": "votingReward"
+              }
+            }
+          },
+          {
+            "name": "totalClaimedReward",
+            "type": "u64"
+          },
+          {
+            "name": "proposalType",
+            "type": "u8"
+          },
+          {
+            "name": "buffers",
+            "type": {
+              "array": [
+                "u128",
+                10
+              ]
+            }
+          },
+          {
+            "name": "instructions",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "proposalInstruction"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "proposalAccountMeta",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pubkey",
+            "type": "pubkey"
+          },
+          {
+            "name": "isSigner",
+            "type": "bool"
+          },
+          {
+            "name": "isWritable",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "proposalInstruction",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "programId",
+            "type": "pubkey"
+          },
+          {
+            "name": "keys",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "proposalAccountMeta"
+                }
+              }
+            }
+          },
+          {
+            "name": "data",
+            "type": "bytes"
           }
         ]
       }
@@ -6954,6 +7682,70 @@ export type Glam = {
             "type": {
               "option": "string"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "vote",
+      "docs": [
+        "Account: Vote"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "proposal",
+            "type": "pubkey"
+          },
+          {
+            "name": "voter",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "side",
+            "type": "u8"
+          },
+          {
+            "name": "votingPower",
+            "type": "u64"
+          },
+          {
+            "name": "claimed",
+            "type": "bool"
+          },
+          {
+            "name": "buffers",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "votingReward",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "rewardMint",
+            "type": "pubkey"
+          },
+          {
+            "name": "rewardVault",
+            "type": "pubkey"
+          },
+          {
+            "name": "rewardPerProposal",
+            "type": "u64"
           }
         ]
       }

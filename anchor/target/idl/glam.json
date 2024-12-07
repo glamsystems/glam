@@ -202,6 +202,86 @@
       ]
     },
     {
+      "name": "cast_vote",
+      "discriminator": [
+        20,
+        212,
+        15,
+        189,
+        69,
+        180,
+        69,
+        151
+      ],
+      "accounts": [
+        {
+          "name": "fund",
+          "writable": true
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "locker"
+        },
+        {
+          "name": "escrow"
+        },
+        {
+          "name": "proposal",
+          "writable": true
+        },
+        {
+          "name": "vote",
+          "writable": true
+        },
+        {
+          "name": "governor"
+        },
+        {
+          "name": "locked_voter_program",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "governance_program",
+          "address": "GovaE4iu227srtG2s3tZzB4RmWBzw8sTwrCLZz7kN7rY"
+        }
+      ],
+      "args": [
+        {
+          "name": "side",
+          "type": "u8"
+        }
+      ]
+    },
+    {
       "name": "close_fund",
       "discriminator": [
         230,
@@ -1332,6 +1412,149 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "increase_locked_amount",
+      "discriminator": [
+        5,
+        168,
+        118,
+        53,
+        72,
+        46,
+        203,
+        146
+      ],
+      "accounts": [
+        {
+          "name": "fund"
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "locker",
+          "writable": true
+        },
+        {
+          "name": "escrow_jup_ata",
+          "writable": true
+        },
+        {
+          "name": "treasury_jup_ata",
+          "writable": true
+        },
+        {
+          "name": "escrow",
+          "writable": true
+        },
+        {
+          "name": "locked_voter_program",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "init_locked_voter_escrow",
+      "discriminator": [
+        148,
+        74,
+        247,
+        66,
+        206,
+        51,
+        119,
+        243
+      ],
+      "accounts": [
+        {
+          "name": "fund"
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "locker",
+          "writable": true
+        },
+        {
+          "name": "escrow",
+          "writable": true
+        },
+        {
+          "name": "locked_voter_program",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
     },
     {
       "name": "initialize_and_delegate_stake",
@@ -2604,6 +2827,71 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "new_vote",
+      "discriminator": [
+        163,
+        108,
+        157,
+        189,
+        140,
+        80,
+        13,
+        143
+      ],
+      "accounts": [
+        {
+          "name": "fund"
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "proposal",
+          "writable": true
+        },
+        {
+          "name": "vote",
+          "writable": true
+        },
+        {
+          "name": "governance_program",
+          "address": "GovaE4iu227srtG2s3tZzB4RmWBzw8sTwrCLZz7kN7rY"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
     },
     {
       "name": "redeem",
@@ -4519,6 +4807,19 @@
   ],
   "accounts": [
     {
+      "name": "Escrow",
+      "discriminator": [
+        31,
+        213,
+        123,
+        187,
+        186,
+        22,
+        218,
+        155
+      ]
+    },
+    {
       "name": "FundAccount",
       "discriminator": [
         49,
@@ -4545,6 +4846,32 @@
       ]
     },
     {
+      "name": "Governor",
+      "discriminator": [
+        37,
+        136,
+        44,
+        80,
+        68,
+        85,
+        213,
+        178
+      ]
+    },
+    {
+      "name": "Locker",
+      "discriminator": [
+        74,
+        246,
+        6,
+        113,
+        249,
+        228,
+        75,
+        169
+      ]
+    },
+    {
       "name": "PolicyAccount",
       "discriminator": [
         218,
@@ -4555,6 +4882,32 @@
         127,
         81,
         175
+      ]
+    },
+    {
+      "name": "Proposal",
+      "discriminator": [
+        26,
+        94,
+        189,
+        187,
+        116,
+        136,
+        53,
+        33
+      ]
+    },
+    {
+      "name": "Vote",
+      "discriminator": [
+        96,
+        91,
+        104,
+        57,
+        145,
+        35,
+        172,
+        155
       ]
     }
   ],
@@ -5010,6 +5363,70 @@
                 }
               }
             ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "Escrow",
+      "docs": [
+        "Account: Escrow"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "locker",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "tokens",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "escrow_started_at",
+            "type": "i64"
+          },
+          {
+            "name": "escrow_ends_at",
+            "type": "i64"
+          },
+          {
+            "name": "vote_delegate",
+            "type": "pubkey"
+          },
+          {
+            "name": "is_max_lock",
+            "type": "bool"
+          },
+          {
+            "name": "partial_unstaking_amount",
+            "type": "u64"
+          },
+          {
+            "name": "padding",
+            "type": "u64"
+          },
+          {
+            "name": "buffers",
+            "type": {
+              "array": [
+                "u128",
+                9
+              ]
+            }
           }
         ]
       }
@@ -5574,6 +5991,86 @@
       }
     },
     {
+      "name": "GovernanceParameters",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "voting_delay",
+            "type": "u64"
+          },
+          {
+            "name": "voting_period",
+            "type": "u64"
+          },
+          {
+            "name": "quorum_votes",
+            "type": "u64"
+          },
+          {
+            "name": "timelock_delay_seconds",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Governor",
+      "docs": [
+        "Account: Governor"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "base",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "proposal_count",
+            "type": "u64"
+          },
+          {
+            "name": "locker",
+            "type": "pubkey"
+          },
+          {
+            "name": "smart_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "params",
+            "type": {
+              "defined": {
+                "name": "GovernanceParameters"
+              }
+            }
+          },
+          {
+            "name": "voting_reward",
+            "type": {
+              "defined": {
+                "name": "VotingReward"
+              }
+            }
+          },
+          {
+            "name": "buffers",
+            "type": {
+              "array": [
+                "u128",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "IntegrationAcl",
       "type": {
         "kind": "struct",
@@ -5638,6 +6135,85 @@
           },
           {
             "name": "Mint"
+          },
+          {
+            "name": "JupiterVote"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Locker",
+      "docs": [
+        "Account: Locker"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "base",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "locked_supply",
+            "type": "u64"
+          },
+          {
+            "name": "total_escrow",
+            "type": "u64"
+          },
+          {
+            "name": "governor",
+            "type": "pubkey"
+          },
+          {
+            "name": "params",
+            "type": {
+              "defined": {
+                "name": "LockerParams"
+              }
+            }
+          },
+          {
+            "name": "buffers",
+            "type": {
+              "array": [
+                "u128",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "LockerParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "max_stake_vote_multiplier",
+            "type": "u8"
+          },
+          {
+            "name": "min_stake_duration",
+            "type": "u64"
+          },
+          {
+            "name": "max_stake_duration",
+            "type": "u64"
+          },
+          {
+            "name": "proposal_activation_min_votes",
+            "type": "u64"
           }
         ]
       }
@@ -5918,6 +6494,12 @@
           },
           {
             "name": "SetTokenAccountsStates"
+          },
+          {
+            "name": "StakeJup"
+          },
+          {
+            "name": "VoteOnProposal"
           }
         ]
       }
@@ -5964,6 +6546,152 @@
           },
           {
             "name": "Slide"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Proposal",
+      "docs": [
+        "Account: Proposal"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "governor",
+            "type": "pubkey"
+          },
+          {
+            "name": "index",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "proposer",
+            "type": "pubkey"
+          },
+          {
+            "name": "quorum_votes",
+            "type": "u64"
+          },
+          {
+            "name": "max_option",
+            "type": "u8"
+          },
+          {
+            "name": "option_votes",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "canceled_at",
+            "type": "i64"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "activated_at",
+            "type": "i64"
+          },
+          {
+            "name": "voting_ends_at",
+            "type": "i64"
+          },
+          {
+            "name": "queued_at",
+            "type": "i64"
+          },
+          {
+            "name": "queued_transaction",
+            "type": "pubkey"
+          },
+          {
+            "name": "voting_reward",
+            "type": {
+              "defined": {
+                "name": "VotingReward"
+              }
+            }
+          },
+          {
+            "name": "total_claimed_reward",
+            "type": "u64"
+          },
+          {
+            "name": "proposal_type",
+            "type": "u8"
+          },
+          {
+            "name": "buffers",
+            "type": {
+              "array": [
+                "u128",
+                10
+              ]
+            }
+          },
+          {
+            "name": "instructions",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "ProposalInstruction"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProposalAccountMeta",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pubkey",
+            "type": "pubkey"
+          },
+          {
+            "name": "is_signer",
+            "type": "bool"
+          },
+          {
+            "name": "is_writable",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProposalInstruction",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "program_id",
+            "type": "pubkey"
+          },
+          {
+            "name": "keys",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "ProposalAccountMeta"
+                }
+              }
+            }
+          },
+          {
+            "name": "data",
+            "type": "bytes"
           }
         ]
       }
@@ -6948,6 +7676,70 @@
             "type": {
               "option": "string"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Vote",
+      "docs": [
+        "Account: Vote"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "proposal",
+            "type": "pubkey"
+          },
+          {
+            "name": "voter",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "side",
+            "type": "u8"
+          },
+          {
+            "name": "voting_power",
+            "type": "u64"
+          },
+          {
+            "name": "claimed",
+            "type": "bool"
+          },
+          {
+            "name": "buffers",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "VotingReward",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "reward_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "reward_vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "reward_per_proposal",
+            "type": "u64"
           }
         ]
       }
