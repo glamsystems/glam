@@ -6141,6 +6141,9 @@ export type Glam = {
           },
           {
             "name": "mint"
+          },
+          {
+            "name": "jupiterVote"
           }
         ]
       }
@@ -6497,6 +6500,12 @@ export type Glam = {
           },
           {
             "name": "setTokenAccountsStates"
+          },
+          {
+            "name": "stakeJup"
+          },
+          {
+            "name": "voteOnProposal"
           }
         ]
       }

@@ -6135,6 +6135,9 @@
           },
           {
             "name": "Mint"
+          },
+          {
+            "name": "JupiterVote"
           }
         ]
       }
@@ -6491,6 +6494,12 @@
           },
           {
             "name": "SetTokenAccountsStates"
+          },
+          {
+            "name": "StakeJup"
+          },
+          {
+            "name": "VoteOnProposal"
           }
         ]
       }
