@@ -137,18 +137,27 @@ export default function Transfer() {
     setFromAssetList(treasuryAssets());
   }, [from, driftUser, driftMarketConfigs]);
 
-  const transferTreasuryManager = async (asset: string, amount: number) => {
+  const transferTreasuryManager = async (symbol: string, amount: number) => {
     if (!fundPDA) return; // already checked, to avoid type issue
+
+    const asset = treasuryAssets().find((a) => a.symbol === symbol);
+    if (!asset) {
+      toast({
+        title: "Asset not found",
+        variant: "destructive",
+      });
+    }
+    console.log(asset);
 
     try {
       setIsTxPending(true);
       const txId = await glamClient.fund.withdraw(
         fundPDA,
-        new PublicKey(asset),
-        amount,
+        new PublicKey(asset?.address || 0),
+        amount * 10 ** (asset?.decimals || 9),
       );
       toast({
-        title: `Transfered ${amount} ${asset} from treasury to manager`,
+        title: `Transfered ${amount} ${asset?.symbol} from treasury to manager`,
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
       });
     } catch (error: any) {
