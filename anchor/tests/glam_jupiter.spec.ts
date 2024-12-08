@@ -51,7 +51,6 @@ describe("glam_jupiter", () => {
           fund: fundPDA,
           locker: JUP_STAKE_LOCKER,
           escrow,
-          lockedVoterProgram: JUP_VOTE_PROGRAM,
         })
         .rpc();
       console.log("initLockedVoterEscrow txId", txId);

@@ -10,6 +10,10 @@ import { getGlamClient, setFundToConfig } from "./utils";
 import { QuoteParams } from "anchor/src/client/jupiter";
 import { VersionedTransaction } from "@solana/web3.js";
 import { getPriorityFeeEstimate } from "@glam/anchor";
+import {
+  createAssociatedTokenAccountIdempotentInstruction,
+  getAssociatedTokenAddressSync,
+} from "@solana/spl-token";
 
 const configPath = path.join(os.homedir(), ".config/glam/cli/config.json");
 let fundPDA;
@@ -48,6 +52,7 @@ program
     console.log("Program ID:", glamClient.programId.toBase58());
     console.log("Wallet connected:", glamClient.getManager().toBase58());
     console.log("RPC endpoint:", glamClient.provider.connection.rpcEndpoint);
+    console.log("Active fund:", fundPDA ? fundPDA.toBase58() : "not set");
   });
 
 program
@@ -286,6 +291,76 @@ integration
     } catch (e) {
       console.error(e);
       process.exit(1);
+    }
+  });
+
+const jup = fund.command("jup").description("JUP staking");
+jup
+  .command("stake <amount>")
+  .description("Stake JUP tokens")
+  .action(async (amount) => {
+    if (!fundPDA) {
+      console.error("Error: fund not set");
+      process.exit(1);
+    }
+
+    try {
+      const txId = await glamClient.jupiter.stakeJup(
+        fundPDA,
+        new anchor.BN(amount * 10 ** 6), // decimals 6
+      );
+      console.log("stakeJup txId", txId);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  });
+
+jup
+  .command("unstake")
+  .description("Unstake JUP tokens")
+  .action(async () => {
+    if (!fundPDA) {
+      console.error("Error: fund not set");
+      process.exit(1);
+    }
+    console.error("Not implemented");
+    process.exit(1);
+  });
+
+const vote = fund
+  .command("vote <proposal> <side>")
+  .description("Vote on a proposal")
+  .action(async (_proposal, side) => {
+    if (!fundPDA) {
+      console.error("Error: fund not set");
+      process.exit(1);
+    }
+
+    let proposal;
+    let governor;
+    try {
+      proposal = new PublicKey(_proposal);
+      const proposalAccountInfo =
+        await glamClient.provider.connection.getAccountInfo(proposal);
+      governor = new PublicKey(proposalAccountInfo.data.subarray(8, 40)); // first 8 bytes are discriminator
+      console.log("Proposal governor:", governor.toBase58());
+    } catch (e) {
+      console.error("Error: invalid proposal:", _proposal);
+      process.exit(1);
+    }
+
+    try {
+      const txId = await glamClient.jupiter.voteOnProposal(
+        fundPDA,
+        proposal,
+        governor,
+        Number(side),
+      );
+      console.log("castVote txId", txId);
+    } catch (e) {
+      console.error(e);
+      throw e;
     }
   });
 
