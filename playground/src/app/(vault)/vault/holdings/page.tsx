@@ -7,6 +7,7 @@ import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";
 import { Holding } from "./data/holdingSchema";
+import { ExplorerLink } from "@/components/ExplorerLink";
 
 const SKELETON_ROW_COUNT = 5;
 
@@ -138,6 +139,8 @@ export default function Holdings() {
     }
   }, [treasury, jupTokenList, prices, activeFund]);
 
+  const treasuryAddress = treasury?.pubkey ? treasury.pubkey.toBase58() : "";
+
   return (
     <PageContentWrapper>
       <DataTable
@@ -145,12 +148,22 @@ export default function Holdings() {
           isLoadingData
             ? skeletonData
             : showZeroBalances
-              ? tableData
-              : tableData.filter((d) => d.balance > 0)
+            ? tableData
+            : tableData.filter((d) => d.balance > 0)
         }
         columns={columns}
         setShowZeroBalances={setShowZeroBalances}
       />
+      <br />
+      <p>
+        Treasury:{" "}
+        {treasuryAddress && (
+          <ExplorerLink
+            path={`/account/${treasuryAddress}`}
+            label={treasuryAddress}
+          />
+        )}
+      </p>
     </PageContentWrapper>
   );
 }

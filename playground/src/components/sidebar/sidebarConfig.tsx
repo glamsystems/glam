@@ -262,6 +262,12 @@ const ALL_NAV_ITEMS = {
     shortcut: "",
     Icon: Component1Icon,
   },
+  vaultCreate: {
+    route: "/vault/create",
+    text: "New",
+    shortcut: "",
+    Icon: PlusIcon,
+  },
   vaultAccess: {
     route: "/vault/access",
     text: "Access",
