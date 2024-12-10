@@ -31,15 +31,17 @@ const ToolbarTree: React.FC<ToolbarTreeProps> = ({
 }) => {
   return (
     <div className="w-full">
-      <div className="w-full">
-        <form className="w-full">
-          <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search" className="pl-8" />
-          </div>
-        </form>
-      </div>
-      <div className="flex flex-col pt-[38px]">
+      {/*<div className="w-full">*/}
+      {/*  <form className="w-full">*/}
+      {/*    <div className="relative">*/}
+      {/*      <MagnifyingGlassIcon className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />*/}
+      {/*      <Input placeholder="Search" className="pl-8" />*/}
+      {/*    </div>*/}
+      {/*  </form>*/}
+      {/*</div>*/}
+      {/*<div className="flex flex-col pt-[38px]">*/}
+      {/*duplicate; remove row when enabling search bar*/}
+      <div className="flex flex-col">
         <div className="flex">
           <TooltipProvider>
             <Tooltip>

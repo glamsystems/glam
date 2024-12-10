@@ -6,7 +6,7 @@ import PageContentWrapper from "@/components/PageContentWrapper";
 export default function VaultIntegrationsPage() {
   return (
     <PageContentWrapper>
-      <h1>Policies</h1>
+      <h1>Integrations</h1>
     </PageContentWrapper>
   );
 }

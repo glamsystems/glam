@@ -24,7 +24,7 @@ import { PublicKey } from "@solana/web3.js";
 
 const createSchema = z.object({
   productName: z.string().min(3, {
-    message: "Product name must be at least 3 characters.",
+    message: "Vault name must be at least 3 characters.",
   }),
 });
 
@@ -118,12 +118,12 @@ export default function Create() {
                 name="productName"
                 render={({ field }) => (
                   <FormItem className="w-full">
-                    <FormLabel>Product Name</FormLabel>
+                    <FormLabel>Vault Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Product Name" {...field} />
+                      <Input placeholder="Vault name" {...field} />
                     </FormControl>
                     <FormDescription>
-                      This is the public product name.
+                      This is the public vault name.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

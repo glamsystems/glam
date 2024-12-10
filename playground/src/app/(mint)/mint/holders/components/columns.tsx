@@ -47,9 +47,13 @@ export const columns: ColumnDef<HoldersData>[] = [
     ),
     cell: ({ row }) => {
       return row.getValue("frozen") ? (
-        <Badge variant="destructive">Frozen</Badge>
+        <Badge variant="destructive" className="rounded-none">
+          Frozen
+        </Badge>
       ) : (
-        <Badge variant="outline">Active</Badge>
+        <Badge variant="outline" className="rounded-none">
+          Active
+        </Badge>
       );
     },
     enableSorting: false,
