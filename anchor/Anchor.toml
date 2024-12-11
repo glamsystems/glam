@@ -156,11 +156,11 @@ address = "GJQjnyhSG9jN1AdMHTSyTxUR44hJHEGCmNzkidw9z3y8"
 filename = "./fixtures/accounts/GJQjnyhSG9jN1AdMHTSyTxUR44hJHEGCmNzkidw9z3y8.json"
 
 #
-# Jupiter
+# Jupiter swap
 #
 [[test.genesis]]
 address = "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"
-program = "./fixtures/programs/jupiter.so"
+program = "./fixtures/programs/jupiter_swap.so"
 
 [[test.genesis]] # Mercurial - for e2e swap test
 address = "MERLuDFBMmsHnsBPZw2sDQZHvXFMwp8EdjudcU2HKky"
@@ -193,6 +193,17 @@ filename = "./fixtures/accounts/91bUbswo6Di8235jAPwim1At4cPZLbG2pkpneyqKg4NQ.jso
 [[test.validator.account]] # for e2e swap test
 address = "BWdb6kE1yLzSDocaoJ9VWCEHG6fEnfGCUxguJ3VgEjtx"
 filename = "./fixtures/accounts/BWdb6kE1yLzSDocaoJ9VWCEHG6fEnfGCUxguJ3VgEjtx.json"
+
+#
+# Jupiter vote
+#
+[[test.genesis]]
+address = "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+program = "./fixtures/programs/jup_locked_voter.so"
+
+[[test.validator.account]] # vote locker
+address = "CVMdMd79no569tjc5Sq7kzz8isbfCcFyBS5TLGsrZ5dN"
+filename = "./fixtures/accounts/jupiter_vote/CVMdMd79no569tjc5Sq7kzz8isbfCcFyBS5TLGsrZ5dN.json"
 
 #
 # Stake pool - Spl

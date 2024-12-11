@@ -17,13 +17,13 @@ export default function Products() {
     }
   }, [allFunds]);
 
-  const products = (allFunds || []).map((f: any) => ({
-    id: f.idStr,
-    imageKey: f.imageKey,
-    name: f.name || f.idStr,
-    symbol: f.shareClasses[0]?.shareClassSymbol || "-",
-    baseAsset: f.fundCurrency || "SOL",
-    inception: f.fundLaunchDate,
+  const products = (allFunds || []).map((f) => ({
+    id: f.id?.toBase58() || "",
+    imageKey: f.id?.toBase58() || "",
+    name: f.name || f.id?.toBase58() || "",
+    symbol: f.shareClasses[0]?.symbol || "-",
+    baseAsset: f.rawOpenfunds?.fundCurrency || "SOL",
+    inception: f.rawOpenfunds?.fundLaunchDate || "-",
     status: "active",
   }));
 

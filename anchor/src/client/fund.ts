@@ -1,3 +1,4 @@
+import * as anchor from "@coral-xyz/anchor";
 import {
   PublicKey,
   VersionedTransaction,
@@ -13,15 +14,27 @@ import {
   TOKEN_PROGRAM_ID,
   unpackMint,
 } from "@solana/spl-token";
+import {
+  CompanyModel,
+  DelegateAcl,
+  FundModel,
+  FundOpenfundsModel,
+  ManagerModel,
+  ShareClassModel,
+  ShareClassOpenfundsModel,
+} from "../models";
 
 export class FundClient {
   public constructor(readonly base: BaseClient) {}
 
   public async createFund(
-    fund: any,
+    partialFundModel: Partial<FundModel>,
+    singleTx: boolean = false,
+    txOptions: TxOptions = {},
   ): Promise<[TransactionSignature, PublicKey]> {
-    // @ts-ignore Type instantiation is excessively deep and possibly infinite.
-    let fundModel = this.base.enrichFundModelInitialize(fund);
+    let fundModel = this.enrichFundModel(partialFundModel);
+
+    console.log("Enriched fund model", fundModel);
 
     const fundPDA = this.base.getFundPDA(fundModel);
     const treasury = this.base.getTreasuryPDA(fundPDA);
@@ -31,16 +44,61 @@ export class FundClient {
     const shareClasses = fundModel.shareClasses;
     fundModel.shareClasses = [];
 
+    if (shareClasses.length > 1) {
+      throw new Error("Multiple share classes not supported");
+    }
+
+    // No share class, only need to initialize the fund
+    if (shareClasses.length === 0) {
+      // @ts-ignore
+      const txSig = await this.base.program.methods
+        .initializeFund(fundModel)
+        .accountsPartial({
+          fund: fundPDA,
+          treasury,
+          openfunds,
+          manager,
+        })
+        .rpc();
+      return [txSig, fundPDA];
+    }
+
+    if (singleTx) {
+      // @ts-ignore
+      const initFundIx = await this.base.program.methods
+        .initializeFund(fundModel)
+        .accountsPartial({
+          fund: fundPDA,
+          treasury,
+          openfunds,
+          manager,
+        })
+        .instruction();
+
+      const shareClassMint = this.base.getShareClassPDA(fundPDA, 0);
+      const txSig = await this.base.program.methods
+        .addShareClass(shareClasses[0])
+        .accounts({
+          fund: fundPDA,
+          shareClassMint,
+          openfunds,
+        })
+        .preInstructions([initFundIx])
+        .rpc();
+      return [txSig, fundPDA];
+    }
+
+    // @ts-ignore
     const txSig = await this.base.program.methods
       .initializeFund(fundModel)
-      .accounts({
-        //@ts-ignore IDL ts type is unhappy
+      .accountsPartial({
         fund: fundPDA,
         treasury,
         openfunds,
         manager,
       })
       .rpc();
+
     await Promise.all(
       shareClasses.map(async (shareClass: any, j: number) => {
         const shareClassMint = this.base.getShareClassPDA(fundPDA, j);
@@ -53,6 +111,7 @@ export class FundClient {
             openfunds,
           })
           .preInstructions([
+            // FIXME: estimate compute units
             ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 }),
           ])
           .rpc();
@@ -63,12 +122,10 @@ export class FundClient {
 
   public async updateFund(
     fundPDA: PublicKey,
-    updated: any,
+    updated: Partial<FundModel>,
   ): Promise<TransactionSignature> {
-    let updatedFund = this.base.getFundModel(updated);
-
     return await this.base.program.methods
-      .updateFund(updatedFund)
+      .updateFund(new FundModel(updated))
       .accounts({
         fund: fundPDA,
         signer: this.base.getManager(),
@@ -89,6 +146,99 @@ export class FundClient {
   }
 
   /**
+   * Create a full fund model from a partial fund model
+   *
+   * @param fundModel
+   */
+  enrichFundModel(partialFundModel: Partial<FundModel>): FundModel {
+    const fundModel = { ...partialFundModel };
+    const manager = this.base.getManager();
+    const defaultDate = new Date().toISOString().split("T")[0];
+
+    // createdKey = hash fund name and get first 8 bytes
+    // useful for computing fund account PDA in the future
+    const createdKey = [
+      ...Buffer.from(
+        anchor.utils.sha256.hash(this.base.getFundName(fundModel)),
+      ).subarray(0, 8),
+    ];
+    fundModel.created = {
+      key: createdKey,
+      manager,
+    };
+
+    fundModel.rawOpenfunds = new FundOpenfundsModel(
+      fundModel.rawOpenfunds ?? {},
+    );
+
+    fundModel.manager = new ManagerModel({
+      ...(fundModel.manager || {}),
+      pubkey: manager,
+    });
+
+    fundModel.company = new CompanyModel(fundModel.company || {});
+
+    if (fundModel.shareClasses?.length == 1) {
+      const shareClass = fundModel.shareClasses[0];
+      fundModel.name = fundModel.name || shareClass.name;
+
+      fundModel.rawOpenfunds.fundCurrency =
+        fundModel.rawOpenfunds?.fundCurrency ||
+        shareClass.rawOpenfunds?.shareClassCurrency ||
+        null;
+    } else if (
+      fundModel.shareClasses?.length &&
+      fundModel.shareClasses.length > 1
+    ) {
+      throw new Error("Fund with more than 1 share class is not supported");
+    }
+
+    if (fundModel.isEnabled) {
+      fundModel.rawOpenfunds.fundLaunchDate =
+        fundModel.rawOpenfunds?.fundLaunchDate || defaultDate;
+    }
+
+    // fields containing fund id / pda
+    const fundPDA = this.base.getFundPDA(fundModel);
+    fundModel.uri =
+      fundModel.uri || `https://gui.glam.systems/products/${fundPDA}`;
+    fundModel.openfundsUri =
+      fundModel.openfundsUri ||
+      `https://api.glam.systems/v0/openfunds?fund=${fundPDA}&format=csv`;
+
+    // build openfunds models for each share classes
+    (fundModel.shareClasses || []).forEach(
+      (shareClass: ShareClassModel, i: number) => {
+        if (shareClass.rawOpenfunds) {
+          if (shareClass.rawOpenfunds.shareClassLifecycle === "active") {
+            shareClass.rawOpenfunds.shareClassLaunchDate =
+              shareClass.rawOpenfunds.shareClassLaunchDate || defaultDate;
+          }
+          shareClass.rawOpenfunds = new ShareClassOpenfundsModel(
+            shareClass.rawOpenfunds,
+          );
+          shareClass.isRawOpenfunds = true;
+        } else {
+          shareClass.isRawOpenfunds = false;
+        }
+
+        const sharePDA = this.base.getShareClassPDA(fundPDA, i);
+        shareClass.uri = `https://api.glam.systems/metadata/${sharePDA}`;
+        shareClass.fundId = fundPDA;
+        shareClass.imageUri = `https://api.glam.systems/v0/sparkle?key=${sharePDA}&format=png`;
+      },
+    );
+
+    // convert partial share class models to full share class models
+    fundModel.shareClasses = (fundModel.shareClasses || []).map(
+      // @ts-ignore
+      (s) => new ShareClassModel(s),
+    );
+
+    return new FundModel(fundModel);
+  }
+
+  /**
    * Delete delegates' access to the fund
    *
    * @param fundPDA
@@ -99,7 +249,7 @@ export class FundClient {
     fundPDA: PublicKey,
     delegates: PublicKey[],
   ): Promise<TransactionSignature> {
-    let updatedFund = this.base.getFundModel({
+    let updatedFund = new FundModel({
       delegateAcls: delegates.map((pubkey) => ({ pubkey, permissions: [] })),
     });
     return await this.base.program.methods
@@ -113,9 +263,9 @@ export class FundClient {
 
   public async upsertDelegateAcls(
     fundPDA: PublicKey,
-    delegateAcls: any[],
+    delegateAcls: DelegateAcl[],
   ): Promise<TransactionSignature> {
-    let updatedFund = this.base.getFundModel({ delegateAcls });
+    let updatedFund = new FundModel({ delegateAcls });
     return await this.base.program.methods
       .updateFund(updatedFund)
       .accounts({

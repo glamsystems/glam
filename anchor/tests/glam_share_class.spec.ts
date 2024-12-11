@@ -1,10 +1,9 @@
 import { Keypair, PublicKey } from "@solana/web3.js";
-import { BN, Wallet } from "@coral-xyz/anchor";
+import { BN } from "@coral-xyz/anchor";
 
-import { createFundForTest, fundTestExample, str2seed } from "./setup";
+import { createFundForTest, testFundModel, str2seed } from "./setup";
 import { GlamClient, GlamError, WSOL } from "../src";
 import {
-  createAssociatedTokenAccountIdempotentInstruction,
   getAccount,
   TOKEN_2022_PROGRAM_ID,
   unpackAccount,
@@ -19,12 +18,17 @@ describe("glam_share_class", () => {
 
   it("Initialize fund with default account state frozen", async () => {
     const fundForTest = {
-      ...fundTestExample,
-      integrationAcls: [{ name: { mint: {} }, features: [] }],
+      ...testFundModel,
+      integrationAcls: [{ name: { mint: {} }, features: [] }], // must have mint integration
+      shareClasses: [
+        {
+          ...testFundModel.shareClasses![0],
+          allowlist: [glamClient.getManager()],
+          defaultAccountStateFrozen: true,
+          permanentDelegate: new PublicKey(0), // set permanent delegate to share class itself
+        },
+      ],
     };
-    fundForTest.shareClasses[0].allowlist = [glamClient.getManager()];
-    fundForTest.shareClasses[0].defaultAccountStateFrozen = true;
-    fundForTest.shareClasses[0].permanentDelegate = new PublicKey(0); // set permanent delegate to share class itself
     const fundData = await createFundForTest(glamClient, fundForTest);
 
     fundPDA = fundData.fundPDA;
@@ -32,10 +36,8 @@ describe("glam_share_class", () => {
     const fund = await glamClient.fetchFund(fundPDA);
 
     expect(fund.shareClasses.length).toEqual(1);
-    expect(fund.shareClasses[0].shareClassAllowlist).toEqual([
-      glamClient.getManager(),
-    ]);
-    expect(fund.shareClasses[0].shareClassBlocklist).toEqual([]);
+    expect(fund.shareClasses[0].allowlist).toEqual([glamClient.getManager()]);
+    expect(fund.shareClasses[0].blocklist).toEqual([]);
   });
 
   it("Mint share class fail due to default state frozen", async () => {

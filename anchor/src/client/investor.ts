@@ -28,11 +28,10 @@ export class InvestorClient {
     fund: PublicKey,
     asset: PublicKey,
     amount: BN,
-    // @ts-ignore
-    fundModel: FundModel = undefined,
+    fundModel?: FundModel,
     shareClassId: number = 0,
     skipState: boolean = true,
-    txOptions: TxOptions = {}
+    txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const tx = await this.subscribeTx(
       fund,
@@ -41,7 +40,7 @@ export class InvestorClient {
       fundModel,
       shareClassId,
       skipState,
-      txOptions
+      txOptions,
     );
     return await this.base.sendAndConfirm(tx);
   }
@@ -50,10 +49,10 @@ export class InvestorClient {
     fund: PublicKey,
     amount: BN,
     inKind: boolean = false,
-    fundModel: FundModel = undefined,
+    fundModel?: FundModel,
     shareClassId: number = 0,
     skipState: boolean = true,
-    txOptions: TxOptions = {}
+    txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const tx = await this.redeemTx(
       fund,
@@ -62,7 +61,7 @@ export class InvestorClient {
       fundModel,
       shareClassId,
       skipState,
-      txOptions
+      txOptions,
     );
     return await this.base.sendAndConfirm(tx);
   }
@@ -75,10 +74,10 @@ export class InvestorClient {
     fund: PublicKey,
     asset: PublicKey,
     amount: BN,
-    fundModel: FundModel = undefined,
+    fundModel?: FundModel,
     shareClassId: number = 0,
     skipState: boolean = true,
-    txOptions: TxOptions
+    txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
 
@@ -92,30 +91,28 @@ export class InvestorClient {
     const treasuryAta = this.base.getTreasuryAta(
       fund,
       asset,
-      assetMeta?.programId
+      assetMeta?.programId,
     );
     const signerAssetAta = getAssociatedTokenAddressSync(
       asset,
       signer,
       true,
-      assetMeta?.programId
+      assetMeta?.programId,
     );
 
     // remaining accounts may have 3 parts:
     // 1. treasury atas + pricing to compute AUM
     // 2. marinade ticket
     // 3. stake accounts
-    // @ts-ignore
     if (!fundModel) {
-      //@ts-ignore
       fundModel = await this.base.fetchFund(fund);
     }
-    let remainingAccounts = (fundModel.assets || []).flatMap((asset: any) => {
+    let remainingAccounts = fundModel.assets.flatMap((asset) => {
       const assetMeta = this.base.getAssetMeta(asset.toBase58());
       const treasuryAta = this.base.getTreasuryAta(
         fund,
         asset,
-        assetMeta?.programId
+        assetMeta?.programId,
       );
 
       return [
@@ -123,7 +120,7 @@ export class InvestorClient {
         {
           // For some LSTs we have both state and pricing accounts
           // The program should always prefer the state account
-          pubkey: assetMeta.stateAccount || assetMeta.pricingAccount,
+          pubkey: assetMeta.stateAccount || assetMeta.pricingAccount!,
           isSigner: false,
           isWritable: false,
         },
@@ -131,11 +128,11 @@ export class InvestorClient {
     });
 
     remainingAccounts = remainingAccounts.concat(
-      (fundModel.externalTreasuryAccounts || []).map((address: PublicKey) => ({
+      fundModel.externalTreasuryAccounts.map((address) => ({
         pubkey: address,
         isSigner: false,
         isWritable: false,
-      }))
+      })),
     );
 
     // SOL -> wSOL
@@ -146,21 +143,21 @@ export class InvestorClient {
         signerAssetAta,
         signer,
         asset,
-        assetMeta?.programId
+        assetMeta?.programId,
       ),
       createAssociatedTokenAccountIdempotentInstruction(
         signer,
         treasuryAta,
         treasury,
         asset,
-        assetMeta?.programId
+        assetMeta?.programId,
       ),
       createAssociatedTokenAccountIdempotentInstruction(
         signer,
         signerShareAta,
         signer,
         shareClass,
-        TOKEN_2022_PROGRAM_ID
+        TOKEN_2022_PROGRAM_ID,
       ),
     ];
 
@@ -169,7 +166,9 @@ export class InvestorClient {
       let wsolBalance = new BN(0);
       try {
         wsolBalance = new BN(
-          (await connection.getTokenAccountBalance(signerAssetAta)).value.amount
+          (
+            await connection.getTokenAccountBalance(signerAssetAta)
+          ).value.amount,
         );
       } catch (err) {
         // ignore
@@ -188,6 +187,7 @@ export class InvestorClient {
       }
     }
 
+    // @ts-ignore
     const tx = await this.base.program.methods
       .subscribe(amount, skipState)
       .accounts({
@@ -211,10 +211,10 @@ export class InvestorClient {
     fund: PublicKey,
     amount: BN,
     inKind: boolean = false,
-    fundModel: FundModel = undefined,
+    fundModel?: FundModel,
     shareClassId: number = 0,
     skipState: boolean = true,
-    txOptions: TxOptions
+    txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const treasury = this.base.getTreasuryPDA(fund);
     const signer = txOptions.signer || this.base.getSigner();
@@ -233,13 +233,13 @@ export class InvestorClient {
       const treasuryAta = this.base.getTreasuryAta(
         fund,
         asset,
-        assetMeta?.programId
+        assetMeta?.programId,
       );
       const signerAta = getAssociatedTokenAddressSync(
         asset,
         signer,
         true,
-        assetMeta?.programId
+        assetMeta?.programId,
       );
 
       return [
@@ -261,7 +261,7 @@ export class InvestorClient {
         pubkey: address,
         isSigner: false,
         isWritable: false,
-      }))
+      })),
     );
 
     const preInstructions = (
@@ -277,7 +277,7 @@ export class InvestorClient {
             asset,
             signer,
             true,
-            assetMeta?.programId
+            assetMeta?.programId,
           );
 
           return createAssociatedTokenAccountIdempotentInstruction(
@@ -285,9 +285,9 @@ export class InvestorClient {
             signerAta,
             signer,
             asset,
-            assetMeta?.programId
+            assetMeta?.programId,
           );
-        })
+        }),
       )
     ).filter((x: any) => !!x) as TransactionInstruction[];
 

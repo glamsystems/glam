@@ -39,15 +39,16 @@ import { WSOL, USDC } from "../constants";
 
 import { Glam, GlamIDL, GlamProgram, getGlamProgramId } from "../glamExports";
 import { ClusterOrCustom, GlamClientConfig } from "../clientConfig";
-import { FundModel, FundOpenfundsModel } from "../models";
+import {
+  FundAccount,
+  FundMetadataAccount,
+  FundModel,
+  FundOpenfundsModel,
+} from "../models";
 import { AssetMeta, ASSETS_MAINNET, ASSETS_TESTS } from "./assets";
 import { GlamError } from "../error";
 import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 import { BlockhashWithCache } from "../utils/blockhash";
-
-// @ts-ignore
-type FundAccount = IdlAccounts<Glam>["fundAccount"];
-type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
 
 export const JUPITER_API_DEFAULT = "https://quote-api.jup.ag/v6";
 export const JITO_TIP_DEFAULT = new PublicKey(
@@ -356,12 +357,7 @@ export class BaseClient {
     );
   }
 
-  getFundModel(fund: any): FundModel {
-    //@ts-ignore
-    return new FundModel(fund);
-  }
-
-  getFundPDA(fundModel: FundModel): PublicKey {
+  getFundPDA(fundModel: Partial<FundModel>): PublicKey {
     const createdKey = fundModel?.created?.key || [
       ...Buffer.from(
         anchor.utils.sha256.hash(this.getFundName(fundModel)),
@@ -494,183 +490,27 @@ export class BaseClient {
     );
   }
 
-  getFundName(fundModel: FundModel) {
-    return (
-      // @ts-ignore
+  getFundName(fundModel: Partial<FundModel>) {
+    const fundName =
       fundModel.name ||
       fundModel.rawOpenfunds?.legalFundNameIncludingUmbrella ||
-      fundModel.legalFundNameIncludingUmbrella ||
-      fundModel.shareClasses[0]?.name ||
-      ""
-    );
+      (fundModel.shareClasses && fundModel.shareClasses[0]?.name);
+    if (!fundName) {
+      throw new Error("Fund name not be inferred from fund model");
+    }
+    return fundName;
   }
 
-  enrichFundModelInitialize(fund: FundModel): FundModel {
-    let fundModel = this.getFundModel(fund);
-
-    // createdKey = hash fund name and get first 8 bytes
-    const createdKey = [
-      ...Buffer.from(
-        anchor.utils.sha256.hash(this.getFundName(fundModel)),
-      ).subarray(0, 8),
-    ];
-    fundModel.created = {
-      key: createdKey,
-      manager: null,
-    };
-
-    if (!fundModel.rawOpenfunds) {
-      fundModel.rawOpenfunds = new FundOpenfundsModel({}) as FundOpenfundsModel;
-    }
-
-    if (fundModel.shareClasses?.length == 1) {
-      // fund with a single share class
-      const shareClass = fundModel.shareClasses[0];
-      fundModel.name = fundModel.name || shareClass.name;
-
-      fundModel.rawOpenfunds.fundCurrency =
-        fundModel.rawOpenfunds?.fundCurrency ||
-        shareClass.rawOpenfunds?.shareClassCurrency ||
-        null;
-    } else {
-      // fund with multiple share classes
-      // TODO
-    }
-
-    // computed fields
-
-    if (fundModel.isEnabled) {
-      fundModel.rawOpenfunds.fundLaunchDate =
-        fundModel.rawOpenfunds?.fundLaunchDate ||
-        new Date().toISOString().split("T")[0];
-    }
-
-    // fields containing fund id / pda
-    const fundPDA = this.getFundPDA(fundModel);
-    fundModel.uri =
-      fundModel.uri || `https://gui.glam.systems/products/${fundPDA}`;
-    fundModel.openfundsUri =
-      fundModel.openfundsUri ||
-      `https://api.glam.systems/v0/openfunds?fund=${fundPDA}&format=csv`;
-
-    // share classes
-    fundModel.shareClasses.forEach((shareClass: any, i: number) => {
-      if (
-        shareClass.rawOpenfunds &&
-        shareClass.rawOpenfunds.shareClassLifecycle === "active"
-      ) {
-        shareClass.rawOpenfunds.shareClassLaunchDate =
-          shareClass.rawOpenfunds.shareClassLaunchDate ||
-          new Date().toISOString().split("T")[0];
-      }
-
-      const sharePDA = this.getShareClassPDA(fundPDA, i);
-      shareClass.uri = `https://api.glam.systems/metadata/${sharePDA}`;
-      shareClass.imageUri = `https://api.glam.systems/v0/sparkle?key=${sharePDA}&format=png`;
-    });
-
-    return fundModel;
-  }
-
-  public async createFund(
-    fund: any,
-    singleTx: boolean = false,
-    txOpitons = {},
-  ): Promise<[TransactionSignature, PublicKey]> {
-    let fundModel = this.enrichFundModelInitialize(fund);
-
-    const fundPDA = this.getFundPDA(fundModel);
-    const treasury = this.getTreasuryPDA(fundPDA);
-    const openfunds = this.getOpenfundsPDA(fundPDA);
-    const manager = this.getManager();
-
-    const shareClasses = fundModel.shareClasses;
-    fundModel.shareClasses = [];
-
-    if (shareClasses.length > 1) {
-      throw new Error("Multiple share classes not supported");
-    }
-
-    if (shareClasses.length == 1) {
-      if (singleTx) {
-        const initFundIx = await this.program.methods
-          .initializeFund(fundModel)
-          .accounts({
-            //@ts-ignore IDL ts type is unhappy
-            fund: fundPDA,
-            treasury,
-            openfunds,
-          })
-          .instruction();
-
-        const shareClassMint = this.getShareClassPDA(fundPDA, 0);
-        const tx = await this.program.methods
-          .addShareClass(shareClasses[0])
-          .accounts({
-            fund: fundPDA,
-            shareClassMint,
-            openfunds,
-          })
-          .preInstructions([initFundIx])
-          .transaction();
-
-        const vTx = await this.intoVersionedTransaction({ tx, ...txOpitons });
-        const txSig = await this.sendAndConfirm(vTx);
-
-        return [txSig, fundPDA];
-      }
-
-      const createFundTxSig = await this.program.methods
-        .initializeFund(fundModel)
-        .accounts({
-          //@ts-ignore IDL ts type is unhappy
-          fund: fundPDA,
-          treasury,
-          openfunds,
-          manager,
-        })
-        .rpc();
-
-      const shareClassMint = this.getShareClassPDA(fundPDA, 0);
-      const createSharClassTxSig = await this.program.methods
-        .addShareClass(shareClasses[0])
-        .accounts({
-          fund: fundPDA,
-          shareClassMint,
-          openfunds,
-        })
-        .preInstructions([
-          ComputeBudgetProgram.setComputeUnitLimit({ units: 1_000_000 }),
-        ])
-        .rpc();
-      return [createFundTxSig, fundPDA];
-    }
-
-    // No share classes, only initialize the fund
-    const tx = await this.program.methods
-      .initializeFund(fundModel)
-      .accounts({
-        //@ts-ignore IDL ts type is unhappy
-        fund: fundPDA,
-        treasury,
-        openfunds,
-        manager,
-      })
-      .transaction();
-    const vTx = await this.intoVersionedTransaction({ tx, ...txOpitons });
-    const txSig = await this.sendAndConfirm(vTx);
-    return [txSig, fundPDA];
-  }
-
+  // @ts-ignore
   public async fetchFundAccount(fundPDA: PublicKey): Promise<FundAccount> {
-    return this.program.account.fundAccount.fetch(fundPDA);
+    return await this.program.account.fundAccount.fetch(fundPDA);
   }
 
   public async fetchFundMetadataAccount(
     fundPDA: PublicKey,
   ): Promise<FundMetadataAccount> {
     const openfunds = this.getOpenfundsPDA(fundPDA);
-    return this.program.account.fundMetadataAccount.fetch(openfunds);
+    return await this.program.account.fundMetadataAccount.fetch(openfunds);
   }
 
   public async fetchShareClassAccount(
@@ -699,6 +539,7 @@ export class BaseClient {
     return "";
   }
 
+  // @deprecated
   remapKeyValueArray(vec: Array<any>): any {
     return vec.reduce((prev, el) => {
       prev[Object.keys(el.name)[0]] = el.value;
@@ -706,6 +547,7 @@ export class BaseClient {
     }, {});
   }
 
+  // @deprecated
   getOpenfundsFromAccounts(
     fundAccount: FundAccount,
     openfundsAccount: FundMetadataAccount,
@@ -801,77 +643,53 @@ export class BaseClient {
     return accounts.map((a) => a.pubkey);
   }
 
-  fundModelFromAccounts(
-    fundPDA: PublicKey,
-    fundAccount: FundAccount,
-    openfundsAccount: FundMetadataAccount,
-    firstShareClass?: Mint,
-  ): FundModel {
-    //TODO rebuild model from accounts
-    let fundModel = this.getFundModel(fundAccount);
-    fundModel.id = fundPDA;
-    fundAccount.params[0].forEach((param) => {
-      const name = Object.keys(param.name)[0];
-      //@ts-ignore
-      const value = Object.values(param.value)[0].val;
-      fundModel[name] = value;
-    });
-
-    let fund = {
-      ...fundModel,
-      fundId: fundPDA,
-      idStr: fundPDA.toBase58(),
-      treasuryId: fundAccount.treasury.toBase58(),
-      openfundsMetadataId: fundAccount.openfunds.toBase58(),
-      fundUri: `https://playground.glam.systems/products/${fundPDA}`,
-      //@ts-ignore
-      imageKey: (fundAccount.shareClasses[0] || fundPDA).toBase58(),
-      ...this.getOpenfundsFromAccounts(fundAccount, openfundsAccount, [
-        firstShareClass,
-      ]),
-    };
-    fund.name = this.getFundName(fund);
-
-    //TODO: this is no longer FundModel, we should create a proper type
-    return fund;
-  }
-
+  /**
+   * Fetch fund data from onchain accounts and build a FundModel
+   *
+   * @param fundPDA
+   * @returns
+   */
   public async fetchFund(fundPDA: PublicKey): Promise<FundModel> {
     const fundAccount = await this.fetchFundAccount(fundPDA);
     const openfundsAccount = await this.fetchFundMetadataAccount(fundPDA);
-    let firstShareClass;
-    try {
-      firstShareClass = await this.fetchShareClassAccount(fundPDA, 0);
-    } catch (_) {
-      // pass - for vaults
+
+    if (fundAccount.shareClasses.length > 0) {
+      const firstShareClass = await this.fetchShareClassAccount(fundPDA, 0);
+      return FundModel.fromOnchainAccounts(
+        fundPDA,
+        fundAccount,
+        openfundsAccount,
+        firstShareClass,
+      );
     }
-    return this.fundModelFromAccounts(
+
+    return FundModel.fromOnchainAccounts(
       fundPDA,
       fundAccount,
       openfundsAccount,
-      firstShareClass,
     );
   }
 
   public async fetchAllFunds(): Promise<FundModel[]> {
     const fundAccounts = await this.program.account.fundAccount.all();
+
     const openfundsAccounts =
       await this.program.account.fundMetadataAccount.all();
+
     let openfundsCache = new Map<string, FundMetadataAccount>();
-    (openfundsAccounts || []).forEach((of) => {
+    openfundsAccounts.forEach((of) => {
       openfundsCache.set(of.publicKey.toBase58(), of.account);
     });
 
     /* fetch first mint */
     let mintCache = new Map<string, Mint>();
     const connection = this.provider.connection;
-    const mintAddresses = (fundAccounts || [])
+    const mintAddresses = fundAccounts
       .map((f) => f.account.shareClasses[0])
       .filter((addr) => !!addr);
-    const mintAccounts = await connection.getMultipleAccountsInfo(
-      mintAddresses,
-    );
-    (mintAccounts || []).forEach((info, j) => {
+    const mintAccounts =
+      await connection.getMultipleAccountsInfo(mintAddresses);
+    mintAccounts.forEach((info, j) => {
       const mintInfo = unpackMint(
         mintAddresses[j],
         info,
@@ -880,18 +698,15 @@ export class BaseClient {
       mintCache.set(mintAddresses[j].toBase58(), mintInfo);
     });
 
-    const funds = (fundAccounts || []).map((f) =>
-      this.fundModelFromAccounts(
+    return fundAccounts.map((f) =>
+      FundModel.fromOnchainAccounts(
         f.publicKey,
         f.account,
-        openfundsCache.get(f.account.openfunds.toBase58()) ||
-          ({} as FundMetadataAccount),
+        openfundsCache.get(f.account.openfunds.toBase58()),
         mintCache.get(
           f.account.shareClasses[0] ? f.account.shareClasses[0].toBase58() : "",
-        ) || ({} as Mint),
+        ),
       ),
     );
-
-    return funds;
   }
 }

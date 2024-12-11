@@ -80,6 +80,7 @@ export function DataTableToolbar<TData>({
       { pubkey, permissions: permissions.map((p) => ({ [p]: {} })) },
     ];
     try {
+      // @ts-ignore
       const txSig = await glamClient.fund.upsertDelegateAcls(
         fundPDA!,
         delegateAcls,

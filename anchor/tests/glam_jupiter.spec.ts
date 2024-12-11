@@ -3,28 +3,29 @@ import {
   quoteResponseForTest,
   str2seed,
   swapInstructionsForTest,
-  sleep,
+  testFundModel,
 } from "./setup";
-import { GlamClient } from "../src";
+import {
+  FundModel,
+  GlamClient,
+  JUP_STAKE_LOCKER,
+  JUP_VOTE_PROGRAM,
+} from "../src";
 import { Keypair } from "@solana/web3.js";
 import { getAccount } from "@solana/spl-token";
 import { BN } from "@coral-xyz/anchor";
 import { MSOL, WSOL } from "../src";
 import { PublicKey } from "@solana/web3.js";
 
-const JUP_STAKE_LOCKER = new PublicKey(
-  "CVMdMd79no569tjc5Sq7kzz8isbfCcFyBS5TLGsrZ5dN",
-);
-const JUP_VOTE_PROGRAM = new PublicKey(
-  "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj",
-);
-
 describe("glam_jupiter", () => {
   const glamClient = new GlamClient();
   let fundPDA;
 
   it("Initialize fund", async () => {
-    const fundData = await createFundForTest(glamClient);
+    const fundData = await createFundForTest(glamClient, {
+      ...testFundModel,
+      integrationAcls: [{ name: { jupiterVote: {} }, features: [] }],
+    });
     fundPDA = fundData.fundPDA;
 
     const fund = await glamClient.fetchFund(fundPDA);
@@ -36,28 +37,6 @@ describe("glam_jupiter", () => {
       1_000_000_000,
     );
     await glamClient.provider.connection.confirmTransaction(airdrop);
-  });
-
-  it("Create escrow", async () => {
-    const treasury = glamClient.getTreasuryPDA(fundPDA);
-    const [escrow] = PublicKey.findProgramAddressSync(
-      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), treasury.toBuffer()],
-      JUP_VOTE_PROGRAM,
-    );
-    try {
-      const txId = await glamClient.program.methods
-        .initLockedVoterEscrow()
-        .accounts({
-          fund: fundPDA,
-          locker: JUP_STAKE_LOCKER,
-          escrow,
-        })
-        .rpc();
-      console.log("initLockedVoterEscrow txId", txId);
-    } catch (e) {
-      console.error(e);
-      throw e;
-    }
   });
 
   it("Swap end to end", async () => {
@@ -167,7 +146,7 @@ describe("glam_jupiter", () => {
     expect(fundModel.delegateAcls.length).toEqual(1);
 
     // The test fund has 2 assets, WSOL and MSOL. Update to WSOL only.
-    let updatedFund = glamClient.getFundModel({ assets: [WSOL] });
+    let updatedFund = new FundModel({ assets: [WSOL] });
     try {
       await glamClient.program.methods
         .updateFund(updatedFund)
@@ -495,6 +474,8 @@ describe("glam_jupiter", () => {
       asLegacyTransaction: false,
       maxAccounts: 15,
     };
+    // NOTE: we're making real API request to jupiter in this test.
+    // Test could fail if jupiter api is down or too busy.
     const quoteResponse = await (
       await fetch(
         `${glamClient.jupiterApi}/quote?${new URLSearchParams(
@@ -525,4 +506,26 @@ describe("glam_jupiter", () => {
       );
     }
   }, 15_000);
+
+  it("Create JUP escrow", async () => {
+    const treasury = glamClient.getTreasuryPDA(fundPDA);
+    const [escrow] = PublicKey.findProgramAddressSync(
+      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), treasury.toBuffer()],
+      JUP_VOTE_PROGRAM,
+    );
+    try {
+      const txId = await glamClient.program.methods
+        .initLockedVoterEscrow()
+        .accounts({
+          fund: fundPDA,
+          locker: JUP_STAKE_LOCKER,
+          escrow,
+        })
+        .rpc();
+      console.log("initLockedVoterEscrow txId", txId);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  });
 });

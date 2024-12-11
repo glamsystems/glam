@@ -42,7 +42,7 @@ export default function MintContextPage() {
 
   useEffect(() => {
     if (fundPDA && allFunds) {
-      const fund = allFunds.find((f) => f.idStr === fundPDA.toBase58());
+      const fund = allFunds.find((f) => f.id && f.id.equals(fundPDA));
       if (fund) {
         setOpenfundsData({
           ...openfundsData,
@@ -51,11 +51,12 @@ export default function MintContextPage() {
           },
           fund: {
             legalFundNameIncludingUmbrella: fund.name,
-            fundDomicileAlpha2: fund.fundDomicileAlpha2,
+            fundDomicileAlpha2: fund.rawOpenfunds?.fundDomicileAlpha2,
           },
           shareClass: {
-            iSIN: fund.shareClasses[0].isin,
-            shareClassCurrency: fund.shareClasses[0].shareClassCurrency,
+            iSIN: fund.shareClasses[0].rawOpenfunds?.isin,
+            shareClassCurrency:
+              fund.shareClasses[0].rawOpenfunds?.shareClassCurrency,
           },
         });
 

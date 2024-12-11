@@ -15,7 +15,7 @@ describe("glam_marinade", () => {
     const connection = glamClient.provider.connection;
     const airdropTx = await connection.requestAirdrop(
       fundData.treasuryPDA,
-      100_000_000_000
+      100_000_000_000,
     );
     await connection.confirmTransaction({
       ...(await connection.getLatestBlockhash()),
@@ -27,7 +27,7 @@ describe("glam_marinade", () => {
     try {
       const tx = await glamClient.marinade.depositSol(
         fundPDA,
-        new anchor.BN(2e10)
+        new anchor.BN(2e10),
       );
       console.log("Stake 20 SOL:", tx);
     } catch (error) {
@@ -40,7 +40,7 @@ describe("glam_marinade", () => {
     try {
       const tx = await glamClient.marinade.liquidUnstake(
         fundPDA,
-        new anchor.BN(1e9)
+        new anchor.BN(1e9),
       );
       console.log("Liquid unstake:", tx);
     } catch (error) {
@@ -54,7 +54,7 @@ describe("glam_marinade", () => {
       for (let i = 0; i < 5; i++) {
         const tx = await glamClient.marinade.delayedUnstake(
           fundPDA,
-          new anchor.BN(1e9)
+          new anchor.BN(1e9),
         );
         console.log(`Delayed unstake #${i}:`, tx);
       }
@@ -68,16 +68,13 @@ describe("glam_marinade", () => {
     const tickets = await glamClient.marinade.getExistingTickets(fundPDA);
     console.log(
       "Tickets:",
-      tickets.map((t) => t.toBase58())
+      tickets.map((t) => t.toBase58()),
     );
     expect(tickets.length).toBe(5);
 
-    const fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
-
-    // fund.params[0][0]: assets
-    // fund.params[0][1]: integration acls
-    // fund.params[0][2]: external accounts
-    expect(fund.params[0][2].value.vecPubkey?.val.length).toBe(tickets.length);
+    const fundModel = await glamClient.fetchFund(fundPDA);
+    expect(fundModel.externalTreasuryAccounts.length).toBe(tickets.length);
+    expect(fundModel.externalTreasuryAccounts.sort()).toEqual(tickets.sort());
   });
 
   it("Claim tickets", async () => {
@@ -97,12 +94,9 @@ describe("glam_marinade", () => {
     const tickets = await glamClient.marinade.getExistingTickets(fundPDA);
     expect(tickets.length).toBe(0);
 
-    const fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
-
-    // fund.params[0][0]: assets
-    // fund.params[0][1]: integration acls
-    // fund.params[0][2]: external accounts
-    expect(fund.params[0][2].value.vecPubkey?.val.length).toBe(tickets.length);
+    const fundModel = await glamClient.fetchFund(fundPDA);
+    expect(fundModel.externalTreasuryAccounts.length).toBe(tickets.length);
+    expect(fundModel.externalTreasuryAccounts.sort()).toEqual(tickets.sort());
   });
 
   // FIXME: For some reason, depositStake test must be run after the claimTickets test
@@ -112,7 +106,7 @@ describe("glam_marinade", () => {
       const txSig = await glamClient.staking.initializeAndDelegateStake(
         fundPDA,
         new PublicKey("GJQjnyhSG9jN1AdMHTSyTxUR44hJHEGCmNzkidw9z3y8"),
-        new anchor.BN(10_000_000_000)
+        new anchor.BN(10_000_000_000),
       );
       console.log("nativeStakeDeposit tx:", txSig);
     } catch (e) {
@@ -123,7 +117,7 @@ describe("glam_marinade", () => {
 
   it("Desposit stake account", async () => {
     const stakeAccounts = await glamClient.staking.getStakeAccounts(
-      glamClient.getTreasuryPDA(fundPDA)
+      glamClient.getTreasuryPDA(fundPDA),
     );
     expect(stakeAccounts.length).toEqual(1);
 

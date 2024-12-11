@@ -101,8 +101,8 @@ const deserializeFundCache = (f: any) => {
 const toFundCache = (f: FundModel) => {
   return {
     pubkey: f.id,
-    imageKey: f.imageKey,
-    address: f.id.toBase58(),
+    imageKey: f.id?.toBase58(),
+    address: f.id?.toBase58(),
     name: f.name,
   } as FundCache;
 };
@@ -199,13 +199,17 @@ export function GlamProvider({
     }
     const fundModels = (allFundsData || []).sort(
       (a: FundModel, b: FundModel) => {
-        if (a.fundLaunchDate > b.fundLaunchDate) {
-          return -1;
-        } else if (a.fundLaunchDate < b.fundLaunchDate) {
+        if (!a.rawOpenfunds?.fundLaunchDate) {
           return 1;
-        } else if (a.name < b.name) {
+        }
+        if (!b.rawOpenfunds?.fundLaunchDate) {
           return -1;
-        } else if (a.name > b.name) {
+        }
+        if (a.rawOpenfunds?.fundLaunchDate > b.rawOpenfunds?.fundLaunchDate) {
+          return -1;
+        } else if (
+          a.rawOpenfunds?.fundLaunchDate < b.rawOpenfunds?.fundLaunchDate
+        ) {
           return 1;
         }
         return 0;
@@ -215,7 +219,7 @@ export function GlamProvider({
 
     const fundList = [] as FundCache[];
     fundModels.forEach((f: FundModel) => {
-      if (wallet?.publicKey?.equals(f.manager)) {
+      if (wallet?.publicKey?.equals(f.manager.pubkey!)) {
         const fundCache = toFundCache(f);
         fundList.push(fundCache);
       } else {
