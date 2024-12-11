@@ -4920,13 +4920,48 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "notAuthorized",
-      "msg": "Signer is not authorized"
+      "name": "closeNotEmptyError",
+      "msg": "Error closing account: not empty"
     },
     {
       "code": 6001,
-      "name": "integrationDisabled",
-      "msg": "Integration is disabled"
+      "name": "notAuthorizedError",
+      "msg": "Error: not authorized"
+    },
+    {
+      "code": 6002,
+      "name": "invalidFundName",
+      "msg": "Invalid fund name: max 50 chars"
+    },
+    {
+      "code": 6003,
+      "name": "invalidFundSymbol",
+      "msg": "Too many assets: max 50"
+    },
+    {
+      "code": 6004,
+      "name": "invalidFundUri",
+      "msg": "Too many assets: max 20"
+    },
+    {
+      "code": 6005,
+      "name": "invalidAssetsLen",
+      "msg": "Too many assets: max 100"
+    },
+    {
+      "code": 6006,
+      "name": "invalidAssetsWeights",
+      "msg": "Number of weights should match number of assets"
+    },
+    {
+      "code": 6007,
+      "name": "invalidAssetForSwap",
+      "msg": "Asset cannot be swapped"
+    },
+    {
+      "code": 6008,
+      "name": "invalidSwap",
+      "msg": "Swap failed"
     }
   ],
   "types": [
@@ -6734,49 +6769,16 @@ export type Glam = {
             "name": "shareClassCurrency"
           },
           {
-            "name": "allInFeeApplied"
-          },
-          {
-            "name": "allInFeeDate"
-          },
-          {
-            "name": "allInFeeIncludesTransactionCosts"
-          },
-          {
-            "name": "allInFeeMaximum"
-          },
-          {
             "name": "appliedSubscriptionFeeInFavourOfDistributor"
           },
           {
             "name": "appliedSubscriptionFeeInFavourOfDistributorReferenceDate"
           },
           {
-            "name": "benchmark"
-          },
-          {
-            "name": "countryLegalRegistration"
-          },
-          {
-            "name": "countryMarketingDistribution"
-          },
-          {
-            "name": "currencyHedgeShareClass"
-          },
-          {
             "name": "currencyOfMinimalSubscription"
           },
           {
-            "name": "distributionDeclarationFrequency"
-          },
-          {
             "name": "fullShareClassName"
-          },
-          {
-            "name": "hasAllInFee"
-          },
-          {
-            "name": "hasOngoingCharges"
           },
           {
             "name": "hasPerformanceFee"
@@ -6786,15 +6788,6 @@ export type Glam = {
           },
           {
             "name": "investmentStatus"
-          },
-          {
-            "name": "isEtf"
-          },
-          {
-            "name": "isRdrCompliant"
-          },
-          {
-            "name": "isTrailerFeeClean"
           },
           {
             "name": "managementFeeApplied"
@@ -6830,27 +6823,6 @@ export type Glam = {
             "name": "minimumSubscriptionFeeInFavourOfDistributor"
           },
           {
-            "name": "ongoingCharges"
-          },
-          {
-            "name": "ongoingChargesDate"
-          },
-          {
-            "name": "performanceFeeApplied"
-          },
-          {
-            "name": "performanceFeeAppliedReferenceDate"
-          },
-          {
-            "name": "performanceFeeInProspectus"
-          },
-          {
-            "name": "performanceFeeInProspectusReferenceDate"
-          },
-          {
-            "name": "recordDateForSrri"
-          },
-          {
             "name": "shareClassDistributionPolicy"
           },
           {
@@ -6866,75 +6838,6 @@ export type Glam = {
             "name": "srri"
           },
           {
-            "name": "terExcludingPerformanceFee"
-          },
-          {
-            "name": "terExcludingPerformanceFeeDate"
-          },
-          {
-            "name": "terIncludingPerformanceFee"
-          },
-          {
-            "name": "terIncludingPerformanceFeeDate"
-          },
-          {
-            "name": "transferAgentName"
-          },
-          {
-            "name": "bicOfTransferAgent"
-          },
-          {
-            "name": "domicileOfTransferAgent"
-          },
-          {
-            "name": "formOfShare"
-          },
-          {
-            "name": "hasDurationHedge"
-          },
-          {
-            "name": "typeOfEqualization"
-          },
-          {
-            "name": "isMultiseries"
-          },
-          {
-            "name": "seriesIssuance"
-          },
-          {
-            "name": "seriesFrequency"
-          },
-          {
-            "name": "doesFundIssueSidePocket"
-          },
-          {
-            "name": "hasRedemptionGates"
-          },
-          {
-            "name": "typeOfAlternativeFundStructureVehicle"
-          },
-          {
-            "name": "bloombergCode"
-          },
-          {
-            "name": "figiCode"
-          },
-          {
-            "name": "abbreviatedShareClassName"
-          },
-          {
-            "name": "valuationFrequency"
-          },
-          {
-            "name": "navPublicationTime"
-          },
-          {
-            "name": "isShareClassEligibleForUcits"
-          },
-          {
-            "name": "investmentStatusDate"
-          },
-          {
             "name": "launchPrice"
           },
           {
@@ -6942,45 +6845,6 @@ export type Glam = {
           },
           {
             "name": "launchPriceDate"
-          },
-          {
-            "name": "efamaMainEfcCategory"
-          },
-          {
-            "name": "efamaefcClassificationType"
-          },
-          {
-            "name": "efamaActiveEfcClassification"
-          },
-          {
-            "name": "efamaefcInvestmentTheme"
-          },
-          {
-            "name": "pricingMethodology"
-          },
-          {
-            "name": "singlePricingType"
-          },
-          {
-            "name": "swingFactor"
-          },
-          {
-            "name": "standardMinimumRemainingAmount"
-          },
-          {
-            "name": "standardMinimumRemainingShares"
-          },
-          {
-            "name": "currencyOfMinimumRemainingAmount"
-          },
-          {
-            "name": "standardMinimumRemainingCategory"
-          },
-          {
-            "name": "hurdleRate"
-          },
-          {
-            "name": "highWaterMark"
           },
           {
             "name": "hasAppliedSubscriptionFeeInFavourOfFund"
@@ -7007,106 +6871,13 @@ export type Glam = {
             "name": "maximumRedemptionFeeInFavourOfFund"
           },
           {
-            "name": "equivalentTrailerFeeCleanIsin"
-          },
-          {
-            "name": "hasSeparateDistributionFee"
-          },
-          {
-            "name": "distributionFee"
-          },
-          {
-            "name": "distributionFeeMaximum"
-          },
-          {
-            "name": "iaSector"
-          },
-          {
-            "name": "absorbingFundFullShareClassName"
-          },
-          {
-            "name": "absorbingFundShareClassIsin"
-          },
-          {
-            "name": "administrationFeeMaximum"
-          },
-          {
-            "name": "annualDistributionAtFiscalYearEnd"
-          },
-          {
-            "name": "annualDistributionYieldAtFiscalYearEnd"
-          },
-          {
             "name": "appliedRedemptionFeeInFavourOfDistributor"
           },
           {
             "name": "appliedRedemptionFeeInFavourOfDistributorReferenceDate"
           },
           {
-            "name": "bankDetailsSsiForPaymentsProvision"
-          },
-          {
-            "name": "bankDetailsLevelApplication"
-          },
-          {
-            "name": "benchmarkBloombergTicker"
-          },
-          {
-            "name": "calculationDateOffsetForRedemption"
-          },
-          {
-            "name": "calculationDateOffsetForSubscription"
-          },
-          {
-            "name": "calendarOrBusinessDaysForCutOffDateOffsetForRedemption"
-          },
-          {
-            "name": "calendarOrBusinessDaysForCutOffDateOffsetForSubscription"
-          },
-          {
-            "name": "calendarOrBusinessDaysForPrePaymentDaysForSubscription"
-          },
-          {
-            "name": "calendarOrBusinessDaysForSettlementPeriodForRedemption"
-          },
-          {
-            "name": "calendarOrBusinessDaysForSettlementPeriodForSubscription"
-          },
-          {
-            "name": "calendarOrBusinessDaysForTransactions"
-          },
-          {
-            "name": "cfiCode"
-          },
-          {
-            "name": "contingentDeferredSalesChargeExitFee"
-          },
-          {
-            "name": "contingentDeferredSalesChargeUpfrontFee"
-          },
-          {
-            "name": "countryIsoCodeAlpha2"
-          },
-          {
-            "name": "countryIsoCodeAlpha3"
-          },
-          {
-            "name": "countryName"
-          },
-          {
-            "name": "currenciesOfMulticurrencyShareClass"
-          },
-          {
             "name": "currencyOfMinimalOrMaximumRedemption"
-          },
-          {
-            "name": "custodianFeeApplied"
-          },
-          {
-            "name": "custodianFeeAppliedReferenceDate"
-          },
-          {
-            "name": "custodianFeeMaximum"
           },
           {
             "name": "cutOffDateOffsetForRedemption"
@@ -7121,106 +6892,13 @@ export type Glam = {
             "name": "cutOffTimeForSubscription"
           },
           {
-            "name": "cutOffTimeForSwitchIn"
-          },
-          {
-            "name": "cutOffTimeForSwitchOut"
-          },
-          {
-            "name": "dealingDaysOfMultipleRedemptionTradeCycles"
-          },
-          {
-            "name": "dealingDaysOfMultipleSubscriptionTradeCycles"
-          },
-          {
-            "name": "disseminationRecipient"
-          },
-          {
-            "name": "distributionFeeReferenceDate"
-          },
-          {
-            "name": "doesShareClassApplyMandatoryConversion"
-          },
-          {
-            "name": "doesShareClassApplyPartialDealingDays"
-          },
-          {
-            "name": "doesShareClassApplyPartialPaymentDays"
-          },
-          {
-            "name": "dormantEndDate"
-          },
-          {
-            "name": "dormantStartDate"
-          },
-          {
-            "name": "exDividendDateCalendar"
-          },
-          {
-            "name": "exitCostDescription"
-          },
-          {
-            "name": "hasContingentDeferredSalesChargeFee"
-          },
-          {
-            "name": "hasDilutionLevyAppliedByFund"
-          },
-          {
-            "name": "hasEqualizationMethodForDistribution"
-          },
-          {
-            "name": "hasEqualizationMethodForPerformanceFee"
-          },
-          {
-            "name": "hasForcedRedemption"
-          },
-          {
-            "name": "hasForwardPricing"
-          },
-          {
-            "name": "hasHighWaterMark"
-          },
-          {
             "name": "hasLockUpForRedemption"
-          },
-          {
-            "name": "hasPreNoticeForSwitchIn"
-          },
-          {
-            "name": "hasPreNoticeForSwitchOut"
-          },
-          {
-            "name": "hasPrePaymentForSubscription"
           },
           {
             "name": "hasRedemptionFeeInFavourOfDistributor"
           },
           {
-            "name": "hasTripartiteReport"
-          },
-          {
-            "name": "investmentStatusDescription"
-          },
-          {
-            "name": "irregularRedemptionDealingDays"
-          },
-          {
-            "name": "irregularSubscriptionDealingDays"
-          },
-          {
-            "name": "isMulticurrencyShareClass"
-          },
-          {
-            "name": "isRestrictedToSeparateFeeArrangement"
-          },
-          {
-            "name": "isStructuredFinanceProduct"
-          },
-          {
             "name": "isValidIsin"
-          },
-          {
-            "name": "liquidationStartDate"
           },
           {
             "name": "lockUpComment"
@@ -7230,12 +6908,6 @@ export type Glam = {
           },
           {
             "name": "managementFeeMinimum"
-          },
-          {
-            "name": "mandatoryShareConversionDescriptionDetails"
-          },
-          {
-            "name": "marketsRelevantToFundTradingCalendar"
           },
           {
             "name": "maximalNumberOfPossibleDecimalsAmount"
@@ -7262,9 +6934,6 @@ export type Glam = {
             "name": "maximumSubsequentRedemptionInShares"
           },
           {
-            "name": "mergerRatio"
-          },
-          {
             "name": "minimalInitialRedemptionInAmount"
           },
           {
@@ -7289,52 +6958,7 @@ export type Glam = {
             "name": "minimumSubscriptionFeeInFavourOfFund"
           },
           {
-            "name": "monthlyRedemptionDealingDays"
-          },
-          {
-            "name": "monthlySubscriptionDealingDays"
-          },
-          {
-            "name": "nasdaqFundNetworkNfnIdentifier"
-          },
-          {
-            "name": "noTradingDate"
-          },
-          {
-            "name": "numberOfPossibleRedemptionsWithinPeriod"
-          },
-          {
-            "name": "numberOfPossibleSubscriptionsWithinPeriod"
-          },
-          {
-            "name": "partialDealingDaysDateAndTime"
-          },
-          {
-            "name": "partialPaymentDaysDateAndTime"
-          },
-          {
-            "name": "paymentDateCalendar"
-          },
-          {
             "name": "performanceFeeMinimum"
-          },
-          {
-            "name": "preNoticeCutOffForRedemption"
-          },
-          {
-            "name": "preNoticeCutOffForSubscription"
-          },
-          {
-            "name": "prePaymentCutOffTimeForSubscription"
-          },
-          {
-            "name": "prePaymentDaysForSubscription"
-          },
-          {
-            "name": "recordDateCalendar"
-          },
-          {
-            "name": "redemptionTradeCyclePeriod"
           },
           {
             "name": "roundingMethodForPrices"
@@ -7352,64 +6976,7 @@ export type Glam = {
             "name": "roundingMethodForSubscriptionInShares"
           },
           {
-            "name": "settlementPeriodForRedemption"
-          },
-          {
-            "name": "settlementPeriodForSubscription"
-          },
-          {
-            "name": "settlementPeriodForSwitchIn"
-          },
-          {
-            "name": "settlementPeriodForSwitchOut"
-          },
-          {
             "name": "shareClassDividendType"
-          },
-          {
-            "name": "singleRegisterAccountRestrictions"
-          },
-          {
-            "name": "subscriptionPeriodEndDate"
-          },
-          {
-            "name": "subscriptionPeriodStartDate"
-          },
-          {
-            "name": "subscriptionTradeCyclePeriod"
-          },
-          {
-            "name": "switchInNoticePeriod"
-          },
-          {
-            "name": "switchOutNoticePeriod"
-          },
-          {
-            "name": "terminationDate"
-          },
-          {
-            "name": "timeZoneForCutOff"
-          },
-          {
-            "name": "timeZoneForCutOffUsingTzDatabase"
-          },
-          {
-            "name": "valuationFrequencyDetail"
-          },
-          {
-            "name": "valuationReduction"
-          },
-          {
-            "name": "weeklyRedemptionDealingDays"
-          },
-          {
-            "name": "weeklySubscriptionDealingDays"
-          },
-          {
-            "name": "yearlyRedemptionDealingDays"
-          },
-          {
-            "name": "yearlySubscriptionDealingDays"
           },
           {
             "name": "cusip"

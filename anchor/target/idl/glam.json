@@ -1,5 +1,5 @@
 {
-  "address": "GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP",
+  "address": "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc",
   "metadata": {
     "name": "glam",
     "version": "0.3.7",
@@ -4914,13 +4914,48 @@
   "errors": [
     {
       "code": 6000,
-      "name": "NotAuthorized",
-      "msg": "Signer is not authorized"
+      "name": "CloseNotEmptyError",
+      "msg": "Error closing account: not empty"
     },
     {
       "code": 6001,
-      "name": "IntegrationDisabled",
-      "msg": "Integration is disabled"
+      "name": "NotAuthorizedError",
+      "msg": "Error: not authorized"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidFundName",
+      "msg": "Invalid fund name: max 50 chars"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidFundSymbol",
+      "msg": "Too many assets: max 50"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidFundUri",
+      "msg": "Too many assets: max 20"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidAssetsLen",
+      "msg": "Too many assets: max 100"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidAssetsWeights",
+      "msg": "Number of weights should match number of assets"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidAssetForSwap",
+      "msg": "Asset cannot be swapped"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidSwap",
+      "msg": "Swap failed"
     }
   ],
   "types": [
@@ -6728,49 +6763,16 @@
             "name": "ShareClassCurrency"
           },
           {
-            "name": "AllInFeeApplied"
-          },
-          {
-            "name": "AllInFeeDate"
-          },
-          {
-            "name": "AllInFeeIncludesTransactionCosts"
-          },
-          {
-            "name": "AllInFeeMaximum"
-          },
-          {
             "name": "AppliedSubscriptionFeeInFavourOfDistributor"
           },
           {
             "name": "AppliedSubscriptionFeeInFavourOfDistributorReferenceDate"
           },
           {
-            "name": "Benchmark"
-          },
-          {
-            "name": "CountryLegalRegistration"
-          },
-          {
-            "name": "CountryMarketingDistribution"
-          },
-          {
-            "name": "CurrencyHedgeShareClass"
-          },
-          {
             "name": "CurrencyOfMinimalSubscription"
           },
           {
-            "name": "DistributionDeclarationFrequency"
-          },
-          {
             "name": "FullShareClassName"
-          },
-          {
-            "name": "HasAllInFee"
-          },
-          {
-            "name": "HasOngoingCharges"
           },
           {
             "name": "HasPerformanceFee"
@@ -6780,15 +6782,6 @@
           },
           {
             "name": "InvestmentStatus"
-          },
-          {
-            "name": "IsETF"
-          },
-          {
-            "name": "IsRDRCompliant"
-          },
-          {
-            "name": "IsTrailerFeeClean"
           },
           {
             "name": "ManagementFeeApplied"
@@ -6824,27 +6817,6 @@
             "name": "MinimumSubscriptionFeeInFavourOfDistributor"
           },
           {
-            "name": "OngoingCharges"
-          },
-          {
-            "name": "OngoingChargesDate"
-          },
-          {
-            "name": "PerformanceFeeApplied"
-          },
-          {
-            "name": "PerformanceFeeAppliedReferenceDate"
-          },
-          {
-            "name": "PerformanceFeeInProspectus"
-          },
-          {
-            "name": "PerformanceFeeInProspectusReferenceDate"
-          },
-          {
-            "name": "RecordDateForSRRI"
-          },
-          {
             "name": "ShareClassDistributionPolicy"
           },
           {
@@ -6860,75 +6832,6 @@
             "name": "SRRI"
           },
           {
-            "name": "TERExcludingPerformanceFee"
-          },
-          {
-            "name": "TERExcludingPerformanceFeeDate"
-          },
-          {
-            "name": "TERIncludingPerformanceFee"
-          },
-          {
-            "name": "TERIncludingPerformanceFeeDate"
-          },
-          {
-            "name": "TransferAgentName"
-          },
-          {
-            "name": "BICOfTransferAgent"
-          },
-          {
-            "name": "DomicileOfTransferAgent"
-          },
-          {
-            "name": "FormOfShare"
-          },
-          {
-            "name": "HasDurationHedge"
-          },
-          {
-            "name": "TypeOfEqualization"
-          },
-          {
-            "name": "IsMultiseries"
-          },
-          {
-            "name": "SeriesIssuance"
-          },
-          {
-            "name": "SeriesFrequency"
-          },
-          {
-            "name": "DoesFundIssueSidePocket"
-          },
-          {
-            "name": "HasRedemptionGates"
-          },
-          {
-            "name": "TypeOfAlternativeFundStructureVehicle"
-          },
-          {
-            "name": "BloombergCode"
-          },
-          {
-            "name": "FIGICode"
-          },
-          {
-            "name": "AbbreviatedShareClassName"
-          },
-          {
-            "name": "ValuationFrequency"
-          },
-          {
-            "name": "NAVPublicationTime"
-          },
-          {
-            "name": "IsShareClassEligibleForUCITS"
-          },
-          {
-            "name": "InvestmentStatusDate"
-          },
-          {
             "name": "LaunchPrice"
           },
           {
@@ -6936,45 +6839,6 @@
           },
           {
             "name": "LaunchPriceDate"
-          },
-          {
-            "name": "EFAMAMainEFCCategory"
-          },
-          {
-            "name": "EFAMAEFCClassificationType"
-          },
-          {
-            "name": "EFAMAActiveEFCClassification"
-          },
-          {
-            "name": "EFAMAEFCInvestmentTheme"
-          },
-          {
-            "name": "PricingMethodology"
-          },
-          {
-            "name": "SinglePricingType"
-          },
-          {
-            "name": "SwingFactor"
-          },
-          {
-            "name": "StandardMinimumRemainingAmount"
-          },
-          {
-            "name": "StandardMinimumRemainingShares"
-          },
-          {
-            "name": "CurrencyOfMinimumRemainingAmount"
-          },
-          {
-            "name": "StandardMinimumRemainingCategory"
-          },
-          {
-            "name": "HurdleRate"
-          },
-          {
-            "name": "HighWaterMark"
           },
           {
             "name": "HasAppliedSubscriptionFeeInFavourOfFund"
@@ -7001,106 +6865,13 @@
             "name": "MaximumRedemptionFeeInFavourOfFund"
           },
           {
-            "name": "EquivalentTrailerFeeCleanISIN"
-          },
-          {
-            "name": "HasSeparateDistributionFee"
-          },
-          {
-            "name": "DistributionFee"
-          },
-          {
-            "name": "DistributionFeeMaximum"
-          },
-          {
-            "name": "IASector"
-          },
-          {
-            "name": "AbsorbingFundFullShareClassName"
-          },
-          {
-            "name": "AbsorbingFundShareClassISIN"
-          },
-          {
-            "name": "AdministrationFeeMaximum"
-          },
-          {
-            "name": "AnnualDistributionAtFiscalYearEnd"
-          },
-          {
-            "name": "AnnualDistributionYieldAtFiscalYearEnd"
-          },
-          {
             "name": "AppliedRedemptionFeeInFavourOfDistributor"
           },
           {
             "name": "AppliedRedemptionFeeInFavourOfDistributorReferenceDate"
           },
           {
-            "name": "BankDetailsSSIForPaymentsProvision"
-          },
-          {
-            "name": "BankDetailsLevelApplication"
-          },
-          {
-            "name": "BenchmarkBloombergTicker"
-          },
-          {
-            "name": "CalculationDateOffsetForRedemption"
-          },
-          {
-            "name": "CalculationDateOffsetForSubscription"
-          },
-          {
-            "name": "CalendarOrBusinessDaysForCutOffDateOffsetForRedemption"
-          },
-          {
-            "name": "CalendarOrBusinessDaysForCutOffDateOffsetForSubscription"
-          },
-          {
-            "name": "CalendarOrBusinessDaysForPrePaymentDaysForSubscription"
-          },
-          {
-            "name": "CalendarOrBusinessDaysForSettlementPeriodForRedemption"
-          },
-          {
-            "name": "CalendarOrBusinessDaysForSettlementPeriodForSubscription"
-          },
-          {
-            "name": "CalendarOrBusinessDaysForTransactions"
-          },
-          {
-            "name": "CFICode"
-          },
-          {
-            "name": "ContingentDeferredSalesChargeExitFee"
-          },
-          {
-            "name": "ContingentDeferredSalesChargeUpfrontFee"
-          },
-          {
-            "name": "CountryISOCodeAlpha2"
-          },
-          {
-            "name": "CountryISOCodeAlpha3"
-          },
-          {
-            "name": "CountryName"
-          },
-          {
-            "name": "CurrenciesOfMulticurrencyShareClass"
-          },
-          {
             "name": "CurrencyOfMinimalOrMaximumRedemption"
-          },
-          {
-            "name": "CustodianFeeApplied"
-          },
-          {
-            "name": "CustodianFeeAppliedReferenceDate"
-          },
-          {
-            "name": "CustodianFeeMaximum"
           },
           {
             "name": "CutOffDateOffsetForRedemption"
@@ -7115,106 +6886,13 @@
             "name": "CutOffTimeForSubscription"
           },
           {
-            "name": "CutOffTimeForSwitchIn"
-          },
-          {
-            "name": "CutOffTimeForSwitchOut"
-          },
-          {
-            "name": "DealingDaysOfMultipleRedemptionTradeCycles"
-          },
-          {
-            "name": "DealingDaysOfMultipleSubscriptionTradeCycles"
-          },
-          {
-            "name": "DisseminationRecipient"
-          },
-          {
-            "name": "DistributionFeeReferenceDate"
-          },
-          {
-            "name": "DoesShareClassApplyMandatoryConversion"
-          },
-          {
-            "name": "DoesShareClassApplyPartialDealingDays"
-          },
-          {
-            "name": "DoesShareClassApplyPartialPaymentDays"
-          },
-          {
-            "name": "DormantEndDate"
-          },
-          {
-            "name": "DormantStartDate"
-          },
-          {
-            "name": "ExDividendDateCalendar"
-          },
-          {
-            "name": "ExitCostDescription"
-          },
-          {
-            "name": "HasContingentDeferredSalesChargeFee"
-          },
-          {
-            "name": "HasDilutionLevyAppliedByFund"
-          },
-          {
-            "name": "HasEqualizationMethodForDistribution"
-          },
-          {
-            "name": "HasEqualizationMethodForPerformanceFee"
-          },
-          {
-            "name": "HasForcedRedemption"
-          },
-          {
-            "name": "HasForwardPricing"
-          },
-          {
-            "name": "HasHighWaterMark"
-          },
-          {
             "name": "HasLockUpForRedemption"
-          },
-          {
-            "name": "HasPreNoticeForSwitchIn"
-          },
-          {
-            "name": "HasPreNoticeForSwitchOut"
-          },
-          {
-            "name": "HasPrePaymentForSubscription"
           },
           {
             "name": "HasRedemptionFeeInFavourOfDistributor"
           },
           {
-            "name": "HasTripartiteReport"
-          },
-          {
-            "name": "InvestmentStatusDescription"
-          },
-          {
-            "name": "IrregularRedemptionDealingDays"
-          },
-          {
-            "name": "IrregularSubscriptionDealingDays"
-          },
-          {
-            "name": "IsMulticurrencyShareClass"
-          },
-          {
-            "name": "IsRestrictedToSeparateFeeArrangement"
-          },
-          {
-            "name": "IsStructuredFinanceProduct"
-          },
-          {
             "name": "IsValidISIN"
-          },
-          {
-            "name": "LiquidationStartDate"
           },
           {
             "name": "LockUpComment"
@@ -7224,12 +6902,6 @@
           },
           {
             "name": "ManagementFeeMinimum"
-          },
-          {
-            "name": "MandatoryShareConversionDescriptionDetails"
-          },
-          {
-            "name": "MarketsRelevantToFundTradingCalendar"
           },
           {
             "name": "MaximalNumberOfPossibleDecimalsAmount"
@@ -7256,9 +6928,6 @@
             "name": "MaximumSubsequentRedemptionInShares"
           },
           {
-            "name": "MergerRatio"
-          },
-          {
             "name": "MinimalInitialRedemptionInAmount"
           },
           {
@@ -7283,52 +6952,7 @@
             "name": "MinimumSubscriptionFeeInFavourOfFund"
           },
           {
-            "name": "MonthlyRedemptionDealingDays"
-          },
-          {
-            "name": "MonthlySubscriptionDealingDays"
-          },
-          {
-            "name": "NasdaqFundNetworkNFNIdentifier"
-          },
-          {
-            "name": "NoTradingDate"
-          },
-          {
-            "name": "NumberOfPossibleRedemptionsWithinPeriod"
-          },
-          {
-            "name": "NumberOfPossibleSubscriptionsWithinPeriod"
-          },
-          {
-            "name": "PartialDealingDaysDateAndTime"
-          },
-          {
-            "name": "PartialPaymentDaysDateAndTime"
-          },
-          {
-            "name": "PaymentDateCalendar"
-          },
-          {
             "name": "PerformanceFeeMinimum"
-          },
-          {
-            "name": "PreNoticeCutOffForRedemption"
-          },
-          {
-            "name": "PreNoticeCutOffForSubscription"
-          },
-          {
-            "name": "PrePaymentCutOffTimeForSubscription"
-          },
-          {
-            "name": "PrePaymentDaysForSubscription"
-          },
-          {
-            "name": "RecordDateCalendar"
-          },
-          {
-            "name": "RedemptionTradeCyclePeriod"
           },
           {
             "name": "RoundingMethodForPrices"
@@ -7346,64 +6970,7 @@
             "name": "RoundingMethodForSubscriptionInShares"
           },
           {
-            "name": "SettlementPeriodForRedemption"
-          },
-          {
-            "name": "SettlementPeriodForSubscription"
-          },
-          {
-            "name": "SettlementPeriodForSwitchIn"
-          },
-          {
-            "name": "SettlementPeriodForSwitchOut"
-          },
-          {
             "name": "ShareClassDividendType"
-          },
-          {
-            "name": "SingleRegisterAccountRestrictions"
-          },
-          {
-            "name": "SubscriptionPeriodEndDate"
-          },
-          {
-            "name": "SubscriptionPeriodStartDate"
-          },
-          {
-            "name": "SubscriptionTradeCyclePeriod"
-          },
-          {
-            "name": "SwitchInNoticePeriod"
-          },
-          {
-            "name": "SwitchOutNoticePeriod"
-          },
-          {
-            "name": "TerminationDate"
-          },
-          {
-            "name": "TimeZoneForCutOff"
-          },
-          {
-            "name": "TimeZoneForCutOffUsingTZDatabase"
-          },
-          {
-            "name": "ValuationFrequencyDetail"
-          },
-          {
-            "name": "ValuationReduction"
-          },
-          {
-            "name": "WeeklyRedemptionDealingDays"
-          },
-          {
-            "name": "WeeklySubscriptionDealingDays"
-          },
-          {
-            "name": "YearlyRedemptionDealingDays"
-          },
-          {
-            "name": "YearlySubscriptionDealingDays"
           },
           {
             "name": "CUSIP"
