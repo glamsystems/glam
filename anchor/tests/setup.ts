@@ -1,5 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
-import { GlamClient, WSOL, MSOL, USDC } from "../src";
+import { GlamClient, WSOL, MSOL, USDC, FundModel } from "../src";
 
 export const sleep = async (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
@@ -8,7 +8,7 @@ export const str2seed = (str: String) =>
   Uint8Array.from(
     Array.from(str)
       .map((letter) => letter.charCodeAt(0))
-      .concat(new Array(32 - str.length).fill(0))
+      .concat(new Array(32 - str.length).fill(0)),
   );
 
 export const fundTestExample = {
@@ -23,35 +23,36 @@ export const fundTestExample = {
       allowlist: [] as PublicKey[],
       blocklist: [] as PublicKey[],
       lockUpPeriodInSeconds: 0, // number or BN
-      lockUpComment: "", // string
       permanentDelegate: new PublicKey(0), // PublicKey, new PublicKey(0) => mint
       defaultAccountStateFrozen: false, // bool
 
       // Openfunds Share Class
-      fullShareClassName: "Glam Fund SOL-mSOL",
-      isin: "XS1082172823",
-      cusip: "demo",
-      valor: "demo",
-      shareClassCurrency: "SOL",
-      shareClassLifecycle: "active",
-      investmentStatus: "open",
-      shareClassDistributionPolicy: "accumulating",
-      shareClassLaunchDate: new Date().toISOString().split("T")[0],
-      minimalInitialSubscriptionCategory: "amount",
-      minimalInitialSubscriptionInShares: "0",
-      minimalInitialSubscriptionInAmount: "1000",
-      currencyOfMinimalSubscription: "SOL",
-      minimalRedemptionCategory: "shares",
-      minimalInitialRedemptionInShares: "1",
-      maximumInitialRedemptionInShares: "1000",
-      minimalInitialRedemptionInAmount: "0",
-      maximumInitialRedemptionInAmount: null,
-      currencyOfMinimalOrMaximumRedemption: "SOL",
-      shareClassDividendType: "both",
-      srri: "4",
-      launchPrice: "100",
-      launchPriceCurrency: "USD",
-      launchPriceDate: new Date().toISOString().split("T")[0],
+      rawOpenfunds: {
+        fullShareClassName: "Glam Fund SOL-mSOL",
+        isin: "XS1082172823",
+        cusip: "demo",
+        valor: "demo",
+        shareClassCurrency: "SOL",
+        shareClassLifecycle: "active",
+        investmentStatus: "open",
+        shareClassDistributionPolicy: "accumulating",
+        shareClassLaunchDate: new Date().toISOString().split("T")[0],
+        minimalInitialSubscriptionCategory: "amount",
+        minimalInitialSubscriptionInShares: "0",
+        minimalInitialSubscriptionInAmount: "1000",
+        currencyOfMinimalSubscription: "SOL",
+        minimalRedemptionCategory: "shares",
+        minimalInitialRedemptionInShares: "1",
+        maximumInitialRedemptionInShares: "1000",
+        minimalInitialRedemptionInAmount: "0",
+        maximumInitialRedemptionInAmount: null,
+        currencyOfMinimalOrMaximumRedemption: "SOL",
+        shareClassDividendType: "both",
+        srri: "4",
+        launchPrice: "100",
+        launchPriceCurrency: "USD",
+        launchPriceDate: new Date().toISOString().split("T")[0],
+      },
     },
   ],
   // Glam
@@ -79,11 +80,11 @@ export const fundTestExample = {
   manager: {
     portfolioManagerName: "glam.sol",
   },
-};
+} as Partial<FundModel>;
 
 export const createFundForTest = async (
   glamClient: GlamClient = new GlamClient(),
-  fundTest: any = fundTestExample
+  fundTest: any = fundTestExample,
 ) => {
   let txId, fundPDA;
   try {
@@ -137,7 +138,7 @@ export const quoteResponseForTest = {
 export const swapInstructionsForTest = (
   manager: PublicKey,
   inputSignerAta: PublicKey,
-  outputSignerAta: PublicKey
+  outputSignerAta: PublicKey,
 ) => ({
   tokenLedgerInstruction: null,
   computeBudgetInstructions: [

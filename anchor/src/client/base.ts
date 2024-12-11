@@ -45,7 +45,6 @@ import { GlamError } from "../error";
 import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 import { BlockhashWithCache } from "../utils/blockhash";
 
-// @ts-ignore
 type FundAccount = IdlAccounts<Glam>["fundAccount"];
 type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
 
@@ -868,9 +867,8 @@ export class BaseClient {
     const mintAddresses = (fundAccounts || [])
       .map((f) => f.account.shareClasses[0])
       .filter((addr) => !!addr);
-    const mintAccounts = await connection.getMultipleAccountsInfo(
-      mintAddresses,
-    );
+    const mintAccounts =
+      await connection.getMultipleAccountsInfo(mintAddresses);
     (mintAccounts || []).forEach((info, j) => {
       const mintInfo = unpackMint(
         mintAddresses[j],

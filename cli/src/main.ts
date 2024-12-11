@@ -10,10 +10,6 @@ import { getGlamClient, setFundToConfig } from "./utils";
 import { QuoteParams } from "anchor/src/client/jupiter";
 import { VersionedTransaction } from "@solana/web3.js";
 import { getPriorityFeeEstimate } from "@glam/anchor";
-import {
-  createAssociatedTokenAccountIdempotentInstruction,
-  getAssociatedTokenAddressSync,
-} from "@solana/spl-token";
 
 const configPath = path.join(os.homedir(), ".config/glam/cli/config.json");
 let fundPDA;
