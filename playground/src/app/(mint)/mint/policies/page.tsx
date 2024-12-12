@@ -82,7 +82,7 @@ function PolicyForm({
   return (
     <div>
       <h2 className="text-xl mb-6 text-muted-foreground font-extralight">
-        Policy
+        Policies
       </h2>
       <Form {...form}>
         <form className="space-y-8">
