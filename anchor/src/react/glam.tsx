@@ -219,7 +219,7 @@ export function GlamProvider({
 
     const fundList = [] as FundCache[];
     fundModels.forEach((f: FundModel) => {
-      if (wallet?.publicKey?.equals(f.manager.pubkey!)) {
+      if (wallet?.publicKey?.equals(f.manager!.pubkey!)) {
         const fundCache = toFundCache(f);
         fundList.push(fundCache);
       } else {

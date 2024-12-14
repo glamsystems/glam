@@ -47,7 +47,7 @@ export default function MintContextPage() {
         setOpenfundsData({
           ...openfundsData,
           company: {
-            fundGroupName: fund.company.fundGroupName,
+            fundGroupName: fund.company?.fundGroupName,
           },
           fund: {
             legalFundNameIncludingUmbrella: fund.name,
