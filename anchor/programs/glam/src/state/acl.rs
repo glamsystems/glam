@@ -37,6 +37,7 @@ pub enum Permission {
     SetTokenAccountsStates,
     StakeJup,       // Initialize locked voter escrow and stake JUP
     VoteOnProposal, // New vote and cast vote
+    UnstakeJup,     // Unstake JUP
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]

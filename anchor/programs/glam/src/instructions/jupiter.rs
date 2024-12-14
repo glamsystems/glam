@@ -10,12 +10,17 @@ use solana_program::{instruction::Instruction, program::invoke_signed};
 
 use jup_locked_voter::cpi::{
     accounts::{
-        CastVote as JupCastVote, IncreaseLockedAmount as StakeJup, NewEscrow, ToggleMaxLock,
+        CastVote as JupCastVote, IncreaseLockedAmount as StakeJup, MergePartialUnstaking,
+        NewEscrow, OpenPartialUnstaking, ToggleMaxLock as JupToggleMaxLock, Withdraw,
+        WithdrawPartialUnstaking as JupWithdrawPartialUnstaking,
     },
-    cast_vote as jup_cast_vote, increase_locked_amount as stake_jup, new_escrow, toggle_max_lock,
+    cast_vote as jup_cast_vote, increase_locked_amount as stake_jup,
+    merge_partial_unstaking as jup_merge_partial_unstaking, new_escrow,
+    open_partial_unstaking as jup_open_partial_unstaking, toggle_max_lock as jup_toggle_max_lock,
+    withdraw, withdraw_partial_unstaking as jup_partial_withdraw,
 };
 use jup_locked_voter::program::LockedVoter;
-use jup_locked_voter::state::{Escrow, Locker};
+use jup_locked_voter::state::{Escrow, Locker, PartialUnstaking as PartialUnstakeAccount};
 
 use jup_governance::cpi::{accounts::NewVote as JupNewVote, new_vote as jup_new_vote};
 use jup_governance::program::Govern;
@@ -302,6 +307,54 @@ pub fn init_locked_voter_escrow<'info>(ctx: Context<InitLockedVoterEscrow>) -> R
 }
 
 #[derive(Accounts)]
+pub struct ToogleMaxLock<'info> {
+    #[account()]
+    pub fund: Box<Account<'info, FundAccount>>,
+
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    #[account(mut)]
+    pub locker: Box<Account<'info, Locker>>,
+
+    #[account(mut, constraint = escrow.owner == treasury.key())]
+    pub escrow: Box<Account<'info, Escrow>>,
+
+    pub locked_voter_program: Program<'info, LockedVoter>,
+    pub token_program: Program<'info, Token>,
+}
+
+#[access_control(
+    acl::check_access_any(
+        &ctx.accounts.fund,
+        &ctx.accounts.signer.key,
+        vec![Permission::StakeJup, Permission::UnstakeJup])
+)]
+#[access_control(
+    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
+)]
+#[treasury_signer_seeds]
+pub fn toggle_max_lock<'info>(ctx: Context<ToogleMaxLock>, value: bool) -> Result<()> {
+    jup_toggle_max_lock(
+        CpiContext::new_with_signer(
+            ctx.accounts.locked_voter_program.to_account_info(),
+            JupToggleMaxLock {
+                locker: ctx.accounts.locker.to_account_info(),
+                escrow: ctx.accounts.escrow.to_account_info(),
+                escrow_owner: ctx.accounts.treasury.to_account_info(),
+            },
+            treasury_signer_seeds,
+        ),
+        value,
+    )?;
+
+    Ok(())
+}
+
+#[derive(Accounts)]
 pub struct IncreaseLockedAmount<'info> {
     #[account()]
     pub fund: Box<Account<'info, FundAccount>>,
@@ -312,9 +365,8 @@ pub struct IncreaseLockedAmount<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    /// CHECK: does the voter program check it?
     #[account(mut)]
-    pub locker: AccountInfo<'info>,
+    pub locker: Box<Account<'info, Locker>>,
 
     #[account(mut)]
     pub escrow_jup_ata: Box<InterfaceAccount<'info, TokenAccount>>,
@@ -340,19 +392,6 @@ pub fn increase_locked_amount<'info>(
     ctx: Context<IncreaseLockedAmount>,
     amount: u64,
 ) -> Result<()> {
-    toggle_max_lock(
-        CpiContext::new_with_signer(
-            ctx.accounts.locked_voter_program.to_account_info(),
-            ToggleMaxLock {
-                locker: ctx.accounts.locker.to_account_info(),
-                escrow: ctx.accounts.escrow.to_account_info(),
-                escrow_owner: ctx.accounts.treasury.to_account_info(),
-            },
-            treasury_signer_seeds,
-        ),
-        true,
-    )?;
-
     stake_jup(
         CpiContext::new_with_signer(
             ctx.accounts.locked_voter_program.to_account_info(),
@@ -368,6 +407,190 @@ pub fn increase_locked_amount<'info>(
         ),
         amount,
     )?;
+
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct PartialUnstaking<'info> {
+    #[account()]
+    pub fund: Box<Account<'info, FundAccount>>,
+
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    /// CHECK: to be initialized
+    #[account(mut)]
+    pub partial_unstake: AccountInfo<'info>,
+
+    #[account(mut)]
+    pub locker: Box<Account<'info, Locker>>,
+
+    #[account(mut)]
+    pub escrow: Box<Account<'info, Escrow>>,
+
+    pub locked_voter_program: Program<'info, LockedVoter>,
+    pub system_program: Program<'info, System>,
+}
+
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::UnstakeJup)
+)]
+#[access_control(
+    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
+)]
+#[treasury_signer_seeds]
+pub fn open_partial_unstaking<'info>(
+    ctx: Context<PartialUnstaking>,
+    amount: u64,
+    memo: String,
+) -> Result<()> {
+    jup_open_partial_unstaking(
+        CpiContext::new_with_signer(
+            ctx.accounts.locked_voter_program.to_account_info(),
+            OpenPartialUnstaking {
+                locker: ctx.accounts.locker.to_account_info(),
+                escrow: ctx.accounts.escrow.to_account_info(),
+                partial_unstake: ctx.accounts.partial_unstake.to_account_info(),
+                owner: ctx.accounts.treasury.to_account_info(),
+                system_program: ctx.accounts.system_program.to_account_info(),
+            },
+            treasury_signer_seeds,
+        ),
+        amount,
+        memo,
+    )?;
+    Ok(())
+}
+
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::UnstakeJup)
+)]
+#[access_control(
+    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
+)]
+#[treasury_signer_seeds]
+pub fn merge_partial_unstaking<'info>(ctx: Context<PartialUnstaking>) -> Result<()> {
+    jup_merge_partial_unstaking(CpiContext::new_with_signer(
+        ctx.accounts.locked_voter_program.to_account_info(),
+        MergePartialUnstaking {
+            locker: ctx.accounts.locker.to_account_info(),
+            escrow: ctx.accounts.escrow.to_account_info(),
+            partial_unstake: ctx.accounts.partial_unstake.to_account_info(),
+            owner: ctx.accounts.treasury.to_account_info(),
+        },
+        treasury_signer_seeds,
+    ))?;
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct WithdrawAllStakedJup<'info> {
+    #[account()]
+    pub fund: Box<Account<'info, FundAccount>>,
+
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    #[account(mut)]
+    pub locker: Box<Account<'info, Locker>>,
+
+    #[account(mut)]
+    pub escrow: Box<Account<'info, Escrow>>,
+
+    #[account(mut)]
+    pub escrow_jup_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+
+    #[account(mut)]
+    pub treasury_jup_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+
+    pub locked_voter_program: Program<'info, LockedVoter>,
+    pub token_program: Program<'info, Token>,
+}
+
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::UnstakeJup)
+)]
+#[access_control(
+    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
+)]
+#[treasury_signer_seeds]
+pub fn withdraw_all_staked_jup<'info>(ctx: Context<WithdrawAllStakedJup>) -> Result<()> {
+    withdraw(CpiContext::new_with_signer(
+        ctx.accounts.locked_voter_program.to_account_info(),
+        Withdraw {
+            locker: ctx.accounts.locker.to_account_info(),
+            escrow: ctx.accounts.escrow.to_account_info(),
+            escrow_owner: ctx.accounts.treasury.to_account_info(),
+            escrow_tokens: ctx.accounts.escrow_jup_ata.to_account_info(),
+            destination_tokens: ctx.accounts.treasury_jup_ata.to_account_info(),
+            payer: ctx.accounts.treasury.to_account_info(),
+            token_program: ctx.accounts.token_program.to_account_info(),
+        },
+        treasury_signer_seeds,
+    ))?;
+
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct WithdrawPartialUnstaking<'info> {
+    #[account()]
+    pub fund: Box<Account<'info, FundAccount>>,
+
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub treasury: SystemAccount<'info>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    #[account(mut)]
+    pub partial_unstake: Box<Account<'info, PartialUnstakeAccount>>,
+
+    #[account(mut)]
+    pub locker: Box<Account<'info, Locker>>,
+
+    #[account(mut)]
+    pub escrow: Box<Account<'info, Escrow>>,
+
+    #[account(mut)]
+    pub escrow_jup_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+
+    #[account(mut)]
+    pub treasury_jup_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+
+    pub locked_voter_program: Program<'info, LockedVoter>,
+    pub token_program: Program<'info, Token>,
+}
+
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::UnstakeJup)
+)]
+#[access_control(
+    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
+)]
+#[treasury_signer_seeds]
+pub fn withdraw_partial_unstaking<'info>(ctx: Context<WithdrawPartialUnstaking>) -> Result<()> {
+    jup_partial_withdraw(CpiContext::new_with_signer(
+        ctx.accounts.locked_voter_program.to_account_info(),
+        JupWithdrawPartialUnstaking {
+            locker: ctx.accounts.locker.to_account_info(),
+            escrow: ctx.accounts.escrow.to_account_info(),
+            owner: ctx.accounts.treasury.to_account_info(),
+            partial_unstake: ctx.accounts.partial_unstake.to_account_info(),
+            escrow_tokens: ctx.accounts.escrow_jup_ata.to_account_info(),
+            destination_tokens: ctx.accounts.treasury_jup_ata.to_account_info(),
+            payer: ctx.accounts.treasury.to_account_info(),
+            token_program: ctx.accounts.token_program.to_account_info(),
+        },
+        treasury_signer_seeds,
+    ))?;
 
     Ok(())
 }

@@ -2653,6 +2653,75 @@ export type Glam = {
       ]
     },
     {
+      "name": "mergePartialUnstaking",
+      "discriminator": [
+        190,
+        154,
+        163,
+        153,
+        168,
+        115,
+        40,
+        173
+      ],
+      "accounts": [
+        {
+          "name": "fund"
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "partialUnstake",
+          "writable": true
+        },
+        {
+          "name": "locker",
+          "writable": true
+        },
+        {
+          "name": "escrow",
+          "writable": true
+        },
+        {
+          "name": "lockedVoterProgram",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "mergeStakeAccounts",
       "discriminator": [
         173,
@@ -2898,6 +2967,84 @@ export type Glam = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "openPartialUnstaking",
+      "discriminator": [
+        201,
+        137,
+        207,
+        175,
+        79,
+        95,
+        220,
+        27
+      ],
+      "accounts": [
+        {
+          "name": "fund"
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "partialUnstake",
+          "writable": true
+        },
+        {
+          "name": "locker",
+          "writable": true
+        },
+        {
+          "name": "escrow",
+          "writable": true
+        },
+        {
+          "name": "lockedVoterProgram",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "memo",
+          "type": "string"
+        }
+      ]
     },
     {
       "name": "redeem",
@@ -4047,6 +4194,76 @@ export type Glam = {
       ]
     },
     {
+      "name": "toggleMaxLock",
+      "discriminator": [
+        163,
+        157,
+        161,
+        132,
+        179,
+        107,
+        127,
+        143
+      ],
+      "accounts": [
+        {
+          "name": "fund"
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "locker",
+          "writable": true
+        },
+        {
+          "name": "escrow",
+          "writable": true
+        },
+        {
+          "name": "lockedVoterProgram",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "value",
+          "type": "bool"
+        }
+      ]
+    },
+    {
       "name": "transferHook",
       "discriminator": [
         105,
@@ -4439,6 +4656,79 @@ export type Glam = {
       ]
     },
     {
+      "name": "withdrawAllStakedJup",
+      "discriminator": [
+        210,
+        124,
+        52,
+        114,
+        25,
+        254,
+        170,
+        52
+      ],
+      "accounts": [
+        {
+          "name": "fund"
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "locker",
+          "writable": true
+        },
+        {
+          "name": "escrow",
+          "writable": true
+        },
+        {
+          "name": "escrowJupAta",
+          "writable": true
+        },
+        {
+          "name": "treasuryJupAta",
+          "writable": true
+        },
+        {
+          "name": "lockedVoterProgram",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "withdrawFromStakeAccounts",
       "discriminator": [
         93,
@@ -4499,6 +4789,83 @@ export type Glam = {
         {
           "name": "stakeProgram",
           "address": "Stake11111111111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "withdrawPartialUnstaking",
+      "discriminator": [
+        201,
+        202,
+        137,
+        124,
+        2,
+        3,
+        245,
+        87
+      ],
+      "accounts": [
+        {
+          "name": "fund"
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "fund"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "partialUnstake",
+          "writable": true
+        },
+        {
+          "name": "locker",
+          "writable": true
+        },
+        {
+          "name": "escrow",
+          "writable": true
+        },
+        {
+          "name": "escrowJupAta",
+          "writable": true
+        },
+        {
+          "name": "treasuryJupAta",
+          "writable": true
+        },
+        {
+          "name": "lockedVoterProgram",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         }
       ],
       "args": []
@@ -4878,6 +5245,19 @@ export type Glam = {
       ]
     },
     {
+      "name": "partialUnstaking",
+      "discriminator": [
+        172,
+        146,
+        58,
+        213,
+        40,
+        250,
+        107,
+        63
+      ]
+    },
+    {
       "name": "policyAccount",
       "discriminator": [
         218,
@@ -4920,13 +5300,58 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "notAuthorized",
-      "msg": "Signer is not authorized"
+      "name": "invalidShareClass",
+      "msg": "Share class not allowed to subscribe"
     },
     {
       "code": 6001,
-      "name": "integrationDisabled",
-      "msg": "Integration is disabled"
+      "name": "invalidAssetSubscribe",
+      "msg": "Asset not allowed to subscribe"
+    },
+    {
+      "code": 6002,
+      "name": "invalidPricingOracle",
+      "msg": "Invalid oracle for asset price"
+    },
+    {
+      "code": 6003,
+      "name": "invalidRemainingAccounts",
+      "msg": "Invalid accounts: the transaction is malformed"
+    },
+    {
+      "code": 6004,
+      "name": "invalidTreasuryAccount",
+      "msg": "Invalid treasury ata"
+    },
+    {
+      "code": 6005,
+      "name": "invalidSignerAccount",
+      "msg": "Invalid signer ata"
+    },
+    {
+      "code": 6006,
+      "name": "invalidAssetPrice",
+      "msg": "Invalid asset price"
+    },
+    {
+      "code": 6007,
+      "name": "invalidStableCoinPriceForSubscribe",
+      "msg": "Subscription not allowed: invalid stable coin price"
+    },
+    {
+      "code": 6008,
+      "name": "subscribeRedeemDisable",
+      "msg": "Fund is disabled for subscription and redemption"
+    },
+    {
+      "code": 6009,
+      "name": "invalidPolicyAccount",
+      "msg": "Policy account is mandatory"
+    },
+    {
+      "code": 6010,
+      "name": "priceTooOld",
+      "msg": "Price is too old"
     }
   ],
   "types": [
@@ -5798,6 +6223,12 @@ export type Glam = {
             }
           },
           {
+            "name": "externalTreasuryAccounts",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
             "name": "shareClasses",
             "type": {
               "vec": {
@@ -6434,6 +6865,42 @@ export type Glam = {
       }
     },
     {
+      "name": "partialUnstaking",
+      "docs": [
+        "Account: PartialUnstaking"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "escrow",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "expiration",
+            "type": "i64"
+          },
+          {
+            "name": "buffers",
+            "type": {
+              "array": [
+                "u128",
+                6
+              ]
+            }
+          },
+          {
+            "name": "memo",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
       "name": "permission",
       "docs": [
         "* Delegate ACL"
@@ -6506,6 +6973,9 @@ export type Glam = {
           },
           {
             "name": "voteOnProposal"
+          },
+          {
+            "name": "unstakeJup"
           }
         ]
       }
