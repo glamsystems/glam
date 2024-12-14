@@ -317,9 +317,8 @@ pub struct ToogleMaxLock<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    /// CHECK: does the voter program check it?
     #[account(mut)]
-    pub locker: AccountInfo<'info>,
+    pub locker: Box<Account<'info, Locker>>,
 
     #[account(mut, constraint = escrow.owner == treasury.key())]
     pub escrow: Box<Account<'info, Escrow>>,
@@ -329,7 +328,10 @@ pub struct ToogleMaxLock<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::StakeJup)
+    acl::check_access_any(
+        &ctx.accounts.fund,
+        &ctx.accounts.signer.key,
+        vec![Permission::StakeJup, Permission::UnstakeJup])
 )]
 #[access_control(
     acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
@@ -363,9 +365,8 @@ pub struct IncreaseLockedAmount<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    /// CHECK: does the voter program check it?
     #[account(mut)]
-    pub locker: AccountInfo<'info>,
+    pub locker: Box<Account<'info, Locker>>,
 
     #[account(mut)]
     pub escrow_jup_ata: Box<InterfaceAccount<'info, TokenAccount>>,
@@ -425,9 +426,8 @@ pub struct PartialUnstaking<'info> {
     #[account(mut)]
     pub partial_unstake: AccountInfo<'info>,
 
-    /// CHECK: does the voter program check it?
     #[account(mut)]
-    pub locker: AccountInfo<'info>,
+    pub locker: Box<Account<'info, Locker>>,
 
     #[account(mut)]
     pub escrow: Box<Account<'info, Escrow>>,
@@ -488,7 +488,7 @@ pub fn merge_partial_unstaking<'info>(ctx: Context<PartialUnstaking>) -> Result<
 }
 
 #[derive(Accounts)]
-pub struct WithdrawAll<'info> {
+pub struct WithdrawAllStakedJup<'info> {
     #[account()]
     pub fund: Box<Account<'info, FundAccount>>,
 
@@ -514,8 +514,15 @@ pub struct WithdrawAll<'info> {
     pub token_program: Program<'info, Token>,
 }
 
-pub fn withdraw_all_staked_jup<'info>(ctx: Context<WithdrawAll>) -> Result<()> {
-    withdraw(CpiContext::new(
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::UnstakeJup)
+)]
+#[access_control(
+    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
+)]
+#[treasury_signer_seeds]
+pub fn withdraw_all_staked_jup<'info>(ctx: Context<WithdrawAllStakedJup>) -> Result<()> {
+    withdraw(CpiContext::new_with_signer(
         ctx.accounts.locked_voter_program.to_account_info(),
         Withdraw {
             locker: ctx.accounts.locker.to_account_info(),
@@ -526,6 +533,7 @@ pub fn withdraw_all_staked_jup<'info>(ctx: Context<WithdrawAll>) -> Result<()> {
             payer: ctx.accounts.treasury.to_account_info(),
             token_program: ctx.accounts.token_program.to_account_info(),
         },
+        treasury_signer_seeds,
     ))?;
 
     Ok(())
@@ -561,8 +569,15 @@ pub struct WithdrawPartialUnstaking<'info> {
     pub token_program: Program<'info, Token>,
 }
 
+#[access_control(
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::UnstakeJup)
+)]
+#[access_control(
+    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
+)]
+#[treasury_signer_seeds]
 pub fn withdraw_partial_unstaking<'info>(ctx: Context<WithdrawPartialUnstaking>) -> Result<()> {
-    jup_partial_withdraw(CpiContext::new(
+    jup_partial_withdraw(CpiContext::new_with_signer(
         ctx.accounts.locked_voter_program.to_account_info(),
         JupWithdrawPartialUnstaking {
             locker: ctx.accounts.locker.to_account_info(),
@@ -574,6 +589,7 @@ pub fn withdraw_partial_unstaking<'info>(ctx: Context<WithdrawPartialUnstaking>)
             payer: ctx.accounts.treasury.to_account_info(),
             token_program: ctx.accounts.token_program.to_account_info(),
         },
+        treasury_signer_seeds,
     ))?;
 
     Ok(())

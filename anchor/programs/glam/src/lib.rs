@@ -339,11 +339,35 @@ pub mod glam {
         jupiter::init_locked_voter_escrow(ctx)
     }
 
+    pub fn toggle_max_lock<'info>(ctx: Context<ToogleMaxLock>, value: bool) -> Result<()> {
+        jupiter::toggle_max_lock(ctx, value)
+    }
+
     pub fn increase_locked_amount<'info>(
         ctx: Context<IncreaseLockedAmount>,
         amount: u64,
     ) -> Result<()> {
         jupiter::increase_locked_amount(ctx, amount)
+    }
+
+    pub fn open_partial_unstaking<'info>(
+        ctx: Context<PartialUnstaking>,
+        amount: u64,
+        memo: String,
+    ) -> Result<()> {
+        jupiter::open_partial_unstaking(ctx, amount, memo)
+    }
+
+    pub fn merge_partial_unstaking<'info>(ctx: Context<PartialUnstaking>) -> Result<()> {
+        jupiter::merge_partial_unstaking(ctx)
+    }
+
+    pub fn withdraw_partial_unstaking<'info>(ctx: Context<WithdrawPartialUnstaking>) -> Result<()> {
+        jupiter::withdraw_partial_unstaking(ctx)
+    }
+
+    pub fn withdraw_all_staked_jup<'info>(ctx: Context<WithdrawAllStakedJup>) -> Result<()> {
+        jupiter::withdraw_all_staked_jup(ctx)
     }
 
     pub fn new_vote<'info>(ctx: Context<NewVote>) -> Result<()> {
