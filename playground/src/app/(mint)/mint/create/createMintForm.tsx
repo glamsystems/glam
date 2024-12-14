@@ -16,7 +16,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import { useGlam } from "@glam/anchor/react";
+import {
+  CompanyModel,
+  FundModel,
+  FundOpenfundsModel,
+  ManagerModel,
+  ShareClassOpenfundsModel,
+  useGlam,
+} from "@glam/anchor/react";
 import { PublicKey } from "@solana/web3.js";
 import { toast } from "@/components/ui/use-toast";
 import { ExplorerLink } from "@/components/ExplorerLink";
@@ -119,32 +126,48 @@ export default function MultiStepForm() {
       const fundData = {
         name: basicInfoFormData.name,
         isEnabled: true,
-        fundDomicileAlpha2: openfundsData.fund.fundDomicileAlpha2,
+        rawOpenfunds: {
+          fundDomicileAlpha2: openfundsData.fund.fundDomicileAlpha2,
+        } as Partial<FundOpenfundsModel>,
+        // @ts-ignore
         integrationAcls: [{ name: { mint: {} }, features: [] }],
         company: {
           fundGroupName: openfundsData.company.fundGroupName,
-        },
+        } as Partial<CompanyModel>,
+        manager: {
+          pubkey: glamClient.getManager(),
+          kind: { wallet: {} },
+        } as Partial<ManagerModel>,
         shareClasses: [
           {
+            uri: "",
+            fundId: null,
+            imageUri: "",
+            allowlist: [],
+            blocklist: [],
             name: basicInfoFormData.name,
             symbol: basicInfoFormData.symbol,
+            asset: new PublicKey(0),
+            lockUpPeriodInSeconds: policyFormData.lockUp * 3600,
             permanentDelegate: policyFormData.permanentDelegate
               ? new PublicKey(policyFormData.permanentDelegate)
               : new PublicKey(0),
-            lockUpPeriodInSeconds: policyFormData.lockUp * 3600,
             defaultAccountStateFrozen: policyFormData.defaultAccountStateFrozen,
-            isin: openfundsData.shareClass.iSIN,
-            shareClassCurrency: openfundsData.shareClass.shareClassCurrency,
+            isRawOpenfunds: true,
+            rawOpenfunds: {
+              isin: openfundsData.shareClass.iSIN,
+              shareClassCurrency: openfundsData.shareClass.shareClassCurrency,
+            } as Partial<ShareClassOpenfundsModel>,
           },
         ],
-      };
+      } as Partial<FundModel>;
 
-      const [txSig, fundPDA] = await glamClient.createFund(fundData, true);
+      const [txSig, fundPDA] = await glamClient.fund.createFund(fundData, true);
       setActiveFund({
         address: fundPDA.toBase58(),
         pubkey: fundPDA,
         imageKey: fundPDA.toBase58(),
-        name: fundData.name,
+        name: basicInfoFormData.name,
       });
       toast({
         title: "Fund created successfully",

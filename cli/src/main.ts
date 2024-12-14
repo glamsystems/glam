@@ -1,5 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
-import { FundModel, WSOL } from "@glam/anchor";
+import { FundModel, IntegrationName, WSOL } from "@glam/anchor";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { Command } from "commander";
 
@@ -10,10 +10,6 @@ import { getGlamClient, setFundToConfig } from "./utils";
 import { QuoteParams } from "anchor/src/client/jupiter";
 import { VersionedTransaction } from "@solana/web3.js";
 import { getPriorityFeeEstimate } from "@glam/anchor";
-import {
-  createAssociatedTokenAccountIdempotentInstruction,
-  getAssociatedTokenAddressSync,
-} from "@solana/spl-token";
 
 const configPath = path.join(os.homedir(), ".config/glam/cli/config.json");
 let fundPDA;
@@ -63,9 +59,17 @@ program
   .action(async () => {
     const funds = await glamClient.fetchAllFunds();
     funds
-      .sort((a, b) => (a.fundLaunchDate > b.fundLaunchDate ? 1 : -1))
+      .sort((a, b) =>
+        a.rawOpenfunds.fundLaunchDate > b.rawOpenfunds.fundLaunchDate ? 1 : -1,
+      )
       .map((f: FundModel) => {
-        console.log(f.fundId.toBase58(), "\t", f.fundLaunchDate, "\t", f.name);
+        console.log(
+          f.id.toBase58(),
+          "\t",
+          f.rawOpenfunds.fundLaunchDate,
+          "\t",
+          f.name,
+        );
       });
   });
 
@@ -95,7 +99,7 @@ fund
     fundData.assets = fundData.assets.map((a) => new PublicKey(a));
 
     try {
-      const [txSig, fundPDA] = await glamClient.createFund(fundData);
+      const [txSig, fundPDA] = await glamClient.fund.createFund(fundData);
       console.log("Fund created:", fundPDA.toBase58());
       console.log("txSig:", txSig);
 
@@ -235,10 +239,10 @@ integration
       process.exit(0);
     }
 
-    const updatedFund = glamClient.getFundModel({
+    const updatedFund = new FundModel({
       integrationAcls: [
         ...fundModel.integrationAcls,
-        { name: { [integration]: {} }, features: [] },
+        { name: { [integration]: {} } as IntegrationName, features: [] },
       ],
     });
 
@@ -275,7 +279,7 @@ integration
       process.exit(0);
     }
 
-    const updatedFund = glamClient.getFundModel({
+    const updatedFund = new FundModel({
       integrationAcls: fundModel.integrationAcls.filter(
         (integ) => Object.keys(integ.name)[0] !== integration,
       ),

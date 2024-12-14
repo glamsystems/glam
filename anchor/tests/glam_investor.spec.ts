@@ -21,7 +21,7 @@ import {
   createAssociatedTokenAccountIdempotentInstruction,
 } from "@solana/spl-token";
 
-import { fundTestExample, createFundForTest, str2seed } from "./setup";
+import { testFundModel, createFundForTest, str2seed } from "./setup";
 import { GlamClient, WSOL } from "../src";
 
 describe("glam_investor", () => {
@@ -56,23 +56,22 @@ describe("glam_investor", () => {
   const manager = (client.provider as anchor.AnchorProvider)
     .wallet as anchor.Wallet;
 
-  const fundExample = {
-    ...fundTestExample,
+  const fundModel = {
+    ...testFundModel,
     name: "Glam Investment",
     assets: [usdc.publicKey, btc.publicKey, ethOrWsol],
-    assetsWeights: [0, 60, 40],
-  } as any;
-  // overwrite share class acls
-  // alice and manager are allowed to subcribe
-  // bob and eve will be blocked
-  fundExample.shareClasses[0].allowlist = [
-    alice.publicKey,
-    bob.publicKey,
-    manager.publicKey,
-  ];
-  fundExample.shareClasses[0].blocklist = [bob.publicKey, eve.publicKey];
+    // overwrite share class acls: alice and manager are allowed to subscribe,
+    // bob and eve will be blocked.
+    shareClasses: [
+      {
+        ...testFundModel.shareClasses![0],
+        allowlist: [alice.publicKey, bob.publicKey, manager.publicKey],
+        blocklist: [bob.publicKey, eve.publicKey],
+      },
+    ],
+  };
 
-  const fundPDA = client.getFundPDA(fundExample);
+  const fundPDA = client.getFundPDA(fundModel);
   const treasuryPDA = client.getTreasuryPDA(fundPDA);
   const sharePDA = client.getShareClassPDA(fundPDA, 0);
 
@@ -85,21 +84,21 @@ describe("glam_investor", () => {
     treasuryPDA,
     true,
     TOKEN_PROGRAM_ID,
-    ASSOCIATED_TOKEN_PROGRAM_ID
+    ASSOCIATED_TOKEN_PROGRAM_ID,
   );
   const treasuryEthAta = getAssociatedTokenAddressSync(
     ethOrWsol,
     treasuryPDA,
     true,
     TOKEN_PROGRAM_ID,
-    ASSOCIATED_TOKEN_PROGRAM_ID
+    ASSOCIATED_TOKEN_PROGRAM_ID,
   );
   const treasuryBtcAta = getAssociatedTokenAddressSync(
     btc.publicKey,
     treasuryPDA,
     true,
     BTC_TOKEN_PROGRAM_ID,
-    ASSOCIATED_TOKEN_PROGRAM_ID
+    ASSOCIATED_TOKEN_PROGRAM_ID,
   );
 
   // manager
@@ -108,28 +107,28 @@ describe("glam_investor", () => {
     manager.publicKey,
     false,
     TOKEN_PROGRAM_ID,
-    ASSOCIATED_TOKEN_PROGRAM_ID
+    ASSOCIATED_TOKEN_PROGRAM_ID,
   );
   const managerEthAta = getAssociatedTokenAddressSync(
     ethOrWsol,
     manager.publicKey,
     false,
     TOKEN_PROGRAM_ID,
-    ASSOCIATED_TOKEN_PROGRAM_ID
+    ASSOCIATED_TOKEN_PROGRAM_ID,
   );
   const managerBtcAta = getAssociatedTokenAddressSync(
     btc.publicKey,
     manager.publicKey,
     false,
     BTC_TOKEN_PROGRAM_ID,
-    ASSOCIATED_TOKEN_PROGRAM_ID
+    ASSOCIATED_TOKEN_PROGRAM_ID,
   );
   const managerSharesAta = getAssociatedTokenAddressSync(
     sharePDA,
     manager.publicKey,
     false,
     TOKEN_2022_PROGRAM_ID,
-    ASSOCIATED_TOKEN_PROGRAM_ID
+    ASSOCIATED_TOKEN_PROGRAM_ID,
   );
 
   beforeAll(async () => {
@@ -149,7 +148,7 @@ describe("glam_investor", () => {
             idx == 0 ? 6 : 8,
             token,
             { commitment }, // await 'confirmed'
-            idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID
+            idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID,
           );
 
           // create ATAs for each user
@@ -157,7 +156,7 @@ describe("glam_investor", () => {
             // send 1 SOL to each user
             const airdrop = await connection.requestAirdrop(
               user.publicKey,
-              1_000_000_000
+              1_000_000_000,
             );
             await connection.confirmTransaction(airdrop);
 
@@ -167,7 +166,7 @@ describe("glam_investor", () => {
               token.publicKey,
               user.publicKey,
               {},
-              idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID
+              idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID,
             );
             await mintTo(
               connection,
@@ -178,7 +177,7 @@ describe("glam_investor", () => {
               idx == 2 ? 10_000_000_000 : 1000_000_000,
               [],
               {},
-              idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID
+              idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID,
             );
           }
 
@@ -188,7 +187,7 @@ describe("glam_investor", () => {
             token.publicKey,
             manager.publicKey,
             {},
-            idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID
+            idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID,
           );
 
           await mintTo(
@@ -200,9 +199,9 @@ describe("glam_investor", () => {
             idx == 2 ? 1000_000_000_000 : 1000_000_000,
             [],
             { commitment }, // await 'confirmed'
-            idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID
+            idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID,
           );
-        })
+        }),
       );
     } catch (e) {
       console.error(e);
@@ -215,7 +214,7 @@ describe("glam_investor", () => {
       //
       // create fund
       //
-      const fundData = await createFundForTest(client, fundExample);
+      const fundData = await createFundForTest(client, fundModel);
       const fund = await program.account.fundAccount.fetch(fundPDA);
       expect(fund.shareClasses[0]).toEqual(sharePDA);
     } catch (e) {
@@ -236,7 +235,7 @@ describe("glam_investor", () => {
       const txId = await glamClient.investor.subscribe(
         fundPDA,
         ethOrWsol,
-        amount
+        amount,
       );
       console.log(`subscribe ${useWsolInsteadOfEth ? "wsol" : "eth"}:`, txId);
     } catch (e) {
@@ -248,7 +247,7 @@ describe("glam_investor", () => {
       connection,
       sharePDA,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     console.log("total shares:", shares.supply);
     expect(shares.supply).toBeGreaterThan(770_000_000_000);
@@ -258,7 +257,7 @@ describe("glam_investor", () => {
       connection,
       managerSharesAta,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect(managerShares.amount).toEqual(shares.supply);
   }, 15_000);
@@ -274,14 +273,14 @@ describe("glam_investor", () => {
         6,
         keypair,
         { commitment },
-        TOKEN_2022_PROGRAM_ID
+        TOKEN_2022_PROGRAM_ID,
       );
       const shareAta = getAssociatedTokenAddressSync(
         invalidShareClass,
         manager.publicKey,
         false,
         TOKEN_2022_PROGRAM_ID,
-        ASSOCIATED_TOKEN_PROGRAM_ID
+        ASSOCIATED_TOKEN_PROGRAM_ID,
       );
       const txId = await program.methods
         .subscribe(new BN(1 * 10 ** 8), true)
@@ -303,7 +302,7 @@ describe("glam_investor", () => {
             shareAta,
             manager.publicKey,
             invalidShareClass,
-            TOKEN_2022_PROGRAM_ID
+            TOKEN_2022_PROGRAM_ID,
           ),
         ])
         .rpc({ commitment });
@@ -321,7 +320,7 @@ describe("glam_investor", () => {
       const txId = await glamClient.investor.subscribe(
         fundPDA,
         btc.publicKey,
-        amount
+        amount,
       );
       console.log("subscribe btc:", txId);
     } catch (e) {
@@ -333,7 +332,7 @@ describe("glam_investor", () => {
       connection,
       sharePDA,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     console.log("total shares:", shares.supply);
     // expect(shares.supply.toString()).toEqual(expectedShares); //TODO: compare BigInt?
@@ -342,7 +341,7 @@ describe("glam_investor", () => {
       connection,
       managerSharesAta,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect(managerShares.amount).toEqual(shares.supply);
   });
@@ -352,7 +351,7 @@ describe("glam_investor", () => {
       connection,
       sharePDA,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     const amount = new BN(shares.supply / 2n);
     console.log("total shares:", shares.supply, "amount:", amount);
@@ -369,7 +368,7 @@ describe("glam_investor", () => {
       connection,
       sharePDA,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     // expect(shares.supply.toString()).toEqual(remaining.toString());
 
@@ -377,7 +376,7 @@ describe("glam_investor", () => {
       connection,
       managerSharesAta,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect(managerShares.amount).toEqual(shares.supply);
   });
@@ -391,7 +390,7 @@ describe("glam_investor", () => {
           manager.publicKey,
           treasuryUsdcAta,
           treasuryPDA,
-          usdc.publicKey
+          usdc.publicKey,
         ),
         createTransferCheckedInstruction(
           managerUsdcAta,
@@ -401,13 +400,13 @@ describe("glam_investor", () => {
           amountExt,
           6,
           [],
-          TOKEN_PROGRAM_ID
+          TOKEN_PROGRAM_ID,
         ),
         SystemProgram.transfer({
           fromPubkey: manager.publicKey,
           toPubkey: treasuryPDA,
           lamports: 1_000_000_000,
-        })
+        }),
       );
       await sendAndConfirmTransaction(connection, tx1, [manager.payer], {
         skipPreflight: true,
@@ -423,7 +422,7 @@ describe("glam_investor", () => {
       connection,
       treasuryUsdcAta,
       commitment,
-      TOKEN_PROGRAM_ID
+      TOKEN_PROGRAM_ID,
     );
     const oldAmountUsdc = treasuryUsdc.amount;
     expect(oldAmountUsdc.toString()).toEqual(amountExt.toString());
@@ -432,13 +431,13 @@ describe("glam_investor", () => {
       connection,
       treasuryBtcAta,
       commitment,
-      BTC_TOKEN_PROGRAM_ID
+      BTC_TOKEN_PROGRAM_ID,
     );
     const oldAmountBtc = treasuryBtc.amount;
 
     let treasuryAccountInfo = await connection.getAccountInfo(
       treasuryPDA,
-      commitment
+      commitment,
     );
     const oldAmountSol = treasuryAccountInfo?.lamports;
 
@@ -456,7 +455,7 @@ describe("glam_investor", () => {
       connection,
       treasuryUsdcAta,
       commitment,
-      TOKEN_PROGRAM_ID
+      TOKEN_PROGRAM_ID,
     );
     const newAmountUsdc = treasuryUsdc.amount;
 
@@ -464,13 +463,13 @@ describe("glam_investor", () => {
       connection,
       treasuryBtcAta,
       commitment,
-      BTC_TOKEN_PROGRAM_ID
+      BTC_TOKEN_PROGRAM_ID,
     );
     const newAmountBtc = treasuryBtc.amount;
 
     treasuryAccountInfo = await connection.getAccountInfo(
       treasuryPDA,
-      commitment
+      commitment,
     );
     const newAmountSol = treasuryAccountInfo?.lamports;
 
@@ -487,7 +486,7 @@ describe("glam_investor", () => {
       connection,
       sharePDA,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     const amount = new BN(shares.supply.toString());
     try {
@@ -503,7 +502,7 @@ describe("glam_investor", () => {
       connection,
       sharePDA,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect(shares.supply.toString()).toEqual("0");
 
@@ -511,7 +510,7 @@ describe("glam_investor", () => {
       connection,
       managerSharesAta,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect(managerShares.amount).toEqual(shares.supply); // 0
 
@@ -519,7 +518,7 @@ describe("glam_investor", () => {
       connection,
       treasuryUsdcAta,
       commitment,
-      TOKEN_PROGRAM_ID
+      TOKEN_PROGRAM_ID,
     );
     expect(treasuryUsdc.amount).toEqual(shares.supply); // 0
 
@@ -527,7 +526,7 @@ describe("glam_investor", () => {
       connection,
       treasuryEthAta,
       commitment,
-      TOKEN_PROGRAM_ID
+      TOKEN_PROGRAM_ID,
     );
     expect(treasuryEth.amount).toEqual(shares.supply); // 0
 
@@ -535,14 +534,14 @@ describe("glam_investor", () => {
       connection,
       treasuryBtcAta,
       commitment,
-      BTC_TOKEN_PROGRAM_ID
+      BTC_TOKEN_PROGRAM_ID,
     );
     expect(treasuryBtc.amount).toEqual(shares.supply); // 0
 
     // All lamports are sent to signer => treasury account no longer exists
     const treasuryAccountInfo = await connection.getAccountInfo(
       treasuryPDA,
-      commitment
+      commitment,
     );
     expect(treasuryAccountInfo).toBeNull();
   });
@@ -553,7 +552,7 @@ describe("glam_investor", () => {
       const txId = await glamClientAlice.investor.subscribe(
         fundPDA,
         usdc.publicKey,
-        amount
+        amount,
       );
       console.log("tx:", txId);
     } catch (e) {
@@ -565,7 +564,7 @@ describe("glam_investor", () => {
       connection,
       sharePDA,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     // $250 for $100 per share => 2.5 shares
     // in reality it will be less due to fees but toFixed(2) rounds it up
@@ -578,7 +577,7 @@ describe("glam_investor", () => {
       const txId = await glamClientBob.investor.subscribe(
         fundPDA,
         usdc.publicKey,
-        amount
+        amount,
       );
       console.log("tx:", txId);
       expect(txId).toBeUndefined();
@@ -593,7 +592,7 @@ describe("glam_investor", () => {
       const txId = await glamClientEve.investor.subscribe(
         fundPDA,
         usdc.publicKey,
-        amount
+        amount,
       );
       console.log("tx:", txId);
       expect(txId).toBeUndefined();
@@ -611,12 +610,12 @@ describe("glam_investor", () => {
       });
       const txDeposit = await glamClient.marinade.depositSol(
         fundPDA,
-        new anchor.BN(10 ** 9)
+        new anchor.BN(10 ** 9),
       );
       console.log("marinade deposit:", txDeposit);
       const txUnstake = await glamClient.marinade.delayedUnstake(
         fundPDA,
-        new anchor.BN(10 ** 8)
+        new anchor.BN(10 ** 8),
       );
       console.log("marinade delayed unstake:", txUnstake);
     } catch (e) {
@@ -624,17 +623,14 @@ describe("glam_investor", () => {
       throw e;
     }
 
-    const fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
-    // params[0][0]: assets
-    // params[0][1]: integration acls
-    // params[0][2]: external accounts
-    expect(fund.params[0][2].value.vecPubkey?.val.length).toBe(1);
+    const fundModel = await glamClient.fetchFund(fundPDA);
+    expect(fundModel.externalTreasuryAccounts.length).toEqual(1);
 
     try {
       const txId = await glamClient.investor.subscribe(
         fundPDA,
         btc.publicKey,
-        new BN(10 ** 8) // 1 BTC
+        new BN(10 ** 8), // 1 BTC
       );
       console.log("subscribe:", txId);
     } catch (e) {
@@ -645,7 +641,7 @@ describe("glam_investor", () => {
     try {
       const txId = await glamClient.investor.redeem(
         fundPDA,
-        new BN(10 ** 9) // 1 share
+        new BN(10 ** 9), // 1 share
       );
       console.log("redeem 1 share:", txId);
     } catch (e) {

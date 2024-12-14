@@ -80,7 +80,7 @@ async function fetchHolderData(mint: string): Promise<any> {
             },
           },
         }),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -103,7 +103,7 @@ async function fetchHolderData(mint: string): Promise<any> {
 
 function processHolderData(
   data: any,
-  decimals: number
+  decimals: number,
 ): {
   holders: Array<{ holder: React.ReactNode; shares: number; fill: string }>;
   totalHolders: number;
@@ -132,7 +132,7 @@ function processHolderData(
   const totalHolders = holdersArray.length;
 
   holdersArray.sort(
-    (a: { shares: number }, b: { shares: number }) => b.shares - a.shares
+    (a: { shares: number }, b: { shares: number }) => b.shares - a.shares,
   );
 
   let topHolders = holdersArray.slice(0, 4);
@@ -141,7 +141,7 @@ function processHolderData(
     .slice(4)
     .reduce(
       (sum: number, holder: { shares: number }) => sum + holder.shares,
-      0
+      0,
     );
 
   if (othersShares > 0) {
@@ -177,7 +177,7 @@ async function updateHoldersData(fund: Fund): Promise<HolderData[]> {
 
       if (!mintAddress) {
         console.error(
-          `Mint address not found for share class: ${shareClass.shareClassSymbol}`
+          `Mint address not found for share class: ${shareClass.shareClassSymbol}`,
         );
         return null;
       }
@@ -190,7 +190,7 @@ async function updateHoldersData(fund: Fund): Promise<HolderData[]> {
 
       const processedData = processHolderData(
         holderData,
-        shareClass?.shareClassDecimals || 0
+        shareClass?.shareClassDecimals || 0,
       );
 
       return {
@@ -198,7 +198,7 @@ async function updateHoldersData(fund: Fund): Promise<HolderData[]> {
         holders: processedData.holders,
         totalHolders: processedData.totalHolders,
       };
-    })
+    }),
   );
 
   console.log("Aggregated holders data:", holdersData);
@@ -313,7 +313,7 @@ const ChartComponent: React.FC<{ fund: Fund; holdersConfig: any }> = React.memo(
         </PieChart>
       </ChartContainer>
     );
-  }
+  },
 );
 
 export default function ProductPage() {
@@ -343,7 +343,7 @@ export default function ProductPage() {
 
   const fund = useMemo(() => {
     if (!allFunds || !publicKey) return null;
-    return allFunds.find((f) => f.idStr === product);
+    return allFunds.find((f) => f.id?.toBase58() === product);
   }, [allFunds, publicKey, product]);
 
   //Mark the client as ready once mounted (to prevent server-side rendering issues)
@@ -365,7 +365,7 @@ export default function ProductPage() {
       "Effect running. ClientReady:",
       clientReady,
       "IsAllFundsLoading:",
-      isAllFundsLoading
+      isAllFundsLoading,
     );
     console.log("PublicKey:", publicKey, "Fund:", fund, "AllFunds:", allFunds);
 
@@ -408,7 +408,7 @@ export default function ProductPage() {
       sc1: { label: "Share Class 2", color: `hsl(${chartColors[1]})` },
       sc2: { label: "Share Class 3", color: `hsl(${chartColors[2]})` },
     }),
-    [chartColors]
+    [chartColors],
   );
 
   const holdersConfig = useMemo(
@@ -420,7 +420,7 @@ export default function ProductPage() {
       hld3: { label: "Holder 4", color: `hsl(${chartColors[3]})` },
       hld4: { label: "Others", color: `hsl(${chartColors[4]})` }, // Changed label to "Others"
     }),
-    [chartColors]
+    [chartColors],
   );
 
   useEffect(() => {
@@ -480,12 +480,12 @@ export default function ProductPage() {
         Number(shareClass?.shareClassSupply) /
           10 ** (shareClass?.shareClassDecimals || 0) || 0,
       fill: `var(--color-sc${j})`,
-    })
+    }),
   );
 
   const totalShares = mintData.reduce(
     (acc: number, cur: any) => acc + cur.shares,
-    0
+    0,
   );
 
   let displayTotalShares = totalShares;
@@ -542,7 +542,7 @@ export default function ProductPage() {
               ref={sparkleContainerRef}
             >
               <Sparkle
-                address={fund?.shareClasses[0]?.shareClassId}
+                address={fund?.shareClasses[0]?.fundId?.toBase58()!}
                 size={105}
                 onColorGenerated={handleColorGenerated}
               />
@@ -555,7 +555,7 @@ export default function ProductPage() {
                 {fund.name}
               </CardTitle>
               <CardDescription className="text-sm text-muted-foreground mt-2 line-clamp-2 overflow-clip">
-                {fund.investmentObjective}
+                {fund.rawOpenfunds?.investmentObjective}
               </CardDescription>
             </CardHeader>
           </Card>
@@ -616,11 +616,11 @@ export default function ProductPage() {
               <p className="text-muted-foreground opacity-75 text-xs font-light">
                 Symbol
               </p>
-              {fund.shareClasses[0]?.shareClassSymbol}
+              {fund.shareClasses[0]?.symbol}
               <p className="text-muted-foreground opacity-25 text-xs font-light">
                 <ExplorerLink
-                  path={`/account/${fund?.shareClasses[0]?.shareClassId}`}
-                  label={fund?.shareClasses[0]?.shareClassId}
+                  path={`/account/${fund?.shareClasses[0]?.fundId?.toBase58()}`}
+                  label={fund?.shareClasses[0]?.fundId?.toBase58() || ""}
                 />
               </p>
             </Card>
@@ -628,11 +628,14 @@ export default function ProductPage() {
               <p className="text-muted-foreground opacity-75 text-xs font-light">
                 Class Asset
               </p>
-              {fund.shareClasses[0]?.shareClassCurrency}
+              {fund.shareClasses[0]?.rawOpenfunds?.shareClassCurrency}
               <p className="text-muted-foreground opacity-25 text-xs font-light">
                 <ExplorerLink
-                  path={`/account/${fund?.shareClasses[0]?.shareClassCurrencyId}`}
-                  label={fund?.shareClasses[0]?.shareClassCurrencyId}
+                  path={`/account/${fund?.shareClasses[0]?.rawOpenfunds?.shareClassCurrency}`}
+                  label={
+                    fund?.shareClasses[0]?.rawOpenfunds?.shareClassCurrency ||
+                    ""
+                  }
                 />
               </p>
             </Card>
@@ -727,6 +730,7 @@ export default function ProductPage() {
             </TabsTrigger>
           </TabsList>
 
+          {/* FIXME: this is completely broken 
           <TabsContent value="overview">
             <div className="grid grid-cols-12 grid-rows-[auto_auto] gap-4">
               <Card className="col-span-8 row-span-1 min-h-[391px]">
@@ -878,7 +882,7 @@ export default function ProductPage() {
                                 ?.charAt(0)
                                 .toUpperCase() +
                                 fund.shareClasses[0]?.shareClassLifecycle?.slice(
-                                  1
+                                  1,
                                 )}
                             </dd>
                           </div>
@@ -891,7 +895,7 @@ export default function ProductPage() {
                                 ?.charAt(0)
                                 .toUpperCase() +
                                 fund.shareClasses[0]?.investmentStatus?.slice(
-                                  1
+                                  1,
                                 )}
                             </dd>
                           </div>
@@ -906,13 +910,13 @@ export default function ProductPage() {
                                     ?.minimalInitialSubscriptionInShares +
                                   " shares"
                                 : fund.shareClasses[0]
-                                    ?.minimalInitialSubscriptionInAmount > 0
-                                ? fund.shareClasses[0]
-                                    ?.minimalInitialSubscriptionInAmount +
-                                  " " +
-                                  fund.shareClasses[0]
-                                    ?.currencyOfMinimalSubscription
-                                : "-"}
+                                      ?.minimalInitialSubscriptionInAmount > 0
+                                  ? fund.shareClasses[0]
+                                      ?.minimalInitialSubscriptionInAmount +
+                                    " " +
+                                    fund.shareClasses[0]
+                                      ?.currencyOfMinimalSubscription
+                                  : "-"}
                             </dd>
                           </div>
                           <div className="flex items-center justify-between">
@@ -924,7 +928,7 @@ export default function ProductPage() {
                                 ?.charAt(0)
                                 .toUpperCase() +
                                 fund.shareClasses[0]?.shareClassDistributionPolicy?.slice(
-                                  1
+                                  1,
                                 )}
                             </dd>
                           </div>
@@ -974,16 +978,7 @@ export default function ProductPage() {
                               Openfunds
                             </span>
                             <span className="flex gap-2">
-                              {/*
-                               // TODO: XLSX not supported yet by rest service
-                               <a
-                                href={`https://api.glam.systems/v0/openfunds?fund=${product}&format=xlsx`}
-                                rel="noopener noreferrer"
-                                target="_blank"
-                                className="link"
-                              >
-                                XLSX
-                              </a> */}
+
                               <a
                                 href={`https://api.glam.systems/v0/openfunds?fund=${product}&format=csv`}
                                 rel="noopener noreferrer"
@@ -1027,7 +1022,7 @@ export default function ProductPage() {
               </Card>
             </div>
           </TabsContent>
-
+*/}
           <TabsContent value="holdings">
             <div className="grid grid-cols-12 grid-rows-[auto_auto] gap-4">
               <Card className="col-span-12 row-span-1">

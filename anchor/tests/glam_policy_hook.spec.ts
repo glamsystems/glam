@@ -22,7 +22,7 @@ import {
   defaultAccountStateInstructionData,
 } from "@solana/spl-token";
 
-import { fundTestExample, createFundForTest, str2seed, sleep } from "./setup";
+import { testFundModel, createFundForTest, str2seed, sleep } from "./setup";
 import { GlamClient, WSOL } from "../src";
 
 describe("glam_policy_hook", () => {
@@ -48,13 +48,13 @@ describe("glam_policy_hook", () => {
     .wallet as anchor.Wallet;
 
   const shareClass = {
-    ...fundTestExample.shareClasses[0],
+    ...testFundModel.shareClasses[0],
     lockUpPeriodInSeconds: 3,
     lockUpComment: "lock-up test",
     permanentDelegate: new PublicKey(0),
   } as any;
   const fundExample = {
-    ...fundTestExample,
+    ...testFundModel,
     name: "Glam Investment",
     assets: [WSOL, usdc.publicKey, btc.publicKey],
     shareClasses: [shareClass],
@@ -74,7 +74,7 @@ describe("glam_policy_hook", () => {
     manager.publicKey,
     false,
     TOKEN_2022_PROGRAM_ID,
-    ASSOCIATED_TOKEN_PROGRAM_ID
+    ASSOCIATED_TOKEN_PROGRAM_ID,
   );
 
   // alice
@@ -83,7 +83,7 @@ describe("glam_policy_hook", () => {
     alice.publicKey,
     false,
     TOKEN_2022_PROGRAM_ID,
-    ASSOCIATED_TOKEN_PROGRAM_ID
+    ASSOCIATED_TOKEN_PROGRAM_ID,
   );
 
   beforeAll(async () => {
@@ -99,7 +99,7 @@ describe("glam_policy_hook", () => {
             idx == 0 ? 6 : 8,
             token,
             { commitment }, // await 'confirmed'
-            idx == 1 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID
+            idx == 1 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID,
           );
 
           // create ATAs for each user
@@ -107,7 +107,7 @@ describe("glam_policy_hook", () => {
             // send 1 SOL to each user
             const airdrop = await connection.requestAirdrop(
               user.publicKey,
-              1_000_000_000
+              1_000_000_000,
             );
             await connection.confirmTransaction(airdrop);
 
@@ -117,7 +117,7 @@ describe("glam_policy_hook", () => {
               token.publicKey,
               user.publicKey,
               {},
-              idx == 1 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID
+              idx == 1 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID,
             );
             await mintTo(
               connection,
@@ -128,7 +128,7 @@ describe("glam_policy_hook", () => {
               idx == 1 ? 10_000_000_000 : 1000_000_000,
               [],
               {},
-              idx == 1 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID
+              idx == 1 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID,
             );
           }
 
@@ -138,7 +138,7 @@ describe("glam_policy_hook", () => {
             token.publicKey,
             manager.publicKey,
             {},
-            idx == 1 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID
+            idx == 1 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID,
           );
 
           await mintTo(
@@ -150,9 +150,9 @@ describe("glam_policy_hook", () => {
             idx == 1 ? 1000_000_000_000 : 1000_000_000,
             [],
             { commitment }, // await 'confirmed'
-            idx == 1 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID
+            idx == 1 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID,
           );
-        })
+        }),
       );
 
       //
@@ -216,7 +216,7 @@ describe("glam_policy_hook", () => {
       connection,
       sharePDA,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect(shares.supply.toString()).toEqual(expectedShares);
 
@@ -224,7 +224,7 @@ describe("glam_policy_hook", () => {
       connection,
       managerSharesAta,
       commitment,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_2022_PROGRAM_ID,
     );
     expect(managerShares.amount).toEqual(shares.supply);
   }, 15_000);
@@ -245,7 +245,7 @@ describe("glam_policy_hook", () => {
         aliceSharesAta,
         alice.publicKey,
         sharePDA,
-        TOKEN_2022_PROGRAM_ID
+        TOKEN_2022_PROGRAM_ID,
       ),
       await createTransferCheckedWithTransferHookInstruction(
         connection,
@@ -257,8 +257,8 @@ describe("glam_policy_hook", () => {
         9,
         [],
         commitment,
-        TOKEN_2022_PROGRAM_ID
-      )
+        TOKEN_2022_PROGRAM_ID,
+      ),
     );
 
     try {
@@ -289,7 +289,7 @@ describe("glam_policy_hook", () => {
         aliceSharesAta,
         alice.publicKey,
         sharePDA,
-        TOKEN_2022_PROGRAM_ID
+        TOKEN_2022_PROGRAM_ID,
       ),
       await createTransferCheckedWithTransferHookInstruction(
         connection,
@@ -301,8 +301,8 @@ describe("glam_policy_hook", () => {
         9,
         [],
         commitment,
-        TOKEN_2022_PROGRAM_ID
-      )
+        TOKEN_2022_PROGRAM_ID,
+      ),
     );
 
     try {
