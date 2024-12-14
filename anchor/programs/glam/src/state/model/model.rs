@@ -19,6 +19,7 @@ pub struct FundModel {
     // Assets
     pub assets: Vec<Pubkey>,
     pub assets_weights: Vec<u32>, // deprecated
+    pub external_treasury_accounts: Vec<Pubkey>,
 
     // Relationships
     pub share_classes: Vec<ShareClassModel>,
