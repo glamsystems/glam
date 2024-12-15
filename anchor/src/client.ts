@@ -68,7 +68,7 @@ export class GlamClient extends BaseClient {
 
   get staking(): StakingClient {
     if (!this._staking) {
-      this._staking = new StakingClient(this);
+      this._staking = new StakingClient(this, this.marinade);
     }
     return this._staking;
   }

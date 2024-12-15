@@ -38,7 +38,7 @@ export function DataTableRowActions<TData>({
   const copyToClipboard = (
     e: React.MouseEvent,
     address: string,
-    type: string
+    type: string,
   ) => {
     console.log("row:", holding);
     e.preventDefault();
@@ -72,53 +72,16 @@ export function DataTableRowActions<TData>({
     }
   };
 
-  const marinadeDelayedUnstake = async (amount: number) => {
+  const unstake = async (mint: string, amount: BN) => {
     if (!fund) {
       return;
     }
 
-    console.log("fund", fund.toBase58(), "delayed unstake amount", amount);
-
     try {
-      const txId = await glamClient.marinade.delayedUnstake(
+      const txId = await glamClient.staking.unstake(
         fund,
-        new BN(amount)
-      );
-      toast({
-        title: `Unstake success`,
-        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
-      });
-      await refresh();
-    } catch (error: any) {
-      toast({
-        title: "Failed to unstake (marinade)",
-        description: parseTxError(error),
-        variant: "destructive",
-      });
-    }
-  };
-
-  const unstake = async (mint: string, amount: number) => {
-    const assetMeta = glamClient.getAssetMeta(mint);
-
-    if (!fund || !assetMeta || !assetMeta.stateAccount) {
-      return;
-    }
-
-    console.log(
-      "fund",
-      fund.toBase58(),
-      "pool",
-      assetMeta.stateAccount.toBase58(),
-      "unstake amount",
-      amount
-    );
-
-    try {
-      const txId = await glamClient.staking.stakePoolWithdrawStake(
-        fund,
-        assetMeta.stateAccount,
-        new BN(amount)
+        new PublicKey(mint),
+        amount,
       );
       toast({
         title: `Unstake success`,
@@ -211,16 +174,10 @@ export function DataTableRowActions<TData>({
             <DropdownMenuItem
               className="cursor-pointer"
               onClick={async (e) => {
-                if (holding.mint === MSOL.toBase58()) {
-                  await marinadeDelayedUnstake(
-                    holding.balance * 10 ** holding.decimals
-                  );
-                } else {
-                  await unstake(
-                    holding.mint,
-                    holding.balance * 10 ** holding.decimals
-                  );
-                }
+                await unstake(
+                  holding.mint,
+                  new BN(holding.balance * 10 ** holding.decimals),
+                );
               }}
             >
               Unstake all
