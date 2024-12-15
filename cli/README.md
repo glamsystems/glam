@@ -34,7 +34,7 @@ The image should have wallet keypair at `/root/keypair.json` and CLI config at `
 
 Make sure `keypair.json` and `config.json` are available in the root dir of the repo before running docker build.
 
-⚠️ The produced image will have keypair in it. **NEVER** distribute it or upload to a remote image repository.
+**The produced image will have keypair in it. NEVER distribute it or upload to a remote image repository.**
 
 ```
 docker build -f ./cli/Dockerfile -t glam-cli .
