@@ -32,7 +32,27 @@ docker build -f ./cli/agents/glam-cli-for-agents.dockerfile -t glam-cli .
 
 ## Build AI agent
 
-### Environment setup
+### Python environment
+
+1. Create a virtual environment in the same directory as this README file. The relative path to the root of the repo would be `cli/agents/.venv`. Python 3.10+ is recommended.
+
+```bash
+python3 -m venv .venv
+```
+
+2. Activate the virtual environment:
+
+```bash
+source .venv/bin/activate
+```
+
+2. Install the required Python packages:
+
+```bash
+pip install python-dotenv pyautogen autogen-core==0.4.0.dev3 autogen-core==0.4.0.dev3 autogen-agentchat==0.4.0.dev3
+```
+
+### OpenAI API key
 
 Create a `.env` file in the same directory as this README file. The relative path to the root of the repo would be `cli/agents/.env`.
 
