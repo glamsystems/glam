@@ -516,14 +516,14 @@ fund
 const lst = fund.command("lst").description("Liquid staking");
 lst
   .command("stake <asset> <amount>")
-  .description("Stake <amount> SOL into <asset>")
+  .description("Stake <amount> SOL into <asset> (mint address)")
   .action(async (asset, amount) => {
     console.error("Not implemented");
     process.exit(1);
   });
 lst
   .command("unstake <asset> <amount>")
-  .description("Unstake <amount> worth of <asset>")
+  .description("Unstake <amount> worth of <asset> (mint address)")
   .action(async (asset, amount) => {
     if (!fundPDA) {
       console.error("Error: fund not set");
@@ -545,11 +545,110 @@ lst
     }
   });
 lst
-  .command("claim <account>")
-  .description("Claim ticket/withdraw stacking <account>")
-  .action(async (amount) => {
-    console.error("Not implemented");
-    process.exit(1);
+  .command("list")
+  .description("List all staking accounts")
+  .action(async () => {
+    if (!fundPDA) {
+      console.error("Error: fund not set");
+      process.exit(1);
+    }
+
+    try {
+      let stakeAccounts = await glamClient.staking.getStakeAccountsWithStates(
+        glamClient.getTreasuryPDA(fundPDA),
+      );
+      console.log(
+        "Account                                     ",
+        "\t",
+        "Lamports",
+        "\t",
+        "State",
+      );
+      stakeAccounts.forEach((acc: any) => {
+        console.log(
+          acc.address.toBase58(),
+          "\t",
+          acc.lamports,
+          "\t",
+          acc.state,
+        );
+      });
+    } catch (e) {
+      console.error(e);
+      process.exit(1);
+    }
+  });
+lst
+  .command("withdraw <accounts>")
+  .description("Withdraw staking accounts (comma-separated)")
+  .action(async (accounts) => {
+    if (!fundPDA) {
+      console.error("Error: fund not set");
+      process.exit(1);
+    }
+
+    try {
+      const txSig = await glamClient.staking.withdrawFromStakeAccounts(
+        fundPDA,
+        accounts.split(",").map((addr: string) => new PublicKey(addr)),
+      );
+      console.log(`Withdrew from ${accounts}:`, txSig);
+    } catch (e) {
+      console.error(e);
+      process.exit(1);
+    }
+  });
+lst
+  .command("marinade-list")
+  .description("List all Marinade tickets")
+  .action(async () => {
+    if (!fundPDA) {
+      console.error("Error: fund not set");
+      process.exit(1);
+    }
+
+    try {
+      let stakeAccounts = await glamClient.marinade.getTickets(fundPDA);
+      console.log(
+        "Ticket                                      ",
+        "\t",
+        "Lamports",
+        "\t",
+        "State",
+      );
+      stakeAccounts.forEach((acc: any) => {
+        console.log(
+          acc.address.toBase58(),
+          "\t",
+          acc.lamports,
+          "\t",
+          acc.state,
+        );
+      });
+    } catch (e) {
+      console.error(e);
+      process.exit(1);
+    }
+  });
+lst
+  .command("marinade-claim <tickets>")
+  .description("Claim Marinade tickets (comma-separated)")
+  .action(async (tickets) => {
+    if (!fundPDA) {
+      console.error("Error: fund not set");
+      process.exit(1);
+    }
+
+    try {
+      const txSig = await glamClient.marinade.claimTickets(
+        fundPDA,
+        tickets.split(",").map((addr: string) => new PublicKey(addr)),
+      );
+      console.log(`Claimed ${tickets}:`, txSig);
+    } catch (e) {
+      console.error(e);
+      process.exit(1);
+    }
   });
 
 program.parse(process.argv);
