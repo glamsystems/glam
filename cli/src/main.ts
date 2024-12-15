@@ -513,6 +513,45 @@ fund
     }
   });
 
+const lst = fund.command("lst").description("Liquid staking");
+lst
+  .command("stake <asset> <amount>")
+  .description("Stake <amount> SOL into <asset>")
+  .action(async (asset, amount) => {
+    console.error("Not implemented");
+    process.exit(1);
+  });
+lst
+  .command("unstake <asset> <amount>")
+  .description("Unstake <amount> worth of <asset>")
+  .action(async (asset, amount) => {
+    if (!fundPDA) {
+      console.error("Error: fund not set");
+      process.exit(1);
+    }
+
+    try {
+      const txSig = await glamClient.staking.unstake(
+        fundPDA,
+        new PublicKey(asset),
+        //TODO: better decimals (even though all LSTs have 9 right now)
+        new anchor.BN(parseFloat(amount) * LAMPORTS_PER_SOL),
+        cliTxOptions,
+      );
+      console.log(`Unstaked ${amount} ${asset}:`, txSig);
+    } catch (e) {
+      console.error(e);
+      process.exit(1);
+    }
+  });
+lst
+  .command("claim <account>")
+  .description("Claim ticket/withdraw stacking <account>")
+  .action(async (amount) => {
+    console.error("Not implemented");
+    process.exit(1);
+  });
+
 program.parse(process.argv);
 
 //
