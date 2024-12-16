@@ -2,7 +2,7 @@
 
 A convenient way of interacting with the GLAM program.
 
-# Build
+## Build
 
 Clone https://github.com/glamsystems/glam/, enter the repo directory and run:
 
@@ -10,34 +10,71 @@ Clone https://github.com/glamsystems/glam/, enter the repo directory and run:
 pnpm install && npx nx build cli
 ```
 
-Invoke the cli by
+## config.json
 
-```
-node dist/cli/main.js -h
-```
-
-# Setup
-
-The CLI expects a configuration file at `~/.config/glam/cli/config.json` with keys `helius_api_key`, `keypair_path`, and `fund` (optional, can be set later on).
+The CLI expects a configuration file at `~/.config/glam/cli/config.json` by default.
 
 ```
 {
-  "helius_api_key": "<your-api-key>",
+  "helius_api_key": "<your-helius-api-key>",
   "keypair_path": "/path/to/keypair.json",
   "fund": "optional_fund_pubkey"
 }
 ```
 
-## Docker build
+`fund` is optional. If provided, the CLI will use the fund as the active fund. You can set the active fund using `fund set <pubkey>` command later on.
 
-The image should have wallet keypair at `/root/keypair.json` and CLI config at `/root/.config/glam/cli/config.json`.
+## Run the CLI
 
-Make sure `keypair.json` and `config.json` are available in the root dir of the repo before running docker build.
+```
+node dist/cli/main.js -h
+```
 
-**The produced image will have keypair in it. NEVER distribute it or upload to a remote image repository.**
+# Docker build
+
+Run the following command from the root of the repo:
 
 ```
 docker build -f ./cli/Dockerfile -t glam-cli .
+```
+
+This builds a docker image and tags it as `glam-cli`.
+
+## Run the CLI in docker container
+
+The docker image doesn't come with a configuration file or the keypair. They needed be provided to the container by mounting a volume from a local directory to the container's `/workspace` directory.
+
+Create a local directory (for example, `$HOME/.glam-cli-docker`) and drop both the configuration file and keypair into it. Assuming the keypair filename is `keypair.json`, the configuration file should look like:
+
+```
+$ ls $HOME/.glam-cli-docker
+config.json  keypair.json
+
+$ cat $HOME/.glam-cli-docker/config.json
+{
+  "helius_api_key": "[redacted]",
+  "keypair_path": "/workspace/keypair.json",
+  "fund": "[redacted]"
+}
+```
+
+Run the following command to enter the container with cli ready to use:
+
+```
+docker run -it --rm -v $HOME/.glam-cli-docker:/workspace glam-cli bash
+```
+
+Example:
+
+```
+$ docker run -it --rm -v $HOME/.glam-cli-docker:/workspace glam-cli bash
+
+root@af07b0e1891d:/mnt/glam# node dist/cli/main.js env
+
+Program ID: GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP
+Wallet connected: [redacted]
+RPC endpoint: https://mainnet.helius-rpc.com/?api-key=[redacted]
+Active fund: [redacted]
 ```
 
 # Commands
