@@ -6,38 +6,38 @@ This is a guide for building AI agents (using the AutoGen framework) to interact
 
 1. Create a `coding` directory in the same directory as this README file. The relative path to the root of the repo would be `cli/agents/coding`.
 
-2. Generate a keypair for the AI agent to use, and the pubkey is the identity of your AI agent. The pubkey (aka your agent) must be granted necessary permissions by the vault's owner.
+2. You can use an existing keypair or generate a new keypair for the AI agent to use. The pubkey is the identity of your AI agent, and the pubkey (aka your agent) must be granted necessary permissions by the vault's owner to sign transactions.
 
    - Drop the keypair into the `coding` directory and rename it to `agent-keypair.json`.
 
 3. Create a `config.json` file in the `coding` directory with the following content:
 
-   - Set the values for `json_rpc_url`, `helius_api_key`, and `fund` accordingly.
-   - DO NOT change the `keypair_path` value.
+   - `helius_api_key` is required.
+   - DO NOT change the `keypair_path` value (unless you know what you're doing).
+   - `fund` is optional, it can be set later on by telling the agent to use a specific one.
 
 ```json
 {
-  "json_rpc_url": "your_json_rpc_url",
   "helius_api_key": "your_helius_api_key",
-  "keypair_path": "/root/agent-keypair.json",
-  "fund": "fund_pubkey"
+  "keypair_path": "/workspace/agent-keypair.json",
+  "fund": "optional_fund_pubkey"
 }
 ```
 
 4. Run docker build from the root of the repo and tag the image as `glam-cli`:
 
 ```bash
-docker build -f ./cli/agents/glam-cli-for-agents.dockerfile -t glam-cli .
+docker build -f ./cli/Dockerfile -t glam-cli .
 ```
 
 ## Build AI agent
 
 ### Python environment
 
-1. Create a virtual environment in the same directory as this README file. The relative path to the root of the repo would be `cli/agents/.venv`. Python 3.10+ is recommended.
+1. Create a virtual environment in the same directory as this README file. The relative path to the root of the repo would be `cli/agents/.venv`. Python 3.12 is recommended, otherwise you may run into AutoGen dependencies issues.
 
 ```bash
-python3 -m venv .venv
+python3.12 -m venv .venv
 ```
 
 2. Activate the virtual environment:

@@ -11,7 +11,14 @@ import { QuoteParams } from "anchor/src/client/jupiter";
 import { VersionedTransaction } from "@solana/web3.js";
 import { getPriorityFeeEstimate } from "@glam/anchor";
 
-const configPath = path.join(os.homedir(), ".config/glam/cli/config.json");
+// By default config is at ~/.config/glam/cli/config.json
+// If running in docker, config is expected to be at /workspace/config.json
+const configHomeDefault = path.join(os.homedir(), ".config/glam/cli/");
+const configPath = path.join(
+  process.env.DOCKER ? "/workspace" : configHomeDefault,
+  "config.json",
+);
+
 let fundPDA;
 let heliusApiKey;
 try {
