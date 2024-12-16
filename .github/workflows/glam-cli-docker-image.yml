@@ -1,8 +1,11 @@
 name: glam-cli Docker image
 
 on:
-  pull_request:
-    branches: ["main"]
+  push:
+    branches:
+      - main
+    paths:
+      - "cli/**"
 
   workflow_dispatch:
 
