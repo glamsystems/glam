@@ -13,7 +13,7 @@ export type FundAccount = IdlAccounts<Glam>["fundAccount"];
 export type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
 
 export type FundModelType = IdlTypes<Glam>["fundModel"];
-export class FundModel implements FundModelType {
+export class FundIdlModel implements FundModelType {
   id: PublicKey | null;
   name: string | null;
   uri: string | null;
@@ -54,6 +54,15 @@ export class FundModel implements FundModelType {
     this.driftOrderTypes = data.driftOrderTypes ?? [];
     this.isRawOpenfunds = data.isRawOpenfunds ?? false;
     this.rawOpenfunds = data.rawOpenfunds ?? null;
+  }
+}
+
+export class FundModel extends FundIdlModel {
+  idStr: string = "";
+
+  constructor(data: Partial<FundModelType>) {
+    super(data);
+    this.idStr = this?.id ? this?.id.toBase58() : "";
   }
 
   /**
@@ -138,6 +147,11 @@ export class FundModel implements FundModelType {
 
       fundModel.shareClasses.push(new ShareClassModel(shareClassModel));
     });
+
+    fundModel.name =
+      fundModel.name ||
+      fundModel.rawOpenfunds?.legalFundNameIncludingUmbrella ||
+      (fundModel.shareClasses && fundModel.shareClasses[0]?.name);
 
     // @ts-ignore
     return new FundModel(fundModel);

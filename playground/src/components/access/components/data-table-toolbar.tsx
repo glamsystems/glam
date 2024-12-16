@@ -23,7 +23,6 @@ import ToolbarTree from "@/components/ToolbarTree";
 import * as React from "react";
 import { useState } from "react";
 import { TreeNodeData } from "@/components/CustomTree";
-import { mintPermissions, treeDataPermissions } from "../data/permissions";
 import { toast } from "@/components/ui/use-toast";
 import { PublicKey } from "@solana/web3.js";
 import { useGlam } from "@glam/anchor/react";
@@ -32,10 +31,12 @@ import { parseTxError } from "@/lib/error";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
+  treeDataPermissions: TreeNodeData;
 }
 
 export function DataTableToolbar<TData>({
   table,
+  treeDataPermissions,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
 
@@ -48,12 +49,21 @@ export function DataTableToolbar<TData>({
   };
   const { glamClient, fund: fundPDA } = useGlam();
 
+  const flatPermissions =
+    treeDataPermissions.children?.flatMap(
+      (lvl1: any) =>
+        lvl1.children?.map((node: any) => ({
+          label: node.id,
+          value: node.id,
+        })) || [],
+    ) || [];
+
   const handleAddKey = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     console.log("Add key with permissions:", treeData);
-    const permissions = treeData.children
-      ?.filter((node) => node.checked)
-      .map((node) => node.id);
+    const permissions = treeData.children?.flatMap((lvl1) =>
+      lvl1.children?.filter((node) => node.checked).map((node) => node.id),
+    );
 
     if (!permissions || permissions.length === 0) {
       toast({
@@ -77,6 +87,7 @@ export function DataTableToolbar<TData>({
     }
 
     const delegateAcls = [
+      //@ts-ignore
       { pubkey, permissions: permissions.map((p) => ({ [p]: {} })) },
     ];
     try {
@@ -172,7 +183,7 @@ export function DataTableToolbar<TData>({
           <DataTableFacetedFilter
             column={table.getColumn("tags")}
             title="Access"
-            options={mintPermissions}
+            options={flatPermissions}
           />
         )}
         {isFiltered && (
