@@ -7,7 +7,7 @@ A convenient way of interacting with the GLAM program.
 Clone https://github.com/glamsystems/glam/, enter the repo and run:
 
 ```
-pnpm install && npx nx build cli
+pnpm install && pnpm run cli-build
 ```
 
 ## config.json
@@ -65,6 +65,7 @@ $ cat $HOME/.glam-cli-docker/config.json
 {
   "helius_api_key": "[redacted]",
   "keypair_path": "/workspace/keypair.json",
+  "priority_fee_level": "Low",
   "fund": "[redacted]"
 }
 ```
