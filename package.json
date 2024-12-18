@@ -12,7 +12,8 @@
     "dev": "nx run playground:dev",
     "pg-dev": "nx run playground:dev",
     "pg-build": "nx run playground:build",
-    "pg-start": "nx run playground:start"
+    "pg-start": "nx run playground:start",
+    "cli-build": "nx run cli:build"
   },
   "private": true,
   "dependencies": {

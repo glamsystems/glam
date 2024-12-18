@@ -1,5 +1,11 @@
 import * as anchor from "@coral-xyz/anchor";
-import { FundModel, IntegrationName, WSOL } from "@glam/anchor";
+import {
+  FundModel,
+  IntegrationName,
+  PriorityLevel,
+  WSOL,
+  getPriorityFeeEstimate,
+} from "@glam/anchor";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { Command } from "commander";
 
@@ -9,7 +15,6 @@ import path from "path";
 import { getGlamClient, setFundToConfig } from "./utils";
 import { QuoteParams } from "anchor/src/client/jupiter";
 import { VersionedTransaction } from "@solana/web3.js";
-import { getPriorityFeeEstimate } from "@glam/anchor";
 
 // By default config is at ~/.config/glam/cli/config.json
 // If running in docker, config is expected to be at /workspace/config.json
@@ -21,22 +26,25 @@ const configPath = path.join(
 
 let fundPDA;
 let heliusApiKey;
+let priorityFeeLevel = "Low" as PriorityLevel; // Defaults to Low
 try {
   const config = fs.readFileSync(configPath, "utf8");
-  const { keypair_path, helius_api_key, fund } = JSON.parse(config);
+  const { keypair_path, helius_api_key, priority_fee_level, fund } =
+    JSON.parse(config);
   process.env.ANCHOR_PROVIDER_URL = `https://mainnet.helius-rpc.com/?api-key=${helius_api_key}`;
   process.env.ANCHOR_WALLET = keypair_path;
   if (fund) {
     fundPDA = new PublicKey(fund);
   }
   heliusApiKey = helius_api_key;
+  priorityFeeLevel = priority_fee_level ?? priorityFeeLevel;
 } catch (err) {
   console.error(`Could not load config at ${configPath}:`, err.message);
 }
 
 const cliTxOptions = {
   getPriorityFeeMicroLamports: async (tx: VersionedTransaction) =>
-    await getPriorityFeeEstimate(heliusApiKey, tx),
+    await getPriorityFeeEstimate(heliusApiKey, tx, undefined, priorityFeeLevel),
 };
 
 const glamClient = getGlamClient();
@@ -52,10 +60,14 @@ program
   .command("env")
   .description("Show environment setup")
   .action(async () => {
-    console.log("Program ID:", glamClient.programId.toBase58());
     console.log("Wallet connected:", glamClient.getManager().toBase58());
     console.log("RPC endpoint:", glamClient.provider.connection.rpcEndpoint);
+    console.log("Priority fee level:", priorityFeeLevel);
     console.log("Active fund:", fundPDA ? fundPDA.toBase58() : "not set");
+    if (fundPDA) {
+      const vault = glamClient.getTreasuryPDA(fundPDA);
+      console.log("Vault:", vault.toBase58());
+    }
   });
 
 program

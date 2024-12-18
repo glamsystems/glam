@@ -2,7 +2,7 @@ import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 import { VersionedTransaction } from "@solana/web3.js";
 
 // https://docs.helius.dev/guides/priority-fee-api
-type PriorityLevel =
+export type PriorityLevel =
   | "Min"
   | "Low"
   | "Medium"
@@ -15,7 +15,7 @@ export const getPriorityFeeEstimate = async (
   heliusApiKey: string,
   tx?: VersionedTransaction,
   accountKeys?: string[],
-  priorityLevel?: PriorityLevel
+  priorityLevel?: PriorityLevel,
 ) => {
   if (!tx && !accountKeys) {
     throw new Error("Either tx or accountKeys must be provided");
@@ -42,7 +42,7 @@ export const getPriorityFeeEstimate = async (
           },
         ],
       }),
-    }
+    },
   );
   const data = await response.json();
   console.log("getPriorityFeeEstimate with options", options, data.result);
