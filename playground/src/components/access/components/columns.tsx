@@ -6,16 +6,16 @@ import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
 import { ExplorerLink } from "@/components/ExplorerLink";
 
-const tagColors: Record<string, string> = {
-  stake:
-    "bg-emerald-100 text-emerald-800 border-emerald-800 dark:bg-emerald-900 dark:text-emerald-400 dark:border-emerald-400",
-  swap: "bg-teal-100 text-teal-800 border-teal-800 dark:bg-teal-900 dark:text-teal-400 dark:border-teal-400",
-  trade:
-    "bg-sky-100 text-sky-800 border-teal-800 dark:bg-sky-900 dark:text-sky-400 dark:border-sky-400",
-  lend: "bg-purple-100 text-purple-800 border-purple-800 dark:bg-purple-900 dark:text-purple-400 dark:border-purple-400",
-  admin:
-    "bg-rose-100 text-rose-800 border-rose-800 dark:bg-rose-900 dark:text-rose-400 dark:border-rose-400",
-};
+// const tagColors: Record<string, string> = {
+//   stake:
+//     "bg-emerald-100 text-emerald-800 border-emerald-800 dark:bg-emerald-900 dark:text-emerald-400 dark:border-emerald-400",
+//   swap: "bg-teal-100 text-teal-800 border-teal-800 dark:bg-teal-900 dark:text-teal-400 dark:border-teal-400",
+//   trade:
+//     "bg-sky-100 text-sky-800 border-teal-800 dark:bg-sky-900 dark:text-sky-400 dark:border-sky-400",
+//   lend: "bg-purple-100 text-purple-800 border-purple-800 dark:bg-purple-900 dark:text-purple-400 dark:border-purple-400",
+//   admin:
+//     "bg-rose-100 text-rose-800 border-rose-800 dark:bg-rose-900 dark:text-rose-400 dark:border-rose-400",
+// };
 
 export type KeyData = {
   pubkey: string;
@@ -64,7 +64,8 @@ export const columns: ColumnDef<KeyData>[] = [
             <Badge
               key={tag}
               variant="default"
-              className={`my-1 pointer-events-none capitalize font-normal rounded-none dark:bg-opacity-25 ${tagColors[tag]}`}
+              // className={`my-1 pointer-events-none capitalize font-normal rounded-none dark:bg-opacity-25 ${tagColors[tag]}`}
+              className={`my-1 pointer-events-none capitalize font-normal rounded-none dark:bg-opacity-25`}
             >
               {tag}
             </Badge>
