@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import {
   Form,
   FormControl,
@@ -20,10 +20,9 @@ import { useGlam } from "@glam/anchor/react";
 import { ProductNameGen } from "@/utils/ProductNameGen";
 import { UpdateIcon } from "@radix-ui/react-icons";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { MultiSelect } from "@/components/ui/multiple-select";
-import TruncateAddress from "@/utils/TruncateAddress";
 import { PublicKey } from "@solana/web3.js";
 import { useRouter } from "next/navigation";
+import { TokenMultiSelect } from "@/components/TokenMultiSelect";
 
 const createSchema = z.object({
   productName: z.string().min(3, {
@@ -34,31 +33,10 @@ const createSchema = z.object({
 
 type CreateSchema = z.infer<typeof createSchema>;
 
-interface TokenOption {
-  value: string;
-  label: string;
-  symbol: string;
-  name: string;
-  address: string;
-  logoURI?: string;
-  [key: string]: any;
-}
-
 export default function Create() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const { glamClient, jupTokenList } = useGlam();
-
-  const tokenOptions = useMemo(() => {
-    if (jupTokenList) {
-      return jupTokenList.map((token) => ({
-        value: token.address,
-        label: token.symbol,
-        ...token,
-      }));
-    }
-    return [];
-  }, [jupTokenList]);
+  const { glamClient } = useGlam();
 
   const form = useForm<CreateSchema>({
     resolver: zodResolver(createSchema),
@@ -67,7 +45,6 @@ export default function Create() {
       assets: [],
     },
   });
-
 
   const selectedTokens = form.watch("assets");
 
@@ -80,25 +57,32 @@ export default function Create() {
     setIsLoading(true);
     try {
       const fund = {
-        name: values.productName, shareClasses: [], isEnabled: true, assets: values.assets.map(address => new PublicKey(address)),
+        name: values.productName,
+        shareClasses: [],
+        isEnabled: true,
+        assets: values.assets.map(address => new PublicKey(address)),
       };
 
       const [txId, fundPDA] = await glamClient.fund.createFund(fund);
 
       // Reset form
       form.reset({
-        productName: "", assets: []
+        productName: "",
+        assets: []
       });
 
       toast({
-        title: "Vault created", description: (<div>
-          <p>Fund PDA: {fundPDA.toBase58()}</p>
-          <p>Transaction ID: {txId}</p>
-          <p>Assets:</p>
-          <pre className="mt-2 text-xs">
+        title: "Vault created",
+        description: (
+          <div>
+            <p>Fund PDA: {fundPDA.toBase58()}</p>
+            <p>Transaction ID: {txId}</p>
+            <p>Assets:</p>
+            <pre className="mt-2 text-xs">
               {JSON.stringify(values.assets, null, 2)}
             </pre>
-        </div>),
+          </div>
+        ),
       });
 
       // Navigate using Next.js router
@@ -106,7 +90,9 @@ export default function Create() {
     } catch (error) {
       console.error("Error creating vault:", error);
       toast({
-        title: "Error", description: "Failed to create vault. Please try again.", variant: "destructive",
+        title: "Error",
+        description: "Failed to create vault. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -165,51 +151,9 @@ export default function Create() {
                   <FormItem className="w-full">
                     <FormLabel>Vault Assets</FormLabel>
                     <FormControl>
-                      <MultiSelect
-                        options={tokenOptions}
-                        selected={selectedTokens}
-                        onChange={(value) => form.setValue("assets", value)}
-                        placeholder="Select assets..."
-                        searchPlaceholder="Search tokens..."
-                        filterOption={(option, search) =>
-                          option.symbol.toLowerCase().includes(search.toLowerCase()) ||
-                          option.name.toLowerCase().includes(search.toLowerCase()) ||
-                          option.address.toLowerCase().includes(search.toLowerCase())
-                        }
-                        renderOption={(option) => (
-                          <div className="flex items-center w-full">
-                            <div className="flex items-center gap-2 flex-1">
-                              {option.logoURI && (
-                                <img
-                                  src={option.logoURI}
-                                  alt={option.symbol}
-                                  className="w-5 h-5 rounded-full"
-                                />
-                              )}
-                              <span className="font-medium text-nowrap">
-                                {option.symbol}
-                              </span>
-                              <span className="ml-1.5 truncate text-muted-foreground text-xs">
-                                {option.name}
-                              </span>
-                            </div>
-                            <span className="text-xs text-muted-foreground ml-auto pl-2">
-                              <TruncateAddress address={option.address} />
-                            </span>
-                          </div>
-                        )}
-                        renderBadge={(option) => (
-                          <div className="flex items-center gap-2">
-                            {option.logoURI && (
-                              <img
-                                src={option.logoURI}
-                                alt={option.symbol}
-                                className="w-4 h-4 rounded-full"
-                              />
-                            )}
-                            <span className="font-medium">{option.symbol}</span>
-                          </div>
-                        )}
+                      <TokenMultiSelect
+                        value={field.value}
+                        onChange={field.onChange}
                       />
                     </FormControl>
                     <FormDescription>

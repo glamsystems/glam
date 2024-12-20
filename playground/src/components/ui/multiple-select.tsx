@@ -21,55 +21,56 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
-interface Option {
+export interface Option {
   value: string
   label: string
-  symbol: string
-  name: string
-  address: string
-  logoURI?: string
-  [key: string]: any // Allow for additional token properties
+  [key: string]: any
 }
 
-interface MultiSelectProps {
-  options: Option[]
+export interface MultiSelectProps<T extends Option> {
+  options: T[]
   selected: string[]
+  selectedTokens: T[]
   onChange: (value: string[]) => void
   placeholder?: string
   searchPlaceholder?: string
   emptyText?: string
-  renderOption?: (option: Option) => React.ReactNode
-  renderBadge?: (option: Option) => React.ReactNode
-  filterOption?: (option: Option, search: string) => boolean
+  renderOption?: (option: T) => React.ReactNode
+  renderBadge?: (option: T) => React.ReactNode
+  filterOption?: (option: T, search: string) => boolean
 }
 
-export function MultiSelect({
-                              options = [],
-                              selected = [],
-                              onChange,
-                              placeholder = "Select items...",
-                              searchPlaceholder = "Search items...",
-                              emptyText = "No items found.",
-                              renderOption,
-                              renderBadge,
-                              filterOption,
-                            }: MultiSelectProps) {
+function MultiSelect<T extends Option>({
+                                         options,
+                                         selected,
+                                         selectedTokens,
+                                         onChange,
+                                         placeholder = "Select items...",
+                                         searchPlaceholder = "Search items...",
+                                         emptyText = "No items found.",
+                                         renderOption,
+                                         renderBadge,
+                                         filterOption,
+                                       }: MultiSelectProps<T>) {
   const [open, setOpen] = React.useState(false)
   const [inputValue, setInputValue] = React.useState("")
-  const parentRef = React.useRef<HTMLDivElement>(null)
 
-  const defaultFilterOption = React.useCallback((option: Option, search: string) => {
-    return option.label.toLowerCase().includes(search.toLowerCase())
-  }, [])
+  const selectedSet = React.useMemo(() => new Set(selected), [selected])
+
+  const availableOptions = React.useMemo(() =>
+      options.filter(option => !selectedSet.has(option.value)),
+    [options, selectedSet]
+  )
 
   const filteredOptions = React.useMemo(() => {
-    const search = inputValue.toLowerCase()
-    return options.filter(option =>
-      !selected.includes(option.value) &&
-      (filterOption ? filterOption(option, search) : defaultFilterOption(option, search))
+    if (!open) return []
+    if (!inputValue) return availableOptions
+    return availableOptions.filter(option =>
+      filterOption ? filterOption(option, inputValue) : option.label.toLowerCase().includes(inputValue.toLowerCase())
     )
-  }, [options, selected, inputValue, filterOption, defaultFilterOption])
+  }, [open, availableOptions, inputValue, filterOption])
 
+  const parentRef = React.useRef<HTMLDivElement>(null)
   const rowVirtualizer = useVirtualizer({
     count: filteredOptions.length,
     getScrollElement: () => parentRef.current,
@@ -79,66 +80,44 @@ export function MultiSelect({
 
   const handleSelect = React.useCallback((value: string) => {
     onChange([...selected, value])
-    setInputValue("")
   }, [onChange, selected])
 
   const handleRemove = React.useCallback((value: string) => {
     onChange(selected.filter(item => item !== value))
   }, [onChange, selected])
 
-  const defaultRenderOption = (option: Option) => (
-    <div className="flex items-center w-full">
-      <div className="flex items-center gap-2 flex-1">
-        {option.logoURI && (
-          <img
-            src={option.logoURI}
-            alt={option.symbol}
-            className="w-5 h-5 rounded-full"
-          />
-        )}
-        <span className="font-medium">{option.symbol}</span>
-      </div>
+  const renderSelectedBadges = React.useMemo(() => (
+    <div className="flex flex-wrap gap-2">
+      {selectedTokens.map((option) => (
+        <Badge key={option.value} variant="secondary" className="text-sm rounded-none">
+          {renderBadge ? renderBadge(option) : option.label}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="ml-1 h-auto p-0 text-muted-foreground hover:text-foreground"
+            onClick={() => handleRemove(option.value)}
+          >
+            <X className="h-3 w-3" />
+            <span className="sr-only">Remove</span>
+          </Button>
+        </Badge>
+      ))}
     </div>
-  )
+  ), [selectedTokens, renderBadge, handleRemove])
 
-  const defaultRenderBadge = (option: Option) => (
-    <div className="flex items-center gap-2">
-      {option.logoURI && (
-        <img
-          src={option.logoURI}
-          alt={option.symbol}
-          className="w-4 h-4 rounded-full"
-        />
-      )}
-      <span className="font-medium">{option.symbol}</span>
-    </div>
-  )
+  const handleOpenChange = React.useCallback((newOpen: boolean) => {
+    setOpen(newOpen)
+    if (!newOpen) {
+      setInputValue("")
+    }
+  }, [])
 
   return (
     <div className="flex flex-col space-y-4">
       <ScrollArea className="h-20 w-full rounded-md border border-input bg-background px-3 py-2">
-        <div className="flex flex-wrap gap-2">
-          {selected.map((value) => {
-            const option = options?.find((opt) => opt.value === value)
-            if (!option) return null
-            return (
-              <Badge key={value} variant="secondary" className="text-sm rounded-none">
-                {renderBadge ? renderBadge(option) : defaultRenderBadge(option)}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="ml-1 h-auto p-0 text-muted-foreground hover:text-foreground"
-                  onClick={() => handleRemove(value)}
-                >
-                  <X className="h-3 w-3" />
-                  <span className="sr-only">Remove</span>
-                </Button>
-              </Badge>
-            )
-          })}
-        </div>
+        {renderSelectedBadges}
       </ScrollArea>
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
@@ -189,11 +168,7 @@ export function MultiSelect({
                               onSelect={() => handleSelect(option.value)}
                               className="w-full"
                             >
-                              <Check
-                                className="mr-2 h-4 w-4 opacity-0"
-                                aria-hidden="true"
-                              />
-                              {renderOption ? renderOption(option) : defaultRenderOption(option)}
+                              {renderOption ? renderOption(option) : option.label}
                             </CommandItem>
                           </div>
                         )
@@ -209,3 +184,6 @@ export function MultiSelect({
     </div>
   )
 }
+
+export { MultiSelect }
+
