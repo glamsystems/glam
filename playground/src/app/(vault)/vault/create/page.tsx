@@ -22,104 +22,41 @@ import { UpdateIcon } from "@radix-ui/react-icons";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { PublicKey } from "@solana/web3.js";
 import { MultiSelect } from "@/components/ui/multiple-select";
+import TruncateAddress from "@/utils/TruncateAddress";
 
 const createSchema = z.object({
   productName: z.string().min(3, {
     message: "Vault name must be at least 3 characters.",
   }),
+  assets: z.array(z.string()),
 });
-
-const options = [
-  { value: "react", label: "React" },
-  { value: "nextjs", label: "Next.js" },
-  { value: "typescript", label: "TypeScript" },
-  { value: "nodejs", label: "Node.js" },
-  { value: "tailwindcss", label: "Tailwind CSS" },
-  { value: "prisma", label: "Prisma" },
-  { value: "mongodb", label: "MongoDB" },
-  { value: "graphql", label: "GraphQL" },
-  { value: "docker", label: "Docker" },
-  { value: "aws", label: "AWS" },
-  // Frontend Frameworks & Libraries
-  { value: "vuejs", label: "Vue.js" },
-  { value: "angular", label: "Angular" },
-  { value: "svelte", label: "Svelte" },
-  { value: "preact", label: "Preact" },
-  { value: "solidjs", label: "SolidJS" },
-  // Backend Technologies
-  { value: "express", label: "Express.js" },
-  { value: "nestjs", label: "NestJS" },
-  { value: "fastify", label: "Fastify" },
-  { value: "django", label: "Django" },
-  { value: "flask", label: "Flask" },
-  // Databases
-  { value: "postgresql", label: "PostgreSQL" },
-  { value: "mysql", label: "MySQL" },
-  { value: "redis", label: "Redis" },
-  { value: "elasticsearch", label: "Elasticsearch" },
-  { value: "cassandra", label: "Cassandra" },
-  // Cloud & DevOps
-  { value: "gcp", label: "Google Cloud Platform" },
-  { value: "azure", label: "Microsoft Azure" },
-  { value: "kubernetes", label: "Kubernetes" },
-  { value: "terraform", label: "Terraform" },
-  { value: "jenkins", label: "Jenkins" },
-  // Testing
-  { value: "jest", label: "Jest" },
-  { value: "cypress", label: "Cypress" },
-  { value: "playwright", label: "Playwright" },
-  { value: "selenium", label: "Selenium" },
-  { value: "mocha", label: "Mocha" },
-  // State Management
-  { value: "redux", label: "Redux" },
-  { value: "mobx", label: "MobX" },
-  { value: "zustand", label: "Zustand" },
-  { value: "recoil", label: "Recoil" },
-  { value: "jotai", label: "Jotai" },
-  // Build Tools
-  { value: "webpack", label: "Webpack" },
-  { value: "vite", label: "Vite" },
-  { value: "rollup", label: "Rollup" },
-  { value: "parcel", label: "Parcel" },
-  { value: "esbuild", label: "esbuild" },
-  // CSS Tools
-  { value: "sass", label: "Sass" },
-  { value: "styledcomponents", label: "Styled Components" },
-  { value: "emotion", label: "Emotion" },
-  { value: "cssmodules", label: "CSS Modules" },
-  { value: "windicss", label: "Windi CSS" },
-  // Mobile Development
-  { value: "reactnative", label: "React Native" },
-  { value: "flutter", label: "Flutter" },
-  { value: "ionic", label: "Ionic" },
-  { value: "capacitor", label: "Capacitor" },
-  { value: "cordova", label: "Cordova" },
-  // Authentication & Security
-  { value: "auth0", label: "Auth0" },
-  { value: "firebase", label: "Firebase" },
-  { value: "supabase", label: "Supabase" },
-  { value: "passport", label: "Passport.js" },
-  { value: "jwt", label: "JSON Web Tokens" },
-];
 
 type CreateSchema = z.infer<typeof createSchema>;
 
 export default function Create() {
   const [isLoading, setIsLoading] = useState(false);
-  const { glamClient } = useGlam();
+  const { glamClient, jupTokenList } = useGlam();
   const form = useForm<CreateSchema>({
     resolver: zodResolver(createSchema),
     defaultValues: {
       productName: "",
+      assets: [],
     },
   });
 
-  const [selectedItems, setSelectedItems] = useState<string[]>([])
+  const selectedTokens = form.watch("assets");
 
   useEffect(() => {
     const generatedName = ProductNameGen();
     form.setValue("productName", generatedName);
   }, [form]);
+
+  // Transform Jupiter tokens to match the Option interface
+  const tokenOptions = jupTokenList?.map(token => ({
+    value: token.address,
+    label: token.symbol,
+    ...token,
+  })) || [];
 
   const onSubmit = async (values: CreateSchema) => {
     setIsLoading(true);
@@ -128,24 +65,6 @@ export default function Create() {
         name: values.productName,
         shareClasses: [],
         isEnabled: true,
-        // fundDomicileAlpha2: "XS",
-        // legalFundNameIncludingUmbrella: values.productName,
-        // fundLaunchDate: new Date().toISOString().split("T")[0],
-        // investmentObjective: "Internal Testing",
-        // fundCurrency: "SOL",
-        // openEndedOrClosedEndedFundStructure: "open-ended fund",
-        // fiscalYearEnd: "12-31",
-        // legalForm: "other",
-        // company: {
-        //   fundGroupName: "GLAM GUI",
-        //   manCo: "GLAM GUI",
-        //   domicileOfManCo: "CH",
-        //   emailAddressOfManCo: "build@glam.systems",
-        //   fundWebsiteOfManCo: "https://glam.systems",
-        // },
-        // manager: {
-        //   portfolioManagerName: "GLAM",
-        // },
       };
 
       const [txId, fundPDA] = await glamClient.fund.createFund(fund);
@@ -175,6 +94,7 @@ export default function Create() {
     event.preventDefault();
     const generatedName = ProductNameGen();
     form.setValue("productName", generatedName);
+    form.setValue("assets", []); // Update the form field instead of the state
   };
 
   const handleRefresh = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -192,7 +112,8 @@ export default function Create() {
               <FormField
                 control={form.control}
                 name="productName"
-                render={({ field }) => (<FormItem className="w-full">
+                render={({ field }) => (
+                  <FormItem className="w-full">
                     <FormLabel>Vault Name</FormLabel>
                     <FormControl>
                       <Input placeholder="Vault name" {...field} />
@@ -201,7 +122,8 @@ export default function Create() {
                       This is the public vault name.
                     </FormDescription>
                     <FormMessage />
-                  </FormItem>)}
+                  </FormItem>
+                )}
               />
               <Button
                 variant="ghost"
@@ -215,25 +137,66 @@ export default function Create() {
             <div className="flex space-x-4 items-top">
               <FormField
                 control={form.control}
-                name="productName"
-                render={({ field }) => (<FormItem className="w-full">
+                name="assets"
+                render={({ field }) => (
+                  <FormItem className="w-full">
                     <FormLabel>Vault Assets</FormLabel>
                     <FormControl>
                       <MultiSelect
-                        options={options}
-                        onChange={setSelectedItems}
+                        options={tokenOptions}
+                        selected={selectedTokens}
+                        onChange={(value) => form.setValue("assets", value)} // Update form field
                         placeholder="Select assets..."
+                        searchPlaceholder="Search tokens..."
+                        filterOption={(option, search) =>
+                          option.symbol.toLowerCase().includes(search.toLowerCase()) ||
+                          option.name.toLowerCase().includes(search.toLowerCase()) ||
+                          option.address.toLowerCase().includes(search.toLowerCase())
+                        }
+                        renderOption={(option) => (
+                          <div className="flex items-center w-full">
+                            <div className="flex items-center gap-2 flex-1">
+                              {option.logoURI && (
+                                <img
+                                  src={option.logoURI}
+                                  alt={option.symbol}
+                                  className="w-5 h-5 rounded-full"
+                                />
+                              )}
+                              <span className="font-medium text-nowrap">
+                                {option.symbol}
+                              </span>
+                              <span className="ml-1.5 truncate text-muted-foreground text-xs">
+                                {option.name}
+                              </span>
+                            </div>
+                            <span className="text-xs text-muted-foreground ml-auto pl-2">
+                              <TruncateAddress address={option.address} />
+                            </span>
+                          </div>
+                        )}
+                        renderBadge={(option) => (
+                          <div className="flex items-center gap-2">
+                            {option.logoURI && (
+                              <img
+                                src={option.logoURI}
+                                alt={option.symbol}
+                                className="w-4 h-4 rounded-full"
+                              />
+                            )}
+                            <span className="font-medium">{option.symbol}</span>
+                          </div>
+                        )}
                       />
                     </FormControl>
                     <FormDescription>
                       Select the assets allowed in the vault.
                     </FormDescription>
                     <FormMessage />
-                  </FormItem>)}
+                  </FormItem>
+                )}
               />
             </div>
-
-
 
             <div className="flex space-x-4 w-full">
               <Button className="w-1/2" variant="ghost" onClick={handleClear}>
@@ -246,5 +209,6 @@ export default function Create() {
           </form>
         </Form>
       </div>
-    </PageContentWrapper>);
+    </PageContentWrapper>
+  );
 }

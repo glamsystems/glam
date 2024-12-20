@@ -20,45 +20,65 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
-interface MultiSelectProps {
-  options?: { label: string; value: string }[]
-  onChange: (value: string[]) => void
-  placeholder?: string
+interface Option {
+  value: string
+  label: string
 }
 
-export function MultiSelect({
-                              options = [],
-                              onChange,
-                              placeholder = "Select items..."
-                            }: MultiSelectProps) {
+interface MultiSelectProps<T extends Option> {
+  options: T[]
+  selected: string[]
+  onChange: (value: string[]) => void
+  placeholder?: string
+  searchPlaceholder?: string
+  emptyText?: string
+  renderOption?: (option: T) => React.ReactNode
+  renderBadge?: (option: T) => React.ReactNode
+  filterOption?: (option: T, search: string) => boolean
+}
+
+export function MultiSelect<T extends Option>({
+                                                options = [],
+                                                selected = [],
+                                                onChange,
+                                                placeholder = "Select items...",
+                                                searchPlaceholder = "Search items...",
+                                                emptyText = "No items found.",
+                                                renderOption,
+                                                renderBadge,
+                                                filterOption,
+                                              }: MultiSelectProps<T>) {
   const [open, setOpen] = React.useState(false)
-  const [selected, setSelected] = React.useState<string[]>([])
   const [inputValue, setInputValue] = React.useState("")
 
+  const defaultFilterOption = React.useCallback((option: T, search: string) => {
+    return option.label.toLowerCase().includes(search.toLowerCase())
+  }, [])
+
   const filteredOptions = React.useMemo(() => {
+    const search = inputValue.toLowerCase()
     return options.filter(option =>
       !selected.includes(option.value) &&
-      option.label.toLowerCase().includes(inputValue.toLowerCase())
+      (filterOption ? filterOption(option, search) : defaultFilterOption(option, search))
     )
-  }, [options, selected, inputValue])
+  }, [options, selected, inputValue, filterOption, defaultFilterOption])
 
   const handleSelect = React.useCallback((value: string) => {
-    setSelected(prev => {
-      const updatedSelected = [...prev, value]
-      onChange(updatedSelected)
-      return updatedSelected
-    })
-    // Don't close the popover after selection
+    onChange([...selected, value])
     setInputValue("")
-  }, [onChange])
+  }, [onChange, selected])
 
   const handleRemove = React.useCallback((value: string) => {
-    setSelected(prev => {
-      const updatedSelected = prev.filter(item => item !== value)
-      onChange(updatedSelected)
-      return updatedSelected
-    })
-  }, [onChange])
+    onChange(selected.filter(item => item !== value))
+  }, [onChange, selected])
+
+  const defaultRenderOption = (option: T) => (
+    <span className="font-medium">{option.label}</span>
+  )
+
+  const defaultRenderBadge = (option: T) => (
+    <span className="font-medium">{option.label}</span>
+  )
 
   return (
     <div className="flex flex-col space-y-4">
@@ -69,7 +89,7 @@ export function MultiSelect({
             if (!option) return null
             return (
               <Badge key={value} variant="secondary" className="text-sm rounded-none">
-                {option.label}
+                {renderBadge ? renderBadge(option) : defaultRenderBadge(option)}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -99,12 +119,12 @@ export function MultiSelect({
         <PopoverContent className="w-full p-0" align="start">
           <Command shouldFilter={false}>
             <CommandInput
-              placeholder="Search items..."
+              placeholder={searchPlaceholder}
               value={inputValue}
               onValueChange={setInputValue}
             />
             <CommandList>
-              <CommandEmpty>No items found.</CommandEmpty>
+              <CommandEmpty>{emptyText}</CommandEmpty>
               <CommandGroup>
                 <ScrollArea className="h-72">
                   {filteredOptions.map((option) => (
@@ -117,7 +137,7 @@ export function MultiSelect({
                         className="mr-2 h-4 w-4 opacity-0"
                         aria-hidden="true"
                       />
-                      {option.label}
+                      {renderOption ? renderOption(option) : defaultRenderOption(option)}
                     </CommandItem>
                   ))}
                 </ScrollArea>
