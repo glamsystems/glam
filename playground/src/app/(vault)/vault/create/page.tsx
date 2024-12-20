@@ -22,6 +22,8 @@ import { UpdateIcon } from "@radix-ui/react-icons";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { MultiSelect } from "@/components/ui/multiple-select";
 import TruncateAddress from "@/utils/TruncateAddress";
+import { PublicKey } from "@solana/web3.js";
+import { useRouter } from "next/navigation";
 
 const createSchema = z.object({
   productName: z.string().min(3, {
@@ -43,6 +45,7 @@ interface TokenOption {
 }
 
 export default function Create() {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const { glamClient, jupTokenList } = useGlam();
 
@@ -77,28 +80,33 @@ export default function Create() {
     setIsLoading(true);
     try {
       const fund = {
-        name: values.productName,
-        shareClasses: [],
-        isEnabled: true,
+        name: values.productName, shareClasses: [], isEnabled: true, assets: values.assets.map(address => new PublicKey(address)),
       };
 
       const [txId, fundPDA] = await glamClient.fund.createFund(fund);
 
-      toast({
-        title: "Vault created",
-        description: (
-          <div>
-            <p>Fund PDA: {fundPDA.toBase58()}</p>
-            <p>Transaction ID: {txId}</p>
-          </div>
-        ),
+      // Reset form
+      form.reset({
+        productName: "", assets: []
       });
+
+      toast({
+        title: "Vault created", description: (<div>
+          <p>Fund PDA: {fundPDA.toBase58()}</p>
+          <p>Transaction ID: {txId}</p>
+          <p>Assets:</p>
+          <pre className="mt-2 text-xs">
+              {JSON.stringify(values.assets, null, 2)}
+            </pre>
+        </div>),
+      });
+
+      // Navigate using Next.js router
+      router.push("/vault/holdings");
     } catch (error) {
       console.error("Error creating vault:", error);
       toast({
-        title: "Error",
-        description: "Failed to create vault. Please try again.",
-        variant: "destructive",
+        title: "Error", description: "Failed to create vault. Please try again.", variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -227,4 +235,3 @@ export default function Create() {
     </PageContentWrapper>
   );
 }
-
