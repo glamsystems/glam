@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState, useMemo } from "react";
 import {
   Form,
   FormControl,
@@ -12,15 +13,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
-import React, { useEffect, useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/use-toast";
-import { useGlam, MSOL, WSOL } from "@glam/anchor/react";
+import { useGlam } from "@glam/anchor/react";
 import { ProductNameGen } from "@/utils/ProductNameGen";
 import { UpdateIcon } from "@radix-ui/react-icons";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { PublicKey } from "@solana/web3.js";
 import { MultiSelect } from "@/components/ui/multiple-select";
 import TruncateAddress from "@/utils/TruncateAddress";
 
@@ -33,9 +32,31 @@ const createSchema = z.object({
 
 type CreateSchema = z.infer<typeof createSchema>;
 
+interface TokenOption {
+  value: string;
+  label: string;
+  symbol: string;
+  name: string;
+  address: string;
+  logoURI?: string;
+  [key: string]: any;
+}
+
 export default function Create() {
   const [isLoading, setIsLoading] = useState(false);
   const { glamClient, jupTokenList } = useGlam();
+
+  const tokenOptions = useMemo(() => {
+    if (jupTokenList) {
+      return jupTokenList.map((token) => ({
+        value: token.address,
+        label: token.symbol,
+        ...token,
+      }));
+    }
+    return [];
+  }, [jupTokenList]);
+
   const form = useForm<CreateSchema>({
     resolver: zodResolver(createSchema),
     defaultValues: {
@@ -44,19 +65,13 @@ export default function Create() {
     },
   });
 
+
   const selectedTokens = form.watch("assets");
 
   useEffect(() => {
     const generatedName = ProductNameGen();
     form.setValue("productName", generatedName);
   }, [form]);
-
-  // Transform Jupiter tokens to match the Option interface
-  const tokenOptions = jupTokenList?.map(token => ({
-    value: token.address,
-    label: token.symbol,
-    ...token,
-  })) || [];
 
   const onSubmit = async (values: CreateSchema) => {
     setIsLoading(true);
@@ -94,7 +109,7 @@ export default function Create() {
     event.preventDefault();
     const generatedName = ProductNameGen();
     form.setValue("productName", generatedName);
-    form.setValue("assets", []); // Update the form field instead of the state
+    form.setValue("assets", []);
   };
 
   const handleRefresh = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -145,7 +160,7 @@ export default function Create() {
                       <MultiSelect
                         options={tokenOptions}
                         selected={selectedTokens}
-                        onChange={(value) => form.setValue("assets", value)} // Update form field
+                        onChange={(value) => form.setValue("assets", value)}
                         placeholder="Select assets..."
                         searchPlaceholder="Search tokens..."
                         filterOption={(option, search) =>
@@ -212,3 +227,4 @@ export default function Create() {
     </PageContentWrapper>
   );
 }
+
