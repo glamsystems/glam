@@ -2,11 +2,10 @@
 
 import { Cross2Icon, PlusIcon } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
-
+import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DataTableRefresh } from "./data-table-refresh";
-
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import {
   Sheet,
@@ -21,33 +20,40 @@ import {
 import { Label } from "@/components/ui/label";
 import ToolbarTree from "@/components/ToolbarTree";
 import * as React from "react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { TreeNodeData } from "@/components/CustomTree";
 import { toast } from "@/components/ui/use-toast";
 import { PublicKey } from "@solana/web3.js";
 import { useGlam } from "@glam/anchor/react";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { parseTxError } from "@/lib/error";
+import { useKeyLabels } from "@/hooks/useKeyLabels";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
   treeDataPermissions: TreeNodeData;
+  onSuccess?: () => void;
 }
 
 export function DataTableToolbar<TData>({
-  table,
-  treeDataPermissions,
-}: DataTableToolbarProps<TData>) {
+                                          table,
+                                          treeDataPermissions,
+                                          onSuccess,
+                                        }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   const [publicKey, setPublicKey] = useState("");
+  const [label, setLabel] = useState("");
   const [isExpanded, setIsExpanded] = useState(true);
   const [treeData, setTreeData] = useState<TreeNodeData>(treeDataPermissions);
+
+  const { updateLabel } = useKeyLabels();
+  const { glamClient, fund: fundPDA } = useGlam();
 
   const toggleExpandCollapse = () => {
     setIsExpanded(!isExpanded);
   };
-  const { glamClient, fund: fundPDA } = useGlam();
 
   const flatPermissions =
     treeDataPermissions.children?.flatMap(
@@ -60,7 +66,6 @@ export function DataTableToolbar<TData>({
 
   const handleAddKey = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    console.log("Add key with permissions:", treeData);
     const permissions = treeData.children?.flatMap((lvl1) =>
       lvl1.children?.filter((node) => node.checked).map((node) => node.id),
     );
@@ -90,16 +95,33 @@ export function DataTableToolbar<TData>({
       //@ts-ignore
       { pubkey, permissions: permissions.map((p) => ({ [p]: {} })) },
     ];
+
     try {
       // @ts-ignore
       const txSig = await glamClient.fund.upsertDelegateAcls(
         fundPDA!,
         delegateAcls,
       );
+
+      // Save the label if provided
+      if (label) {
+        updateLabel(publicKey, label);
+      }
+
       toast({
         title: "A new delegate key was added",
         description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
       });
+
+      // Reset form and close sheet
+      setPublicKey("");
+      setLabel("");
+      setTreeData(treeDataPermissions);
+      closeButtonRef.current?.click();
+
+      // Wait for blockchain confirmation and refresh
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      onSuccess?.();
     } catch (e) {
       toast({
         title: "Failed to add delegate key",
@@ -109,10 +131,16 @@ export function DataTableToolbar<TData>({
     }
   };
 
+  const handleSheetClose = () => {
+    setPublicKey("");
+    setLabel("");
+    setTreeData(treeDataPermissions);
+  };
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-2">
-        <Sheet>
+        <Sheet onOpenChange={handleSheetClose}>
           <SheetTrigger asChild>
             <Button variant="default" size="sm" className="h-8">
               <PlusIcon className="mr-2" />
@@ -131,7 +159,13 @@ export function DataTableToolbar<TData>({
                 <Label htmlFor="label" className="text-right">
                   Label
                 </Label>
-                <Input id="label" value="" className="col-span-3" />
+                <Input
+                  id="label"
+                  value={label}
+                  onChange={(e) => setLabel(e.target.value)}
+                  placeholder="Enter a label"
+                  className="col-span-3"
+                />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="pubkey" className="text-right">
@@ -163,11 +197,10 @@ export function DataTableToolbar<TData>({
               </div>
             </div>
             <SheetFooter className="mt-4">
-              <SheetClose asChild>
-                <Button type="submit" onClick={handleAddKey}>
-                  Add Key
-                </Button>
-              </SheetClose>
+              <SheetClose ref={closeButtonRef} className="hidden" />
+              <Button type="submit" onClick={handleAddKey}>
+                Add Key
+              </Button>
             </SheetFooter>
           </SheetContent>
         </Sheet>

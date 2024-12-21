@@ -24,17 +24,17 @@ export type KeyData = {
 };
 
 export const columns: ColumnDef<KeyData>[] = [
-  // {
-  //   accessorKey: "label",
-  //   header: ({ column }) => (
-  //     <DataTableColumnHeader column={column} title="Label" />
-  //   ),
-  //   cell: ({ row }) => (
-  //     <div className="w-[100px] truncate">{row.getValue("label")}</div>
-  //   ),
-  //   enableSorting: true,
-  //   enableHiding: false,
-  // },
+  {
+    accessorKey: "label",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Label" />
+    ),
+    cell: ({ row }) => (
+      <div className="w-[100px] truncate">{row.getValue("label")}</div>
+    ),
+    enableSorting: true,
+    enableHiding: false,
+  },
   {
     accessorKey: "pubkey",
     header: ({ column }) => (

@@ -42,7 +42,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { TreeNodeData } from "@/components/CustomTree";
 import ToolbarTree from "@/components/ToolbarTree";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   vaultTreeDataPermissions,
   mintTreeDataPermissions,
@@ -53,18 +53,21 @@ import { ExplorerLink } from "@/components/ExplorerLink";
 import { parseTxError } from "@/lib/error";
 import { PublicKey } from "@solana/web3.js";
 import { KeyData } from "./columns";
+import { useKeyLabels} from "@/hooks/useKeyLabels";
 
 interface DataTableProps<TData extends KeyData> {
   columns: ColumnDef<TData>[];
   data: TData[];
   perms: "vault" | "mint" | "all";
+  onSuccess?: () => void;
 }
 
 export function DataTable<TData extends KeyData>({
-  columns,
-  data,
-  perms,
-}: DataTableProps<TData>) {
+                                                   columns,
+                                                   data,
+                                                   perms,
+                                                   onSuccess,
+                                                 }: DataTableProps<TData>) {
   // Permissions
   const allChildren = (vaultTreeDataPermissions.children || []).concat(
     mintTreeDataPermissions.children || [],
@@ -83,6 +86,7 @@ export function DataTable<TData extends KeyData>({
     [],
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [activeRow, setActiveRow] = useState<string | null>(null);
 
   const table = useReactTable({
     data,
@@ -108,6 +112,8 @@ export function DataTable<TData extends KeyData>({
 
   const [isExpanded, setIsExpanded] = useState(true);
   const [treeData, setTreeData] = useState<TreeNodeData>(treeDataPermissions);
+  const { updateLabel } = useKeyLabels();
+  const [labelInput, setLabelInput] = useState("");
 
   const toggleExpandCollapse = () => {
     setIsExpanded(!isExpanded);
@@ -115,20 +121,41 @@ export function DataTable<TData extends KeyData>({
 
   const { glamClient, fund: fundPDA } = useGlam();
 
+  // Helper function to reset states
+  const resetStates = () => {
+    setActiveRow(null);
+    setTreeData({ ...treeDataPermissions });
+    setLabelInput("");
+  };
+
+  // Helper function to initialize tree with permissions
+  const initializeTreeWithPermissions = (currentPermissions: string[]) => {
+    const newTreeData = { ...treeDataPermissions };
+
+    const initializeNode = (node: TreeNodeData) => {
+      if (node.children) {
+        node.children.forEach(initializeNode);
+      } else if (node.id) {
+        node.checked = currentPermissions.includes(node.id);
+      }
+    };
+
+    initializeNode(newTreeData);
+    return newTreeData;
+  };
+
   const handleModifyKey = async (
     event: React.MouseEvent<HTMLButtonElement>,
     publicKey: string,
   ) => {
     event.preventDefault();
 
+    if (labelInput) {
+      updateLabel(publicKey, labelInput);
+    }
+
     const permissions = treeData.children?.flatMap((lvl1) =>
       lvl1.children?.filter((node) => node.checked).map((node) => node.id),
-    );
-    console.log(
-      "Modify key:",
-      publicKey,
-      " with new permissions:",
-      permissions,
     );
 
     if (!permissions || permissions.length === 0) {
@@ -156,16 +183,22 @@ export function DataTable<TData extends KeyData>({
       //@ts-ignore
       { pubkey, permissions: permissions.map((p) => ({ [p]: {} })) },
     ];
+
     try {
       // @ts-ignore
       const txSig = await glamClient.fund.upsertDelegateAcls(
         fundPDA!,
         delegateAcls,
       );
+
+      resetStates();
+
       toast({
         title: "Delegate key permissions updated",
         description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
       });
+
+      onSuccess?.();
     } catch (e) {
       toast({
         title: "Failed to update delegate key",
@@ -180,7 +213,6 @@ export function DataTable<TData extends KeyData>({
     publicKey: string,
   ) => {
     event.preventDefault();
-    console.log("Delete key:", publicKey);
 
     let pubkey;
     try {
@@ -198,10 +230,15 @@ export function DataTable<TData extends KeyData>({
       const txSig = await glamClient.fund.deleteDelegateAcls(fundPDA!, [
         pubkey,
       ]);
+
+      resetStates();
+
       toast({
         title: "Delegate key deleted",
         description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
       });
+
+      onSuccess?.();
     } catch (e) {
       toast({
         title: "Failed to delete delegate key",
@@ -216,6 +253,7 @@ export function DataTable<TData extends KeyData>({
       <DataTableToolbar
         table={table}
         treeDataPermissions={treeDataPermissions}
+        onSuccess={onSuccess}
       />
       <div className="rounded-md border">
         <Table>
@@ -228,9 +266,9 @@ export function DataTable<TData extends KeyData>({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                     </TableHead>
                   );
                 })}
@@ -240,8 +278,21 @@ export function DataTable<TData extends KeyData>({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <Sheet key={row.id}>
-                  {/* Add key prop here */}
+                <Sheet
+                  key={row.id}
+                  open={activeRow === row.original.pubkey}
+                  modal={false}
+                  onOpenChange={(open) => {
+                    if (open) {
+                      setActiveRow(row.original.pubkey);
+                      const currentPermissions = row.original.tags;
+                      setTreeData(initializeTreeWithPermissions(currentPermissions));
+                      setLabelInput(row.original.label);
+                    } else {
+                      resetStates();
+                    }
+                  }}
+                >
                   <SheetTrigger asChild>
                     <TableRow
                       data-state={row.getIsSelected() && "selected"}
@@ -260,6 +311,13 @@ export function DataTable<TData extends KeyData>({
                   <SheetContent
                     side="right"
                     className="p-12 sm:max-w-none w-1/2"
+                    onOpenAutoFocus={(e) => {
+                      e.preventDefault();
+                    }}
+                    onInteractOutside={(e) => {
+                      e.preventDefault();
+                    }}
+                    role="dialog"
                   >
                     <SheetHeader>
                       <SheetTitle>Modify Key</SheetTitle>
@@ -276,6 +334,10 @@ export function DataTable<TData extends KeyData>({
                           id="label"
                           placeholder="Label"
                           className="col-span-3"
+                          value={labelInput}
+                          onChange={(e) => setLabelInput(e.target.value)}
+                          autoFocus={false}
+                          tabIndex={-1}
                         />
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">

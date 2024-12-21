@@ -2,34 +2,55 @@
 
 import { DataTable } from "./access/components/data-table";
 import { columns } from "./access/components/columns";
-import React from "react";
+import React, { useEffect, useCallback } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";
+import { useKeyLabels } from "@/hooks/useKeyLabels";
 
 export default function PageAccess({
-  perms,
-}: {
+                                     perms,
+                                   }: {
   perms: "vault" | "mint" | "all";
 }) {
-  //@ts-ignore
   const { allFunds, activeFund } = useGlam();
+  const { getLabel } = useKeyLabels();
 
   const fundId = activeFund?.address;
   const fund: any = fundId
     ? (allFunds || []).find((f: any) => f.idStr === fundId)
     : undefined;
 
-  const data = (fund?.delegateAcls || []).map((acl: any) => ({
-    pubkey: acl.pubkey.toBase58(),
-    label: "-",
-    tags: (acl.permissions || []).map((x: any) => Object.keys(x)[0]),
-  }));
+  const getData = useCallback(() => {
+    if (!fund) return [];
 
-  // TODO: add a row for the manager
+    return (fund.delegateAcls || []).map((acl: any) => {
+      const pubkey = acl.pubkey.toBase58();
+      return {
+        pubkey,
+        label: getLabel(pubkey),
+        tags: (acl.permissions || []).map((x: any) => Object.keys(x)[0]),
+      };
+    });
+  }, [fund, getLabel]);
+
+  const data = getData();
+
+  const handleSuccess = useCallback(() => {
+    // Force a re-render when a key is modified
+    // This will cause getData to run again with the latest fund data
+    window.setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+  }, []);
 
   return (
     <PageContentWrapper>
-      <DataTable data={data} columns={columns} perms={perms} />
+      <DataTable
+        data={data}
+        columns={columns}
+        perms={perms}
+        onSuccess={handleSuccess}
+      />
     </PageContentWrapper>
   );
 }
