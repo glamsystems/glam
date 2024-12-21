@@ -376,9 +376,6 @@ export default function Transfer() {
                         .then(() => {
                           setHasCopiedAddress(true);
                           setTimeout(() => setHasCopiedAddress(false), 2000);
-                          // toast({
-                          //   title: "Vault address copied to clipboard",
-                          // });
                         });
                     }}
                   >
