@@ -148,18 +148,18 @@ export default function Holdings() {
           isLoadingData
             ? skeletonData
             : showZeroBalances
-            ? tableData
-            : tableData.filter((d) => d.balance > 0)
+              ? tableData
+              : tableData.filter((d) => d.balance > 0)
         }
         columns={columns}
         setShowZeroBalances={setShowZeroBalances}
       />
       <br />
-      <p>
-        Treasury:{" "}
+      <p className="text-sm text-muted-foreground">
+        Vault:{" "}
         {treasuryAddress && (
           <ExplorerLink
-            path={`/account/${treasuryAddress}`}
+            path={`account/${treasuryAddress}`}
             label={treasuryAddress}
           />
         )}

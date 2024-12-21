@@ -2,23 +2,21 @@
 
 import { DataTable } from "./access/components/data-table";
 import { columns } from "./access/components/columns";
-import React, { useEffect, useCallback } from "react";
+import React, { useCallback } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";
 import { useKeyLabels } from "@/hooks/useKeyLabels";
 
 export default function PageAccess({
-                                     perms,
-                                   }: {
+  perms,
+}: {
   perms: "vault" | "mint" | "all";
 }) {
   const { allFunds, activeFund } = useGlam();
   const { getLabel } = useKeyLabels();
 
   const fundId = activeFund?.address;
-  const fund: any = fundId
-    ? (allFunds || []).find((f: any) => f.idStr === fundId)
-    : undefined;
+  const fund = (allFunds || []).find((f) => f.idStr === fundId);
 
   const getData = useCallback(() => {
     if (!fund) return [];
