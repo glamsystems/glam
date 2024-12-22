@@ -31,6 +31,7 @@ import { ExplorerLink } from "@/components/ExplorerLink";
 import { getPriorityFeeMicroLamports } from "@/app/(shared)/settings/priorityfee";
 import { WarningCard } from "@/components/WarningCard";
 import { PublicKey } from "@solana/web3.js";
+import { CheckIcon, CopyIcon } from "lucide-react";
 
 const venues: [string, ...string[]] = ["Treasury", "Drift", "Manager"];
 const transferSchema = z.object({
@@ -56,6 +57,8 @@ export default function Transfer() {
   const [isTxPending, setIsTxPending] = useState(false);
   const [fromAssetList, setFromAssetList] = useState<Asset[]>([]);
   const [warning, setWarning] = useState<string>("");
+  const [hasCopiedAddress, setHasCopiedAddress] = useState(false);
+  const [transferButtonDisabled, setTransferButtonDisabled] = useState(false);
 
   const treasuryAssets = () => {
     const assets = (treasury?.tokenAccounts || []).map((ta) => {
@@ -120,13 +123,14 @@ export default function Transfer() {
   useEffect(() => {
     if (from === "Manager") {
       setWarning(
-        "Sending FROM Manager is currently not implemented. You can just transfer any asset from any wallet to " +
-          treasury?.pubkey.toString(),
+        "Sending FROM Manager is currently not implemented. You can just transfer any asset from any wallet to the vault address below.",
       );
+      setTransferButtonDisabled(true);
       return;
     } else {
       setWarning("");
     }
+    setTransferButtonDisabled(false);
 
     if (from === "Drift") {
       console.log(driftUser.spotPositions);
@@ -257,26 +261,6 @@ export default function Transfer() {
       });
     }
     setIsTxPending(false);
-
-    /*
-    toast({
-      title: "You submitted the following trade:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-zinc-900 p-4">
-          <code className="text-white">
-            {JSON.stringify(
-              {
-                ...values,
-                amountAsset,
-              },
-              null,
-              2
-            )}
-          </code>
-        </pre>
-      ),
-    });
-    */
   };
 
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -379,7 +363,31 @@ export default function Transfer() {
                 />
               </div>
 
-              {warning && <WarningCard className="p-2" message={warning} />}
+              {warning && (
+                <>
+                  <WarningCard className="p-2" message={warning} />
+                  <div
+                    className="flex flex-row items-center space-x-2 text-sm text-muted-foreground cursor-pointer"
+                    onClick={(e: React.MouseEvent) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      navigator.clipboard
+                        .writeText(treasury?.pubkey.toBase58() || "")
+                        .then(() => {
+                          setHasCopiedAddress(true);
+                          setTimeout(() => setHasCopiedAddress(false), 2000);
+                        });
+                    }}
+                  >
+                    <p>{treasury?.pubkey.toBase58()}</p>
+                    {hasCopiedAddress ? (
+                      <CheckIcon className="h-4 w-4" />
+                    ) : (
+                      <CopyIcon className="h-4 w-4 cursor-pointer" />
+                    )}
+                  </div>
+                </>
+              )}
 
               <div className="flex space-x-4 w-full">
                 <Button
@@ -389,7 +397,12 @@ export default function Transfer() {
                 >
                   Clear
                 </Button>
-                <Button className="w-1/2" type="submit" loading={isTxPending}>
+                <Button
+                  className="w-1/2"
+                  type="submit"
+                  loading={isTxPending}
+                  disabled={transferButtonDisabled}
+                >
                   Transfer
                 </Button>
               </div>

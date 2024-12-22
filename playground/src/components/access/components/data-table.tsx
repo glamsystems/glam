@@ -53,7 +53,7 @@ import { ExplorerLink } from "@/components/ExplorerLink";
 import { parseTxError } from "@/lib/error";
 import { PublicKey } from "@solana/web3.js";
 import { KeyData } from "./columns";
-import { useKeyLabels} from "@/hooks/useKeyLabels";
+import { useKeyLabels } from "@/hooks/useKeyLabels";
 
 interface DataTableProps<TData extends KeyData> {
   columns: ColumnDef<TData>[];
@@ -63,11 +63,11 @@ interface DataTableProps<TData extends KeyData> {
 }
 
 export function DataTable<TData extends KeyData>({
-                                                   columns,
-                                                   data,
-                                                   perms,
-                                                   onSuccess,
-                                                 }: DataTableProps<TData>) {
+  columns,
+  data,
+  perms,
+  onSuccess,
+}: DataTableProps<TData>) {
   // Permissions
   const allChildren = (vaultTreeDataPermissions.children || []).concat(
     mintTreeDataPermissions.children || [],
@@ -266,9 +266,9 @@ export function DataTable<TData extends KeyData>({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
                     </TableHead>
                   );
                 })}
@@ -286,7 +286,9 @@ export function DataTable<TData extends KeyData>({
                     if (open) {
                       setActiveRow(row.original.pubkey);
                       const currentPermissions = row.original.tags;
-                      setTreeData(initializeTreeWithPermissions(currentPermissions));
+                      setTreeData(
+                        initializeTreeWithPermissions(currentPermissions),
+                      );
                       setLabelInput(row.original.label);
                     } else {
                       resetStates();
@@ -361,7 +363,7 @@ export function DataTable<TData extends KeyData>({
                           Access Rights
                         </Label>
                       </div>
-                      <div className="col-span-3">
+                      <div className="col-span-3 max-h-[50vh] overflow-y-auto">
                         <ToolbarTree
                           treeData={treeData}
                           setTreeData={setTreeData}

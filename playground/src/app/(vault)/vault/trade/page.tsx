@@ -93,11 +93,9 @@ import { PublicKey } from "@solana/web3.js";
 import {
   QuoteParams,
   QuoteResponse,
-} from "../../../../../../anchor/src/client/jupiter";
-import {
   PerpMarketConfig,
   SpotMarketConfig,
-} from "../../../../../../anchor/src/client/drift";
+} from "@glam/anchor/react";
 import { getPriorityFeeMicroLamports } from "@/app/(shared)/settings/priorityfee";
 import { SlippageInput } from "@/components/SlippageInput";
 import { PriorityFeeInput } from "@/components/PriorityFeeInput";
