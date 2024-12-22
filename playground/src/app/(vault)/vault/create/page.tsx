@@ -36,7 +36,7 @@ type CreateSchema = z.infer<typeof createSchema>;
 export default function Create() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const { glamClient } = useGlam();
+  const { glamClient, setActiveFund } = useGlam();
 
   const form = useForm<CreateSchema>({
     resolver: zodResolver(createSchema),
@@ -60,7 +60,7 @@ export default function Create() {
         name: values.productName,
         shareClasses: [],
         isEnabled: true,
-        assets: values.assets.map(address => new PublicKey(address)),
+        assets: values.assets.map((address) => new PublicKey(address)),
       };
 
       const [txId, fundPDA] = await glamClient.fund.createFund(fund);
@@ -68,7 +68,7 @@ export default function Create() {
       // Reset form
       form.reset({
         productName: "",
-        assets: []
+        assets: [],
       });
 
       toast({
@@ -85,8 +85,14 @@ export default function Create() {
         ),
       });
 
+      setActiveFund({
+        address: fundPDA.toBase58(),
+        pubkey: fundPDA,
+        imageKey: fundPDA.toBase58(),
+        name: values.productName,
+      });
       // Navigate using Next.js router
-      router.push("/vault/holdings");
+      router.push("/vault/access");
     } catch (error) {
       console.error("Error creating vault:", error);
       toast({
