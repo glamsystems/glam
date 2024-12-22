@@ -186,7 +186,7 @@ export function DataTableToolbar<TData>({
                   Access rights
                 </Label>
               </div>
-              <div className="col-span-3">
+              <div className="col-span-3 max-h-[50vh] overflow-y-auto">
                 <ToolbarTree
                   treeData={treeData}
                   isExpanded={isExpanded}
