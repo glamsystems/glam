@@ -23,6 +23,7 @@ import PageContentWrapper from "@/components/PageContentWrapper";
 import { PublicKey } from "@solana/web3.js";
 import { useRouter } from "next/navigation";
 import { TokenMultiSelect } from "@/components/TokenMultiSelect";
+import { ExplorerLink } from "@/components/ExplorerLink";
 
 const createSchema = z.object({
   productName: z.string().min(3, {
@@ -36,7 +37,7 @@ type CreateSchema = z.infer<typeof createSchema>;
 export default function Create() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const { glamClient, setActiveFund } = useGlam();
+  const { glamClient, setActiveFund, jupTokenList } = useGlam();
 
   const form = useForm<CreateSchema>({
     resolver: zodResolver(createSchema),
@@ -64,6 +65,7 @@ export default function Create() {
       };
 
       const [txId, fundPDA] = await glamClient.fund.createFund(fund);
+      const vault = glamClient.getTreasuryPDA(fundPDA).toBase58();
 
       // Reset form
       form.reset({
@@ -71,15 +73,24 @@ export default function Create() {
         assets: [],
       });
 
+      const symbols = values.assets.map((asset) => {
+        const jupToken = jupTokenList?.find((t) => t.address === asset);
+        return jupToken?.symbol;
+      });
+
       toast({
-        title: "Vault created",
+        title: "Vault successfully created",
         description: (
           <div>
-            <p>Fund PDA: {fundPDA.toBase58()}</p>
-            <p>Transaction ID: {txId}</p>
+            <p>
+              Vault: <ExplorerLink path={`account/${vault}`} label={vault} />
+            </p>
+            <p>
+              Transaction: <ExplorerLink path={`tx/${txId}`} label={txId} />
+            </p>
             <p>Assets:</p>
             <pre className="mt-2 text-xs">
-              {JSON.stringify(values.assets, null, 2)}
+              {JSON.stringify(symbols, null, 2)}
             </pre>
           </div>
         ),
