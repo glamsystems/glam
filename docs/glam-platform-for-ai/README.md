@@ -18,3 +18,7 @@ While AI agents are drastically transforming the world with their ability to aut
 * CLI and Docker Support: Provides ready-to-use infrastructure, streamlining the development and deployment of AI agents.
 * AI Agent Framework Integrations: Supports popular agentic AI frameworks such as [AutoGen](https://microsoft.github.io/autogen/0.2/), [Eliza](https://github.com/elizaOS/eliza), and more, with additional frameworks on the way.
 
+## Get Started
+
+1. Create your GLAM vault at [https://gui.glam.systems/vault/create](https://gui.glam.systems/vault/create)
+2. Grant you AI agent's pubkey permissions on [https://gui.glam.systems/vault/access](https://gui.glam.systems/vault/access)
