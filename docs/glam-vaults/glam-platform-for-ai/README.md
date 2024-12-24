@@ -4,14 +4,15 @@ GLAM Vaults offer powerful fine-grained access control and risk management, maki
 
 ## GitHub Resources
 
-* GLAM Protocol [https://github.com/glamsystems/glam/tree/main/anchor](https://github.com/glamsystems/glam/tree/main/anchor)
-* GLAM dApp [https://github.com/glamsystems/glam/tree/main/playground](https://github.com/glamsystems/glam/tree/main/playground)
-* GLAM CLI [https://github.com/glamsystems/glam/tree/main/cli](https://github.com/glamsystems/glam/tree/main/cli)
-* GLAM plugin for Eliza [https://github.com/glamsystems/eliza/tree/glam\_plugin/packages/plugin-glam](https://github.com/glamsystems/eliza/tree/glam_plugin/packages/plugin-glam)
-* GLAM agent for AutoGen [https://github.com/glamsystems/glam/blob/main/cli/agents/demo/glam.py](../../../cli/agents/demo/glam.py)
-* GLAM multi-agents demos [https://github.com/glamsystems/glam/tree/main/cli/agents/demo](https://github.com/glamsystems/glam/tree/main/cli/agents/demo)
+* Main repo: [https://github.com/glamsystems/glam](https://github.com/glamsystems/glam)
+* [GLAM Protocol](https://github.com/glamsystems/glam/tree/main/anchor)
+* [GLAM dApp ](https://github.com/glamsystems/glam/tree/main/playground)([https://gui.glam.systems/](https://gui.glam.systems/))
+* [GLAM CLI](https://github.com/glamsystems/glam/tree/main/cli)
+* [GLAM Plugin for Eliza](https://github.com/glamsystems/eliza/tree/glam_plugin/packages/plugin-glam)
+* [GLAM Agent for AutoGen ](../../../cli/agents/demo/glam.py)
+* [GLAM Multi-Agents Demos](https://github.com/glamsystems/glam/tree/main/cli/agents/demo)
 
-## Security Matters
+## Security
 
 While AI agents are drastically transforming the world with their ability to automate processes and enhance decision-making, the security risks they pose cannot be overstated. As AI becomes more integrated into crypto trading and asset management, the potential for misuse, exploitation, or unintended consequences grows exponentially.
 

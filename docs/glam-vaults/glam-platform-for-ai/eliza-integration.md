@@ -8,7 +8,7 @@ To start the GLAM agent, run:
 pnpm run dev  --characters=\"characters/glam.character.json\"
 ```
 
-A glam-cli docker image will be pulled from ghcr.io (github container registry). The glam-cli requires the following setup in order to interact with a GLAM vault:
+A glam-cli docker image will be pulled from ghcr.io (github container registry). The glam-cli requires the following setup in order to interact with a GLAM vault.
 
 ```bash
 $ ls $HOME/.glam-cli-docker

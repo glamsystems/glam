@@ -43,7 +43,7 @@ OPENAI_API_KEY=your_openai_api_key
 
 Create a `coding`directory and add the following `config.json` to it:
 
-```
+```json
 {
   "helius_api_key": "your_helius_api_key",
   "keypair_path": "/workspace/agent-keypair.json",
