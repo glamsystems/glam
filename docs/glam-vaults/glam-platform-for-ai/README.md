@@ -1,6 +1,15 @@
 # GLAM Platform for AI
 
-GLAM Vaults offer powerful fine-grained access control and risk management, making them ideal for Crypto and AI developers to create autonomous AI agents that can interact with onchain assets.&#x20;
+GLAM Vaults offer powerful fine-grained access control and risk management, making them ideal for Crypto and AI developers to create autonomous AI agents that can interact with onchain assets.
+
+## GitHub Resources
+
+* GLAM Protocol [https://github.com/glamsystems/glam/tree/main/anchor](https://github.com/glamsystems/glam/tree/main/anchor)
+* GLAM dApp [https://github.com/glamsystems/glam/tree/main/playground](https://github.com/glamsystems/glam/tree/main/playground)
+* GLAM CLI [https://github.com/glamsystems/glam/tree/main/cli](https://github.com/glamsystems/glam/tree/main/cli)
+* GLAM plugin for Eliza [https://github.com/glamsystems/eliza/tree/glam\_plugin/packages/plugin-glam](https://github.com/glamsystems/eliza/tree/glam_plugin/packages/plugin-glam)
+* GLAM agent for AutoGen [https://github.com/glamsystems/glam/blob/main/cli/agents/demo/glam.py](../../../cli/agents/demo/glam.py)
+* GLAM multi-agents demos [https://github.com/glamsystems/glam/tree/main/cli/agents/demo](https://github.com/glamsystems/glam/tree/main/cli/agents/demo)
 
 ## Security Matters
 
