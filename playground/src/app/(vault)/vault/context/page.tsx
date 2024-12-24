@@ -105,7 +105,7 @@ export default function VaultContextPage() {
                 <FormLabel>Vault Assets</FormLabel>
                 <FormControl>
                   <TokenMultiSelect
-                    value={field.value}
+                    selected={field.value}
                     onChange={field.onChange}
                   />
                 </FormControl>

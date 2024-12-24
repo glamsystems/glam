@@ -24,7 +24,7 @@ import {
 import { DriftMarketConfigs, GlamDriftUser } from "../client/drift";
 import { TokenAccount } from "../client/base";
 
-interface JupTokenListItem {
+export interface JupTokenListItem {
   address: string;
   name: string;
   symbol: string;

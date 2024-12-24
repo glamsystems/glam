@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { useGlam } from "@glam/anchor/react";
+import { JupTokenListItem, useGlam } from "@glam/anchor/react";
 
 export interface TokenData {
-  value: string;
-  label: string;
+  value: string; // mint address
+  label: string; // token symbol
   symbol: string;
   name: string;
   address: string;
@@ -34,13 +34,16 @@ export function useTokenList() {
     );
   }, []);
 
-  const processTokens = useCallback((tokens: any[]): TokenData[] => {
-    return tokens.map((token) => ({
-      value: token.address,
-      label: token.symbol,
-      ...token,
-    }));
-  }, []);
+  const processTokens = useCallback(
+    (tokens: JupTokenListItem[]): TokenData[] => {
+      return tokens.map((token) => ({
+        value: token.address,
+        label: token.symbol,
+        ...token,
+      }));
+    },
+    [],
+  );
 
   useEffect(() => {
     const loadTokens = async () => {
