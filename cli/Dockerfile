@@ -15,3 +15,4 @@ WORKDIR /mnt/glam
 ENV DOCKER=1
 COPY --from=builder /mnt/workspace/node_modules /mnt/glam/node_modules
 COPY --from=builder /mnt/workspace/dist /mnt/glam/dist
+COPY --from=builder /mnt/workspace/dist/cli/main.js /mnt/glam/glam-cli.js
