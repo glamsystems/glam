@@ -165,6 +165,33 @@ fund
     }
   });
 
+fund
+  .command("withdraw <asset> <amount>")
+  .description("Withdraw <asset> (mint address) from the vault")
+  .action(async (asset, amount) => {
+    if (!fundPDA) {
+      console.error("Error: fund not set");
+      process.exit(1);
+    }
+
+    if (asset.toLowerCase() === "SOL") {
+      asset = WSOL.toBase58();
+    } else if (asset.toLowerCase() === "jitosol") {
+      asset = "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn";
+    }
+
+    const { mint } = await glamClient.fund.fetchMintWithOwner(
+      new PublicKey(asset),
+    );
+
+    await glamClient.fund.withdraw(
+      fundPDA,
+      new PublicKey(asset),
+      new anchor.BN(parseFloat(amount) * mint.decimals),
+      cliTxOptions,
+    );
+  });
+
 const delegate = fund.command("delegate").description("Manage fund delegates");
 delegate
   .command("get")
@@ -499,7 +526,7 @@ fund
     let quoteParams = {
       inputMint: from,
       outputMint: to,
-      amount: parseFloat(amount) * 10 ** tokenFrom.decimals,
+      amount: Math.floor(parseFloat(amount) * 10 ** tokenFrom.decimals),
       swapMode: "ExactIn",
       slippageBps: slippageBps ? parseInt(slippageBps) : 5,
       asLegacyTransaction: false,
