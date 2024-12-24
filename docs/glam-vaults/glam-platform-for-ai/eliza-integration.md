@@ -1,6 +1,6 @@
 # Eliza Integration
 
-We developed a GLAM plugin for the Eliza framework. Check out the `glam_plugin`branch of our [eliza fork](https://github.com/glamsystems/eliza).
+We developed a GLAM plugin for the [Eliza](https://github.com/elizaOS/eliza) framework. Check out the `glam_plugin` branch of GLAM's [eliza fork](https://github.com/glamsystems/eliza).
 
 To start the GLAM agent, run:
 

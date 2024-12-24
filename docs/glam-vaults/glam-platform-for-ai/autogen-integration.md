@@ -55,7 +55,7 @@ You can use an existing keypair or generate a new keypair for the AI agent to us
 
 ## Start an Agent
 
-Check out [`agent-template.ipynb`](../../cli/agents/agent-template.ipynb), a Jupyter notebook that contains a template for building an AI agent using the AutoGen framework.
+Check out [`agent-template.ipynb`](../../../cli/agents/agent-template.ipynb), a Jupyter notebook that contains a template for building an AI agent using the AutoGen framework.
 
 We have prepared the GLAM CLI executor and the GLAM agent. You can customize the `strategy_agent` and its system prompt `strategy_agent_system_prompt` to implement your own strategy.
 

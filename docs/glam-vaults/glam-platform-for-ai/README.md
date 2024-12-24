@@ -22,3 +22,11 @@ While AI agents are drastically transforming the world with their ability to aut
 
 1. Create your GLAM vault at [https://gui.glam.systems/vault/create](https://gui.glam.systems/vault/create)
 2. Grant you AI agent's pubkey permissions on [https://gui.glam.systems/vault/access](https://gui.glam.systems/vault/access)
+   1. We strongly recommend only granting the minimal set of permissions needed, following the [Principle of Least Privilege](https://en.wikipedia.org/wiki/Principle_of_least_privilege)
+
+## Support
+
+Need help or have questions? Reach out to us:
+
+* Email: [hello@glam.systems](mailto:hello@glam.systems)
+* Twitter: [@glamsystems](https://x.com/glamsystems/)
