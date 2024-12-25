@@ -51,7 +51,7 @@ describe("glam_crud", () => {
       console.error(e);
       throw e;
     }
-    const fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
+    const fund = await glamClient.fetchFundAccount(fundPDA);
     expect(fund.name).toEqual(updatedFund.name);
   });
 
@@ -105,36 +105,45 @@ describe("glam_crud", () => {
   });
 
   it("[integration-acl] add and update", async () => {
-    const updatedFund1 = {
+    // 0 by default
+    let fundModel = await glamClient.fetchFund(fundPDA);
+    expect(fundModel.integrationAcls.length).toEqual(0);
+
+    // 1 acl
+    let updatedFund = {
       integrationAcls: [{ name: { drift: {} }, features: [] }],
-    };
+    } as Partial<FundModel>;
     try {
-      const txSig = await glamClient.fund.updateFund(fundPDA, updatedFund1);
+      const txSig = await glamClient.fund.updateFund(fundPDA, updatedFund);
       console.log("Update integration acl txSig", txSig);
     } catch (e) {
       console.error(e);
       throw e;
     }
-    const fundModel1 = await glamClient.fetchFund(fundPDA);
-    expect(fundModel1.integrationAcls.length).toEqual(1);
-    expect(fundModel1.integrationAcls).toEqual(updatedFund1.integrationAcls);
+    fundModel = await glamClient.fetchFund(fundPDA);
+    expect(fundModel.integrationAcls.length).toEqual(1);
+    expect(fundModel.integrationAcls).toEqual(updatedFund.integrationAcls);
 
-    const updatedFund2 = {
+    // 5 acls
+    updatedFund = {
       integrationAcls: [
         { name: { drift: {} }, features: [] },
-        { name: { jupiter: {} }, features: [] },
+        { name: { jupiterSwap: {} }, features: [] },
         { name: { marinade: {} }, features: [] },
         { name: { splStakePool: {} }, features: [] },
         { name: { sanctumStakePool: {} }, features: [] },
       ],
     };
     try {
-      const txSig = await glamClient.fund.updateFund(fundPDA, updatedFund2);
+      const txSig = await glamClient.fund.updateFund(fundPDA, updatedFund);
       console.log("Update integration acl txSig", txSig);
     } catch (e) {
       console.error(e);
       throw e;
     }
+    fundModel = await glamClient.fetchFund(fundPDA);
+    expect(fundModel.integrationAcls.length).toEqual(5);
+    expect(fundModel.integrationAcls).toEqual(updatedFund.integrationAcls);
   });
 
   it("[delegate-acl] upsert", async () => {

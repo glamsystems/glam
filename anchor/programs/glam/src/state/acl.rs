@@ -1,14 +1,8 @@
 use anchor_lang::prelude::*;
 
 use super::FundAccount;
-
-#[error_code]
-pub enum AccessError {
-    #[msg("Signer is not authorized")]
-    NotAuthorized,
-    #[msg("Integration is disabled")]
-    IntegrationDisabled,
-}
+use crate::error::AccessError;
+use spl_stake_pool::ID as SPL_STAKE_POOL_PROGRAM_ID;
 
 /**
  * Delegate ACL
@@ -56,7 +50,7 @@ pub enum IntegrationName {
     SanctumStakePool,
     NativeStaking,
     Marinade,
-    Jupiter,     // Jupiter Swap
+    JupiterSwap, // Jupiter Swap
     Mint,        // GLAM Mint
     JupiterVote, // Jupiter Vote
 }
@@ -137,4 +131,13 @@ pub fn check_integration(fund: &FundAccount, integration: IntegrationName) -> Re
     }
 
     return Err(AccessError::IntegrationDisabled.into());
+}
+
+pub fn check_stake_pool_integration(fund: &FundAccount, stake_pool_program: &Pubkey) -> Result<()> {
+    let integration = if stake_pool_program == &SPL_STAKE_POOL_PROGRAM_ID {
+        IntegrationName::SplStakePool
+    } else {
+        IntegrationName::SanctumStakePool
+    };
+    check_integration(fund, integration)
 }

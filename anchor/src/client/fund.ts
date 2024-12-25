@@ -34,8 +34,6 @@ export class FundClient {
   ): Promise<[TransactionSignature, PublicKey]> {
     let fundModel = this.enrichFundModel(partialFundModel);
 
-    console.log("Enriched fund model", fundModel);
-
     const fundPDA = this.base.getFundPDA(fundModel);
     const treasury = this.base.getTreasuryPDA(fundPDA);
     const openfunds = this.base.getOpenfundsPDA(fundPDA);

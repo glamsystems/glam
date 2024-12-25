@@ -28,15 +28,13 @@ impl anchor_lang::Ids for StakePoolInterface {
 #[derive(Accounts)]
 pub struct StakePoolDepositSol<'info> {
     #[account(mut)]
-    pub manager: Signer<'info>,
+    pub signer: Signer<'info>,
 
     #[account(has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
-
-    pub stake_pool_program: Interface<'info, StakePoolInterface>,
 
     /// CHECK: checked by stake pool program
     #[account(mut)]
@@ -59,22 +57,24 @@ pub struct StakePoolDepositSol<'info> {
 
     #[account(
         init_if_needed,
-        payer = manager,
+        payer = signer,
         associated_token::mint = pool_mint,
         associated_token::authority = treasury,
     )]
     pub mint_to: Account<'info, TokenAccount>,
 
+    pub stake_pool_program: Interface<'info, StakePoolInterface>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
     pub token_program: Interface<'info, TokenInterface>,
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Stake)
 )]
+#[access_control(acl::check_stake_pool_integration(&ctx.accounts.fund, &ctx.accounts.stake_pool_program.key))]
 #[treasury_signer_seeds]
-pub fn stake_pool_deposit_sol<'c: 'info, 'info>(
+pub fn deposit_sol_handler<'c: 'info, 'info>(
     ctx: Context<StakePoolDepositSol>,
     lamports: u64,
 ) -> Result<()> {
@@ -114,7 +114,7 @@ pub fn stake_pool_deposit_sol<'c: 'info, 'info>(
 #[derive(Accounts)]
 pub struct StakePoolDepositStake<'info> {
     #[account(mut)]
-    pub manager: Signer<'info>,
+    pub signer: Signer<'info>,
 
     #[account(mut, has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
@@ -127,7 +127,7 @@ pub struct StakePoolDepositStake<'info> {
 
     #[account(
         init_if_needed,
-        payer = manager,
+        payer = signer,
         associated_token::mint = pool_mint,
         associated_token::authority = treasury,
     )]
@@ -162,11 +162,10 @@ pub struct StakePoolDepositStake<'info> {
     #[account(mut)]
     pub reserve_stake_account: Box<Account<'info, StakeAccount>>,
 
-    pub stake_pool_program: Interface<'info, StakePoolInterface>,
-
     pub clock: Sysvar<'info, Clock>,
     pub stake_history: Sysvar<'info, StakeHistory>,
 
+    pub stake_pool_program: Interface<'info, StakePoolInterface>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
     pub token_program: Interface<'info, TokenInterface>,
@@ -174,12 +173,11 @@ pub struct StakePoolDepositStake<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Stake)
 )]
+#[access_control(acl::check_stake_pool_integration(&ctx.accounts.fund, &ctx.accounts.stake_pool_program.key))]
 #[treasury_signer_seeds]
-pub fn stake_pool_deposit_stake<'c: 'info, 'info>(
-    ctx: Context<StakePoolDepositStake>,
-) -> Result<()> {
+pub fn deposit_stake_handler<'c: 'info, 'info>(ctx: Context<StakePoolDepositStake>) -> Result<()> {
     let vec_ix = deposit_stake(
         ctx.accounts.stake_pool_program.key,
         ctx.accounts.stake_pool.key,
@@ -231,15 +229,13 @@ pub fn stake_pool_deposit_stake<'c: 'info, 'info>(
 #[derive(Accounts)]
 pub struct StakePoolWithdrawSol<'info> {
     #[account(mut)]
-    pub manager: Signer<'info>,
+    pub signer: Signer<'info>,
 
     #[account(has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
     pub treasury: SystemAccount<'info>,
-
-    pub stake_pool_program: Interface<'info, StakePoolInterface>,
 
     /// CHECK: checked by stake pool program
     #[account(mut)]
@@ -266,16 +262,18 @@ pub struct StakePoolWithdrawSol<'info> {
     pub clock: Sysvar<'info, Clock>,
     pub stake_history: Sysvar<'info, StakeHistory>,
 
+    pub stake_pool_program: Interface<'info, StakePoolInterface>,
     pub system_program: Program<'info, System>,
     pub token_program: Interface<'info, TokenInterface>,
     pub stake_program: Program<'info, Stake>,
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::LiquidUnstake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::LiquidUnstake)
 )]
+#[access_control(acl::check_stake_pool_integration(&ctx.accounts.fund, &ctx.accounts.stake_pool_program.key))]
 #[treasury_signer_seeds]
-pub fn stake_pool_withdraw_sol<'c: 'info, 'info>(
+pub fn withdraw_sol_handler<'c: 'info, 'info>(
     ctx: Context<StakePoolWithdrawSol>,
     pool_token_amount: u64,
 ) -> Result<()> {
@@ -318,7 +316,7 @@ pub fn stake_pool_withdraw_sol<'c: 'info, 'info>(
 #[derive(Accounts)]
 pub struct StakePoolWithdrawStake<'info> {
     #[account(mut)]
-    pub manager: Signer<'info>,
+    pub signer: Signer<'info>,
 
     #[account(mut, has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
@@ -355,20 +353,22 @@ pub struct StakePoolWithdrawStake<'info> {
     #[account(mut, constraint = pool_token_ata.mint == pool_mint.key())]
     pub pool_token_ata: Account<'info, TokenAccount>,
 
-    pub stake_pool_program: Interface<'info, StakePoolInterface>,
-
     pub clock: Sysvar<'info, Clock>,
 
+    pub stake_pool_program: Interface<'info, StakePoolInterface>,
     pub system_program: Program<'info, System>,
     pub token_program: Interface<'info, TokenInterface>,
     pub stake_program: Program<'info, Stake>,
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Unstake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Unstake)
+)]
+#[access_control(
+    acl::check_stake_pool_integration(&ctx.accounts.fund, &ctx.accounts.stake_pool_program.key)
 )]
 #[treasury_signer_seeds]
-pub fn stake_pool_withdraw_stake<'c: 'info, 'info>(
+pub fn withdraw_stake_handler<'c: 'info, 'info>(
     ctx: Context<StakePoolWithdrawStake>,
     pool_token_amount: u64,
     stake_account_bump: u8,

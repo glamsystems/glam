@@ -14,14 +14,16 @@ use solana_program::stake::state::warmup_cooldown_rate;
 
 use crate::constants::{self, WSOL};
 use crate::error::{FundError, InvestorError, PolicyError};
+use crate::instructions::policy_hook::PolicyAccount;
 use crate::state::pyth_price::PriceExt;
-use crate::{state::*, PolicyAccount};
+use crate::state::*;
 
 fn log_decimal(amount: u64, minus_decimals: i32) -> f64 {
     amount as f64 * 10f64.powf(minus_decimals as f64)
 }
 
 #[derive(Accounts)]
+#[instruction(_share_class_id: u8)]
 pub struct Subscribe<'info> {
     #[account()]
     pub fund: Box<Account<'info, FundAccount>>,
@@ -32,7 +34,7 @@ pub struct Subscribe<'info> {
     // the shares to mint
     #[account(
         mut,
-        seeds = [b"share".as_ref(), &[0u8], fund.key().as_ref()], //TODO: add share_class_idx to instruction
+        seeds = [b"share".as_ref(), &[_share_class_id], fund.key().as_ref()],
         bump,
         mint::authority = share_class,
         mint::token_program = token_2022_program
@@ -82,6 +84,7 @@ pub struct Subscribe<'info> {
 
 pub fn subscribe_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, Subscribe<'info>>,
+    _share_class_id: u8,
     amount: u64,
     skip_state: bool,
 ) -> Result<()> {

@@ -1,11 +1,15 @@
 use crate::{
     constants::*,
-    error::{FundError, ManagerError},
+    error::{AccessError, FundError, ManagerError},
     state::*,
 };
 use anchor_lang::{prelude::*, system_program};
-use anchor_spl::token_interface::{
-    transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
+use anchor_spl::{
+    token::{close_account as close_token_account, CloseAccount as CloseTokenAccount, Token},
+    token_2022::{
+        close_account as close_token_2022_account, CloseAccount as CloseToken2022Account, Token2022,
+    },
+    token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
 };
 use glam_macros::treasury_signer_seeds;
 
@@ -284,7 +288,7 @@ pub fn update_fund_handler<'c: 'info, 'info>(
 
 #[derive(Accounts)]
 pub struct CloseFund<'info> {
-    #[account(mut, close = manager, has_one = manager @ ManagerError::NotAuthorizedError)]
+    #[account(mut, close = manager, has_one = manager @ AccessError::NotAuthorized)]
     fund: Account<'info, FundAccount>,
 
     #[account(mut, close = manager)]
@@ -327,7 +331,7 @@ pub fn close_fund_handler(ctx: Context<CloseFund>) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct SetSubscribeRedeemEnabled<'info> {
-    #[account(mut, has_one = manager @ ManagerError::NotAuthorizedError)]
+    #[account(mut, has_one = manager @ AccessError::NotAuthorized)]
     fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut)]
@@ -362,7 +366,7 @@ pub fn set_subscribe_redeem_enabled_handler(
 
 #[derive(Accounts)]
 pub struct Withdraw<'info> {
-    #[account(mut, has_one = manager @ ManagerError::NotAuthorizedError)]
+    #[account(mut, has_one = manager @ AccessError::NotAuthorized)]
     fund: Account<'info, FundAccount>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
@@ -417,5 +421,50 @@ pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
         ctx.accounts.asset.decimals,
     )?;
 
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct CloseTokenAccounts<'info> {
+    #[account(mut, has_one = manager @ AccessError::NotAuthorized)]
+    fund: Account<'info, FundAccount>,
+
+    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    treasury: SystemAccount<'info>,
+
+    #[account(mut)]
+    manager: Signer<'info>,
+
+    token_program: Program<'info, Token>,
+    token_2022_program: Program<'info, Token2022>,
+}
+
+#[treasury_signer_seeds]
+pub fn close_token_accounts_handler<'info>(
+    ctx: Context<'_, '_, '_, 'info, CloseTokenAccounts<'info>>,
+) -> Result<()> {
+    ctx.remaining_accounts.iter().try_for_each(|account| {
+        if account.owner.eq(&ctx.accounts.token_program.key()) {
+            close_token_account(CpiContext::new_with_signer(
+                ctx.accounts.token_program.to_account_info(),
+                CloseTokenAccount {
+                    account: account.to_account_info(),
+                    destination: ctx.accounts.treasury.to_account_info(),
+                    authority: ctx.accounts.treasury.to_account_info(),
+                },
+                treasury_signer_seeds,
+            ))
+        } else {
+            close_token_2022_account(CpiContext::new_with_signer(
+                ctx.accounts.token_2022_program.to_account_info(),
+                CloseToken2022Account {
+                    account: account.to_account_info(),
+                    destination: ctx.accounts.treasury.to_account_info(),
+                    authority: ctx.accounts.treasury.to_account_info(),
+                },
+                treasury_signer_seeds,
+            ))
+        }
+    })?;
     Ok(())
 }

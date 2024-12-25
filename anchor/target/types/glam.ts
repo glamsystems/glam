@@ -15,6 +15,17 @@ export type Glam = {
   "instructions": [
     {
       "name": "addShareClass",
+      "docs": [
+        "Share class",
+        "Adds a new share class to a fund.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `share_class_metadata`: An instance of `ShareClassModel` containing the metadata for the new share class.",
+        "",
+        "# Permission required",
+        "- Manager only, delegates not allowed"
+      ],
       "discriminator": [
         34,
         49,
@@ -104,6 +115,20 @@ export type Glam = {
     },
     {
       "name": "burnShare",
+      "docs": [
+        "Burns a specified amount of shares for the given share class.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `share_class_id`: The id of the share class to burn shares for.",
+        "- `amount`: The amount of shares to burn.",
+        "",
+        "# Permission required",
+        "- Permission::BurnShare",
+        "",
+        "# Integration required",
+        "- IntegrationName::Mint"
+      ],
       "discriminator": [
         111,
         41,
@@ -184,12 +209,9 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "token2022Program",
@@ -209,6 +231,19 @@ export type Glam = {
     },
     {
       "name": "castVote",
+      "docs": [
+        "Casts a vote.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `side`: The side to vote for.",
+        "",
+        "# Permission required",
+        "- Permission::VoteOnProposal",
+        "",
+        "# Integration required",
+        "- IntegrationName::JupiterVote"
+      ],
       "discriminator": [
         20,
         212,
@@ -289,6 +324,15 @@ export type Glam = {
     },
     {
       "name": "closeFund",
+      "docs": [
+        "Closes a fund and releases its resources.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Manager only, delegates not allowed"
+      ],
       "discriminator": [
         230,
         183,
@@ -350,6 +394,16 @@ export type Glam = {
     },
     {
       "name": "closeShareClass",
+      "docs": [
+        "Closes a share class and releases its resources.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `share_class_id`: The id of the share class to be closed.",
+        "",
+        "# Permission required",
+        "- Manager only, delegates not allowed"
+      ],
       "discriminator": [
         35,
         248,
@@ -456,6 +510,15 @@ export type Glam = {
     },
     {
       "name": "closeTokenAccounts",
+      "docs": [
+        "Closes token accounts owned by the treasury.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Manager only, delegates not allowed"
+      ],
       "discriminator": [
         199,
         170,
@@ -517,6 +580,18 @@ export type Glam = {
     },
     {
       "name": "deactivateStakeAccounts",
+      "docs": [
+        "Deactivates stake accounts.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- IntegrationName::NativeStaking"
+      ],
       "discriminator": [
         58,
         18,
@@ -529,7 +604,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -577,6 +652,21 @@ export type Glam = {
     },
     {
       "name": "driftCancelOrders",
+      "docs": [
+        "Cancels drift orders.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `market_type`:",
+        "- `market_index`:",
+        "- `direction`:",
+        "",
+        "# Permission required",
+        "- Permission::DriftCancelOrders",
+        "",
+        "# Integration required",
+        "- IntegrationName::Drift"
+      ],
       "discriminator": [
         98,
         107,
@@ -624,7 +714,7 @@ export type Glam = {
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -668,6 +758,18 @@ export type Glam = {
     },
     {
       "name": "driftDeleteUser",
+      "docs": [
+        "Deletes a drift user (sub account).",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::DriftDeleteUser",
+        "",
+        "# Integration required",
+        "- IntegrationName::Drift"
+      ],
       "discriminator": [
         179,
         118,
@@ -719,7 +821,7 @@ export type Glam = {
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -732,15 +834,24 @@ export type Glam = {
           "address": "11111111111111111111111111111111"
         }
       ],
-      "args": [
-        {
-          "name": "subAccountId",
-          "type": "u16"
-        }
-      ]
+      "args": []
     },
     {
       "name": "driftDeposit",
+      "docs": [
+        "Deposits to drift.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `market_index`: Index of the drift spot market.",
+        "- `amount`: Amount of asset to deposit.",
+        "",
+        "# Permission required",
+        "- Permission::DriftDeposit",
+        "",
+        "# Integration required",
+        "- IntegrationName::Drift"
+      ],
       "discriminator": [
         252,
         63,
@@ -800,7 +911,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -826,6 +937,19 @@ export type Glam = {
     },
     {
       "name": "driftInitialize",
+      "docs": [
+        "drift",
+        "Initializes a drift account owned by fund treasury and creates a subaccount.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::DriftInitialize",
+        "",
+        "# Integration required",
+        "- IntegrationName::Drift"
+      ],
       "discriminator": [
         21,
         21,
@@ -877,7 +1001,7 @@ export type Glam = {
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -898,6 +1022,20 @@ export type Glam = {
     },
     {
       "name": "driftPlaceOrders",
+      "docs": [
+        "Places orders on drift.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `order_params`: A list of orders.",
+        "",
+        "# Permissions required",
+        "- Permission::DriftPlaceOrders",
+        "- Additional permission Permission::DriftSpotMarket or Permission::DriftPerpMarket is required depending on market type.",
+        "",
+        "# Integration required",
+        "- IntegrationName::Drift"
+      ],
       "discriminator": [
         117,
         18,
@@ -945,7 +1083,7 @@ export type Glam = {
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -973,6 +1111,20 @@ export type Glam = {
     },
     {
       "name": "driftUpdateUserCustomMarginRatio",
+      "docs": [
+        "Updates custom margin ratio.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `sub_account_id`: Sub account.",
+        "- `margin_ratio`: Margin ratio.",
+        "",
+        "# Permission required",
+        "- Permission::DriftUpdateUser",
+        "",
+        "# Integration required",
+        "- IntegrationName::Drift"
+      ],
       "discriminator": [
         4,
         47,
@@ -1016,7 +1168,7 @@ export type Glam = {
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -1038,6 +1190,20 @@ export type Glam = {
     },
     {
       "name": "driftUpdateUserDelegate",
+      "docs": [
+        "Sets a delegate on the specified sub account.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `sub_account_id`: Sub account.",
+        "- `delegate`: Delegate's wallet address.",
+        "",
+        "# Permission required",
+        "- Permission::DriftUpdateUser",
+        "",
+        "# Integration required",
+        "- IntegrationName::Drift"
+      ],
       "discriminator": [
         36,
         181,
@@ -1081,7 +1247,7 @@ export type Glam = {
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -1103,6 +1269,20 @@ export type Glam = {
     },
     {
       "name": "driftUpdateUserMarginTradingEnabled",
+      "docs": [
+        "Enables/Disables margin trading.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `sub_account_id`: Sub account.",
+        "- `margin_trading_enabled`: Whether to enable or disable margin trading.",
+        "",
+        "# Permission required",
+        "- Permission::DriftUpdateUser",
+        "",
+        "# Integration required",
+        "- IntegrationName::Drift"
+      ],
       "discriminator": [
         157,
         175,
@@ -1146,7 +1326,7 @@ export type Glam = {
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -1168,6 +1348,20 @@ export type Glam = {
     },
     {
       "name": "driftWithdraw",
+      "docs": [
+        "Withdraws from drift.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `market_index`: Index of the drift spot market.",
+        "- `amount`: Amount to withdraw.",
+        "",
+        "# Permission required",
+        "- Permission::DriftWithdraw",
+        "",
+        "# Integration required",
+        "- IntegrationName::Drift"
+      ],
       "discriminator": [
         86,
         59,
@@ -1230,7 +1424,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -1256,6 +1450,20 @@ export type Glam = {
     },
     {
       "name": "forceTransferShare",
+      "docs": [
+        "Forcefully transfers a specified amount of shares from one account to another.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `share_class_id`: The id of the share class to transfer shares for.",
+        "- `amount`: The amount of shares to transfer.",
+        "",
+        "# Permission required",
+        "- Permission::ForceTransferShare",
+        "",
+        "# Integration required",
+        "- IntegrationName::Mint"
+      ],
       "discriminator": [
         71,
         90,
@@ -1396,12 +1604,9 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "token2022Program",
@@ -1421,6 +1626,19 @@ export type Glam = {
     },
     {
       "name": "increaseLockedAmount",
+      "docs": [
+        "Increases the locked amount (aka stakes JUP).",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `amount`: The amount of JUP to stake.",
+        "",
+        "# Permission required",
+        "- Permission::StakeJup",
+        "",
+        "# Integration required",
+        "- IntegrationName::JupiterVote"
+      ],
       "discriminator": [
         5,
         168,
@@ -1499,6 +1717,18 @@ export type Glam = {
     },
     {
       "name": "initLockedVoterEscrow",
+      "docs": [
+        "Initializes a locked voter escrow.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::StakeJup",
+        "",
+        "# Integration required",
+        "- IntegrationName::JupiterVote"
+      ],
       "discriminator": [
         148,
         74,
@@ -1564,6 +1794,21 @@ export type Glam = {
     },
     {
       "name": "initializeAndDelegateStake",
+      "docs": [
+        "Initializes a stake account and delegates it to a validator.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `lamports`: The amount of SOL to initialize the stake account with.",
+        "- `stake_account_id`: The ID of the stake account to initialize.",
+        "- `stake_account_bump`: The bump seed for the stake account.",
+        "",
+        "# Permission required",
+        "- Permission::Stake",
+        "",
+        "# Integration required",
+        "- IntegrationName::NativeStaking"
+      ],
       "discriminator": [
         71,
         101,
@@ -1576,7 +1821,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -1660,6 +1905,17 @@ export type Glam = {
     },
     {
       "name": "initializeFund",
+      "docs": [
+        "Fund",
+        "Initializes a fund from the provided FundModel instance.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `fund`: An instance of `FundModel` containing the details of the fund to be initialized.",
+        "",
+        "# Permission required",
+        "- Manager only, delegates not allowed"
+      ],
       "discriminator": [
         212,
         42,
@@ -1770,6 +2026,20 @@ export type Glam = {
     },
     {
       "name": "jupiterSwap",
+      "docs": [
+        "Swaps assets using Jupiter.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `amount`: The amount of asset to swap.",
+        "- `data`: The data for the swap.",
+        "",
+        "# Permission required",
+        "- Permission::JupiterSwapFundAssets or Permission::JupiterSwapAnyAsset",
+        "",
+        "# Integration required",
+        "- IntegrationName::JupiterSwap"
+      ],
       "discriminator": [
         116,
         207,
@@ -1978,6 +2248,18 @@ export type Glam = {
     },
     {
       "name": "marinadeClaimTickets",
+      "docs": [
+        "Claims tickets that were unstaked in the previous epoch to get SOL.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- IntegrationName::Marinade"
+      ],
       "discriminator": [
         14,
         146,
@@ -1990,7 +2272,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -2059,6 +2341,21 @@ export type Glam = {
     },
     {
       "name": "marinadeDelayedUnstake",
+      "docs": [
+        "Unstakes mSOL to get a ticket that can be claimed at the next epoch.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `msol_amount`: Amount of mSOL to unstake.",
+        "- `ticket_id`: Ticket ID.",
+        "- `bump`: Bump seed.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- IntegrationName::Marinade"
+      ],
       "discriminator": [
         117,
         66,
@@ -2071,7 +2368,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -2165,6 +2462,20 @@ export type Glam = {
     },
     {
       "name": "marinadeDepositSol",
+      "docs": [
+        "marinade",
+        "Deposits SOL to get mSOL.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `lamports`: The amount of SOL to deposit.",
+        "",
+        "# Permission required",
+        "- Permission::Stake",
+        "",
+        "# Integration required",
+        "- IntegrationName::Marinade"
+      ],
       "discriminator": [
         64,
         140,
@@ -2177,7 +2488,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -2356,6 +2667,19 @@ export type Glam = {
     },
     {
       "name": "marinadeDepositStake",
+      "docs": [
+        "Deposits a stake account to get mSOL.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `validator_idx`: Validator index.",
+        "",
+        "# Permission required",
+        "- Permission::Stake",
+        "",
+        "# Integration required",
+        "- IntegrationName::Marinade"
+      ],
       "discriminator": [
         69,
         207,
@@ -2368,7 +2692,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -2558,6 +2882,19 @@ export type Glam = {
     },
     {
       "name": "marinadeLiquidUnstake",
+      "docs": [
+        "Unstakes mSOL to get SOL immediately.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `msol_amount`: Amount of mSOL to unstake.",
+        "",
+        "# Permission required",
+        "- Permission::LiquidUnstake",
+        "",
+        "# Integration required",
+        "- IntegrationName::Marinade"
+      ],
       "discriminator": [
         29,
         146,
@@ -2570,7 +2907,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "signer": true
         },
         {
@@ -2654,6 +2991,18 @@ export type Glam = {
     },
     {
       "name": "mergePartialUnstaking",
+      "docs": [
+        "Merges partial unstaking.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::UnstakeJup",
+        "",
+        "# Integration required",
+        "- IntegrationName::JupiterVote"
+      ],
       "discriminator": [
         190,
         154,
@@ -2723,6 +3072,18 @@ export type Glam = {
     },
     {
       "name": "mergeStakeAccounts",
+      "docs": [
+        "Merges two stake accounts.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::Stake",
+        "",
+        "# Integration required",
+        "- IntegrationName::NativeStaking"
+      ],
       "discriminator": [
         173,
         206,
@@ -2735,7 +3096,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -2800,6 +3161,20 @@ export type Glam = {
     },
     {
       "name": "mintShare",
+      "docs": [
+        "Mints a specified amount of shares for the given share class.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `share_class_id`: The id of the share class to mint shares for.",
+        "- `amount`: The amount of shares to mint.",
+        "",
+        "# Permission required",
+        "- Permission::MintShare",
+        "",
+        "# Integration required",
+        "- IntegrationName::Mint"
+      ],
       "discriminator": [
         145,
         1,
@@ -2880,12 +3255,9 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "token2022Program",
@@ -2905,6 +3277,18 @@ export type Glam = {
     },
     {
       "name": "newVote",
+      "docs": [
+        "Creates a new vote.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::VoteOnProposal",
+        "",
+        "# Integration required",
+        "- IntegrationName::JupiterVote"
+      ],
       "discriminator": [
         163,
         108,
@@ -2970,6 +3354,20 @@ export type Glam = {
     },
     {
       "name": "openPartialUnstaking",
+      "docs": [
+        "Partially unstakes JUP.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `amount`: The amount of JUP to partially unstake.",
+        "- `memo`: The memo for the partial unstaking.",
+        "",
+        "# Permission required",
+        "- Permission::UnstakeJup",
+        "",
+        "# Integration required",
+        "- IntegrationName::JupiterVote"
+      ],
       "discriminator": [
         201,
         137,
@@ -3048,6 +3446,15 @@ export type Glam = {
     },
     {
       "name": "redeem",
+      "docs": [
+        "Redeems a specified amount of shares.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `amount`: The amount of shares to redeem.",
+        "- `in_kind`: Whether to redeem in kind.",
+        "- `skip_state`: Should always be true (state check to be implemented)."
+      ],
       "discriminator": [
         184,
         12,
@@ -3162,6 +3569,20 @@ export type Glam = {
     },
     {
       "name": "redelegateStake",
+      "docs": [
+        "Redelegates an existing stake account to a new validator (a new stake account will be created).",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `new_stake_account_id`: The ID of the new stake account.",
+        "- `new_stake_account_bump`: The bump seed for the new stake account.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- IntegrationName::NativeStaking"
+      ],
       "discriminator": [
         240,
         90,
@@ -3174,7 +3595,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -3250,6 +3671,18 @@ export type Glam = {
     },
     {
       "name": "setSubscribeRedeemEnabled",
+      "docs": [
+        "Enables or disables the subscribe and redeem functionality for the fund.",
+        "",
+        "This allows the manager to pause/unpause subscription and redemption of a fund.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `enabled`: A boolean indicating whether to enable or disable the subscribe and redeem functionality.",
+        "",
+        "# Permission required",
+        "- Manager only, delegates not allowed"
+      ],
       "discriminator": [
         189,
         56,
@@ -3283,6 +3716,20 @@ export type Glam = {
     },
     {
       "name": "setTokenAccountsStates",
+      "docs": [
+        "Sets the frozen state of the token accounts for the specified share class.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `share_class_id`: The id of the share class to set the frozen state for.",
+        "- `frozen`: The new frozen state.",
+        "",
+        "# Permission required",
+        "- Permission::SetTokenAccountsStates",
+        "",
+        "# Integration required",
+        "- IntegrationName::Mint"
+      ],
       "discriminator": [
         50,
         133,
@@ -3303,12 +3750,9 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "token2022Program",
@@ -3328,6 +3772,21 @@ export type Glam = {
     },
     {
       "name": "splitStakeAccount",
+      "docs": [
+        "Splits from an existing stake account to get a new stake account.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `lamports`: The amount of SOL to split.",
+        "- `new_stake_account_id`: The ID of the new stake account.",
+        "- `new_stake_account_bump`: The bump seed for the new stake account.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- IntegrationName::NativeStaking"
+      ],
       "discriminator": [
         130,
         42,
@@ -3340,7 +3799,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -3414,6 +3873,19 @@ export type Glam = {
     },
     {
       "name": "stakePoolDepositSol",
+      "docs": [
+        "Deposits SOL to a stake pool to get pool token.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `lamports`: The amount of SOL to deposit.",
+        "",
+        "# Permission required",
+        "- Permission::Stake",
+        "",
+        "# Integration required",
+        "- IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used."
+      ],
       "discriminator": [
         147,
         187,
@@ -3426,7 +3898,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -3460,9 +3932,6 @@ export type Glam = {
           "relations": [
             "fund"
           ]
-        },
-        {
-          "name": "stakePoolProgram"
         },
         {
           "name": "stakePool",
@@ -3574,6 +4043,9 @@ export type Glam = {
           }
         },
         {
+          "name": "stakePoolProgram"
+        },
+        {
           "name": "associatedTokenProgram",
           "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         },
@@ -3595,7 +4067,16 @@ export type Glam = {
     {
       "name": "stakePoolDepositStake",
       "docs": [
-        "Deposit a stake account into the stake pool and receive pool token"
+        "Deposits a stake account to a stake pool to get pool token.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::Stake",
+        "",
+        "# Integration required",
+        "- IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used."
       ],
       "discriminator": [
         212,
@@ -3609,7 +4090,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -3770,15 +4251,15 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "stakePoolProgram"
-        },
-        {
           "name": "clock",
           "address": "SysvarC1ock11111111111111111111111111111111"
         },
         {
           "name": "stakeHistory",
           "address": "SysvarStakeHistory1111111111111111111111111"
+        },
+        {
+          "name": "stakePoolProgram"
         },
         {
           "name": "associatedTokenProgram",
@@ -3800,6 +4281,19 @@ export type Glam = {
     },
     {
       "name": "stakePoolWithdrawSol",
+      "docs": [
+        "Unstakes from pool token to get SOL immediately.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `pool_token_amount`: Amount of pool token to unstake.",
+        "",
+        "# Permission required",
+        "- Permission::LiquidUnstake",
+        "",
+        "# Integration required",
+        "- IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used."
+      ],
       "discriminator": [
         179,
         100,
@@ -3812,7 +4306,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -3848,9 +4342,6 @@ export type Glam = {
           ]
         },
         {
-          "name": "stakePoolProgram"
-        },
-        {
           "name": "stakePool",
           "writable": true
         },
@@ -3882,6 +4373,9 @@ export type Glam = {
           "address": "SysvarStakeHistory1111111111111111111111111"
         },
         {
+          "name": "stakePoolProgram"
+        },
+        {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         },
@@ -3902,6 +4396,21 @@ export type Glam = {
     },
     {
       "name": "stakePoolWithdrawStake",
+      "docs": [
+        "Unstakes from pool token into a stake account.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `pool_token_amount`: Amount of pool token to unstake.",
+        "- `stake_account_id`: Stake account ID.",
+        "- `stake_account_bump`: Stake account bump seed.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used."
+      ],
       "discriminator": [
         7,
         70,
@@ -3914,7 +4423,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -3982,11 +4491,11 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "stakePoolProgram"
-        },
-        {
           "name": "clock",
           "address": "SysvarC1ock11111111111111111111111111111111"
+        },
+        {
+          "name": "stakePoolProgram"
         },
         {
           "name": "systemProgram",
@@ -4017,6 +4526,15 @@ export type Glam = {
     },
     {
       "name": "subscribe",
+      "docs": [
+        "Investor",
+        "Subscribes to a specified amount of shares.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `amount`: The amount of shares to subscribe.",
+        "- `skip_state`: Should always be true (state check to be implemented)."
+      ],
       "discriminator": [
         254,
         28,
@@ -4184,6 +4702,10 @@ export type Glam = {
       ],
       "args": [
         {
+          "name": "shareClassId",
+          "type": "u8"
+        },
+        {
           "name": "amount",
           "type": "u64"
         },
@@ -4195,6 +4717,19 @@ export type Glam = {
     },
     {
       "name": "toggleMaxLock",
+      "docs": [
+        "Toggles max lock.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `value`: The value to toggle.",
+        "",
+        "# Permission required",
+        "- Permission::UnstakeJup",
+        "",
+        "# Integration required",
+        "- IntegrationName::JupiterVote"
+      ],
       "discriminator": [
         163,
         157,
@@ -4396,6 +4931,16 @@ export type Glam = {
     },
     {
       "name": "updateFund",
+      "docs": [
+        "Updates an existing fund with new parameters.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `fund`: An instance of `FundModel` containing the updated details of the fund.",
+        "",
+        "# Permission required",
+        "- Manager only, delegates not allowed"
+      ],
       "discriminator": [
         132,
         171,
@@ -4430,6 +4975,17 @@ export type Glam = {
     },
     {
       "name": "updateShareClass",
+      "docs": [
+        "Updates an existing share class with new metadata.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `share_class_id`: The id of the share class to be updated.",
+        "- `share_class_metadata`: An instance of `ShareClassModel` containing the updated metadata for the new share class.",
+        "",
+        "# Permission required",
+        "- Manager only, delegates not allowed"
+      ],
       "discriminator": [
         196,
         227,
@@ -4479,6 +5035,16 @@ export type Glam = {
     },
     {
       "name": "withdraw",
+      "docs": [
+        "Withdraw an asset from fund treasury into manager's wallet.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `amount`: The amount to withdraw.",
+        "",
+        "# Permission required",
+        "- Manager only, delegates not allowed"
+      ],
       "discriminator": [
         183,
         18,
@@ -4657,6 +5223,18 @@ export type Glam = {
     },
     {
       "name": "withdrawAllStakedJup",
+      "docs": [
+        "Withdraws all unstaked JUP.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::UnstakeJup",
+        "",
+        "# Integration required",
+        "- IntegrationName::JupiterVote"
+      ],
       "discriminator": [
         210,
         124,
@@ -4730,6 +5308,18 @@ export type Glam = {
     },
     {
       "name": "withdrawFromStakeAccounts",
+      "docs": [
+        "Withdraws SOL from stake accounts.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- IntegrationName::NativeStaking"
+      ],
       "discriminator": [
         93,
         209,
@@ -4742,7 +5332,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -4795,6 +5385,18 @@ export type Glam = {
     },
     {
       "name": "withdrawPartialUnstaking",
+      "docs": [
+        "Withdraws JUP from partial unstaking.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::UnstakeJup",
+        "",
+        "# Integration required",
+        "- IntegrationName::JupiterVote"
+      ],
       "discriminator": [
         201,
         202,
@@ -4872,6 +5474,15 @@ export type Glam = {
     },
     {
       "name": "wsolUnwrap",
+      "docs": [
+        "Unwraps all wSOL to get SOL.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::WSolUnwrap"
+      ],
       "discriminator": [
         123,
         189,
@@ -5019,6 +5630,16 @@ export type Glam = {
     },
     {
       "name": "wsolWrap",
+      "docs": [
+        "Wraps SOL to get wSOL.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `lamports`: The amount of SOL to wrap.",
+        "",
+        "# Permission required",
+        "- Permission::WSolWrap"
+      ],
       "discriminator": [
         26,
         2,
@@ -6568,7 +7189,7 @@ export type Glam = {
             "name": "marinade"
           },
           {
-            "name": "jupiter"
+            "name": "jupiterSwap"
           },
           {
             "name": "mint"

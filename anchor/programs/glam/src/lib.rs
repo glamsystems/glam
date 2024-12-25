@@ -22,10 +22,18 @@ pub mod glam {
 
     use super::*;
 
-    //
-    // Fund
-    //
+    //////////////////////////////////////////////////////////////////////
+    /// Fund
+    //////////////////////////////////////////////////////////////////////
 
+    /// Initializes a fund from the provided FundModel instance.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `fund`: An instance of `FundModel` containing the details of the fund to be initialized.
+    ///
+    /// # Permission required
+    /// - Manager only, delegates not allowed
     pub fn initialize_fund<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, InitializeFund<'info>>,
         fund: FundModel,
@@ -33,6 +41,14 @@ pub mod glam {
         fund::initialize_fund_handler(ctx, fund)
     }
 
+    /// Updates an existing fund with new parameters.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `fund`: An instance of `FundModel` containing the updated details of the fund.
+    ///
+    /// # Permission required
+    /// - Manager only, delegates not allowed
     pub fn update_fund<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, UpdateFund<'info>>,
         fund: FundModel,
@@ -40,10 +56,27 @@ pub mod glam {
         fund::update_fund_handler(ctx, fund)
     }
 
+    /// Closes a fund and releases its resources.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    ///
+    /// # Permission required
+    /// - Manager only, delegates not allowed
     pub fn close_fund(ctx: Context<CloseFund>) -> Result<()> {
         fund::close_fund_handler(ctx)
     }
 
+    /// Enables or disables the subscribe and redeem functionality for the fund.
+    ///
+    /// This allows the manager to pause/unpause subscription and redemption of a fund.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `enabled`: A boolean indicating whether to enable or disable the subscribe and redeem functionality.
+    ///
+    /// # Permission required
+    /// - Manager only, delegates not allowed
     pub fn set_subscribe_redeem_enabled(
         ctx: Context<SetSubscribeRedeemEnabled>,
         enabled: bool,
@@ -51,14 +84,43 @@ pub mod glam {
         fund::set_subscribe_redeem_enabled_handler(ctx, enabled)
     }
 
+    /// Closes token accounts owned by the treasury.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    ///
+    /// # Permission required
+    /// - Manager only, delegates not allowed
+    pub fn close_token_accounts<'info>(
+        ctx: Context<'_, '_, '_, 'info, CloseTokenAccounts<'info>>,
+    ) -> Result<()> {
+        fund::close_token_accounts_handler(ctx)
+    }
+
+    /// Withdraw an asset from fund treasury into manager's wallet.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `amount`: The amount to withdraw.
+    ///
+    /// # Permission required
+    /// - Manager only, delegates not allowed
     pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
         fund::withdraw(ctx, amount)
     }
 
-    //
-    // Share class
-    //
+    //////////////////////////////////////////////////////////////////////
+    /// Share class
+    //////////////////////////////////////////////////////////////////////
 
+    /// Adds a new share class to a fund.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `share_class_metadata`: An instance of `ShareClassModel` containing the metadata for the new share class.
+    ///
+    /// # Permission required
+    /// - Manager only, delegates not allowed
     pub fn add_share_class<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, AddShareClass<'info>>,
         share_class_metadata: ShareClassModel,
@@ -66,6 +128,15 @@ pub mod glam {
         share_class::add_share_class_handler(ctx, share_class_metadata)
     }
 
+    /// Updates an existing share class with new metadata.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `share_class_id`: The id of the share class to be updated.
+    /// - `share_class_metadata`: An instance of `ShareClassModel` containing the updated metadata for the new share class.
+    ///
+    /// # Permission required
+    /// - Manager only, delegates not allowed
     pub fn update_share_class(
         ctx: Context<UpdateShareClass>,
         share_class_id: u8,
@@ -74,10 +145,30 @@ pub mod glam {
         share_class::update_share_class_handler(ctx, share_class_id, share_class_metadata)
     }
 
+    /// Closes a share class and releases its resources.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `share_class_id`: The id of the share class to be closed.
+    ///
+    /// # Permission required
+    /// - Manager only, delegates not allowed
     pub fn close_share_class(ctx: Context<CloseShareClass>, share_class_id: u8) -> Result<()> {
         share_class::close_share_class_handler(ctx, share_class_id)
     }
 
+    /// Mints a specified amount of shares for the given share class.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `share_class_id`: The id of the share class to mint shares for.
+    /// - `amount`: The amount of shares to mint.
+    ///
+    /// # Permission required
+    /// - Permission::MintShare
+    ///
+    /// # Integration required
+    /// - IntegrationName::Mint
     pub fn mint_share<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, MintShare<'info>>,
         share_class_id: u8,
@@ -86,6 +177,18 @@ pub mod glam {
         share_class::mint_share_handler(ctx, share_class_id, amount)
     }
 
+    /// Forcefully transfers a specified amount of shares from one account to another.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `share_class_id`: The id of the share class to transfer shares for.
+    /// - `amount`: The amount of shares to transfer.
+    ///
+    /// # Permission required
+    /// - Permission::ForceTransferShare
+    ///
+    /// # Integration required
+    /// - IntegrationName::Mint
     pub fn force_transfer_share(
         ctx: Context<ForceTransferShare>,
         share_class_id: u8,
@@ -94,10 +197,34 @@ pub mod glam {
         share_class::force_transfer_share_handler(ctx, share_class_id, amount)
     }
 
+    /// Burns a specified amount of shares for the given share class.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `share_class_id`: The id of the share class to burn shares for.
+    /// - `amount`: The amount of shares to burn.
+    ///
+    /// # Permission required
+    /// - Permission::BurnShare
+    ///
+    /// # Integration required
+    /// - IntegrationName::Mint
     pub fn burn_share(ctx: Context<BurnShare>, share_class_id: u8, amount: u64) -> Result<()> {
         share_class::burn_share_handler(ctx, share_class_id, amount)
     }
 
+    /// Sets the frozen state of the token accounts for the specified share class.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `share_class_id`: The id of the share class to set the frozen state for.
+    /// - `frozen`: The new frozen state.
+    ///
+    /// # Permission required
+    /// - Permission::SetTokenAccountsStates
+    ///
+    /// # Integration required
+    /// - IntegrationName::Mint
     pub fn set_token_accounts_states<'info>(
         ctx: Context<'_, '_, 'info, 'info, SetTokenAccountsStates<'info>>,
         share_class_id: u8,
@@ -106,23 +233,32 @@ pub mod glam {
         share_class::set_token_accounts_states_handler(ctx, share_class_id, frozen)
     }
 
-    pub fn close_token_accounts<'info>(
-        ctx: Context<'_, '_, '_, 'info, CloseTokenAccounts<'info>>,
-    ) -> Result<()> {
-        share_class::close_token_accounts_handler(ctx)
-    }
+    //////////////////////////////////////////////////////////////////////
+    /// Investor
+    //////////////////////////////////////////////////////////////////////
 
-    //
-    // Investor
-    //
-
+    /// Subscribes to a specified amount of shares.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `amount`: The amount of shares to subscribe.
+    /// - `skip_state`: Should always be true (state check to be implemented).
     pub fn subscribe<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, Subscribe<'info>>,
+        share_class_id: u8,
         amount: u64,
         skip_state: bool,
     ) -> Result<()> {
-        investor::subscribe_handler(ctx, amount, skip_state)
+        investor::subscribe_handler(ctx, share_class_id, amount, skip_state)
     }
+
+    /// Redeems a specified amount of shares.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `amount`: The amount of shares to redeem.
+    /// - `in_kind`: Whether to redeem in kind.
+    /// - `skip_state`: Should always be true (state check to be implemented).
     pub fn redeem<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, Redeem<'info>>,
         amount: u64,
@@ -132,142 +268,347 @@ pub mod glam {
         investor::redeem_handler(ctx, amount, in_kind, skip_state)
     }
 
-    //
-    // Drift
-    //
+    //////////////////////////////////////////////////////////////////////
+    /// Drift
+    //////////////////////////////////////////////////////////////////////
 
+    /// Initializes a drift account owned by fund treasury and creates a subaccount.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    ///
+    /// # Permission required
+    /// - Permission::DriftInitialize
+    ///
+    /// # Integration required
+    /// - IntegrationName::Drift
     pub fn drift_initialize(ctx: Context<DriftInitialize>) -> Result<()> {
-        drift::drift_initialize_handler(ctx)
+        drift::initialize_handler(ctx)
     }
 
+    /// Updates custom margin ratio.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `sub_account_id`: Sub account.
+    /// - `margin_ratio`: Margin ratio.
+    ///
+    /// # Permission required
+    /// - Permission::DriftUpdateUser
+    ///
+    /// # Integration required
+    /// - IntegrationName::Drift
     pub fn drift_update_user_custom_margin_ratio(
         ctx: Context<DriftUpdate>,
         sub_account_id: u16,
         margin_ratio: u32,
     ) -> Result<()> {
-        drift::drift_update_user_custom_margin_ratio_handler(ctx, sub_account_id, margin_ratio)
+        drift::update_user_custom_margin_ratio_handler(ctx, sub_account_id, margin_ratio)
     }
 
+    /// Enables/Disables margin trading.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `sub_account_id`: Sub account.
+    /// - `margin_trading_enabled`: Whether to enable or disable margin trading.
+    ///
+    /// # Permission required
+    /// - Permission::DriftUpdateUser
+    ///
+    /// # Integration required
+    /// - IntegrationName::Drift
     pub fn drift_update_user_margin_trading_enabled(
         ctx: Context<DriftUpdate>,
         sub_account_id: u16,
         margin_trading_enabled: bool,
     ) -> Result<()> {
-        drift::drift_update_user_margin_trading_enabled_handler(
+        drift::update_user_margin_trading_enabled_handler(
             ctx,
             sub_account_id,
             margin_trading_enabled,
         )
     }
 
+    /// Sets a delegate on the specified sub account.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `sub_account_id`: Sub account.
+    /// - `delegate`: Delegate's wallet address.
+    ///
+    /// # Permission required
+    /// - Permission::DriftUpdateUser
+    ///
+    /// # Integration required
+    /// - IntegrationName::Drift
     pub fn drift_update_user_delegate(
         ctx: Context<DriftUpdate>,
         sub_account_id: u16,
         delegate: Pubkey,
     ) -> Result<()> {
-        drift::drift_update_user_delegate_handler(ctx, sub_account_id, delegate)
+        drift::update_user_delegate_handler(ctx, sub_account_id, delegate)
     }
 
+    /// Deposits to drift.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `market_index`: Index of the drift spot market.
+    /// - `amount`: Amount of asset to deposit.
+    ///
+    /// # Permission required
+    /// - Permission::DriftDeposit
+    ///
+    /// # Integration required
+    /// - IntegrationName::Drift
     pub fn drift_deposit<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, DriftDeposit<'info>>,
         market_index: u16,
         amount: u64,
     ) -> Result<()> {
-        drift::drift_deposit_handler(ctx, market_index, amount)
+        drift::deposit_handler(ctx, market_index, amount)
     }
 
+    /// Withdraws from drift.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `market_index`: Index of the drift spot market.
+    /// - `amount`: Amount to withdraw.
+    ///
+    /// # Permission required
+    /// - Permission::DriftWithdraw
+    ///
+    /// # Integration required
+    /// - IntegrationName::Drift
     pub fn drift_withdraw<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, DriftWithdraw<'info>>,
         market_index: u16,
         amount: u64,
     ) -> Result<()> {
-        drift::drift_withdraw_handler(ctx, market_index, amount)
+        drift::withdraw_handler(ctx, market_index, amount)
     }
 
-    pub fn drift_delete_user(ctx: Context<DriftDeleteUser>, _sub_account_id: u16) -> Result<()> {
-        drift::drift_delete_user_handler(ctx)
+    /// Deletes a drift user (sub account).
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    ///
+    /// # Permission required
+    /// - Permission::DriftDeleteUser
+    ///
+    /// # Integration required
+    /// - IntegrationName::Drift
+    pub fn drift_delete_user(ctx: Context<DriftDeleteUser>) -> Result<()> {
+        drift::delete_user_handler(ctx)
     }
 
+    /// Places orders on drift.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `order_params`: A list of orders.
+    ///
+    /// # Permissions required
+    /// - Permission::DriftPlaceOrders
+    /// - Additional permission Permission::DriftSpotMarket or Permission::DriftPerpMarket is required depending on market type.
+    ///
+    /// # Integration required
+    /// - IntegrationName::Drift
     pub fn drift_place_orders<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, DriftPlaceOrders<'info>>,
         order_params: Vec<OrderParams>,
     ) -> Result<()> {
-        drift::drift_place_orders_handler(ctx, order_params)
+        drift::place_orders_handler(ctx, order_params)
     }
 
+    /// Cancels drift orders.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `market_type`:
+    /// - `market_index`:
+    /// - `direction`:
+    ///
+    /// # Permission required
+    /// - Permission::DriftCancelOrders
+    ///
+    /// # Integration required
+    /// - IntegrationName::Drift
     pub fn drift_cancel_orders<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, DriftCancelOrders<'info>>,
         market_type: Option<MarketType>,
         market_index: Option<u16>,
         direction: Option<PositionDirection>,
     ) -> Result<()> {
-        drift::drift_cancel_orders_handler(ctx, market_type, market_index, direction)
+        drift::cancel_orders_handler(ctx, market_type, market_index, direction)
     }
 
-    //
-    // Marinade
-    //
+    //////////////////////////////////////////////////////////////////////
+    /// Marinade
+    //////////////////////////////////////////////////////////////////////
 
+    /// Deposits SOL to get mSOL.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `lamports`: The amount of SOL to deposit.
+    ///
+    /// # Permission required
+    /// - Permission::Stake
+    ///
+    /// # Integration required
+    /// - IntegrationName::Marinade
     pub fn marinade_deposit_sol(ctx: Context<MarinadeDepositSol>, lamports: u64) -> Result<()> {
-        marinade::marinade_deposit_sol(ctx, lamports)
+        marinade::marinade_deposit_sol_handler(ctx, lamports)
     }
 
+    /// Deposits a stake account to get mSOL.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `validator_idx`: Validator index.
+    ///
+    /// # Permission required
+    /// - Permission::Stake
+    ///
+    /// # Integration required
+    /// - IntegrationName::Marinade
     pub fn marinade_deposit_stake(
         ctx: Context<MarinadeDepositStake>,
         validator_idx: u32,
     ) -> Result<()> {
-        marinade::marinade_deposit_stake(ctx, validator_idx)
+        marinade::marinade_deposit_stake_handler(ctx, validator_idx)
     }
 
+    /// Unstakes mSOL to get SOL immediately.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `msol_amount`: Amount of mSOL to unstake.
+    ///
+    /// # Permission required
+    /// - Permission::LiquidUnstake
+    ///
+    /// # Integration required
+    /// - IntegrationName::Marinade
     pub fn marinade_liquid_unstake(
         ctx: Context<MarinadeLiquidUnstake>,
         msol_amount: u64,
     ) -> Result<()> {
-        marinade::marinade_liquid_unstake(ctx, msol_amount)
+        marinade::liquid_unstake_handler(ctx, msol_amount)
     }
 
+    /// Unstakes mSOL to get a ticket that can be claimed at the next epoch.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `msol_amount`: Amount of mSOL to unstake.
+    /// - `ticket_id`: Ticket ID.
+    /// - `bump`: Bump seed.
+    ///
+    /// # Permission required
+    /// - Permission::Unstake
+    ///
+    /// # Integration required
+    /// - IntegrationName::Marinade
     pub fn marinade_delayed_unstake(
         ctx: Context<MarinadeDelayedUnstake>,
         msol_amount: u64,
         ticket_id: String,
         bump: u8,
     ) -> Result<()> {
-        marinade::marinade_delayed_unstake(ctx, msol_amount, ticket_id, bump)
+        marinade::delayed_unstake_handler(ctx, msol_amount, ticket_id, bump)
     }
 
+    /// Claims tickets that were unstaked in the previous epoch to get SOL.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    ///
+    /// # Permission required
+    /// - Permission::Unstake
+    ///
+    /// # Integration required
+    /// - IntegrationName::Marinade
     pub fn marinade_claim_tickets<'info>(
         ctx: Context<'_, '_, '_, 'info, MarinadeClaimTickets<'info>>,
     ) -> Result<()> {
-        marinade::marinade_claim_tickets(ctx)
+        marinade::claim_tickets_handler(ctx)
     }
 
-    //
+    //////////////////////////////////////////////////////////////////////
     // Stake pool
-    //
+    //////////////////////////////////////////////////////////////////////
 
+    /// Deposits SOL to a stake pool to get pool token.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `lamports`: The amount of SOL to deposit.
+    ///
+    /// # Permission required
+    /// - Permission::Stake
+    ///
+    /// # Integration required
+    /// - IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used.
     pub fn stake_pool_deposit_sol(ctx: Context<StakePoolDepositSol>, lamports: u64) -> Result<()> {
-        stake_pool::stake_pool_deposit_sol(ctx, lamports)
+        stake_pool::deposit_sol_handler(ctx, lamports)
     }
 
-    #[doc = "Deposit a stake account into the stake pool and receive pool token"]
+    /// Deposits a stake account to a stake pool to get pool token.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    ///
+    /// # Permission required
+    /// - Permission::Stake
+    ///
+    /// # Integration required
+    /// - IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used.
     pub fn stake_pool_deposit_stake(ctx: Context<StakePoolDepositStake>) -> Result<()> {
-        stake_pool::stake_pool_deposit_stake(ctx)
+        stake_pool::deposit_stake_handler(ctx)
     }
 
+    /// Unstakes from pool token to get SOL immediately.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `pool_token_amount`: Amount of pool token to unstake.
+    ///
+    /// # Permission required
+    /// - Permission::LiquidUnstake
+    ///
+    /// # Integration required
+    /// - IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used.
     pub fn stake_pool_withdraw_sol(
         ctx: Context<StakePoolWithdrawSol>,
         pool_token_amount: u64,
     ) -> Result<()> {
-        stake_pool::stake_pool_withdraw_sol(ctx, pool_token_amount)
+        stake_pool::withdraw_sol_handler(ctx, pool_token_amount)
     }
 
+    /// Unstakes from pool token into a stake account.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `pool_token_amount`: Amount of pool token to unstake.
+    /// - `stake_account_id`: Stake account ID.
+    /// - `stake_account_bump`: Stake account bump seed.
+    ///
+    /// # Permission required
+    /// - Permission::Unstake
+    ///
+    /// # Integration required
+    /// - IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used.
     pub fn stake_pool_withdraw_stake(
         ctx: Context<StakePoolWithdrawStake>,
         pool_token_amount: u64,
         stake_account_id: String,
         stake_account_bump: u8,
     ) -> Result<()> {
-        stake_pool::stake_pool_withdraw_stake(
+        stake_pool::withdraw_stake_handler(
             ctx,
             pool_token_amount,
             stake_account_bump,
@@ -275,119 +616,323 @@ pub mod glam {
         )
     }
 
-    //
+    //////////////////////////////////////////////////////////////////////
     // Native staking
-    //
+    //////////////////////////////////////////////////////////////////////
 
+    /// Initializes a stake account and delegates it to a validator.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `lamports`: The amount of SOL to initialize the stake account with.
+    /// - `stake_account_id`: The ID of the stake account to initialize.
+    /// - `stake_account_bump`: The bump seed for the stake account.
+    ///
+    /// # Permission required
+    /// - Permission::Stake
+    ///
+    /// # Integration required
+    /// - IntegrationName::NativeStaking
     pub fn initialize_and_delegate_stake<'info>(
         ctx: Context<'_, '_, '_, 'info, InitializeAndDelegateStake<'info>>,
         lamports: u64,
         stake_account_id: String,
         stake_account_bump: u8,
     ) -> Result<()> {
-        stake::initialize_and_delegate_stake(ctx, lamports, stake_account_id, stake_account_bump)
+        stake::initialize_and_delegate_stake_handler(
+            ctx,
+            lamports,
+            stake_account_id,
+            stake_account_bump,
+        )
     }
 
+    /// Deactivates stake accounts.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    ///
+    /// # Permission required
+    /// - Permission::Unstake
+    ///
+    /// # Integration required
+    /// - IntegrationName::NativeStaking
     pub fn deactivate_stake_accounts<'info>(
         ctx: Context<'_, '_, '_, 'info, DeactivateStakeAccounts<'info>>,
     ) -> Result<()> {
-        stake::deactivate_stake_accounts(ctx)
+        stake::deactivate_stake_accounts_handler(ctx)
     }
 
+    /// Withdraws SOL from stake accounts.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    ///
+    /// # Permission required
+    /// - Permission::Unstake
+    ///
+    /// # Integration required
+    /// - IntegrationName::NativeStaking
     pub fn withdraw_from_stake_accounts<'info>(
         ctx: Context<'_, '_, '_, 'info, WithdrawFromStakeAccounts<'info>>,
     ) -> Result<()> {
-        stake::withdraw_from_stake_accounts(ctx)
+        stake::withdraw_from_stake_accounts_handler(ctx)
     }
 
+    /// Merges two stake accounts.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    ///
+    /// # Permission required
+    /// - Permission::Stake
+    ///
+    /// # Integration required
+    /// - IntegrationName::NativeStaking
     pub fn merge_stake_accounts<'info>(
         ctx: Context<'_, '_, '_, 'info, MergeStakeAccounts<'info>>,
     ) -> Result<()> {
-        stake::merge_stake_accounts(ctx)
+        stake::merge_stake_accounts_handler(ctx)
     }
 
+    /// Splits from an existing stake account to get a new stake account.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `lamports`: The amount of SOL to split.
+    /// - `new_stake_account_id`: The ID of the new stake account.
+    /// - `new_stake_account_bump`: The bump seed for the new stake account.
+    ///
+    /// # Permission required
+    /// - Permission::Unstake
+    ///
+    /// # Integration required
+    /// - IntegrationName::NativeStaking
     pub fn split_stake_account<'info>(
         ctx: Context<'_, '_, '_, 'info, SplitStakeAccount<'info>>,
         lamports: u64,
         new_stake_account_id: String,
         new_stake_account_bump: u8,
     ) -> Result<()> {
-        stake::split_stake_account(ctx, lamports, new_stake_account_id, new_stake_account_bump)
+        stake::split_stake_account_handler(
+            ctx,
+            lamports,
+            new_stake_account_id,
+            new_stake_account_bump,
+        )
     }
 
+    /// Redelegates an existing stake account to a new validator (a new stake account will be created).
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `new_stake_account_id`: The ID of the new stake account.
+    /// - `new_stake_account_bump`: The bump seed for the new stake account.
+    ///
+    /// # Permission required
+    /// - Permission::Unstake
+    ///
+    /// # Integration required
+    /// - IntegrationName::NativeStaking
     pub fn redelegate_stake<'info>(
         ctx: Context<'_, '_, '_, 'info, RedelegateStake<'info>>,
         new_stake_account_id: String,
         new_stake_account_bump: u8,
     ) -> Result<()> {
-        stake::redelegate_stake(ctx, new_stake_account_id, new_stake_account_bump)
+        stake::redelegate_stake_handler(ctx, new_stake_account_id, new_stake_account_bump)
     }
 
-    //
-    // Jupiter
-    //
+    //////////////////////////////////////////////////////////////////////
+    // Jupiter swap
+    //////////////////////////////////////////////////////////////////////
 
+    /// Swaps assets using Jupiter.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `amount`: The amount of asset to swap.
+    /// - `data`: The data for the swap.
+    ///
+    /// # Permission required
+    /// - Permission::JupiterSwapFundAssets or Permission::JupiterSwapAnyAsset
+    ///
+    /// # Integration required
+    /// - IntegrationName::JupiterSwap
     pub fn jupiter_swap<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, JupiterSwap<'info>>,
         amount: u64,
         data: Vec<u8>,
     ) -> Result<()> {
-        jupiter::jupiter_swap(ctx, amount, data)
+        jupiter::swap_handler(ctx, amount, data)
     }
 
+    //////////////////////////////////////////////////////////////////////
+    // Jupiter vote
+    //////////////////////////////////////////////////////////////////////
+
+    /// Initializes a locked voter escrow.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    ///
+    /// # Permission required
+    /// - Permission::StakeJup
+    ///
+    /// # Integration required
+    /// - IntegrationName::JupiterVote
     pub fn init_locked_voter_escrow<'info>(ctx: Context<InitLockedVoterEscrow>) -> Result<()> {
-        jupiter::init_locked_voter_escrow(ctx)
+        jupiter::init_locked_voter_escrow_handler(ctx)
     }
 
+    /// Toggles max lock.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `value`: The value to toggle.
+    ///
+    /// # Permission required
+    /// - Permission::UnstakeJup
+    ///
+    /// # Integration required
+    /// - IntegrationName::JupiterVote
     pub fn toggle_max_lock<'info>(ctx: Context<ToogleMaxLock>, value: bool) -> Result<()> {
-        jupiter::toggle_max_lock(ctx, value)
+        jupiter::toggle_max_lock_handler(ctx, value)
     }
 
+    /// Increases the locked amount (aka stakes JUP).
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `amount`: The amount of JUP to stake.
+    ///
+    /// # Permission required
+    /// - Permission::StakeJup
+    ///
+    /// # Integration required
+    /// - IntegrationName::JupiterVote
     pub fn increase_locked_amount<'info>(
         ctx: Context<IncreaseLockedAmount>,
         amount: u64,
     ) -> Result<()> {
-        jupiter::increase_locked_amount(ctx, amount)
+        jupiter::increase_locked_amount_handler(ctx, amount)
     }
 
+    /// Partially unstakes JUP.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `amount`: The amount of JUP to partially unstake.
+    /// - `memo`: The memo for the partial unstaking.
+    ///
+    /// # Permission required
+    /// - Permission::UnstakeJup
+    ///
+    /// # Integration required
+    /// - IntegrationName::JupiterVote
     pub fn open_partial_unstaking<'info>(
         ctx: Context<PartialUnstaking>,
         amount: u64,
         memo: String,
     ) -> Result<()> {
-        jupiter::open_partial_unstaking(ctx, amount, memo)
+        jupiter::open_partial_unstaking_handler(ctx, amount, memo)
     }
 
+    /// Merges partial unstaking.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    ///
+    /// # Permission required
+    /// - Permission::UnstakeJup
+    ///
+    /// # Integration required
+    /// - IntegrationName::JupiterVote
     pub fn merge_partial_unstaking<'info>(ctx: Context<PartialUnstaking>) -> Result<()> {
-        jupiter::merge_partial_unstaking(ctx)
+        jupiter::merge_partial_unstaking_handler(ctx)
     }
 
+    /// Withdraws JUP from partial unstaking.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    ///
+    /// # Permission required
+    /// - Permission::UnstakeJup
+    ///
+    /// # Integration required
+    /// - IntegrationName::JupiterVote
     pub fn withdraw_partial_unstaking<'info>(ctx: Context<WithdrawPartialUnstaking>) -> Result<()> {
-        jupiter::withdraw_partial_unstaking(ctx)
+        jupiter::withdraw_partial_unstaking_handler(ctx)
     }
 
+    /// Withdraws all unstaked JUP.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    ///
+    /// # Permission required
+    /// - Permission::UnstakeJup
+    ///
+    /// # Integration required
+    /// - IntegrationName::JupiterVote
     pub fn withdraw_all_staked_jup<'info>(ctx: Context<WithdrawAllStakedJup>) -> Result<()> {
-        jupiter::withdraw_all_staked_jup(ctx)
+        jupiter::withdraw_all_staked_jup_handler(ctx)
     }
 
+    /// Creates a new vote.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    ///
+    /// # Permission required
+    /// - Permission::VoteOnProposal
+    ///
+    /// # Integration required
+    /// - IntegrationName::JupiterVote
     pub fn new_vote<'info>(ctx: Context<NewVote>) -> Result<()> {
-        jupiter::new_vote(ctx)
+        jupiter::new_vote_handler(ctx)
     }
 
+    /// Casts a vote.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `side`: The side to vote for.
+    ///
+    /// # Permission required
+    /// - Permission::VoteOnProposal
+    ///
+    /// # Integration required
+    /// - IntegrationName::JupiterVote
     pub fn cast_vote<'info>(ctx: Context<CastVote>, side: u8) -> Result<()> {
-        jupiter::cast_vote(ctx, side)
+        jupiter::cast_vote_handler(ctx, side)
     }
 
-    //
+    //////////////////////////////////////////////////////////////////////
     // wSOL
-    //
+    //////////////////////////////////////////////////////////////////////
 
+    /// Wraps SOL to get wSOL.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `lamports`: The amount of SOL to wrap.
+    ///
+    /// # Permission required
+    /// - Permission::WSolWrap
     pub fn wsol_wrap(ctx: Context<WSolWrap>, lamports: u64) -> Result<()> {
-        wsol::wsol_wrap(ctx, lamports)
+        wsol::wrap_handler(ctx, lamports)
     }
 
+    /// Unwraps all wSOL to get SOL.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    ///
+    /// # Permission required
+    /// - Permission::WSolUnwrap
     pub fn wsol_unwrap(ctx: Context<WSolUnwrap>) -> Result<()> {
-        wsol::wsol_unwrap(ctx)
+        wsol::unwrap_handler(ctx)
     }
 
     //

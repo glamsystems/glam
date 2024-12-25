@@ -1,11 +1,17 @@
 use anchor_lang::prelude::*;
 
 #[error_code]
+pub enum AccessError {
+    #[msg("Signer is not authorized")]
+    NotAuthorized,
+    #[msg("Integration is disabled")]
+    IntegrationDisabled,
+}
+
+#[error_code]
 pub enum ManagerError {
     #[msg("Error closing account: not empty")]
     CloseNotEmptyError,
-    #[msg("Error: not authorized")]
-    NotAuthorizedError,
     #[msg("Invalid fund name: max 50 chars")]
     InvalidFundName,
     #[msg("Too many assets: max 50")]

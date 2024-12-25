@@ -157,8 +157,11 @@ fn parse_shared_accounts_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
         vec![Permission::JupiterSwapFundAssets, Permission::JupiterSwapAnyAsset]
     )
 )]
+#[access_control(
+    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterSwap)
+)]
 #[treasury_signer_seeds]
-pub fn jupiter_swap<'c: 'info, 'info>(
+pub fn swap_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, JupiterSwap<'info>>,
     amount: u64,
     data: Vec<u8>,
@@ -290,7 +293,7 @@ pub struct InitLockedVoterEscrow<'info> {
     acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
 )]
 #[treasury_signer_seeds]
-pub fn init_locked_voter_escrow<'info>(ctx: Context<InitLockedVoterEscrow>) -> Result<()> {
+pub fn init_locked_voter_escrow_handler<'info>(ctx: Context<InitLockedVoterEscrow>) -> Result<()> {
     new_escrow(CpiContext::new_with_signer(
         ctx.accounts.locked_voter_program.to_account_info(),
         NewEscrow {
@@ -337,7 +340,7 @@ pub struct ToogleMaxLock<'info> {
     acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
 )]
 #[treasury_signer_seeds]
-pub fn toggle_max_lock<'info>(ctx: Context<ToogleMaxLock>, value: bool) -> Result<()> {
+pub fn toggle_max_lock_handler<'info>(ctx: Context<ToogleMaxLock>, value: bool) -> Result<()> {
     jup_toggle_max_lock(
         CpiContext::new_with_signer(
             ctx.accounts.locked_voter_program.to_account_info(),
@@ -388,7 +391,7 @@ pub struct IncreaseLockedAmount<'info> {
     acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
 )]
 #[treasury_signer_seeds]
-pub fn increase_locked_amount<'info>(
+pub fn increase_locked_amount_handler<'info>(
     ctx: Context<IncreaseLockedAmount>,
     amount: u64,
 ) -> Result<()> {
@@ -443,7 +446,7 @@ pub struct PartialUnstaking<'info> {
     acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
 )]
 #[treasury_signer_seeds]
-pub fn open_partial_unstaking<'info>(
+pub fn open_partial_unstaking_handler<'info>(
     ctx: Context<PartialUnstaking>,
     amount: u64,
     memo: String,
@@ -473,7 +476,7 @@ pub fn open_partial_unstaking<'info>(
     acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
 )]
 #[treasury_signer_seeds]
-pub fn merge_partial_unstaking<'info>(ctx: Context<PartialUnstaking>) -> Result<()> {
+pub fn merge_partial_unstaking_handler<'info>(ctx: Context<PartialUnstaking>) -> Result<()> {
     jup_merge_partial_unstaking(CpiContext::new_with_signer(
         ctx.accounts.locked_voter_program.to_account_info(),
         MergePartialUnstaking {
@@ -521,7 +524,7 @@ pub struct WithdrawAllStakedJup<'info> {
     acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
 )]
 #[treasury_signer_seeds]
-pub fn withdraw_all_staked_jup<'info>(ctx: Context<WithdrawAllStakedJup>) -> Result<()> {
+pub fn withdraw_all_staked_jup_handler<'info>(ctx: Context<WithdrawAllStakedJup>) -> Result<()> {
     withdraw(CpiContext::new_with_signer(
         ctx.accounts.locked_voter_program.to_account_info(),
         Withdraw {
@@ -576,7 +579,9 @@ pub struct WithdrawPartialUnstaking<'info> {
     acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
 )]
 #[treasury_signer_seeds]
-pub fn withdraw_partial_unstaking<'info>(ctx: Context<WithdrawPartialUnstaking>) -> Result<()> {
+pub fn withdraw_partial_unstaking_handler<'info>(
+    ctx: Context<WithdrawPartialUnstaking>,
+) -> Result<()> {
     jup_partial_withdraw(CpiContext::new_with_signer(
         ctx.accounts.locked_voter_program.to_account_info(),
         JupWithdrawPartialUnstaking {
@@ -624,7 +629,7 @@ pub struct NewVote<'info> {
     acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
 )]
 #[treasury_signer_seeds]
-pub fn new_vote<'info>(ctx: Context<NewVote>) -> Result<()> {
+pub fn new_vote_handler<'info>(ctx: Context<NewVote>) -> Result<()> {
     jup_new_vote(
         CpiContext::new_with_signer(
             ctx.accounts.governance_program.to_account_info(),
@@ -679,7 +684,7 @@ pub struct CastVote<'info> {
     acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
 )]
 #[treasury_signer_seeds]
-pub fn cast_vote<'info>(ctx: Context<CastVote>, side: u8) -> Result<()> {
+pub fn cast_vote_handler<'info>(ctx: Context<CastVote>, side: u8) -> Result<()> {
     jup_cast_vote(
         CpiContext::new_with_signer(
             ctx.accounts.locked_voter_program.to_account_info(),
