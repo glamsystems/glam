@@ -49,18 +49,18 @@ pub struct AddShareClass<'info> {
         space = ExtraAccountMetaList::size_of(TRANSFER_HOOK_EXTRA_ACCOUNTS).unwrap(),
         seeds = [b"extra-account-metas", share_class_mint.key().as_ref()],
         bump,
-        payer = manager,
+        payer = signer,
     )]
     pub extra_account_meta_list: UncheckedAccount<'info>,
 
-    #[account(mut, has_one = manager @ AccessError::NotAuthorized)]
+    #[account(mut, constraint = fund.manager == signer.key() @ AccessError::NotAuthorized)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut)]
     pub openfunds: Box<Account<'info, FundMetadataAccount>>,
 
     #[account(mut)]
-    pub manager: Signer<'info>,
+    pub signer: Signer<'info>,
 
     pub system_program: Program<'info, System>,
     pub token_2022_program: Program<'info, Token2022>,
@@ -191,7 +191,7 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
         CpiContext::new_with_signer(
             ctx.accounts.token_2022_program.to_account_info(),
             system_program::CreateAccount {
-                from: ctx.accounts.manager.to_account_info(),
+                from: ctx.accounts.signer.to_account_info(),
                 to: share_mint.clone(),
             },
             signer_seeds,
@@ -353,15 +353,15 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
 #[instruction(share_class_id: u8)]
 pub struct SetTokenAccountsStates<'info> {
     #[account(mut, seeds = [b"share".as_ref(), &[share_class_id], fund.key().as_ref()], bump)]
-    share_class_mint: InterfaceAccount<'info, Mint>,
+    pub share_class_mint: InterfaceAccount<'info, Mint>,
 
     #[account(mut)]
-    fund: Box<Account<'info, FundAccount>>,
+    pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut)]
-    signer: Signer<'info>,
+    pub signer: Signer<'info>,
 
-    token_2022_program: Program<'info, Token2022>,
+    pub token_2022_program: Program<'info, Token2022>,
 }
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::SetTokenAccountsStates))]
@@ -454,15 +454,15 @@ pub struct ForceTransferShare<'info> {
         mint::authority = share_class_mint,
         mint::token_program = token_2022_program
     )]
-    share_class_mint: InterfaceAccount<'info, Mint>,
+    pub share_class_mint: InterfaceAccount<'info, Mint>,
 
     #[account(mut)]
-    fund: Box<Account<'info, FundAccount>>,
+    pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut)]
-    signer: Signer<'info>,
+    pub signer: Signer<'info>,
 
-    token_2022_program: Program<'info, Token2022>,
+    pub token_2022_program: Program<'info, Token2022>,
 }
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::ForceTransferShare))]
@@ -523,15 +523,15 @@ pub struct BurnShare<'info> {
         mint::authority = share_class_mint,
         mint::token_program = token_2022_program
     )]
-    share_class_mint: InterfaceAccount<'info, Mint>,
+    pub share_class_mint: InterfaceAccount<'info, Mint>,
 
     #[account(mut)]
-    fund: Box<Account<'info, FundAccount>>,
+    pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut)]
-    signer: Signer<'info>,
+    pub signer: Signer<'info>,
 
-    token_2022_program: Program<'info, Token2022>,
+    pub token_2022_program: Program<'info, Token2022>,
 }
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::BurnShare))]
@@ -629,11 +629,11 @@ pub struct UpdateShareClass<'info> {
     )]
     share_class_mint: InterfaceAccount<'info, Mint>,
 
-    #[account(mut, has_one = manager @ AccessError::NotAuthorized)]
+    #[account(mut, constraint = fund.manager == signer.key() @ AccessError::NotAuthorized)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut)]
-    pub manager: Signer<'info>,
+    pub signer: Signer<'info>,
 
     pub token_2022_program: Program<'info, Token2022>,
 }
@@ -664,11 +664,11 @@ pub fn update_share_class_handler(
 #[derive(Accounts)]
 #[instruction(share_class_id: u8)]
 pub struct CloseShareClass<'info> {
-    #[account(mut, has_one = manager @ AccessError::NotAuthorized)]
-    fund: Account<'info, FundAccount>,
+    #[account(mut, constraint = fund.manager == signer.key() @ AccessError::NotAuthorized)]
+    pub fund: Account<'info, FundAccount>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    treasury: SystemAccount<'info>,
+    pub treasury: SystemAccount<'info>,
 
     #[account(
         mut,
@@ -681,7 +681,7 @@ pub struct CloseShareClass<'info> {
         mint::authority = share_class_mint,
         mint::token_program = token_2022_program
       )]
-    share_class_mint: InterfaceAccount<'info, Mint>,
+    pub share_class_mint: InterfaceAccount<'info, Mint>,
 
     /// CHECK: Token2022 Transfer Hook, we manually close it
     #[account(
@@ -695,9 +695,9 @@ pub struct CloseShareClass<'info> {
     pub openfunds: Box<Account<'info, FundMetadataAccount>>,
 
     #[account(mut)]
-    manager: Signer<'info>,
+    pub signer: Signer<'info>,
 
-    token_2022_program: Program<'info, Token2022>,
+    pub token_2022_program: Program<'info, Token2022>,
 }
 
 #[share_class_signer_seeds]

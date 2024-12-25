@@ -99,7 +99,7 @@ pub struct DriftUpdate<'info> {
     pub treasury: SystemAccount<'info>,
 
     #[account(mut)]
-    signer: Signer<'info>,
+    pub signer: Signer<'info>,
 
     pub drift_program: Program<'info, Drift>,
 }
