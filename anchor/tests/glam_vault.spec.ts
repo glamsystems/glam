@@ -6,7 +6,7 @@ import {
 } from "@solana/web3.js";
 import { BN, Wallet } from "@coral-xyz/anchor";
 
-import { createFundForTest, fundTestExample, sleep, str2seed } from "./setup";
+import { createFundForTest, testFundModel, str2seed } from "./setup";
 import { FundModel, GlamClient, MSOL, USDC, WSOL } from "../src";
 import {
   createMint,
@@ -26,7 +26,7 @@ describe("glam_vault", () => {
   let fundPDA: PublicKey;
 
   it("Initialize vault", async () => {
-    let fundForTest = { ...fundTestExample };
+    let fundForTest = { ...testFundModel };
     fundForTest.shareClasses = [];
     const fundData = await createFundForTest(glamClient, fundForTest);
 
@@ -34,32 +34,30 @@ describe("glam_vault", () => {
 
     let fund;
     try {
-      //@ts-ignore
       fund = await glamClient.fetchFund(fundPDA);
     } catch (e) {
       console.error(e);
       throw e;
     }
-    console.log("fund.shareClasses.length", fund.shareClasses.length);
     expect(fund.shareClasses.length).toEqual(0);
   });
 
   it("Update vault name", async () => {
-    const updatedFund = glamClient.getFundModel({ name: "Updated vault name" });
+    const updated = { name: "Updated vault name" };
     try {
-      const txSig = await glamClient.fund.updateFund(fundPDA, updatedFund);
+      const txSig = await glamClient.fund.updateFund(fundPDA, updated);
       console.log("Update vault name txSig", txSig);
     } catch (e) {
       console.error(e);
       throw e;
     }
-    const fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
-    expect(fund.name).toEqual(updatedFund.name);
+    const fundAccount = await glamClient.fetchFundAccount(fundPDA);
+    expect(fundAccount.name).toEqual(updated.name);
   });
 
   it("Update vault asset allowlist", async () => {
     // The test fund has 2 assets, WSOL and MSOL. Update to USDC.
-    let updatedFund = glamClient.getFundModel({ assets: [USDC] });
+    let updatedFund = { assets: [USDC] };
     try {
       const txSig = await glamClient.fund.updateFund(fundPDA, updatedFund);
       console.log("Update vault assets (USDC) txSig", txSig);
@@ -71,7 +69,7 @@ describe("glam_vault", () => {
     expect(fundModel.assets).toEqual([USDC]);
 
     // Update assets back to WSOL and MSOL
-    updatedFund = glamClient.getFundModel({ assets: [WSOL, MSOL] });
+    updatedFund = { assets: [WSOL, MSOL] };
     try {
       const txSig = await glamClient.fund.updateFund(fundPDA, updatedFund);
       console.log("Update vault assets (WSOL and MSOL) txSig", txSig);
@@ -84,9 +82,9 @@ describe("glam_vault", () => {
   });
 
   it("[integration-acl] add and update", async () => {
-    const updatedFund1 = glamClient.getFundModel({
+    const updatedFund1 = {
       integrationAcls: [{ name: { drift: {} }, features: [] }],
-    });
+    };
     try {
       const txSig = await glamClient.fund.updateFund(fundPDA, updatedFund1);
       console.log("Update integration acl txSig", txSig);
@@ -98,15 +96,15 @@ describe("glam_vault", () => {
     expect(fundModel1.integrationAcls.length).toEqual(1);
     expect(fundModel1.integrationAcls).toEqual(updatedFund1?.integrationAcls);
 
-    const updatedFund2 = glamClient.getFundModel({
+    const updatedFund2 = {
       integrationAcls: [
         { name: { drift: {} }, features: [] },
-        { name: { jupiter: {} }, features: [] },
+        { name: { jupiterSwap: {} }, features: [] },
         { name: { marinade: {} }, features: [] },
         { name: { splStakePool: {} }, features: [] },
         { name: { sanctumStakePool: {} }, features: [] },
       ],
-    });
+    };
     try {
       const txSig = await glamClient.fund.updateFund(fundPDA, updatedFund2);
       console.log("Update integration acl txSig", txSig);
@@ -201,7 +199,7 @@ describe("glam_vault", () => {
     // transfer 1 SOL to treasury
     const tranferTx = new Transaction().add(
       SystemProgram.transfer({
-        fromPubkey: glamClient.getManager(),
+        fromPubkey: glamClient.getSigner(),
         toPubkey: glamClient.getTreasuryPDA(fundPDA),
         lamports: 1_000_000_000,
       }),
@@ -211,7 +209,7 @@ describe("glam_vault", () => {
     // transfer 0.1 SOL to key1 as it needs to pay for treasury wsol ata creation
     const tranferTx2 = new Transaction().add(
       SystemProgram.transfer({
-        fromPubkey: glamClient.getManager(),
+        fromPubkey: glamClient.getSigner(),
         toPubkey: key1.publicKey,
         lamports: 100_000_000,
       }),
@@ -219,11 +217,11 @@ describe("glam_vault", () => {
     await glamClient.sendAndConfirm(tranferTx2);
 
     // grant key1 wSolWrap permission
-    let updatedFund = glamClient.getFundModel({
+    let updatedFund = {
       delegateAcls: [
         { pubkey: key1.publicKey, permissions: [{ wSolWrap: {} }] },
       ],
-    });
+    };
     try {
       const txSig = await glamClient.fund.updateFund(fundPDA, updatedFund);
       console.log("Update delegate acl txSig", txSig);
@@ -261,10 +259,10 @@ describe("glam_vault", () => {
   }, 15_000);
 
   it("Update fund unauthorized", async () => {
-    const updatedFund = glamClient.getFundModel({ name: "Updated fund name" });
+    const updatedFund = { name: "Updated fund name" };
     try {
       const txId = await glamClient.program.methods
-        .updateFund(updatedFund)
+        .updateFund(new FundModel(updatedFund))
         .accounts({
           fund: fundPDA,
           signer: key1.publicKey,
@@ -278,42 +276,32 @@ describe("glam_vault", () => {
   });
 
   it("Update manager", async () => {
-    const manager = glamClient.getManager();
+    const manager = glamClient.getSigner();
     const newManager = Keypair.generate();
     console.log("New manager:", newManager.publicKey);
 
-    const updatedFund = glamClient.getFundModel({
-      fundManagers: [
-        {
-          name: "New Manager",
-          pubkey: newManager.publicKey,
-          // kind: "Wallet"
-        },
-      ],
-    });
+    const updatedFund = {
+      manager: {
+        portfolioManagerName: "New Manager",
+        pubkey: newManager.publicKey,
+        kind: { wallet: {} },
+      },
+    };
     try {
-      await glamClient.program.methods
-        .updateFund(updatedFund)
-        .accounts({
-          fund: fundPDA,
-          signer: manager,
-        })
-        .rpc();
+      await glamClient.fund.updateFund(fundPDA, updatedFund);
     } catch (e) {
       console.error(e);
       throw e;
     }
-    let fund = await glamClient.program.account.fundAccount.fetch(fundPDA);
+    let fund = await glamClient.fetchFundAccount(fundPDA);
     expect(fund.manager.toString()).toEqual(newManager.publicKey.toString());
 
-    const updatedFund2 = glamClient.getFundModel({
-      fundManagers: [
-        {
-          name: "Old Manager",
-          pubkey: manager,
-          // kind: "Wallet"
-        },
-      ],
+    const updatedFund2 = new FundModel({
+      manager: {
+        portfolioManagerName: "Old Manager",
+        pubkey: manager,
+        kind: { wallet: {} },
+      },
     });
 
     // old manager can NOT update back
@@ -356,7 +344,7 @@ describe("glam_vault", () => {
     for (const mint of [WSOL, MSOL]) {
       transaction.add(
         createAssociatedTokenAccountIdempotentInstruction(
-          glamClient.getManager(),
+          glamClient.getSigner(),
           glamClient.getTreasuryAta(fundPDA, mint),
           treasury,
           mint,
@@ -462,9 +450,8 @@ describe("glam_vault", () => {
   });
 
   it("Close vault", async () => {
-    const fund = await glamClient.program.account.fundAccount.fetchNullable(
-      fundPDA,
-    );
+    const fund =
+      await glamClient.program.account.fundAccount.fetchNullable(fundPDA);
     expect(fund).not.toBeNull();
 
     try {
