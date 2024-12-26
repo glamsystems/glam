@@ -9,13 +9,13 @@ import {
 } from "@solana/spl-token";
 
 import {
-  fundTestExample,
+  testFundModel,
   createFundForTest,
   quoteResponseForTest,
   swapInstructionsForTest,
   sleep,
 } from "./setup";
-import { GlamClient, MSOL, WSOL } from "../src";
+import { FundModel, GlamClient, MSOL, WSOL } from "../src";
 
 describe("glam_sol_msol", () => {
   const glamClient = new GlamClient();
@@ -32,13 +32,18 @@ describe("glam_sol_msol", () => {
   const glamClientBob = new GlamClient({ wallet: new Wallet(bob) });
   const glamClientEve = new GlamClient({ wallet: new Wallet(eve) });
 
-  const fundExample = {
-    ...fundTestExample,
+  const testFund = {
+    ...testFundModel,
     name: "Glam SOL-mSOL",
     assets: [WSOL, MSOL],
-  } as any;
+    integrationAcls: [
+      { name: { marinade: {} }, features: [] },
+      { name: { jupiterSwap: {} }, features: [] },
+      { name: { nativeStaking: {} }, features: [] },
+    ],
+  } as Partial<FundModel>;
 
-  const fundPDA = glamClient.getFundPDA(fundExample);
+  const fundPDA = glamClient.getFundPDA(testFund);
   const treasuryPDA = glamClient.getTreasuryPDA(fundPDA);
   const sharePDA = glamClient.getShareClassPDA(fundPDA, 0);
 
@@ -63,7 +68,7 @@ describe("glam_sol_msol", () => {
       //
       // create fund
       //
-      const fundData = await createFundForTest(glamClient, fundExample);
+      const fundData = await createFundForTest(glamClient, testFund);
 
       // default vote account
       const voteAccountStatus = await connection.getVoteAccounts();
@@ -80,7 +85,7 @@ describe("glam_sol_msol", () => {
   it("Fund created", async () => {
     try {
       const fund = await glamClient.fetchFundAccount(fundPDA);
-      expect(fund.name).toEqual(fundExample.name);
+      expect(fund.name).toEqual(testFund.name);
     } catch (e) {
       console.error(e);
     }
@@ -302,13 +307,13 @@ describe("glam_sol_msol", () => {
        mSOL price is 1.186356194 SOL.
        The value of the fund is almost unchanged. */
 
-    const manager = glamClient.getManager();
-    const inputSignerAta = glamClient.getManagerAta(WSOL);
-    const outputSignerAta = glamClient.getManagerAta(MSOL);
+    const signer = glamClient.getSigner();
+    const inputSignerAta = glamClient.getAta(WSOL);
+    const outputSignerAta = glamClient.getAta(MSOL);
 
     const quoteResponse = quoteResponseForTest;
     const swapInstructions = swapInstructionsForTest(
-      manager,
+      signer,
       inputSignerAta,
       outputSignerAta,
     );

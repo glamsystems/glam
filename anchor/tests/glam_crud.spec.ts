@@ -27,8 +27,11 @@ describe("glam_crud", () => {
   let fundPDA: PublicKey;
 
   it("Initialize fund", async () => {
+    const shareClassAllowlist = [glamClient.getSigner()];
+    const shareClassBlocklist = [];
+
     const fundForTest = { ...testFundModel };
-    fundForTest.shareClasses![0].allowlist = [glamClient.getManager()];
+    fundForTest.shareClasses![0].allowlist = shareClassAllowlist;
 
     const fundData = await createFundForTest(glamClient, fundForTest);
     fundPDA = fundData.fundPDA;
@@ -36,10 +39,8 @@ describe("glam_crud", () => {
     const fundModel = await glamClient.fetchFund(fundPDA);
 
     expect(fundModel.shareClasses.length).toEqual(1);
-    expect(fundModel.shareClasses[0].allowlist).toEqual([
-      glamClient.getManager(),
-    ]);
-    expect(fundModel.shareClasses[0].blocklist).toEqual([]);
+    expect(fundModel.shareClasses[0].allowlist).toEqual(shareClassAllowlist);
+    expect(fundModel.shareClasses[0].blocklist).toEqual(shareClassBlocklist);
   });
 
   it("Update fund name", async () => {
@@ -232,12 +233,12 @@ describe("glam_crud", () => {
     // transfer 0.1 SOL to key1 as it needs to pay for treasury wsol ata creation
     const tranferTx = new Transaction().add(
       SystemProgram.transfer({
-        fromPubkey: glamClient.getManager(),
+        fromPubkey: glamClient.getSigner(),
         toPubkey: glamClient.getTreasuryPDA(fundPDA),
         lamports: 1_000_000_000,
       }),
       SystemProgram.transfer({
-        fromPubkey: glamClient.getManager(),
+        fromPubkey: glamClient.getSigner(),
         toPubkey: key1.publicKey,
         lamports: 100_000_000,
       }),
@@ -301,7 +302,7 @@ describe("glam_crud", () => {
   });
 
   it("Update manager", async () => {
-    const defaultManager = glamClient.getManager();
+    const defaultManager = glamClient.getSigner();
     const newManager = Keypair.fromSeed(str2seed("new-manager"));
 
     const updatedFund = new FundModel({
@@ -377,7 +378,7 @@ describe("glam_crud", () => {
     for (const mint of [WSOL, MSOL]) {
       transaction.add(
         createAssociatedTokenAccountIdempotentInstruction(
-          glamClient.getManager(),
+          glamClient.getSigner(),
           glamClient.getTreasuryAta(fundPDA, mint),
           treasury,
           mint,

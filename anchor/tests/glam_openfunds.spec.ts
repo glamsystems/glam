@@ -12,7 +12,7 @@ import {
 describe("glam_openfunds", () => {
   const glamClient = new GlamClient();
 
-  const manager = glamClient.getManager();
+  const manager = glamClient.getSigner();
 
   // fund1: 1 share class + implicit fields
   const fund1 = {

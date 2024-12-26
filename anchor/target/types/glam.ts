@@ -86,12 +86,9 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "systemProgram",
@@ -378,12 +375,9 @@ export type Glam = {
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "systemProgram",
@@ -489,12 +483,9 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "token2022Program",
@@ -560,12 +551,9 @@ export type Glam = {
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "tokenProgram",
@@ -1943,7 +1931,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "manager"
+                "path": "signer"
               },
               {
                 "kind": "arg",
@@ -2004,7 +1992,7 @@ export type Glam = {
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -3699,12 +3687,9 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         }
       ],
       "args": [
@@ -5006,12 +4991,9 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "token2022Program",
@@ -5152,7 +5134,7 @@ export type Glam = {
             "seeds": [
               {
                 "kind": "account",
-                "path": "manager"
+                "path": "signer"
               },
               {
                 "kind": "account",
@@ -5203,12 +5185,9 @@ export type Glam = {
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "tokenProgram"

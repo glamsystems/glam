@@ -23,7 +23,7 @@ describe("glam_share_class", () => {
       shareClasses: [
         {
           ...testFundModel.shareClasses![0],
-          allowlist: [glamClient.getManager()],
+          allowlist: [glamClient.getSigner()],
           defaultAccountStateFrozen: true,
           permanentDelegate: new PublicKey(0), // set permanent delegate to share class itself
         },
@@ -36,7 +36,7 @@ describe("glam_share_class", () => {
     const fund = await glamClient.fetchFund(fundPDA);
 
     expect(fund.shareClasses.length).toEqual(1);
-    expect(fund.shareClasses[0].allowlist).toEqual([glamClient.getManager()]);
+    expect(fund.shareClasses[0].allowlist).toEqual([glamClient.getSigner()]);
     expect(fund.shareClasses[0].blocklist).toEqual([]);
   });
 

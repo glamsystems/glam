@@ -24,7 +24,10 @@ describe("glam_jupiter", () => {
   it("Initialize fund", async () => {
     const fundData = await createFundForTest(glamClient, {
       ...testFundModel,
-      integrationAcls: [{ name: { jupiterVote: {} }, features: [] }],
+      integrationAcls: [
+        { name: { jupiterSwap: {} }, features: [] },
+        { name: { jupiterVote: {} }, features: [] },
+      ],
     });
     fundPDA = fundData.fundPDA;
 
@@ -42,13 +45,13 @@ describe("glam_jupiter", () => {
   it("Swap end to end", async () => {
     const treasury = glamClient.getTreasuryPDA(fundPDA);
 
-    const manager = glamClient.getManager();
-    const inputSignerAta = glamClient.getManagerAta(WSOL);
-    const outputSignerAta = glamClient.getManagerAta(MSOL);
+    const signer = glamClient.getSigner();
+    const inputSignerAta = glamClient.getAta(WSOL);
+    const outputSignerAta = glamClient.getAta(MSOL);
 
     const quoteResponse = quoteResponseForTest;
     const swapInstructions = swapInstructionsForTest(
-      manager,
+      signer,
       inputSignerAta,
       outputSignerAta,
     );
@@ -58,8 +61,8 @@ describe("glam_jupiter", () => {
       await glamClient.provider.connection.getBalance(treasury);
     expect(beforeTreasuryBalance).toEqual(1_000_000_000);
     const beforeNoAccounts = [
-      glamClient.getManagerAta(WSOL),
-      glamClient.getManagerAta(MSOL),
+      glamClient.getAta(WSOL),
+      glamClient.getAta(MSOL),
       glamClient.getTreasuryAta(fundPDA, WSOL),
       glamClient.getTreasuryAta(fundPDA, MSOL),
     ];
@@ -90,8 +93,8 @@ describe("glam_jupiter", () => {
 
     // Post-checks: the following accounts should exist and have 0 balance
     const afterAccounts = [
-      glamClient.getManagerAta(WSOL),
-      glamClient.getManagerAta(MSOL),
+      glamClient.getAta(WSOL),
+      glamClient.getAta(MSOL),
       glamClient.getTreasuryAta(fundPDA, WSOL),
     ];
     afterAccounts.forEach(async (account) => {
@@ -152,7 +155,6 @@ describe("glam_jupiter", () => {
         .updateFund(updatedFund)
         .accounts({
           fund: fundPDA,
-          signer: glamClient.getManager(),
         })
         .rpc();
     } catch (e) {
@@ -229,9 +231,9 @@ describe("glam_jupiter", () => {
   }, 30_000);
 
   it("Swap back end to end", async () => {
-    const manager = glamClient.getManager();
-    const inputSignerAta = glamClient.getManagerAta(MSOL);
-    const outputSignerAta = glamClient.getManagerAta(WSOL);
+    const signer = glamClient.getSigner();
+    const inputSignerAta = glamClient.getAta(MSOL);
+    const outputSignerAta = glamClient.getAta(WSOL);
 
     const swapInstructions = {
       tokenLedgerInstruction: null,
@@ -289,7 +291,7 @@ describe("glam_jupiter", () => {
             isWritable: false,
           },
           {
-            pubkey: manager.toBase58(),
+            pubkey: signer.toBase58(),
             isSigner: true,
             isWritable: false,
           },
@@ -349,7 +351,7 @@ describe("glam_jupiter", () => {
             isWritable: false,
           },
           {
-            pubkey: manager.toBase58(),
+            pubkey: signer.toBase58(),
             isSigner: false,
             isWritable: false,
           },
@@ -485,7 +487,7 @@ describe("glam_jupiter", () => {
     ).json();
     const swapInstructions = await glamClient.jupiter.getSwapInstructions(
       quoteResponse,
-      glamClient.getManager(),
+      glamClient.getSigner(),
     );
 
     try {

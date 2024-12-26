@@ -150,12 +150,6 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
         other => other,
     };
 
-    msg!(
-        "share_class_metadata.permanent_delegate: {:?}",
-        share_class_metadata.permanent_delegate,
-    );
-    msg!("share permanent delegate: {:?}", share_permanent_delegate);
-
     let default_account_state_frozen = share_class_metadata.default_account_state_frozen;
 
     let seeds = &[

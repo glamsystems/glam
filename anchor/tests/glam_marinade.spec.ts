@@ -12,6 +12,14 @@ describe("glam_marinade", () => {
     const fundData = await createFundForTest(glamClient);
     fundPDA = fundData.fundPDA;
 
+    const txSig = await glamClient.fund.updateFund(fundPDA, {
+      integrationAcls: [
+        { name: { marinade: {} }, features: [] },
+        { name: { nativeStaking: {} }, features: [] },
+      ],
+    });
+    console.log("Marinade integration enabled:", txSig);
+
     const connection = glamClient.provider.connection;
     const airdropTx = await connection.requestAirdrop(
       fundData.treasuryPDA,

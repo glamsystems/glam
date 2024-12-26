@@ -116,6 +116,8 @@ export class FundModel extends FundIdlModel {
           shareClassModel["allowlist"] = value as PublicKey[];
         } else if (name === "shareClassBlocklist") {
           shareClassModel["blocklist"] = value as PublicKey[];
+        } else if (name == "lockUp") {
+          shareClassModel["lockUpPeriodInSeconds"] = Number(value);
         } else {
           shareClassModel[name] = value;
         }
@@ -135,14 +137,23 @@ export class FundModel extends FundIdlModel {
       }
 
       if (shareClassMint) {
-        const data = getExtensionData(
+        const extMetadata = getExtensionData(
           ExtensionType.TokenMetadata,
           shareClassMint.tlvData,
         );
-        const metadata = data ? unpack(data) : ({} as TokenMetadata);
-        shareClassModel["symbol"] = metadata?.symbol;
-        shareClassModel["name"] = metadata?.name;
-        shareClassModel["uri"] = metadata?.uri;
+        const tokenMetadata = extMetadata
+          ? unpack(extMetadata)
+          : ({} as TokenMetadata);
+        shareClassModel["symbol"] = tokenMetadata?.symbol;
+        shareClassModel["name"] = tokenMetadata?.name;
+        shareClassModel["uri"] = tokenMetadata?.uri;
+
+        const extPermDelegate = getExtensionData(
+          ExtensionType.PermanentDelegate,
+          shareClassMint.tlvData,
+        );
+        const permanentDelegate = new PublicKey(extPermDelegate);
+        shareClassModel["permanentDelegate"] = permanentDelegate;
       }
 
       fundModel.shareClasses.push(new ShareClassModel(shareClassModel));

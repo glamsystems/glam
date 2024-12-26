@@ -80,12 +80,9 @@
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "system_program",
@@ -372,12 +369,9 @@
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "system_program",
@@ -483,12 +477,9 @@
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "token_2022_program",
@@ -554,12 +545,9 @@
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "token_program",
@@ -1937,7 +1925,7 @@
               },
               {
                 "kind": "account",
-                "path": "manager"
+                "path": "signer"
               },
               {
                 "kind": "arg",
@@ -1998,7 +1986,7 @@
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -3693,12 +3681,9 @@
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         }
       ],
       "args": [
@@ -5000,12 +4985,9 @@
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "token_2022_program",
@@ -5146,7 +5128,7 @@
             "seeds": [
               {
                 "kind": "account",
-                "path": "manager"
+                "path": "signer"
               },
               {
                 "kind": "account",
@@ -5197,12 +5179,9 @@
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "token_program"

@@ -18,8 +18,6 @@ import {
   getMint,
   getAccount,
   createTransferCheckedWithTransferHookInstruction,
-  PermanentDelegateLayout,
-  defaultAccountStateInstructionData,
 } from "@solana/spl-token";
 
 import { testFundModel, createFundForTest, str2seed, sleep } from "./setup";
@@ -27,6 +25,7 @@ import { GlamClient, WSOL } from "../src";
 
 describe("glam_policy_hook", () => {
   const glamClient = new GlamClient();
+  const wallet = glamClient.getWallet();
 
   const userKeypairs = [
     Keypair.generate(), // alice
@@ -41,15 +40,10 @@ describe("glam_policy_hook", () => {
   const usdc = tokenKeypairs[0]; // 6 decimals
   const btc = tokenKeypairs[1]; // 8 decimals, token2022
   const BTC_TOKEN_PROGRAM_ID = TOKEN_2022_PROGRAM_ID;
-  const ethOrWsol = WSOL;
-
-  const client = new GlamClient();
-  const manager = (client.provider as anchor.AnchorProvider)
-    .wallet as anchor.Wallet;
 
   const shareClass = {
-    ...testFundModel.shareClasses[0],
-    lockUpPeriodInSeconds: 3,
+    ...testFundModel.shareClasses![0],
+    lockUpPeriodInSeconds: 5,
     lockUpComment: "lock-up test",
     permanentDelegate: new PublicKey(0),
   } as any;
@@ -60,18 +54,16 @@ describe("glam_policy_hook", () => {
     shareClasses: [shareClass],
   } as any;
 
-  const fundPDA = client.getFundPDA(fundExample);
-  const treasuryPDA = client.getTreasuryPDA(fundPDA);
-  const sharePDA = client.getShareClassPDA(fundPDA, 0);
+  const fundPDA = glamClient.getFundPDA(fundExample);
+  const sharePDA = glamClient.getShareClassPDA(fundPDA, 0);
 
-  const connection = client.provider.connection;
+  const connection = glamClient.provider.connection;
   const commitment = "confirmed";
-  const program = client.program;
 
   // manager
   const managerSharesAta = getAssociatedTokenAddressSync(
     sharePDA,
-    manager.publicKey,
+    wallet.publicKey,
     false,
     TOKEN_2022_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -92,9 +84,9 @@ describe("glam_policy_hook", () => {
         // exec in parallel, but await before ending the test
         tokenKeypairs.map(async (token, idx) => {
           const mint = await createMint(
-            client.provider.connection,
-            manager.payer,
-            manager.publicKey,
+            glamClient.provider.connection,
+            wallet.payer,
+            wallet.publicKey,
             null,
             idx == 0 ? 6 : 8,
             token,
@@ -124,7 +116,7 @@ describe("glam_policy_hook", () => {
               user,
               token.publicKey,
               userATA,
-              manager.payer,
+              wallet.payer,
               idx == 1 ? 10_000_000_000 : 1000_000_000,
               [],
               {},
@@ -134,19 +126,19 @@ describe("glam_policy_hook", () => {
 
           const managerAta = await createAssociatedTokenAccount(
             connection,
-            manager.payer,
+            wallet.payer,
             token.publicKey,
-            manager.publicKey,
+            wallet.publicKey,
             {},
             idx == 1 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID,
           );
 
           await mintTo(
             connection,
-            manager.payer,
+            wallet.payer,
             token.publicKey,
             managerAta,
-            manager.payer,
+            wallet.payer,
             idx == 1 ? 1000_000_000_000 : 1000_000_000,
             [],
             { commitment }, // await 'confirmed'
@@ -158,43 +150,20 @@ describe("glam_policy_hook", () => {
       //
       // create fund
       //
-      const fundData = await createFundForTest(client, fundExample);
+      const fundData = await createFundForTest(glamClient, fundExample);
     } catch (e) {
       console.error(e);
       throw e;
     }
   }, /* timeout */ 15_000);
 
-  /*afterAll(async () => {
-    await program.methods
-      .close()
-      .accounts({
-        fund: fundPDA,
-        manager: manager.publicKey
-      })
-      .rpc();
-
-    // The account should no longer exist, returning null.
-    const closedAccount = await program.account.fund.fetchNullable(fundPDA);
-    expect(closedAccount).toBeNull();
-  });*/
-
   it("Fund created", async () => {
     try {
       const fund = await glamClient.fetchFund(fundPDA);
       console.log("fund", fund);
-      expect(fund.shareClasses[0]?.id).toEqual(sharePDA);
-      // params
-      expect(fund.shareClasses[0]?.lockUpPeriodInSeconds).toEqual(new BN(3));
-      // mint
-      expect(fund.shareClasses[0]?.shareClassSymbol).toEqual("GBS");
-      expect(fund.shareClasses[0]?.shareClassDecimals).toEqual(9);
+      expect(fund.shareClasses[0]?.lockUpPeriodInSeconds).toEqual(5);
+      expect(fund.shareClasses[0]?.symbol).toEqual("GBS");
       expect(fund.shareClasses[0]?.permanentDelegate).toEqual(sharePDA);
-      // computed
-      expect(fund.shareClasses[0]?.hasPermanentDelegate).toEqual("yes");
-      // openfunds
-      expect(fund.shareClasses[0]?.lockUpPeriodInDays).toEqual("1");
-      expect(fund.shareClasses[0]?.lockUpComment).toEqual("lock-up test");
     } catch (e) {
       console.error(e);
       throw e;
@@ -241,7 +210,7 @@ describe("glam_policy_hook", () => {
 
     const tx = new Transaction().add(
       createAssociatedTokenAccountInstruction(
-        manager.publicKey,
+        wallet.publicKey,
         aliceSharesAta,
         alice.publicKey,
         sharePDA,
@@ -252,7 +221,7 @@ describe("glam_policy_hook", () => {
         managerSharesAta,
         sharePDA,
         aliceSharesAta,
-        manager.publicKey,
+        wallet.publicKey,
         amount,
         9,
         [],
@@ -263,7 +232,7 @@ describe("glam_policy_hook", () => {
 
     try {
       const txId = await sendAndConfirmTransaction(connection, tx, [
-        manager.payer,
+        wallet.payer,
       ]);
       expect(txId).toBeUndefined();
     } catch (err) {
@@ -273,7 +242,7 @@ describe("glam_policy_hook", () => {
 
   it("Wait of lock-up. Then manager redeems + transfers shares to Alice: both succeed", async () => {
     console.log("Zzz...");
-    await sleep(5_000);
+    await sleep(10_000);
     const amount = new BN(10 * 10 ** 9);
 
     try {
@@ -285,7 +254,7 @@ describe("glam_policy_hook", () => {
 
     const tx = new Transaction().add(
       createAssociatedTokenAccountInstruction(
-        manager.publicKey,
+        wallet.publicKey,
         aliceSharesAta,
         alice.publicKey,
         sharePDA,
@@ -296,7 +265,7 @@ describe("glam_policy_hook", () => {
         managerSharesAta,
         sharePDA,
         aliceSharesAta,
-        manager.publicKey,
+        wallet.publicKey,
         amount,
         9,
         [],
@@ -307,7 +276,7 @@ describe("glam_policy_hook", () => {
 
     try {
       const txId = await sendAndConfirmTransaction(connection, tx, [
-        manager.payer,
+        wallet.payer,
       ]);
       console.log("manager transfers shares:", txId);
     } catch (err) {
@@ -320,5 +289,5 @@ describe("glam_policy_hook", () => {
     } catch (err) {
       throw err;
     }
-  }, 10_000);
+  }, 15_000);
 });

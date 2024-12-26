@@ -12,14 +12,13 @@ describe("glam_wsol", () => {
     const fundData = await createFundForTest(glamClient);
     fundPDA = fundData.fundPDA;
 
-    const connection = glamClient.provider.connection;
     // transfer 0.1 SOL to treasury
     const tranferTx = new Transaction().add(
       SystemProgram.transfer({
-        fromPubkey: glamClient.getManager(),
+        fromPubkey: glamClient.getSigner(),
         toPubkey: glamClient.getTreasuryPDA(fundPDA),
         lamports: 100_000_000,
-      })
+      }),
     );
     await glamClient.sendAndConfirm(tranferTx);
   });

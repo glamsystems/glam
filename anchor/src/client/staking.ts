@@ -506,7 +506,7 @@ export class StakingClient {
     amount: BN,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const treasury = this.base.getTreasuryPDA(fund);
     const stakeAccountId = Date.now().toString();
     const [stakeAccountPda, bump] = this.getStakeAccountPDA(
@@ -515,10 +515,9 @@ export class StakingClient {
     );
     const tx = await this.base.program.methods
       .initializeAndDelegateStake(amount, stakeAccountId, bump)
-      .accounts({
-        manager,
+      .accountsPartial({
+        signer,
         fund,
-        //@ts-ignore IDL ts type is unhappy
         treasury,
         treasuryStakeAccount: stakeAccountPda,
         vote,
@@ -539,14 +538,13 @@ export class StakingClient {
     stakeAccounts: PublicKey[],
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const treasury = this.base.getTreasuryPDA(fund);
     const tx = await this.base.program.methods
       .deactivateStakeAccounts()
-      .accounts({
-        manager,
+      .accountsPartial({
+        signer,
         fund,
-        //@ts-ignore IDL ts type is unhappy
         treasury,
         clock: SYSVAR_CLOCK_PUBKEY,
         stakeProgram: StakeProgram.programId,
@@ -570,14 +568,13 @@ export class StakingClient {
     stakeAccounts: PublicKey[],
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const treasury = this.base.getTreasuryPDA(fund);
     const tx = await this.base.program.methods
       .withdrawFromStakeAccounts()
-      .accounts({
-        manager,
+      .accountsPartial({
+        signer,
         fund,
-        //@ts-ignore IDL ts type is unhappy
         treasury,
         clock: SYSVAR_CLOCK_PUBKEY,
         stakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
@@ -603,14 +600,13 @@ export class StakingClient {
     fromStake: PublicKey,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const treasury = this.base.getTreasuryPDA(fund);
     const tx = await this.base.program.methods
       .mergeStakeAccounts()
-      .accounts({
-        manager,
+      .accountsPartial({
+        signer,
         fund,
-        //@ts-ignore IDL ts type is unhappy
         treasury,
         toStake,
         fromStake,
@@ -633,15 +629,14 @@ export class StakingClient {
     newStakeAccountBump: number,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const treasury = this.base.getTreasuryPDA(fund);
 
     const tx = await this.base.program.methods
       .splitStakeAccount(lamports, newStakeAccountId, newStakeAccountBump)
-      .accounts({
-        manager,
+      .accountsPartial({
+        signer,
         fund,
-        //@ts-ignore IDL ts type is unhappy
         treasury,
         existingStake,
         newStake,
@@ -663,15 +658,14 @@ export class StakingClient {
     newStakeAccountBump: number,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const treasury = this.base.getTreasuryPDA(fund);
 
     const tx = await this.base.program.methods
       .redelegateStake(newStakeAccountId, newStakeAccountBump)
-      .accounts({
-        manager,
+      .accountsPartial({
+        signer,
         fund,
-        //@ts-ignore IDL ts type is unhappy
         treasury,
         vote,
         existingStake,

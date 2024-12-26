@@ -37,7 +37,6 @@ export class FundClient {
     const fundPDA = this.base.getFundPDA(fundModel);
     const treasury = this.base.getTreasuryPDA(fundPDA);
     const openfunds = this.base.getOpenfundsPDA(fundPDA);
-    const manager = this.base.getManager();
 
     const shareClasses = fundModel.shareClasses;
     fundModel.shareClasses = [];
@@ -55,7 +54,6 @@ export class FundClient {
           fund: fundPDA,
           treasury,
           openfunds,
-          manager,
         })
         .rpc();
       return [txSig, fundPDA];
@@ -69,7 +67,6 @@ export class FundClient {
           fund: fundPDA,
           treasury,
           openfunds,
-          manager,
         })
         .instruction();
 
@@ -93,7 +90,6 @@ export class FundClient {
         fund: fundPDA,
         treasury,
         openfunds,
-        manager,
       })
       .rpc();
 
@@ -121,12 +117,12 @@ export class FundClient {
   public async updateFund(
     fundPDA: PublicKey,
     updated: Partial<FundModel>,
+    txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     return await this.base.program.methods
       .updateFund(new FundModel(updated))
       .accounts({
         fund: fundPDA,
-        signer: this.base.getManager(),
       })
       .rpc();
   }
@@ -150,7 +146,7 @@ export class FundClient {
    */
   enrichFundModel(partialFundModel: Partial<FundModel>): FundModel {
     const fundModel = { ...partialFundModel };
-    const manager = this.base.getManager();
+    const manager = this.base.getSigner();
     const defaultDate = new Date().toISOString().split("T")[0];
 
     // createdKey = hash fund name and get first 8 bytes
@@ -246,31 +242,21 @@ export class FundClient {
   public async deleteDelegateAcls(
     fundPDA: PublicKey,
     delegates: PublicKey[],
+    txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    let updatedFund = new FundModel({
+    const updatedFund = new FundModel({
       delegateAcls: delegates.map((pubkey) => ({ pubkey, permissions: [] })),
     });
-    return await this.base.program.methods
-      .updateFund(updatedFund)
-      .accounts({
-        fund: fundPDA,
-        signer: this.base.getManager(),
-      })
-      .rpc();
+    return await this.updateFund(fundPDA, updatedFund, txOptions);
   }
 
   public async upsertDelegateAcls(
     fundPDA: PublicKey,
     delegateAcls: DelegateAcl[],
+    txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    let updatedFund = new FundModel({ delegateAcls });
-    return await this.base.program.methods
-      .updateFund(updatedFund)
-      .accounts({
-        fund: fundPDA,
-        signer: this.base.getManager(),
-      })
-      .rpc();
+    const updatedFund = new FundModel({ delegateAcls });
+    return await this.updateFund(fundPDA, updatedFund, txOptions);
   }
 
   public async setSubscribeRedeemEnabled(
@@ -362,28 +348,27 @@ export class FundClient {
     amount: number | BN,
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const treasury = this.base.getTreasuryPDA(fund);
 
     const { mint, tokenProgram } = await this.fetchMintWithOwner(asset);
 
-    const managerAta = this.base.getManagerAta(asset, manager, tokenProgram);
+    const signerAta = this.base.getAta(asset, signer, tokenProgram);
     const treasuryAta = this.base.getTreasuryAta(fund, asset, tokenProgram);
 
-    // @ts-ignore
     const tx = new Transaction().add(
       createAssociatedTokenAccountIdempotentInstruction(
-        manager,
+        signer,
         treasuryAta,
         treasury,
         asset,
         tokenProgram,
       ),
       createTransferCheckedInstruction(
-        managerAta,
+        signerAta,
         asset,
         treasuryAta,
-        manager,
+        signer,
         new BN(amount).toNumber(),
         mint.decimals,
         [],
@@ -400,9 +385,9 @@ export class FundClient {
     amount: number | BN,
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
-    const { mint, tokenProgram } = await this.fetchMintWithOwner(asset);
-    const managerAta = this.base.getManagerAta(asset, manager, tokenProgram);
+    const signer = txOptions.signer || this.base.getSigner();
+    const { tokenProgram } = await this.fetchMintWithOwner(asset);
+    const signerAta = this.base.getAta(asset, signer, tokenProgram);
 
     // @ts-ignore
     const tx = await this.base.program.methods
@@ -410,15 +395,13 @@ export class FundClient {
       .accounts({
         fund,
         asset,
-        //@ts-ignore
-        manager,
         tokenProgram,
       })
       .preInstructions([
         createAssociatedTokenAccountIdempotentInstruction(
-          manager,
-          managerAta,
-          manager,
+          signer,
+          signerAta,
+          signer,
           asset,
           tokenProgram,
         ),
