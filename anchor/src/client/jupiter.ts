@@ -140,7 +140,7 @@ export class JupiterClient {
     }
     preInstructions.push(
       createAssociatedTokenAccountIdempotentInstruction(
-        this.base.getManager(),
+        this.base.getSigner(),
         escrowJupAta,
         escrow,
         JUP,
@@ -230,7 +230,7 @@ export class JupiterClient {
     swapInstructions?: SwapInstructions,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const signer = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
 
     let swapInstruction: InstructionFromJupiter;
     let addressLookupTableAddresses: string[];
@@ -298,12 +298,8 @@ export class JupiterClient {
           outputMint,
           outputTokenProgram,
         ),
-        inputSignerAta: this.base.getManagerAta(
-          inputMint,
-          signer,
-          inputTokenProgram,
-        ),
-        outputSignerAta: this.base.getManagerAta(
+        inputSignerAta: this.base.getAta(inputMint, signer, inputTokenProgram),
+        outputSignerAta: this.base.getAta(
           outputMint,
           signer,
           outputTokenProgram,
@@ -344,14 +340,14 @@ export class JupiterClient {
     const ataParams = [
       {
         payer: manager,
-        ata: this.base.getManagerAta(inputMint, manager, inputTokenProgram),
+        ata: this.base.getAta(inputMint, manager, inputTokenProgram),
         owner: manager,
         mint: inputMint,
         tokenProgram: inputTokenProgram,
       },
       {
         payer: manager,
-        ata: this.base.getManagerAta(outputMint, manager, outputTokenProgram),
+        ata: this.base.getAta(outputMint, manager, outputTokenProgram),
         owner: manager,
         mint: outputMint,
         tokenProgram: outputTokenProgram,

@@ -168,12 +168,8 @@ export class BaseClient {
     jitoTipLamports?: number;
     latestBlockhash?: BlockhashWithExpiryBlockHeight;
   }): Promise<VersionedTransaction> {
-    if (lookupTables === undefined) {
-      lookupTables = [];
-    }
-    if (signer === undefined) {
-      signer = this.getManager();
-    }
+    lookupTables = lookupTables || [];
+    signer = signer || this.getSigner();
 
     const instructions = tx.instructions;
 
@@ -335,23 +331,14 @@ export class BaseClient {
     return publicKey;
   }
 
-  //@deprecated
-  getManager(): PublicKey {
-    const managerPublicKey = this.provider?.publicKey;
-    if (!managerPublicKey) {
-      throw new Error("Manager public key cannot be retrieved from provider");
-    }
-    return managerPublicKey;
-  }
-
-  getManagerAta(
+  getAta(
     mint: PublicKey,
-    manager?: PublicKey,
+    owner?: PublicKey,
     tokenProgram = TOKEN_PROGRAM_ID,
   ): PublicKey {
     return getAssociatedTokenAddressSync(
       mint,
-      manager || this.getManager(),
+      owner || this.getSigner(),
       true,
       tokenProgram,
     );
@@ -364,7 +351,7 @@ export class BaseClient {
       ).subarray(0, 8),
     ];
 
-    const manager = this.getManager();
+    const manager = this.getSigner();
     const [pda, _bump] = PublicKey.findProgramAddressSync(
       [
         anchor.utils.bytes.utf8.encode("fund"),
@@ -389,12 +376,7 @@ export class BaseClient {
     mint: PublicKey,
     programId?: PublicKey,
   ): PublicKey {
-    return getAssociatedTokenAddressSync(
-      mint,
-      this.getTreasuryPDA(fundPDA),
-      true,
-      programId,
-    );
+    return this.getAta(mint, this.getTreasuryPDA(fundPDA), programId);
   }
 
   /**
@@ -482,12 +464,7 @@ export class BaseClient {
   }
 
   getShareClassAta(user: PublicKey, shareClassPDA: PublicKey): PublicKey {
-    return getAssociatedTokenAddressSync(
-      shareClassPDA,
-      user,
-      true,
-      TOKEN_2022_PROGRAM_ID,
-    );
+    return this.getAta(shareClassPDA, user, TOKEN_2022_PROGRAM_ID);
   }
 
   getFundName(fundModel: Partial<FundModel>) {

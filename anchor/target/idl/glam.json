@@ -9,6 +9,17 @@
   "instructions": [
     {
       "name": "add_share_class",
+      "docs": [
+        "Share class",
+        "Adds a new share class to a fund.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `share_class_metadata`: An instance of `ShareClassModel` containing the metadata for the new share class.",
+        "",
+        "# Permission required",
+        "- Manager only, delegates not allowed"
+      ],
       "discriminator": [
         34,
         49,
@@ -69,12 +80,9 @@
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "system_program",
@@ -98,6 +106,20 @@
     },
     {
       "name": "burn_share",
+      "docs": [
+        "Burns a specified amount of shares for the given share class.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `share_class_id`: The id of the share class to burn shares for.",
+        "- `amount`: The amount of shares to burn.",
+        "",
+        "# Permission required",
+        "- Permission::BurnShare",
+        "",
+        "# Integration required",
+        "- IntegrationName::Mint"
+      ],
       "discriminator": [
         111,
         41,
@@ -178,12 +200,9 @@
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "token_2022_program",
@@ -203,6 +222,19 @@
     },
     {
       "name": "cast_vote",
+      "docs": [
+        "Casts a vote.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `side`: The side to vote for.",
+        "",
+        "# Permission required",
+        "- Permission::VoteOnProposal",
+        "",
+        "# Integration required",
+        "- IntegrationName::JupiterVote"
+      ],
       "discriminator": [
         20,
         212,
@@ -283,6 +315,15 @@
     },
     {
       "name": "close_fund",
+      "docs": [
+        "Closes a fund and releases its resources.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Manager only, delegates not allowed"
+      ],
       "discriminator": [
         230,
         183,
@@ -328,12 +369,9 @@
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "system_program",
@@ -344,6 +382,16 @@
     },
     {
       "name": "close_share_class",
+      "docs": [
+        "Closes a share class and releases its resources.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `share_class_id`: The id of the share class to be closed.",
+        "",
+        "# Permission required",
+        "- Manager only, delegates not allowed"
+      ],
       "discriminator": [
         35,
         248,
@@ -429,12 +477,9 @@
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "token_2022_program",
@@ -450,6 +495,15 @@
     },
     {
       "name": "close_token_accounts",
+      "docs": [
+        "Closes token accounts owned by the treasury.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Manager only, delegates not allowed"
+      ],
       "discriminator": [
         199,
         170,
@@ -491,12 +545,9 @@
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "token_program",
@@ -511,6 +562,18 @@
     },
     {
       "name": "deactivate_stake_accounts",
+      "docs": [
+        "Deactivates stake accounts.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- IntegrationName::NativeStaking"
+      ],
       "discriminator": [
         58,
         18,
@@ -523,7 +586,7 @@
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -571,6 +634,21 @@
     },
     {
       "name": "drift_cancel_orders",
+      "docs": [
+        "Cancels drift orders.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `market_type`:",
+        "- `market_index`:",
+        "- `direction`:",
+        "",
+        "# Permission required",
+        "- Permission::DriftCancelOrders",
+        "",
+        "# Integration required",
+        "- IntegrationName::Drift"
+      ],
       "discriminator": [
         98,
         107,
@@ -618,7 +696,7 @@
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -662,6 +740,18 @@
     },
     {
       "name": "drift_delete_user",
+      "docs": [
+        "Deletes a drift user (sub account).",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::DriftDeleteUser",
+        "",
+        "# Integration required",
+        "- IntegrationName::Drift"
+      ],
       "discriminator": [
         179,
         118,
@@ -713,7 +803,7 @@
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -726,15 +816,24 @@
           "address": "11111111111111111111111111111111"
         }
       ],
-      "args": [
-        {
-          "name": "_sub_account_id",
-          "type": "u16"
-        }
-      ]
+      "args": []
     },
     {
       "name": "drift_deposit",
+      "docs": [
+        "Deposits to drift.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `market_index`: Index of the drift spot market.",
+        "- `amount`: Amount of asset to deposit.",
+        "",
+        "# Permission required",
+        "- Permission::DriftDeposit",
+        "",
+        "# Integration required",
+        "- IntegrationName::Drift"
+      ],
       "discriminator": [
         252,
         63,
@@ -794,7 +893,7 @@
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -820,6 +919,19 @@
     },
     {
       "name": "drift_initialize",
+      "docs": [
+        "Drift",
+        "Initializes a drift account owned by fund treasury and creates a subaccount.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::DriftInitialize",
+        "",
+        "# Integration required",
+        "- IntegrationName::Drift"
+      ],
       "discriminator": [
         21,
         21,
@@ -871,7 +983,7 @@
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -892,6 +1004,20 @@
     },
     {
       "name": "drift_place_orders",
+      "docs": [
+        "Places orders on drift.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `order_params`: A list of orders.",
+        "",
+        "# Permissions required",
+        "- Permission::DriftPlaceOrders",
+        "- Additional permission Permission::DriftSpotMarket or Permission::DriftPerpMarket is required depending on market type.",
+        "",
+        "# Integration required",
+        "- IntegrationName::Drift"
+      ],
       "discriminator": [
         117,
         18,
@@ -939,7 +1065,7 @@
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -967,6 +1093,20 @@
     },
     {
       "name": "drift_update_user_custom_margin_ratio",
+      "docs": [
+        "Updates custom margin ratio.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `sub_account_id`: Sub account.",
+        "- `margin_ratio`: Margin ratio.",
+        "",
+        "# Permission required",
+        "- Permission::DriftUpdateUser",
+        "",
+        "# Integration required",
+        "- IntegrationName::Drift"
+      ],
       "discriminator": [
         4,
         47,
@@ -1010,7 +1150,7 @@
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -1032,6 +1172,20 @@
     },
     {
       "name": "drift_update_user_delegate",
+      "docs": [
+        "Sets a delegate on the specified sub account.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `sub_account_id`: Sub account.",
+        "- `delegate`: Delegate's wallet address.",
+        "",
+        "# Permission required",
+        "- Permission::DriftUpdateUser",
+        "",
+        "# Integration required",
+        "- IntegrationName::Drift"
+      ],
       "discriminator": [
         36,
         181,
@@ -1075,7 +1229,7 @@
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -1097,6 +1251,20 @@
     },
     {
       "name": "drift_update_user_margin_trading_enabled",
+      "docs": [
+        "Enables/Disables margin trading.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `sub_account_id`: Sub account.",
+        "- `margin_trading_enabled`: Whether to enable or disable margin trading.",
+        "",
+        "# Permission required",
+        "- Permission::DriftUpdateUser",
+        "",
+        "# Integration required",
+        "- IntegrationName::Drift"
+      ],
       "discriminator": [
         157,
         175,
@@ -1140,7 +1308,7 @@
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -1162,6 +1330,20 @@
     },
     {
       "name": "drift_withdraw",
+      "docs": [
+        "Withdraws from drift.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `market_index`: Index of the drift spot market.",
+        "- `amount`: Amount to withdraw.",
+        "",
+        "# Permission required",
+        "- Permission::DriftWithdraw",
+        "",
+        "# Integration required",
+        "- IntegrationName::Drift"
+      ],
       "discriminator": [
         86,
         59,
@@ -1224,7 +1406,7 @@
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -1250,6 +1432,20 @@
     },
     {
       "name": "force_transfer_share",
+      "docs": [
+        "Forcefully transfers a specified amount of shares from one account to another.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `share_class_id`: The id of the share class to transfer shares for.",
+        "- `amount`: The amount of shares to transfer.",
+        "",
+        "# Permission required",
+        "- Permission::ForceTransferShare",
+        "",
+        "# Integration required",
+        "- IntegrationName::Mint"
+      ],
       "discriminator": [
         71,
         90,
@@ -1390,12 +1586,9 @@
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "token_2022_program",
@@ -1415,6 +1608,19 @@
     },
     {
       "name": "increase_locked_amount",
+      "docs": [
+        "Increases the locked amount (aka stakes JUP).",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `amount`: The amount of JUP to stake.",
+        "",
+        "# Permission required",
+        "- Permission::StakeJup",
+        "",
+        "# Integration required",
+        "- IntegrationName::JupiterVote"
+      ],
       "discriminator": [
         5,
         168,
@@ -1493,6 +1699,18 @@
     },
     {
       "name": "init_locked_voter_escrow",
+      "docs": [
+        "Initializes a locked voter escrow.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::StakeJup",
+        "",
+        "# Integration required",
+        "- IntegrationName::JupiterVote"
+      ],
       "discriminator": [
         148,
         74,
@@ -1558,6 +1776,21 @@
     },
     {
       "name": "initialize_and_delegate_stake",
+      "docs": [
+        "Initializes a stake account and delegates it to a validator.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `lamports`: The amount of SOL to initialize the stake account with.",
+        "- `stake_account_id`: The ID of the stake account to initialize.",
+        "- `stake_account_bump`: The bump seed for the stake account.",
+        "",
+        "# Permission required",
+        "- Permission::Stake",
+        "",
+        "# Integration required",
+        "- IntegrationName::NativeStaking"
+      ],
       "discriminator": [
         71,
         101,
@@ -1570,7 +1803,7 @@
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -1654,6 +1887,17 @@
     },
     {
       "name": "initialize_fund",
+      "docs": [
+        "Fund",
+        "Initializes a fund from the provided FundModel instance.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `fund`: An instance of `FundModel` containing the details of the fund to be initialized.",
+        "",
+        "# Permission required",
+        "- Manager only, delegates not allowed"
+      ],
       "discriminator": [
         212,
         42,
@@ -1681,7 +1925,7 @@
               },
               {
                 "kind": "account",
-                "path": "manager"
+                "path": "signer"
               },
               {
                 "kind": "arg",
@@ -1742,7 +1986,7 @@
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -1764,6 +2008,20 @@
     },
     {
       "name": "jupiter_swap",
+      "docs": [
+        "Swaps assets using Jupiter.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `amount`: The amount of asset to swap.",
+        "- `data`: The data for the swap.",
+        "",
+        "# Permission required",
+        "- Permission::JupiterSwapFundAssets or Permission::JupiterSwapAnyAsset",
+        "",
+        "# Integration required",
+        "- IntegrationName::JupiterSwap"
+      ],
       "discriminator": [
         116,
         207,
@@ -1972,6 +2230,18 @@
     },
     {
       "name": "marinade_claim_tickets",
+      "docs": [
+        "Claims tickets that were unstaked in the previous epoch to get SOL.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- IntegrationName::Marinade"
+      ],
       "discriminator": [
         14,
         146,
@@ -1984,7 +2254,7 @@
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -2053,6 +2323,21 @@
     },
     {
       "name": "marinade_delayed_unstake",
+      "docs": [
+        "Unstakes mSOL to get a ticket that can be claimed at the next epoch.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `msol_amount`: Amount of mSOL to unstake.",
+        "- `ticket_id`: Ticket ID.",
+        "- `bump`: Bump seed.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- IntegrationName::Marinade"
+      ],
       "discriminator": [
         117,
         66,
@@ -2065,7 +2350,7 @@
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -2159,6 +2444,20 @@
     },
     {
       "name": "marinade_deposit_sol",
+      "docs": [
+        "Marinade",
+        "Deposits SOL to get mSOL.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `lamports`: The amount of SOL to deposit.",
+        "",
+        "# Permission required",
+        "- Permission::Stake",
+        "",
+        "# Integration required",
+        "- IntegrationName::Marinade"
+      ],
       "discriminator": [
         64,
         140,
@@ -2171,7 +2470,7 @@
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -2350,6 +2649,19 @@
     },
     {
       "name": "marinade_deposit_stake",
+      "docs": [
+        "Deposits a stake account to get mSOL.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `validator_idx`: Validator index.",
+        "",
+        "# Permission required",
+        "- Permission::Stake",
+        "",
+        "# Integration required",
+        "- IntegrationName::Marinade"
+      ],
       "discriminator": [
         69,
         207,
@@ -2362,7 +2674,7 @@
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -2552,6 +2864,19 @@
     },
     {
       "name": "marinade_liquid_unstake",
+      "docs": [
+        "Unstakes mSOL to get SOL immediately.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `msol_amount`: Amount of mSOL to unstake.",
+        "",
+        "# Permission required",
+        "- Permission::LiquidUnstake",
+        "",
+        "# Integration required",
+        "- IntegrationName::Marinade"
+      ],
       "discriminator": [
         29,
         146,
@@ -2564,7 +2889,7 @@
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "signer": true
         },
         {
@@ -2648,6 +2973,18 @@
     },
     {
       "name": "merge_partial_unstaking",
+      "docs": [
+        "Merges partial unstaking.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::UnstakeJup",
+        "",
+        "# Integration required",
+        "- IntegrationName::JupiterVote"
+      ],
       "discriminator": [
         190,
         154,
@@ -2717,6 +3054,18 @@
     },
     {
       "name": "merge_stake_accounts",
+      "docs": [
+        "Merges two stake accounts.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::Stake",
+        "",
+        "# Integration required",
+        "- IntegrationName::NativeStaking"
+      ],
       "discriminator": [
         173,
         206,
@@ -2729,7 +3078,7 @@
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -2794,6 +3143,20 @@
     },
     {
       "name": "mint_share",
+      "docs": [
+        "Mints a specified amount of shares for the given share class.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `share_class_id`: The id of the share class to mint shares for.",
+        "- `amount`: The amount of shares to mint.",
+        "",
+        "# Permission required",
+        "- Permission::MintShare",
+        "",
+        "# Integration required",
+        "- IntegrationName::Mint"
+      ],
       "discriminator": [
         145,
         1,
@@ -2874,12 +3237,9 @@
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "token_2022_program",
@@ -2899,6 +3259,18 @@
     },
     {
       "name": "new_vote",
+      "docs": [
+        "Creates a new vote.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::VoteOnProposal",
+        "",
+        "# Integration required",
+        "- IntegrationName::JupiterVote"
+      ],
       "discriminator": [
         163,
         108,
@@ -2964,6 +3336,20 @@
     },
     {
       "name": "open_partial_unstaking",
+      "docs": [
+        "Partially unstakes JUP.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `amount`: The amount of JUP to partially unstake.",
+        "- `memo`: The memo for the partial unstaking.",
+        "",
+        "# Permission required",
+        "- Permission::UnstakeJup",
+        "",
+        "# Integration required",
+        "- IntegrationName::JupiterVote"
+      ],
       "discriminator": [
         201,
         137,
@@ -3042,6 +3428,15 @@
     },
     {
       "name": "redeem",
+      "docs": [
+        "Redeems a specified amount of shares.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `amount`: The amount of shares to redeem.",
+        "- `in_kind`: Whether to redeem in kind.",
+        "- `skip_state`: Should always be true (state check to be implemented)."
+      ],
       "discriminator": [
         184,
         12,
@@ -3156,6 +3551,20 @@
     },
     {
       "name": "redelegate_stake",
+      "docs": [
+        "Redelegates an existing stake account to a new validator (a new stake account will be created).",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `new_stake_account_id`: The ID of the new stake account.",
+        "- `new_stake_account_bump`: The bump seed for the new stake account.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- IntegrationName::NativeStaking"
+      ],
       "discriminator": [
         240,
         90,
@@ -3168,7 +3577,7 @@
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -3244,6 +3653,18 @@
     },
     {
       "name": "set_subscribe_redeem_enabled",
+      "docs": [
+        "Enables or disables the subscribe and redeem functionality for the fund.",
+        "",
+        "This allows the manager to pause/unpause subscription and redemption of a fund.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `enabled`: A boolean indicating whether to enable or disable the subscribe and redeem functionality.",
+        "",
+        "# Permission required",
+        "- Manager only, delegates not allowed"
+      ],
       "discriminator": [
         189,
         56,
@@ -3260,12 +3681,9 @@
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         }
       ],
       "args": [
@@ -3277,6 +3695,20 @@
     },
     {
       "name": "set_token_accounts_states",
+      "docs": [
+        "Sets the frozen state of the token accounts for the specified share class.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `share_class_id`: The id of the share class to set the frozen state for.",
+        "- `frozen`: The new frozen state.",
+        "",
+        "# Permission required",
+        "- Permission::SetTokenAccountsStates",
+        "",
+        "# Integration required",
+        "- IntegrationName::Mint"
+      ],
       "discriminator": [
         50,
         133,
@@ -3297,12 +3729,9 @@
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "token_2022_program",
@@ -3322,6 +3751,21 @@
     },
     {
       "name": "split_stake_account",
+      "docs": [
+        "Splits from an existing stake account to get a new stake account.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `lamports`: The amount of SOL to split.",
+        "- `new_stake_account_id`: The ID of the new stake account.",
+        "- `new_stake_account_bump`: The bump seed for the new stake account.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- IntegrationName::NativeStaking"
+      ],
       "discriminator": [
         130,
         42,
@@ -3334,7 +3778,7 @@
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -3408,6 +3852,19 @@
     },
     {
       "name": "stake_pool_deposit_sol",
+      "docs": [
+        "Deposits SOL to a stake pool to get pool token.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `lamports`: The amount of SOL to deposit.",
+        "",
+        "# Permission required",
+        "- Permission::Stake",
+        "",
+        "# Integration required",
+        "- IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used."
+      ],
       "discriminator": [
         147,
         187,
@@ -3420,7 +3877,7 @@
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -3454,9 +3911,6 @@
           "relations": [
             "fund"
           ]
-        },
-        {
-          "name": "stake_pool_program"
         },
         {
           "name": "stake_pool",
@@ -3568,6 +4022,9 @@
           }
         },
         {
+          "name": "stake_pool_program"
+        },
+        {
           "name": "associated_token_program",
           "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         },
@@ -3589,7 +4046,16 @@
     {
       "name": "stake_pool_deposit_stake",
       "docs": [
-        "Deposit a stake account into the stake pool and receive pool token"
+        "Deposits a stake account to a stake pool to get pool token.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::Stake",
+        "",
+        "# Integration required",
+        "- IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used."
       ],
       "discriminator": [
         212,
@@ -3603,7 +4069,7 @@
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -3764,15 +4230,15 @@
           "writable": true
         },
         {
-          "name": "stake_pool_program"
-        },
-        {
           "name": "clock",
           "address": "SysvarC1ock11111111111111111111111111111111"
         },
         {
           "name": "stake_history",
           "address": "SysvarStakeHistory1111111111111111111111111"
+        },
+        {
+          "name": "stake_pool_program"
         },
         {
           "name": "associated_token_program",
@@ -3794,6 +4260,19 @@
     },
     {
       "name": "stake_pool_withdraw_sol",
+      "docs": [
+        "Unstakes from pool token to get SOL immediately.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `pool_token_amount`: Amount of pool token to unstake.",
+        "",
+        "# Permission required",
+        "- Permission::LiquidUnstake",
+        "",
+        "# Integration required",
+        "- IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used."
+      ],
       "discriminator": [
         179,
         100,
@@ -3806,7 +4285,7 @@
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -3842,9 +4321,6 @@
           ]
         },
         {
-          "name": "stake_pool_program"
-        },
-        {
           "name": "stake_pool",
           "writable": true
         },
@@ -3876,6 +4352,9 @@
           "address": "SysvarStakeHistory1111111111111111111111111"
         },
         {
+          "name": "stake_pool_program"
+        },
+        {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         },
@@ -3896,6 +4375,21 @@
     },
     {
       "name": "stake_pool_withdraw_stake",
+      "docs": [
+        "Unstakes from pool token into a stake account.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `pool_token_amount`: Amount of pool token to unstake.",
+        "- `stake_account_id`: Stake account ID.",
+        "- `stake_account_bump`: Stake account bump seed.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used."
+      ],
       "discriminator": [
         7,
         70,
@@ -3908,7 +4402,7 @@
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -3976,11 +4470,11 @@
           "writable": true
         },
         {
-          "name": "stake_pool_program"
-        },
-        {
           "name": "clock",
           "address": "SysvarC1ock11111111111111111111111111111111"
+        },
+        {
+          "name": "stake_pool_program"
         },
         {
           "name": "system_program",
@@ -4011,6 +4505,15 @@
     },
     {
       "name": "subscribe",
+      "docs": [
+        "Investor",
+        "Subscribes to a specified amount of shares.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `amount`: The amount of shares to subscribe.",
+        "- `skip_state`: Should always be true (state check to be implemented)."
+      ],
       "discriminator": [
         254,
         28,
@@ -4178,6 +4681,10 @@
       ],
       "args": [
         {
+          "name": "share_class_id",
+          "type": "u8"
+        },
+        {
           "name": "amount",
           "type": "u64"
         },
@@ -4189,6 +4696,19 @@
     },
     {
       "name": "toggle_max_lock",
+      "docs": [
+        "Toggles max lock.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `value`: The value to toggle.",
+        "",
+        "# Permission required",
+        "- Permission::UnstakeJup",
+        "",
+        "# Integration required",
+        "- IntegrationName::JupiterVote"
+      ],
       "discriminator": [
         163,
         157,
@@ -4390,6 +4910,16 @@
     },
     {
       "name": "update_fund",
+      "docs": [
+        "Updates an existing fund with new parameters.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `fund`: An instance of `FundModel` containing the updated details of the fund.",
+        "",
+        "# Permission required",
+        "- Manager only, delegates not allowed"
+      ],
       "discriminator": [
         132,
         171,
@@ -4424,6 +4954,17 @@
     },
     {
       "name": "update_share_class",
+      "docs": [
+        "Updates an existing share class with new metadata.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `share_class_id`: The id of the share class to be updated.",
+        "- `share_class_metadata`: An instance of `ShareClassModel` containing the updated metadata for the new share class.",
+        "",
+        "# Permission required",
+        "- Manager only, delegates not allowed"
+      ],
       "discriminator": [
         196,
         227,
@@ -4444,12 +4985,9 @@
           "writable": true
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "token_2022_program",
@@ -4473,6 +5011,16 @@
     },
     {
       "name": "withdraw",
+      "docs": [
+        "Withdraw an asset from fund treasury into manager's wallet.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `amount`: The amount to withdraw.",
+        "",
+        "# Permission required",
+        "- Manager only, delegates not allowed"
+      ],
       "discriminator": [
         183,
         18,
@@ -4580,7 +5128,7 @@
             "seeds": [
               {
                 "kind": "account",
-                "path": "manager"
+                "path": "signer"
               },
               {
                 "kind": "account",
@@ -4631,12 +5179,9 @@
           }
         },
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "fund"
-          ]
+          "signer": true
         },
         {
           "name": "token_program"
@@ -4651,6 +5196,18 @@
     },
     {
       "name": "withdraw_all_staked_jup",
+      "docs": [
+        "Withdraws all unstaked JUP.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::UnstakeJup",
+        "",
+        "# Integration required",
+        "- IntegrationName::JupiterVote"
+      ],
       "discriminator": [
         210,
         124,
@@ -4724,6 +5281,18 @@
     },
     {
       "name": "withdraw_from_stake_accounts",
+      "docs": [
+        "Withdraws SOL from stake accounts.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- IntegrationName::NativeStaking"
+      ],
       "discriminator": [
         93,
         209,
@@ -4736,7 +5305,7 @@
       ],
       "accounts": [
         {
-          "name": "manager",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
@@ -4789,6 +5358,18 @@
     },
     {
       "name": "withdraw_partial_unstaking",
+      "docs": [
+        "Withdraws JUP from partial unstaking.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::UnstakeJup",
+        "",
+        "# Integration required",
+        "- IntegrationName::JupiterVote"
+      ],
       "discriminator": [
         201,
         202,
@@ -4866,6 +5447,15 @@
     },
     {
       "name": "wsol_unwrap",
+      "docs": [
+        "Unwraps all wSOL to get SOL.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::WSolUnwrap"
+      ],
       "discriminator": [
         123,
         189,
@@ -5013,6 +5603,16 @@
     },
     {
       "name": "wsol_wrap",
+      "docs": [
+        "Wraps SOL to get wSOL.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `lamports`: The amount of SOL to wrap.",
+        "",
+        "# Permission required",
+        "- Permission::WSolWrap"
+      ],
       "discriminator": [
         26,
         2,
@@ -6562,7 +7162,7 @@
             "name": "Marinade"
           },
           {
-            "name": "Jupiter"
+            "name": "JupiterSwap"
           },
           {
             "name": "Mint"

@@ -26,7 +26,7 @@ export class MarinadeClient {
 
   public async depositSol(
     fund: PublicKey,
-    amount: BN
+    amount: BN,
   ): Promise<TransactionSignature> {
     const tx = await this.depositSolTx(fund, amount, {});
     return await this.base.sendAndConfirm(tx);
@@ -34,7 +34,7 @@ export class MarinadeClient {
 
   public async depositStake(
     fund: PublicKey,
-    stakeAccount: PublicKey
+    stakeAccount: PublicKey,
   ): Promise<TransactionSignature> {
     const tx = await this.depositStakeTx(fund, stakeAccount, {});
     return await this.base.sendAndConfirm(tx);
@@ -42,7 +42,7 @@ export class MarinadeClient {
 
   public async liquidUnstake(
     fund: PublicKey,
-    amount: BN
+    amount: BN,
   ): Promise<TransactionSignature> {
     const tx = await this.liquidUnstakeTx(fund, amount, {});
     return await this.base.sendAndConfirm(tx);
@@ -50,7 +50,7 @@ export class MarinadeClient {
 
   public async delayedUnstake(
     fund: PublicKey,
-    amount: BN
+    amount: BN,
   ): Promise<TransactionSignature> {
     const tx = await this.delayedUnstakeTx(fund, amount, {});
     return await this.base.sendAndConfirm(tx);
@@ -58,7 +58,7 @@ export class MarinadeClient {
 
   public async claimTickets(
     fund: PublicKey,
-    tickets: PublicKey[]
+    tickets: PublicKey[],
   ): Promise<TransactionSignature> {
     const tx = await this.claimTicketsTx(fund, tickets, {});
     return await this.base.sendAndConfirm(tx);
@@ -70,11 +70,11 @@ export class MarinadeClient {
 
   getMarinadeTicketPDA(
     fundPDA: PublicKey,
-    ticketId: string
+    ticketId: string,
   ): [PublicKey, number] {
     return PublicKey.findProgramAddressSync(
       [Buffer.from("ticket"), Buffer.from(ticketId), fundPDA.toBuffer()],
-      this.base.programId
+      this.base.programId,
     );
   }
 
@@ -94,7 +94,7 @@ export class MarinadeClient {
               },
             },
           ],
-        }
+        },
       );
     return accounts.map((a) => a.pubkey);
   }
@@ -128,13 +128,13 @@ export class MarinadeClient {
               },
             },
           ],
-        }
+        },
       );
     const currentEpoch = await this.base.provider.connection.getEpochInfo();
     return accounts.map((a) => {
       const lamports = Number((a.account.data as Buffer).readBigInt64LE(72));
       const createdEpoch = Number(
-        (a.account.data as Buffer).readBigInt64LE(80)
+        (a.account.data as Buffer).readBigInt64LE(80),
       );
       return {
         address: a.pubkey,
@@ -151,21 +151,21 @@ export class MarinadeClient {
     // TODO: use marinade.getMarinadeState(); ?
     return {
       marinadeStateAddress: new PublicKey(
-        "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC"
+        "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC",
       ),
       msolMintAddress: MSOL,
       treasuryMsolAccount: new PublicKey(
-        "B1aLzaNMeFVAyQ6f3XbbUyKcH2YPHu2fqiEagmiF23VR"
+        "B1aLzaNMeFVAyQ6f3XbbUyKcH2YPHu2fqiEagmiF23VR",
       ),
       reserveAddress: new PublicKey(
-        "Du3Ysj1wKbxPKkuPPnvzQLQh8oMSVifs3jGZjJWXFmHN"
+        "Du3Ysj1wKbxPKkuPPnvzQLQh8oMSVifs3jGZjJWXFmHN",
       ),
       mSolMintAuthority: new PublicKey(
-        "3JLPCS1qM2zRw3Dp6V4hZnYHd4toMNPkNesXdX9tg6KM"
+        "3JLPCS1qM2zRw3Dp6V4hZnYHd4toMNPkNesXdX9tg6KM",
       ),
       msolLeg: new PublicKey("7GgPYjS5Dza89wV6FpZ23kUJRG5vbQ1GM25ezspYFSoE"),
       msolLegAuthority: new PublicKey(
-        "EyaSjUtSgo9aRD1f8LWXwdvkpDTmXAW54yoSHZRF14WL"
+        "EyaSjUtSgo9aRD1f8LWXwdvkpDTmXAW54yoSHZRF14WL",
       ),
       solLeg: new PublicKey("UefNb6z6yvArqe4cJHTXCqStRsKmWhGxnZzuHbikP5Q"),
     };
@@ -176,7 +176,7 @@ export class MarinadeClient {
       await this.base.provider.connection.getParsedAccountInfo(stakeAccount);
     if (!stakeAccountInfo) {
       throw new Error(
-        `Failed to find the stake account ${stakeAccount.toBase58()}`
+        `Failed to find the stake account ${stakeAccount.toBase58()}`,
       );
     }
 
@@ -184,7 +184,7 @@ export class MarinadeClient {
       throw new Error(
         `${stakeAccount.toBase58()} is not a stake account because owner is ${
           stakeAccountInfo.owner
-        }`
+        }`,
       );
     }
 
@@ -197,7 +197,7 @@ export class MarinadeClient {
       throw new Error(
         `${stakeAccount.toBase58()} is not a stake account because space is ${
           parsedData.space
-        } != 200`
+        } != 200`,
       );
     }
 
@@ -215,25 +215,24 @@ export class MarinadeClient {
   public async depositSolTx(
     fund: PublicKey,
     amount: BN,
-    txOptions: TxOptions
+    txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const treasury = this.base.getTreasuryPDA(fund);
     const marinadeState = this.getMarinadeState();
     const treasuryMsolAta = getAssociatedTokenAddressSync(
       marinadeState.msolMintAddress,
       treasury,
-      true
+      true,
     );
 
     // @ts-ignore
     const tx = await this.base.program.methods
       .marinadeDepositSol(amount)
-      .accounts({
+      .accountsPartial({
         fund,
-        //@ts-ignore IDL ts type is unhappy
         treasury,
-        manager,
+        signer,
         reservePda: marinadeState.reserveAddress,
         marinadeState: marinadeState.marinadeStateAddress,
         msolMint: marinadeState.msolMintAddress,
@@ -255,9 +254,9 @@ export class MarinadeClient {
   public async depositStakeTx(
     fund: PublicKey,
     stakeAccount: PublicKey,
-    txOptions: TxOptions
+    txOptions: TxOptions,
   ): Promise<any> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const treasury = this.base.getTreasuryPDA(fund);
 
     const stakeAccountInfo = await this.getParsedStakeAccountInfo(stakeAccount);
@@ -266,7 +265,7 @@ export class MarinadeClient {
     const marinadeState = await new Marinade().getMarinadeState();
     const { validatorRecords } = await marinadeState.getValidatorRecords();
     const validatorLookupIndex = validatorRecords.findIndex(
-      ({ validatorAccount }) => validatorAccount.equals(stakeAccountInfo.voter)
+      ({ validatorAccount }) => validatorAccount.equals(stakeAccountInfo.voter),
     );
     const validatorIndex =
       validatorLookupIndex === -1
@@ -274,16 +273,15 @@ export class MarinadeClient {
         : validatorLookupIndex;
 
     const duplicationFlag = await marinadeState.validatorDuplicationFlag(
-      stakeAccountInfo.voter
+      stakeAccountInfo.voter,
     );
 
     const tx = await this.base.program.methods
       .marinadeDepositStake(validatorIndex)
-      .accounts({
+      .accountsPartial({
         fund,
-        //@ts-ignore IDL ts type is unhappy
         treasury,
-        manager,
+        signer,
         marinadeState: marinadeState.marinadeStateAddress,
         validatorList:
           marinadeState.state.validatorSystem.validatorList.account,
@@ -310,27 +308,26 @@ export class MarinadeClient {
   public async delayedUnstakeTx(
     fund: PublicKey,
     amount: BN,
-    txOptions: TxOptions
+    txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const ticketId = Date.now().toString();
     const [ticket, bump] = this.getMarinadeTicketPDA(fund, ticketId);
     const treasury = this.base.getTreasuryPDA(fund);
     const marinadeState = this.getMarinadeState();
     const treasuryMsolAta = this.base.getTreasuryAta(
       fund,
-      marinadeState.msolMintAddress
+      marinadeState.msolMintAddress,
     );
 
     console.log(`Ticket ${ticketId}`, ticket.toBase58());
 
     const tx = await this.base.program.methods
       .marinadeDelayedUnstake(amount, ticketId, bump)
-      .accounts({
+      .accountsPartial({
         fund,
-        //@ts-ignore IDL ts type is unhappy
         treasury,
-        manager,
+        signer,
         ticket,
         msolMint: marinadeState.msolMintAddress,
         burnMsolFrom: treasuryMsolAta,
@@ -349,25 +346,24 @@ export class MarinadeClient {
   public async claimTicketsTx(
     fund: PublicKey,
     tickets: PublicKey[],
-    txOptions: TxOptions
+    txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const treasury = this.base.getTreasuryPDA(fund);
     const marinadeState = this.getMarinadeState();
 
     const tx = await this.base.program.methods
       .marinadeClaimTickets()
-      .accounts({
+      .accountsPartial({
         fund,
-        //@ts-ignore IDL ts type is unhappy
         treasury,
-        manager,
+        signer,
         marinadeState: marinadeState.marinadeStateAddress,
         reservePda: marinadeState.reserveAddress,
         marinadeProgram: MARINADE_PROGRAM_ID,
       })
       .remainingAccounts(
-        tickets.map((t) => ({ pubkey: t, isSigner: false, isWritable: true }))
+        tickets.map((t) => ({ pubkey: t, isSigner: false, isWritable: true })),
       )
       .transaction();
 
@@ -380,24 +376,23 @@ export class MarinadeClient {
   public async liquidUnstakeTx(
     fund: PublicKey,
     amount: BN,
-    txOptions: TxOptions
+    txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const treasury = this.base.getTreasuryPDA(fund);
     const marinadeState = this.getMarinadeState();
     const treasuryMsolAta = getAssociatedTokenAddressSync(
       marinadeState.msolMintAddress,
       treasury,
-      true
+      true,
     );
 
     const tx = await this.base.program.methods
       .marinadeLiquidUnstake(amount)
-      .accounts({
+      .accountsPartial({
         fund,
-        //@ts-ignore IDL ts type is unhappy
         treasury,
-        manager,
+        signer,
         marinadeState: marinadeState.marinadeStateAddress,
         msolMint: marinadeState.msolMintAddress,
         liqPoolSolLegPda: marinadeState.solLeg,

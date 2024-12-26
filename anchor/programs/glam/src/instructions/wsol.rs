@@ -41,7 +41,7 @@ pub struct WSolWrap<'info> {
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::WSolWrap)
 )]
 #[treasury_signer_seeds]
-pub fn wsol_wrap(ctx: Context<WSolWrap>, lamports: u64) -> Result<()> {
+pub fn wrap_handler(ctx: Context<WSolWrap>, lamports: u64) -> Result<()> {
     // Transfer SOL to token account
     transfer(
         CpiContext::new_with_signer(
@@ -95,7 +95,7 @@ pub struct WSolUnwrap<'info> {
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::WSolUnwrap)
 )]
 #[treasury_signer_seeds]
-pub fn wsol_unwrap(ctx: Context<WSolUnwrap>) -> Result<()> {
+pub fn unwrap_handler(ctx: Context<WSolUnwrap>) -> Result<()> {
     close_account(CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
         CloseAccount {

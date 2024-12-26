@@ -26,6 +26,7 @@ import { GlamClient, WSOL } from "../src";
 
 describe("glam_investor", () => {
   const glamClient = new GlamClient();
+  const wallet = glamClient.getWallet();
 
   const useWsolInsteadOfEth = true;
 
@@ -52,32 +53,29 @@ describe("glam_investor", () => {
   const BTC_TOKEN_PROGRAM_ID = TOKEN_2022_PROGRAM_ID;
   const ethOrWsol = useWsolInsteadOfEth ? WSOL : eth.publicKey;
 
-  const client = new GlamClient();
-  const manager = (client.provider as anchor.AnchorProvider)
-    .wallet as anchor.Wallet;
-
   const fundModel = {
     ...testFundModel,
     name: "Glam Investment",
     assets: [usdc.publicKey, btc.publicKey, ethOrWsol],
+    integrationAcls: [{ name: { marinade: {} }, features: [] }],
     // overwrite share class acls: alice and manager are allowed to subscribe,
     // bob and eve will be blocked.
     shareClasses: [
       {
         ...testFundModel.shareClasses![0],
-        allowlist: [alice.publicKey, bob.publicKey, manager.publicKey],
+        allowlist: [alice.publicKey, bob.publicKey, wallet.publicKey],
         blocklist: [bob.publicKey, eve.publicKey],
       },
     ],
   };
 
-  const fundPDA = client.getFundPDA(fundModel);
-  const treasuryPDA = client.getTreasuryPDA(fundPDA);
-  const sharePDA = client.getShareClassPDA(fundPDA, 0);
+  const fundPDA = glamClient.getFundPDA(fundModel);
+  const treasuryPDA = glamClient.getTreasuryPDA(fundPDA);
+  const sharePDA = glamClient.getShareClassPDA(fundPDA);
 
-  const connection = client.provider.connection;
+  const connection = glamClient.provider.connection;
   const commitment = "confirmed";
-  const program = client.program;
+  const program = glamClient.program;
 
   const treasuryUsdcAta = getAssociatedTokenAddressSync(
     usdc.publicKey,
@@ -104,28 +102,28 @@ describe("glam_investor", () => {
   // manager
   const managerUsdcAta = getAssociatedTokenAddressSync(
     usdc.publicKey,
-    manager.publicKey,
+    wallet.publicKey,
     false,
     TOKEN_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
   );
   const managerEthAta = getAssociatedTokenAddressSync(
     ethOrWsol,
-    manager.publicKey,
+    wallet.publicKey,
     false,
     TOKEN_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
   );
   const managerBtcAta = getAssociatedTokenAddressSync(
     btc.publicKey,
-    manager.publicKey,
+    wallet.publicKey,
     false,
     BTC_TOKEN_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
   );
   const managerSharesAta = getAssociatedTokenAddressSync(
     sharePDA,
-    manager.publicKey,
+    wallet.publicKey,
     false,
     TOKEN_2022_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -141,9 +139,9 @@ describe("glam_investor", () => {
         // exec in parallel, but await before ending the test
         tokenKeypairs.map(async (token, idx) => {
           const mint = await createMint(
-            client.provider.connection,
-            manager.payer,
-            manager.publicKey,
+            glamClient.provider.connection,
+            wallet.payer,
+            wallet.publicKey,
             null,
             idx == 0 ? 6 : 8,
             token,
@@ -173,7 +171,7 @@ describe("glam_investor", () => {
               user,
               token.publicKey,
               userATA,
-              manager.payer,
+              wallet.payer,
               idx == 2 ? 10_000_000_000 : 1000_000_000,
               [],
               {},
@@ -183,19 +181,19 @@ describe("glam_investor", () => {
 
           const managerAta = await createAssociatedTokenAccount(
             connection,
-            manager.payer,
+            wallet.payer,
             token.publicKey,
-            manager.publicKey,
+            wallet.publicKey,
             {},
             idx == 2 ? BTC_TOKEN_PROGRAM_ID : TOKEN_PROGRAM_ID,
           );
 
           await mintTo(
             connection,
-            manager.payer,
+            wallet.payer,
             token.publicKey,
             managerAta,
-            manager.payer,
+            wallet.payer,
             idx == 2 ? 1000_000_000_000 : 1000_000_000,
             [],
             { commitment }, // await 'confirmed'
@@ -214,9 +212,9 @@ describe("glam_investor", () => {
       //
       // create fund
       //
-      const fundData = await createFundForTest(client, fundModel);
-      const fund = await program.account.fundAccount.fetch(fundPDA);
-      expect(fund.shareClasses[0]).toEqual(sharePDA);
+      const fundData = await createFundForTest(glamClient, fundModel);
+      const fundAccount = await glamClient.fetchFundAccount(fundData.fundPDA);
+      expect(fundAccount.shareClasses[0]).toEqual(sharePDA);
     } catch (e) {
       console.error(e);
       throw e;
@@ -267,7 +265,7 @@ describe("glam_investor", () => {
       const keypair = Keypair.generate();
       const invalidShareClass = await createMint(
         connection,
-        manager.payer,
+        wallet.payer,
         keypair.publicKey,
         null,
         6,
@@ -277,14 +275,14 @@ describe("glam_investor", () => {
       );
       const shareAta = getAssociatedTokenAddressSync(
         invalidShareClass,
-        manager.publicKey,
+        wallet.publicKey,
         false,
         TOKEN_2022_PROGRAM_ID,
         ASSOCIATED_TOKEN_PROGRAM_ID,
       );
       const txId = await program.methods
-        .subscribe(new BN(1 * 10 ** 8), true)
-        .accounts({
+        .subscribe(0, new BN(1 * 10 ** 8), true)
+        .accountsPartial({
           fund: fundPDA,
           treasury: treasuryPDA,
           shareClass: invalidShareClass,
@@ -292,15 +290,15 @@ describe("glam_investor", () => {
           asset: btc.publicKey,
           treasuryAta: treasuryEthAta,
           signerAssetAta: managerEthAta,
-          signer: manager.publicKey,
+          signer: wallet.publicKey,
           tokenProgram: TOKEN_PROGRAM_ID,
           token2022Program: TOKEN_2022_PROGRAM_ID,
         })
         .preInstructions([
           createAssociatedTokenAccountIdempotentInstruction(
-            manager.publicKey,
+            wallet.publicKey,
             shareAta,
-            manager.publicKey,
+            wallet.publicKey,
             invalidShareClass,
             TOKEN_2022_PROGRAM_ID,
           ),
@@ -353,7 +351,7 @@ describe("glam_investor", () => {
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
-    const amount = new BN(shares.supply / 2n);
+    const amount = new BN((shares.supply / 2n).toString());
     console.log("total shares:", shares.supply, "amount:", amount);
     try {
       const txId = await glamClient.investor.redeem(fundPDA, amount, true);
@@ -383,11 +381,11 @@ describe("glam_investor", () => {
 
   it("Manager adds more tokens and redeems USDC", async () => {
     // transfer 250 USDC into the treasury (e.g. fees)
-    const amountExt = new BN(250_000_000);
+    const amountExt = 250_000_000;
     try {
       const tx1 = new Transaction().add(
         createAssociatedTokenAccountInstruction(
-          manager.publicKey,
+          wallet.publicKey,
           treasuryUsdcAta,
           treasuryPDA,
           usdc.publicKey,
@@ -396,19 +394,19 @@ describe("glam_investor", () => {
           managerUsdcAta,
           usdc.publicKey,
           treasuryUsdcAta,
-          manager.publicKey,
+          wallet.publicKey,
           amountExt,
           6,
           [],
           TOKEN_PROGRAM_ID,
         ),
         SystemProgram.transfer({
-          fromPubkey: manager.publicKey,
+          fromPubkey: wallet.publicKey,
           toPubkey: treasuryPDA,
           lamports: 1_000_000_000,
         }),
       );
-      await sendAndConfirmTransaction(connection, tx1, [manager.payer], {
+      await sendAndConfirmTransaction(connection, tx1, [wallet.payer], {
         skipPreflight: true,
         commitment,
       });

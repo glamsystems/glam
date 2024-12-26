@@ -12,10 +12,11 @@ use marinade::program::MarinadeFinance;
 use marinade::state::delayed_unstake_ticket::TicketAccountData;
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Stake)
 )]
+#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Marinade))]
 #[treasury_signer_seeds]
-pub fn marinade_deposit_sol<'c: 'info, 'info>(
+pub fn marinade_deposit_sol_handler<'c: 'info, 'info>(
     ctx: Context<MarinadeDepositSol>,
     lamports: u64,
 ) -> Result<()> {
@@ -42,10 +43,11 @@ pub fn marinade_deposit_sol<'c: 'info, 'info>(
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Stake)
 )]
+#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Marinade))]
 #[treasury_signer_seeds]
-pub fn marinade_deposit_stake<'c: 'info, 'info>(
+pub fn marinade_deposit_stake_handler<'c: 'info, 'info>(
     ctx: Context<MarinadeDepositStake>,
     validator_idx: u32,
 ) -> Result<()> {
@@ -74,10 +76,11 @@ pub fn marinade_deposit_stake<'c: 'info, 'info>(
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Unstake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Unstake)
 )]
+#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Marinade))]
 #[treasury_signer_seeds]
-pub fn marinade_delayed_unstake<'c: 'info, 'info>(
+pub fn delayed_unstake_handler<'c: 'info, 'info>(
     ctx: Context<MarinadeDelayedUnstake>,
     msol_amount: u64,
     ticket_id: String,
@@ -100,7 +103,7 @@ pub fn marinade_delayed_unstake<'c: 'info, 'info>(
         CpiContext::new_with_signer(
             ctx.accounts.system_program.to_account_info(),
             system_program::CreateAccount {
-                from: ctx.accounts.manager.to_account_info(), // treasury PDA
+                from: ctx.accounts.signer.to_account_info(), // treasury PDA
                 to: ctx.accounts.ticket.to_account_info().clone(),
             },
             signer_seeds,
@@ -137,10 +140,11 @@ pub fn marinade_delayed_unstake<'c: 'info, 'info>(
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Unstake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Unstake)
 )]
+#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Marinade))]
 #[treasury_signer_seeds]
-pub fn marinade_claim_tickets<'info>(
+pub fn claim_tickets_handler<'info>(
     ctx: Context<'_, '_, '_, 'info, MarinadeClaimTickets<'info>>,
 ) -> Result<()> {
     let fund = &mut ctx.accounts.fund;
@@ -174,10 +178,11 @@ pub fn marinade_claim_tickets<'info>(
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::LiquidUnstake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::LiquidUnstake)
 )]
+#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Marinade))]
 #[treasury_signer_seeds]
-pub fn marinade_liquid_unstake<'c: 'info, 'info>(
+pub fn liquid_unstake_handler<'c: 'info, 'info>(
     ctx: Context<MarinadeLiquidUnstake>,
     msol_amount: u64,
 ) -> Result<()> {
@@ -203,7 +208,7 @@ pub fn marinade_liquid_unstake<'c: 'info, 'info>(
 #[derive(Accounts)]
 pub struct MarinadeDepositSol<'info> {
     #[account(mut)]
-    pub manager: Signer<'info>,
+    pub signer: Signer<'info>,
 
     #[account(has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
@@ -240,7 +245,7 @@ pub struct MarinadeDepositSol<'info> {
 
     #[account(
         init_if_needed,
-        payer = manager,
+        payer = signer,
         associated_token::mint = msol_mint,
         associated_token::authority = treasury,
     )]
@@ -255,7 +260,7 @@ pub struct MarinadeDepositSol<'info> {
 #[derive(Accounts)]
 pub struct MarinadeDepositStake<'info> {
     #[account(mut)]
-    pub manager: Signer<'info>,
+    pub signer: Signer<'info>,
 
     #[account(has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
@@ -290,7 +295,7 @@ pub struct MarinadeDepositStake<'info> {
 
     #[account(
         init_if_needed,
-        payer = manager,
+        payer = signer,
         associated_token::mint = msol_mint,
         associated_token::authority = treasury,
     )]
@@ -310,7 +315,7 @@ pub struct MarinadeDepositStake<'info> {
 // #[instruction(ticket_id: String)]
 pub struct MarinadeDelayedUnstake<'info> {
     #[account(mut)]
-    pub manager: Signer<'info>,
+    pub signer: Signer<'info>,
 
     #[account(mut, has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
@@ -350,7 +355,7 @@ pub struct MarinadeDelayedUnstake<'info> {
 #[derive(Accounts)]
 pub struct MarinadeClaimTickets<'info> {
     #[account(mut)]
-    pub manager: Signer<'info>,
+    pub signer: Signer<'info>,
 
     #[account(mut, has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
@@ -375,7 +380,7 @@ pub struct MarinadeClaimTickets<'info> {
 
 #[derive(Accounts)]
 pub struct MarinadeLiquidUnstake<'info> {
-    pub manager: Signer<'info>,
+    pub signer: Signer<'info>,
 
     #[account(has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,

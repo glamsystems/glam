@@ -18,7 +18,7 @@ export class BlockhashWithCache {
   constructor(
     provider: anchor.Provider,
     isBrowser: boolean,
-    ttl: number = 15_000
+    ttl: number = 15_000,
   ) {
     this.provider = provider;
     this.isBrowser = isBrowser;
@@ -37,18 +37,18 @@ export class BlockhashWithCache {
 
     if (data) {
       const { blockhash, expiresAt } = data;
-      console.log(`blockhash expires at`, expiresAt);
+      // console.log(`blockhash expires at`, expiresAt);
       if (expiresAt > Date.now()) {
-        console.log("blockhash cache hit");
+        // console.log("blockhash cache hit");
         return blockhash;
       }
     }
 
     const latestBlockhash = await this.provider.connection.getLatestBlockhash();
-    console.log(
-      "blockhash cache miss, fetched latestBlockhash:",
-      latestBlockhash
-    );
+    // console.log(
+    //   "blockhash cache miss, fetched latestBlockhash:",
+    //   latestBlockhash
+    // );
     await this.set({
       blockhash: latestBlockhash,
       expiresAt: Date.now() + this.ttl,
@@ -91,7 +91,7 @@ export class BlockhashWithCache {
       this.cacheKey,
       new Response(JSON.stringify(data), {
         headers: { "Content-Type": "application/json" },
-      })
+      }),
     );
   }
 

@@ -60,7 +60,7 @@ program
   .command("env")
   .description("Show environment setup")
   .action(async () => {
-    console.log("Wallet connected:", glamClient.getManager().toBase58());
+    console.log("Wallet connected:", glamClient.getSigner().toBase58());
     console.log("RPC endpoint:", glamClient.provider.connection.rpcEndpoint);
     console.log("Priority fee level:", priorityFeeLevel);
     console.log("Active fund:", fundPDA ? fundPDA.toBase58() : "not set");

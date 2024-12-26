@@ -642,7 +642,8 @@ export default function Trade() {
     if (!validated) {
       return;
     }
-    const { orderType, direction, size, price, marketConfig } = validated;
+    const { orderType, direction, size, price } = validated;
+    const marketConfig = validated.marketConfig as SpotMarketConfig;
 
     const orderParams = getOrderParams({
       orderType,

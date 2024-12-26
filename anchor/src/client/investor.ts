@@ -173,7 +173,6 @@ export class InvestorClient {
       } catch (err) {
         // ignore
       }
-      // const solBalance = new BN(String(await connection.getBalance(signer)));
       const delta = amount.sub(wsolBalance);
       if (delta.gt(new BN(0))) {
         preInstructions = preInstructions.concat([
@@ -189,7 +188,7 @@ export class InvestorClient {
 
     // @ts-ignore
     const tx = await this.base.program.methods
-      .subscribe(amount, skipState)
+      .subscribe(0, amount, skipState)
       .accounts({
         fund,
         shareClass,

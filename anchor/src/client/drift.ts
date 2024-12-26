@@ -30,11 +30,10 @@ export interface PerpMarketConfig {
   categories: string[];
   symbol: string;
   baseAsset: string;
-  decimals: number;
   marketIndex: number;
   launchTs: string;
   oracle: string;
-  oraceSource: string;
+  oracleSource: string;
   pythPullOraclePDA: string;
   pythFeedId: string;
   marketPDA: string;
@@ -74,7 +73,7 @@ export interface GlamDriftUser {
 }
 
 const DRIFT_VAULT = new PublicKey(
-  "JCNCMFXo5M5qwUPg2Utu1u6YWp3MbygxqBsBeXXJfrw"
+  "JCNCMFXo5M5qwUPg2Utu1u6YWp3MbygxqBsBeXXJfrw",
 );
 const DRIFT_MARGIN_PRECISION = 10_000;
 
@@ -93,12 +92,12 @@ export class DriftClient {
   public async updateUserCustomMarginRatio(
     fund: PublicKey,
     maxLeverage: number, // 1=1x, 2=2x ... 50=50x leverage
-    subAccountId: number = 0
+    subAccountId: number = 0,
   ): Promise<TransactionSignature> {
     const tx = await this.updateUserCustomMarginRatioTx(
       fund,
       maxLeverage,
-      subAccountId
+      subAccountId,
     );
     return await this.base.sendAndConfirm(tx);
   }
@@ -106,12 +105,12 @@ export class DriftClient {
   public async updateUserMarginTradingEnabled(
     fund: PublicKey,
     marginTradingEnabled: boolean,
-    subAccountId: number = 0
+    subAccountId: number = 0,
   ): Promise<TransactionSignature> {
     const tx = await this.updateUserMarginTradingEnabledTx(
       fund,
       marginTradingEnabled,
-      subAccountId
+      subAccountId,
     );
     return await this.base.sendAndConfirm(tx);
   }
@@ -119,7 +118,7 @@ export class DriftClient {
   public async updateUserDelegate(
     fund: PublicKey,
     delegate: PublicKey,
-    subAccountId: number = 0
+    subAccountId: number = 0,
   ): Promise<TransactionSignature> {
     const tx = await this.updateUserDelegateTx(fund, delegate, subAccountId);
     return await this.base.sendAndConfirm(tx);
@@ -131,7 +130,7 @@ export class DriftClient {
     marketIndex: number = 1,
     subAccountId: number = 0,
     marketConfigs: DriftMarketConfigs,
-    txOptions: TxOptions = {}
+    txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const tx = await this.depositTx(
       fund,
@@ -139,7 +138,7 @@ export class DriftClient {
       marketIndex,
       subAccountId,
       marketConfigs,
-      txOptions
+      txOptions,
     );
     return await this.base.sendAndConfirm(tx);
   }
@@ -150,7 +149,7 @@ export class DriftClient {
     marketIndex: number = 1,
     subAccountId: number = 0,
     marketConfigs: DriftMarketConfigs,
-    txOptions: TxOptions = {}
+    txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const tx = await this.withdrawTx(
       fund,
@@ -158,7 +157,7 @@ export class DriftClient {
       marketIndex,
       subAccountId,
       marketConfigs,
-      txOptions
+      txOptions,
     );
     return await this.base.sendAndConfirm(tx);
   }
@@ -168,14 +167,14 @@ export class DriftClient {
     orderParams: OrderParams,
     subAccountId: number = 0,
     marketConfigs: DriftMarketConfigs,
-    txOptions: TxOptions = {}
+    txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const tx = await this.placeOrderTx(
       fund,
       orderParams,
       subAccountId,
       marketConfigs,
-      txOptions
+      txOptions,
     );
     return await this.base.sendAndConfirm(tx);
   }
@@ -187,7 +186,7 @@ export class DriftClient {
     direction: PositionDirection,
     subAccountId: number = 0,
     marketConfigs: DriftMarketConfigs,
-    txOptions: TxOptions = {}
+    txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const tx = await this.cancelOrdersTx(
       fund,
@@ -196,7 +195,7 @@ export class DriftClient {
       direction,
       subAccountId,
       marketConfigs,
-      txOptions
+      txOptions,
     );
     return await this.base.sendAndConfirm(tx);
   }
@@ -218,7 +217,7 @@ export class DriftClient {
   async getPositions(fund: PublicKey, subAccountId: number = 0) {
     const treasury = this.base.getTreasuryPDA(fund);
     const response = await fetch(
-      `https://api.glam.systems/v0/drift/user?authority=${treasury.toBase58()}&accountId=0`
+      `https://api.glam.systems/v0/drift/user?authority=${treasury.toBase58()}&accountId=${subAccountId}`,
     );
     const data = await response.json();
     const { spotPositions, perpPositions } = data as GlamDriftUser;
@@ -233,7 +232,7 @@ export class DriftClient {
       const connection = this.base.provider.connection;
       const info = await connection.getAccountInfo(
         driftUserAddress,
-        connection.commitment
+        connection.commitment,
       );
       if (info) {
         driftUserAccount = decodeUser(info.data);
@@ -264,11 +263,11 @@ export class DriftClient {
     subAccountId: number,
     marketType: MarketType,
     marketIndex: number,
-    marketConfigs: DriftMarketConfigs
+    marketConfigs: DriftMarketConfigs,
   ): Promise<AccountMeta[]> {
     const { spotPositions, perpPositions } = await this.getPositions(
       fund,
-      subAccountId
+      subAccountId,
     );
     const spotMarketIndexes = spotPositions.map((p) => p.marketIndex);
     const perpMarketIndexes = perpPositions.map((p) => p.marketIndex);
@@ -286,12 +285,17 @@ export class DriftClient {
         break;
     }
 
+    console.log("spotMarketIndexes:", spotMarketIndexes);
+    console.log("perpMarketIndexes:", perpMarketIndexes);
+
     const oracles = spotMarketIndexes
       .map((i) => marketConfigs.spot[i].oracle)
       .concat(perpMarketIndexes.map((i) => marketConfigs.perp[i].oracle));
     const markets = spotMarketIndexes
       .map((i) => marketConfigs.spot[i].marketPDA)
       .concat(perpMarketIndexes.map((i) => marketConfigs.perp[i].marketPDA));
+
+    console.log("oracles:", oracles);
 
     return oracles
       .map((o) => ({
@@ -304,7 +308,7 @@ export class DriftClient {
           pubkey: new PublicKey(m),
           isWritable: true,
           isSigner: false,
-        }))
+        })),
       );
   }
 
@@ -314,9 +318,9 @@ export class DriftClient {
 
   public async initializeTx(
     fund: PublicKey,
-    txOptions: TxOptions = {}
+    txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
 
     const [user, userStats] = this.getUser(fund);
     const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
@@ -329,7 +333,7 @@ export class DriftClient {
         user,
         userStats,
         state,
-        manager,
+        signer,
       })
       .transaction();
 
@@ -343,9 +347,9 @@ export class DriftClient {
     fund: PublicKey,
     maxLeverage: number, // 1=1x, 2=2x ... 50=50x leverage
     subAccountId: number = 0,
-    txOptions: TxOptions = {}
+    txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const [user] = this.getUser(fund, subAccountId);
 
     // https://github.com/drift-labs/protocol-v2/blob/babed162b08b1fe34e49a81c5aa3e4ec0a88ecdf/programs/drift/src/math/constants.rs#L183-L184
@@ -353,10 +357,10 @@ export class DriftClient {
 
     const tx = await this.base.program.methods
       .driftUpdateUserCustomMarginRatio(subAccountId, marginRatio)
-      .accounts({
+      .accountsPartial({
         fund,
         user,
-        manager,
+        signer,
       })
       .transaction();
 
@@ -370,17 +374,17 @@ export class DriftClient {
     fund: PublicKey,
     marginTradingEnabled: boolean,
     subAccountId: number = 0,
-    txOptions: TxOptions = {}
+    txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const [user] = this.getUser(fund, subAccountId);
 
     const tx = await this.base.program.methods
       .driftUpdateUserMarginTradingEnabled(subAccountId, marginTradingEnabled)
-      .accounts({
+      .accountsPartial({
         fund,
         user,
-        manager,
+        signer,
       })
       .transaction();
 
@@ -394,17 +398,17 @@ export class DriftClient {
     fund: PublicKey,
     delegate: PublicKey,
     subAccountId: number = 0,
-    txOptions: TxOptions = {}
+    txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const [user] = this.getUser(fund, subAccountId);
 
     const tx = await this.base.program.methods
       .driftUpdateUserDelegate(subAccountId, delegate)
-      .accounts({
+      .accountsPartial({
         fund,
         user,
-        manager,
+        signer,
       })
       .transaction();
 
@@ -420,9 +424,9 @@ export class DriftClient {
     marketIndex: number = 1,
     subAccountId: number = 0,
     marketConfigs: DriftMarketConfigs,
-    txOptions: TxOptions = {}
+    txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const [user, userStats] = this.getUser(fund, subAccountId);
     const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
@@ -431,14 +435,14 @@ export class DriftClient {
 
     const tx = await this.base.program.methods
       .driftDeposit(marketIndex, amount)
-      .accounts({
+      .accountsPartial({
         fund,
         treasuryAta: this.base.getTreasuryAta(fund, new PublicKey(mint)),
         driftAta: new PublicKey(vaultPDA),
         user,
         userStats,
         state,
-        manager,
+        signer,
       })
       .remainingAccounts([
         { pubkey: new PublicKey(oracle), isSigner: false, isWritable: false },
@@ -458,9 +462,9 @@ export class DriftClient {
     marketIndex: number = 1,
     subAccountId: number = 0,
     marketConfigs: DriftMarketConfigs,
-    txOptions: TxOptions = {}
+    txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const [user, userStats] = this.getUser(fund, subAccountId);
     const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
@@ -470,19 +474,19 @@ export class DriftClient {
       subAccountId,
       MarketType.SPOT,
       marketIndex,
-      marketConfigs
+      marketConfigs,
     );
 
     const tx = await this.base.program.methods
       .driftWithdraw(marketIndex, amount)
-      .accounts({
+      .accountsPartial({
         fund,
         treasuryAta: this.base.getTreasuryAta(fund, new PublicKey(mint)),
         driftAta: new PublicKey(vaultPDA),
         user,
         userStats,
         state,
-        manager,
+        signer,
         driftSigner: DRIFT_VAULT,
       })
       .remainingAccounts(remainingAccounts)
@@ -499,7 +503,7 @@ export class DriftClient {
     orderParams: OrderParams,
     subAccountId: number = 0,
     marketConfigs: DriftMarketConfigs,
-    txOptions: TxOptions = {}
+    txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const { marketIndex, marketType } = orderParams;
     const remainingAccounts = await this.composeRemainingAccounts(
@@ -507,22 +511,20 @@ export class DriftClient {
       subAccountId,
       marketType,
       marketIndex,
-      marketConfigs
+      marketConfigs,
     );
-    console.log("remainingAccounts", remainingAccounts);
 
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const [user] = this.getUser(fund, subAccountId);
     const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
     const tx = await this.base.program.methods
-      //@ts-ignore
       .driftPlaceOrders([orderParams])
-      .accounts({
+      .accountsPartial({
         fund,
         user,
         state,
-        manager,
+        signer,
       })
       .remainingAccounts(remainingAccounts)
       .transaction();
@@ -540,9 +542,9 @@ export class DriftClient {
     direction: PositionDirection,
     subAccountId: number = 0,
     marketConfigs: DriftMarketConfigs,
-    txOptions: TxOptions = {}
+    txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const [user] = this.getUser(fund, subAccountId);
     const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
@@ -551,17 +553,16 @@ export class DriftClient {
       subAccountId,
       marketType,
       marketIndex,
-      marketConfigs
+      marketConfigs,
     );
 
     const tx = await this.base.program.methods
-      //@ts-ignore
       .driftCancelOrders(marketType, marketIndex, direction)
-      .accounts({
+      .accountsPartial({
         fund,
         user,
         state,
-        manager,
+        signer,
       })
       .remainingAccounts(remainingAccounts)
       .transaction();

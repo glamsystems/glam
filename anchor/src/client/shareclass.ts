@@ -90,7 +90,7 @@ export class ShareClassClient {
     const shareClassMint = this.base.getShareClassPDA(fundPDA, shareClassId);
     const ata = this.base.getShareClassAta(owner, shareClassMint);
     const ixCreateAta = createAssociatedTokenAccountIdempotentInstruction(
-      this.base.getManager(),
+      this.base.getSigner(),
       ata,
       owner,
       shareClassMint,
@@ -164,7 +164,7 @@ export class ShareClassClient {
     const preInstructions = [];
     preInstructions.push(
       createAssociatedTokenAccountIdempotentInstruction(
-        this.base.getManager(),
+        this.base.getSigner(),
         mintTo,
         recipient,
         shareClassMint,
@@ -251,7 +251,7 @@ export class ShareClassClient {
     const preInstructions = [];
     preInstructions.push(
       createAssociatedTokenAccountIdempotentInstruction(
-        this.base.getManager(),
+        this.base.getSigner(),
         toAta,
         to,
         shareClassMint,

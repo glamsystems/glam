@@ -8,7 +8,7 @@ use glam_macros::treasury_signer_seeds;
 #[derive(Accounts)]
 pub struct InitializeAndDelegateStake<'info> {
     #[account(mut)]
-    pub manager: Signer<'info>,
+    pub signer: Signer<'info>,
 
     #[account(mut, has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
@@ -35,10 +35,13 @@ pub struct InitializeAndDelegateStake<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Stake)
+)]
+#[access_control(
+    acl::check_integration(&ctx.accounts.fund, IntegrationName::NativeStaking)
 )]
 #[treasury_signer_seeds]
-pub fn initialize_and_delegate_stake<'c: 'info, 'info>(
+pub fn initialize_and_delegate_stake_handler<'c: 'info, 'info>(
     ctx: Context<InitializeAndDelegateStake>,
     lamports: u64,
     stake_account_id: String,
@@ -126,7 +129,7 @@ pub fn initialize_and_delegate_stake<'c: 'info, 'info>(
 #[derive(Accounts)]
 pub struct DeactivateStakeAccounts<'info> {
     #[account(mut)]
-    pub manager: Signer<'info>,
+    pub signer: Signer<'info>,
 
     #[account(has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
@@ -139,10 +142,13 @@ pub struct DeactivateStakeAccounts<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Unstake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Unstake)
+)]
+#[access_control(
+    acl::check_integration(&ctx.accounts.fund, IntegrationName::NativeStaking)
 )]
 #[treasury_signer_seeds]
-pub fn deactivate_stake_accounts<'info>(
+pub fn deactivate_stake_accounts_handler<'info>(
     ctx: Context<'_, '_, '_, 'info, DeactivateStakeAccounts<'info>>,
 ) -> Result<()> {
     ctx.remaining_accounts.iter().for_each(|stake_account| {
@@ -163,7 +169,7 @@ pub fn deactivate_stake_accounts<'info>(
 #[derive(Accounts)]
 pub struct WithdrawFromStakeAccounts<'info> {
     #[account(mut)]
-    pub manager: Signer<'info>,
+    pub signer: Signer<'info>,
 
     #[account(mut, has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
@@ -177,10 +183,13 @@ pub struct WithdrawFromStakeAccounts<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Unstake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Unstake)
+)]
+#[access_control(
+    acl::check_integration(&ctx.accounts.fund, IntegrationName::NativeStaking)
 )]
 #[treasury_signer_seeds]
-pub fn withdraw_from_stake_accounts<'info>(
+pub fn withdraw_from_stake_accounts_handler<'info>(
     ctx: Context<'_, '_, '_, 'info, WithdrawFromStakeAccounts<'info>>,
 ) -> Result<()> {
     let fund = &mut ctx.accounts.fund;
@@ -212,7 +221,7 @@ pub fn withdraw_from_stake_accounts<'info>(
 #[derive(Accounts)]
 pub struct MergeStakeAccounts<'info> {
     #[account(mut)]
-    pub manager: Signer<'info>,
+    pub signer: Signer<'info>,
 
     #[account(mut, has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
@@ -234,10 +243,15 @@ pub struct MergeStakeAccounts<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Stake)
+)]
+#[access_control(
+    acl::check_integration(&ctx.accounts.fund, IntegrationName::NativeStaking)
 )]
 #[treasury_signer_seeds]
-pub fn merge_stake_accounts<'c: 'info, 'info>(ctx: Context<MergeStakeAccounts>) -> Result<()> {
+pub fn merge_stake_accounts_handler<'c: 'info, 'info>(
+    ctx: Context<MergeStakeAccounts>,
+) -> Result<()> {
     let ix = solana_program::stake::instruction::merge(
         &ctx.accounts.to_stake.key(),
         &ctx.accounts.from_stake.key(),
@@ -265,7 +279,7 @@ pub fn merge_stake_accounts<'c: 'info, 'info>(ctx: Context<MergeStakeAccounts>) 
 #[derive(Accounts)]
 pub struct SplitStakeAccount<'info> {
     #[account(mut)]
-    pub manager: Signer<'info>,
+    pub signer: Signer<'info>,
 
     #[account(mut, has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
@@ -287,10 +301,13 @@ pub struct SplitStakeAccount<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Unstake)
+)]
+#[access_control(
+    acl::check_integration(&ctx.accounts.fund, IntegrationName::NativeStaking)
 )]
 #[treasury_signer_seeds]
-pub fn split_stake_account<'c: 'info, 'info>(
+pub fn split_stake_account_handler<'c: 'info, 'info>(
     ctx: Context<SplitStakeAccount>,
     lamports: u64,
     new_stake_account_id: String,
@@ -355,7 +372,7 @@ pub fn split_stake_account<'c: 'info, 'info>(
 #[derive(Accounts)]
 pub struct RedelegateStake<'info> {
     #[account(mut)]
-    pub manager: Signer<'info>,
+    pub signer: Signer<'info>,
 
     #[account(mut, has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
@@ -383,10 +400,13 @@ pub struct RedelegateStake<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.manager.key, Permission::Stake)
+    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Stake)
+)]
+#[access_control(
+    acl::check_integration(&ctx.accounts.fund, IntegrationName::NativeStaking)
 )]
 #[treasury_signer_seeds]
-pub fn redelegate_stake<'c: 'info, 'info>(
+pub fn redelegate_stake_handler<'c: 'info, 'info>(
     ctx: Context<RedelegateStake>,
     new_stake_account_id: String,
     new_stake_account_bump: u8,

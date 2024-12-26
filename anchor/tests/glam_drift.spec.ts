@@ -1,5 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
-import { GlamClient, GlamProgram } from "../src";
+import { DriftMarketConfigs, GlamClient } from "../src";
 import { createFundForTest } from "./setup";
 import {
   getOrderParams,
@@ -7,23 +7,102 @@ import {
   OrderType,
   PositionDirection,
 } from "@drift-labs/sdk";
-import { PublicKey } from "@solana/web3.js";
+import { jest } from "@jest/globals";
 
-const SOL_PERP_MARKET = new PublicKey(
-  "8UJgxaiQx5nTrdDgph5FiahMmzduuLTLf5WmsPegYA6W"
-);
+const mockPositionsData = {
+  spotPositions: [
+    {
+      scaledBalance: 8173,
+      openBids: 0,
+      openAsks: 0,
+      cumulativeDeposits: 18446744073705673000,
+      marketIndex: 0,
+      balanceType: "Deposit",
+      openOrders: 0,
+      cumulativeDepositInterest: "11245879976",
+      cumulativeBorrowInterest: "12560874142",
+      balance: "0.000009",
+    },
+    {
+      scaledBalance: 46,
+      openBids: 0,
+      openAsks: 0,
+      cumulativeDeposits: 18446744073709255000,
+      marketIndex: 1,
+      balanceType: "Deposit",
+      openOrders: 0,
+      cumulativeDepositInterest: "10370779453",
+      cumulativeBorrowInterest: "11047388421",
+      balance: "0.000000047",
+    },
+  ],
+  perpPositions: [],
+};
+// @ts-ignore
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    json: () => Promise.resolve(mockPositionsData),
+  }),
+) as jest.Mock;
 
 describe("glam_drift", () => {
-  const provider = anchor.AnchorProvider.env();
-  anchor.setProvider(provider);
-
   const glamClient = new GlamClient();
-  const manager = glamClient.getManager();
-
-  const program = anchor.workspace.Glam as GlamProgram;
   const commitment = "confirmed";
 
   let fundPDA, treasuryPDA, sharePDA;
+  const marketConfigs: DriftMarketConfigs = {
+    orderConstants: {
+      perpBaseScale: 9,
+      quoteScale: 6,
+    },
+    perp: [
+      {
+        fullName: "Solana",
+        categories: ["Solana", "L1", "Infra"],
+        symbol: "SOL-PERP",
+        baseAsset: "SOL",
+        marketIndex: 0,
+        launchTs: "2022-11-04T11:15:05Z",
+        oracle: "BAtFj4kQttZRVep3UZS2aZRDixkGYgWsbqTBVDbnSsPF",
+        oracleSource: "PythPull",
+        pythPullOraclePDA: "BAtFj4kQttZRVep3UZS2aZRDixkGYgWsbqTBVDbnSsPF",
+        pythFeedId:
+          "ef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d",
+        marketPDA: "8UJgxaiQx5nTrdDgph5FiahMmzduuLTLf5WmsPegYA6W",
+      },
+    ],
+    spot: [
+      {
+        symbol: "USDC",
+        marketIndex: 0,
+        decimals: 6,
+        oracle: "En8hkHLkRe9d9DraYmBTrus518BvmVH448YcvmrFM6Ce",
+        oracleSource: "PythStableCoinPull",
+        pythPullOraclePDA: "En8hkHLkRe9d9DraYmBTrus518BvmVH448YcvmrFM6Ce",
+        pythFeedId:
+          "eaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a",
+        marketPDA: "6gMq3mRCKf8aP3ttTyYhuijVZ2LGi14oDsBbkgubfLB3",
+        mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        vaultPDA: "GXWqPpjQpdz7KZw9p7f5PX2eGxHAhvpNXiviFkAB8zXg",
+      },
+      {
+        symbol: "SOL",
+        marketIndex: 1,
+        decimals: 9,
+        oracle: "BAtFj4kQttZRVep3UZS2aZRDixkGYgWsbqTBVDbnSsPF",
+        oracleSource: "PythPull",
+        pythPullOraclePDA: "BAtFj4kQttZRVep3UZS2aZRDixkGYgWsbqTBVDbnSsPF",
+        pythFeedId:
+          "ef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d",
+        marketPDA: "3x85u7SWkmmr7YQGYhtjARgxwegTLJgkSLRprfXod6rh",
+        mint: "So11111111111111111111111111111111111111112",
+        serumMarket: "8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6",
+        phoenixMarket: "4DoNfFBfF7UokCC2FQzriy7yHK6DY6NVdYpuekQ5pRgg",
+        openBookMarket: "AFgkED1FUVfBe2trPUDqSqK9QKd4stJrfzq5q1RwAFTa",
+        vaultPDA: "DfYCNezifxAEsQbAJ1b3j6PX3JVBe8fu11KBhxsbw5d2",
+      },
+    ],
+  };
 
   it("Create and initialize fund", async () => {
     const fundData = await createFundForTest();
@@ -31,22 +110,16 @@ describe("glam_drift", () => {
     treasuryPDA = fundData.treasuryPDA;
     sharePDA = fundData.sharePDA;
 
-    const fund = await program.account.fundAccount.fetch(fundPDA);
+    const fund = await glamClient.fetchFundAccount(fundPDA);
     expect(fund.shareClasses.length).toEqual(1);
     expect(fund.name).toEqual("Glam Fund SOL-mSOL");
 
     // Enable drift integration
-    const updatedFund = glamClient.getFundModel({
+    const updatedFund = {
       integrationAcls: [{ name: { drift: {} }, features: [] }],
-    });
+    };
     try {
-      const txSig = await glamClient.program.methods
-        .updateFund(updatedFund)
-        .accounts({
-          fund: fundPDA,
-          signer: glamClient.getManager(),
-        })
-        .rpc();
+      const txSig = await glamClient.fund.updateFund(fundPDA, updatedFund);
       console.log("Enable drift integration tx:", txSig);
     } catch (e) {
       console.error(e);
@@ -63,13 +136,13 @@ describe("glam_drift", () => {
         ...(await connection.getLatestBlockhash()),
         signature: airdropTx,
       },
-      commitment
+      commitment,
     );
 
     try {
       const txSig = await glamClient.wsol.wrap(
         fundPDA,
-        new anchor.BN(lamports)
+        new anchor.BN(lamports),
       );
       console.log("Wrappped 10 SOL in treasury:", txSig);
     } catch (e) {
@@ -89,7 +162,7 @@ describe("glam_drift", () => {
   });
 
   it("Drift: update trader", async () => {
-    const trader = manager;
+    const trader = glamClient.getSigner();
     try {
       const txId = await glamClient.drift.updateUserDelegate(fundPDA, trader);
       console.log("driftUpdateUserDelegate", txId);
@@ -103,7 +176,13 @@ describe("glam_drift", () => {
     const amount = new anchor.BN(10_000_000_000);
 
     try {
-      const txId = await glamClient.drift.deposit(fundPDA, amount);
+      const txId = await glamClient.drift.deposit(
+        fundPDA,
+        amount,
+        1,
+        0,
+        marketConfigs,
+      );
 
       console.log("driftDeposit", txId);
     } catch (e) {
@@ -114,9 +193,14 @@ describe("glam_drift", () => {
 
   it("Drift: withdraw 1 SOL to trading account", async () => {
     const amount = new anchor.BN(1_000_000_000);
-
     try {
-      const txId = await glamClient.drift.withdraw(fundPDA, amount);
+      const txId = await glamClient.drift.withdraw(
+        fundPDA,
+        amount,
+        1,
+        0,
+        marketConfigs,
+      );
 
       console.log("driftWithdraw", txId);
     } catch (e) {
@@ -136,9 +220,12 @@ describe("glam_drift", () => {
     });
 
     try {
-      const txId = await glamClient.drift.placeOrder(fundPDA, orderParams, 0, {
-        perpMarket: SOL_PERP_MARKET,
-      });
+      const txId = await glamClient.drift.placeOrder(
+        fundPDA,
+        orderParams,
+        0,
+        marketConfigs,
+      );
       console.log("driftPlaceOrders", txId);
     } catch (e) {
       console.error(e);
@@ -155,7 +242,7 @@ describe("glam_drift", () => {
         0,
         PositionDirection.LONG,
         0,
-        { perpMarket: SOL_PERP_MARKET }
+        marketConfigs,
       );
 
       console.log("driftCancelOrders", txId);
@@ -167,7 +254,7 @@ describe("glam_drift", () => {
 
   it("Drift: constrain market", async () => {
     try {
-      const txId = await glamClient.updateFund(fundPDA, {
+      const txId = await glamClient.fund.updateFund(fundPDA, {
         driftMarketIndexesPerp: [2, 3],
       });
       console.log("driftPlaceOrders", txId);
@@ -188,9 +275,12 @@ describe("glam_drift", () => {
     });
 
     try {
-      const txId = await glamClient.drift.placeOrder(fundPDA, orderParams, 0, {
-        perpMarket: SOL_PERP_MARKET,
-      });
+      const txId = await glamClient.drift.placeOrder(
+        fundPDA,
+        orderParams,
+        0,
+        marketConfigs,
+      );
       expect(txId).toBeUndefined();
     } catch (err) {
       const errMsg = err.message + err.logs;
