@@ -334,7 +334,7 @@ export class StakingClient {
     amount: BN,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const treasury = this.base.getTreasuryPDA(fund);
     const {
       programId: stakePoolProgram,
@@ -350,10 +350,9 @@ export class StakingClient {
     // @ts-ignore
     const tx = await this.base.program.methods
       .stakePoolDepositSol(amount)
-      .accounts({
-        manager,
+      .accountsPartial({
+        signer,
         fund,
-        //@ts-ignore IDL ts type is unhappy
         treasury,
         mintTo: this.base.getTreasuryAta(fund, poolMint),
         stakePoolProgram,
@@ -378,7 +377,7 @@ export class StakingClient {
     stakeAccount: PublicKey,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const treasury = this.base.getTreasuryPDA(fund);
     const {
       programId: stakePoolProgram,
@@ -396,10 +395,9 @@ export class StakingClient {
 
     const tx = await this.base.program.methods
       .stakePoolDepositStake()
-      .accounts({
-        manager,
+      .accountsPartial({
+        signer,
         fund,
-        //@ts-ignore IDL ts type is unhappy
         treasury,
         treasuryStakeAccount: stakeAccount,
         mintTo: this.base.getTreasuryAta(fund, poolMint),
@@ -431,7 +429,7 @@ export class StakingClient {
     deactivate: boolean = false,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const manager = txOptions.signer || this.base.getManager();
+    const signer = txOptions.signer || this.base.getSigner();
     const treasury = this.base.getTreasuryPDA(fund);
     const {
       programId: stakePoolProgram,
@@ -456,7 +454,7 @@ export class StakingClient {
           await this.base.program.methods
             .deactivateStakeAccounts()
             .accountsPartial({
-              manager,
+              signer,
               fund,
               treasury,
               clock: SYSVAR_CLOCK_PUBKEY,
@@ -476,7 +474,7 @@ export class StakingClient {
     const tx = await this.base.program.methods
       .stakePoolWithdrawStake(amount, stakeAccountId, bump)
       .accountsPartial({
-        manager,
+        signer,
         fund,
         treasury,
         treasuryStakeAccount: stakeAccountPda,

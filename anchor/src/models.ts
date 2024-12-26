@@ -152,8 +152,10 @@ export class FundModel extends FundIdlModel {
           ExtensionType.PermanentDelegate,
           shareClassMint.tlvData,
         );
-        const permanentDelegate = new PublicKey(extPermDelegate);
-        shareClassModel["permanentDelegate"] = permanentDelegate;
+        if (extPermDelegate) {
+          const permanentDelegate = new PublicKey(extPermDelegate);
+          shareClassModel["permanentDelegate"] = permanentDelegate;
+        }
       }
 
       fundModel.shareClasses.push(new ShareClassModel(shareClassModel));

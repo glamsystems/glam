@@ -135,7 +135,7 @@ export default function MultiStepForm() {
           fundGroupName: openfundsData.company.fundGroupName,
         } as Partial<CompanyModel>,
         manager: {
-          pubkey: glamClient.getManager(),
+          pubkey: glamClient.getSigner(),
           kind: { wallet: {} },
         } as Partial<ManagerModel>,
         shareClasses: [

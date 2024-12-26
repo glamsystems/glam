@@ -186,6 +186,7 @@ export class InvestorClient {
       }
     }
 
+    // @ts-ignore
     const tx = await this.base.program.methods
       .subscribe(0, amount, skipState)
       .accounts({
