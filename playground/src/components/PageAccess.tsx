@@ -1,7 +1,7 @@
 "use client";
 
-import { DataTable } from "./access/components/data-table";
-import { columns } from "./access/components/columns";
+import { DataTable } from "./access/data-table";
+import { columns } from "./access/columns";
 import React, { useCallback } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";

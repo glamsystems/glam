@@ -1,10 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
-import {
-  AnchorProvider,
-  IdlAccounts,
-  Program,
-  Wallet,
-} from "@coral-xyz/anchor";
+import { AnchorProvider, Program, Wallet } from "@coral-xyz/anchor";
 import {
   AddressLookupTableAccount,
   BlockhashWithExpiryBlockHeight,
@@ -37,7 +32,7 @@ import {
 import { TokenMetadata, unpack } from "@solana/spl-token-metadata";
 import { WSOL, USDC } from "../constants";
 
-import { Glam, GlamIDL, GlamProgram, getGlamProgramId } from "../glamExports";
+import { GlamIDL, GlamProgram, getGlamProgramId } from "../glamExports";
 import { ClusterOrCustom, GlamClientConfig } from "../clientConfig";
 import {
   FundAccount,

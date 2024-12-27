@@ -1,10 +1,10 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
 import { ExplorerLink } from "@/components/ExplorerLink";
+import { Badge } from "../ui/badge";
 
 // const tagColors: Record<string, string> = {
 //   stake:

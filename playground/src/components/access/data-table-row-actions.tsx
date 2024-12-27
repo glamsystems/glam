@@ -1,9 +1,16 @@
 "use client";
 
-import { CaretRightIcon, EnterIcon, MixerHorizontalIcon, Pencil1Icon, TrashIcon, TriangleRightIcon } from "@radix-ui/react-icons";
+import {
+  CaretRightIcon,
+  EnterIcon,
+  MixerHorizontalIcon,
+  Pencil1Icon,
+  TrashIcon,
+  TriangleRightIcon,
+} from "@radix-ui/react-icons";
 import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { keySchema } from "../data/keySchema";
+import { keySchema } from "./data/keySchema";
 import { toast } from "@/components/ui/use-toast";
 
 interface DataTableRowActionsProps<TData> {
@@ -11,8 +18,8 @@ interface DataTableRowActionsProps<TData> {
 }
 
 export function DataTableRowActions<TData>({
-                                             row,
-                                           }: DataTableRowActionsProps<TData>) {
+  row,
+}: DataTableRowActionsProps<TData>) {
   const holding = keySchema.parse(row.original);
 
   // Handler for edit button click
