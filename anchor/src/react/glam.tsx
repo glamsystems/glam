@@ -44,7 +44,6 @@ interface GlamProviderContext {
   fund?: PublicKey;
   treasury?: Treasury;
   fundsList: FundCache[];
-  //@ts-ignore
   allFunds: FundModel[];
   userWallet: UserWallet;
   prices: PythPrice[];

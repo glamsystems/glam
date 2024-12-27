@@ -46,8 +46,8 @@ import { useRef, useState } from "react";
 import {
   vaultTreeDataPermissions,
   mintTreeDataPermissions,
-} from "../data/permissions";
-import { toast } from "@/components/ui/use-toast";
+} from "./data/permissions";
+import { toast } from "../ui/use-toast";
 import { useGlam } from "@glam/anchor/react";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { parseTxError } from "@/lib/error";
@@ -281,7 +281,6 @@ export function DataTable<TData extends KeyData>({
                 <Sheet
                   key={row.id}
                   open={activeRow === row.original.pubkey}
-                  modal={false}
                   onOpenChange={(open) => {
                     if (open) {
                       setActiveRow(row.original.pubkey);
@@ -314,9 +313,6 @@ export function DataTable<TData extends KeyData>({
                     side="right"
                     className="p-12 sm:max-w-none w-1/2"
                     onOpenAutoFocus={(e) => {
-                      e.preventDefault();
-                    }}
-                    onInteractOutside={(e) => {
                       e.preventDefault();
                     }}
                     role="dialog"

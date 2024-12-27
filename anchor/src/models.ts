@@ -1,8 +1,15 @@
 import { IdlTypes, IdlAccounts } from "@coral-xyz/anchor";
-import { Glam } from "./glamExports";
+import { Glam, GlamIDLJson } from "./glamExports";
 import { PublicKey } from "@solana/web3.js";
 import { ExtensionType, getExtensionData, Mint } from "@solana/spl-token";
 import { TokenMetadata, unpack } from "@solana/spl-token-metadata";
+
+export const GlamIntegrations =
+  GlamIDLJson?.types
+    ?.find((t) => t.name === "IntegrationName")
+    ?.type?.variants?.map((v) => v.name) ?? [];
+
+export const VaultIntegrations = GlamIntegrations.filter((i) => i !== "Mint");
 
 // FIXME: Anchor is not able to handle enums with too many options
 // The culprit of so many broken types suppressed by @ts-ignore is ShareClassFieldName, which
