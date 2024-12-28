@@ -39,6 +39,7 @@ import {
   FundMetadataAccount,
   FundModel,
   FundOpenfundsModel,
+  ShareClassModel,
 } from "../models";
 import { AssetMeta, ASSETS_MAINNET, ASSETS_TESTS } from "./assets";
 import { GlamError } from "../error";
@@ -439,23 +440,11 @@ export class BaseClient {
   }
 
   getOpenfundsPDA(fundPDA: PublicKey): PublicKey {
-    const [pda, _bump] = PublicKey.findProgramAddressSync(
-      [anchor.utils.bytes.utf8.encode("openfunds"), fundPDA.toBuffer()],
-      this.programId,
-    );
-    return pda;
+    return FundModel.openfundsPda(fundPDA);
   }
 
   getShareClassPDA(fundPDA: PublicKey, shareId: number = 0): PublicKey {
-    const [pda, _bump] = PublicKey.findProgramAddressSync(
-      [
-        anchor.utils.bytes.utf8.encode("share"),
-        Uint8Array.from([shareId % 256]),
-        fundPDA.toBuffer(),
-      ],
-      this.programId,
-    );
-    return pda;
+    return ShareClassModel.mintAddress(fundPDA, shareId);
   }
 
   getShareClassAta(user: PublicKey, shareClassPDA: PublicKey): PublicKey {

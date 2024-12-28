@@ -127,7 +127,10 @@ export class FundClient {
       .rpc();
   }
 
-  public async closeFund(fundPDA: PublicKey): Promise<TransactionSignature> {
+  public async closeFund(
+    fundPDA: PublicKey,
+    txOptions: TxOptions = {},
+  ): Promise<TransactionSignature> {
     const openfunds = this.base.getOpenfundsPDA(fundPDA);
 
     return await this.base.program.methods
@@ -136,6 +139,7 @@ export class FundClient {
         fund: fundPDA,
         openfunds,
       })
+      .preInstructions(txOptions.preInstructions || [])
       .rpc();
   }
 

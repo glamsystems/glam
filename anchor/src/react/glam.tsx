@@ -70,7 +70,7 @@ interface Treasury {
 interface FundCache {
   address: string;
   pubkey: PublicKey;
-  imageKey: string;
+  sparkleKey: string;
   name: string;
 }
 
@@ -100,8 +100,8 @@ const deserializeFundCache = (f: any) => {
 const toFundCache = (f: FundModel) => {
   return {
     pubkey: f.id,
-    imageKey: f.id?.toBase58(),
-    address: f.id?.toBase58(),
+    sparkleKey: f.sparkleKey,
+    address: f.idStr,
     name: f.name,
   } as FundCache;
 };
@@ -301,6 +301,7 @@ export function GlamProvider({
         pubkey: wallet.publicKey,
         ...walletBalances,
       } as UserWallet);
+      console.log("user wallet balances", walletBalances);
     }
   }, [walletBalances]);
 

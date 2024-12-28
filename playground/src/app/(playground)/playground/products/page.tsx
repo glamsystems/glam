@@ -2,12 +2,11 @@
 
 import { DataTable } from "../products/components/data-table";
 import { columns } from "../products/components/columns";
-import React from "react";
+import React, { useMemo } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { useGlam } from "@glam/anchor/react";
+import { FundModel, useGlam } from "@glam/anchor/react";
 
 export default function Products() {
-  // @ts-ignore Type instantiation is excessively deep and possibly infinite.
   const { allFunds } = useGlam();
   const [isLoading, setIsLoading] = React.useState(true);
 
@@ -17,15 +16,20 @@ export default function Products() {
     }
   }, [allFunds]);
 
-  const products = (allFunds || []).map((f) => ({
-    id: f.id?.toBase58() || "",
-    imageKey: f.id?.toBase58() || "",
-    name: f.name || f.id?.toBase58() || "",
-    symbol: f.shareClasses[0]?.symbol || "-",
-    baseAsset: f.rawOpenfunds?.fundCurrency || "SOL",
-    inception: f.rawOpenfunds?.fundLaunchDate || "-",
-    status: "active",
-  }));
+  const products = useMemo(
+    () =>
+      (allFunds || []).map((f) => ({
+        id: f.idStr,
+        sparkleKey: f.sparkleKey,
+        name: f.name || f.idStr || "",
+        symbol: f.shareClasses[0]?.symbol || "-",
+        baseAsset: f.rawOpenfunds?.fundCurrency || "SOL",
+        inception: f.rawOpenfunds?.fundLaunchDate || "-",
+        status: "active",
+        product: f.productType,
+      })),
+    [allFunds],
+  );
 
   return (
     <PageContentWrapper>

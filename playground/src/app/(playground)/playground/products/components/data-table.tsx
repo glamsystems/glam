@@ -13,6 +13,7 @@ import {
   getSortedRowModel,
   useReactTable,
   ColumnDef,
+  getPaginationRowModel,
 } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 
@@ -28,6 +29,7 @@ import {
 import { DataTableToolbar } from "./data-table-toolbar";
 import { columns as defaultColumns } from "./columns";
 import { Product } from "../data/productSchema";
+import { DataTablePagination } from "./data-table-pagination";
 
 // Number of skeleton rows to display
 const SKELETON_ROW_COUNT = 10;
@@ -47,7 +49,7 @@ export function DataTable<TData extends Product, TValue>({
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
@@ -56,14 +58,19 @@ export function DataTable<TData extends Product, TValue>({
     () =>
       Array(SKELETON_ROW_COUNT)
         .fill(null)
-        .map((_, index) => ({ id: `skeleton-${index}` } as TData)),
-    []
+        .map((_, index) => ({ id: `skeleton-${index}` }) as TData),
+    [],
   );
 
   const tableData = React.useMemo(
     () => (isLoading || data.length === 0 ? skeletonData : data),
-    [isLoading, skeletonData, data]
+    [isLoading, skeletonData, data],
   );
+
+  const [pagination, setPagination] = React.useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
 
   const table = useReactTable({
     data: tableData,
@@ -73,8 +80,11 @@ export function DataTable<TData extends Product, TValue>({
       columnVisibility,
       rowSelection,
       columnFilters,
+      pagination,
     },
+    onPaginationChange: setPagination,
     enableRowSelection: true,
+    getPaginationRowModel: getPaginationRowModel(),
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -106,7 +116,7 @@ export function DataTable<TData extends Product, TValue>({
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
                 ))}
@@ -131,7 +141,7 @@ export function DataTable<TData extends Product, TValue>({
           </TableBody>
         </Table>
       </div>
-      {/*<DataTablePagination table={table} />*/}
+      <DataTablePagination table={table} />
     </div>
   );
 }

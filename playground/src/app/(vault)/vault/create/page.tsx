@@ -99,7 +99,7 @@ export default function Create() {
       setActiveFund({
         address: fundPDA.toBase58(),
         pubkey: fundPDA,
-        imageKey: fundPDA.toBase58(),
+        sparkleKey: fundPDA.toBase58(),
         name: values.productName,
       });
       // Navigate using Next.js router
