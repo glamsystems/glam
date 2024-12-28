@@ -120,7 +120,6 @@ export class BaseClient {
       this.provider,
       !!isBrowser,
     );
-    process.env.GLAM_PROGRAM_ID = this.programId.toBase58();
   }
 
   isMainnet(): boolean {

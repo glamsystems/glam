@@ -52,6 +52,21 @@ export class ShareClassClient {
     });
   }
 
+  public async closeShareClassIx(fundPDA: PublicKey, shareClassId: number = 0) {
+    const openfunds = this.base.getOpenfundsPDA(fundPDA);
+    const shareClassMint = this.base.getShareClassPDA(fundPDA, shareClassId);
+
+    // @ts-ignore Type instantiation is excessively deep and possibly infinite.
+    return await this.base.program.methods
+      .closeShareClass(shareClassId)
+      .accounts({
+        fund: fundPDA,
+        openfunds,
+        shareClassMint,
+      })
+      .instruction();
+  }
+
   public async closeShareClass(
     fundPDA: PublicKey,
     shareClassId: number = 0,

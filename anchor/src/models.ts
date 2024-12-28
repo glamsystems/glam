@@ -1,5 +1,5 @@
 import { IdlTypes, IdlAccounts } from "@coral-xyz/anchor";
-import { getGlamProgramId, Glam, GlamIDLJson } from "./glamExports";
+import { Glam, GlamIDLJson } from "./glamExports";
 import { PublicKey } from "@solana/web3.js";
 import { ExtensionType, getExtensionData, Mint } from "@solana/spl-token";
 import { TokenMetadata, unpack } from "@solana/spl-token-metadata";
@@ -11,9 +11,7 @@ export const GlamIntegrations =
 
 export const VaultIntegrations = GlamIntegrations.filter((i) => i !== "Mint");
 
-const GlamProgramId = process.env.GLAM_PROGRAM_ID
-  ? new PublicKey(process.env.GLAM_PROGRAM_ID)
-  : getGlamProgramId("mainnet-beta");
+const GlamProgramId = new PublicKey(GlamIDLJson.address);
 
 // FIXME: Anchor is not able to handle enums with too many options
 // The culprit of so many broken types suppressed by @ts-ignore is ShareClassFieldName, which
@@ -74,6 +72,19 @@ export class FundModel extends FundIdlModel {
 
   get idStr() {
     return this.id?.toBase58() || "";
+  }
+
+  get productType() {
+    if (this.shareClasses.length === 0) {
+      return "Vault";
+    }
+    if (
+      // @ts-ignore
+      this.integrationAcls.find((acl) => Object.keys(acl.name)[0] === "mint")
+    ) {
+      return "Mint";
+    }
+    return "Fund";
   }
 
   get shareClassMints() {

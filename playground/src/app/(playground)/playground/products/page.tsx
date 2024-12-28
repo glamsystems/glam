@@ -16,17 +16,6 @@ export default function Products() {
     }
   }, [allFunds]);
 
-  const getProduct = (f: FundModel) => {
-    if (f.shareClasses.length === 0) {
-      return "Vault";
-    }
-    // @ts-ignore
-    if (f.integrationAcls.find((acl) => Object.keys(acl.name)[0] === "mint")) {
-      return "Mint";
-    }
-    return "Fund";
-  };
-
   const products = useMemo(
     () =>
       (allFunds || []).map((f) => ({
@@ -37,7 +26,7 @@ export default function Products() {
         baseAsset: f.rawOpenfunds?.fundCurrency || "SOL",
         inception: f.rawOpenfunds?.fundLaunchDate || "-",
         status: "active",
-        product: getProduct(f),
+        product: f.productType,
       })),
     [allFunds],
   );
