@@ -39,13 +39,16 @@ type PopoverTriggerProps = React.ComponentPropsWithoutRef<
 interface ProductSwitcherProps extends PopoverTriggerProps {}
 
 export default function ProductSwitcher({ className }: ProductSwitcherProps) {
-  const { userWallet, fundsList, activeFund, setActiveFund } = useGlam();
+  const { userWallet, allFunds, fundsList, activeFund, setActiveFund } =
+    useGlam();
   const [open, setOpen] = React.useState(false);
   const { state } = useSidebar();
   const { theme, systemTheme } = useTheme();
   const [defaultSparkleImage, setDefaultSparkleImage] = React.useState(
     "/default-sparkle-light.svg",
   );
+
+  const fundModel = allFunds.find((f) => f.idStr === activeFund?.address);
 
   React.useEffect(() => {
     const currentTheme = theme === "system" ? systemTheme : theme;
@@ -109,8 +112,8 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
           )}
         >
           <span className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10">
-            {activeFund?.pubkey ? (
-              <Sparkle address={activeFund?.imageKey} size={30} />
+            {fundModel?.sparkleKey ? (
+              <Sparkle address={fundModel?.sparkleKey} size={30} />
             ) : (
               <Image
                 src={defaultSparkleImage}
@@ -154,7 +157,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
                     >
                       <span className="mr-2">
                         {product ? (
-                          <Sparkle address={product.imageKey} size={24} />
+                          <Sparkle address={product.sparkleKey} size={24} />
                         ) : null}
                       </span>
                       {product ? (

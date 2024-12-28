@@ -166,7 +166,7 @@ export default function MultiStepForm() {
       setActiveFund({
         address: fundPDA.toBase58(),
         pubkey: fundPDA,
-        imageKey: fundPDA.toBase58(),
+        sparkleKey: fundPDA.toBase58(),
         name: basicInfoFormData.name,
       });
       toast({

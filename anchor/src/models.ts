@@ -1,5 +1,5 @@
 import { IdlTypes, IdlAccounts } from "@coral-xyz/anchor";
-import { Glam, GlamIDLJson } from "./glamExports";
+import { getGlamProgramId, Glam, GlamIDLJson } from "./glamExports";
 import { PublicKey } from "@solana/web3.js";
 import { ExtensionType, getExtensionData, Mint } from "@solana/spl-token";
 import { TokenMetadata, unpack } from "@solana/spl-token-metadata";
@@ -10,6 +10,10 @@ export const GlamIntegrations =
     ?.type?.variants?.map((v) => v.name) ?? [];
 
 export const VaultIntegrations = GlamIntegrations.filter((i) => i !== "Mint");
+
+const GlamProgramId = process.env.GLAM_PROGRAM_ID
+  ? new PublicKey(process.env.GLAM_PROGRAM_ID)
+  : getGlamProgramId("mainnet-beta");
 
 // FIXME: Anchor is not able to handle enums with too many options
 // The culprit of so many broken types suppressed by @ts-ignore is ShareClassFieldName, which
@@ -63,13 +67,38 @@ export class FundIdlModel implements FundModelType {
     this.rawOpenfunds = data.rawOpenfunds ?? null;
   }
 }
-
 export class FundModel extends FundIdlModel {
-  idStr: string = "";
-
-  constructor(data: Partial<FundModelType>) {
+  constructor(data: Partial<FundIdlModel>) {
     super(data);
-    this.idStr = this?.id ? this?.id.toBase58() : "";
+  }
+
+  get idStr() {
+    return this.id?.toBase58() || "";
+  }
+
+  get shareClassMints() {
+    if (this.shareClasses.length > 0 && !this.id) {
+      // If share classes are set, fund ID should be set as well
+      throw new Error("Fund ID not set");
+    }
+    return this.shareClasses.map((_, i) =>
+      ShareClassModel.mintAddress(this.id!, i),
+    );
+  }
+
+  get sparkleKey() {
+    if (this.shareClasses.length === 0) {
+      return this.idStr;
+    }
+    return this.shareClassMints[0].toBase58() || this.idStr;
+  }
+
+  static openfundsPda(fundPda: PublicKey) {
+    const [pda, _] = PublicKey.findProgramAddressSync(
+      [Buffer.from("openfunds"), fundPda.toBuffer()],
+      GlamProgramId,
+    );
+    return pda;
   }
 
   /**
@@ -114,19 +143,21 @@ export class FundModel extends FundIdlModel {
     // Build the array of ShareClassModel
     fundModel.shareClasses = [] as ShareClassModel[];
     fundAccount.shareClasses.forEach((_, i) => {
-      const shareClassModel = {} as any;
+      const shareClassIdlModel = {} as any;
+      shareClassIdlModel["fundId"] = fundPDA;
+
       fundAccount.params[i + 1].forEach((param) => {
         const name = Object.keys(param.name)[0];
         // @ts-ignore
         const value = Object.values(param.value)[0].val;
         if (name === "shareClassAllowlist") {
-          shareClassModel["allowlist"] = value as PublicKey[];
+          shareClassIdlModel["allowlist"] = value as PublicKey[];
         } else if (name === "shareClassBlocklist") {
-          shareClassModel["blocklist"] = value as PublicKey[];
+          shareClassIdlModel["blocklist"] = value as PublicKey[];
         } else if (name == "lockUp") {
-          shareClassModel["lockUpPeriodInSeconds"] = Number(value);
+          shareClassIdlModel["lockUpPeriodInSeconds"] = Number(value);
         } else {
-          shareClassModel[name] = value;
+          shareClassIdlModel[name] = value;
         }
       });
 
@@ -138,7 +169,7 @@ export class FundModel extends FundIdlModel {
           // @ts-ignore
           shareClassOpenfundsFields[name] = value;
         });
-        shareClassModel["rawOpenfunds"] = new ShareClassOpenfundsModel(
+        shareClassIdlModel["rawOpenfunds"] = new ShareClassOpenfundsModel(
           shareClassOpenfundsFields,
         );
       }
@@ -151,9 +182,9 @@ export class FundModel extends FundIdlModel {
         const tokenMetadata = extMetadata
           ? unpack(extMetadata)
           : ({} as TokenMetadata);
-        shareClassModel["symbol"] = tokenMetadata?.symbol;
-        shareClassModel["name"] = tokenMetadata?.name;
-        shareClassModel["uri"] = tokenMetadata?.uri;
+        shareClassIdlModel["symbol"] = tokenMetadata?.symbol;
+        shareClassIdlModel["name"] = tokenMetadata?.name;
+        shareClassIdlModel["uri"] = tokenMetadata?.uri;
 
         const extPermDelegate = getExtensionData(
           ExtensionType.PermanentDelegate,
@@ -161,11 +192,11 @@ export class FundModel extends FundIdlModel {
         );
         if (extPermDelegate) {
           const permanentDelegate = new PublicKey(extPermDelegate);
-          shareClassModel["permanentDelegate"] = permanentDelegate;
+          shareClassIdlModel["permanentDelegate"] = permanentDelegate;
         }
       }
 
-      fundModel.shareClasses.push(new ShareClassModel(shareClassModel));
+      fundModel.shareClasses.push(new ShareClassModel(shareClassIdlModel));
     });
 
     fundModel.name =
@@ -220,7 +251,7 @@ export class FundOpenfundsModel implements FundOpenfundsModelType {
 }
 
 export type ShareClassModelType = IdlTypes<Glam>["shareClassModel"];
-export class ShareClassModel implements ShareClassModelType {
+export class ShareIdlClassModel implements ShareClassModelType {
   symbol: string | null;
   name: string | null;
   uri: string | null;
@@ -249,6 +280,19 @@ export class ShareClassModel implements ShareClassModelType {
     this.lockUpPeriodInSeconds = data.lockUpPeriodInSeconds ?? 0;
     this.permanentDelegate = data.permanentDelegate ?? null;
     this.defaultAccountStateFrozen = data.defaultAccountStateFrozen ?? false;
+  }
+}
+export class ShareClassModel extends ShareIdlClassModel {
+  constructor(data: Partial<ShareIdlClassModel>) {
+    super(data);
+  }
+
+  static mintAddress(fundPDA: PublicKey, idx: number = 0): PublicKey {
+    const [pda, _] = PublicKey.findProgramAddressSync(
+      [Buffer.from("share"), Uint8Array.from([idx % 256]), fundPDA.toBuffer()],
+      GlamProgramId,
+    );
+    return pda;
   }
 }
 

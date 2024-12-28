@@ -7,7 +7,6 @@ import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";
 
 export default function Products() {
-  // @ts-ignore Type instantiation is excessively deep and possibly infinite.
   const { allFunds } = useGlam();
   const [isLoading, setIsLoading] = React.useState(true);
 
@@ -18,8 +17,8 @@ export default function Products() {
   }, [allFunds]);
 
   const products = (allFunds || []).map((f) => ({
-    id: f.id?.toBase58() || "",
-    imageKey: f.id?.toBase58() || "",
+    id: f.idStr,
+    imageKey: f.sparkleKey,
     name: f.name || f.id?.toBase58() || "",
     symbol: f.shareClasses[0]?.symbol || "-",
     baseAsset: f.rawOpenfunds?.fundCurrency || "SOL",

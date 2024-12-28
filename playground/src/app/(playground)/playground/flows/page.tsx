@@ -26,7 +26,7 @@ import { AssetInput } from "@/components/AssetInput";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import React, { useState, useEffect } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { useGlam, WSOL } from "@glam/anchor/react";
+import { FundModel, useGlam, WSOL } from "@glam/anchor/react";
 import { BN } from "@coral-xyz/anchor";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
@@ -371,15 +371,10 @@ function InvestorDisclaimers({
   );
 }
 
-function InvestorWidget({ fundId }: { fundId: string }) {
-  //@ts-ignore
-  const { glamClient, allFunds, userWallet } = useGlam();
+function InvestorWidget({ fundModel }: { fundModel?: FundModel }) {
+  const { glamClient, userWallet } = useGlam();
   const queryClient = useQueryClient();
   const [isTxPending, setIsTxPending] = useState(false);
-
-  const fund: any = fundId
-    ? (allFunds || []).find((f: any) => f.idStr === fundId)
-    : undefined;
 
   const [direction, setDirection] = useState<string>("subscribe");
   const [method, setMethod] = useState<string>("share class currency");
@@ -404,11 +399,10 @@ function InvestorWidget({ fundId }: { fundId: string }) {
     setBalance(0);
 
     if (direction === "redeem") {
-      // keep method as is
-      setAmountInAsset("Shares"); // TODO: use share class symbol here
+      const symbol = fundModel?.shareClasses[0]?.symbol || "Share";
+      const mint = fundModel?.shareClassMints[0];
+      setAmountInAsset(symbol);
 
-      // update balance
-      const mint = fund?.shareClasses[0]?.id;
       if (mint) {
         const tokenAccount = (userWallet?.tokenAccounts || []).find(
           (a) => a.mint.toBase58() === mint.toBase58(),
@@ -421,10 +415,10 @@ function InvestorWidget({ fundId }: { fundId: string }) {
     }
 
     // direction === "subscribe"
-    setAmountInAsset(fund?.fundCurrency || "SOL");
+    setAmountInAsset(fundModel?.rawOpenfunds?.fundCurrency || "SOL");
 
     // update balance
-    const mint = fund?.assets[0] || WSOL;
+    const mint = fundModel?.assets[0] || WSOL;
     if (WSOL.equals(mint)) {
       setBalance((userWallet?.balanceLamports || 0) / LAMPORTS_PER_SOL);
     } else {
@@ -435,7 +429,7 @@ function InvestorWidget({ fundId }: { fundId: string }) {
         setBalance(tokenAccount.uiAmount);
       }
     }
-  }, [fundId, direction, userWallet]);
+  }, [fundModel, direction, userWallet]);
 
   const getDecimals = (asset: PublicKey, mintsList: any[]) => {
     if (WSOL.equals(asset)) {
@@ -464,7 +458,7 @@ function InvestorWidget({ fundId }: { fundId: string }) {
     // - fund must be valid
     // - amount > 0
 
-    if (!fundId) {
+    if (!fundModel) {
       toast({
         title: "Please select a product.",
         variant: "destructive",
@@ -494,14 +488,14 @@ function InvestorWidget({ fundId }: { fundId: string }) {
     let txId;
     try {
       if (direction === "redeem") {
-        const asset = fund.shareClasses[0].id as PublicKey;
+        const shareClassMint = fundModel?.shareClassMints[0];
         const ata = (userWallet?.tokenAccounts || []).find((a) =>
-          a.mint.equals(asset),
+          a.mint.equals(shareClassMint),
         )!;
         const amount = new BN(values.amountIn * 10 ** ata.decimals);
 
         txId = await glamClient.investor.redeem(
-          fund.id,
+          fundModel.id!,
           amount,
           method === "in-kind",
           undefined,
@@ -512,17 +506,17 @@ function InvestorWidget({ fundId }: { fundId: string }) {
           },
         );
       } else {
-        const asset = fund.assets[0];
+        const asset = fundModel.assets[0];
         const ata = (userWallet?.tokenAccounts || []).find((a) =>
           a.mint.equals(asset),
         )!;
 
         const amount = new BN(values.amountIn * 10 ** ata.decimals);
         txId = await glamClient.investor.subscribe(
-          fund.id,
+          fundModel.id!,
           asset,
           amount,
-          fund,
+          fundModel,
           0,
           true,
           {
@@ -566,7 +560,7 @@ function InvestorWidget({ fundId }: { fundId: string }) {
               <FormItem className="w-full">
                 <FormLabel>Direction</FormLabel>
                 <ToggleGroup
-                  disabled={!fundId}
+                  disabled={!fundModel}
                   type="single"
                   value={direction}
                   onValueChange={handleModeChange}
@@ -671,14 +665,18 @@ function InvestorWidget({ fundId }: { fundId: string }) {
       </FormProvider>
       <br />
       <br />
-      <InvestorDisclaimers fund={fund} direction={direction} method={method} />
+      <InvestorDisclaimers
+        fund={fundModel}
+        direction={direction}
+        method={method}
+      />
     </div>
   );
 }
 
 export default function Flows() {
   const { allFunds } = useGlam();
-  const [fundId, setFundId] = useState("");
+  const [selectedFund, setSelectedFund] = useState<FundModel>();
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -694,22 +692,14 @@ export default function Flows() {
             >
               <span className="flex flex-row align-center">
                 <span className="mr-2">
-                  {fundId ? (
-                    <Sparkle
-                      address={
-                        (allFunds.find((f: any) => f.idStr === fundId) as any)
-                          ?.imageKey
-                      }
-                      size={24}
-                    />
+                  {selectedFund ? (
+                    <Sparkle address={selectedFund.sparkleKey} size={24} />
                   ) : (
                     <div className="h-[24px] w-[24px] border"></div>
                   )}
                 </span>
                 <span className="leading-6">
-                  {fundId
-                    ? allFunds.find((f: any) => f.idStr === fundId)?.name
-                    : "Select product..."}
+                  {selectedFund ? selectedFund.name : "Select product..."}
                 </span>
               </span>
               <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -721,28 +711,30 @@ export default function Flows() {
               <CommandList>
                 <CommandEmpty>No product found.</CommandEmpty>
                 <CommandGroup>
-                  {allFunds.map((f) => (
-                    <CommandItem
-                      key={(f as any)?.idStr}
-                      onSelect={() => {
-                        setFundId((f as any)?.idStr);
-                        setOpen(false);
-                      }}
-                      className="flex items-center"
-                    >
-                      <span className="mr-2">
-                        <Sparkle address={(f as any)?.imageKey} size={24} />
-                      </span>
-                      {f.name}
-                    </CommandItem>
-                  ))}
+                  {allFunds
+                    .filter((f) => f.shareClasses.length > 0)
+                    .map((f) => (
+                      <CommandItem
+                        key={f.idStr}
+                        onSelect={() => {
+                          setSelectedFund(f);
+                          setOpen(false);
+                        }}
+                        className="flex items-center"
+                      >
+                        <span className="mr-2">
+                          <Sparkle address={f.sparkleKey} size={24} />
+                        </span>
+                        {f.name}
+                      </CommandItem>
+                    ))}
                 </CommandGroup>
               </CommandList>
             </Command>
           </PopoverContent>
         </Popover>
 
-        <InvestorWidget fundId={fundId} />
+        <InvestorWidget fundModel={selectedFund} />
       </div>
     </PageContentWrapper>
   );
