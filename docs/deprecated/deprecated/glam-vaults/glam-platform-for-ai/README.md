@@ -9,7 +9,7 @@ GLAM Vaults offer powerful fine-grained access control and risk management, maki
 * [GLAM dApp ](https://github.com/glamsystems/glam/tree/main/playground)([https://gui.glam.systems/](https://gui.glam.systems/))
 * [GLAM CLI](https://github.com/glamsystems/glam/tree/main/cli)
 * [GLAM Plugin for Eliza](https://github.com/glamsystems/eliza/tree/glam_plugin/packages/plugin-glam)
-* [GLAM Agent for AutoGen ](../../../cli/agents/demo/glam.py)
+* [GLAM Agent for AutoGen ](../../../../../cli/agents/demo/glam.py)
 * [GLAM Multi-Agents Demos](https://github.com/glamsystems/glam/tree/main/cli/agents/demo)
 
 ## Security
