@@ -1,8 +1,20 @@
 # Table of contents
 
+## Overview
+
+* [Key Concepts](README.md)
+* [GLAM Vaults](overview/glam-vaults/README.md)
+  * [Fine-Grained Access Control](overview/glam-vaults/fine-grained-access-control.md)
+  * [Risk Management](overview/glam-vaults/risk-management.md)
+  * [GLAM Platform for AI](overview/glam-vaults/glam-platform-for-ai/README.md)
+    * [Eliza Integration](overview/glam-vaults/glam-platform-for-ai/eliza-integration.md)
+    * [AutoGen Integration](overview/glam-vaults/glam-platform-for-ai/autogen-integration.md)
+* [GLAM Mints](overview/glam-mints.md)
+* [GLAM CLI](overview/glam-cli.md)
+
 ## Essentials
 
-* [Welcome](README.md)
+* [Welcome](<README (1).md>)
 * [Quickstart](essentials/quickstart.md)
 * [Use-cases](essentials/use-cases/README.md)
   * [Manage an Onchain Portfolio](essentials/use-cases/manage-an-onchain-portfolio.md)
@@ -40,15 +52,3 @@
 * [LOOK](infrastructure/look.md)
 * [WATCH](infrastructure/watch.md)
 * [PULSE](infrastructure/pulse.md)
-
-## Overview
-
-* [Key Concepts](overview/key-concepts.md)
-* [GLAM Vaults](overview/glam-vaults/README.md)
-  * [Fine-Grained Access Control](overview/glam-vaults/fine-grained-access-control.md)
-  * [Risk Management](overview/glam-vaults/risk-management.md)
-  * [GLAM Platform for AI](overview/glam-vaults/glam-platform-for-ai/README.md)
-    * [Eliza Integration](overview/glam-vaults/glam-platform-for-ai/eliza-integration.md)
-    * [AutoGen Integration](overview/glam-vaults/glam-platform-for-ai/autogen-integration.md)
-* [GLAM Mints](overview/glam-mints.md)
-* [GLAM CLI](overview/glam-cli.md)
