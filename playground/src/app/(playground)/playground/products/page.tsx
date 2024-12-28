@@ -2,9 +2,9 @@
 
 import { DataTable } from "../products/components/data-table";
 import { columns } from "../products/components/columns";
-import React from "react";
+import React, { useMemo } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { useGlam } from "@glam/anchor/react";
+import { FundModel, useGlam } from "@glam/anchor/react";
 
 export default function Products() {
   const { allFunds } = useGlam();
@@ -16,15 +16,31 @@ export default function Products() {
     }
   }, [allFunds]);
 
-  const products = (allFunds || []).map((f) => ({
-    id: f.idStr,
-    imageKey: f.sparkleKey,
-    name: f.name || f.id?.toBase58() || "",
-    symbol: f.shareClasses[0]?.symbol || "-",
-    baseAsset: f.rawOpenfunds?.fundCurrency || "SOL",
-    inception: f.rawOpenfunds?.fundLaunchDate || "-",
-    status: "active",
-  }));
+  const getProduct = (f: FundModel) => {
+    if (f.shareClasses.length === 0) {
+      return "Vault";
+    }
+    // @ts-ignore
+    if (f.integrationAcls.find((acl) => Object.keys(acl.name)[0] === "mint")) {
+      return "Mint";
+    }
+    return "Fund";
+  };
+
+  const products = useMemo(
+    () =>
+      (allFunds || []).map((f) => ({
+        id: f.idStr,
+        sparkleKey: f.sparkleKey,
+        name: f.name || f.idStr || "",
+        symbol: f.shareClasses[0]?.symbol || "-",
+        baseAsset: f.rawOpenfunds?.fundCurrency || "SOL",
+        inception: f.rawOpenfunds?.fundLaunchDate || "-",
+        status: "active",
+        product: getProduct(f),
+      })),
+    [allFunds],
+  );
 
   return (
     <PageContentWrapper>

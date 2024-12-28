@@ -7,7 +7,7 @@ import { Product } from "../data/productSchema";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
 import { statuses } from "../data/data";
-import Sparkle from "../../../../../utils/Sparkle";
+import Sparkle from "@/utils/Sparkle";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Function to generate a random width within a range
@@ -36,14 +36,14 @@ const VariableWidthSkeleton = ({
 
 export const columns: ColumnDef<Product>[] = [
   {
-    accessorKey: "imageKey",
+    accessorKey: "sparkleKey",
     header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: ({ row }) => (
       <div className="flex items-center justify-center w-8 h-8">
         {row.original.id.startsWith("skeleton-") ? (
           <Skeleton className="h-8 w-8" />
         ) : (
-          <Sparkle address={row.getValue("imageKey")} size={32} />
+          <Sparkle address={row.getValue("sparkleKey")} size={32} />
         )}
       </div>
     ),
@@ -138,8 +138,25 @@ export const columns: ColumnDef<Product>[] = [
       </div>
     ),
   },
-  // {
-  //   id: "actions",
-  //   cell: ({ row }) => <DataTableRowActions row={row} />,
-  // },
+  {
+    accessorKey: "product",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Product" />
+    ),
+    cell: ({ row }) => (
+      <div className="w-[100px]">
+        {row.original.id.startsWith("skeleton-") ? (
+          <VariableWidthSkeleton minWidth={60} maxWidth={100} height={20} />
+        ) : (
+          <Badge variant="outline" className="rounded-none">
+            <div className="truncate">{row.getValue("product")}</div>
+          </Badge>
+        )}
+      </div>
+    ),
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => <DataTableRowActions row={row} />,
+  },
 ];

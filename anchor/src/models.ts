@@ -114,12 +114,13 @@ export class FundModel extends FundIdlModel {
     openfundsAccount?: FundMetadataAccount,
     shareClassMint?: Mint,
   ) {
-    let fundModel: Partial<FundModelType> = {
+    let fundModel: Partial<FundIdlModel> = {
       id: fundPDA,
       name: fundAccount.name,
       uri: fundAccount.uri,
       manager: new ManagerModel({ pubkey: fundAccount.manager }),
       openfundsUri: fundAccount.openfundsUri,
+      shareClasses: [],
     };
 
     // All fields in fund params[0] should be available on the FundModel
@@ -127,7 +128,12 @@ export class FundModel extends FundIdlModel {
       const name = Object.keys(param.name)[0];
       // @ts-ignore
       const value = Object.values(param.value)[0].val;
-      fundModel[name] = value;
+      if (new FundIdlModel({}).hasOwnProperty(name)) {
+        // @ts-ignore
+        fundModel[name] = value;
+      } else {
+        console.warn(`Fund param ${name} not found in FundIdlModel`);
+      }
     });
 
     // Build fundModel.rawOpenfunds from openfunds account
@@ -141,7 +147,6 @@ export class FundModel extends FundIdlModel {
     fundModel.rawOpenfunds = new FundOpenfundsModel(fundOpenfundsFields);
 
     // Build the array of ShareClassModel
-    fundModel.shareClasses = [] as ShareClassModel[];
     fundAccount.shareClasses.forEach((_, i) => {
       const shareClassIdlModel = {} as any;
       shareClassIdlModel["fundId"] = fundPDA;
@@ -196,7 +201,9 @@ export class FundModel extends FundIdlModel {
         }
       }
 
-      fundModel.shareClasses.push(new ShareClassModel(shareClassIdlModel));
+      // fundModel.shareClasses should never be null
+      // non-null assertion is safe and is needed to suppress type error
+      fundModel.shareClasses!.push(new ShareClassModel(shareClassIdlModel));
     });
 
     fundModel.name =
@@ -251,7 +258,7 @@ export class FundOpenfundsModel implements FundOpenfundsModelType {
 }
 
 export type ShareClassModelType = IdlTypes<Glam>["shareClassModel"];
-export class ShareIdlClassModel implements ShareClassModelType {
+export class ShareClassIdlModel implements ShareClassModelType {
   symbol: string | null;
   name: string | null;
   uri: string | null;
@@ -282,8 +289,8 @@ export class ShareIdlClassModel implements ShareClassModelType {
     this.defaultAccountStateFrozen = data.defaultAccountStateFrozen ?? false;
   }
 }
-export class ShareClassModel extends ShareIdlClassModel {
-  constructor(data: Partial<ShareIdlClassModel>) {
+export class ShareClassModel extends ShareClassIdlModel {
+  constructor(data: Partial<ShareClassIdlModel>) {
     super(data);
   }
 
