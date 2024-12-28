@@ -41,15 +41,14 @@
 * [WATCH](infrastructure/watch.md)
 * [PULSE](infrastructure/pulse.md)
 
-## Deprecated
+## Overview
 
-* [Deprecated](deprecated/deprecated/README.md)
-  * [Key Concepts](deprecated/deprecated/key-concepts.md)
-  * [GLAM Vaults](deprecated/deprecated/glam-vaults/README.md)
-    * [Fine-Grained Access Control](deprecated/deprecated/glam-vaults/fine-grained-access-control.md)
-    * [Risk Management](deprecated/deprecated/glam-vaults/risk-management.md)
-    * [GLAM Platform for AI](deprecated/deprecated/glam-vaults/glam-platform-for-ai/README.md)
-      * [Eliza Integration](deprecated/deprecated/glam-vaults/glam-platform-for-ai/eliza-integration.md)
-      * [AutoGen Integration](deprecated/deprecated/glam-vaults/glam-platform-for-ai/autogen-integration.md)
-  * [GLAM Mints](deprecated/deprecated/glam-mints.md)
-  * [GLAM CLI](deprecated/deprecated/glam-cli.md)
+* [Key Concepts](overview/key-concepts.md)
+* [GLAM Vaults](overview/glam-vaults/README.md)
+  * [Fine-Grained Access Control](overview/glam-vaults/fine-grained-access-control.md)
+  * [Risk Management](overview/glam-vaults/risk-management.md)
+  * [GLAM Platform for AI](overview/glam-vaults/glam-platform-for-ai/README.md)
+    * [Eliza Integration](overview/glam-vaults/glam-platform-for-ai/eliza-integration.md)
+    * [AutoGen Integration](overview/glam-vaults/glam-platform-for-ai/autogen-integration.md)
+* [GLAM Mints](overview/glam-mints.md)
+* [GLAM CLI](overview/glam-cli.md)
