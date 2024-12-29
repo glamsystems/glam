@@ -7,7 +7,6 @@ import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";
 import { Holding } from "./data/holdingSchema";
-import { ExplorerLink } from "@/components/ExplorerLink";
 import {
   Sheet,
   SheetClose,
@@ -20,6 +19,11 @@ import {
 } from "@/components/ui/sheet";
 import { ClickToCopyText } from "@/components/ClickToCopyText";
 import { Button } from "@/components/ui/button";
+import QRCodeSVG from "qrcode.react";
+import { WarningCard } from "@/components/WarningCard";
+import { parseTxError } from "@/lib/error";
+import { toast } from "@/components/ui/use-toast";
+import { ExplorerLink } from "@/components/ExplorerLink";
 
 const SKELETON_ROW_COUNT = 5;
 
@@ -31,10 +35,12 @@ export default function Holdings() {
     driftUser,
     jupTokenList,
     prices,
+    glamClient,
   } = useGlam();
 
   const [showZeroBalances, setShowZeroBalances] = useState(false);
   const [isLoadingData, setIsLoading] = useState(true);
+  const [isTxPending, setIsTxPending] = useState(false);
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const openSheet = () => setIsSheetOpen(true);
@@ -157,12 +163,28 @@ export default function Holdings() {
 
   const vaultAddress = treasury?.pubkey ? treasury.pubkey.toBase58() : "";
 
-  const closeVault = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const closeVault = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
     if (!activeFund?.pubkey) {
       return;
     }
+
+    setIsTxPending(true);
+    try {
+      const txSig = await glamClient.fund.closeFund(activeFund.pubkey);
+      toast({
+        title: "Vault closed",
+        description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
+      });
+    } catch (e) {
+      toast({
+        title: "Error closing vault",
+        description: parseTxError(e),
+        variant: "destructive",
+      });
+    }
+    setIsTxPending(false);
   };
 
   return (
@@ -198,11 +220,25 @@ export default function Holdings() {
               <ClickToCopyText text={vaultAddress} />
             </div>
 
-            {/* Show a QR code that links to the vault */}
+            <div className="flex flex-col items-center space-y-2 py-8">
+              <QRCodeSVG value={vaultAddress} level="M" size={128} />
+              <p className="text-sm text-muted-foreground">
+                Scan the QR code to get the vault address
+              </p>
+            </div>
           </div>
-          <Button onClick={closeVault} className="" variant="destructive">
-            Close Vault
-          </Button>
+
+          <div className="flex flex-col items-start space-y-2">
+            <WarningCard message="Before closing the vault, please ensure all assets have been transferred out of the vault and all token accounts have been closed. It's fine to leave some remaining SOL in the vault; it will be automatically returned to your wallet." />
+            <Button
+              className="w-1/5"
+              onClick={closeVault}
+              variant="destructive"
+              loading={isTxPending}
+            >
+              Close Vault
+            </Button>
+          </div>
         </SheetContent>
       </Sheet>
     </PageContentWrapper>
