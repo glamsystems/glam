@@ -26,7 +26,7 @@ const wrapSchema = z.object({
 type WrapSchema = z.infer<typeof wrapSchema>;
 
 export default function Wrap() {
-  const { fund: fundPDA, treasury, userWallet, glamClient } = useGlam();
+  const { activeFund, treasury, userWallet, glamClient } = useGlam();
 
   const [amountAsset, setAmountAsset] = useState<string>("SOL");
   const [direction, setDirection] = useState<string>("wrap");
@@ -45,7 +45,7 @@ export default function Wrap() {
   });
 
   useEffect(() => {
-    if (fundPDA) {
+    if (activeFund?.pubkey && treasury) {
       const solBalance = (treasury?.balanceLamports || 0) / LAMPORTS_PER_SOL;
       const wSolBalance =
         treasury?.tokenAccounts?.find((ta) => ta.mint.equals(WSOL))?.uiAmount ||
@@ -54,7 +54,7 @@ export default function Wrap() {
       setWSolBalance(wSolBalance);
       setDisplayBalance(solBalance);
     }
-  }, [fundPDA, treasury, glamClient]);
+  }, [activeFund, treasury, glamClient]);
 
   const onSubmit: SubmitHandler<WrapSchema> = async (values, _event) => {
     if (values.amount === 0) {
@@ -73,7 +73,7 @@ export default function Wrap() {
       return;
     }
 
-    if (!fundPDA) {
+    if (!activeFund?.pubkey) {
       toast({
         title: "Fund not found for the connected wallet.",
         variant: "destructive",
@@ -86,7 +86,7 @@ export default function Wrap() {
       let txId;
       if (direction === "wrap") {
         txId = await glamClient.wsol.wrap(
-          fundPDA,
+          activeFund.pubkey,
           new BN(values.amount * LAMPORTS_PER_SOL),
           {
             getPriorityFeeMicroLamports,
@@ -94,7 +94,7 @@ export default function Wrap() {
         );
       } else {
         // Unwrap means unwrap all, there's no amount
-        txId = await glamClient.wsol.unwrap(fundPDA, {
+        txId = await glamClient.wsol.unwrap(activeFund.pubkey, {
           getPriorityFeeMicroLamports,
         });
       }

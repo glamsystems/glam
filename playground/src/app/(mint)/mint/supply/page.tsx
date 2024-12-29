@@ -27,7 +27,7 @@ const supplySchema = z.object({
 type SupplySchema = z.infer<typeof supplySchema>;
 
 export default function SupplyPage() {
-  const { fund: fundPDA, glamClient } = useGlam();
+  const { activeFund, glamClient } = useGlam();
 
   const [txStates, setTxStates] = React.useState({
     mintTxPending: false,
@@ -40,15 +40,18 @@ export default function SupplyPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const tokenAccounts = await glamClient.shareClass.getHolders(fundPDA!, 0);
+      const tokenAccounts = await glamClient.shareClass.getHolders(
+        activeFund!.pubkey,
+        0,
+      );
       const tokenHolders = tokenAccounts.map((ta) => ({
         value: ta.owner.toBase58(),
         label: ta.owner.toBase58(), // PubkeySelector only supports search by label
       }));
       setTokenHolders(tokenHolders);
     };
-    fundPDA && fetchData();
-  }, [glamClient, fundPDA]);
+    activeFund?.pubkey && fetchData();
+  }, [glamClient, activeFund]);
 
   const form = useForm<SupplySchema>({
     resolver: zodResolver(supplySchema),
@@ -60,7 +63,7 @@ export default function SupplyPage() {
 
   const onSubmit: SubmitHandler<SupplySchema> = async (values, event) => {
     const submitter = (event?.nativeEvent as SubmitEvent)?.submitter?.id;
-    if (!submitter || !fundPDA) {
+    if (!submitter || !activeFund?.pubkey) {
       return;
     }
 
@@ -97,14 +100,14 @@ export default function SupplyPage() {
       const txSig =
         submitter === "mint"
           ? await glamClient.shareClass.mintShare(
-              fundPDA,
+              activeFund.pubkey,
               0,
               pubkey,
               new BN(amount * 10 ** 9),
               true, // force thawing token account if it's frozen
             )
           : await glamClient.shareClass.burnShare(
-              fundPDA,
+              activeFund.pubkey,
               0,
               new BN(amount * 10 ** 9),
               pubkey,

@@ -41,7 +41,6 @@ interface PythPrice {
 interface GlamProviderContext {
   glamClient: GlamClient;
   activeFund?: FundCache;
-  fund?: PublicKey;
   treasury?: Treasury;
   fundsList: FundCache[];
   allFunds: FundModel[];
@@ -351,7 +350,7 @@ export function GlamProvider({
   // Fetch drift positions
   //
   const { data: driftUserData } = useQuery({
-    queryKey: ["/drift-positions"],
+    queryKey: ["/drift-positions", treasury?.pubkey],
     enabled: !!treasury,
     refetchInterval: 30 * 1000,
     queryFn: () => {
@@ -361,15 +360,12 @@ export function GlamProvider({
     },
   });
   useEffect(() => {
-    if (driftUserData) {
-      setDriftUser(driftUserData);
-    }
-  }, [driftUserData]);
+    setDriftUser(driftUserData || {});
+  }, [driftUserData, activeFund]);
 
   const value: GlamProviderContext = {
     glamClient,
     activeFund,
-    fund: activeFund?.pubkey, // TODO: no longer needed, should use activeFund instead
     treasury,
     fundsList: useAtomValue(fundsListAtom),
     allFunds, // TODO: only keep one of allFunds or fundsList

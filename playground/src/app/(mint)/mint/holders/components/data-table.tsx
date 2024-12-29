@@ -64,17 +64,17 @@ export function DataTable<TData extends HoldersData>({
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
-  const { glamClient, fund: fundPDA } = useGlam();
+  const { glamClient, activeFund } = useGlam();
 
   const thawOrFreeAccount = async (ata: string, frozen: boolean) => {
-    if (!fundPDA || !glamClient) {
+    if (!activeFund?.pubkey || !glamClient) {
       return;
     }
 
     const pubkey = new PublicKey(ata);
     try {
       const txSig = await glamClient.shareClass.setTokenAccountsStates(
-        fundPDA,
+        activeFund.pubkey,
         0,
         [pubkey],
         frozen,

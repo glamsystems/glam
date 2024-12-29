@@ -45,7 +45,7 @@ type TransferSchema = z.infer<typeof transferSchema>;
 
 export default function Transfer() {
   const {
-    fund: fundPDA,
+    activeFund,
     treasury,
     glamClient,
     driftMarketConfigs,
@@ -107,7 +107,7 @@ export default function Transfer() {
 
   useEffect(() => {
     setFromAssetList(treasuryAssets());
-  }, [treasury, jupTokenList, fundPDA]);
+  }, [treasury, jupTokenList, activeFund]);
 
   const form = useForm<TransferSchema>({
     resolver: zodResolver(transferSchema),
@@ -142,7 +142,7 @@ export default function Transfer() {
   }, [from, driftUser, driftMarketConfigs]);
 
   const transferTreasuryManager = async (symbol: string, amount: number) => {
-    if (!fundPDA) return; // already checked, to avoid type issue
+    if (!activeFund?.pubkey || !glamClient) return; // already checked, to avoid type issue
 
     const asset = treasuryAssets().find((a) => a.symbol === symbol);
     if (!asset) {
@@ -156,7 +156,7 @@ export default function Transfer() {
     try {
       setIsTxPending(true);
       const txId = await glamClient.fund.withdraw(
-        fundPDA,
+        activeFund.pubkey,
         new PublicKey(asset?.address || 0),
         amount * 10 ** (asset?.decimals || 9),
       );
@@ -184,7 +184,7 @@ export default function Transfer() {
 
     console.log("Submitting transfer", values);
 
-    if (!fundPDA) {
+    if (!activeFund?.pubkey) {
       toast({
         title: "Invalid fund",
         description: "Please select a valid fund",
@@ -234,7 +234,7 @@ export default function Transfer() {
       const txId =
         origin === "Treasury"
           ? await glamClient.drift.deposit(
-              fundPDA,
+              activeFund.pubkey,
               new anchor.BN(amount * 10 ** decimals),
               marketIndex,
               0,
@@ -242,7 +242,7 @@ export default function Transfer() {
               { getPriorityFeeMicroLamports },
             )
           : await glamClient.drift.withdraw(
-              fundPDA,
+              activeFund.pubkey,
               new anchor.BN(amount * 10 ** decimals),
               marketIndex,
               0,
