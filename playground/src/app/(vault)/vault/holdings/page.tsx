@@ -8,6 +8,18 @@ import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";
 import { Holding } from "./data/holdingSchema";
 import { ExplorerLink } from "@/components/ExplorerLink";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { ClickToCopyText } from "@/components/ClickToCopyText";
+import { Button } from "@/components/ui/button";
 
 const SKELETON_ROW_COUNT = 5;
 
@@ -23,6 +35,10 @@ export default function Holdings() {
 
   const [showZeroBalances, setShowZeroBalances] = useState(false);
   const [isLoadingData, setIsLoading] = useState(true);
+
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const openSheet = () => setIsSheetOpen(true);
+  const closeSheet = () => setIsSheetOpen(false);
 
   const createSkeletonHolding = (): Holding => ({
     name: "",
@@ -139,7 +155,15 @@ export default function Holdings() {
     }
   }, [treasury, jupTokenList, prices, activeFund]);
 
-  const treasuryAddress = treasury?.pubkey ? treasury.pubkey.toBase58() : "";
+  const vaultAddress = treasury?.pubkey ? treasury.pubkey.toBase58() : "";
+
+  const closeVault = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+
+    if (!activeFund?.pubkey) {
+      return;
+    }
+  };
 
   return (
     <PageContentWrapper>
@@ -153,17 +177,34 @@ export default function Holdings() {
         }
         columns={columns}
         setShowZeroBalances={setShowZeroBalances}
+        onOpenSheet={openSheet}
       />
-      <br />
-      <p className="text-sm text-muted-foreground">
-        Vault:{" "}
-        {treasuryAddress && (
-          <ExplorerLink
-            path={`account/${treasuryAddress}`}
-            label={treasuryAddress}
-          />
-        )}
-      </p>
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetTrigger asChild></SheetTrigger>
+        <SheetContent side="right" className="p-12 sm:max-w-none w-1/2">
+          <SheetHeader>
+            <SheetTitle>Vault Info</SheetTitle>
+            <SheetDescription>Detailed info about the vault</SheetDescription>
+          </SheetHeader>
+
+          <div className="space-y-2 py-4">
+            <div className="flex items-center space-x-2">
+              <p className="text-sm text-muted-foreground">State:</p>
+              <ClickToCopyText text={activeFund?.address || ""} />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <p className="text-sm text-muted-foreground">Vault:</p>
+              <ClickToCopyText text={vaultAddress} />
+            </div>
+
+            {/* Show a QR code that links to the vault */}
+          </div>
+          <Button onClick={closeVault} className="" variant="destructive">
+            Close Vault
+          </Button>
+        </SheetContent>
+      </Sheet>
     </PageContentWrapper>
   );
 }

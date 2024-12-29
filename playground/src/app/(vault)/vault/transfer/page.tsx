@@ -31,7 +31,7 @@ import { ExplorerLink } from "@/components/ExplorerLink";
 import { getPriorityFeeMicroLamports } from "@/app/(shared)/settings/priorityfee";
 import { WarningCard } from "@/components/WarningCard";
 import { PublicKey } from "@solana/web3.js";
-import { CheckIcon, CopyIcon } from "lucide-react";
+import { ClickToCopyText } from "@/components/ClickToCopyText";
 
 const venues: [string, ...string[]] = ["Treasury", "Drift", "Manager"];
 const transferSchema = z.object({
@@ -57,7 +57,6 @@ export default function Transfer() {
   const [isTxPending, setIsTxPending] = useState(false);
   const [fromAssetList, setFromAssetList] = useState<Asset[]>([]);
   const [warning, setWarning] = useState<string>("");
-  const [hasCopiedAddress, setHasCopiedAddress] = useState(false);
   const [transferButtonDisabled, setTransferButtonDisabled] = useState(false);
 
   const treasuryAssets = () => {
@@ -366,26 +365,7 @@ export default function Transfer() {
               {warning && (
                 <>
                   <WarningCard className="p-2" message={warning} />
-                  <div
-                    className="flex flex-row items-center space-x-2 text-sm text-muted-foreground cursor-pointer"
-                    onClick={(e: React.MouseEvent) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      navigator.clipboard
-                        .writeText(treasury?.pubkey.toBase58() || "")
-                        .then(() => {
-                          setHasCopiedAddress(true);
-                          setTimeout(() => setHasCopiedAddress(false), 2000);
-                        });
-                    }}
-                  >
-                    <p>{treasury?.pubkey.toBase58()}</p>
-                    {hasCopiedAddress ? (
-                      <CheckIcon className="h-4 w-4" />
-                    ) : (
-                      <CopyIcon className="h-4 w-4 cursor-pointer" />
-                    )}
-                  </div>
+                  <ClickToCopyText text={activeFund?.pubkey.toBase58() || ""} />
                 </>
               )}
 
