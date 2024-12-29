@@ -28,22 +28,25 @@ type TransferSchema = z.infer<typeof transferSchema>;
 
 export default function TransferPage() {
   const [isTxPending, setIsTxPending] = React.useState(false);
-  const { fund: fundPDA, glamClient } = useGlam();
+  const { activeFund, glamClient } = useGlam();
 
   const [tokenHolders, setTokenHolders] = React.useState<
     { value: string; label: string }[]
   >([]);
   useEffect(() => {
     const fetchData = async () => {
-      const tokenAccounts = await glamClient.shareClass.getHolders(fundPDA!, 0);
+      const tokenAccounts = await glamClient.shareClass.getHolders(
+        activeFund!.pubkey,
+        0,
+      );
       const tokenHolders = tokenAccounts.map((ta) => ({
         value: ta.owner.toBase58(),
         label: ta.owner.toBase58(), // PubkeySelector only supports search by label
       }));
       setTokenHolders(tokenHolders);
     };
-    fundPDA && fetchData();
-  }, [glamClient, fundPDA]);
+    activeFund?.pubkey && fetchData();
+  }, [glamClient, activeFund]);
 
   const form = useForm<TransferSchema>({
     resolver: zodResolver(transferSchema),
@@ -95,14 +98,14 @@ export default function TransferPage() {
       return;
     }
 
-    if (!fundPDA || !glamClient) {
+    if (!activeFund?.pubkey || !glamClient) {
       return;
     }
 
     setIsTxPending(true);
     try {
       const txId = await glamClient.shareClass.forceTransferShare(
-        fundPDA,
+        activeFund.pubkey,
         0,
         new BN(amount * 10 ** 9),
         fromPubkey,

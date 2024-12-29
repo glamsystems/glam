@@ -10,16 +10,18 @@ import {
 import { useGlam } from "@glam/anchor/react";
 
 export default function HoldersPage() {
-  // @ts-ignore
-  const { glamClient, fund: fundPDA } = useGlam();
+  const { glamClient, activeFund } = useGlam();
   const [holders, setHolders] = React.useState([] as HoldersData[]);
 
   React.useEffect(() => {
     const fetchData = async () => {
-      if (!glamClient || !fundPDA) {
+      if (!glamClient || !activeFund?.pubkey) {
         return;
       }
-      const tokenAccounts = await glamClient.shareClass.getHolders(fundPDA, 0);
+      const tokenAccounts = await glamClient.shareClass.getHolders(
+        activeFund.pubkey,
+        0,
+      );
 
       // convert token accounts to holder data models
       setHolders(
@@ -34,7 +36,7 @@ export default function HoldersPage() {
     };
 
     fetchData();
-  }, [glamClient, fundPDA]);
+  }, [glamClient, activeFund]);
 
   return (
     <PageContentWrapper>

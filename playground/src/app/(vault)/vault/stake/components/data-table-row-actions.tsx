@@ -33,10 +33,10 @@ export function DataTableRowActions<TData>({
   const isClosable = ticketOrStake.status === "inactive";
   const isPendingOrDeactivating = ticketOrStake.status === "deactivating";
 
-  const { glamClient, fund: fundPDA } = useGlam();
+  const { glamClient, activeFund } = useGlam();
 
   const handleClaimTicket = async () => {
-    if (!fundPDA) {
+    if (!activeFund?.pubkey || !glamClient) {
       console.error("No fund selected");
       return;
     }
@@ -45,7 +45,7 @@ export function DataTableRowActions<TData>({
       const ticketPublicKey = new PublicKey(ticketOrStake.publicKey);
       console.log("Claim marinade ticket:", ticketPublicKey.toBase58());
 
-      const txId = await glamClient.marinade.claimTickets(fundPDA, [
+      const txId = await glamClient.marinade.claimTickets(activeFund.pubkey, [
         ticketPublicKey,
       ]);
 
@@ -65,7 +65,7 @@ export function DataTableRowActions<TData>({
   };
 
   const handlDeactivateStake = async () => {
-    if (!fundPDA) {
+    if (!activeFund?.pubkey || !glamClient) {
       console.error("No fund selected");
       return;
     }
@@ -74,9 +74,10 @@ export function DataTableRowActions<TData>({
       const accountPublicKey = new PublicKey(ticketOrStake.publicKey);
       console.log("Deactivate stake account:", accountPublicKey.toBase58());
 
-      const txId = await glamClient.staking.deactivateStakeAccounts(fundPDA, [
-        accountPublicKey,
-      ]);
+      const txId = await glamClient.staking.deactivateStakeAccounts(
+        activeFund.pubkey,
+        [accountPublicKey],
+      );
 
       toast({
         title: "Stake deactivated successfully",
@@ -106,7 +107,7 @@ export function DataTableRowActions<TData>({
   };
 
   const handleWithdrawStake = async () => {
-    if (!fundPDA) {
+    if (!activeFund?.pubkey || !glamClient) {
       console.error("No fund selected");
       return;
     }
@@ -115,9 +116,10 @@ export function DataTableRowActions<TData>({
       const accountPublicKey = new PublicKey(ticketOrStake.publicKey);
       console.log("Withdraw from stake account:", accountPublicKey.toBase58());
 
-      const txId = await glamClient.staking.withdrawFromStakeAccounts(fundPDA, [
-        accountPublicKey,
-      ]);
+      const txId = await glamClient.staking.withdrawFromStakeAccounts(
+        activeFund.pubkey,
+        [accountPublicKey],
+      );
 
       toast({
         title: "Stake withdrawn successfully",

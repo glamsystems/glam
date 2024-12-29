@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { holdingSchema } from "../data/holdingSchema";
-import TruncateAddress from "../../../../../utils/TruncateAddress";
+import TruncateAddress from "@/utils/TruncateAddress";
 import { useState } from "react";
 import { ArrowLeftRight, CheckIcon, CopyIcon, X } from "lucide-react";
 import { MSOL, useGlam } from "@glam/anchor/react";
@@ -21,6 +21,7 @@ import { PublicKey } from "@solana/web3.js";
 import { toast } from "@/components/ui/use-toast";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { parseTxError } from "@/lib/error";
+import { useRouter } from "next/navigation";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -33,7 +34,7 @@ export function DataTableRowActions<TData>({
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
-  const { glamClient, fund, refresh } = useGlam();
+  const { glamClient, activeFund, refresh } = useGlam();
 
   const copyToClipboard = (
     e: React.MouseEvent,
@@ -50,12 +51,12 @@ export function DataTableRowActions<TData>({
   };
 
   const closeAta = async (ata: string) => {
-    if (!fund) {
+    if (!activeFund?.pubkey || !glamClient) {
       return;
     }
 
     try {
-      const txId = await glamClient.fund.closeTokenAccounts(fund, [
+      const txId = await glamClient.fund.closeTokenAccounts(activeFund.pubkey, [
         new PublicKey(ata),
       ]);
       toast({
@@ -73,13 +74,13 @@ export function DataTableRowActions<TData>({
   };
 
   const unstake = async (mint: string, amount: BN) => {
-    if (!fund) {
+    if (!activeFund?.pubkey || !glamClient) {
       return;
     }
 
     try {
       const txId = await glamClient.staking.unstake(
-        fund,
+        activeFund.pubkey,
         new PublicKey(mint),
         amount,
       );
@@ -96,6 +97,8 @@ export function DataTableRowActions<TData>({
       });
     }
   };
+
+  const router = useRouter();
 
   return (
     <DropdownMenu>
@@ -157,8 +160,7 @@ export function DataTableRowActions<TData>({
             <DropdownMenuItem
               className="cursor-pointer"
               onClick={async (e) => {
-                // TODO: redirect to trade page
-                console.log("Swapping token:", holding.mint);
+                router.push("/vault/swap");
               }}
             >
               Swap

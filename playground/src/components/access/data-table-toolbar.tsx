@@ -2,7 +2,6 @@
 
 import { Cross2Icon, PlusIcon } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
-import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DataTableRefresh } from "./data-table-refresh";
@@ -36,10 +35,10 @@ interface DataTableToolbarProps<TData> {
 }
 
 export function DataTableToolbar<TData>({
-                                          table,
-                                          treeDataPermissions,
-                                          onSuccess,
-                                        }: DataTableToolbarProps<TData>) {
+  table,
+  treeDataPermissions,
+  onSuccess,
+}: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -49,7 +48,7 @@ export function DataTableToolbar<TData>({
   const [treeData, setTreeData] = useState<TreeNodeData>(treeDataPermissions);
 
   const { updateLabel } = useKeyLabels();
-  const { glamClient, fund: fundPDA } = useGlam();
+  const { glamClient, activeFund } = useGlam();
 
   const toggleExpandCollapse = () => {
     setIsExpanded(!isExpanded);
@@ -66,6 +65,7 @@ export function DataTableToolbar<TData>({
 
   const handleAddKey = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
+
     const permissions = treeData.children?.flatMap((lvl1) =>
       lvl1.children?.filter((node) => node.checked).map((node) => node.id),
     );
@@ -99,7 +99,7 @@ export function DataTableToolbar<TData>({
     try {
       // @ts-ignore
       const txSig = await glamClient.fund.upsertDelegateAcls(
-        fundPDA!,
+        activeFund!.pubkey,
         delegateAcls,
       );
 
@@ -120,7 +120,7 @@ export function DataTableToolbar<TData>({
       closeButtonRef.current?.click();
 
       // Wait for blockchain confirmation and refresh
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       onSuccess?.();
     } catch (e) {
       toast({

@@ -41,7 +41,6 @@ interface PythPrice {
 interface GlamProviderContext {
   glamClient: GlamClient;
   activeFund?: FundCache;
-  fund?: PublicKey;
   treasury?: Treasury;
   fundsList: FundCache[];
   allFunds: FundModel[];
@@ -56,7 +55,7 @@ interface GlamProviderContext {
 
 interface UserWallet {
   queryKey: string[];
-  pubkey: PublicKey;
+  pubkey?: PublicKey; // if pubkey is null, wallet is not connected
   balanceLamports: number;
   tokenAccounts: TokenAccount[];
 }
@@ -176,7 +175,7 @@ export function GlamProvider({
   // Fetch all funds
   //
   const refreshTreasury = async () => {
-    if (activeFund && activeFund.pubkey) {
+    if (activeFund?.pubkey && wallet?.publicKey) {
       console.log(
         "fetching treasury data for fund",
         activeFund.pubkey.toBase58(),
@@ -297,15 +296,12 @@ export function GlamProvider({
     queryFn: () => fetchBalances(glamClient, wallet?.publicKey!),
   });
   useEffect(() => {
-    if (walletBalances) {
-      setUserWallet({
-        queryKey: walletBalancesQueryKey,
-        pubkey: wallet.publicKey,
-        ...walletBalances,
-      } as UserWallet);
-      console.log("user wallet balances", walletBalances);
-    }
-  }, [walletBalances]);
+    setUserWallet({
+      queryKey: walletBalancesQueryKey,
+      pubkey: wallet.publicKey,
+      ...walletBalances,
+    } as UserWallet);
+  }, [walletBalances, wallet]);
 
   //
   // Fetch token list from jupiter api
@@ -351,7 +347,7 @@ export function GlamProvider({
   // Fetch drift positions
   //
   const { data: driftUserData } = useQuery({
-    queryKey: ["/drift-positions"],
+    queryKey: ["/drift-positions", treasury?.pubkey],
     enabled: !!treasury,
     refetchInterval: 30 * 1000,
     queryFn: () => {
@@ -361,15 +357,12 @@ export function GlamProvider({
     },
   });
   useEffect(() => {
-    if (driftUserData) {
-      setDriftUser(driftUserData);
-    }
-  }, [driftUserData]);
+    setDriftUser(driftUserData || {});
+  }, [driftUserData, activeFund]);
 
   const value: GlamProviderContext = {
     glamClient,
     activeFund,
-    fund: activeFund?.pubkey, // TODO: no longer needed, should use activeFund instead
     treasury,
     fundsList: useAtomValue(fundsListAtom),
     allFunds, // TODO: only keep one of allFunds or fundsList

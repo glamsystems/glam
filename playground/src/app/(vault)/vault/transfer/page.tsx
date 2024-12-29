@@ -31,7 +31,7 @@ import { ExplorerLink } from "@/components/ExplorerLink";
 import { getPriorityFeeMicroLamports } from "@/app/(shared)/settings/priorityfee";
 import { WarningCard } from "@/components/WarningCard";
 import { PublicKey } from "@solana/web3.js";
-import { CheckIcon, CopyIcon } from "lucide-react";
+import { ClickToCopyText } from "@/components/ClickToCopyText";
 
 const venues: [string, ...string[]] = ["Treasury", "Drift", "Manager"];
 const transferSchema = z.object({
@@ -45,7 +45,7 @@ type TransferSchema = z.infer<typeof transferSchema>;
 
 export default function Transfer() {
   const {
-    fund: fundPDA,
+    activeFund,
     treasury,
     glamClient,
     driftMarketConfigs,
@@ -57,7 +57,6 @@ export default function Transfer() {
   const [isTxPending, setIsTxPending] = useState(false);
   const [fromAssetList, setFromAssetList] = useState<Asset[]>([]);
   const [warning, setWarning] = useState<string>("");
-  const [hasCopiedAddress, setHasCopiedAddress] = useState(false);
   const [transferButtonDisabled, setTransferButtonDisabled] = useState(false);
 
   const treasuryAssets = () => {
@@ -107,7 +106,7 @@ export default function Transfer() {
 
   useEffect(() => {
     setFromAssetList(treasuryAssets());
-  }, [treasury, jupTokenList, fundPDA]);
+  }, [treasury, jupTokenList, activeFund]);
 
   const form = useForm<TransferSchema>({
     resolver: zodResolver(transferSchema),
@@ -142,7 +141,7 @@ export default function Transfer() {
   }, [from, driftUser, driftMarketConfigs]);
 
   const transferTreasuryManager = async (symbol: string, amount: number) => {
-    if (!fundPDA) return; // already checked, to avoid type issue
+    if (!activeFund?.pubkey || !glamClient) return; // already checked, to avoid type issue
 
     const asset = treasuryAssets().find((a) => a.symbol === symbol);
     if (!asset) {
@@ -156,7 +155,7 @@ export default function Transfer() {
     try {
       setIsTxPending(true);
       const txId = await glamClient.fund.withdraw(
-        fundPDA,
+        activeFund.pubkey,
         new PublicKey(asset?.address || 0),
         amount * 10 ** (asset?.decimals || 9),
       );
@@ -184,7 +183,7 @@ export default function Transfer() {
 
     console.log("Submitting transfer", values);
 
-    if (!fundPDA) {
+    if (!activeFund?.pubkey) {
       toast({
         title: "Invalid fund",
         description: "Please select a valid fund",
@@ -234,7 +233,7 @@ export default function Transfer() {
       const txId =
         origin === "Treasury"
           ? await glamClient.drift.deposit(
-              fundPDA,
+              activeFund.pubkey,
               new anchor.BN(amount * 10 ** decimals),
               marketIndex,
               0,
@@ -242,7 +241,7 @@ export default function Transfer() {
               { getPriorityFeeMicroLamports },
             )
           : await glamClient.drift.withdraw(
-              fundPDA,
+              activeFund.pubkey,
               new anchor.BN(amount * 10 ** decimals),
               marketIndex,
               0,
@@ -366,26 +365,7 @@ export default function Transfer() {
               {warning && (
                 <>
                   <WarningCard className="p-2" message={warning} />
-                  <div
-                    className="flex flex-row items-center space-x-2 text-sm text-muted-foreground cursor-pointer"
-                    onClick={(e: React.MouseEvent) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      navigator.clipboard
-                        .writeText(treasury?.pubkey.toBase58() || "")
-                        .then(() => {
-                          setHasCopiedAddress(true);
-                          setTimeout(() => setHasCopiedAddress(false), 2000);
-                        });
-                    }}
-                  >
-                    <p>{treasury?.pubkey.toBase58()}</p>
-                    {hasCopiedAddress ? (
-                      <CheckIcon className="h-4 w-4" />
-                    ) : (
-                      <CopyIcon className="h-4 w-4 cursor-pointer" />
-                    )}
-                  </div>
+                  <ClickToCopyText text={activeFund?.pubkey.toBase58() || ""} />
                 </>
               )}
 

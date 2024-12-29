@@ -65,7 +65,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 
 export default function Stake() {
-  const { fund: fundPDA, treasury, userWallet, glamClient } = useGlam();
+  const { activeFund, treasury, userWallet, glamClient } = useGlam();
 
   const [ticketsAndStakes, setTicketsAndStakes] = useState<TicketOrStake[]>([]);
   const [isLoadingTableData, setIsLoadingTableData] = useState<boolean>(true); // New loading state
@@ -85,10 +85,10 @@ export default function Stake() {
 
   const { data } = useQuery({
     queryKey: ["tickets-and-stakes"],
-    enabled: (fundPDA && treasury) !== undefined,
+    enabled: (activeFund?.pubkey && treasury) !== undefined,
     queryFn: () =>
       Promise.all([
-        glamClient.marinade.getTickets(fundPDA!),
+        glamClient.marinade.getTickets(activeFund!.pubkey),
         glamClient.staking.getStakeAccountsWithStates(
           new PublicKey(treasury!.pubkey),
         ),
@@ -163,7 +163,7 @@ export default function Stake() {
       return;
     }
 
-    if (!fundPDA) {
+    if (!activeFund?.pubkey) {
       toast({
         title: "Fund not found for the connected wallet.",
         variant: "destructive",
@@ -190,7 +190,7 @@ export default function Stake() {
     const stakeFnMap: any = {
       Native: async () => {
         return await glamClient.staking.initializeAndDelegateStake(
-          fundPDA,
+          activeFund.pubkey,
           new PublicKey(values.validatorAddress!),
           // new PublicKey("J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp"), // phantom validator
           new BN(values.amountIn * LAMPORTS_PER_SOL),
@@ -203,14 +203,14 @@ export default function Stake() {
       Stakepool: async () => {
         if (selectedStakepool === "Jito") {
           return await glamClient.staking.stakePoolDepositSol(
-            fundPDA,
+            activeFund.pubkey,
             JITO_STAKE_POOL,
             new BN(values.amountIn * LAMPORTS_PER_SOL),
           );
         }
         if (selectedStakepool === "Marinade") {
           return await glamClient.marinade.depositSol(
-            fundPDA,
+            activeFund.pubkey,
             new BN(values.amountIn * LAMPORTS_PER_SOL),
           );
         }
@@ -250,7 +250,7 @@ export default function Stake() {
   return (
     <PageContentWrapper>
       <div>
-        {userWallet.pubkey && fundPDA ? (
+        {userWallet.pubkey && activeFund?.pubkey ? (
           <DataTable
             columns={columns}
             data={ticketsAndStakes}

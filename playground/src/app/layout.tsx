@@ -1,4 +1,3 @@
-// app/layout.tsx
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Inter } from "next/font/google";
@@ -6,6 +5,9 @@ import "./globals.css";
 import { ReactQueryProvider } from "./react-query-provider";
 import React from "react";
 import MobileOverlay from "@/components/MobileOverlay";
+import dynamic from "next/dynamic";
+import { ClusterProvider } from "@/components/solana-cluster-provider";
+import { GlamProvider } from "@glam/anchor/react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -13,6 +15,11 @@ export const metadata: Metadata = {
   title: "GLAM *.+",
   description: "The New Standard for Asset Management.",
 };
+
+const AppWalletProvider = dynamic(
+  () => import("@/components/wallet-provider"),
+  { ssr: false },
+);
 
 export default function RootLayout({
   children,
@@ -32,7 +39,15 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <main className="flex-1 flex min-h-screen w-full">{children}</main>
+            <ClusterProvider>
+              <AppWalletProvider>
+                <GlamProvider>
+                  <main className="flex-1 flex min-h-screen w-full">
+                    {children}
+                  </main>
+                </GlamProvider>
+              </AppWalletProvider>
+            </ClusterProvider>
           </ThemeProvider>
         </ReactQueryProvider>
       </body>

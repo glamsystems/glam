@@ -31,6 +31,7 @@ import Link from "next/link";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useTheme } from "next-themes";
 import Image from "next/image";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger

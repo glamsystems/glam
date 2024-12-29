@@ -24,10 +24,6 @@ import { useState } from "react";
 import { useGlam } from "@glam/anchor/react";
 import { PublicKey } from "@solana/web3.js";
 import { toast } from "@/components/ui/use-toast";
-import {
-  createAssociatedTokenAccountIdempotentInstruction,
-  TOKEN_2022_PROGRAM_ID,
-} from "@solana/spl-token";
 import { ExplorerLink } from "@/components/ExplorerLink";
 
 interface DataTableToolbarProps<TData> {
@@ -43,15 +39,15 @@ export function DataTableToolbar<TData>({
   const [publicKey, setPublicKey] = useState<string>("");
   const [ata, setAta] = useState<string>("");
 
-  const { glamClient, fund: fundPDA } = useGlam();
+  const { glamClient, activeFund } = useGlam();
 
   React.useEffect(() => {
-    if (!glamClient || !fundPDA) {
+    if (!glamClient || !activeFund?.pubkey) {
       return;
     }
     // Set ata if public key is valid
     try {
-      const shareClassMint = glamClient.getShareClassPDA(fundPDA, 0);
+      const shareClassMint = glamClient.getShareClassPDA(activeFund.pubkey, 0);
       const ata = glamClient.getShareClassAta(
         new PublicKey(publicKey),
         shareClassMint,
@@ -67,7 +63,7 @@ export function DataTableToolbar<TData>({
   ) => {
     event.preventDefault();
 
-    if (!fundPDA || !glamClient) {
+    if (!activeFund?.pubkey || !glamClient) {
       return;
     }
 
@@ -86,7 +82,7 @@ export function DataTableToolbar<TData>({
 
     try {
       const txSig = await glamClient.shareClass.createTokenAccount(
-        fundPDA,
+        activeFund.pubkey,
         pubkey,
         0,
         false,
