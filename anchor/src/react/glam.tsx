@@ -72,6 +72,7 @@ interface FundCache {
   pubkey: PublicKey;
   sparkleKey: string;
   name: string;
+  product: "Mint" | "Vault" | "Fund";
 }
 
 const GlamContext = createContext<GlamProviderContext>(
@@ -103,6 +104,7 @@ const toFundCache = (f: FundModel) => {
     sparkleKey: f.sparkleKey,
     address: f.idStr,
     name: f.name,
+    product: f.productType,
   } as FundCache;
 };
 

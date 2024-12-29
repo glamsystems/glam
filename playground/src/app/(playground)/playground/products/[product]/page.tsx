@@ -14,7 +14,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useGlam } from "@glam/anchor/react";
+import { FundModel, ShareClassModel, useGlam } from "@glam/anchor/react";
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PublicKey } from "@solana/web3.js";
@@ -45,11 +45,6 @@ interface ShareClass {
   shareClassDecimals: number; // Add this line to define 'shareClassDecimals'
 }
 
-interface Fund {
-  shareClasses: ShareClass[];
-  [key: string]: any; // To accommodate additional properties
-}
-
 interface HolderData {
   mint: string;
   holders: Array<{ holder: React.ReactNode; shares: number; fill: string }>;
@@ -74,7 +69,7 @@ async function fetchHolderData(mint: string): Promise<any> {
           id: "1",
           method: "getTokenAccounts",
           params: {
-            mint: mint,
+            mint,
             options: {
               showZeroBalance: true,
             },
@@ -170,18 +165,10 @@ function processHolderData(
   };
 }
 
-async function updateHoldersData(fund: Fund): Promise<HolderData[]> {
+async function updateHoldersData(fundModel: FundModel): Promise<HolderData[]> {
   const holdersData = await Promise.all(
-    (fund.shareClasses || []).map(async (shareClass) => {
-      const mintAddress = shareClass.shareClassId;
-
-      if (!mintAddress) {
-        console.error(
-          `Mint address not found for share class: ${shareClass.shareClassSymbol}`,
-        );
-        return null;
-      }
-
+    fundModel.shareClasses.map(async (shareClassModel, i) => {
+      const mintAddress = fundModel.shareClassMints[i].toBase58();
       const holderData = await fetchHolderData(mintAddress);
       if (!holderData) {
         console.error(`Failed to fetch holder data for mint: ${mintAddress}`);
@@ -190,7 +177,7 @@ async function updateHoldersData(fund: Fund): Promise<HolderData[]> {
 
       const processedData = processHolderData(
         holderData,
-        shareClass?.shareClassDecimals || 0,
+        9, // All share classes use hardcoded decimals 9 for now
       );
 
       return {
@@ -206,8 +193,8 @@ async function updateHoldersData(fund: Fund): Promise<HolderData[]> {
   return holdersData.filter((item) => item !== null) as HolderData[];
 }
 
-const ChartComponent: React.FC<{ fund: Fund; holdersConfig: any }> = React.memo(
-  ({ fund, holdersConfig }) => {
+const ChartComponent: React.FC<{ fundModel: FundModel; holdersConfig: any }> =
+  React.memo(({ fundModel, holdersConfig }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [showSkeleton, setShowSkeleton] = useState(true); // **New State**
     const [localHoldersData, setLocalHoldersData] = useState<
@@ -220,7 +207,7 @@ const ChartComponent: React.FC<{ fund: Fund; holdersConfig: any }> = React.memo(
         try {
           setIsLoading(true);
           setError(null);
-          const updatedHoldersData = await updateHoldersData(fund);
+          const updatedHoldersData = await updateHoldersData(fundModel);
           setLocalHoldersData(updatedHoldersData);
         } catch (err: any) {
           setError(err.message);
@@ -230,7 +217,7 @@ const ChartComponent: React.FC<{ fund: Fund; holdersConfig: any }> = React.memo(
       };
 
       fetchData();
-    }, [fund]);
+    }, [fundModel]);
 
     if (isLoading) {
       return <SkeletonChart />;
@@ -313,8 +300,7 @@ const ChartComponent: React.FC<{ fund: Fund; holdersConfig: any }> = React.memo(
         </PieChart>
       </ChartContainer>
     );
-  },
-);
+  });
 
 export default function ProductPage() {
   const [clientReady, setClientReady] = useState(false);
@@ -326,12 +312,11 @@ export default function ProductPage() {
   const params = useParams();
   const router = useRouter();
   const { product } = params;
-  // @ts-ignore
   const { allFunds } = useGlam();
 
   const isAllFundsLoading = !allFunds;
 
-  const publicKey = useMemo(() => {
+  const fundPublicKey = useMemo(() => {
     if (!product) return null;
     try {
       return new PublicKey(product);
@@ -341,10 +326,10 @@ export default function ProductPage() {
     }
   }, [product]);
 
-  const fund = useMemo(() => {
-    if (!allFunds || !publicKey) return null;
-    return allFunds.find((f) => f.id?.toBase58() === product);
-  }, [allFunds, publicKey, product]);
+  const fundModel = useMemo(() => {
+    if (!allFunds || allFunds.length === 0 || !fundPublicKey) return null;
+    return allFunds.find((f) => f.idStr === product);
+  }, [allFunds, fundPublicKey, product]);
 
   //Mark the client as ready once mounted (to prevent server-side rendering issues)
   useEffect(() => {
@@ -367,20 +352,34 @@ export default function ProductPage() {
       "IsAllFundsLoading:",
       isAllFundsLoading,
     );
-    console.log("PublicKey:", publicKey, "Fund:", fund, "AllFunds:", allFunds);
+    console.log(
+      "PublicKey:",
+      fundPublicKey,
+      "Fund:",
+      fundModel,
+      "AllFunds:",
+      allFunds,
+    );
 
     if (clientReady && !isAllFundsLoading) {
-      if (!publicKey) {
+      if (!fundPublicKey) {
         console.log("Redirecting: Invalid public key");
         router.push("/");
         return;
       }
-      if (allFunds && allFunds.length > 0 && !fund) {
+      if (allFunds && allFunds.length > 0 && !fundModel) {
         console.log("Redirecting: Valid public key but no matching fund");
         router.push("/");
       }
     }
-  }, [clientReady, publicKey, fund, isAllFundsLoading, router, allFunds]);
+  }, [
+    clientReady,
+    fundPublicKey,
+    fundModel,
+    isAllFundsLoading,
+    router,
+    allFunds,
+  ]);
 
   // Calculating color info based on sparkleColor (must be declared at the top level)
   const colorInfo: ColorInfo = useMemo(() => {
@@ -439,7 +438,7 @@ export default function ProductPage() {
     return () => window.removeEventListener("resize", updateSparkleSize);
   }, []);
 
-  if (!clientReady || isAllFundsLoading || !fund) {
+  if (!clientReady || isAllFundsLoading || !fundModel) {
     return (
       <motion.div
         className="flex mt-[30vh] justify-center items-end"
@@ -464,7 +463,7 @@ export default function ProductPage() {
     );
   }
 
-  if (!publicKey || (allFunds && allFunds.length > 0 && !fund)) {
+  if (!fundPublicKey || (allFunds && allFunds.length > 0 && !fundModel)) {
     router.push("/");
     return null;
   }
@@ -473,7 +472,7 @@ export default function ProductPage() {
     setSparkleColor(generatedColor);
   };
 
-  let mintData = (fund?.shareClasses || []).map(
+  let mintData = (fundModel?.shareClasses || []).map(
     (shareClass: any, j: number) => ({
       mint: shareClass?.shareClassSymbol,
       shares:
@@ -542,7 +541,7 @@ export default function ProductPage() {
               ref={sparkleContainerRef}
             >
               <Sparkle
-                address={fund?.shareClasses[0]?.fundId?.toBase58()!}
+                address={fundModel?.shareClasses[0]?.fundId?.toBase58()!}
                 size={105}
                 onColorGenerated={handleColorGenerated}
               />
@@ -552,10 +551,10 @@ export default function ProductPage() {
           <Card className="col-span-4 row-span-1 flex flex-col items-start justify-start p-2 overflow-clip">
             <CardHeader className="p-0 w-full">
               <CardTitle className="text-xl font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
-                {fund.name}
+                {fundModel.name}
               </CardTitle>
               <CardDescription className="text-sm text-muted-foreground mt-2 line-clamp-2 overflow-clip">
-                {fund.rawOpenfunds?.investmentObjective}
+                {fundModel.rawOpenfunds?.investmentObjective}
               </CardDescription>
             </CardHeader>
           </Card>
@@ -616,11 +615,11 @@ export default function ProductPage() {
               <p className="text-muted-foreground opacity-75 text-xs font-light">
                 Symbol
               </p>
-              {fund.shareClasses[0]?.symbol}
+              {fundModel.shareClasses[0]?.symbol}
               <p className="text-muted-foreground opacity-25 text-xs font-light">
                 <ExplorerLink
-                  path={`/account/${fund?.shareClasses[0]?.fundId?.toBase58()}`}
-                  label={fund?.shareClasses[0]?.fundId?.toBase58() || ""}
+                  path={`/account/${fundModel?.shareClasses[0]?.fundId?.toBase58()}`}
+                  label={fundModel?.shareClasses[0]?.fundId?.toBase58() || ""}
                 />
               </p>
             </Card>
@@ -628,13 +627,13 @@ export default function ProductPage() {
               <p className="text-muted-foreground opacity-75 text-xs font-light">
                 Class Asset
               </p>
-              {fund.shareClasses[0]?.rawOpenfunds?.shareClassCurrency}
+              {fundModel.shareClasses[0]?.rawOpenfunds?.shareClassCurrency}
               <p className="text-muted-foreground opacity-25 text-xs font-light">
                 <ExplorerLink
-                  path={`/account/${fund?.shareClasses[0]?.rawOpenfunds?.shareClassCurrency}`}
+                  path={`/account/${fundModel?.shareClasses[0]?.rawOpenfunds?.shareClassCurrency}`}
                   label={
-                    fund?.shareClasses[0]?.rawOpenfunds?.shareClassCurrency ||
-                    ""
+                    fundModel?.shareClasses[0]?.rawOpenfunds
+                      ?.shareClassCurrency || ""
                   }
                 />
               </p>
@@ -730,7 +729,6 @@ export default function ProductPage() {
             </TabsTrigger>
           </TabsList>
 
-          {/* FIXME: this is completely broken 
           <TabsContent value="overview">
             <div className="grid grid-cols-12 grid-rows-[auto_auto] gap-4">
               <Card className="col-span-8 row-span-1 min-h-[391px]">
@@ -812,7 +810,7 @@ export default function ProductPage() {
                         className="flex-1 mx-auto aspect-square max-h-[256px] self-center"
                       >
                         <ChartComponent
-                          fund={fund}
+                          fundModel={fundModel}
                           holdersConfig={holdersConfig}
                         />
                       </ChartContainer>
@@ -835,22 +833,25 @@ export default function ProductPage() {
                             <span className="text-muted-foreground">
                               Base Asset
                             </span>
-                            <span>{fund.fundCurrency}</span>
+                            <span>{fundModel.rawOpenfunds?.fundCurrency}</span>
                           </li>
                           <li className="flex items-center justify-between">
                             <span className="text-muted-foreground">
                               Launch Date
                             </span>
-                            <span>{fund.fundLaunchDate}</span>
+                            <span>
+                              {fundModel.rawOpenfunds?.fundLaunchDate}
+                            </span>
                           </li>
                           <li className="flex items-center justify-between">
                             <span className="text-muted-foreground">
                               Domicile
                             </span>
                             <span>
-                              {fund.fundDomicileAlpha2 === "XS"
+                              {fundModel.rawOpenfunds?.fundDomicileAlpha2 ===
+                              "XS"
                                 ? "Solana"
-                                : fund.fundDomicileAlpha2}
+                                : fundModel.rawOpenfunds?.fundDomicileAlpha2}
                             </span>
                           </li>
                         </ul>
@@ -863,14 +864,22 @@ export default function ProductPage() {
                             <dt className="text-muted-foreground">
                               Share Class Asset
                             </dt>
-                            <dd>{fund.shareClasses[0]?.shareClassCurrency}</dd>
+                            <dd>
+                              {
+                                fundModel.shareClasses[0]?.rawOpenfunds
+                                  ?.shareClassCurrency
+                              }
+                            </dd>
                           </div>
                           <div className="flex items-center justify-between">
                             <dt className="text-muted-foreground">
                               Launch Date
                             </dt>
                             <dd>
-                              {fund.shareClasses[0]?.shareClassLaunchDate}
+                              {
+                                fundModel.shareClasses[0]?.rawOpenfunds
+                                  ?.shareClassLaunchDate
+                              }
                             </dd>
                           </div>
                           <div className="flex items-center justify-between">
@@ -878,12 +887,10 @@ export default function ProductPage() {
                               Lifecycle Stage
                             </dt>
                             <dd>
-                              {fund.shareClasses[0]?.shareClassLifecycle
-                                ?.charAt(0)
-                                .toUpperCase() +
-                                fund.shareClasses[0]?.shareClassLifecycle?.slice(
-                                  1,
-                                )}
+                              {
+                                fundModel.shareClasses[0]?.rawOpenfunds
+                                  ?.shareClassLifecycle
+                              }
                             </dd>
                           </div>
                           <div className="flex items-center justify-between">
@@ -891,12 +898,10 @@ export default function ProductPage() {
                               Investment Status
                             </dt>
                             <dd>
-                              {fund.shareClasses[0]?.investmentStatus
-                                ?.charAt(0)
-                                .toUpperCase() +
-                                fund.shareClasses[0]?.investmentStatus?.slice(
-                                  1,
-                                )}
+                              {
+                                fundModel.shareClasses[0]?.rawOpenfunds
+                                  ?.investmentStatus
+                              }
                             </dd>
                           </div>
                           <div className="flex items-center justify-between">
@@ -904,19 +909,19 @@ export default function ProductPage() {
                               Minimal Subscription
                             </dt>
                             <dd>
-                              {fund.shareClasses[0]
-                                ?.minimalInitialSubscriptionInShares > 0
-                                ? fund.shareClasses[0]
+                              {/* {fundModel.shareClasses[0]
+                                ?.rawOpenfunds?.minimalInitialSubscriptionInShares > 0
+                                ? fundModel.shareClasses[0]
                                     ?.minimalInitialSubscriptionInShares +
                                   " shares"
-                                : fund.shareClasses[0]
+                                : fundModel.shareClasses[0]
                                       ?.minimalInitialSubscriptionInAmount > 0
-                                  ? fund.shareClasses[0]
+                                  ? fundModel.shareClasses[0]
                                       ?.minimalInitialSubscriptionInAmount +
                                     " " +
-                                    fund.shareClasses[0]
+                                    fundModel.shareClasses[0]
                                       ?.currencyOfMinimalSubscription
-                                  : "-"}
+                                  : "-"} */}
                             </dd>
                           </div>
                           <div className="flex items-center justify-between">
@@ -924,12 +929,10 @@ export default function ProductPage() {
                               Distribution Policy
                             </dt>
                             <dd>
-                              {fund.shareClasses[0]?.shareClassDistributionPolicy
-                                ?.charAt(0)
-                                .toUpperCase() +
-                                fund.shareClasses[0]?.shareClassDistributionPolicy?.slice(
-                                  1,
-                                )}
+                              {
+                                fundModel.shareClasses[0]?.rawOpenfunds
+                                  ?.shareClassDistributionPolicy
+                              }
                             </dd>
                           </div>
                         </dl>
@@ -942,8 +945,8 @@ export default function ProductPage() {
                           <li className="flex items-center justify-between">
                             <span className="text-muted-foreground">Fund</span>
                             <ExplorerLink
-                              path={`/account/${fund?.idStr}`}
-                              label={fund?.idStr}
+                              path={`/account/${fundModel?.idStr}`}
+                              label={fundModel?.idStr}
                             />
                           </li>
                           <li className="flex items-center justify-between">
@@ -951,8 +954,12 @@ export default function ProductPage() {
                               Manager
                             </span>
                             <ExplorerLink
-                              path={`/account/${fund?.fundManagers[0]?.portfolioManagerId}`}
-                              label={fund?.fundManagers[0]?.portfolioManagerId}
+                              path={`/account/${fundModel?.manager?.portfolioManagerName || fundModel?.manager?.pubkey}`}
+                              label={
+                                fundModel?.manager?.portfolioManagerName ||
+                                fundModel?.manager?.pubkey?.toBase58() ||
+                                ""
+                              }
                             />
                           </li>
                           <li className="flex items-center justify-between">
@@ -960,8 +967,8 @@ export default function ProductPage() {
                               Treasury
                             </span>
                             <ExplorerLink
-                              path={`/account/${fund?.treasuryId}`}
-                              label={fund?.treasuryId}
+                              path={`/account/${fundModel.vaultPda}`}
+                              label={fundModel?.vaultPda.toBase58()}
                             />
                           </li>
                           <li className="flex items-center justify-between">
@@ -969,8 +976,8 @@ export default function ProductPage() {
                               Metadata
                             </span>
                             <ExplorerLink
-                              path={`/account/${fund?.openfundsMetadataId}`}
-                              label={fund?.openfundsMetadataId}
+                              path={`/account/${fundModel?.openfundsPda}`}
+                              label={fundModel?.openfundsPda.toBase58()}
                             />
                           </li>
                           <li className="flex items-center justify-between">
@@ -978,7 +985,6 @@ export default function ProductPage() {
                               Openfunds
                             </span>
                             <span className="flex gap-2">
-
                               <a
                                 href={`https://api.glam.systems/v0/openfunds?fund=${product}&format=csv`}
                                 rel="noopener noreferrer"
@@ -1006,12 +1012,11 @@ export default function ProductPage() {
                         <dl className="grid gap-2">
                           <div className="flex items-center justify-between">
                             <dt className="text-muted-foreground">
-                              Share Class 1{" "}
-                              {fund?.shareClasses[0]?.shareClassSymbol}
+                              Share Class 1 {fundModel?.shareClasses[0]?.symbol}
                             </dt>
                             <ExplorerLink
-                              path={`/account/${fund?.shareClasses[0]?.shareClassId}`}
-                              label={fund?.shareClasses[0]?.shareClassId}
+                              path={`/account/${fundModel?.shareClassMints[0]}`}
+                              label={fundModel?.shareClassMints[0].toBase58()}
                             />
                           </div>
                         </dl>
@@ -1022,7 +1027,6 @@ export default function ProductPage() {
               </Card>
             </div>
           </TabsContent>
-*/}
           <TabsContent value="holdings">
             <div className="grid grid-cols-12 grid-rows-[auto_auto] gap-4">
               <Card className="col-span-12 row-span-1">

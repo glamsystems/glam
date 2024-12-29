@@ -15,7 +15,7 @@ export const getSimulationComputeUnits = async (
   connection: Connection,
   instructions: Array<TransactionInstruction>,
   payer: PublicKey,
-  lookupTables: Array<AddressLookupTableAccount> | []
+  lookupTables: Array<AddressLookupTableAccount> | [],
 ): Promise<number | undefined> => {
   const testInstructions = [
     // Set an arbitrarily high number in simulation
@@ -32,7 +32,7 @@ export const getSimulationComputeUnits = async (
       // RecentBlockhash can by any public key during simulation
       // since 'replaceRecentBlockhash' is set to 'true' below
       recentBlockhash: PublicKey.default.toString(),
-    }).compileToV0Message(lookupTables)
+    }).compileToV0Message(lookupTables),
   );
 
   const rpcResponse = await connection.simulateTransaction(testTransaction, {
@@ -47,7 +47,7 @@ export const getSimulationComputeUnits = async (
 const getErrorFromRPCResponse = (
   rpcResponse: RpcResponseAndContext<
     SignatureResult | SimulatedTransactionResponse
-  >
+  >,
 ) => {
   // Note: `confirmTransaction` does not throw an error if the confirmation does not succeed,
   // but rather a `TransactionError` object. so we handle that here
@@ -75,7 +75,7 @@ const getErrorFromRPCResponse = (
         // ]
         // See also https://solana.stackexchange.com/a/931/294
         throw new Error(
-          `Error in transaction: instruction index ${instructionError[0]}, custom program error ${instructionError[1]["Custom"]}`
+          `Error in transaction: instruction index ${instructionError[0]}, custom program error ${instructionError[1]["Custom"]}`,
         );
       }
     }

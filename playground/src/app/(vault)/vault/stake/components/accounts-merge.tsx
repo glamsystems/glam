@@ -2,7 +2,12 @@
 
 import { CardStackPlusIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useEffect, useState } from "react";
 
 interface AccountsMergeProps {
@@ -20,7 +25,7 @@ export function AccountsMerge({ selectedRows = [] }: AccountsMergeProps) {
     }
 
     // Check if all selected rows are of type "account"
-    const allAreAccounts = selectedRows.every(row => row.type === "account");
+    const allAreAccounts = selectedRows.every((row) => row.type === "account");
 
     if (!allAreAccounts) {
       setIsDisabled(true);
@@ -28,13 +33,11 @@ export function AccountsMerge({ selectedRows = [] }: AccountsMergeProps) {
     }
 
     // Filter rows that are of type "account" and have status "active" TODO: check for same lockup, stakeouthority, withdrawauthority, validatorvotekey, creditsobseverd
-    const eligibleRows = selectedRows.filter(
-      (row) => row.status === "active"
-    );
+    const eligibleRows = selectedRows.filter((row) => row.status === "active");
 
     // Ensure all eligible rows have the same validator value
     const hasSameValidator = eligibleRows.every(
-      (row, _, array) => row.validator && row.validator === array[0].validator
+      (row, _, array) => row.validator && row.validator === array[0].validator,
     );
 
     // The button should be enabled only if there are at least two eligible rows with the same validator
@@ -44,7 +47,7 @@ export function AccountsMerge({ selectedRows = [] }: AccountsMergeProps) {
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger>
+        <TooltipTrigger asChild>
           <Button
             variant="default"
             size="icon"

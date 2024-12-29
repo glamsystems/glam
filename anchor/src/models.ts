@@ -74,6 +74,28 @@ export class FundModel extends FundIdlModel {
     return this.id?.toBase58() || "";
   }
 
+  get vaultPda() {
+    if (!this.id) {
+      throw new Error("Fund ID not set");
+    }
+    const [pda, _bump] = PublicKey.findProgramAddressSync(
+      [Buffer.from("treasury"), this.id.toBuffer()],
+      GlamProgramId,
+    );
+    return pda;
+  }
+
+  get openfundsPda() {
+    if (!this.id) {
+      throw new Error("Fund ID not set");
+    }
+    const [pda, _] = PublicKey.findProgramAddressSync(
+      [Buffer.from("openfunds"), this.id.toBuffer()],
+      GlamProgramId,
+    );
+    return pda;
+  }
+
   get productType() {
     if (this.shareClasses.length === 0) {
       return "Vault";

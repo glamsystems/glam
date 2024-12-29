@@ -168,6 +168,7 @@ export default function MultiStepForm() {
         pubkey: fundPDA,
         sparkleKey: fundPDA.toBase58(),
         name: basicInfoFormData.name,
+        product: "Mint",
       });
       toast({
         title: "Fund created successfully",

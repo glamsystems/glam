@@ -2,7 +2,12 @@
 
 import { CardStackMinusIcon, UploadIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useEffect, useState } from "react";
 
 interface AccountsWithdrawProps {
@@ -20,7 +25,7 @@ export function AccountsClose({ selectedRows = [] }: AccountsWithdrawProps) {
     }
 
     // Check if all selected rows are of type "account"
-    const allAreAccounts = selectedRows.every(row => row.type === "account");
+    const allAreAccounts = selectedRows.every((row) => row.type === "account");
 
     if (!allAreAccounts) {
       setIsDisabled(true);
@@ -29,12 +34,12 @@ export function AccountsClose({ selectedRows = [] }: AccountsWithdrawProps) {
 
     // Filter rows that are of type "account" and have status "inactive"
     const eligibleRows = selectedRows.filter(
-      (row) => row.status === "inactive"
+      (row) => row.status === "inactive",
     );
 
     // Ensure all eligible rows have the same validator value
     const hasSameValidator = eligibleRows.every(
-      (row, _, array) => row.validator && row.validator === array[0].validator
+      (row, _, array) => row.validator && row.validator === array[0].validator,
     );
 
     // The button should be enabled only if there are at least two eligible rows with the same validator
@@ -44,7 +49,7 @@ export function AccountsClose({ selectedRows = [] }: AccountsWithdrawProps) {
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger>
+        <TooltipTrigger asChild>
           <Button
             variant="default"
             size="icon"
