@@ -101,6 +101,7 @@ export default function Create() {
         pubkey: fundPDA,
         sparkleKey: fundPDA.toBase58(),
         name: values.productName,
+        product: "Vault",
       });
       // Navigate using Next.js router
       router.push("/vault/access");

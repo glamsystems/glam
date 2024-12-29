@@ -48,6 +48,14 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
     "/default-sparkle-light.svg",
   );
 
+  const { funds, mints, vaults } = React.useMemo(() => {
+    return {
+      funds: fundsList.filter((f) => f.product === "Fund"),
+      mints: fundsList.filter((f) => f.product === "Mint"),
+      vaults: fundsList.filter((f) => f.product === "Vault"),
+    };
+  }, [fundsList]);
+
   const fundModel = allFunds.find((f) => f.idStr === activeFund?.address);
 
   React.useEffect(() => {
@@ -145,41 +153,48 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
           <CommandList className="overflow-hidden h-full">
             {fundsList.length > 0 && (
               <>
-                <CommandGroup key="Products" heading="Products">
-                  {fundsList.map((product) => (
-                    <CommandItem
-                      key={product.name || product.address}
-                      onSelect={() => {
-                        setActiveFund(product);
-                        setOpen(false);
-                      }}
-                      className="text-sm cursor-pointer h-8"
-                    >
-                      <span className="mr-2">
-                        {product ? (
-                          <Sparkle address={product.sparkleKey} size={24} />
-                        ) : null}
-                      </span>
-                      {product ? (
-                        product.name ? (
-                          <p className="text-ellipsis mr-4 text-sidebar-foreground">
-                            {product.name}
-                          </p>
-                        ) : (
-                          <TruncateAddress address={product.name} />
-                        )
-                      ) : null}
-                      <CheckIcon
-                        className={cn(
-                          "ml-auto h-4 w-4",
-                          activeFund?.address === product.address
-                            ? "opacity-100"
-                            : "opacity-0",
-                        )}
-                      />
-                    </CommandItem>
+                {[
+                  { key: "Funds", items: funds },
+                  { key: "Vaults", items: vaults },
+                  { key: "Mints", items: mints },
+                ]
+                  .filter(({ items }) => items.length > 0)
+                  .map(({ key, items }) => (
+                    <CommandGroup key={key} heading={key}>
+                      {items.map((product) => (
+                        <CommandItem
+                          key={product.name || product.address}
+                          onSelect={() => {
+                            setActiveFund(product);
+                            setOpen(false);
+                          }}
+                          className="text-sm cursor-pointer h-8"
+                        >
+                          <span className="mr-2">
+                            {product && (
+                              <Sparkle address={product.sparkleKey} size={24} />
+                            )}
+                          </span>
+                          {product &&
+                            (product.name ? (
+                              <p className="text-ellipsis mr-4 text-sidebar-foreground">
+                                {product.name}
+                              </p>
+                            ) : (
+                              <TruncateAddress address={product.name} />
+                            ))}
+                          <CheckIcon
+                            className={cn(
+                              "ml-auto h-4 w-4",
+                              activeFund?.address === product.address
+                                ? "opacity-100"
+                                : "opacity-0",
+                            )}
+                          />
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
                   ))}
-                </CommandGroup>
                 <CommandSeparator />
               </>
             )}
