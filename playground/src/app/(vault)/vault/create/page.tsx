@@ -24,6 +24,8 @@ import { PublicKey } from "@solana/web3.js";
 import { useRouter } from "next/navigation";
 import { TokenMultiSelect } from "@/components/TokenMultiSelect";
 import { ExplorerLink } from "@/components/ExplorerLink";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
+import { parseTxError } from "@/lib/error";
 
 const createSchema = z.object({
   productName: z.string().min(3, {
@@ -37,7 +39,8 @@ type CreateSchema = z.infer<typeof createSchema>;
 export default function Create() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const { glamClient, setActiveFund, jupTokenList } = useGlam();
+  const { glamClient, userWallet, setActiveFund, jupTokenList } = useGlam();
+  const { setVisible: setWalletModalVisible } = useWalletModal();
 
   const form = useForm<CreateSchema>({
     resolver: zodResolver(createSchema),
@@ -47,14 +50,17 @@ export default function Create() {
     },
   });
 
-  const selectedTokens = form.watch("assets");
-
   useEffect(() => {
     const generatedName = ProductNameGen();
     form.setValue("productName", generatedName);
   }, [form]);
 
   const onSubmit = async (values: CreateSchema) => {
+    if (!userWallet.pubkey) {
+      setWalletModalVisible(true);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const fund = {
@@ -106,10 +112,9 @@ export default function Create() {
       // Navigate using Next.js router
       router.push("/vault/access");
     } catch (error) {
-      console.error("Error creating vault:", error);
       toast({
         title: "Error",
-        description: "Failed to create vault. Please try again.",
+        description: parseTxError(error),
         variant: "destructive",
       });
     } finally {
@@ -188,7 +193,11 @@ export default function Create() {
                 Clear
               </Button>
               <Button className="w-1/2" type="submit" disabled={isLoading}>
-                {isLoading ? "Creating..." : "Create"}
+                {userWallet.pubkey
+                  ? isLoading
+                    ? "Creating..."
+                    : "Create"
+                  : "Connect Wallet"}
               </Button>
             </div>
           </form>

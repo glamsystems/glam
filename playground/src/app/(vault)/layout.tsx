@@ -1,11 +1,5 @@
-// app/(vault)/layout.tsx
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "../globals.css";
-import MobileOverlay from "@/components/MobileOverlay";
 import SharedDashboardLayout from "@/components/layouts/SharedDashboardLayout";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "GLAM *.+ Vault",
@@ -14,13 +8,8 @@ export const metadata: Metadata = {
 
 export default function VaultLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
-  return (
-    <>
-      <MobileOverlay />
-      <SharedDashboardLayout beta={true}>{children}</SharedDashboardLayout>
-    </>
-  );
+}>) {
+  return <SharedDashboardLayout beta={true}>{children}</SharedDashboardLayout>;
 }

@@ -1,11 +1,5 @@
-// app/(mint)/layout.tsx
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "../globals.css";
-import MobileOverlay from "@/components/MobileOverlay";
 import SharedDashboardLayout from "@/components/layouts/SharedDashboardLayout";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "GLAM *.+ Mint",
@@ -17,10 +11,5 @@ export default function MintLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <div className={`${inter.className} select-none`}>
-      <MobileOverlay />
-      <SharedDashboardLayout beta={true}>{children}</SharedDashboardLayout>
-    </div>
-  );
+  return <SharedDashboardLayout beta={true}>{children}</SharedDashboardLayout>;
 }
