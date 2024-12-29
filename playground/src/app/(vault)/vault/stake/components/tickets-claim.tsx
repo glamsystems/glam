@@ -20,7 +20,7 @@ export function TicketsClaim({ selectedRows = [] }: TicketsClaimProps) {
   useEffect(() => {
     // Filter rows that are of type "ticket" and have status "claimable"
     const eligibleRows = selectedRows.filter(
-      (row) => row.type === "ticket" && row.status === "claimable"
+      (row) => row.type === "ticket" && row.status === "claimable",
     );
 
     // The button should be enabled only if all selected rows are eligible tickets
@@ -34,9 +34,7 @@ export function TicketsClaim({ selectedRows = [] }: TicketsClaimProps) {
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger>
-          {/* FIXME: this is causing warning "In HTML, <button> cannot be a descendant of <button>" */}
-          {/* TooltipTrigger is an HTMLButtonElement so we cannot have another button nestsed */}
+        <TooltipTrigger asChild>
           <Button
             variant="default"
             size="icon"
