@@ -10,7 +10,7 @@ import { DataTableRefresh } from "./data-table-refresh";
 import { useGlam } from "@glam/anchor/react";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { InfoIcon, QrCodeIcon } from "lucide-react";
+import { InfoIcon, QrCodeIcon, ScanIcon } from "lucide-react";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -35,8 +35,8 @@ export function DataTableToolbar<TData>({
           className="h-8"
           onClick={onOpenSheet} // Trigger the Sheet opening
         >
-          <InfoIcon className="mr-2 w-4 h-4" />
-          Vault Info
+          <QrCodeIcon className="mr-2 w-4 h-4" />
+          Details
         </Button>
 
         <Input

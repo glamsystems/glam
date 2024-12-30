@@ -20,10 +20,12 @@ import {
 import { ClickToCopyText } from "@/components/ClickToCopyText";
 import { Button } from "@/components/ui/button";
 import QRCodeSVG from "qrcode.react";
-import { WarningCard } from "@/components/WarningCard";
+import { DangerCard } from "@/components/DangerCard";
 import { parseTxError } from "@/lib/error";
 import { toast } from "@/components/ui/use-toast";
 import { ExplorerLink } from "@/components/ExplorerLink";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { AlertTriangle } from "lucide-react";
 
 const SKELETON_ROW_COUNT = 5;
 
@@ -205,40 +207,81 @@ export default function Holdings() {
         <SheetTrigger asChild></SheetTrigger>
         <SheetContent side="right" className="p-12 sm:max-w-none w-1/2">
           <SheetHeader>
-            <SheetTitle>Vault Info</SheetTitle>
-            <SheetDescription>Detailed info about the vault</SheetDescription>
+            <SheetTitle>Vault Details</SheetTitle>
+            <SheetDescription>Review vault information, account addresses, and closure controls.</SheetDescription>
           </SheetHeader>
 
-          <div className="space-y-2 py-4">
-            <div className="flex items-center space-x-2">
-              <p className="text-sm text-muted-foreground">State:</p>
-              <ClickToCopyText text={activeFund?.address || ""} />
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <p className="text-sm text-muted-foreground">Vault:</p>
-              <ClickToCopyText text={vaultAddress} />
-            </div>
-
-            <div className="flex flex-col items-center space-y-2 py-8">
-              <QRCodeSVG value={vaultAddress} level="M" size={128} />
-              <p className="text-sm text-muted-foreground">
-                Scan the QR code to get the vault address
+          <div className="grid grid-cols-[200px_1fr] gap-6 py-6">
+            <div className="flex flex-col items-center justify-center">
+              <QRCodeSVG value={vaultAddress} level="M" size={200} />
+              <p className="mt-2 text-sm text-muted-foreground text-left">
+                This is the address of your Vault. Deposit funds by scanning the
+                QR code or copying the address.
               </p>
             </div>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Name</p>
+                <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2">
+                  <span className="flex-1 text-sm font-medium">
+                    {activeFund?.name || "Unnamed Vault"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Vault</p>
+                <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2">
+                  <ClickToCopyText text={vaultAddress} />
+                </div>
+              </div>
+
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="state">
+                  <AccordionTrigger className="py-2 text-muted-foreground font-normal">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm">State</p>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2">
+                        <ClickToCopyText text={activeFund?.address || ""} />
+                      </div>
+                      <div className="flex gap-2 items-center">
+                      <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">
+                        Do not send assets to this account.
+                      </p>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div>
           </div>
 
-          <div className="flex flex-col items-start space-y-2">
-            <WarningCard message="Before closing the vault, please ensure all assets have been transferred out of the vault and all token accounts have been closed. It's fine to leave some remaining SOL in the vault; it will be automatically returned to your wallet." />
-            <Button
-              className="w-1/5"
-              onClick={closeVault}
-              variant="destructive"
-              loading={isTxPending}
-            >
-              Close Vault
-            </Button>
-          </div>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="danger-zone">
+              <AccordionTrigger className="text-destructive font-semibold">
+                Danger Zone
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-4">
+                  <DangerCard message="Before closing your vault, transfer all assets and close all token accounts, noting that any remaining SOL will automatically return to your wallet." />
+                  <Button
+                    onClick={closeVault}
+                    variant="destructive"
+                    disabled={isTxPending}
+                    className="w-full"
+                  >
+                    {isTxPending ? "Closing..." : "Close Vault"}
+                  </Button>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </SheetContent>
       </Sheet>
     </PageContentWrapper>
