@@ -15,7 +15,6 @@ import type { FundModel } from "../models";
 import { GlamClient } from "../client";
 import { useAtomValue, useSetAtom } from "jotai/react";
 import { PublicKey } from "@solana/web3.js";
-import { ASSETS_MAINNET } from "../client/assets";
 import { WSOL } from "../constants";
 import {
   getAssociatedTokenAddressSync,
@@ -33,7 +32,7 @@ export interface JupTokenListItem {
   tags: string[];
 }
 
-interface PythPrice {
+interface TokenPrice {
   mint: string;
   price: number; // USD
 }
@@ -45,7 +44,7 @@ interface GlamProviderContext {
   fundsList: FundCache[];
   allFunds: FundModel[];
   userWallet: UserWallet;
-  prices: PythPrice[];
+  prices: TokenPrice[];
   setActiveFund: (f: FundCache) => void;
   jupTokenList?: JupTokenListItem[];
   driftMarketConfigs: DriftMarketConfigs;
@@ -157,19 +156,13 @@ export function GlamProvider({
   );
   const [allFunds, setAllFunds] = useState([] as FundModel[]);
   const [jupTokenList, setJupTokenList] = useState([] as JupTokenListItem[]);
-  const [pythPrices, setPythPrices] = useState([] as PythPrice[]);
+  const [tokenPrices, setTokenPrices] = useState([] as TokenPrice[]);
   const [driftMarketConfigs, setDriftMarketConfigs] = useState(
     {} as DriftMarketConfigs,
   );
   const [driftUser, setDriftUser] = useState({} as GlamDriftUser);
 
   const activeFund = deserializeFundCache(useAtomValue(fundAtom)) as FundCache;
-
-  // Build a lookup table for price account -> mint account
-  const priceFeedToMint = new Map<string, string>([]);
-  for (let [mint, asset] of ASSETS_MAINNET) {
-    priceFeedToMint.set(asset.priceFeed!, mint);
-  }
 
   //
   // Fetch all funds
@@ -233,7 +226,10 @@ export function GlamProvider({
     });
     if (fundList.length > 0) {
       setFundsList(fundList);
-      if (!activeFund) {
+      if (
+        !activeFund ||
+        !fundList.find((f) => f.pubkey.equals(activeFund.pubkey))
+      ) {
         setActiveFund(fundList[0]);
       }
     }
@@ -242,49 +238,50 @@ export function GlamProvider({
   }, [allFundsData, activeFund, wallet]);
 
   //
-  // Fetch prices from pyth
+  // Fetch token prices https://station.jup.ag/docs/apis/price-api-v2
   //
-
-  const { data: pythData } = useQuery({
-    queryKey: ["/prices"],
-    enabled: !!treasury?.tokenAccounts,
-    refetchInterval: 10 * 1000,
+  const { data: jupTokenPricesData } = useQuery({
+    queryKey: ["/jup-token-prices"],
+    enabled: !!treasury?.tokenAccounts?.length,
+    refetchInterval: 10_000,
     queryFn: () => {
-      const pythFeedIds = new Set([] as string[]);
+      const tokenMints = new Set([] as string[]);
+
+      // Token accounts owned by the treasury
       treasury.tokenAccounts.forEach((ta: TokenAccount) => {
-        const hex = ASSETS_MAINNET.get(ta.mint.toBase58())?.priceFeed!;
-        if (hex) {
-          // we cannot price tokens without a price feed
-          pythFeedIds.add(hex);
+        tokenMints.add(ta.mint.toBase58());
+      });
+      tokenMints.add(WSOL.toBase58()); // Always add wSOL feed so that we can price SOL
+
+      // Drift spot positions
+      driftUser.spotPositions.forEach((position) => {
+        const marketConfig = driftMarketConfigs.spot.find(
+          (m) => position.marketIndex === m.marketIndex,
+        );
+        if (marketConfig) {
+          tokenMints.add(marketConfig.mint);
         }
       });
-      // Always add wSOL feed so that we can price SOL
-      pythFeedIds.add(ASSETS_MAINNET.get(WSOL.toBase58())?.priceFeed!);
 
-      const params = Array.from(pythFeedIds)
-        .map((hex) => `ids[]=${hex}`)
-        .join("&");
-
-      return fetch(
-        `https://hermes.pyth.network/v2/updates/price/latest?${params}`,
-      ).then((res) => res.json());
+      const param = Array.from(tokenMints).join(",");
+      return fetch(`https://api.jup.ag/price/v2?ids=${param}`).then((res) =>
+        res.json(),
+      );
     },
   });
   useEffect(() => {
-    if (pythData) {
-      const prices = pythData.parsed.map((p: any) => {
-        const price =
-          Number.parseFloat(p.price.price) *
-          10 ** Number.parseInt(p.price.expo);
+    if (jupTokenPricesData) {
+      const prices = Object.values(jupTokenPricesData.data).map(
+        (p: any) =>
+          ({
+            mint: p.id,
+            price: Number(p.price),
+          }) as TokenPrice,
+      );
 
-        return {
-          mint: priceFeedToMint.get(p.id),
-          price,
-        } as PythPrice;
-      });
-      setPythPrices(prices);
+      setTokenPrices(prices);
     }
-  }, [pythData]);
+  }, [jupTokenPricesData]);
 
   //
   // Balance and token accounts of the connected wallet
@@ -368,7 +365,7 @@ export function GlamProvider({
     allFunds, // TODO: only keep one of allFunds or fundsList
     userWallet,
     jupTokenList,
-    prices: pythPrices,
+    prices: tokenPrices,
     setActiveFund,
     driftMarketConfigs,
     driftUser,
