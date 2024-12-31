@@ -72,7 +72,7 @@ function InvestorDisclaimers({
   direction,
   method,
 }: {
-  fund: any;
+  fund?: FundModel;
   direction: string;
   method: string;
 }) {
@@ -96,8 +96,7 @@ function InvestorDisclaimers({
       <div className="grid gap-3 text-sm">
         <div className="font-semibold">Redemption Details</div>
         <ul className="grid gap-3">
-          {/* Share Class Link */}
-          {fund?.shareClasses[0]?.shareClassId ? (
+          {fund?.shareClassMints[0] ? (
             <li className="border-b pb-3 flex items-center justify-between">
               <span className="text-muted-foreground flex items-center">
                 Share Class Address
@@ -105,8 +104,8 @@ function InvestorDisclaimers({
               <span>
                 <p className="font-semibold">
                   <ExplorerLink
-                    path={`/account/${fund?.shareClasses[0]?.shareClassId}`}
-                    label={fund?.shareClasses[0]?.shareClassId}
+                    path={`/account/${fund?.shareClassMints[0]}`}
+                    label={fund?.shareClassMints[0].toBase58()}
                   />
                 </p>
               </span>
@@ -121,8 +120,7 @@ function InvestorDisclaimers({
               </span>
               <span>
                 <p className="font-semibold">
-                  You will receive a combination of {fund.fundCurrency} and
-                  other assets
+                  You will receive a portion of existing assets of the fund.
                 </p>
               </span>
             </li>
@@ -133,14 +131,14 @@ function InvestorDisclaimers({
               </span>
               <span>
                 <p className="font-semibold">
-                  You will receive {fund.fundCurrency}
+                  You will receive {fund.rawOpenfunds?.fundCurrency}
                 </p>
               </span>
             </li>
           )}
 
           {/* Lockup period */}
-          {share.hasLockUpForRedemption === "yes" ? (
+          {share.rawOpenfunds?.hasLockUpForRedemption ? (
             <li className="border-b pb-3 flex items-center justify-between">
               <span className="text-muted-foreground flex items-center">
                 Lock-up Period
@@ -168,21 +166,23 @@ function InvestorDisclaimers({
           ) : null}
 
           {/* Minimal redemption */}
-          {share.minimalRedemptionCategory === "amount" ? (
+          {share?.rawOpenfunds?.minimalRedemptionCategory === "amount" ? (
             <li className="border-b pb-3 flex items-center justify-between">
               <span className="text-muted-foreground flex items-center">
                 Minimal Redemption Amount
               </span>
               <span>
                 <NumberFormatter
-                  value={Number(share.minimalInitialRedemptionInAmount)}
+                  value={Number(
+                    share?.rawOpenfunds?.minimalInitialRedemptionInAmount,
+                  )}
                   maxDecimalPlaces={2}
                   addCommas={true}
                 />{" "}
-                {share.currencyOfMinimalOrMaximumRedemption}
+                {share.rawOpenfunds?.currencyOfMinimalOrMaximumRedemption}
               </span>
             </li>
-          ) : share.minimalRedemptionCategory === "shares" ? (
+          ) : share.rawOpenfunds?.minimalRedemptionCategory === "shares" ? (
             <li className="border-b pb-3 flex items-center justify-between">
               <span className="text-muted-foreground flex items-center">
                 Minimal Redemption Amount
@@ -190,13 +190,13 @@ function InvestorDisclaimers({
               <span>
                 <p className="font-semibold">
                   <NumberFormatter
-                    value={Number(share.minimalInitialRedemptionInShares)}
+                    value={Number(
+                      share.rawOpenfunds.minimalInitialRedemptionInShares,
+                    )}
                     maxDecimalPlaces={2}
                     addCommas={true}
                   />{" "}
-                  {share.minimalInitialRedemptionInShares > 1
-                    ? "shares"
-                    : "share"}
+                  Share
                 </p>
               </span>
             </li>
@@ -204,7 +204,7 @@ function InvestorDisclaimers({
 
           {/* Maximum redemption */}
           {/* TODO: maximumRedemptionCategory (but there's a bug with on-chain data) */}
-          {share.maximumInitialRedemptionInShares ? (
+          {share.rawOpenfunds?.maximumInitialRedemptionInShares ? (
             <li className="border-b pb-3 flex items-center justify-between">
               <span className="text-muted-foreground flex items-center">
                 Maximal Redemption Amount
@@ -212,13 +212,13 @@ function InvestorDisclaimers({
               <span>
                 <p className="font-semibold">
                   <NumberFormatter
-                    value={Number(share.maximumInitialRedemptionInShares)}
+                    value={Number(
+                      share.rawOpenfunds.maximumInitialRedemptionInShares,
+                    )}
                     maxDecimalPlaces={2}
                     addCommas={true}
                   />{" "}
-                  {share.maximumInitialRedemptionInShares > 1
-                    ? "shares"
-                    : "share"}
+                  Share
                 </p>
               </span>
             </li>
@@ -232,7 +232,7 @@ function InvestorDisclaimers({
         <div className="font-semibold">Subscription Details</div>
         <ul className="grid gap-3">
           {/* Share Class Link */}
-          {fund?.shareClasses[0]?.shareClassId ? (
+          {!!fund?.shareClassMints?.length ? (
             <li className="border-b pb-3 flex items-center justify-between">
               <span className="text-muted-foreground flex items-center">
                 Share Class Address
@@ -240,8 +240,8 @@ function InvestorDisclaimers({
               <span>
                 <p className="font-semibold">
                   <ExplorerLink
-                    path={`/account/${fund?.shareClasses[0]?.shareClassId}`}
-                    label={fund?.shareClasses[0]?.shareClassId}
+                    path={`/account/${fund?.shareClassMints[0]}`}
+                    label={fund?.shareClassMints[0].toBase58()}
                   />
                 </p>
               </span>
@@ -249,7 +249,8 @@ function InvestorDisclaimers({
           ) : null}
 
           {/* Minimal subscription */}
-          {share.minimalInitialSubscriptionCategory === "amount" ? (
+          {share?.rawOpenfunds?.minimalInitialSubscriptionCategory ===
+          "amount" ? (
             <li className="border-b pb-3 flex items-center justify-between">
               <span className="text-muted-foreground flex items-center">
                 Minimal Subscription Amount{" "}
@@ -257,29 +258,32 @@ function InvestorDisclaimers({
               <span>
                 <p className="font-semibold">
                   <NumberFormatter
-                    value={Number(share.minimalInitialSubscriptionInAmount)}
+                    value={Number(
+                      share.rawOpenfunds.minimalInitialSubscriptionInAmount,
+                    )}
                     maxDecimalPlaces={2}
                     addCommas={true}
                   />{" "}
-                  {share.currencyOfMinimalSubscription}
+                  {share.rawOpenfunds.currencyOfMinimalSubscription}
                 </p>
               </span>
             </li>
-          ) : share.minimalInitialSubscriptionCategory === "shares" ? (
+          ) : share.rawOpenfunds?.minimalInitialSubscriptionCategory ===
+            "shares" ? (
             <li className="border-b pb-3 flex items-center justify-between">
               <span className="text-muted-foreground flex items-center">
                 Minimal Subscription Amount{" "}
               </span>
               <span>
                 <p className="font-semibold">
-                  {share.minimalInitialSubscriptionInShares} shares
+                  {share.rawOpenfunds.minimalInitialSubscriptionInShares} Share
                 </p>
               </span>
             </li>
           ) : null}
 
           {/* Lockup period */}
-          {share.hasLockUpForRedemption === "yes" ? (
+          {share?.rawOpenfunds?.hasLockUpForRedemption ? (
             <li className="border-b pb-3 flex items-center justify-between">
               <span className="text-muted-foreground flex items-center">
                 Lock-up Period
@@ -308,7 +312,7 @@ function InvestorDisclaimers({
           ) : null}
 
           {/* Minimal redemption */}
-          {share.minimalRedemptionCategory === "amount" ? (
+          {share.rawOpenfunds?.minimalRedemptionCategory === "amount" ? (
             <li className="border-b pb-3 flex items-center justify-between">
               <span className="text-muted-foreground flex items-center">
                 Minimal Redemption Amount
@@ -316,15 +320,17 @@ function InvestorDisclaimers({
               <span>
                 <p className="font-semibold">
                   <NumberFormatter
-                    value={Number(share.minimalInitialRedemptionInAmount)}
+                    value={Number(
+                      share.rawOpenfunds.minimalInitialRedemptionInAmount,
+                    )}
                     maxDecimalPlaces={2}
                     addCommas={true}
                   />{" "}
-                  {share.currencyOfMinimalOrMaximumRedemption}
+                  {share.rawOpenfunds.currencyOfMinimalOrMaximumRedemption}
                 </p>
               </span>
             </li>
-          ) : share.minimalRedemptionCategory === "shares" ? (
+          ) : share.rawOpenfunds?.minimalRedemptionCategory === "shares" ? (
             <li className="border-b pb-3 flex items-center justify-between">
               <span className="text-muted-foreground flex items-center">
                 Minimal Redemption Amount
@@ -332,13 +338,13 @@ function InvestorDisclaimers({
               <span>
                 <p className="font-semibold">
                   <NumberFormatter
-                    value={Number(share.minimalInitialRedemptionInShares)}
+                    value={Number(
+                      share.rawOpenfunds.minimalInitialRedemptionInShares,
+                    )}
                     maxDecimalPlaces={2}
                     addCommas={true}
                   />{" "}
-                  {share.minimalInitialRedemptionInShares > 1
-                    ? "shares"
-                    : "share"}
+                  Share
                 </p>
               </span>
             </li>
@@ -346,7 +352,7 @@ function InvestorDisclaimers({
 
           {/* Maximum redemption */}
           {/* TODO: maximumRedemptionCategory (but there's a bug with on-chain data) */}
-          {share.maximumInitialRedemptionInShares ? (
+          {share.rawOpenfunds?.maximumInitialRedemptionInShares ? (
             <li className="border-b pb-3 flex items-center justify-between">
               <span className="text-muted-foreground flex items-center">
                 Maximal Redemption Amount
@@ -354,13 +360,13 @@ function InvestorDisclaimers({
               <span>
                 <p className="font-semibold">
                   <NumberFormatter
-                    value={Number(share.maximumInitialRedemptionInShares)}
+                    value={Number(
+                      share.rawOpenfunds.maximumInitialRedemptionInShares,
+                    )}
                     maxDecimalPlaces={2}
                     addCommas={true}
                   />{" "}
-                  {share.maximumInitialRedemptionInShares > 1
-                    ? "shares"
-                    : "share"}
+                  Share
                 </p>
               </span>
             </li>

@@ -258,7 +258,9 @@ export function GlamProvider({
         const marketConfig = driftMarketConfigs.spot.find(
           (m) => position.marketIndex === m.marketIndex,
         );
-        tokenMints.add(marketConfig.mint);
+        if (marketConfig) {
+          tokenMints.add(marketConfig.mint);
+        }
       });
 
       const param = Array.from(tokenMints).join(",");
