@@ -15,13 +15,20 @@ import {
 import { holdingSchema } from "../data/holdingSchema";
 import TruncateAddress from "@/utils/TruncateAddress";
 import { useState } from "react";
-import { ArrowLeftRight, CheckIcon, CopyIcon, X } from "lucide-react";
-import { MSOL, useGlam } from "@glam/anchor/react";
+import {
+  ArrowLeftRight,
+  CheckIcon,
+  CopyIcon,
+  ExternalLinkIcon,
+  X,
+} from "lucide-react";
+import { useGlam } from "@glam/anchor/react";
 import { PublicKey } from "@solana/web3.js";
 import { toast } from "@/components/ui/use-toast";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { parseTxError } from "@/lib/error";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -34,14 +41,13 @@ export function DataTableRowActions<TData>({
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
-  const { glamClient, activeFund, refresh } = useGlam();
+  const { glamClient, activeFund, treasury, refresh } = useGlam();
 
   const copyToClipboard = (
     e: React.MouseEvent,
     address: string,
     type: string,
   ) => {
-    console.log("row:", holding);
     e.preventDefault();
     e.stopPropagation();
     navigator.clipboard.writeText(address).then(() => {
@@ -113,7 +119,7 @@ export function DataTableRowActions<TData>({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[180px]">
-        {holding.symbol !== "SOL" && (
+        {holding.location === "vault" && holding.symbol !== "SOL" && (
           <>
             <DropdownMenuLabel>Info</DropdownMenuLabel>
             <DropdownMenuItem
@@ -160,7 +166,7 @@ export function DataTableRowActions<TData>({
             <DropdownMenuItem
               className="cursor-pointer"
               onClick={async (e) => {
-                router.push("/vault/swap");
+                router.push("/vault/trade");
               }}
             >
               Swap
@@ -194,7 +200,6 @@ export function DataTableRowActions<TData>({
           <DropdownMenuItem
             className="cursor-pointer"
             onClick={async (e) => {
-              console.log("Closing token:", holding.mint);
               await closeAta(holding.ata);
             }}
           >
@@ -203,6 +208,20 @@ export function DataTableRowActions<TData>({
               <X className="h-4 w-4" />
             </DropdownMenuShortcut>
           </DropdownMenuItem>
+        )}
+
+        {holding.location === "drift" && (
+          <Link
+            href={`https://app.drift.trade/overview/balances?authority=${treasury?.pubkey}`}
+            target="_blank"
+          >
+            <DropdownMenuItem className="cursor-pointer">
+              View on Drift
+              <DropdownMenuShortcut>
+                <ExternalLinkIcon className="h-4 w-4" />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+          </Link>
         )}
       </DropdownMenuContent>
     </DropdownMenu>
