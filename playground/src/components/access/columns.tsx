@@ -20,7 +20,7 @@ import { Badge } from "../ui/badge";
 export type KeyData = {
   pubkey: string;
   label: string;
-  tags: ("stake" | "swap" | "trade" | "lend" | "admin")[];
+  tags: string[];
 };
 
 export const columns: ColumnDef<KeyData>[] = [
@@ -56,6 +56,16 @@ export const columns: ColumnDef<KeyData>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Access" />
     ),
+    filterFn: (row, id, filterValue) => {
+      // filterValue is an array of tags
+      // row.getValue("tags") is also an array of strings
+      // return true of filterValue is a subset of row.getValue("tags")
+      const selectedTags = Array.isArray(filterValue)
+        ? (filterValue as string[])
+        : [];
+      const tags = row.getValue("tags") as KeyData["tags"];
+      return selectedTags.every((tag: string) => tags.includes(tag));
+    },
     cell: ({ row }) => {
       const tags = row.getValue("tags") as KeyData["tags"];
       return (
@@ -64,7 +74,6 @@ export const columns: ColumnDef<KeyData>[] = [
             <Badge
               key={tag}
               variant="default"
-              // className={`my-1 pointer-events-none capitalize font-normal rounded-none dark:bg-opacity-25 ${tagColors[tag]}`}
               className={`my-1 pointer-events-none capitalize font-normal rounded-none dark:bg-opacity-25`}
             >
               {tag}

@@ -26,7 +26,7 @@ import { PublicKey } from "@solana/web3.js";
 import { useGlam } from "@glam/anchor/react";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { parseTxError } from "@/lib/error";
-import { useKeyLabels } from "@/hooks/useKeyLabels";
+import { usePubkeyLabels } from "@/hooks/usePubkeyLabels";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -47,7 +47,7 @@ export function DataTableToolbar<TData>({
   const [isExpanded, setIsExpanded] = useState(true);
   const [treeData, setTreeData] = useState<TreeNodeData>(treeDataPermissions);
 
-  const { updateLabel } = useKeyLabels();
+  const { updateLabel } = usePubkeyLabels();
   const { glamClient, activeFund } = useGlam();
 
   const toggleExpandCollapse = () => {
