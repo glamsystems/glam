@@ -9,37 +9,11 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "../../../../../components/ui/tooltip";
+} from "@/components/ui/tooltip";
 import React, { useEffect, useState } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton, VariableWidthSkeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import NumberFormatter from "@/utils/NumberFormatter";
-
-interface DataTableRowActionsProps<TData> {
-  row: Row<TData>;
-}
-
-const randomWidth = (min: number, max: number) => {
-  return Math.floor(Math.random() * (max - min + 1) + min);
-};
-
-const VariableWidthSkeleton = ({
-  minWidth,
-  maxWidth,
-  height,
-}: {
-  minWidth: number;
-  maxWidth: number;
-  height: number;
-}) => {
-  const [width, setWidth] = useState(minWidth);
-
-  useEffect(() => {
-    setWidth(randomWidth(minWidth, maxWidth));
-  }, [minWidth, maxWidth]);
-
-  return <Skeleton style={{ width: `${width}px`, height: `${height}px` }} />;
-};
 
 // Helper function to check if a row is a skeleton
 const isSkeletonRow = (row: Row<Holding>) => {

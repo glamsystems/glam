@@ -29,6 +29,7 @@ type StakeAccountInfo = {
   address: PublicKey;
   lamports: number;
   state: string;
+  voter: string;
 };
 
 export class StakingClient {
@@ -267,7 +268,7 @@ export class StakingClient {
       accounts.map(async (account) => {
         const delegation = (account.account.data as ParsedAccountData).parsed
           .info.stake.delegation;
-        const { activationEpoch, deactivationEpoch, stake } = delegation;
+        const { activationEpoch, deactivationEpoch, voter } = delegation;
 
         // possible state: 'active', 'inactive', 'activating', 'deactivating'
         let state = "unknown";
@@ -284,6 +285,7 @@ export class StakingClient {
         return {
           address: account.pubkey,
           lamports: account.account.lamports,
+          voter,
           state,
         };
       }),
@@ -438,10 +440,21 @@ export class StakingClient {
       feeAccount,
       tokenProgramId: tokenProgram,
       validatorList,
+      reserveStake,
     } = await this.getStakePoolAccountData(stakePool);
 
     const validatorStakeAccounts =
       await this.getStakeAccounts(withdrawAuthority);
+
+    // If there are multiple validator stake accounts, use the first one that is
+    // not the reserve stake account. Otherwise, use the reserve stake account.
+    // The reserve stake account should NOT be used for withdrawals unless we have no other options.
+    const validatorStakeAccount =
+      validatorStakeAccounts.length > 1
+        ? validatorStakeAccounts[0].equals(reserveStake)
+          ? validatorStakeAccounts[1]
+          : validatorStakeAccounts[0]
+        : reserveStake;
 
     const stakeAccountId = Date.now().toString();
     const [stakeAccountPda, bump] = this.getStakeAccountPDA(
@@ -483,7 +496,7 @@ export class StakingClient {
         poolMint,
         poolTokenAta: this.base.getVaultAta(fund, poolMint),
         validatorList,
-        validatorStakeAccount: validatorStakeAccounts[0],
+        validatorStakeAccount,
         withdrawAuthority,
         feeAccount,
         clock: SYSVAR_CLOCK_PUBKEY,

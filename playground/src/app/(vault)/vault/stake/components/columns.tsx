@@ -1,18 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-
-import { ColumnDef } from "@tanstack/react-table";
-
+import React from "react";
+import { ColumnDef, Row } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-
 import { types, statuses } from "../data/data";
 import { TicketOrStake } from "../data/schema";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
 
-import TruncateAddress from "../../../../../utils/TruncateAddress";
+import TruncateAddress from "@/utils/TruncateAddress";
 import {
   TooltipContent,
   Tooltip,
@@ -20,6 +17,16 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTheme } from "next-themes";
+
+const isSkeletonRow = (row: Row<TicketOrStake>) => {
+  return (
+    row.original.service === "" &&
+    row.original.validator === "" &&
+    row.original.status === ""
+  );
+};
 
 export const columns: ColumnDef<TicketOrStake>[] = [
   {
@@ -52,7 +59,9 @@ export const columns: ColumnDef<TicketOrStake>[] = [
       <DataTableColumnHeader column={column} title="ID" />
     ),
     cell: ({ row }) => {
-      return (
+      return isSkeletonRow(row) ? (
+        <Skeleton className="h-6 w-12" />
+      ) : (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>
@@ -82,7 +91,12 @@ export const columns: ColumnDef<TicketOrStake>[] = [
       const formatted = new Intl.NumberFormat("en-US", {
         minimumFractionDigits: 3,
       }).format(sol);
-      return <p>{formatted}</p>;
+
+      return isSkeletonRow(row) ? (
+        <Skeleton className="h-6 w-12" />
+      ) : (
+        <p>{formatted}</p>
+      );
     },
     enableSorting: false,
     enableHiding: false,
@@ -95,7 +109,9 @@ export const columns: ColumnDef<TicketOrStake>[] = [
     cell: ({ row }) => {
       const type = types.find((type) => type.value === row.getValue("type"));
 
-      return (
+      return isSkeletonRow(row) ? (
+        <Skeleton className="h-6 w-12" />
+      ) : (
         <div className="flex space-x-2">
           {type && (
             <Badge variant="outline" className="rounded-none">
@@ -116,7 +132,9 @@ export const columns: ColumnDef<TicketOrStake>[] = [
       <DataTableColumnHeader column={column} title="Validator" />
     ),
     cell: ({ row }) => {
-      return (
+      return isSkeletonRow(row) ? (
+        <Skeleton className="h-6 w-12" />
+      ) : (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>
@@ -146,32 +164,17 @@ export const columns: ColumnDef<TicketOrStake>[] = [
     ),
     cell: ({ row }) => {
       const status = statuses.find(
-        (status) => status.value === row.getValue("status")
+        (status) => status.value === row.getValue("status"),
       );
+      const { resolvedTheme } = useTheme();
+      const colorClass =
+        resolvedTheme === "dark"
+          ? status?.darkModeColor
+          : status?.lightModeColor;
 
-      const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
-
-      useEffect(() => {
-        const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-        setIsDarkMode(mediaQuery.matches);
-
-        const handleChange = (e: MediaQueryListEvent) => {
-          setIsDarkMode(e.matches);
-        };
-
-        mediaQuery.addEventListener("change", handleChange);
-        return () => mediaQuery.removeEventListener("change", handleChange);
-      }, []);
-
-      if (!status) {
-        return null;
-      }
-
-      const colorClass = isDarkMode
-        ? status.darkModeColor
-        : status.lightModeColor;
-
-      return (
+      return !status || isSkeletonRow(row) ? (
+        <Skeleton className="h-6 w-12" />
+      ) : (
         <div className="flex w-[120px] items-center">
           {status.icon && (
             <status.icon className={`mr-2 h-4 w-4 ${colorClass}`} />
@@ -183,9 +186,17 @@ export const columns: ColumnDef<TicketOrStake>[] = [
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
     },
+    enableSorting: true,
   },
   {
     id: "actions",
-    cell: ({ row }) => <DataTableRowActions row={row} />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
+    cell: ({ row }) => {
+      return isSkeletonRow(row) ? (
+        <Skeleton className="h-6 w-6" />
+      ) : (
+        <DataTableRowActions row={row} />
+      );
+    },
   },
 ];

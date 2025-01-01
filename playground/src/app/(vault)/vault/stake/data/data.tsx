@@ -1,14 +1,21 @@
 import {
   CheckCircledIcon,
-  CrossCircledIcon,
   RadiobuttonIcon,
   StopwatchIcon,
 } from "@radix-ui/react-icons";
+import { ASSETS_MAINNET } from "anchor/src/client/assets";
+
+export const stakePoolsStateAccounts = Array.from(ASSETS_MAINNET.entries())
+  .filter(([mint, meta]) => meta.stateAccount)
+  .map(([mint, meta]) => ({
+    mint,
+    stateAccount: meta.stateAccount,
+  }));
 
 export const types = [
   {
-    value: "account",
-    label: "Account",
+    value: "stake-account",
+    label: "Stake Account",
   },
   {
     value: "ticket",

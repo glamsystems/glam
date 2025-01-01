@@ -747,16 +747,6 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
         staking_state: "Fvy5L7f3rduuYfRf9GR9fDqEgmJkYagDPh3Ddkp5jcoP",
     },
 
-    // mallowSOL - mallowSOL
-    "MLLWfi8yLTzsjzKeHN3881qWM1eDM1kTfC59aD4tiP2" =>
-    AssetMeta {
-        decimals: 9,
-        is_stable_coin: false,
-        is_token_2022: false,
-        pyth_account: "",
-        staking_state: "9dP2MvpoFuVgW31NbwyRJzybcjH2gMZS5YkSWEC7NDhD",
-    },
-
     // nordSOL - Nordic Staked SOL
     "nordEhq2BnR6weCyrdezNVk7TwC3Ej94znPZxdBnfLM" =>
     AssetMeta {
