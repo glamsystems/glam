@@ -359,20 +359,20 @@ export class BaseClient {
     return pda;
   }
 
-  getTreasuryPDA(fundPDA: PublicKey): PublicKey {
+  getVaultPda(fundPDA: PublicKey): PublicKey {
     const [pda, _bump] = PublicKey.findProgramAddressSync(
-      [anchor.utils.bytes.utf8.encode("treasury"), fundPDA.toBuffer()],
+      [Buffer.from("treasury"), fundPDA.toBuffer()],
       this.programId,
     );
     return pda;
   }
 
-  getTreasuryAta(
+  getVaultAta(
     fundPDA: PublicKey,
     mint: PublicKey,
     programId?: PublicKey,
   ): PublicKey {
-    return this.getAta(mint, this.getTreasuryPDA(fundPDA), programId);
+    return this.getAta(mint, this.getVaultPda(fundPDA), programId);
   }
 
   /**
@@ -416,7 +416,7 @@ export class BaseClient {
   }
 
   async getTreasuryBalance(fundPDA: PublicKey): Promise<number> {
-    const treasury = this.getTreasuryPDA(fundPDA);
+    const treasury = this.getVaultPda(fundPDA);
     const lamports = await this.provider.connection.getBalance(treasury);
     return lamports / LAMPORTS_PER_SOL;
   }
@@ -426,7 +426,7 @@ export class BaseClient {
     mint: PublicKey,
     programId?: PublicKey,
   ): Promise<number> {
-    const ata = this.getTreasuryAta(fundPDA, mint);
+    const ata = this.getVaultAta(fundPDA, mint);
     const _mint = await getMint(this.provider.connection, mint);
     try {
       const account = await getAccount(this.provider.connection, ata);

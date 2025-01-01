@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::Token;
 use anchor_spl::token_interface::TokenAccount;
 use drift::{MarketType, PositionDirection};
-use glam_macros::treasury_signer_seeds;
+use glam_macros::vault_signer_seeds;
 
 use crate::error::AccessError;
 use crate::state::*;
@@ -35,7 +35,7 @@ pub struct DriftInitialize<'info> {
     pub state: UncheckedAccount<'info>,
 
     #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -47,19 +47,19 @@ pub struct DriftInitialize<'info> {
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::DriftInitialize))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn initialize_handler(ctx: Context<DriftInitialize>) -> Result<()> {
     initialize_user_stats(CpiContext::new_with_signer(
         ctx.accounts.drift_program.to_account_info(),
         InitializeUserStats {
             user_stats: ctx.accounts.user_stats.to_account_info(),
             state: ctx.accounts.state.to_account_info(),
-            authority: ctx.accounts.treasury.to_account_info(),
+            authority: ctx.accounts.vault.to_account_info(),
             payer: ctx.accounts.signer.to_account_info(),
             rent: ctx.accounts.rent.to_account_info(),
             system_program: ctx.accounts.system_program.to_account_info(),
         },
-        treasury_signer_seeds,
+        vault_signer_seeds,
     ))?;
 
     let mut name = [0u8; 32];
@@ -72,12 +72,12 @@ pub fn initialize_handler(ctx: Context<DriftInitialize>) -> Result<()> {
                 user: ctx.accounts.user.to_account_info(),
                 user_stats: ctx.accounts.user_stats.to_account_info(),
                 state: ctx.accounts.state.to_account_info(),
-                authority: ctx.accounts.treasury.to_account_info(),
+                authority: ctx.accounts.vault.to_account_info(),
                 payer: ctx.accounts.signer.to_account_info(),
                 rent: ctx.accounts.rent.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
             },
-            treasury_signer_seeds,
+            vault_signer_seeds,
         ),
         0,
         name,
@@ -96,7 +96,7 @@ pub struct DriftUpdate<'info> {
     pub user: UncheckedAccount<'info>,
 
     #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -106,7 +106,7 @@ pub struct DriftUpdate<'info> {
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::DriftUpdateUser))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn update_user_custom_margin_ratio_handler(
     ctx: Context<DriftUpdate>,
     sub_account_id: u16,
@@ -117,9 +117,9 @@ pub fn update_user_custom_margin_ratio_handler(
             ctx.accounts.drift_program.to_account_info(),
             UpdateUserCustomMarginRatio {
                 user: ctx.accounts.user.to_account_info(),
-                authority: ctx.accounts.treasury.to_account_info(),
+                authority: ctx.accounts.vault.to_account_info(),
             },
-            treasury_signer_seeds,
+            vault_signer_seeds,
         ),
         sub_account_id,
         margin_ratio,
@@ -130,7 +130,7 @@ pub fn update_user_custom_margin_ratio_handler(
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::DriftUpdateUser))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn update_user_margin_trading_enabled_handler(
     ctx: Context<DriftUpdate>,
     sub_account_id: u16,
@@ -141,9 +141,9 @@ pub fn update_user_margin_trading_enabled_handler(
             ctx.accounts.drift_program.to_account_info(),
             UpdateUserMarginTradingEnabled {
                 user: ctx.accounts.user.to_account_info(),
-                authority: ctx.accounts.treasury.to_account_info(),
+                authority: ctx.accounts.vault.to_account_info(),
             },
-            treasury_signer_seeds,
+            vault_signer_seeds,
         ),
         sub_account_id,
         margin_trading_enabled,
@@ -154,7 +154,7 @@ pub fn update_user_margin_trading_enabled_handler(
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::DriftUpdateUser))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn update_user_delegate_handler(
     ctx: Context<DriftUpdate>,
     sub_account_id: u16,
@@ -165,9 +165,9 @@ pub fn update_user_delegate_handler(
             ctx.accounts.drift_program.to_account_info(),
             UpdateUserDelegate {
                 user: ctx.accounts.user.to_account_info(),
-                authority: ctx.accounts.treasury.to_account_info(),
+                authority: ctx.accounts.vault.to_account_info(),
             },
-            treasury_signer_seeds,
+            vault_signer_seeds,
         ),
         sub_account_id,
         delegate,
@@ -192,12 +192,12 @@ pub struct DriftDeposit<'info> {
     pub state: UncheckedAccount<'info>,
 
     #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
     pub drift_ata: Box<InterfaceAccount<'info, TokenAccount>>, // spot market vault
     #[account(mut)]
-    pub treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub vault_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -208,7 +208,7 @@ pub struct DriftDeposit<'info> {
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::DriftDeposit))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn deposit_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftDeposit<'info>>,
     market_index: u16,
@@ -221,12 +221,12 @@ pub fn deposit_handler<'c: 'info, 'info>(
                 user: ctx.accounts.user.to_account_info(),
                 user_stats: ctx.accounts.user_stats.to_account_info(),
                 state: ctx.accounts.state.to_account_info(),
-                authority: ctx.accounts.treasury.to_account_info(),
+                authority: ctx.accounts.vault.to_account_info(),
                 spot_market_vault: ctx.accounts.drift_ata.to_account_info(),
-                user_token_account: ctx.accounts.treasury_ata.to_account_info(),
+                user_token_account: ctx.accounts.vault_ata.to_account_info(),
                 token_program: ctx.accounts.token_program.to_account_info(),
             },
-            treasury_signer_seeds,
+            vault_signer_seeds,
         )
         .with_remaining_accounts(ctx.remaining_accounts.to_vec()),
         market_index,
@@ -255,10 +255,10 @@ pub struct DriftWithdraw<'info> {
     pub drift_signer: UncheckedAccount<'info>,
 
     #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
-    pub treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub vault_ata: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(mut)]
     pub drift_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
@@ -271,7 +271,7 @@ pub struct DriftWithdraw<'info> {
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::DriftWithdraw))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn withdraw_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftWithdraw<'info>>,
     market_index: u16,
@@ -284,13 +284,13 @@ pub fn withdraw_handler<'c: 'info, 'info>(
                 user: ctx.accounts.user.to_account_info(),
                 user_stats: ctx.accounts.user_stats.to_account_info(),
                 state: ctx.accounts.state.to_account_info(),
-                authority: ctx.accounts.treasury.to_account_info(),
+                authority: ctx.accounts.vault.to_account_info(),
                 spot_market_vault: ctx.accounts.drift_ata.to_account_info(),
-                user_token_account: ctx.accounts.treasury_ata.to_account_info(),
+                user_token_account: ctx.accounts.vault_ata.to_account_info(),
                 token_program: ctx.accounts.token_program.to_account_info(),
                 drift_signer: ctx.accounts.drift_signer.to_account_info(),
             },
-            treasury_signer_seeds,
+            vault_signer_seeds,
         )
         .with_remaining_accounts(ctx.remaining_accounts.to_vec()),
         market_index,
@@ -317,7 +317,7 @@ pub struct DriftDeleteUser<'info> {
     pub state: UncheckedAccount<'info>,
 
     #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -328,7 +328,7 @@ pub struct DriftDeleteUser<'info> {
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::DriftDeleteUser))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn delete_user_handler(ctx: Context<DriftDeleteUser>) -> Result<()> {
     delete_user(CpiContext::new_with_signer(
         ctx.accounts.drift_program.to_account_info(),
@@ -336,9 +336,9 @@ pub fn delete_user_handler(ctx: Context<DriftDeleteUser>) -> Result<()> {
             user: ctx.accounts.user.to_account_info(),
             user_stats: ctx.accounts.user_stats.to_account_info(),
             state: ctx.accounts.state.to_account_info(),
-            authority: ctx.accounts.treasury.to_account_info(),
+            authority: ctx.accounts.vault.to_account_info(),
         },
-        treasury_signer_seeds,
+        vault_signer_seeds,
     ))?;
 
     Ok(())
@@ -358,7 +358,7 @@ pub struct DriftPlaceOrders<'info> {
     pub state: UncheckedAccount<'info>,
 
     #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -369,7 +369,7 @@ pub struct DriftPlaceOrders<'info> {
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::DriftPlaceOrders))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn place_orders_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftPlaceOrders<'info>>,
     order_params: Vec<OrderParams>,
@@ -420,9 +420,9 @@ pub fn place_orders_handler<'c: 'info, 'info>(
             PlaceOrders {
                 user: ctx.accounts.user.to_account_info(),
                 state: ctx.accounts.state.to_account_info(),
-                authority: ctx.accounts.treasury.to_account_info(),
+                authority: ctx.accounts.vault.to_account_info(),
             },
-            treasury_signer_seeds,
+            vault_signer_seeds,
         )
         .with_remaining_accounts(ctx.remaining_accounts.to_vec()),
         order_params,
@@ -445,7 +445,7 @@ pub struct DriftCancelOrders<'info> {
     pub state: UncheckedAccount<'info>,
 
     #[account(seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -456,7 +456,7 @@ pub struct DriftCancelOrders<'info> {
 
 #[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::DriftCancelOrders))]
 #[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Drift))]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn cancel_orders_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftCancelOrders<'info>>,
     market_type: Option<MarketType>,
@@ -469,9 +469,9 @@ pub fn cancel_orders_handler<'c: 'info, 'info>(
             CancelOrders {
                 user: ctx.accounts.user.to_account_info(),
                 state: ctx.accounts.state.to_account_info(),
-                authority: ctx.accounts.treasury.to_account_info(),
+                authority: ctx.accounts.vault.to_account_info(),
             },
-            treasury_signer_seeds,
+            vault_signer_seeds,
         )
         .with_remaining_accounts(ctx.remaining_accounts.to_vec()),
         market_type,

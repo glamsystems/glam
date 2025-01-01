@@ -64,7 +64,7 @@ pub struct FundAccount {
                                        // params[1]: EngineShareClass0Params, ...
 }
 impl FundAccount {
-    pub const INIT_SIZE: usize = 1024;
+    pub const INIT_SIZE: usize = 1024; // FIXME: too small?
 
     pub fn is_enabled(&self) -> bool {
         return true;

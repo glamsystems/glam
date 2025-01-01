@@ -38,14 +38,14 @@ describe("glam_jupiter", () => {
 
     // Airdrop some SOL to the treasury
     const airdrop = await glamClient.provider.connection.requestAirdrop(
-      glamClient.getTreasuryPDA(fundPDA),
+      glamClient.getVaultPda(fundPDA),
       1_000_000_000,
     );
     await glamClient.provider.connection.confirmTransaction(airdrop);
   });
 
   it("Swap end to end", async () => {
-    const treasury = glamClient.getTreasuryPDA(fundPDA);
+    const treasury = glamClient.getVaultPda(fundPDA);
 
     const signer = glamClient.getSigner();
     const inputSignerAta = glamClient.getAta(WSOL);
@@ -65,8 +65,8 @@ describe("glam_jupiter", () => {
     const beforeNoAccounts = [
       glamClient.getAta(WSOL),
       glamClient.getAta(MSOL),
-      glamClient.getTreasuryAta(fundPDA, WSOL),
-      glamClient.getTreasuryAta(fundPDA, MSOL),
+      glamClient.getVaultAta(fundPDA, WSOL),
+      glamClient.getVaultAta(fundPDA, MSOL),
     ];
     beforeNoAccounts.forEach(async (account) => {
       try {
@@ -96,7 +96,7 @@ describe("glam_jupiter", () => {
     const afterAccounts = [
       glamClient.getAta(WSOL),
       glamClient.getAta(MSOL),
-      glamClient.getTreasuryAta(fundPDA, WSOL),
+      glamClient.getVaultAta(fundPDA, WSOL),
     ];
     afterAccounts.forEach(async (account) => {
       try {
@@ -427,11 +427,11 @@ describe("glam_jupiter", () => {
     }
 
     // treasury: more mSOL
-    const treasuryMsol = await getAccount(
+    const vaultMsol = await getAccount(
       glamClient.provider.connection,
-      glamClient.getTreasuryAta(fundPDA, MSOL),
+      glamClient.getVaultAta(fundPDA, MSOL),
     );
-    expect(treasuryMsol.amount.toString()).toEqual("42591005");
+    expect(vaultMsol.amount.toString()).toEqual("42591005");
   });
 
   it("Swap by providing quote params", async () => {
@@ -507,7 +507,7 @@ describe("glam_jupiter", () => {
   }, 15_000);
 
   it("Create JUP escrow", async () => {
-    const treasury = glamClient.getTreasuryPDA(fundPDA);
+    const treasury = glamClient.getVaultPda(fundPDA);
     const [escrow] = PublicKey.findProgramAddressSync(
       [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), treasury.toBuffer()],
       JUP_VOTE_PROGRAM,

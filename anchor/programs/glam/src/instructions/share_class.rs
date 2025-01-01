@@ -662,7 +662,7 @@ pub struct CloseShareClass<'info> {
     pub fund: Account<'info, FundAccount>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(
         mut,
@@ -712,7 +712,7 @@ pub fn close_share_class_handler(ctx: Context<CloseShareClass>, share_class_id: 
         ctx.accounts.token_2022_program.to_account_info(),
         CloseToken2022Account {
             account: ctx.accounts.share_class_mint.to_account_info(),
-            destination: ctx.accounts.treasury.to_account_info(),
+            destination: ctx.accounts.vault.to_account_info(),
             authority: ctx.accounts.share_class_mint.to_account_info(),
         },
         share_class_signer_seeds,
@@ -730,7 +730,7 @@ pub fn close_share_class_handler(ctx: Context<CloseShareClass>, share_class_id: 
 
     close_account_info(
         ctx.accounts.extra_account_meta_list.to_account_info(),
-        ctx.accounts.treasury.to_account_info(),
+        ctx.accounts.vault.to_account_info(),
     )?;
 
     msg!(

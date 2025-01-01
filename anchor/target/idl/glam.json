@@ -251,7 +251,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -344,7 +344,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -408,7 +408,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -520,7 +520,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -594,7 +594,7 @@
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -616,10 +616,7 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "clock",
@@ -672,7 +669,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "pda": {
             "seeds": [
               {
@@ -779,7 +776,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "pda": {
             "seeds": [
               {
@@ -861,7 +858,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "pda": {
             "seeds": [
               {
@@ -889,7 +886,7 @@
           "writable": true
         },
         {
-          "name": "treasury_ata",
+          "name": "vault_ata",
           "writable": true
         },
         {
@@ -959,7 +956,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "pda": {
             "seeds": [
               {
@@ -1041,7 +1038,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "pda": {
             "seeds": [
               {
@@ -1126,7 +1123,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "pda": {
             "seeds": [
               {
@@ -1205,7 +1202,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "pda": {
             "seeds": [
               {
@@ -1284,7 +1281,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "pda": {
             "seeds": [
               {
@@ -1374,7 +1371,7 @@
           "name": "drift_signer"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "pda": {
             "seeds": [
               {
@@ -1398,7 +1395,7 @@
           }
         },
         {
-          "name": "treasury_ata",
+          "name": "vault_ata",
           "writable": true
         },
         {
@@ -1636,7 +1633,7 @@
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1674,7 +1671,7 @@
           "writable": true
         },
         {
-          "name": "treasury_jup_ata",
+          "name": "vault_jup_ata",
           "writable": true
         },
         {
@@ -1726,7 +1723,7 @@
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1812,7 +1809,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1834,13 +1831,10 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
-          "name": "treasury_stake_account",
+          "name": "vault_stake_account",
           "writable": true
         },
         {
@@ -1961,7 +1955,7 @@
           }
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -2041,7 +2035,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -2066,9 +2060,9 @@
           }
         },
         {
-          "name": "input_treasury_ata",
+          "name": "input_vault_ata",
           "docs": [
-            "input_treasury_ata to input_signer_ata"
+            "input_vault_ata to input_signer_ata"
           ],
           "writable": true
         },
@@ -2131,16 +2125,19 @@
         },
         {
           "name": "output_signer_ata",
+          "docs": [
+            "TODO: Do we really need output_signer_ata?"
+          ],
           "writable": true
         },
         {
-          "name": "output_treasury_ata",
+          "name": "output_vault_ata",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "account",
-                "path": "treasury"
+                "path": "vault"
               },
               {
                 "kind": "account",
@@ -2274,7 +2271,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -2296,10 +2293,7 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "marinade_state",
@@ -2370,7 +2364,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -2392,10 +2386,7 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "ticket",
@@ -2489,7 +2480,7 @@
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -2511,10 +2502,7 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "marinade_state",
@@ -2551,7 +2539,7 @@
             "seeds": [
               {
                 "kind": "account",
-                "path": "treasury"
+                "path": "vault"
               },
               {
                 "kind": "const",
@@ -2693,7 +2681,7 @@
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -2715,10 +2703,7 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "marinade_state",
@@ -2733,7 +2718,7 @@
           "writable": true
         },
         {
-          "name": "treasury_stake_account",
+          "name": "vault_stake_account",
           "writable": true
         },
         {
@@ -2754,7 +2739,7 @@
             "seeds": [
               {
                 "kind": "account",
-                "path": "treasury"
+                "path": "vault"
               },
               {
                 "kind": "const",
@@ -2901,13 +2886,14 @@
       "accounts": [
         {
           "name": "signer",
+          "writable": true,
           "signer": true
         },
         {
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -2929,10 +2915,7 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "marinade_state",
@@ -3011,7 +2994,7 @@
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3098,7 +3081,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3120,10 +3103,7 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "to_stake",
@@ -3297,7 +3277,7 @@
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3376,7 +3356,7 @@
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3476,7 +3456,7 @@
           "signer": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3597,7 +3577,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3619,10 +3599,7 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "existing_stake",
@@ -3798,7 +3775,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3820,10 +3797,7 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "existing_stake",
@@ -3896,7 +3870,7 @@
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3918,10 +3892,7 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "stake_pool",
@@ -3949,7 +3920,7 @@
             "seeds": [
               {
                 "kind": "account",
-                "path": "treasury"
+                "path": "vault"
               },
               {
                 "kind": "const",
@@ -4089,7 +4060,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -4111,13 +4082,10 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
-          "name": "treasury_stake_account",
+          "name": "vault_stake_account",
           "writable": true
         },
         {
@@ -4127,7 +4095,7 @@
             "seeds": [
               {
                 "kind": "account",
-                "path": "treasury"
+                "path": "vault"
               },
               {
                 "kind": "const",
@@ -4304,7 +4272,7 @@
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -4326,10 +4294,7 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "stake_pool",
@@ -4422,7 +4387,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -4444,13 +4409,10 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
-          "name": "treasury_stake_account",
+          "name": "vault_stake_account",
           "writable": true
         },
         {
@@ -4540,7 +4502,7 @@
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -4629,7 +4591,7 @@
           "name": "asset"
         },
         {
-          "name": "treasury_ata",
+          "name": "vault_ata",
           "writable": true
         },
         {
@@ -4735,7 +4697,7 @@
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -5048,7 +5010,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -5076,13 +5038,13 @@
           "name": "asset"
         },
         {
-          "name": "treasury_ata",
+          "name": "vault_ata",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "account",
-                "path": "treasury"
+                "path": "vault"
               },
               {
                 "kind": "account",
@@ -5234,7 +5196,7 @@
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -5276,7 +5238,7 @@
           "writable": true
         },
         {
-          "name": "treasury_jup_ata",
+          "name": "vault_jup_ata",
           "writable": true
         },
         {
@@ -5325,7 +5287,7 @@
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -5347,10 +5309,7 @@
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "clock",
@@ -5396,7 +5355,7 @@
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -5442,7 +5401,7 @@
           "writable": true
         },
         {
-          "name": "treasury_jup_ata",
+          "name": "vault_jup_ata",
           "writable": true
         },
         {
@@ -5482,7 +5441,7 @@
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -5507,13 +5466,13 @@
           }
         },
         {
-          "name": "treasury_wsol_ata",
+          "name": "vault_wsol_ata",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "account",
-                "path": "treasury"
+                "path": "vault"
               },
               {
                 "kind": "const",
@@ -5639,7 +5598,7 @@
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -5664,13 +5623,13 @@
           }
         },
         {
-          "name": "treasury_wsol_ata",
+          "name": "vault_wsol_ata",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "account",
-                "path": "treasury"
+                "path": "vault"
               },
               {
                 "kind": "const",
@@ -5905,13 +5864,33 @@
   "errors": [
     {
       "code": 6000,
-      "name": "InvalidAssetForSwap",
-      "msg": "Asset cannot be swapped"
+      "name": "CloseNotEmptyError",
+      "msg": "Error closing account: not empty"
     },
     {
       "code": 6001,
-      "name": "InvalidSwap",
-      "msg": "Swap failed"
+      "name": "InvalidFundName",
+      "msg": "Invalid fund name: max 50 chars"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidFundSymbol",
+      "msg": "Too many assets: max 50"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidFundUri",
+      "msg": "Too many assets: max 20"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidAssetsLen",
+      "msg": "Too many assets: max 100"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidAssetsWeights",
+      "msg": "Number of weights should match number of assets"
     }
   ],
   "types": [

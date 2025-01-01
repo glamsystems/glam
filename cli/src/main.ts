@@ -65,7 +65,7 @@ program
     console.log("Priority fee level:", priorityFeeLevel);
     console.log("Active fund:", fundPDA ? fundPDA.toBase58() : "not set");
     if (fundPDA) {
-      const vault = glamClient.getTreasuryPDA(fundPDA);
+      const vault = glamClient.getVaultPda(fundPDA);
       console.log("Vault:", vault.toBase58());
     }
   });
@@ -468,10 +468,9 @@ fund
     }
 
     const { all } = options;
-    const treasury = glamClient.getTreasuryPDA(fundPDA);
-    const tokenAccounts = await glamClient.getTokenAccountsByOwner(treasury);
-    const solBalance =
-      await glamClient.provider.connection.getBalance(treasury);
+    const vault = glamClient.getVaultPda(fundPDA);
+    const tokenAccounts = await glamClient.getTokenAccountsByOwner(vault);
+    const solBalance = await glamClient.provider.connection.getBalance(vault);
 
     const mints = tokenAccounts.map((ta) => ta.mint.toBase58());
     if (!mints.includes(WSOL.toBase58())) {
@@ -601,7 +600,7 @@ lst
 
     try {
       let stakeAccounts = await glamClient.staking.getStakeAccountsWithStates(
-        glamClient.getTreasuryPDA(fundPDA),
+        glamClient.getVaultPda(fundPDA),
       );
       console.log(
         "Account                                     ",

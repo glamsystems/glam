@@ -125,7 +125,7 @@ describe("glam_marinade", () => {
 
   it("Desposit stake account", async () => {
     const stakeAccounts = await glamClient.staking.getStakeAccounts(
-      glamClient.getTreasuryPDA(fundPDA),
+      glamClient.getVaultPda(fundPDA),
     );
     expect(stakeAccounts.length).toEqual(1);
 

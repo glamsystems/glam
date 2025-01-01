@@ -35,7 +35,7 @@ export class FundClient {
     let fundModel = this.enrichFundModel(partialFundModel);
 
     const fundPDA = this.base.getFundPDA(fundModel);
-    const treasury = this.base.getTreasuryPDA(fundPDA);
+    const vault = this.base.getVaultPda(fundPDA);
     const openfunds = this.base.getOpenfundsPDA(fundPDA);
 
     const shareClasses = fundModel.shareClasses;
@@ -52,7 +52,7 @@ export class FundClient {
         .initializeFund(fundModel)
         .accountsPartial({
           fund: fundPDA,
-          treasury,
+          vault,
           openfunds,
         })
         .rpc();
@@ -65,7 +65,7 @@ export class FundClient {
         .initializeFund(fundModel)
         .accountsPartial({
           fund: fundPDA,
-          treasury,
+          vault,
           openfunds,
         })
         .instruction();
@@ -88,7 +88,7 @@ export class FundClient {
       .initializeFund(fundModel)
       .accountsPartial({
         fund: fundPDA,
-        treasury,
+        vault,
         openfunds,
       })
       .rpc();
@@ -353,12 +353,12 @@ export class FundClient {
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const treasury = this.base.getTreasuryPDA(fund);
+    const treasury = this.base.getVaultPda(fund);
 
     const { mint, tokenProgram } = await this.fetchMintWithOwner(asset);
 
     const signerAta = this.base.getAta(asset, signer, tokenProgram);
-    const treasuryAta = this.base.getTreasuryAta(fund, asset, tokenProgram);
+    const treasuryAta = this.base.getVaultAta(fund, asset, tokenProgram);
 
     const tx = new Transaction().add(
       createAssociatedTokenAccountIdempotentInstruction(

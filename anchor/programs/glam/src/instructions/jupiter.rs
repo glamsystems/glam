@@ -4,7 +4,7 @@ use anchor_spl::token::Token;
 use anchor_spl::token_interface::{
     transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
 };
-use glam_macros::treasury_signer_seeds;
+use glam_macros::vault_signer_seeds;
 
 use solana_program::{instruction::Instruction, program::invoke_signed};
 
@@ -47,12 +47,12 @@ pub struct JupiterSwap<'info> {
     #[account(mut)]
     pub fund: Box<Account<'info, FundAccount>>,
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     /// CHECK: no need to deser because we transfer_checked from
-    ///        input_treasury_ata to input_signer_ata
+    ///        input_vault_ata to input_signer_ata
     #[account(mut)]
-    pub input_treasury_ata: UncheckedAccount<'info>,
+    pub input_vault_ata: UncheckedAccount<'info>,
     #[account(
         mut,
         associated_token::mint = input_mint,
@@ -61,16 +61,17 @@ pub struct JupiterSwap<'info> {
     )]
     pub input_signer_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
+    /// TODO: Do we really need output_signer_ata?
     /// CHECK: no need deser, trust Jupiter
     #[account(mut)]
     pub output_signer_ata: UncheckedAccount<'info>,
     #[account(
         mut,
         associated_token::mint = output_mint,
-        associated_token::authority = treasury,
+        associated_token::authority = vault,
         associated_token::token_program = output_token_program
     )]
-    pub output_treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub output_vault_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     pub input_mint: Box<InterfaceAccount<'info, Mint>>,
     pub output_mint: Box<InterfaceAccount<'info, Mint>>,
@@ -188,7 +189,7 @@ fn is_lst<'info>(mint: &Pubkey, stake_pool_account: Option<&AccountInfo<'info>>)
 #[access_control(
     acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterSwap)
 )]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn swap_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, JupiterSwap<'info>>,
     amount: u64,
@@ -243,18 +244,18 @@ pub fn swap_handler<'c: 'info, 'info>(
     require!(parse_result, SwapError::InvalidSwap);
 
     //
-    // Transfer treasury -> signer
+    // Transfer vault -> signer
     //
     transfer_checked(
         CpiContext::new_with_signer(
             ctx.accounts.input_token_program.to_account_info(),
             TransferChecked {
-                from: ctx.accounts.input_treasury_ata.to_account_info(),
+                from: ctx.accounts.input_vault_ata.to_account_info(),
                 mint: ctx.accounts.input_mint.to_account_info(),
                 to: ctx.accounts.input_signer_ata.to_account_info(),
-                authority: ctx.accounts.treasury.to_account_info(),
+                authority: ctx.accounts.vault.to_account_info(),
             },
-            treasury_signer_seeds,
+            vault_signer_seeds,
         ),
         amount,
         ctx.accounts.input_mint.decimals,
@@ -277,15 +278,15 @@ pub fn swap_handler<'c: 'info, 'info>(
 
     // Override destinationTokenAccount
     accounts[dst_ata_idx] = AccountMeta {
-        pubkey: ctx.accounts.output_treasury_ata.key(),
+        pubkey: ctx.accounts.output_vault_ata.key(),
         is_signer: false,
         is_writable: true,
     };
 
-    // Include output_treasury_ata in accounts_infos (add it to remaining_accounts)
+    // Include output_vault_ata in accounts_infos (add it to remaining_accounts)
     let accounts_infos = &[
         ctx.remaining_accounts,
-        &[ctx.accounts.output_treasury_ata.to_account_info()],
+        &[ctx.accounts.output_vault_ata.to_account_info()],
     ]
     .concat();
 
@@ -309,7 +310,7 @@ pub struct InitLockedVoterEscrow<'info> {
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -331,18 +332,18 @@ pub struct InitLockedVoterEscrow<'info> {
 #[access_control(
     acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
 )]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn init_locked_voter_escrow_handler<'info>(ctx: Context<InitLockedVoterEscrow>) -> Result<()> {
     new_escrow(CpiContext::new_with_signer(
         ctx.accounts.locked_voter_program.to_account_info(),
         NewEscrow {
             locker: ctx.accounts.locker.to_account_info(),
             escrow: ctx.accounts.escrow.to_account_info(),
-            escrow_owner: ctx.accounts.treasury.to_account_info(),
-            payer: ctx.accounts.treasury.to_account_info(),
+            escrow_owner: ctx.accounts.vault.to_account_info(),
+            payer: ctx.accounts.vault.to_account_info(),
             system_program: ctx.accounts.system_program.to_account_info(),
         },
-        treasury_signer_seeds,
+        vault_signer_seeds,
     ))?;
 
     Ok(())
@@ -354,7 +355,7 @@ pub struct ToogleMaxLock<'info> {
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -362,7 +363,7 @@ pub struct ToogleMaxLock<'info> {
     #[account(mut)]
     pub locker: Box<Account<'info, Locker>>,
 
-    #[account(mut, constraint = escrow.owner == treasury.key())]
+    #[account(mut, constraint = escrow.owner == vault.key())]
     pub escrow: Box<Account<'info, Escrow>>,
 
     pub locked_voter_program: Program<'info, LockedVoter>,
@@ -378,7 +379,7 @@ pub struct ToogleMaxLock<'info> {
 #[access_control(
     acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
 )]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn toggle_max_lock_handler<'info>(ctx: Context<ToogleMaxLock>, value: bool) -> Result<()> {
     jup_toggle_max_lock(
         CpiContext::new_with_signer(
@@ -386,9 +387,9 @@ pub fn toggle_max_lock_handler<'info>(ctx: Context<ToogleMaxLock>, value: bool) 
             JupToggleMaxLock {
                 locker: ctx.accounts.locker.to_account_info(),
                 escrow: ctx.accounts.escrow.to_account_info(),
-                escrow_owner: ctx.accounts.treasury.to_account_info(),
+                escrow_owner: ctx.accounts.vault.to_account_info(),
             },
-            treasury_signer_seeds,
+            vault_signer_seeds,
         ),
         value,
     )?;
@@ -402,7 +403,7 @@ pub struct IncreaseLockedAmount<'info> {
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -414,9 +415,9 @@ pub struct IncreaseLockedAmount<'info> {
     pub escrow_jup_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(mut)]
-    pub treasury_jup_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub vault_jup_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
-    #[account(mut, constraint = escrow.owner == treasury.key())]
+    #[account(mut, constraint = escrow.owner == vault.key())]
     pub escrow: Box<Account<'info, Escrow>>,
 
     pub locked_voter_program: Program<'info, LockedVoter>,
@@ -429,7 +430,7 @@ pub struct IncreaseLockedAmount<'info> {
 #[access_control(
     acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
 )]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn increase_locked_amount_handler<'info>(
     ctx: Context<IncreaseLockedAmount>,
     amount: u64,
@@ -441,11 +442,11 @@ pub fn increase_locked_amount_handler<'info>(
                 locker: ctx.accounts.locker.to_account_info(),
                 escrow: ctx.accounts.escrow.to_account_info(),
                 escrow_tokens: ctx.accounts.escrow_jup_ata.to_account_info(),
-                payer: ctx.accounts.treasury.to_account_info(),
-                source_tokens: ctx.accounts.treasury_jup_ata.to_account_info(),
+                payer: ctx.accounts.vault.to_account_info(),
+                source_tokens: ctx.accounts.vault_jup_ata.to_account_info(),
                 token_program: ctx.accounts.token_program.to_account_info(),
             },
-            treasury_signer_seeds,
+            vault_signer_seeds,
         ),
         amount,
     )?;
@@ -459,7 +460,7 @@ pub struct PartialUnstaking<'info> {
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -484,7 +485,7 @@ pub struct PartialUnstaking<'info> {
 #[access_control(
     acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
 )]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn open_partial_unstaking_handler<'info>(
     ctx: Context<PartialUnstaking>,
     amount: u64,
@@ -497,10 +498,10 @@ pub fn open_partial_unstaking_handler<'info>(
                 locker: ctx.accounts.locker.to_account_info(),
                 escrow: ctx.accounts.escrow.to_account_info(),
                 partial_unstake: ctx.accounts.partial_unstake.to_account_info(),
-                owner: ctx.accounts.treasury.to_account_info(),
+                owner: ctx.accounts.vault.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
             },
-            treasury_signer_seeds,
+            vault_signer_seeds,
         ),
         amount,
         memo,
@@ -514,7 +515,7 @@ pub fn open_partial_unstaking_handler<'info>(
 #[access_control(
     acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
 )]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn merge_partial_unstaking_handler<'info>(ctx: Context<PartialUnstaking>) -> Result<()> {
     jup_merge_partial_unstaking(CpiContext::new_with_signer(
         ctx.accounts.locked_voter_program.to_account_info(),
@@ -522,9 +523,9 @@ pub fn merge_partial_unstaking_handler<'info>(ctx: Context<PartialUnstaking>) ->
             locker: ctx.accounts.locker.to_account_info(),
             escrow: ctx.accounts.escrow.to_account_info(),
             partial_unstake: ctx.accounts.partial_unstake.to_account_info(),
-            owner: ctx.accounts.treasury.to_account_info(),
+            owner: ctx.accounts.vault.to_account_info(),
         },
-        treasury_signer_seeds,
+        vault_signer_seeds,
     ))?;
     Ok(())
 }
@@ -535,7 +536,7 @@ pub struct WithdrawAllStakedJup<'info> {
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -550,7 +551,7 @@ pub struct WithdrawAllStakedJup<'info> {
     pub escrow_jup_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(mut)]
-    pub treasury_jup_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub vault_jup_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     pub locked_voter_program: Program<'info, LockedVoter>,
     pub token_program: Program<'info, Token>,
@@ -562,20 +563,20 @@ pub struct WithdrawAllStakedJup<'info> {
 #[access_control(
     acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
 )]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn withdraw_all_staked_jup_handler<'info>(ctx: Context<WithdrawAllStakedJup>) -> Result<()> {
     withdraw(CpiContext::new_with_signer(
         ctx.accounts.locked_voter_program.to_account_info(),
         Withdraw {
             locker: ctx.accounts.locker.to_account_info(),
             escrow: ctx.accounts.escrow.to_account_info(),
-            escrow_owner: ctx.accounts.treasury.to_account_info(),
+            escrow_owner: ctx.accounts.vault.to_account_info(),
             escrow_tokens: ctx.accounts.escrow_jup_ata.to_account_info(),
-            destination_tokens: ctx.accounts.treasury_jup_ata.to_account_info(),
-            payer: ctx.accounts.treasury.to_account_info(),
+            destination_tokens: ctx.accounts.vault_jup_ata.to_account_info(),
+            payer: ctx.accounts.vault.to_account_info(),
             token_program: ctx.accounts.token_program.to_account_info(),
         },
-        treasury_signer_seeds,
+        vault_signer_seeds,
     ))?;
 
     Ok(())
@@ -587,7 +588,7 @@ pub struct WithdrawPartialUnstaking<'info> {
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -605,7 +606,7 @@ pub struct WithdrawPartialUnstaking<'info> {
     pub escrow_jup_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(mut)]
-    pub treasury_jup_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub vault_jup_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     pub locked_voter_program: Program<'info, LockedVoter>,
     pub token_program: Program<'info, Token>,
@@ -617,7 +618,7 @@ pub struct WithdrawPartialUnstaking<'info> {
 #[access_control(
     acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
 )]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn withdraw_partial_unstaking_handler<'info>(
     ctx: Context<WithdrawPartialUnstaking>,
 ) -> Result<()> {
@@ -626,14 +627,14 @@ pub fn withdraw_partial_unstaking_handler<'info>(
         JupWithdrawPartialUnstaking {
             locker: ctx.accounts.locker.to_account_info(),
             escrow: ctx.accounts.escrow.to_account_info(),
-            owner: ctx.accounts.treasury.to_account_info(),
+            owner: ctx.accounts.vault.to_account_info(),
             partial_unstake: ctx.accounts.partial_unstake.to_account_info(),
             escrow_tokens: ctx.accounts.escrow_jup_ata.to_account_info(),
-            destination_tokens: ctx.accounts.treasury_jup_ata.to_account_info(),
-            payer: ctx.accounts.treasury.to_account_info(),
+            destination_tokens: ctx.accounts.vault_jup_ata.to_account_info(),
+            payer: ctx.accounts.vault.to_account_info(),
             token_program: ctx.accounts.token_program.to_account_info(),
         },
-        treasury_signer_seeds,
+        vault_signer_seeds,
     ))?;
 
     Ok(())
@@ -645,7 +646,7 @@ pub struct NewVote<'info> {
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -667,7 +668,7 @@ pub struct NewVote<'info> {
 #[access_control(
     acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
 )]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn new_vote_handler<'info>(ctx: Context<NewVote>) -> Result<()> {
     jup_new_vote(
         CpiContext::new_with_signer(
@@ -675,12 +676,12 @@ pub fn new_vote_handler<'info>(ctx: Context<NewVote>) -> Result<()> {
             JupNewVote {
                 proposal: ctx.accounts.proposal.to_account_info(),
                 vote: ctx.accounts.vote.to_account_info(),
-                payer: ctx.accounts.treasury.to_account_info(),
+                payer: ctx.accounts.vault.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
             },
-            treasury_signer_seeds,
+            vault_signer_seeds,
         ),
-        ctx.accounts.treasury.key(), // voter
+        ctx.accounts.vault.key(), // voter
     )?;
 
     Ok(())
@@ -692,7 +693,7 @@ pub struct CastVote<'info> {
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -722,7 +723,7 @@ pub struct CastVote<'info> {
 #[access_control(
     acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
 )]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn cast_vote_handler<'info>(ctx: Context<CastVote>, side: u8) -> Result<()> {
     jup_cast_vote(
         CpiContext::new_with_signer(
@@ -730,13 +731,13 @@ pub fn cast_vote_handler<'info>(ctx: Context<CastVote>, side: u8) -> Result<()> 
             JupCastVote {
                 locker: ctx.accounts.locker.to_account_info(),
                 escrow: ctx.accounts.escrow.to_account_info(),
-                vote_delegate: ctx.accounts.treasury.to_account_info(),
+                vote_delegate: ctx.accounts.vault.to_account_info(),
                 proposal: ctx.accounts.proposal.to_account_info(),
                 vote: ctx.accounts.vote.to_account_info(),
                 governor: ctx.accounts.governor.to_account_info(),
                 govern_program: ctx.accounts.governance_program.to_account_info(),
             },
-            treasury_signer_seeds,
+            vault_signer_seeds,
         ),
         side,
     )?;

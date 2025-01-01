@@ -257,7 +257,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -350,7 +350,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -414,7 +414,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -526,7 +526,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -600,7 +600,7 @@ export type Glam = {
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -622,10 +622,7 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "clock",
@@ -678,7 +675,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "pda": {
             "seeds": [
               {
@@ -785,7 +782,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "pda": {
             "seeds": [
               {
@@ -867,7 +864,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "pda": {
             "seeds": [
               {
@@ -895,7 +892,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasuryAta",
+          "name": "vaultAta",
           "writable": true
         },
         {
@@ -965,7 +962,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "pda": {
             "seeds": [
               {
@@ -1047,7 +1044,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "pda": {
             "seeds": [
               {
@@ -1132,7 +1129,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "pda": {
             "seeds": [
               {
@@ -1211,7 +1208,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "pda": {
             "seeds": [
               {
@@ -1290,7 +1287,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "pda": {
             "seeds": [
               {
@@ -1380,7 +1377,7 @@ export type Glam = {
           "name": "driftSigner"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "pda": {
             "seeds": [
               {
@@ -1404,7 +1401,7 @@ export type Glam = {
           }
         },
         {
-          "name": "treasuryAta",
+          "name": "vaultAta",
           "writable": true
         },
         {
@@ -1642,7 +1639,7 @@ export type Glam = {
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1680,7 +1677,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasuryJupAta",
+          "name": "vaultJupAta",
           "writable": true
         },
         {
@@ -1732,7 +1729,7 @@ export type Glam = {
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1818,7 +1815,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1840,13 +1837,10 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
-          "name": "treasuryStakeAccount",
+          "name": "vaultStakeAccount",
           "writable": true
         },
         {
@@ -1967,7 +1961,7 @@ export type Glam = {
           }
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -2047,7 +2041,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -2072,9 +2066,9 @@ export type Glam = {
           }
         },
         {
-          "name": "inputTreasuryAta",
+          "name": "inputVaultAta",
           "docs": [
-            "input_treasury_ata to input_signer_ata"
+            "input_vault_ata to input_signer_ata"
           ],
           "writable": true
         },
@@ -2137,16 +2131,19 @@ export type Glam = {
         },
         {
           "name": "outputSignerAta",
+          "docs": [
+            "TODO: Do we really need output_signer_ata?"
+          ],
           "writable": true
         },
         {
-          "name": "outputTreasuryAta",
+          "name": "outputVaultAta",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "account",
-                "path": "treasury"
+                "path": "vault"
               },
               {
                 "kind": "account",
@@ -2280,7 +2277,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -2302,10 +2299,7 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "marinadeState",
@@ -2376,7 +2370,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -2398,10 +2392,7 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "ticket",
@@ -2495,7 +2486,7 @@ export type Glam = {
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -2517,10 +2508,7 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "marinadeState",
@@ -2557,7 +2545,7 @@ export type Glam = {
             "seeds": [
               {
                 "kind": "account",
-                "path": "treasury"
+                "path": "vault"
               },
               {
                 "kind": "const",
@@ -2699,7 +2687,7 @@ export type Glam = {
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -2721,10 +2709,7 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "marinadeState",
@@ -2739,7 +2724,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasuryStakeAccount",
+          "name": "vaultStakeAccount",
           "writable": true
         },
         {
@@ -2760,7 +2745,7 @@ export type Glam = {
             "seeds": [
               {
                 "kind": "account",
-                "path": "treasury"
+                "path": "vault"
               },
               {
                 "kind": "const",
@@ -2907,13 +2892,14 @@ export type Glam = {
       "accounts": [
         {
           "name": "signer",
+          "writable": true,
           "signer": true
         },
         {
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -2935,10 +2921,7 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "marinadeState",
@@ -3017,7 +3000,7 @@ export type Glam = {
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3104,7 +3087,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3126,10 +3109,7 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "toStake",
@@ -3303,7 +3283,7 @@ export type Glam = {
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3382,7 +3362,7 @@ export type Glam = {
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3482,7 +3462,7 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3603,7 +3583,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3625,10 +3605,7 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "existingStake",
@@ -3804,7 +3781,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3826,10 +3803,7 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "existingStake",
@@ -3902,7 +3876,7 @@ export type Glam = {
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3924,10 +3898,7 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "stakePool",
@@ -3955,7 +3926,7 @@ export type Glam = {
             "seeds": [
               {
                 "kind": "account",
-                "path": "treasury"
+                "path": "vault"
               },
               {
                 "kind": "const",
@@ -4095,7 +4066,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -4117,13 +4088,10 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
-          "name": "treasuryStakeAccount",
+          "name": "vaultStakeAccount",
           "writable": true
         },
         {
@@ -4133,7 +4101,7 @@ export type Glam = {
             "seeds": [
               {
                 "kind": "account",
-                "path": "treasury"
+                "path": "vault"
               },
               {
                 "kind": "const",
@@ -4310,7 +4278,7 @@ export type Glam = {
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -4332,10 +4300,7 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "stakePool",
@@ -4428,7 +4393,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -4450,13 +4415,10 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
-          "name": "treasuryStakeAccount",
+          "name": "vaultStakeAccount",
           "writable": true
         },
         {
@@ -4546,7 +4508,7 @@ export type Glam = {
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -4635,7 +4597,7 @@ export type Glam = {
           "name": "asset"
         },
         {
-          "name": "treasuryAta",
+          "name": "vaultAta",
           "writable": true
         },
         {
@@ -4741,7 +4703,7 @@ export type Glam = {
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -5054,7 +5016,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -5082,13 +5044,13 @@ export type Glam = {
           "name": "asset"
         },
         {
-          "name": "treasuryAta",
+          "name": "vaultAta",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "account",
-                "path": "treasury"
+                "path": "vault"
               },
               {
                 "kind": "account",
@@ -5240,7 +5202,7 @@ export type Glam = {
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -5282,7 +5244,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasuryJupAta",
+          "name": "vaultJupAta",
           "writable": true
         },
         {
@@ -5331,7 +5293,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -5353,10 +5315,7 @@ export type Glam = {
                 "path": "fund"
               }
             ]
-          },
-          "relations": [
-            "fund"
-          ]
+          }
         },
         {
           "name": "clock",
@@ -5402,7 +5361,7 @@ export type Glam = {
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -5448,7 +5407,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "treasuryJupAta",
+          "name": "vaultJupAta",
           "writable": true
         },
         {
@@ -5488,7 +5447,7 @@ export type Glam = {
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -5513,13 +5472,13 @@ export type Glam = {
           }
         },
         {
-          "name": "treasuryWsolAta",
+          "name": "vaultWsolAta",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "account",
-                "path": "treasury"
+                "path": "vault"
               },
               {
                 "kind": "const",
@@ -5645,7 +5604,7 @@ export type Glam = {
           "name": "fund"
         },
         {
-          "name": "treasury",
+          "name": "vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -5670,13 +5629,13 @@ export type Glam = {
           }
         },
         {
-          "name": "treasuryWsolAta",
+          "name": "vaultWsolAta",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "account",
-                "path": "treasury"
+                "path": "vault"
               },
               {
                 "kind": "const",
@@ -5911,13 +5870,33 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "invalidAssetForSwap",
-      "msg": "Asset cannot be swapped"
+      "name": "closeNotEmptyError",
+      "msg": "Error closing account: not empty"
     },
     {
       "code": 6001,
-      "name": "invalidSwap",
-      "msg": "Swap failed"
+      "name": "invalidFundName",
+      "msg": "Invalid fund name: max 50 chars"
+    },
+    {
+      "code": 6002,
+      "name": "invalidFundSymbol",
+      "msg": "Too many assets: max 50"
+    },
+    {
+      "code": 6003,
+      "name": "invalidFundUri",
+      "msg": "Too many assets: max 20"
+    },
+    {
+      "code": 6004,
+      "name": "invalidAssetsLen",
+      "msg": "Too many assets: max 100"
+    },
+    {
+      "code": 6005,
+      "name": "invalidAssetsWeights",
+      "msg": "Number of weights should match number of assets"
     }
   ],
   "types": [

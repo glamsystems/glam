@@ -70,7 +70,7 @@ describe("glam_investor", () => {
   };
 
   const fundPDA = glamClient.getFundPDA(fundModel);
-  const treasuryPDA = glamClient.getTreasuryPDA(fundPDA);
+  const vaultPda = glamClient.getVaultPda(fundPDA);
   const sharePDA = glamClient.getShareClassPDA(fundPDA);
 
   const connection = glamClient.provider.connection;
@@ -79,21 +79,21 @@ describe("glam_investor", () => {
 
   const treasuryUsdcAta = getAssociatedTokenAddressSync(
     usdc.publicKey,
-    treasuryPDA,
+    vaultPda,
     true,
     TOKEN_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
   );
   const treasuryEthAta = getAssociatedTokenAddressSync(
     ethOrWsol,
-    treasuryPDA,
+    vaultPda,
     true,
     TOKEN_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
   );
   const treasuryBtcAta = getAssociatedTokenAddressSync(
     btc.publicKey,
-    treasuryPDA,
+    vaultPda,
     true,
     BTC_TOKEN_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -284,11 +284,11 @@ describe("glam_investor", () => {
         .subscribe(0, new BN(1 * 10 ** 8), true)
         .accountsPartial({
           fund: fundPDA,
-          treasury: treasuryPDA,
+          vault: vaultPda,
           shareClass: invalidShareClass,
           signerShareAta: shareAta,
           asset: btc.publicKey,
-          treasuryAta: treasuryEthAta,
+          vaultAta: treasuryEthAta,
           signerAssetAta: managerEthAta,
           signer: wallet.publicKey,
           tokenProgram: TOKEN_PROGRAM_ID,
@@ -387,7 +387,7 @@ describe("glam_investor", () => {
         createAssociatedTokenAccountInstruction(
           wallet.publicKey,
           treasuryUsdcAta,
-          treasuryPDA,
+          vaultPda,
           usdc.publicKey,
         ),
         createTransferCheckedInstruction(
@@ -402,7 +402,7 @@ describe("glam_investor", () => {
         ),
         SystemProgram.transfer({
           fromPubkey: wallet.publicKey,
-          toPubkey: treasuryPDA,
+          toPubkey: vaultPda,
           lamports: 1_000_000_000,
         }),
       );
@@ -434,7 +434,7 @@ describe("glam_investor", () => {
     const oldAmountBtc = treasuryBtc.amount;
 
     let treasuryAccountInfo = await connection.getAccountInfo(
-      treasuryPDA,
+      vaultPda,
       commitment,
     );
     const oldAmountSol = treasuryAccountInfo?.lamports;
@@ -465,10 +465,7 @@ describe("glam_investor", () => {
     );
     const newAmountBtc = treasuryBtc.amount;
 
-    treasuryAccountInfo = await connection.getAccountInfo(
-      treasuryPDA,
-      commitment,
-    );
+    treasuryAccountInfo = await connection.getAccountInfo(vaultPda, commitment);
     const newAmountSol = treasuryAccountInfo?.lamports;
 
     // new usdc amount should be less than old amount
@@ -538,7 +535,7 @@ describe("glam_investor", () => {
 
     // All lamports are sent to signer => treasury account no longer exists
     const treasuryAccountInfo = await connection.getAccountInfo(
-      treasuryPDA,
+      vaultPda,
       commitment,
     );
     expect(treasuryAccountInfo).toBeNull();
@@ -601,7 +598,7 @@ describe("glam_investor", () => {
 
   it("Manager subscribes/redeems when marinade ticket exists", async () => {
     try {
-      const airdropTx = await connection.requestAirdrop(treasuryPDA, 10 ** 9);
+      const airdropTx = await connection.requestAirdrop(vaultPda, 10 ** 9);
       await connection.confirmTransaction({
         ...(await connection.getLatestBlockhash()),
         signature: airdropTx,

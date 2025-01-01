@@ -11,7 +11,7 @@ use anchor_spl::{
     },
     token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
 };
-use glam_macros::treasury_signer_seeds;
+use glam_macros::vault_signer_seeds;
 
 #[derive(Accounts)]
 #[instruction(fund_model: FundModel)]
@@ -33,7 +33,7 @@ pub struct InitializeFund<'info> {
     pub openfunds: Box<Account<'info, FundMetadataAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -70,7 +70,7 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
         fund.openfunds_uri = openfunds_uri;
     }
 
-    fund.treasury = ctx.accounts.treasury.key();
+    fund.treasury = ctx.accounts.vault.key();
     fund.openfunds = ctx.accounts.openfunds.key();
     fund.manager = ctx.accounts.signer.key();
 
@@ -306,7 +306,7 @@ pub struct CloseFund<'info> {
     pub openfunds: Account<'info, FundMetadataAccount>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -314,25 +314,25 @@ pub struct CloseFund<'info> {
     pub system_program: Program<'info, System>,
 }
 
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn close_fund_handler(ctx: Context<CloseFund>) -> Result<()> {
     require!(
         ctx.accounts.fund.share_classes.len() == 0,
         FundError::CantCloseShareClasses
     );
 
-    if ctx.accounts.treasury.lamports() > 0 {
+    if ctx.accounts.vault.lamports() > 0 {
         solana_program::program::invoke_signed(
             &solana_program::system_instruction::transfer(
-                ctx.accounts.treasury.key,
+                ctx.accounts.vault.key,
                 ctx.accounts.signer.key,
-                ctx.accounts.treasury.lamports(),
+                ctx.accounts.vault.lamports(),
             ),
             &[
-                ctx.accounts.treasury.to_account_info(),
+                ctx.accounts.vault.to_account_info(),
                 ctx.accounts.signer.to_account_info(),
             ],
-            treasury_signer_seeds,
+            vault_signer_seeds,
         )?;
     }
 
@@ -381,17 +381,17 @@ pub struct Withdraw<'info> {
     pub fund: Account<'info, FundAccount>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     pub asset: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(
         mut,
         associated_token::mint = asset,
-        associated_token::authority = treasury,
+        associated_token::authority = vault,
         associated_token::token_program = token_program
     )]
-    pub treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub vault_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
         mut,
@@ -407,7 +407,7 @@ pub struct Withdraw<'info> {
     pub token_program: Interface<'info, TokenInterface>,
 }
 
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
     //TODO: atm we allow transfers only from vaults (to their manager),
     //      i.e. funds with no share classes.
@@ -421,12 +421,12 @@ pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
         CpiContext::new_with_signer(
             ctx.accounts.token_program.to_account_info(),
             TransferChecked {
-                from: ctx.accounts.treasury_ata.to_account_info(),
+                from: ctx.accounts.vault_ata.to_account_info(),
                 mint: ctx.accounts.asset.to_account_info(),
                 to: ctx.accounts.manager_ata.to_account_info(),
-                authority: ctx.accounts.treasury.to_account_info(),
+                authority: ctx.accounts.vault.to_account_info(),
             },
-            treasury_signer_seeds,
+            vault_signer_seeds,
         ),
         amount,
         ctx.accounts.asset.decimals,
@@ -441,7 +441,7 @@ pub struct CloseTokenAccounts<'info> {
     pub fund: Account<'info, FundAccount>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -450,7 +450,7 @@ pub struct CloseTokenAccounts<'info> {
     pub token_2022_program: Program<'info, Token2022>,
 }
 
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn close_token_accounts_handler<'info>(
     ctx: Context<'_, '_, '_, 'info, CloseTokenAccounts<'info>>,
 ) -> Result<()> {
@@ -460,20 +460,20 @@ pub fn close_token_accounts_handler<'info>(
                 ctx.accounts.token_program.to_account_info(),
                 CloseTokenAccount {
                     account: account.to_account_info(),
-                    destination: ctx.accounts.treasury.to_account_info(),
-                    authority: ctx.accounts.treasury.to_account_info(),
+                    destination: ctx.accounts.vault.to_account_info(),
+                    authority: ctx.accounts.vault.to_account_info(),
                 },
-                treasury_signer_seeds,
+                vault_signer_seeds,
             ))
         } else {
             close_token_2022_account(CpiContext::new_with_signer(
                 ctx.accounts.token_2022_program.to_account_info(),
                 CloseToken2022Account {
                     account: account.to_account_info(),
-                    destination: ctx.accounts.treasury.to_account_info(),
-                    authority: ctx.accounts.treasury.to_account_info(),
+                    destination: ctx.accounts.vault.to_account_info(),
+                    authority: ctx.accounts.vault.to_account_info(),
                 },
-                treasury_signer_seeds,
+                vault_signer_seeds,
             ))
         }
     })?;

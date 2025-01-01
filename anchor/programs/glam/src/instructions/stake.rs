@@ -3,22 +3,22 @@ use anchor_lang::{prelude::*, system_program};
 use anchor_spl::stake::{
     deactivate_stake, withdraw, DeactivateStake, Stake, StakeAccount, Withdraw,
 };
-use glam_macros::treasury_signer_seeds;
+use glam_macros::vault_signer_seeds;
 
 #[derive(Accounts)]
 pub struct InitializeAndDelegateStake<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    #[account(mut, has_one = treasury)]
+    #[account(mut)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     /// CHECK: will be initialized in the instruction
     #[account(mut)]
-    pub treasury_stake_account: AccountInfo<'info>,
+    pub vault_stake_account: AccountInfo<'info>,
 
     /// CHECK: skip
     pub vote: AccountInfo<'info>,
@@ -40,7 +40,7 @@ pub struct InitializeAndDelegateStake<'info> {
 #[access_control(
     acl::check_integration(&ctx.accounts.fund, IntegrationName::NativeStaking)
 )]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn initialize_and_delegate_stake_handler<'c: 'info, 'info>(
     ctx: Context<InitializeAndDelegateStake>,
     lamports: u64,
@@ -54,19 +54,15 @@ pub fn initialize_and_delegate_stake_handler<'c: 'info, 'info>(
         fund_key.as_ref(),
         &[stake_account_bump],
     ];
-    let signer_seeds = &[&stake_account_seeds[..], (*treasury_signer_seeds)[0]];
+    let signer_seeds = &[&stake_account_seeds[..], (*vault_signer_seeds)[0]];
 
     // Create the stake account
     system_program::create_account(
         CpiContext::new_with_signer(
             ctx.accounts.system_program.to_account_info(),
             system_program::CreateAccount {
-                from: ctx.accounts.treasury.to_account_info(),
-                to: ctx
-                    .accounts
-                    .treasury_stake_account
-                    .to_account_info()
-                    .clone(),
+                from: ctx.accounts.vault.to_account_info(),
+                to: ctx.accounts.vault_stake_account.to_account_info().clone(),
             },
             signer_seeds,
         ),
@@ -77,10 +73,10 @@ pub fn initialize_and_delegate_stake_handler<'c: 'info, 'info>(
 
     // Initialize the stake account
     let init_stake_ix = solana_program::stake::instruction::initialize(
-        ctx.accounts.treasury_stake_account.key,
+        ctx.accounts.vault_stake_account.key,
         &solana_program::stake::state::Authorized {
-            staker: *ctx.accounts.treasury.key,
-            withdrawer: *ctx.accounts.treasury.key,
+            staker: *ctx.accounts.vault.key,
+            withdrawer: *ctx.accounts.vault.key,
         },
         &solana_program::stake::state::Lockup {
             unix_timestamp: 0,
@@ -91,7 +87,7 @@ pub fn initialize_and_delegate_stake_handler<'c: 'info, 'info>(
     solana_program::program::invoke_signed(
         &init_stake_ix,
         &[
-            ctx.accounts.treasury_stake_account.clone(),
+            ctx.accounts.vault_stake_account.clone(),
             ctx.accounts.rent.to_account_info(),
         ],
         signer_seeds,
@@ -99,28 +95,28 @@ pub fn initialize_and_delegate_stake_handler<'c: 'info, 'info>(
 
     // Delegate the stake account
     let delegate_stake_ix = solana_program::stake::instruction::delegate_stake(
-        ctx.accounts.treasury_stake_account.key,
-        ctx.accounts.treasury.key,
+        ctx.accounts.vault_stake_account.key,
+        ctx.accounts.vault.key,
         ctx.accounts.vote.key,
     );
     solana_program::program::invoke_signed(
         &delegate_stake_ix,
         &[
-            ctx.accounts.treasury_stake_account.clone(),
+            ctx.accounts.vault_stake_account.clone(),
             ctx.accounts.vote.clone(),
             ctx.accounts.clock.to_account_info(),
             ctx.accounts.stake_history.to_account_info(),
             ctx.accounts.stake_config.clone(),
-            ctx.accounts.treasury.to_account_info(),
+            ctx.accounts.vault.to_account_info(),
         ],
-        treasury_signer_seeds,
+        vault_signer_seeds,
     )?;
 
     // Add the stake account to the fund params
     let fund = &mut ctx.accounts.fund;
     fund.add_to_engine_field(
         EngineFieldName::ExternalTreasuryAccounts,
-        ctx.accounts.treasury_stake_account.key(),
+        ctx.accounts.vault_stake_account.key(),
     );
 
     Ok(())
@@ -131,11 +127,10 @@ pub struct DeactivateStakeAccounts<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    #[account(has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     pub clock: Sysvar<'info, Clock>,
     pub stake_program: Program<'info, Stake>,
@@ -147,7 +142,7 @@ pub struct DeactivateStakeAccounts<'info> {
 #[access_control(
     acl::check_integration(&ctx.accounts.fund, IntegrationName::NativeStaking)
 )]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn deactivate_stake_accounts_handler<'info>(
     ctx: Context<'_, '_, '_, 'info, DeactivateStakeAccounts<'info>>,
 ) -> Result<()> {
@@ -156,10 +151,10 @@ pub fn deactivate_stake_accounts_handler<'info>(
             ctx.accounts.stake_program.to_account_info(),
             DeactivateStake {
                 stake: stake_account.clone(),
-                staker: ctx.accounts.treasury.to_account_info(),
+                staker: ctx.accounts.vault.to_account_info(),
                 clock: ctx.accounts.clock.to_account_info(),
             },
-            treasury_signer_seeds,
+            vault_signer_seeds,
         );
         let _ = deactivate_stake(cpi_ctx);
     });
@@ -171,11 +166,11 @@ pub struct WithdrawFromStakeAccounts<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    #[account(mut, has_one = treasury)]
+    #[account(mut)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     pub clock: Sysvar<'info, Clock>,
     pub stake_history: Sysvar<'info, StakeHistory>,
@@ -188,7 +183,7 @@ pub struct WithdrawFromStakeAccounts<'info> {
 #[access_control(
     acl::check_integration(&ctx.accounts.fund, IntegrationName::NativeStaking)
 )]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn withdraw_from_stake_accounts_handler<'info>(
     ctx: Context<'_, '_, '_, 'info, WithdrawFromStakeAccounts<'info>>,
 ) -> Result<()> {
@@ -199,12 +194,12 @@ pub fn withdraw_from_stake_accounts_handler<'info>(
             ctx.accounts.stake_program.to_account_info(),
             Withdraw {
                 stake: stake_account.clone(),
-                withdrawer: ctx.accounts.treasury.to_account_info(),
-                to: ctx.accounts.treasury.to_account_info(),
+                withdrawer: ctx.accounts.vault.to_account_info(),
+                to: ctx.accounts.vault.to_account_info(),
                 clock: ctx.accounts.clock.to_account_info(),
                 stake_history: ctx.accounts.stake_history.to_account_info(),
             },
-            treasury_signer_seeds,
+            vault_signer_seeds,
         );
 
         let _ = withdraw(cpi_ctx, lamports, None);
@@ -223,11 +218,11 @@ pub struct MergeStakeAccounts<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    #[account(mut, has_one = treasury)]
+    #[account(mut)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
     pub to_stake: Account<'info, StakeAccount>,
@@ -248,23 +243,23 @@ pub struct MergeStakeAccounts<'info> {
 #[access_control(
     acl::check_integration(&ctx.accounts.fund, IntegrationName::NativeStaking)
 )]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn merge_stake_accounts_handler<'c: 'info, 'info>(
     ctx: Context<MergeStakeAccounts>,
 ) -> Result<()> {
     let ix = solana_program::stake::instruction::merge(
         &ctx.accounts.to_stake.key(),
         &ctx.accounts.from_stake.key(),
-        ctx.accounts.treasury.key,
+        ctx.accounts.vault.key,
     );
     let account_infos = &[
         ctx.accounts.to_stake.to_account_info(),
         ctx.accounts.from_stake.to_account_info(),
-        ctx.accounts.treasury.to_account_info(),
+        ctx.accounts.vault.to_account_info(),
         ctx.accounts.clock.to_account_info(),
         ctx.accounts.stake_history.to_account_info(),
     ];
-    let _ = solana_program::program::invoke_signed(&ix[0], account_infos, treasury_signer_seeds);
+    let _ = solana_program::program::invoke_signed(&ix[0], account_infos, vault_signer_seeds);
 
     // Remove the from_stake account from the fund params
     let fund = &mut ctx.accounts.fund;
@@ -281,11 +276,11 @@ pub struct SplitStakeAccount<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    #[account(mut, has_one = treasury)]
+    #[account(mut)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
     pub existing_stake: Account<'info, StakeAccount>,
@@ -306,7 +301,7 @@ pub struct SplitStakeAccount<'info> {
 #[access_control(
     acl::check_integration(&ctx.accounts.fund, IntegrationName::NativeStaking)
 )]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn split_stake_account_handler<'c: 'info, 'info>(
     ctx: Context<SplitStakeAccount>,
     lamports: u64,
@@ -323,7 +318,7 @@ pub fn split_stake_account_handler<'c: 'info, 'info>(
 
     let instructions = solana_program::stake::instruction::split(
         &ctx.accounts.existing_stake.key(),
-        &ctx.accounts.treasury.key(),
+        &ctx.accounts.vault.key(),
         lamports,
         ctx.accounts.new_stake.key,
     );
@@ -353,10 +348,10 @@ pub fn split_stake_account_handler<'c: 'info, 'info>(
         &[
             ctx.accounts.existing_stake.to_account_info(),
             ctx.accounts.new_stake.to_account_info(),
-            ctx.accounts.treasury.to_account_info(),
+            ctx.accounts.vault.to_account_info(),
             ctx.accounts.clock.to_account_info(),
         ],
-        treasury_signer_seeds,
+        vault_signer_seeds,
     )?;
 
     // Add the new stake account to the fund params
@@ -374,11 +369,11 @@ pub struct RedelegateStake<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    #[account(mut, has_one = treasury)]
+    #[account(mut)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
     pub existing_stake: Account<'info, StakeAccount>,
@@ -405,7 +400,7 @@ pub struct RedelegateStake<'info> {
 #[access_control(
     acl::check_integration(&ctx.accounts.fund, IntegrationName::NativeStaking)
 )]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn redelegate_stake_handler<'c: 'info, 'info>(
     ctx: Context<RedelegateStake>,
     new_stake_account_id: String,
@@ -423,7 +418,7 @@ pub fn redelegate_stake_handler<'c: 'info, 'info>(
     // 3 instructions: allocate, assign, redelegate
     let instructions = solana_program::stake::instruction::redelegate(
         &ctx.accounts.existing_stake.key(),
-        ctx.accounts.treasury.key,
+        ctx.accounts.vault.key,
         ctx.accounts.vote.key,
         ctx.accounts.new_stake.key,
     );
@@ -454,12 +449,12 @@ pub fn redelegate_stake_handler<'c: 'info, 'info>(
         &[
             ctx.accounts.existing_stake.to_account_info(),
             ctx.accounts.new_stake.to_account_info(),
-            ctx.accounts.treasury.to_account_info(),
+            ctx.accounts.vault.to_account_info(),
             ctx.accounts.stake_config.clone(),
             ctx.accounts.vote.clone(),
             ctx.accounts.clock.to_account_info(),
         ],
-        treasury_signer_seeds,
+        vault_signer_seeds,
     )?;
 
     // Remove existing stake account from the fund params and add the new one

@@ -27,7 +27,17 @@ export const airdrop = async (
   lamports: number,
 ) => {
   const airdropTx = await connection.requestAirdrop(pubkey, lamports);
-  await connection.confirmTransaction(airdropTx);
+  await connection.confirmTransaction(
+    {
+      ...(await connection.getLatestBlockhash()),
+      signature: airdropTx,
+    },
+    "confirmed",
+  );
+  console.log(
+    `Airdropped ${lamports} lamports to ${pubkey.toBase58()}:`,
+    airdropTx,
+  );
 };
 
 export const testFundModel = {
@@ -110,7 +120,7 @@ export const createFundForTest = async (
 
   return {
     fundPDA,
-    treasuryPDA: glamClient.getTreasuryPDA(fundPDA),
+    treasuryPDA: glamClient.getVaultPda(fundPDA),
     sharePDA: glamClient.getShareClassPDA(fundPDA, 0),
   };
 };

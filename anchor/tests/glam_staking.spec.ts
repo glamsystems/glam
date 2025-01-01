@@ -66,7 +66,7 @@ describe("glam_staking", () => {
     }
 
     const stakeAccounts = await glamClient.staking.getStakeAccounts(
-      glamClient.getTreasuryPDA(fundPDA),
+      glamClient.getVaultPda(fundPDA),
     );
     expect(stakeAccounts.length).toEqual(1);
   });
@@ -76,7 +76,7 @@ describe("glam_staking", () => {
     await sleep(75_000);
 
     let stakeAccounts = await glamClient.staking.getStakeAccountsWithStates(
-      glamClient.getTreasuryPDA(fundPDA),
+      glamClient.getVaultPda(fundPDA),
     );
     expect(stakeAccounts.length).toEqual(1);
 
@@ -96,14 +96,14 @@ describe("glam_staking", () => {
     // 2 stake accounts after re-delegation
     // the existing stake account is not closed by default
     stakeAccounts = await glamClient.staking.getStakeAccountsWithStates(
-      glamClient.getTreasuryPDA(fundPDA),
+      glamClient.getVaultPda(fundPDA),
     );
     expect(stakeAccounts.length).toEqual(2);
   }, 90_000);
 
   it("Spilt stake account", async () => {
     let stakeAccounts = await glamClient.staking.getStakeAccountsWithStates(
-      glamClient.getTreasuryPDA(fundPDA),
+      glamClient.getVaultPda(fundPDA),
     );
 
     try {
@@ -115,7 +115,7 @@ describe("glam_staking", () => {
       console.log("splitStakeAccount tx:", txSig);
 
       stakeAccounts = await glamClient.staking.getStakeAccountsWithStates(
-        glamClient.getTreasuryPDA(fundPDA),
+        glamClient.getVaultPda(fundPDA),
       );
       expect(stakeAccounts.length).toEqual(3);
       expect(
@@ -129,7 +129,7 @@ describe("glam_staking", () => {
 
   it("Merge stake accounts", async () => {
     let stakeAccounts = await glamClient.staking.getStakeAccountsWithStates(
-      glamClient.getTreasuryPDA(fundPDA),
+      glamClient.getVaultPda(fundPDA),
     );
     expect(stakeAccounts.length).toEqual(3);
 
@@ -147,7 +147,7 @@ describe("glam_staking", () => {
 
     // Only 1 stake account should be left after merging
     stakeAccounts = await glamClient.staking.getStakeAccountsWithStates(
-      glamClient.getTreasuryPDA(fundPDA),
+      glamClient.getVaultPda(fundPDA),
     );
     expect(stakeAccounts.length).toEqual(2);
   });
@@ -155,7 +155,7 @@ describe("glam_staking", () => {
   it("[spl-stake-pool] Deposit stake account to jito stake pool", async () => {
     try {
       let stakeAccounts = await glamClient.staking.getStakeAccounts(
-        glamClient.getTreasuryPDA(fundPDA),
+        glamClient.getVaultPda(fundPDA),
       );
       const txSig = await glamClient.staking.stakePoolDepositStake(
         fundPDA,
@@ -165,7 +165,7 @@ describe("glam_staking", () => {
       console.log("stakePoolDepositStake tx:", txSig);
 
       stakeAccounts = await glamClient.staking.getStakeAccounts(
-        glamClient.getTreasuryPDA(fundPDA),
+        glamClient.getVaultPda(fundPDA),
       );
       expect(stakeAccounts.length).toEqual(0);
     } catch (e) {
@@ -198,7 +198,7 @@ describe("glam_staking", () => {
       console.log("stakePoolWithdrawStake tx:", txSig);
 
       const stakeAccounts = await glamClient.staking.getStakeAccounts(
-        glamClient.getTreasuryPDA(fundPDA),
+        glamClient.getVaultPda(fundPDA),
       );
       expect(stakeAccounts.length).toEqual(1);
     } catch (e) {
@@ -232,7 +232,7 @@ describe("glam_staking", () => {
 
       // Now we should have 2 stake accounts: 1 from jito and 1 from bonk
       const stakeAccounts = await glamClient.staking.getStakeAccounts(
-        glamClient.getTreasuryPDA(fundPDA),
+        glamClient.getVaultPda(fundPDA),
       );
       expect(stakeAccounts.length).toEqual(2);
     } catch (e) {
@@ -265,7 +265,7 @@ describe("glam_staking", () => {
       console.log("stakePoolWithdrawStake tx:", txSig);
 
       const stakeAccounts = await glamClient.staking.getStakeAccounts(
-        glamClient.getTreasuryPDA(fundPDA),
+        glamClient.getVaultPda(fundPDA),
       );
       expect(stakeAccounts.length).toEqual(3);
     } catch (e) {
@@ -276,7 +276,7 @@ describe("glam_staking", () => {
 
   it("Deactivate stake accounts", async () => {
     const stakeAccounts = await glamClient.staking.getStakeAccounts(
-      glamClient.getTreasuryPDA(fundPDA),
+      glamClient.getVaultPda(fundPDA),
     );
     try {
       const txSig = await glamClient.staking.deactivateStakeAccounts(
@@ -292,7 +292,7 @@ describe("glam_staking", () => {
 
   it("Withdraw from stake accounts", async () => {
     const stakeAccounts = await glamClient.staking.getStakeAccounts(
-      glamClient.getTreasuryPDA(fundPDA),
+      glamClient.getVaultPda(fundPDA),
     );
 
     let lamportsInStakeAccounts = 0;
@@ -302,7 +302,7 @@ describe("glam_staking", () => {
     }
 
     const treasuryLamportsBefore = (await connection.getAccountInfo(
-      glamClient.getTreasuryPDA(fundPDA),
+      glamClient.getVaultPda(fundPDA),
     ))!.lamports;
 
     try {
@@ -317,14 +317,14 @@ describe("glam_staking", () => {
     }
 
     const treasuryLamportsAfter = (await connection.getAccountInfo(
-      glamClient.getTreasuryPDA(fundPDA),
+      glamClient.getVaultPda(fundPDA),
     ))!.lamports;
     expect(treasuryLamportsAfter).toEqual(
       treasuryLamportsBefore + lamportsInStakeAccounts,
     );
 
     const stakeAccountsAfter = await glamClient.staking.getStakeAccounts(
-      glamClient.getTreasuryPDA(fundPDA),
+      glamClient.getVaultPda(fundPDA),
     );
     expect(stakeAccountsAfter.length).toEqual(0);
   });

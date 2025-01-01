@@ -42,16 +42,16 @@ export class WSolClient {
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const treasury = this.base.getTreasuryPDA(fund);
-    const treasuryWsolAta = this.base.getTreasuryAta(fund, WSOL);
+    const vault = this.base.getVaultPda(fund);
+    const vaultWsolAta = this.base.getVaultAta(fund, WSOL);
 
     // @ts-ignore
     const tx = await this.base.program.methods
       .wsolWrap(amount)
       .accountsPartial({
         fund,
-        treasury,
-        treasuryWsolAta,
+        vault,
+        vaultWsolAta,
         wsolMint: WSOL,
         signer,
       })
@@ -68,15 +68,15 @@ export class WSolClient {
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const treasury = this.base.getTreasuryPDA(fund);
-    const treasuryWsolAta = this.base.getTreasuryAta(fund, WSOL);
+    const vault = this.base.getVaultPda(fund);
+    const vaultWsolAta = this.base.getVaultAta(fund, WSOL);
 
     const tx = await this.base.program.methods
       .wsolUnwrap()
       .accountsPartial({
         fund,
-        treasury,
-        treasuryWsolAta,
+        vault,
+        vaultWsolAta,
         wsolMint: WSOL,
         signer,
       })

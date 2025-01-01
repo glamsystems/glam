@@ -173,7 +173,7 @@ export function GlamProvider({
         "fetching treasury data for fund",
         activeFund.pubkey.toBase58(),
       );
-      const treasury = glamClient.getTreasuryPDA(activeFund.pubkey);
+      const treasury = glamClient.getVaultPda(activeFund.pubkey);
       const balances = await fetchBalances(glamClient, treasury);
       setTreasury({
         ...balances,
