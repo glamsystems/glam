@@ -234,7 +234,7 @@ describe("glam_crud", () => {
     const tranferTx = new Transaction().add(
       SystemProgram.transfer({
         fromPubkey: glamClient.getSigner(),
-        toPubkey: glamClient.getTreasuryPDA(fundPDA),
+        toPubkey: glamClient.getVaultPda(fundPDA),
         lamports: 1_000_000_000,
       }),
       SystemProgram.transfer({
@@ -371,7 +371,7 @@ describe("glam_crud", () => {
   });
 
   it("Close token accounts", async () => {
-    const treasury = glamClient.getTreasuryPDA(fundPDA);
+    const treasury = glamClient.getVaultPda(fundPDA);
 
     // Create empty token accounts
     const transaction = new Transaction();
@@ -379,7 +379,7 @@ describe("glam_crud", () => {
       transaction.add(
         createAssociatedTokenAccountIdempotentInstruction(
           glamClient.getSigner(),
-          glamClient.getTreasuryAta(fundPDA, mint),
+          glamClient.getVaultAta(fundPDA, mint),
           treasury,
           mint,
         ),
@@ -437,7 +437,7 @@ describe("glam_crud", () => {
     }
 
     // The following accounts should no longer exist
-    const treasury = glamClient.getTreasuryPDA(fundPDA);
+    const treasury = glamClient.getVaultPda(fundPDA);
     const openfunds = glamClient.getOpenfundsPDA(fundPDA);
     const ret = await Promise.all(
       [fundPDA, treasury, openfunds].map(

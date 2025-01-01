@@ -1,7 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
-import { Transaction, SystemProgram } from "@solana/web3.js";
 
-import { createFundForTest } from "./setup";
+import { airdrop, createFundForTest } from "./setup";
 import { GlamClient } from "../src";
 
 describe("glam_wsol", () => {
@@ -12,15 +11,11 @@ describe("glam_wsol", () => {
     const fundData = await createFundForTest(glamClient);
     fundPDA = fundData.fundPDA;
 
-    // transfer 0.1 SOL to treasury
-    const tranferTx = new Transaction().add(
-      SystemProgram.transfer({
-        fromPubkey: glamClient.getSigner(),
-        toPubkey: glamClient.getTreasuryPDA(fundPDA),
-        lamports: 100_000_000,
-      }),
+    await airdrop(
+      glamClient.provider.connection,
+      glamClient.getVaultPda(fundPDA),
+      100_000_000,
     );
-    await glamClient.sendAndConfirm(tranferTx);
   });
 
   it("wSOL wrap", async () => {

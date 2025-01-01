@@ -335,7 +335,7 @@ export class StakingClient {
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const treasury = this.base.getTreasuryPDA(fund);
+    const vault = this.base.getVaultPda(fund);
     const {
       programId: stakePoolProgram,
       poolMint,
@@ -353,8 +353,8 @@ export class StakingClient {
       .accountsPartial({
         signer,
         fund,
-        treasury,
-        mintTo: this.base.getTreasuryAta(fund, poolMint),
+        vault,
+        mintTo: this.base.getVaultAta(fund, poolMint),
         stakePoolProgram,
         stakePool,
         poolMint: poolMint,
@@ -378,7 +378,7 @@ export class StakingClient {
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const treasury = this.base.getTreasuryPDA(fund);
+    const vault = this.base.getVaultPda(fund);
     const {
       programId: stakePoolProgram,
       poolMint,
@@ -398,9 +398,9 @@ export class StakingClient {
       .accountsPartial({
         signer,
         fund,
-        treasury,
-        treasuryStakeAccount: stakeAccount,
-        mintTo: this.base.getTreasuryAta(fund, poolMint),
+        vault,
+        vaultStakeAccount: stakeAccount,
+        mintTo: this.base.getVaultAta(fund, poolMint),
         poolMint,
         feeAccount,
         stakePool,
@@ -430,7 +430,7 @@ export class StakingClient {
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const treasury = this.base.getTreasuryPDA(fund);
+    const vault = this.base.getVaultPda(fund);
     const {
       programId: stakePoolProgram,
       poolMint,
@@ -456,7 +456,7 @@ export class StakingClient {
             .accountsPartial({
               signer,
               fund,
-              treasury,
+              vault,
               clock: SYSVAR_CLOCK_PUBKEY,
               stakeProgram: StakeProgram.programId,
             })
@@ -476,12 +476,12 @@ export class StakingClient {
       .accountsPartial({
         signer,
         fund,
-        treasury,
-        treasuryStakeAccount: stakeAccountPda,
+        vault,
+        vaultStakeAccount: stakeAccountPda,
         stakePoolProgram,
         stakePool,
         poolMint,
-        poolTokenAta: this.base.getTreasuryAta(fund, poolMint),
+        poolTokenAta: this.base.getVaultAta(fund, poolMint),
         validatorList,
         validatorStakeAccount: validatorStakeAccounts[0],
         withdrawAuthority,
@@ -505,7 +505,7 @@ export class StakingClient {
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const treasury = this.base.getTreasuryPDA(fund);
+    const vault = this.base.getVaultPda(fund);
     const stakeAccountId = Date.now().toString();
     const [stakeAccountPda, bump] = this.getStakeAccountPDA(
       fund,
@@ -516,8 +516,8 @@ export class StakingClient {
       .accountsPartial({
         signer,
         fund,
-        treasury,
-        treasuryStakeAccount: stakeAccountPda,
+        vault,
+        vaultStakeAccount: stakeAccountPda,
         vote,
         stakeConfig: STAKE_CONFIG_ID,
         stakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
@@ -537,13 +537,13 @@ export class StakingClient {
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const treasury = this.base.getTreasuryPDA(fund);
+    const vault = this.base.getVaultPda(fund);
     const tx = await this.base.program.methods
       .deactivateStakeAccounts()
       .accountsPartial({
         signer,
         fund,
-        treasury,
+        vault,
         clock: SYSVAR_CLOCK_PUBKEY,
         stakeProgram: StakeProgram.programId,
       })
@@ -567,13 +567,13 @@ export class StakingClient {
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const treasury = this.base.getTreasuryPDA(fund);
+    const vault = this.base.getVaultPda(fund);
     const tx = await this.base.program.methods
       .withdrawFromStakeAccounts()
       .accountsPartial({
         signer,
         fund,
-        treasury,
+        vault,
         clock: SYSVAR_CLOCK_PUBKEY,
         stakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
         stakeProgram: StakeProgram.programId,
@@ -599,13 +599,13 @@ export class StakingClient {
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const treasury = this.base.getTreasuryPDA(fund);
+    const vault = this.base.getVaultPda(fund);
     const tx = await this.base.program.methods
       .mergeStakeAccounts()
       .accountsPartial({
         signer,
         fund,
-        treasury,
+        vault,
         toStake,
         fromStake,
         stakeProgram: StakeProgram.programId,
@@ -628,14 +628,14 @@ export class StakingClient {
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const treasury = this.base.getTreasuryPDA(fund);
+    const vault = this.base.getVaultPda(fund);
 
     const tx = await this.base.program.methods
       .splitStakeAccount(lamports, newStakeAccountId, newStakeAccountBump)
       .accountsPartial({
         signer,
         fund,
-        treasury,
+        vault,
         existingStake,
         newStake,
         stakeProgram: StakeProgram.programId,
@@ -657,14 +657,14 @@ export class StakingClient {
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const treasury = this.base.getTreasuryPDA(fund);
+    const vault = this.base.getVaultPda(fund);
 
     const tx = await this.base.program.methods
       .redelegateStake(newStakeAccountId, newStakeAccountBump)
       .accountsPartial({
         signer,
         fund,
-        treasury,
+        vault,
         vote,
         existingStake,
         newStake,

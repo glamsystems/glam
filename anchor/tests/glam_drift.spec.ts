@@ -1,6 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import { DriftMarketConfigs, GlamClient } from "../src";
-import { createFundForTest } from "./setup";
+import { airdrop, createFundForTest } from "./setup";
 import {
   getOrderParams,
   MarketType,
@@ -130,14 +130,7 @@ describe("glam_drift", () => {
   it("Airdrop 10 SOL to treasury and wrap it", async () => {
     const connection = glamClient.provider.connection;
     const lamports = 10_000_000_000;
-    const airdropTx = await connection.requestAirdrop(treasuryPDA, lamports);
-    await connection.confirmTransaction(
-      {
-        ...(await connection.getLatestBlockhash()),
-        signature: airdropTx,
-      },
-      commitment,
-    );
+    await airdrop(connection, treasuryPDA, lamports);
 
     try {
       const txSig = await glamClient.wsol.wrap(

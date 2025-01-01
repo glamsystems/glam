@@ -90,7 +90,7 @@ export class MarinadeClient {
             {
               memcmp: {
                 offset: 40,
-                bytes: this.base.getTreasuryPDA(fundPDA).toBase58(),
+                bytes: this.base.getVaultPda(fundPDA).toBase58(),
               },
             },
           ],
@@ -124,7 +124,7 @@ export class MarinadeClient {
             {
               memcmp: {
                 offset: 40,
-                bytes: this.base.getTreasuryPDA(fundPDA).toBase58(),
+                bytes: this.base.getVaultPda(fundPDA).toBase58(),
               },
             },
           ],
@@ -218,11 +218,11 @@ export class MarinadeClient {
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const treasury = this.base.getTreasuryPDA(fund);
+    const vault = this.base.getVaultPda(fund);
     const marinadeState = this.getMarinadeState();
-    const treasuryMsolAta = getAssociatedTokenAddressSync(
+    const vaultMsolAta = getAssociatedTokenAddressSync(
       marinadeState.msolMintAddress,
-      treasury,
+      vault,
       true,
     );
 
@@ -231,7 +231,7 @@ export class MarinadeClient {
       .marinadeDepositSol(amount)
       .accountsPartial({
         fund,
-        treasury,
+        vault,
         signer,
         reservePda: marinadeState.reserveAddress,
         marinadeState: marinadeState.marinadeStateAddress,
@@ -240,7 +240,7 @@ export class MarinadeClient {
         liqPoolMsolLeg: marinadeState.msolLeg,
         liqPoolMsolLegAuthority: marinadeState.msolLegAuthority,
         liqPoolSolLegPda: marinadeState.solLeg,
-        mintTo: treasuryMsolAta,
+        mintTo: vaultMsolAta,
         marinadeProgram: MARINADE_PROGRAM_ID,
       })
       .transaction();
@@ -257,7 +257,7 @@ export class MarinadeClient {
     txOptions: TxOptions,
   ): Promise<any> {
     const signer = txOptions.signer || this.base.getSigner();
-    const treasury = this.base.getTreasuryPDA(fund);
+    const vault = this.base.getVaultPda(fund);
 
     const stakeAccountInfo = await this.getParsedStakeAccountInfo(stakeAccount);
     console.log("Stake account info", stakeAccountInfo);
@@ -280,17 +280,17 @@ export class MarinadeClient {
       .marinadeDepositStake(validatorIndex)
       .accountsPartial({
         fund,
-        treasury,
+        vault,
         signer,
         marinadeState: marinadeState.marinadeStateAddress,
         validatorList:
           marinadeState.state.validatorSystem.validatorList.account,
         stakeList: marinadeState.state.stakeSystem.stakeList.account,
-        treasuryStakeAccount: stakeAccount,
+        vaultStakeAccount: stakeAccount,
         duplicationFlag,
         msolMint: MSOL,
         msolMintAuthority: await marinadeState.mSolMintAuthority(),
-        mintTo: this.base.getTreasuryAta(fund, MSOL),
+        mintTo: this.base.getVaultAta(fund, MSOL),
         marinadeProgram: MARINADE_PROGRAM_ID,
         clock: SYSVAR_CLOCK_PUBKEY,
         rent: SYSVAR_RENT_PUBKEY,
@@ -313,9 +313,9 @@ export class MarinadeClient {
     const signer = txOptions.signer || this.base.getSigner();
     const ticketId = Date.now().toString();
     const [ticket, bump] = this.getMarinadeTicketPDA(fund, ticketId);
-    const treasury = this.base.getTreasuryPDA(fund);
+    const vault = this.base.getVaultPda(fund);
     const marinadeState = this.getMarinadeState();
-    const treasuryMsolAta = this.base.getTreasuryAta(
+    const treasuryMsolAta = this.base.getVaultAta(
       fund,
       marinadeState.msolMintAddress,
     );
@@ -326,7 +326,7 @@ export class MarinadeClient {
       .marinadeDelayedUnstake(amount, ticketId, bump)
       .accountsPartial({
         fund,
-        treasury,
+        vault,
         signer,
         ticket,
         msolMint: marinadeState.msolMintAddress,
@@ -349,14 +349,14 @@ export class MarinadeClient {
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const treasury = this.base.getTreasuryPDA(fund);
+    const vault = this.base.getVaultPda(fund);
     const marinadeState = this.getMarinadeState();
 
     const tx = await this.base.program.methods
       .marinadeClaimTickets()
       .accountsPartial({
         fund,
-        treasury,
+        vault,
         signer,
         marinadeState: marinadeState.marinadeStateAddress,
         reservePda: marinadeState.reserveAddress,
@@ -379,11 +379,11 @@ export class MarinadeClient {
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const treasury = this.base.getTreasuryPDA(fund);
+    const vault = this.base.getVaultPda(fund);
     const marinadeState = this.getMarinadeState();
     const treasuryMsolAta = getAssociatedTokenAddressSync(
       marinadeState.msolMintAddress,
-      treasury,
+      vault,
       true,
     );
 
@@ -391,14 +391,14 @@ export class MarinadeClient {
       .marinadeLiquidUnstake(amount)
       .accountsPartial({
         fund,
-        treasury,
+        vault,
         signer,
         marinadeState: marinadeState.marinadeStateAddress,
         msolMint: marinadeState.msolMintAddress,
         liqPoolSolLegPda: marinadeState.solLeg,
         liqPoolMsolLeg: marinadeState.msolLeg,
         getMsolFrom: treasuryMsolAta,
-        getMsolFromAuthority: treasury,
+        getMsolFromAuthority: vault,
         treasuryMsolAccount: marinadeState.treasuryMsolAccount,
         marinadeProgram: MARINADE_PROGRAM_ID,
       })

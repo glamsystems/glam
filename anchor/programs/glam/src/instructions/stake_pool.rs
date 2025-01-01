@@ -7,7 +7,7 @@ use anchor_spl::{
     token_interface::TokenInterface,
 };
 
-use glam_macros::treasury_signer_seeds;
+use glam_macros::vault_signer_seeds;
 use solana_program::program::invoke_signed;
 use spl_stake_pool::{
     instruction::{deposit_sol, deposit_stake, withdraw_sol, withdraw_stake},
@@ -30,11 +30,10 @@ pub struct StakePoolDepositSol<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    #[account(has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     /// CHECK: checked by stake pool program
     #[account(mut)]
@@ -59,7 +58,7 @@ pub struct StakePoolDepositSol<'info> {
         init_if_needed,
         payer = signer,
         associated_token::mint = pool_mint,
-        associated_token::authority = treasury,
+        associated_token::authority = vault,
     )]
     pub mint_to: Account<'info, TokenAccount>,
 
@@ -73,7 +72,7 @@ pub struct StakePoolDepositSol<'info> {
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Stake)
 )]
 #[access_control(acl::check_stake_pool_integration(&ctx.accounts.fund, &ctx.accounts.stake_pool_program.key))]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn deposit_sol_handler<'c: 'info, 'info>(
     ctx: Context<StakePoolDepositSol>,
     lamports: u64,
@@ -83,7 +82,7 @@ pub fn deposit_sol_handler<'c: 'info, 'info>(
         ctx.accounts.stake_pool.key,
         ctx.accounts.withdraw_authority.key,
         ctx.accounts.reserve_stake.key,
-        ctx.accounts.treasury.key,
+        ctx.accounts.vault.key,
         &ctx.accounts.mint_to.key(),
         ctx.accounts.fee_account.key,
         &ctx.accounts.mint_to.key(),
@@ -98,14 +97,14 @@ pub fn deposit_sol_handler<'c: 'info, 'info>(
             ctx.accounts.stake_pool.clone(),
             ctx.accounts.withdraw_authority.clone(),
             ctx.accounts.reserve_stake.clone(),
-            ctx.accounts.treasury.to_account_info(),
+            ctx.accounts.vault.to_account_info(),
             ctx.accounts.fee_account.clone(),
             ctx.accounts.mint_to.to_account_info(),
             ctx.accounts.pool_mint.to_account_info(),
             ctx.accounts.system_program.to_account_info(),
             ctx.accounts.token_program.to_account_info(),
         ],
-        treasury_signer_seeds,
+        vault_signer_seeds,
     );
 
     Ok(())
@@ -116,20 +115,20 @@ pub struct StakePoolDepositStake<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    #[account(mut, has_one = treasury)]
+    #[account(mut)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(mut)]
-    pub treasury_stake_account: Box<Account<'info, StakeAccount>>,
+    pub vault_stake_account: Box<Account<'info, StakeAccount>>,
 
     #[account(
         init_if_needed,
         payer = signer,
         associated_token::mint = pool_mint,
-        associated_token::authority = treasury,
+        associated_token::authority = vault,
     )]
     pub mint_to: Account<'info, TokenAccount>,
 
@@ -176,15 +175,15 @@ pub struct StakePoolDepositStake<'info> {
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Stake)
 )]
 #[access_control(acl::check_stake_pool_integration(&ctx.accounts.fund, &ctx.accounts.stake_pool_program.key))]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn deposit_stake_handler<'c: 'info, 'info>(ctx: Context<StakePoolDepositStake>) -> Result<()> {
     let vec_ix = deposit_stake(
         ctx.accounts.stake_pool_program.key,
         ctx.accounts.stake_pool.key,
         ctx.accounts.validator_list.key,
         ctx.accounts.withdraw_authority.key, // stake pool withdraw authority
-        &ctx.accounts.treasury_stake_account.key(),
-        ctx.accounts.treasury.key, // stake account withdraw authority
+        &ctx.accounts.vault_stake_account.key(),
+        ctx.accounts.vault.key, // stake account withdraw authority
         &ctx.accounts.validator_stake_account.key(),
         &ctx.accounts.reserve_stake_account.key(),
         &ctx.accounts.mint_to.key(),
@@ -199,7 +198,7 @@ pub fn deposit_stake_handler<'c: 'info, 'info>(ctx: Context<StakePoolDepositStak
         ctx.accounts.validator_list.clone(),
         ctx.accounts.deposit_authority.clone(),
         ctx.accounts.withdraw_authority.clone(),
-        ctx.accounts.treasury_stake_account.to_account_info(),
+        ctx.accounts.vault_stake_account.to_account_info(),
         ctx.accounts.validator_stake_account.to_account_info(),
         ctx.accounts.reserve_stake_account.to_account_info(),
         ctx.accounts.mint_to.to_account_info(),
@@ -210,17 +209,17 @@ pub fn deposit_stake_handler<'c: 'info, 'info>(ctx: Context<StakePoolDepositStak
         ctx.accounts.stake_history.to_account_info(),
         ctx.accounts.token_program.to_account_info(),
         ctx.accounts.stake_pool_program.to_account_info(),
-        ctx.accounts.treasury.to_account_info(),
+        ctx.accounts.vault.to_account_info(),
     ];
 
     for ix in vec_ix {
-        let _ = invoke_signed(&ix, &account_infos, treasury_signer_seeds);
+        let _ = invoke_signed(&ix, &account_infos, vault_signer_seeds);
     }
 
     let fund = &mut ctx.accounts.fund;
     fund.delete_from_engine_field(
         EngineFieldName::ExternalTreasuryAccounts,
-        ctx.accounts.treasury_stake_account.key(),
+        ctx.accounts.vault_stake_account.key(),
     );
 
     Ok(())
@@ -231,11 +230,10 @@ pub struct StakePoolWithdrawSol<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    #[account(has_one = treasury)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     /// CHECK: checked by stake pool program
     #[account(mut)]
@@ -272,7 +270,7 @@ pub struct StakePoolWithdrawSol<'info> {
     acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::LiquidUnstake)
 )]
 #[access_control(acl::check_stake_pool_integration(&ctx.accounts.fund, &ctx.accounts.stake_pool_program.key))]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn withdraw_sol_handler<'c: 'info, 'info>(
     ctx: Context<StakePoolWithdrawSol>,
     pool_token_amount: u64,
@@ -281,10 +279,10 @@ pub fn withdraw_sol_handler<'c: 'info, 'info>(
         ctx.accounts.stake_pool_program.key,
         ctx.accounts.stake_pool.key,
         ctx.accounts.withdraw_authority.key,
-        ctx.accounts.treasury.key,
+        ctx.accounts.vault.key,
         &ctx.accounts.pool_token_ata.key(),
         ctx.accounts.reserve_stake.key,
-        ctx.accounts.treasury.key,
+        ctx.accounts.vault.key,
         ctx.accounts.fee_account.key,
         &ctx.accounts.pool_mint.key(),
         ctx.accounts.token_program.key,
@@ -297,7 +295,7 @@ pub fn withdraw_sol_handler<'c: 'info, 'info>(
             ctx.accounts.stake_pool_program.to_account_info(),
             ctx.accounts.stake_pool.clone(),
             ctx.accounts.withdraw_authority.clone(),
-            ctx.accounts.treasury.to_account_info(),
+            ctx.accounts.vault.to_account_info(),
             ctx.accounts.pool_token_ata.to_account_info(),
             ctx.accounts.reserve_stake.clone(),
             ctx.accounts.fee_account.clone(),
@@ -307,7 +305,7 @@ pub fn withdraw_sol_handler<'c: 'info, 'info>(
             ctx.accounts.stake_program.to_account_info(),
             ctx.accounts.token_program.to_account_info(),
         ],
-        treasury_signer_seeds,
+        vault_signer_seeds,
     );
 
     Ok(())
@@ -318,15 +316,15 @@ pub struct StakePoolWithdrawStake<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    #[account(mut, has_one = treasury)]
+    #[account(mut)]
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     /// CHECK: will be initialized in the instruction
     #[account(mut)]
-    pub treasury_stake_account: AccountInfo<'info>,
+    pub vault_stake_account: AccountInfo<'info>,
 
     #[account(mut)]
     pub pool_mint: Account<'info, Mint>,
@@ -367,7 +365,7 @@ pub struct StakePoolWithdrawStake<'info> {
 #[access_control(
     acl::check_stake_pool_integration(&ctx.accounts.fund, &ctx.accounts.stake_pool_program.key)
 )]
-#[treasury_signer_seeds]
+#[vault_signer_seeds]
 pub fn withdraw_stake_handler<'c: 'info, 'info>(
     ctx: Context<StakePoolWithdrawStake>,
     pool_token_amount: u64,
@@ -382,19 +380,15 @@ pub fn withdraw_stake_handler<'c: 'info, 'info>(
         &[stake_account_bump],
     ];
 
-    let signer_seeds = &[&stake_account_seeds[..], (*treasury_signer_seeds)[0]];
+    let signer_seeds = &[&stake_account_seeds[..], (*vault_signer_seeds)[0]];
 
     // Create stake account and leave it uninitialized
     system_program::create_account(
         CpiContext::new_with_signer(
             ctx.accounts.system_program.to_account_info(),
             system_program::CreateAccount {
-                from: ctx.accounts.treasury.to_account_info(),
-                to: ctx
-                    .accounts
-                    .treasury_stake_account
-                    .to_account_info()
-                    .clone(),
+                from: ctx.accounts.vault.to_account_info(),
+                to: ctx.accounts.vault_stake_account.to_account_info().clone(),
             },
             signer_seeds,
         ),
@@ -409,9 +403,9 @@ pub fn withdraw_stake_handler<'c: 'info, 'info>(
         ctx.accounts.validator_list.key,
         ctx.accounts.withdraw_authority.key,
         &ctx.accounts.validator_stake_account.key(),
-        ctx.accounts.treasury_stake_account.key,
-        ctx.accounts.treasury.key,
-        ctx.accounts.treasury.key,
+        ctx.accounts.vault_stake_account.key,
+        ctx.accounts.vault.key,
+        ctx.accounts.vault.key,
         &ctx.accounts.pool_token_ata.key(),
         ctx.accounts.fee_account.key,
         &ctx.accounts.pool_mint.key(),
@@ -426,9 +420,9 @@ pub fn withdraw_stake_handler<'c: 'info, 'info>(
             ctx.accounts.validator_list.clone(),
             ctx.accounts.withdraw_authority.clone(),
             ctx.accounts.validator_stake_account.to_account_info(),
-            ctx.accounts.treasury_stake_account.to_account_info(),
-            ctx.accounts.treasury.to_account_info(),
-            ctx.accounts.treasury.to_account_info(), // pool token authority
+            ctx.accounts.vault_stake_account.to_account_info(),
+            ctx.accounts.vault.to_account_info(),
+            ctx.accounts.vault.to_account_info(), // pool token authority
             ctx.accounts.pool_token_ata.to_account_info(),
             ctx.accounts.fee_account.clone(),
             ctx.accounts.pool_mint.to_account_info(),
@@ -436,14 +430,14 @@ pub fn withdraw_stake_handler<'c: 'info, 'info>(
             ctx.accounts.token_program.to_account_info(),
             ctx.accounts.stake_program.to_account_info(),
         ],
-        treasury_signer_seeds,
+        vault_signer_seeds,
     )?;
 
     // Add stake account to the fund params
     let fund = &mut ctx.accounts.fund;
     fund.add_to_engine_field(
         EngineFieldName::ExternalTreasuryAccounts,
-        ctx.accounts.treasury_stake_account.key(),
+        ctx.accounts.vault_stake_account.key(),
     );
 
     Ok(())

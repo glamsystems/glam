@@ -71,7 +71,7 @@ export default function Create() {
       };
 
       const [txId, fundPDA] = await glamClient.fund.createFund(fund);
-      const vault = glamClient.getTreasuryPDA(fundPDA).toBase58();
+      const vault = glamClient.getVaultPda(fundPDA).toBase58();
 
       // Reset form
       form.reset({

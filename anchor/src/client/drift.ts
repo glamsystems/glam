@@ -207,7 +207,7 @@ export class DriftClient {
   DRIFT_PROGRAM = new PublicKey(DRIFT_PROGRAM_ID);
 
   public getUser(fund: PublicKey, subAccountId: number = 0): PublicKey[] {
-    const treasury = this.base.getTreasuryPDA(fund);
+    const treasury = this.base.getVaultPda(fund);
     return [
       getUserAccountPublicKeySync(this.DRIFT_PROGRAM, treasury, subAccountId),
       getUserStatsAccountPublicKey(this.DRIFT_PROGRAM, treasury),
@@ -215,7 +215,7 @@ export class DriftClient {
   }
 
   async getPositions(fund: PublicKey, subAccountId: number = 0) {
-    const treasury = this.base.getTreasuryPDA(fund);
+    const treasury = this.base.getVaultPda(fund);
     const response = await fetch(
       `https://api.glam.systems/v0/drift/user?authority=${treasury.toBase58()}&accountId=${subAccountId}`,
     );
@@ -437,7 +437,7 @@ export class DriftClient {
       .driftDeposit(marketIndex, amount)
       .accountsPartial({
         fund,
-        treasuryAta: this.base.getTreasuryAta(fund, new PublicKey(mint)),
+        vaultAta: this.base.getVaultAta(fund, new PublicKey(mint)),
         driftAta: new PublicKey(vaultPDA),
         user,
         userStats,
@@ -481,7 +481,7 @@ export class DriftClient {
       .driftWithdraw(marketIndex, amount)
       .accountsPartial({
         fund,
-        treasuryAta: this.base.getTreasuryAta(fund, new PublicKey(mint)),
+        vaultAta: this.base.getVaultAta(fund, new PublicKey(mint)),
         driftAta: new PublicKey(vaultPDA),
         user,
         userStats,

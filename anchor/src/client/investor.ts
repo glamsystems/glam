@@ -87,12 +87,8 @@ export class InvestorClient {
 
     // asset token to transfer
     const assetMeta = this.base.getAssetMeta(asset.toBase58());
-    const treasury = this.base.getTreasuryPDA(fund);
-    const treasuryAta = this.base.getTreasuryAta(
-      fund,
-      asset,
-      assetMeta?.programId,
-    );
+    const vault = this.base.getVaultPda(fund);
+    const vaultAta = this.base.getVaultAta(fund, asset, assetMeta?.programId);
     const signerAssetAta = getAssociatedTokenAddressSync(
       asset,
       signer,
@@ -109,14 +105,10 @@ export class InvestorClient {
     }
     let remainingAccounts = fundModel.assets.flatMap((asset) => {
       const assetMeta = this.base.getAssetMeta(asset.toBase58());
-      const treasuryAta = this.base.getTreasuryAta(
-        fund,
-        asset,
-        assetMeta?.programId,
-      );
+      const vaultAta = this.base.getVaultAta(fund, asset, assetMeta?.programId);
 
       return [
-        { pubkey: treasuryAta, isSigner: false, isWritable: false },
+        { pubkey: vaultAta, isSigner: false, isWritable: false },
         {
           // For some LSTs we have both state and pricing accounts
           // The program should always prefer the state account
@@ -147,8 +139,8 @@ export class InvestorClient {
       ),
       createAssociatedTokenAccountIdempotentInstruction(
         signer,
-        treasuryAta,
-        treasury,
+        vaultAta,
+        vault,
         asset,
         assetMeta?.programId,
       ),
@@ -193,7 +185,7 @@ export class InvestorClient {
         fund,
         shareClass,
         asset,
-        treasuryAta,
+        vaultAta,
         signerAssetAta,
         //TODO: only add if the fund has lock-up? (just for efficiency)
         // signerAccountPolicy: null,
@@ -215,7 +207,6 @@ export class InvestorClient {
     skipState: boolean = true,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const treasury = this.base.getTreasuryPDA(fund);
     const signer = txOptions.signer || this.base.getSigner();
 
     // share class token to receive
@@ -229,11 +220,7 @@ export class InvestorClient {
     }
     let remainingAccounts = (fundModel.assets || []).flatMap((asset: any) => {
       const assetMeta = this.base.getAssetMeta(asset.toBase58());
-      const treasuryAta = this.base.getTreasuryAta(
-        fund,
-        asset,
-        assetMeta?.programId,
-      );
+      const vaultAta = this.base.getVaultAta(fund, asset, assetMeta?.programId);
       const signerAta = getAssociatedTokenAddressSync(
         asset,
         signer,
@@ -242,7 +229,7 @@ export class InvestorClient {
       );
 
       return [
-        { pubkey: treasuryAta, isSigner: false, isWritable: true },
+        { pubkey: vaultAta, isSigner: false, isWritable: true },
         {
           // For some LSTs we have both state and pricing accounts
           // The program should always prefer the state account

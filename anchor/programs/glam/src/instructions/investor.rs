@@ -8,6 +8,7 @@ use anchor_spl::token::Token;
 use anchor_spl::token_interface::{
     burn, mint_to, transfer_checked, Burn, Mint, MintTo, Token2022, TokenAccount, TransferChecked,
 };
+use glam_macros::vault_signer_seeds;
 use marinade::state::delayed_unstake_ticket::TicketAccountData;
 use pyth_solana_receiver_sdk::price_update::Price;
 use solana_program::stake::state::warmup_cooldown_rate;
@@ -29,7 +30,7 @@ pub struct Subscribe<'info> {
     pub fund: Box<Account<'info, FundAccount>>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     // the shares to mint
     #[account(
@@ -51,8 +52,8 @@ pub struct Subscribe<'info> {
 
     // the asset to transfer in exchange for shares
     pub asset: Box<InterfaceAccount<'info, Mint>>,
-    #[account(mut, constraint = treasury_ata.mint == asset.key())]
-    pub treasury_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    #[account(mut, constraint = vault_ata.mint == asset.key())]
+    pub vault_ata: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(mut, constraint = signer_asset_ata.mint == asset.key())]
     pub signer_asset_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
@@ -91,12 +92,12 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     let fund = &ctx.accounts.fund;
     require!(fund.is_enabled(), FundError::FundNotActive);
 
-    let external_treasury_accounts =
+    let external_vault_accounts =
         fund.get_pubkeys_from_engine_field(EngineFieldName::ExternalTreasuryAccounts);
 
-    // If system program is in the external treasury accounts, it means that
+    // If system program is in the external vault accounts, it means that
     // the fund is disabled for subscription and redemption.
-    if external_treasury_accounts.contains(&system_program::ID) {
+    if external_vault_accounts.contains(&system_program::ID) {
         return err!(InvestorError::SubscribeRedeemDisable);
     }
 
@@ -176,8 +177,8 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         Action::Subscribe,
         fund_assets,
         ctx.remaining_accounts,
-        &ctx.accounts.treasury,
-        &external_treasury_accounts,
+        &ctx.accounts.vault,
+        &external_vault_accounts,
         &ctx.accounts.signer,
         &ctx.accounts.token_program,
         &ctx.accounts.token_2022_program,
@@ -230,7 +231,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         log_decimal(amount_shares, share_expo)
     );
 
-    // transfer asset from user to treasury
+    // transfer asset from user to vault
     // note: we detect the token program to use from the asset
     let asset_info = ctx.accounts.asset.to_account_info();
     let asset_program = if *asset_info.owner == Token2022::id() {
@@ -244,7 +245,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
             TransferChecked {
                 from: ctx.accounts.signer_asset_ata.to_account_info(),
                 mint: asset_info,
-                to: ctx.accounts.treasury_ata.to_account_info(),
+                to: ctx.accounts.vault_ata.to_account_info(),
                 authority: ctx.accounts.signer.to_account_info(),
             },
         ),
@@ -285,6 +286,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
 
 #[derive(Accounts)]
 pub struct Redeem<'info> {
+    // fund.share_class[0] == ctx.accounts.share_class, checked in handler logic
     pub fund: Account<'info, FundAccount>,
 
     // the shares to burn
@@ -298,7 +300,7 @@ pub struct Redeem<'info> {
     pub signer: Signer<'info>,
 
     #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
-    pub treasury: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>,
 
     #[account(
         mut,
@@ -316,6 +318,7 @@ pub struct Redeem<'info> {
     pub token_2022_program: Program<'info, Token2022>,
 }
 
+#[vault_signer_seeds]
 pub fn redeem_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, Redeem<'info>>,
     amount: u64,
@@ -325,12 +328,12 @@ pub fn redeem_handler<'c: 'info, 'info>(
     let fund = &ctx.accounts.fund;
     require!(fund.is_enabled(), FundError::FundNotActive);
 
-    let external_treasury_accounts =
+    let external_vault_accounts =
         fund.get_pubkeys_from_engine_field(EngineFieldName::ExternalTreasuryAccounts);
 
-    // If system program is in the external treasury accounts, it means that
+    // If system program is in the external vault accounts, it means that
     // the fund is disabled for subscription and redemption.
-    if external_treasury_accounts.contains(&system_program::ID) {
+    if external_vault_accounts.contains(&system_program::ID) {
         return err!(InvestorError::SubscribeRedeemDisable);
     }
 
@@ -343,14 +346,6 @@ pub fn redeem_handler<'c: 'info, 'info>(
         fund.share_classes[0] == ctx.accounts.share_class.key(),
         InvestorError::InvalidShareClass
     );
-
-    let fund_key = ctx.accounts.fund.key();
-    let seeds = &[
-        "treasury".as_bytes(),
-        fund_key.as_ref(),
-        &[ctx.bumps.treasury],
-    ];
-    let signer_seeds = &[&seeds[..]];
 
     // Lock-up
     let mut close_signer_policy = false;
@@ -409,8 +404,8 @@ pub fn redeem_handler<'c: 'info, 'info>(
         Action::Redeem,
         assets,
         ctx.remaining_accounts,
-        &ctx.accounts.treasury,
-        &external_treasury_accounts,
+        &ctx.accounts.vault,
+        &external_vault_accounts,
         &ctx.accounts.signer,
         &ctx.accounts.token_program,
         &ctx.accounts.token_2022_program,
@@ -449,8 +444,8 @@ pub fn redeem_handler<'c: 'info, 'info>(
             let asset = att.asset.clone().unwrap();
 
             let amount_asset = if should_transfer_everything {
-                if let Some(treasury_ata) = &att.treasury_ata {
-                    treasury_ata.amount
+                if let Some(vault_ata) = &att.vault_ata {
+                    vault_ata.amount
                 } else {
                     0
                 }
@@ -492,7 +487,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
                 continue;
             }
 
-            // transfer asset from treasury to user
+            // transfer asset from vault to user
             // note: we detect the token program to use from the asset
             let asset_info = asset.to_account_info();
             let asset_program = if *asset_info.owner == Token2022::id() {
@@ -503,28 +498,28 @@ pub fn redeem_handler<'c: 'info, 'info>(
 
             #[cfg(not(feature = "mainnet"))]
             msg!(
-                "Transfer {} (decimals {}) {} from treasury to user",
+                "Transfer {} (decimals {}) {} from vault to user",
                 amount_asset,
                 asset.decimals,
                 asset_info.key()
             );
             require!(
-                !att.treasury_ata.is_none(),
+                !att.vault_ata.is_none(),
                 InvestorError::InvalidTreasuryAccount
             );
 
             let signer_asset_ata = att.signer_asset_ata.clone().unwrap();
-            let treasury_ata: InterfaceAccount<TokenAccount> = att.treasury_ata.clone().unwrap();
+            let vault_ata: InterfaceAccount<TokenAccount> = att.vault_ata.clone().unwrap();
             transfer_checked(
                 CpiContext::new_with_signer(
                     asset_program,
                     TransferChecked {
-                        from: treasury_ata.to_account_info(),
+                        from: vault_ata.to_account_info(),
                         mint: asset_info,
                         to: signer_asset_ata.to_account_info(),
-                        authority: ctx.accounts.treasury.to_account_info(),
+                        authority: ctx.accounts.vault.to_account_info(),
                     },
-                    signer_seeds,
+                    vault_signer_seeds,
                 ),
                 amount_asset,
                 asset.decimals,
@@ -532,16 +527,16 @@ pub fn redeem_handler<'c: 'info, 'info>(
         }
 
         if should_transfer_everything {
-            let lamports = ctx.accounts.treasury.lamports();
+            let lamports = ctx.accounts.vault.lamports();
             if lamports > 0 {
                 system_program::transfer(
                     CpiContext::new_with_signer(
                         ctx.accounts.system_program.to_account_info(),
                         system_program::Transfer {
-                            from: ctx.accounts.treasury.to_account_info(),
+                            from: ctx.accounts.vault.to_account_info(),
                             to: ctx.accounts.signer.to_account_info(),
                         },
-                        signer_seeds,
+                        vault_signer_seeds,
                     ),
                     lamports,
                 )?;
@@ -569,7 +564,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
 
 #[derive(Debug)]
 pub struct AumComponent<'info> {
-    pub treasury_ata: Option<InterfaceAccount<'info, TokenAccount>>,
+    pub vault_ata: Option<InterfaceAccount<'info, TokenAccount>>,
     pub signer_asset_ata: Option<InterfaceAccount<'info, TokenAccount>>,
     pub asset: Option<InterfaceAccount<'info, Mint>>,
     pub asset_amount: u64,
@@ -582,8 +577,8 @@ pub fn get_aum_components<'info>(
     action: Action,
     assets: &[Pubkey],
     remaining_accounts: &'info [AccountInfo<'info>],
-    treasury: &SystemAccount<'info>,
-    external_treasury_accounts: &[Pubkey],
+    vault: &SystemAccount<'info>,
+    external_vault_accounts: &[Pubkey],
     signer: &Signer<'info>,
     token_program: &Program<'info, Token>,
     token_2022_program: &Program<'info, Token2022>,
@@ -597,13 +592,13 @@ pub fn get_aum_components<'info>(
         split_remaining_accounts(remaining_accounts)?;
 
     require!(
-        stake_accounts.len() + marinade_tickets.len() == external_treasury_accounts.len(),
+        stake_accounts.len() + marinade_tickets.len() == external_vault_accounts.len(),
         InvestorError::InvalidRemainingAccounts
     );
 
     for account in stake_accounts.iter().chain(marinade_tickets.iter()) {
         require!(
-            external_treasury_accounts.contains(&account.key()),
+            external_vault_accounts.contains(&account.key()),
             InvestorError::InvalidRemainingAccounts
         );
     }
@@ -646,23 +641,19 @@ pub fn get_aum_components<'info>(
             }
         }
 
-        // Parse treasury account
-        let treasury_ata_account = &accounts[0];
+        // Parse vault token account
+        let vault_ata = &accounts[0];
         let cur_token_program_key = if cur_asset_meta.is_token_2022 {
             token_2022_program.key()
         } else {
             token_program.key()
         };
-        let expected_treasury_ata = get_associated_token_address_with_program_id(
-            &treasury.key(),
+        let expected_vault_ata = get_associated_token_address_with_program_id(
+            &vault.key(),
             &cur_asset,
             &cur_token_program_key,
         );
-        require_eq!(
-            treasury_ata_account.key(),
-            expected_treasury_ata,
-            // InvestorError::InvalidTreasuryAccount
-        );
+        require_keys_eq!(vault_ata.key(), expected_vault_ata);
 
         // Parse pricing account
         let pricing_account = &accounts[1];
@@ -709,28 +700,28 @@ pub fn get_aum_components<'info>(
             (None, None)
         };
 
-        // Calculate asset_amount in treasury
-        // Deser treasury_ata, if it fails (account doesn't exist) then amount=0
-        let maybe_treasury_ata = InterfaceAccount::<TokenAccount>::try_from(treasury_ata_account);
-        let mut asset_amount = if let Ok(treasury_ata) = &maybe_treasury_ata {
+        // Calculate asset_amount in vault
+        // Deser vault_ata, if it fails (account doesn't exist) then amount=0
+        let maybe_vault_ata = InterfaceAccount::<TokenAccount>::try_from(vault_ata);
+        let mut asset_amount = if let Ok(vault_ata) = &maybe_vault_ata {
             require!(
-                treasury_ata.mint == cur_asset,
+                vault_ata.mint == cur_asset,
                 InvestorError::InvalidTreasuryAccount
             );
             require!(
-                treasury_ata.owner == treasury.key(),
+                vault_ata.owner == vault.key(),
                 InvestorError::InvalidTreasuryAccount
             );
-            treasury_ata.amount
+            vault_ata.amount
         } else {
             0
         };
         if is_wsol {
-            asset_amount += treasury.lamports();
+            asset_amount += vault.lamports();
         }
 
-        let treasury_ata = if asset_amount > 0 {
-            Some(maybe_treasury_ata?)
+        let vault_ata = if asset_amount > 0 {
+            Some(maybe_vault_ata?)
         } else {
             None
         };
@@ -768,7 +759,7 @@ pub fn get_aum_components<'info>(
             .unwrap();
 
         aum_components.push(AumComponent {
-            treasury_ata,
+            vault_ata,
             signer_asset_ata,
             asset,
             asset_amount,
@@ -783,7 +774,7 @@ pub fn get_aum_components<'info>(
      * External lamports will be added to the wsol aum_component.
      */
     if let Some(wsol_component) = aum_components.iter_mut().find(|aum| {
-        !aum.treasury_ata.is_none() && aum.treasury_ata.as_ref().unwrap().mint == constants::WSOL
+        !aum.vault_ata.is_none() && aum.vault_ata.as_ref().unwrap().mint == constants::WSOL
     }) {
         msg!("wsol aum_component={:?}", wsol_component);
 

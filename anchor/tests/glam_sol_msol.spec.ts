@@ -14,6 +14,7 @@ import {
   quoteResponseForTest,
   swapInstructionsForTest,
   sleep,
+  airdrop,
 } from "./setup";
 import { FundModel, GlamClient, MSOL, WSOL } from "../src";
 
@@ -44,7 +45,7 @@ describe("glam_sol_msol", () => {
   } as Partial<FundModel>;
 
   const fundPDA = glamClient.getFundPDA(testFund);
-  const treasuryPDA = glamClient.getTreasuryPDA(fundPDA);
+  const vaultPda = glamClient.getVaultPda(fundPDA);
   const sharePDA = glamClient.getShareClassPDA(fundPDA, 0);
 
   const connection = glamClient.provider.connection;
@@ -224,7 +225,7 @@ describe("glam_sol_msol", () => {
        The fund has 6 SOL for 4 shares (share price is 1.5 SOL).
        With 3 SOL, Alice gets 2 shares.
        The fund has 9 SOL for 6 shares. */
-    const airdrop = await connection.requestAirdrop(treasuryPDA, 2_000_000_000);
+    const airdrop = await connection.requestAirdrop(vaultPda, 2_000_000_000);
     await connection.confirmTransaction(airdrop);
 
     const amount = new BN(3_000_000_000);
@@ -262,8 +263,7 @@ describe("glam_sol_msol", () => {
        The fund has 12 SOL for 6 shares (share price is 2 SOL).
        With 1 share, Alice gets 2 SOL.
        The fund has 10 SOL for 5 shares. */
-    const airdrop = await connection.requestAirdrop(treasuryPDA, 3_000_000_000);
-    await connection.confirmTransaction(airdrop);
+    await airdrop(connection, vaultPda, 3_000_000_000);
 
     const amount = new BN(1_000_000_000);
     try {

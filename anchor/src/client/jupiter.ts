@@ -113,13 +113,13 @@ export class JupiterClient {
     amount: BN,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const treasury = this.base.getTreasuryPDA(fund);
+    const vault = this.base.getVaultPda(fund);
     const [escrow] = PublicKey.findProgramAddressSync(
-      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), treasury.toBuffer()],
+      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), vault.toBuffer()],
       JUP_VOTE_PROGRAM,
     );
     const escrowJupAta = getAssociatedTokenAddressSync(JUP, escrow, true);
-    const treasuryJupAta = getAssociatedTokenAddressSync(JUP, treasury, true);
+    const vaultJupAta = getAssociatedTokenAddressSync(JUP, vault, true);
 
     const escrowAccountInfo =
       await this.base.provider.connection.getAccountInfo(escrow);
@@ -155,7 +155,7 @@ export class JupiterClient {
         locker: JUP_STAKE_LOCKER,
         escrow,
         escrowJupAta,
-        treasuryJupAta,
+        vaultJupAta,
       })
       .preInstructions(preInstructions)
       .rpc();
@@ -178,9 +178,9 @@ export class JupiterClient {
     side: number,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const treasury = this.base.getTreasuryPDA(fund);
+    const vault = this.base.getVaultPda(fund);
     const [vote] = PublicKey.findProgramAddressSync(
-      [Buffer.from("Vote"), proposal.toBuffer(), treasury.toBuffer()],
+      [Buffer.from("Vote"), proposal.toBuffer(), vault.toBuffer()],
       GOVERNANCE_PROGRAM_ID,
     );
 
@@ -204,7 +204,7 @@ export class JupiterClient {
     }
 
     const [escrow] = PublicKey.findProgramAddressSync(
-      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), treasury.toBuffer()],
+      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), vault.toBuffer()],
       JUP_VOTE_PROGRAM,
     );
     return await this.base.program.methods
@@ -293,13 +293,13 @@ export class JupiterClient {
       .accountsPartial({
         fund,
         signer,
-        treasury: this.base.getTreasuryPDA(fund),
-        inputTreasuryAta: this.base.getTreasuryAta(
+        vault: this.base.getVaultPda(fund),
+        inputVaultAta: this.base.getVaultAta(
           fund,
           inputMint,
           inputTokenProgram,
         ),
-        outputTreasuryAta: this.base.getTreasuryAta(
+        outputVaultAta: this.base.getVaultAta(
           fund,
           outputMint,
           outputTokenProgram,
@@ -361,8 +361,8 @@ export class JupiterClient {
       },
       {
         payer: manager,
-        ata: this.base.getTreasuryAta(fund, outputMint, outputTokenProgram),
-        owner: this.base.getTreasuryPDA(fund),
+        ata: this.base.getVaultAta(fund, outputMint, outputTokenProgram),
+        owner: this.base.getVaultPda(fund),
         mint: outputMint,
         tokenProgram: outputTokenProgram,
       },
@@ -385,18 +385,18 @@ export class JupiterClient {
       );
     }
 
-    // Transfer SOL to WSOL ATA if needed for the treasury
+    // Transfer SOL to wSOL ATA if needed for the vault
     if (
       inputMint.toBase58() === "So11111111111111111111111111111111111111112"
     ) {
       let wsolBalance: BN;
-      const treasuryPda = this.base.getTreasuryPDA(fund);
-      const treasuryWsolAta = this.base.getTreasuryAta(fund, inputMint);
+      const vaultPda = this.base.getVaultPda(fund);
+      const vaultWsolAta = this.base.getVaultAta(fund, inputMint);
       try {
         wsolBalance = new BN(
           (
             await this.base.provider.connection.getTokenAccountBalance(
-              treasuryWsolAta,
+              vaultWsolAta,
             )
           ).value.amount,
         );
@@ -404,24 +404,23 @@ export class JupiterClient {
         wsolBalance = new BN(0);
       }
       const solBalance = new BN(
-        await this.base.provider.connection.getBalance(treasuryPda),
+        await this.base.provider.connection.getBalance(vaultPda),
       );
       const delta = amount.sub(wsolBalance);
 
       if (solBalance.lt(delta)) {
         throw new Error(
-          `Insufficient balance in treasury (${treasuryPda.toBase58()}) for swap. solBalance: ${solBalance}, lamports needed: ${delta}`,
+          `Insufficient balance in treasury (${vaultPda.toBase58()}) for swap. solBalance: ${solBalance}, lamports needed: ${delta}`,
         );
       }
       if (delta.gt(new BN(0)) && solBalance.gt(delta)) {
         preInstructions.push(
           await this.base.program.methods
             .wsolWrap(delta)
-            .accounts({
+            .accountsPartial({
               fund,
-              //@ts-ignore IDL ts type is unhappy
-              treasury: treasuryPda,
-              treasuryWsolAta,
+              vault: vaultPda,
+              vaultWsolAta,
               wsolMint: inputMint,
               signer: manager,
             })
