@@ -8,7 +8,7 @@ export type Glam = {
   "address": "GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP",
   "metadata": {
     "name": "glam",
-    "version": "0.3.9",
+    "version": "0.3.10",
     "spec": "0.1.0",
     "description": "Glam Protocol"
   },
@@ -5870,33 +5870,13 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "closeNotEmptyError",
-      "msg": "Error closing account: not empty"
+      "name": "invalidAssetForSwap",
+      "msg": "Asset cannot be swapped"
     },
     {
       "code": 6001,
-      "name": "invalidFundName",
-      "msg": "Invalid fund name: max 50 chars"
-    },
-    {
-      "code": 6002,
-      "name": "invalidFundSymbol",
-      "msg": "Too many assets: max 50"
-    },
-    {
-      "code": 6003,
-      "name": "invalidFundUri",
-      "msg": "Too many assets: max 20"
-    },
-    {
-      "code": 6004,
-      "name": "invalidAssetsLen",
-      "msg": "Too many assets: max 100"
-    },
-    {
-      "code": 6005,
-      "name": "invalidAssetsWeights",
-      "msg": "Number of weights should match number of assets"
+      "name": "invalidSwap",
+      "msg": "Swap failed"
     }
   ],
   "types": [
