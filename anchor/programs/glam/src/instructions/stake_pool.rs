@@ -14,8 +14,8 @@ use spl_stake_pool::{
     ID as SPL_STAKE_POOL_PROGRAM_ID,
 };
 
-pub struct StakePoolInterface;
-impl anchor_lang::Ids for StakePoolInterface {
+pub struct StakePoolProgramInterface;
+impl anchor_lang::Ids for StakePoolProgramInterface {
     fn ids() -> &'static [Pubkey] {
         &[
             SANCTUM_SINGLE_VALIDATOR,
@@ -63,7 +63,7 @@ pub struct StakePoolDepositSol<'info> {
     )]
     pub mint_to: Account<'info, TokenAccount>,
 
-    pub stake_pool_program: Interface<'info, StakePoolInterface>,
+    pub stake_pool_program: Interface<'info, StakePoolProgramInterface>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
     pub token_program: Interface<'info, TokenInterface>,
@@ -165,7 +165,7 @@ pub struct StakePoolDepositStake<'info> {
     pub clock: Sysvar<'info, Clock>,
     pub stake_history: Sysvar<'info, StakeHistory>,
 
-    pub stake_pool_program: Interface<'info, StakePoolInterface>,
+    pub stake_pool_program: Interface<'info, StakePoolProgramInterface>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
     pub token_program: Interface<'info, TokenInterface>,
@@ -262,7 +262,7 @@ pub struct StakePoolWithdrawSol<'info> {
     pub clock: Sysvar<'info, Clock>,
     pub stake_history: Sysvar<'info, StakeHistory>,
 
-    pub stake_pool_program: Interface<'info, StakePoolInterface>,
+    pub stake_pool_program: Interface<'info, StakePoolProgramInterface>,
     pub system_program: Program<'info, System>,
     pub token_program: Interface<'info, TokenInterface>,
     pub stake_program: Program<'info, Stake>,
@@ -355,7 +355,7 @@ pub struct StakePoolWithdrawStake<'info> {
 
     pub clock: Sysvar<'info, Clock>,
 
-    pub stake_pool_program: Interface<'info, StakePoolInterface>,
+    pub stake_pool_program: Interface<'info, StakePoolProgramInterface>,
     pub system_program: Program<'info, System>,
     pub token_program: Interface<'info, TokenInterface>,
     pub stake_program: Program<'info, Stake>,

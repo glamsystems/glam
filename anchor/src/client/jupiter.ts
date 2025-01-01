@@ -22,6 +22,7 @@ import {
   JUP_VOTE_PROGRAM,
   JUPITER_PROGRAM_ID,
 } from "../constants";
+import { ASSETS_MAINNET } from "./assets";
 
 export type QuoteParams = {
   inputMint: string;
@@ -272,6 +273,11 @@ export class JupiterClient {
     const inputTokenProgram = await this.getTokenProgram(inputMint);
     const outputTokenProgram = await this.getTokenProgram(outputMint);
 
+    const inputStakePool =
+      ASSETS_MAINNET.get(inputMint.toBase58())?.stateAccount || null;
+    const outputStakePool =
+      ASSETS_MAINNET.get(outputMint.toBase58())?.stateAccount || null;
+
     const preInstructions = await this.getPreInstructions(
       fund,
       signer,
@@ -284,9 +290,9 @@ export class JupiterClient {
     // @ts-ignore
     const tx = await this.base.program.methods
       .jupiterSwap(amount, swapIx.data)
-      .accounts({
+      .accountsPartial({
         fund,
-        //@ts-ignore IDL ts type is unhappy
+        signer,
         treasury: this.base.getTreasuryPDA(fund),
         inputTreasuryAta: this.base.getTreasuryAta(
           fund,
@@ -306,10 +312,11 @@ export class JupiterClient {
         ),
         inputMint,
         outputMint,
-        signer,
-        jupiterProgram: JUPITER_PROGRAM_ID,
         inputTokenProgram,
         outputTokenProgram,
+        inputStakePool,
+        outputStakePool,
+        jupiterProgram: JUPITER_PROGRAM_ID,
       })
       .remainingAccounts(swapIx.keys)
       .preInstructions(preInstructions)

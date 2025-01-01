@@ -8,6 +8,8 @@ import {
   ShareClassOpenfundsModel,
   FundOpenfundsModel,
 } from "../src";
+import { Connection } from "@solana/web3.js";
+import { BN } from "@coral-xyz/anchor";
 
 export const sleep = async (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
@@ -18,6 +20,15 @@ export const str2seed = (str: String) =>
       .map((letter) => letter.charCodeAt(0))
       .concat(new Array(32 - str.length).fill(0)),
   );
+
+export const airdrop = async (
+  connection: Connection,
+  pubkey: PublicKey,
+  lamports: number,
+) => {
+  const airdropTx = await connection.requestAirdrop(pubkey, lamports);
+  await connection.confirmTransaction(airdropTx);
+};
 
 export const testFundModel = {
   shareClasses: [
