@@ -53,7 +53,7 @@ import { ExplorerLink } from "@/components/ExplorerLink";
 import { parseTxError } from "@/lib/error";
 import { PublicKey } from "@solana/web3.js";
 import { KeyData } from "./columns";
-import { useKeyLabels } from "@/hooks/useKeyLabels";
+import { usePubkeyLabels } from "@/hooks/usePubkeyLabels";
 
 interface DataTableProps<TData extends KeyData> {
   columns: ColumnDef<TData>[];
@@ -112,7 +112,7 @@ export function DataTable<TData extends KeyData>({
 
   const [isExpanded, setIsExpanded] = useState(true);
   const [treeData, setTreeData] = useState<TreeNodeData>(treeDataPermissions);
-  const { updateLabel } = useKeyLabels();
+  const { updateLabel } = usePubkeyLabels();
   const [labelInput, setLabelInput] = useState("");
 
   const toggleExpandCollapse = () => {

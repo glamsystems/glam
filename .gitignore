@@ -42,6 +42,7 @@ Thumbs.db
 anchor/target/deploy
 anchor/target/debug
 anchor/target/release
+anchor/target/verifiable
 anchor/target/sbf-solana-solana
 anchor/target/.rustc_info.json
 !anchor/target/idl/*.json

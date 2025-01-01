@@ -228,7 +228,10 @@ export function GlamProvider({
       setFundsList(fundList);
       if (
         !activeFund ||
-        !fundList.find((f) => f.pubkey.equals(activeFund.pubkey))
+        !fundList.find(
+          (f) =>
+            f.pubkey && activeFund.pubkey && f.pubkey.equals(activeFund.pubkey),
+        )
       ) {
         setActiveFund(fundList[0]);
       }

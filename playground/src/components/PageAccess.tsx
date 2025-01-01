@@ -2,10 +2,10 @@
 
 import { DataTable } from "./access/data-table";
 import { columns } from "./access/columns";
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";
-import { useKeyLabels } from "@/hooks/useKeyLabels";
+import { usePubkeyLabels } from "@/hooks/usePubkeyLabels";
 
 export default function PageAccess({
   perms,
@@ -13,12 +13,12 @@ export default function PageAccess({
   perms: "vault" | "mint" | "all";
 }) {
   const { allFunds, activeFund } = useGlam();
-  const { getLabel } = useKeyLabels();
+  const { getLabel } = usePubkeyLabels();
 
   const fundId = activeFund?.address;
   const fund = (allFunds || []).find((f) => f.idStr === fundId);
 
-  const getData = useCallback(() => {
+  const data = useMemo(() => {
     if (!fund) return [];
 
     return (fund.delegateAcls || []).map((acl: any) => {
@@ -30,8 +30,6 @@ export default function PageAccess({
       };
     });
   }, [fund, getLabel]);
-
-  const data = getData();
 
   const handleSuccess = useCallback(() => {
     // Force a re-render when a key is modified

@@ -5,6 +5,7 @@ on:
     branches:
       - main
     paths:
+      - "anchor/**"
       - "cli/**"
 
   workflow_dispatch:
