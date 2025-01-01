@@ -32,6 +32,7 @@ pub enum Permission {
     StakeJup,       // Initialize locked voter escrow and stake JUP
     VoteOnProposal, // New vote and cast vote
     UnstakeJup,     // Unstake JUP
+    JupiterSwapLst, // Swap LSTs
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
@@ -71,6 +72,7 @@ pub fn check_access(fund: &FundAccount, signer: &Pubkey, permission: Permission)
         return Ok(());
     }
 
+    #[cfg(not(feature = "mainnet"))]
     msg!(
         "Checking signer {:?} has permission {:?}",
         signer,
@@ -96,6 +98,7 @@ pub fn check_access_any(
         return Ok(());
     }
 
+    #[cfg(not(feature = "mainnet"))]
     msg!(
         "Checking signer {:?} has any of {:?}",
         signer,
@@ -104,10 +107,13 @@ pub fn check_access_any(
 
     if let Some(acls) = fund.delegate_acls() {
         for acl in acls {
-            for permission in &allowed_permissions {
-                if acl.pubkey == *signer && acl.permissions.contains(permission) {
-                    return Ok(());
-                }
+            if acl.pubkey == *signer
+                && acl
+                    .permissions
+                    .iter()
+                    .any(|p| allowed_permissions.contains(p))
+            {
+                return Ok(());
             }
         }
     }
@@ -116,11 +122,7 @@ pub fn check_access_any(
 
 pub fn check_integration(fund: &FundAccount, integration: IntegrationName) -> Result<()> {
     #[cfg(not(feature = "mainnet"))]
-    msg!(
-        "Checking integration {:?} is enabled for fund {:?}",
-        integration,
-        fund.name
-    );
+    msg!("Checking integration {:?} is enabled", integration);
 
     if let Some(acls) = fund.integration_acls() {
         for acl in acls {

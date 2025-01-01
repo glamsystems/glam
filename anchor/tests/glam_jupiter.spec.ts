@@ -1,4 +1,5 @@
 import {
+  airdrop,
   createFundForTest,
   quoteResponseForTest,
   str2seed,
@@ -8,6 +9,7 @@ import {
 import {
   FundModel,
   GlamClient,
+  JITOSOL,
   JUP_STAKE_LOCKER,
   JUP_VOTE_PROGRAM,
 } from "../src";
@@ -78,7 +80,6 @@ describe("glam_jupiter", () => {
     // Swap
     const amount = 50_000_000;
     try {
-      const txId0 = await glamClient.wsol.wrap(fundPDA, new BN(amount));
       const txId = await glamClient.jupiter.swap(
         fundPDA,
         undefined,
@@ -123,7 +124,7 @@ describe("glam_jupiter", () => {
     expect(treasuryMsol.amount.toString()).toEqual("41795954");
   }, 15_000);
 
-  it("Swap access control", async () => {
+  it("Swap access control #1", async () => {
     // set up a test signer and airdrop 0.1 SOL
     const testSigner = Keypair.fromSeed(str2seed("test_signer"));
     const airdrop = await glamClient.provider.connection.requestAirdrop(
@@ -135,12 +136,13 @@ describe("glam_jupiter", () => {
     // grant delegate permissions
     // testSigner is only allowed to swap fund assets
     try {
-      await glamClient.fund.upsertDelegateAcls(fundPDA, [
+      const txId = await glamClient.fund.upsertDelegateAcls(fundPDA, [
         {
           pubkey: testSigner.publicKey,
           permissions: [{ jupiterSwapFundAssets: {} }, { wSolWrap: {} }],
         },
       ]);
+      console.log("Update delegate acl txId", txId);
     } catch (e) {
       console.error(e);
       throw e;
@@ -164,64 +166,60 @@ describe("glam_jupiter", () => {
     fundModel = await glamClient.fetchFund(fundPDA);
     expect(fundModel.assets).toEqual([WSOL]);
 
-    // 1st attempt, should fail due to InvalidAssetForSwap because MSOL is not in
-    // asset allowlist, and testSigner doesn't have permission to swap any asset
+    const quoteParams = {
+      inputMint: WSOL.toBase58(),
+      outputMint: MSOL.toBase58(),
+      amount: 50_000_000,
+      swapMode: "ExactIn",
+      onlyDirectRoutes: true,
+      maxAccounts: 8,
+    };
+    // 1st attempt, should fail because MSOL is not in assets allowlist,
+    // and testSigner doesn't have swapAny or swapLst permission
     try {
-      const tx = await glamClient.jupiter.swapTx(
+      const delegateSwapTx = await glamClient.jupiter.swapTx(
         fundPDA,
-        {
-          inputMint: WSOL.toBase58(),
-          outputMint: MSOL.toBase58(),
-          amount: 50_000_000,
-          swapMode: "ExactIn",
-          onlyDirectRoutes: true,
-          maxAccounts: 8,
-        },
+        quoteParams,
         undefined,
         undefined,
         { signer: testSigner.publicKey },
       );
-      const txSig = await glamClient.sendAndConfirm(tx, testSigner);
+      const txSig = await glamClient.sendAndConfirm(delegateSwapTx, testSigner);
       expect(txSig).toBeUndefined();
     } catch (e) {
+      console.log(e);
       const expectedError = e.programLogs.some((log) =>
-        log.includes("Asset cannot be swapped"),
+        log.includes("Signer is not authorized"),
       );
       expect(expectedError).toBeTruthy();
     }
 
-    // allow testSigner to swap any assets
+    // allow testSigner to swap LST
     try {
       const txSig = await glamClient.fund.upsertDelegateAcls(fundPDA, [
         {
           pubkey: testSigner.publicKey,
-          permissions: [{ jupiterSwapAnyAsset: {} }, { wSolWrap: {} }],
+          permissions: [{ jupiterSwapLst: {} }, { wSolWrap: {} }],
         },
       ]);
+      console.log("Grant delegate jupiterSwapAnyAsset permission:", txSig);
     } catch (e) {
       console.error(e);
       throw e;
     }
 
-    // 2nd attempt, should pass since testSigner is now allowed to swap any asset
+    // 2nd attempt, should pass since testSigner is now allowed to swap LST
     // and asset list should be updated accordingly to include MSOL
     try {
-      const tx = await glamClient.jupiter.swapTx(
+      const delegateSwapTx = await glamClient.jupiter.swapTx(
         fundPDA,
-        {
-          inputMint: WSOL.toBase58(),
-          outputMint: MSOL.toBase58(),
-          amount: 50_000_000,
-          swapMode: "ExactIn",
-          onlyDirectRoutes: true,
-          maxAccounts: 8,
-        },
+        quoteParams,
         undefined,
         undefined,
         { signer: testSigner.publicKey },
       );
-      console.log("2nd attempt swap");
-      await glamClient.sendAndConfirm(tx, testSigner);
+      const txSig = await glamClient.sendAndConfirm(delegateSwapTx, testSigner);
+      console.log("2nd attempt swap:", txSig);
     } catch (e) {
       console.error(e);
       throw e;
@@ -453,9 +451,8 @@ describe("glam_jupiter", () => {
         asLegacyTransaction: false,
         maxAccounts: 18,
       });
-      console.log("swap txId", txIdSwap);
+      expect(txIdSwap).toBeUndefined();
     } catch (e) {
-      // make sure program has reached jupiter
       expect(e.programLogs).toContain(
         "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]",
       );
@@ -500,9 +497,9 @@ describe("glam_jupiter", () => {
         quoteResponse,
         swapInstructions,
       );
-      console.log("swap txId", txIdSwap);
+      expect(txIdSwap).toBeUndefined();
     } catch (e) {
-      // make sure program has reached jupiter
+      console.error(e.programLogs);
       expect(e.programLogs).toContain(
         "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]",
       );

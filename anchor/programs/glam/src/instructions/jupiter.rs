@@ -22,12 +22,15 @@ use jup_locked_voter::cpi::{
 use jup_locked_voter::program::LockedVoter;
 use jup_locked_voter::state::{Escrow, Locker, PartialUnstaking as PartialUnstakeAccount};
 
+use crate::error::SwapError;
+use crate::instructions::stake_pool::StakePoolProgramInterface;
+use crate::{constants::*, state::*};
+
 use jup_governance::cpi::{accounts::NewVote as JupNewVote, new_vote as jup_new_vote};
 use jup_governance::program::Govern;
 use jup_governance::state::{Governor, Proposal, Vote};
 
-use crate::error::ManagerError;
-use crate::state::*;
+use anchor_lang::Ids;
 
 #[derive(Clone)]
 pub struct Jupiter;
@@ -74,6 +77,11 @@ pub struct JupiterSwap<'info> {
 
     #[account(mut)]
     pub signer: Signer<'info>,
+
+    /// CHECK: manually check in handler
+    pub input_stake_pool: Option<AccountInfo<'info>>,
+    /// CHECK: manually check in handler
+    pub output_stake_pool: Option<AccountInfo<'info>>,
 
     // programs
     pub system_program: Program<'info, System>,
@@ -150,13 +158,33 @@ fn parse_shared_accounts_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
     (res, 6)
 }
 
-#[access_control(
-    acl::check_access_any(
-        &ctx.accounts.fund,
-        &ctx.accounts.signer.key,
-        vec![Permission::JupiterSwapFundAssets, Permission::JupiterSwapAnyAsset]
-    )
-)]
+fn is_lst<'info>(mint: &Pubkey, stake_pool_account: Option<&AccountInfo<'info>>) -> Result<bool> {
+    // Check if the mint is MSOL
+    if mint == &MSOL {
+        return Ok(true);
+    }
+
+    // Return false if no stake pool account is provided
+    let stake_pool_account = match stake_pool_account {
+        Some(account) => account,
+        None => return Ok(false),
+    };
+
+    // Check if the stake pool account owner is valid
+    if !StakePoolProgramInterface::ids().contains(stake_pool_account.owner) {
+        return Ok(false);
+    }
+
+    // Validate pool mint matches the provided mint
+    let buf = stake_pool_account.try_borrow_data()?;
+    let pool_mint_bytes = &buf[POOL_MINT_OFFSET..POOL_MINT_OFFSET + 32];
+    let pool_mint =
+        Pubkey::try_from(pool_mint_bytes).map_err(|_| SwapError::InvalidAssetForSwap)?;
+    require_keys_eq!(pool_mint, *mint, SwapError::InvalidAssetForSwap);
+
+    Ok(true)
+}
+
 #[access_control(
     acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterSwap)
 )]
@@ -166,28 +194,39 @@ pub fn swap_handler<'c: 'info, 'info>(
     amount: u64,
     data: Vec<u8>,
 ) -> Result<()> {
-    // Check if swap is among assets that belong to the funds, or possibly new
-    // assets. swap_any tells if either the input or output is not part of the fund
     let fund = ctx.accounts.fund.clone();
     let assets = ctx.accounts.fund.assets_mut().unwrap();
-    let output_in_assets = assets.contains(&ctx.accounts.output_mint.key());
+
+    // Check if input and output mints are in the assets allowlist
     let input_in_assets = assets.contains(&ctx.accounts.input_mint.key());
-    let swap_any = !(output_in_assets && input_in_assets);
+    let output_in_assets = assets.contains(&ctx.accounts.output_mint.key());
 
-    // Manager is currently always allowed to swap_any
-    if swap_any && fund.manager != *ctx.accounts.signer.key {
-        // Delegate must have JupiterSwapAnyAsset perm
-        if let Some(acls) = fund.delegate_acls() {
-            // Check if the signer is allowed to swap any asset
-            let can_swap_any_asset = acls.iter().any(|acl| {
-                acl.pubkey == *ctx.accounts.signer.key
-                    && acl.permissions.contains(&Permission::JupiterSwapAnyAsset)
-            });
-            require!(can_swap_any_asset, ManagerError::InvalidAssetForSwap);
-        }
+    let input_is_lst = is_lst(
+        &ctx.accounts.input_mint.key(),
+        ctx.accounts.input_stake_pool.as_ref(),
+    )?;
+    let output_is_lst = is_lst(
+        &ctx.accounts.output_mint.key(),
+        ctx.accounts.output_stake_pool.as_ref(),
+    )?;
+
+    // Build the list of accepted permissions and check access
+    let mut accepted_permissions = vec![Permission::JupiterSwapAnyAsset];
+    if input_in_assets && output_in_assets {
+        accepted_permissions.push(Permission::JupiterSwapFundAssets);
     }
+    if input_is_lst && (output_is_lst || output_in_assets)
+        || output_is_lst && (input_is_lst || input_in_assets)
+    {
+        accepted_permissions.push(Permission::JupiterSwapLst);
+    }
+    acl::check_access_any(&fund, &ctx.accounts.signer.key, accepted_permissions)?;
 
-    // Add output mint to fund assets
+    // TODO: should we add missing assets to the list after permission check?
+    // This will gradually expand the assets allowlist and auto escalate JupiterSwapFundAssets privilege over time
+    if !input_in_assets {
+        assets.push(ctx.accounts.input_mint.key());
+    }
     if !output_in_assets {
         assets.push(ctx.accounts.output_mint.key());
     }
@@ -201,7 +240,7 @@ pub fn swap_handler<'c: 'info, 'info>(
         0xb0d169a89a7d453e => parse_shared_accounts_route(&ctx), // sharedAccountsExactOutRoute (same)
         _ => panic!("Jupiter instruction not supported"),
     };
-    require!(parse_result, ManagerError::InvalidSwap);
+    require!(parse_result, SwapError::InvalidSwap);
 
     //
     // Transfer treasury -> signer

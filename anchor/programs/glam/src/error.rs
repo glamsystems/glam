@@ -22,6 +22,10 @@ pub enum ManagerError {
     InvalidAssetsLen,
     #[msg("Number of weights should match number of assets")]
     InvalidAssetsWeights,
+}
+
+#[error_code]
+pub enum SwapError {
     #[msg("Asset cannot be swapped")]
     InvalidAssetForSwap,
     #[msg("Swap failed")]
