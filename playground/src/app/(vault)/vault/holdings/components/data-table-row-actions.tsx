@@ -29,6 +29,7 @@ import { ExplorerLink } from "@/components/ExplorerLink";
 import { parseTxError } from "@/lib/error";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { getPriorityFeeMicroLamports } from "@/app/(shared)/settings/priorityfee";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -89,6 +90,7 @@ export function DataTableRowActions<TData>({
         activeFund.pubkey,
         new PublicKey(mint),
         amount,
+        { getPriorityFeeMicroLamports },
       );
       toast({
         title: `Unstake success`,

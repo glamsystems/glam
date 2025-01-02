@@ -31,21 +31,19 @@ import { DataTableToolbar } from "./data-table-toolbar";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  isLoadingData: boolean;
-  onOpenSheet: () => void; // Add this prop
+  onOpenSheet: () => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-  isLoadingData,
-  onOpenSheet, // Destructure the prop here
+  onOpenSheet,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
@@ -74,7 +72,6 @@ export function DataTable<TData, TValue>({
   return (
     <div className="space-y-4 w-full">
       <DataTableToolbar table={table as any} onOpenSheet={onOpenSheet} />{" "}
-      {/* Pass the prop here */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -87,7 +84,7 @@ export function DataTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -107,7 +104,7 @@ export function DataTable<TData, TValue>({
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -119,7 +116,7 @@ export function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  {isLoadingData ? "Loading data ..." : "No results."}
+                  No results.
                 </TableCell>
               </TableRow>
             )}

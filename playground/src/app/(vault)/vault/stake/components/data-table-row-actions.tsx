@@ -157,7 +157,7 @@ export function DataTableRowActions<TData>({
 
   // Actions for closable (inactive) or deactivating accounts
   if (
-    ticketOrStake.type === "account" &&
+    ticketOrStake.type === "stake-account" &&
     (isClosable || isPendingOrDeactivating)
   ) {
     return (
@@ -174,7 +174,7 @@ export function DataTableRowActions<TData>({
   }
 
   // Actions for active accounts
-  if (ticketOrStake.type === "account") {
+  if (ticketOrStake.type === "stake-account") {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

@@ -1,4 +1,8 @@
-#!python3
+#!/usr/bin/env python3
+
+# TODO: Read from sanctum-lst-list.toml at
+# https://raw.githubusercontent.com/igneous-labs/sanctum-lst-list/refs/heads/master/sanctum-lst-list.toml
+
 import toml
 
 with open('sanctum-lst-list.toml', 'r') as f:

@@ -55,6 +55,10 @@ export const JITO_STAKE_POOL = new PublicKey(
   "Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb",
 );
 
+export const JUPSOL_STAKE_POOL = new PublicKey(
+  "8VpRhuxa7sUUepdY3kQiTmX9rS5vx4WgaXiAnXq4KCtr",
+);
+
 /**
  * JUP staking & voting
  */

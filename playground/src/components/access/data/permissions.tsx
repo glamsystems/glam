@@ -41,6 +41,11 @@ export const vaultTreeDataPermissions: TreeNodeData = {
           description: "",
         },
         {
+          id: "jupiterSwapLst",
+          label: "Swap (only LSTs)",
+          description: "",
+        },
+        {
           id: "stakeJup",
           label: "Stake JUP tokens for governance/voting",
           description: "",

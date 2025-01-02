@@ -26,7 +26,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { columns } from "./components/columns";
 import { DataTable } from "./components/data-table";
 
-import { useGlam, JITO_STAKE_POOL } from "@glam/anchor/react";
+import { useGlam } from "@glam/anchor/react";
 
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
@@ -63,22 +63,42 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useQuery } from "@tanstack/react-query";
+import { stakePoolsStateAccounts } from "./data/data";
 
 export default function Stake() {
-  const { activeFund, treasury, userWallet, glamClient } = useGlam();
+  const { activeFund, treasury, userWallet, glamClient, jupTokenList } =
+    useGlam();
 
   const [ticketsAndStakes, setTicketsAndStakes] = useState<TicketOrStake[]>([]);
   const [isLoadingTableData, setIsLoadingTableData] = useState<boolean>(true); // New loading state
   const [balance, setBalance] = useState<number>(NaN);
 
-  const [isNativeService, setIsNativeService] = useState<boolean>(true);
-  const [isStakepoolService, setIsStakepoolService] = useState<boolean>(false);
+  const createSkeleton = (): TicketOrStake => ({
+    publicKey: "",
+    lamports: 0,
+    service: "",
+    validator: "",
+    status: "",
+    type: "ticket",
+  });
+
+  const skeletonData = useMemo(() => {
+    return Array(3).fill(null).map(createSkeleton);
+  }, []);
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isStakepoolPopoverOpen, setIsStakepoolPopoverOpen] = useState(false);
-  const [selectedStakepool, setSelectedStakepool] = useState<string | null>(
-    null,
-  );
+
+  const stakePools = useMemo(() => {
+    return stakePoolsStateAccounts.map(({ mint, stateAccount }) => {
+      const jupToken = jupTokenList?.find((t) => t.address === mint);
+      return {
+        symbol: jupToken?.symbol || mint,
+        mint,
+        stateAccount,
+      };
+    });
+  }, [jupTokenList]);
 
   const openSheet = () => setIsSheetOpen(true);
   const closeSheet = () => setIsSheetOpen(false);
@@ -103,9 +123,9 @@ export default function Stake() {
       publicKey: stakeAccount.address.toBase58(),
       lamports: stakeAccount.lamports,
       service: "native",
-      validator: " ",
+      validator: stakeAccount.voter,
       status: stakeAccount.state,
-      type: "account" as const,
+      type: "stake-account" as const,
     }));
     const transformedTickets = tickets.map((ticket) => ({
       publicKey: ticket.address.toBase58(),
@@ -127,13 +147,15 @@ export default function Stake() {
   const form = useForm<StakeService>({
     resolver: zodResolver(stakeServiceSchema),
     defaultValues: {
-      service: "Native",
+      service: "Native Staking",
       amountIn: 0,
       amountInAsset: "SOL",
-      validatorAddress: "GLAMure5ErqQt7jwa8YG75kguatax2ixyDD5h5rTPH3w",
-      stakepool: "",
+      validatorAddress: "",
+      stakePool: "",
     },
   });
+
+  const selectedService = form.watch("service");
 
   const onSubmit: SubmitHandler<StakeService> = async (
     values: StakeService,
@@ -171,7 +193,7 @@ export default function Stake() {
       return;
     }
 
-    if (values.service == "Native" && !values.validatorAddress) {
+    if (values.service == "Native Staking" && !values.validatorAddress) {
       toast({
         title: "Please enter a validator address.",
         variant: "destructive",
@@ -179,20 +201,34 @@ export default function Stake() {
       return;
     }
 
-    if (values.service == "Stakepool" && !selectedStakepool) {
+    if (values.service == "Liquid Staking" && !values.stakePool) {
       toast({
-        title: "Please select a stakepool.",
+        title: "Please select a stake pool.",
         variant: "destructive",
       });
       return;
     }
 
     const stakeFnMap: any = {
-      Native: async () => {
+      "Native Staking": async () => {
         return await glamClient.staking.initializeAndDelegateStake(
           activeFund.pubkey,
           new PublicKey(values.validatorAddress!),
-          // new PublicKey("J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp"), // phantom validator
+          new BN(values.amountIn * LAMPORTS_PER_SOL),
+        );
+      },
+      "Liquid Staking": async () => {
+        if (values.poolTokenSymbol === "mSOL") {
+          return await glamClient.marinade.depositSol(
+            activeFund.pubkey,
+            new BN(values.amountIn * LAMPORTS_PER_SOL),
+          );
+        }
+        // Other LSTs
+        const stateAccount = new PublicKey(values.stakePool!);
+        return await glamClient.staking.stakePoolDepositSol(
+          activeFund.pubkey,
+          stateAccount,
           new BN(values.amountIn * LAMPORTS_PER_SOL),
         );
       },
@@ -200,26 +236,11 @@ export default function Stake() {
         // TODO: Implementation for Marinade Native staking
         return "Staking with Marinade Native";
       },
-      Stakepool: async () => {
-        if (selectedStakepool === "Jito") {
-          return await glamClient.staking.stakePoolDepositSol(
-            activeFund.pubkey,
-            JITO_STAKE_POOL,
-            new BN(values.amountIn * LAMPORTS_PER_SOL),
-          );
-        }
-        if (selectedStakepool === "Marinade") {
-          return await glamClient.marinade.depositSol(
-            activeFund.pubkey,
-            new BN(values.amountIn * LAMPORTS_PER_SOL),
-          );
-        }
-      },
     };
     try {
       const txId = await stakeFnMap[values.service]();
       toast({
-        title: `Stake ${values.amountIn} ${values.amountInAsset}`,
+        title: `Staked ${values.amountIn} ${values.amountInAsset}`,
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
       });
     } catch (error) {
@@ -231,35 +252,19 @@ export default function Stake() {
     }
   };
 
-  const handleSelect = (stakepool: string) => {
-    setSelectedStakepool(stakepool);
-    setIsStakepoolPopoverOpen(false); // Close the dropdown
-  };
-
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     form.reset();
   };
 
-  const handleServiceChange = (service: StakeService["service"]) => {
-    form.setValue("service", service);
-    setIsNativeService(service === "Native");
-    setIsStakepoolService(service === "Stakepool");
-  };
-
   return (
     <PageContentWrapper>
       <div>
-        {userWallet.pubkey && activeFund?.pubkey ? (
-          <DataTable
-            columns={columns}
-            data={ticketsAndStakes}
-            isLoadingData={isLoadingTableData}
-            onOpenSheet={openSheet}
-          />
-        ) : (
-          <></>
-        )}
+        <DataTable
+          columns={columns}
+          data={isLoadingTableData ? skeletonData : ticketsAndStakes}
+          onOpenSheet={openSheet}
+        />
       </div>
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetTrigger asChild></SheetTrigger>
@@ -267,7 +272,7 @@ export default function Stake() {
           <SheetHeader>
             <SheetTitle>Stake</SheetTitle>
             <SheetDescription>
-              Stake SOL natively or via a Stakepool.
+              Stake SOL natively or to a stake pool to earn rewards.
             </SheetDescription>
           </SheetHeader>
           <div className="grid gap-4 py-4">
@@ -289,7 +294,8 @@ export default function Stake() {
                               <Select
                                 value={field.value}
                                 onValueChange={(value) =>
-                                  handleServiceChange(
+                                  form.setValue(
+                                    "service",
                                     value as StakeService["service"],
                                   )
                                 }
@@ -319,7 +325,7 @@ export default function Stake() {
                       />
                     </div>
 
-                    {isNativeService && (
+                    {selectedService === "Native Staking" && (
                       <div className="space-x-4">
                         <FormField
                           control={form.control}
@@ -343,14 +349,16 @@ export default function Stake() {
                       </div>
                     )}
 
-                    {isStakepoolService && (
+                    {selectedService === "Liquid Staking" && (
                       <div>
                         <FormField
                           control={form.control}
-                          name="stakepool"
+                          name="stakePool"
                           render={({ field }) => (
                             <FormItem className="flex flex-col">
-                              <FormLabel className="w-fit">Stakepool</FormLabel>
+                              <FormLabel className="w-fit">
+                                Stake Pool
+                              </FormLabel>
                               <Popover
                                 open={isStakepoolPopoverOpen}
                                 onOpenChange={setIsStakepoolPopoverOpen}
@@ -365,7 +373,8 @@ export default function Stake() {
                                         !field.value && "text-muted-foreground",
                                       )}
                                     >
-                                      {selectedStakepool || "Select Stakepool"}
+                                      {`${form.getValues("poolTokenSymbol")} - ${field.value}` ||
+                                        "Select a stake pool"}
                                       <CaretSortIcon className="ml-2 h-4 w-4 opacity-50" />
                                     </Button>
                                   </FormControl>
@@ -376,22 +385,32 @@ export default function Stake() {
                                 >
                                   <Command>
                                     <CommandInput
-                                      placeholder={`Search Stakepool...`}
+                                      placeholder={`Search stake pool...`}
                                     />
                                     <CommandList>
                                       <CommandGroup>
-                                        <CommandItem
-                                          onSelect={() => handleSelect("Jito")}
-                                        >
-                                          Jito
-                                        </CommandItem>
-                                        <CommandItem
-                                          onSelect={() =>
-                                            handleSelect("Marinade")
-                                          }
-                                        >
-                                          Marinade
-                                        </CommandItem>
+                                        {(stakePools || []).map(
+                                          ({ symbol, mint, stateAccount }) => (
+                                            <CommandItem
+                                              key={mint}
+                                              onSelect={() => {
+                                                form.setValue(
+                                                  "stakePool",
+                                                  stateAccount?.toBase58(),
+                                                );
+                                                form.setValue(
+                                                  "poolTokenSymbol",
+                                                  symbol,
+                                                );
+                                                setIsStakepoolPopoverOpen(
+                                                  false,
+                                                );
+                                              }}
+                                            >
+                                              {`${symbol} - ${stateAccount}`}
+                                            </CommandItem>
+                                          ),
+                                        )}
                                       </CommandGroup>
                                     </CommandList>
                                   </Command>
