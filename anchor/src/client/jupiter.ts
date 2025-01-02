@@ -6,6 +6,7 @@ import {
   TransactionSignature,
   VersionedTransaction,
   AccountMeta,
+  ComputeBudgetProgram,
 } from "@solana/web3.js";
 import {
   TOKEN_2022_PROGRAM_ID,
@@ -21,6 +22,7 @@ import {
   JUP_STAKE_LOCKER,
   JUP_VOTE_PROGRAM,
   JUPITER_PROGRAM_ID,
+  WSOL,
 } from "../constants";
 import { ASSETS_MAINNET } from "./assets";
 
@@ -114,18 +116,14 @@ export class JupiterClient {
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const vault = this.base.getVaultPda(fund);
-    const [escrow] = PublicKey.findProgramAddressSync(
-      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), vault.toBuffer()],
-      JUP_VOTE_PROGRAM,
-    );
+    const escrow = this.getVaultVoterEscrowPda(fund);
     const escrowJupAta = getAssociatedTokenAddressSync(JUP, escrow, true);
     const vaultJupAta = getAssociatedTokenAddressSync(JUP, vault, true);
 
     const escrowAccountInfo =
       await this.base.provider.connection.getAccountInfo(escrow);
-    const escrowCreated = escrowAccountInfo ? true : false;
     const preInstructions = [];
-    if (!escrowCreated) {
+    if (!escrowAccountInfo) {
       console.log("Will create escrow account:", escrow.toBase58());
       preInstructions.push(
         // @ts-ignore
@@ -161,6 +159,34 @@ export class JupiterClient {
       .rpc();
   }
 
+  public async unstakeJup(
+    fund: PublicKey,
+    amount: BN,
+    txOptions: TxOptions = {},
+  ): Promise<TransactionSignature> {
+    const vault = this.base.getVaultPda(fund);
+    const escrow = this.getVaultVoterEscrowPda(fund);
+    const { getPriorityFeeMicroLamports } = txOptions;
+
+    const preInstructions = getPriorityFeeMicroLamports
+      ? [
+          ComputeBudgetProgram.setComputeUnitPrice({
+            microLamports: 50_000,
+          }),
+        ]
+      : [];
+
+    return await this.base.program.methods
+      .toggleMaxLock(false)
+      .accounts({
+        fund,
+        locker: JUP_STAKE_LOCKER,
+        escrow,
+      })
+      .preInstructions(preInstructions)
+      .rpc();
+  }
+
   /**
    * Vote on a proposal. The vote account will be created if it doesn't exist.
    *
@@ -190,11 +216,11 @@ export class JupiterClient {
     const preInstructions = [];
     if (!voteCreated) {
       console.log("Will create vote account:", vote.toBase58());
-      // @ts-ignore
       preInstructions.push(
+        // @ts-ignore
         await this.base.program.methods
           .newVote()
-          .accounts({
+          .accountsPartial({
             fund,
             vote,
             proposal,
@@ -203,21 +229,26 @@ export class JupiterClient {
       );
     }
 
-    const [escrow] = PublicKey.findProgramAddressSync(
-      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), vault.toBuffer()],
-      JUP_VOTE_PROGRAM,
-    );
     return await this.base.program.methods
       .castVote(side)
       .accounts({
         fund,
-        escrow,
+        escrow: this.getVaultVoterEscrowPda(fund),
         proposal,
         vote,
         locker: JUP_STAKE_LOCKER,
         governor,
       })
       .rpc();
+  }
+
+  getVaultVoterEscrowPda(fund: PublicKey) {
+    const vaultPda = this.base.getVaultPda(fund);
+    const [escrow] = PublicKey.findProgramAddressSync(
+      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), vaultPda.toBuffer()],
+      JUP_VOTE_PROGRAM,
+    );
+    return escrow;
   }
 
   /*
@@ -368,12 +399,6 @@ export class JupiterClient {
       },
     ];
     for (const { payer, ata, owner, mint, tokenProgram } of ataParams) {
-      // const ataAccountInfo = await this.base.provider.connection.getAccountInfo(
-      //   ata
-      // );
-      // if (ataAccountInfo) {
-      //   continue;
-      // }
       preInstructions.push(
         createAssociatedTokenAccountIdempotentInstruction(
           payer,
@@ -386,9 +411,7 @@ export class JupiterClient {
     }
 
     // Transfer SOL to wSOL ATA if needed for the vault
-    if (
-      inputMint.toBase58() === "So11111111111111111111111111111111111111112"
-    ) {
+    if (inputMint.equals(WSOL)) {
       let wsolBalance: BN;
       const vaultPda = this.base.getVaultPda(fund);
       const vaultWsolAta = this.base.getVaultAta(fund, inputMint);

@@ -2,6 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 import {
   FundModel,
   IntegrationName,
+  JUP,
   PriorityLevel,
   WSOL,
   getPriorityFeeEstimate,
@@ -15,6 +16,7 @@ import path from "path";
 import { getGlamClient, setFundToConfig } from "./utils";
 import { QuoteParams } from "anchor/src/client/jupiter";
 import { VersionedTransaction } from "@solana/web3.js";
+import { getAccount } from "@solana/spl-token";
 
 // By default config is at ~/.config/glam/cli/config.json
 // If running in docker, config is expected to be at /workspace/config.json
@@ -367,15 +369,20 @@ jup
   });
 
 jup
-  .command("unstake")
-  .description("Unstake JUP tokens")
-  .action(async () => {
+  .command("unstake <amount>")
+  .description("Unstake JUP tokens. Set amount to `all` to unstake all tokens")
+  .action(async (amount) => {
     if (!fundPDA) {
       console.error("Error: fund not set");
       process.exit(1);
     }
-    console.error("Not implemented");
-    process.exit(1);
+
+    const txId = await glamClient.jupiter.unstakeJup(
+      fundPDA,
+      new anchor.BN(amount),
+      cliTxOptions,
+    );
+    console.log("unstakeAllJup (toggle_max_lock=false) txId", txId);
   });
 
 const vote = fund
@@ -412,6 +419,44 @@ const vote = fund
       console.error(e);
       throw e;
     }
+  });
+
+jup
+  .command("info")
+  .description("Show JUP info")
+  .action(async () => {
+    if (!fundPDA) {
+      console.error("Error: fund not set");
+      process.exit(1);
+    }
+
+    const escrow = glamClient.jupiter.getVaultVoterEscrowPda(fundPDA);
+    const escrowJupAta = glamClient.getAta(JUP, escrow);
+    const vaultJupAta = glamClient.getVaultAta(fundPDA, JUP);
+
+    console.log("Escrow:", escrow.toBase58());
+    console.log("Escrow JUP ATA:", escrowJupAta.toBase58());
+    console.log("Vault JUP ATA:", vaultJupAta.toBase58());
+
+    let vaultJupTokenAccount;
+    try {
+      vaultJupTokenAccount = await getAccount(
+        glamClient.provider.connection,
+        vaultJupAta,
+      );
+    } catch (e) {
+      if (e.name === "TokenAccountNotFoundError") {
+        console.log("Vault doesn't have a JUP token account");
+      } else {
+        throw e;
+      }
+    }
+
+    const escrowJupTokenAccount = await getAccount(
+      glamClient.provider.connection,
+      escrowJupAta,
+    );
+    console.log("Escrow JUP balance:", Number(escrowJupTokenAccount.amount));
   });
 
 fund
