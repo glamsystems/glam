@@ -475,8 +475,8 @@ export class BaseClient {
     return fundName;
   }
 
+  // @ts-ignore
   public async fetchFundAccount(fundPDA: PublicKey): Promise<FundAccount> {
-    // @ts-ignore
     return await this.program.account.fundAccount.fetch(fundPDA);
   }
 
