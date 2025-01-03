@@ -26,10 +26,7 @@ import {
   getMint,
   unpackMint,
   Mint,
-  getExtensionData,
-  ExtensionType,
 } from "@solana/spl-token";
-import { TokenMetadata, unpack } from "@solana/spl-token-metadata";
 import { WSOL, USDC } from "../constants";
 
 import { GlamIDL, GlamProgram, getGlamProgramId } from "../glamExports";
@@ -38,7 +35,6 @@ import {
   FundAccount,
   FundMetadataAccount,
   FundModel,
-  FundOpenfundsModel,
   ShareClassModel,
 } from "../models";
 import { AssetMeta, ASSETS_MAINNET, ASSETS_TESTS } from "./assets";
@@ -447,8 +443,8 @@ export class BaseClient {
       throw new Error(`Mint ${asset.toBase58()} not found`);
     }
 
-    const tokenProgram = info?.owner || TOKEN_PROGRAM_ID;
-    let mint = unpackMint(asset, info, tokenProgram);
+    const tokenProgram = info.owner;
+    const mint = unpackMint(asset, info, tokenProgram);
     return { mint, tokenProgram };
   }
 

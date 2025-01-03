@@ -11,8 +11,6 @@ import { BaseClient, TxOptions } from "./base";
 import {
   createAssociatedTokenAccountIdempotentInstruction,
   createTransferCheckedInstruction,
-  TOKEN_PROGRAM_ID,
-  unpackMint,
 } from "@solana/spl-token";
 import {
   CompanyModel,
