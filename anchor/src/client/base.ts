@@ -439,6 +439,19 @@ export class BaseClient {
     }
   }
 
+  async fetchMintWithOwner(asset: PublicKey) {
+    const connection = this.provider.connection;
+    const info = await connection.getAccountInfo(asset, "confirmed");
+
+    if (!info) {
+      throw new Error(`Mint ${asset.toBase58()} not found`);
+    }
+
+    const tokenProgram = info?.owner || TOKEN_PROGRAM_ID;
+    let mint = unpackMint(asset, info, tokenProgram);
+    return { mint, tokenProgram };
+  }
+
   getOpenfundsPDA(fundPDA: PublicKey): PublicKey {
     return FundModel.openfundsPda(fundPDA);
   }
@@ -462,8 +475,8 @@ export class BaseClient {
     return fundName;
   }
 
-  // @ts-ignore
   public async fetchFundAccount(fundPDA: PublicKey): Promise<FundAccount> {
+    // @ts-ignore
     return await this.program.account.fundAccount.fetch(fundPDA);
   }
 
@@ -488,6 +501,52 @@ export class BaseClient {
     );
   }
 
+  /**
+   * Generates instructions to wrap SOL into wSOL if the vault doesn't have enough wSOL
+   *
+   * @param lamports Desired amount of wSOL
+   * @returns
+   */
+  public async maybeWrapSol(
+    fundPda: PublicKey,
+    amount: number | anchor.BN,
+    signer?: PublicKey,
+  ): Promise<TransactionInstruction | null> {
+    const vaultPda = this.getVaultPda(fundPda);
+    const vaultWsolAta = this.getVaultAta(fundPda, WSOL);
+    let wsolBalance = new anchor.BN(0);
+    try {
+      wsolBalance = new anchor.BN(
+        (
+          await this.provider.connection.getTokenAccountBalance(vaultWsolAta)
+        ).value.amount,
+      );
+    } catch (err) {}
+    const solBalance = new anchor.BN(
+      await this.provider.connection.getBalance(vaultPda),
+    );
+    const delta = new anchor.BN(amount).sub(wsolBalance); // wSOL amount needed
+    if (solBalance.lt(delta)) {
+      throw new Error(
+        "Insufficient funds in vault to complete the transaction",
+      );
+    }
+    if (delta.gt(new anchor.BN(0)) && solBalance.gt(delta)) {
+      return await this.program.methods
+        .wsolWrap(delta)
+        .accountsPartial({
+          fund: fundPda,
+          vault: vaultPda,
+          vaultWsolAta,
+          wsolMint: WSOL,
+          signer: signer || this.getSigner(),
+        })
+        .instruction();
+    }
+
+    return null;
+  }
+
   getAssetIdFromCurrency(currency: string): string {
     switch (currency.toUpperCase()) {
       case "SOL":
@@ -498,97 +557,6 @@ export class BaseClient {
         return USDC.toBase58();
     }
     return "";
-  }
-
-  // @deprecated
-  remapKeyValueArray(vec: Array<any>): any {
-    return vec.reduce((prev, el) => {
-      prev[Object.keys(el.name)[0]] = el.value;
-      return prev;
-    }, {});
-  }
-
-  // @deprecated
-  getOpenfundsFromAccounts(
-    fundAccount: FundAccount,
-    openfundsAccount: FundMetadataAccount,
-    mints: any[],
-  ): any {
-    let shareClasses = fundAccount.shareClasses.map(
-      (_shareClassFromFund, i) => {
-        const shareClassMeta = openfundsAccount.shareClasses[i] || [];
-        let shareClassSymbol;
-        let shareClassSupply;
-        let shareClassDecimals;
-        let shareClassCurrencyId;
-        let hasPermanentDelegate;
-        let permanentDelegate;
-
-        const mint = mints[i];
-        if (mint) {
-          const data = getExtensionData(
-            ExtensionType.TokenMetadata,
-            mint.tlvData,
-          );
-          const metadata = data ? unpack(data) : ({} as TokenMetadata);
-          permanentDelegate = getExtensionData(
-            ExtensionType.PermanentDelegate,
-            mint.tlvData,
-          );
-
-          shareClassSymbol = metadata?.symbol;
-          shareClassSupply = mint.supply;
-          shareClassDecimals = mint.decimals;
-          hasPermanentDelegate = permanentDelegate ? "yes" : "no";
-        }
-
-        const remapped = this.remapKeyValueArray(shareClassMeta);
-        shareClassCurrencyId = this.getAssetIdFromCurrency(
-          remapped?.shareClassCurrency || "",
-        );
-
-        (fundAccount.params[i + 1] || []).forEach((param) => {
-          const name = Object.keys(param.name)[0];
-          //@ts-ignore
-          const value = Object.values(param.value)[0].val;
-          //@ts-ignore
-          remapped[name] = value;
-        });
-
-        return {
-          id: fundAccount.shareClasses[i],
-          // custom share class fields
-          shareClassId: fundAccount.shareClasses[i].toBase58(),
-          shareClassSymbol,
-          shareClassSupply,
-          shareClassDecimals,
-          shareClassCurrencyId,
-          permanentDelegate: permanentDelegate
-            ? new PublicKey(permanentDelegate)
-            : null,
-          hasPermanentDelegate,
-          lockUpPeriodInSeconds: remapped.lockUp,
-          ...remapped,
-        };
-      },
-    );
-    let fundManagers = openfundsAccount.fundManagers.map((fundManager) => ({
-      pubkey: fundAccount.manager,
-      portfolioManagerId: fundAccount.manager.toBase58(),
-      ...this.remapKeyValueArray(fundManager),
-    }));
-
-    const company = this.remapKeyValueArray(openfundsAccount.company);
-
-    let openfund = {
-      legalFundNameIncludingUmbrella: fundAccount.name,
-      ...this.remapKeyValueArray(openfundsAccount.fund),
-      company,
-      fundManagers,
-      shareClasses,
-    };
-
-    return openfund;
   }
 
   public async listFunds(): Promise<PublicKey[]> {

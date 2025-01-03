@@ -152,6 +152,7 @@ export default function Stake() {
       amountInAsset: "SOL",
       validatorAddress: "",
       stakePool: "",
+      poolTokenSymbol: "",
     },
   });
 
@@ -373,8 +374,10 @@ export default function Stake() {
                                         !field.value && "text-muted-foreground",
                                       )}
                                     >
-                                      {`${form.getValues("poolTokenSymbol")} - ${field.value}` ||
-                                        "Select a stake pool"}
+                                      {field.value &&
+                                      form.getValues("poolTokenSymbol")
+                                        ? `${form.getValues("poolTokenSymbol")} - ${field.value}`
+                                        : "Select a stake pool"}
                                       <CaretSortIcon className="ml-2 h-4 w-4 opacity-50" />
                                     </Button>
                                   </FormControl>
