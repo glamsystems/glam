@@ -180,9 +180,7 @@ fund
       asset = "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn";
     }
 
-    const { mint } = await glamClient.fund.fetchMintWithOwner(
-      new PublicKey(asset),
-    );
+    const { mint } = await glamClient.fetchMintWithOwner(new PublicKey(asset));
 
     await glamClient.fund.withdraw(
       fundPDA,
