@@ -21,6 +21,7 @@ import {
   JUP_STAKE_LOCKER,
   JUP_VOTE_PROGRAM,
   JUPITER_PROGRAM_ID,
+  WSOL,
 } from "../constants";
 import { ASSETS_MAINNET } from "./assets";
 
@@ -335,7 +336,7 @@ export class JupiterClient {
 
   getPreInstructions = async (
     fund: PublicKey,
-    manager: PublicKey,
+    signer: PublicKey,
     inputMint: PublicKey,
     outputMint: PublicKey,
     amount: BN,
@@ -346,21 +347,21 @@ export class JupiterClient {
 
     const ataParams = [
       {
-        payer: manager,
-        ata: this.base.getAta(inputMint, manager, inputTokenProgram),
-        owner: manager,
+        payer: signer,
+        ata: this.base.getAta(inputMint, signer, inputTokenProgram),
+        owner: signer,
         mint: inputMint,
         tokenProgram: inputTokenProgram,
       },
       {
-        payer: manager,
-        ata: this.base.getAta(outputMint, manager, outputTokenProgram),
-        owner: manager,
+        payer: signer,
+        ata: this.base.getAta(outputMint, signer, outputTokenProgram),
+        owner: signer,
         mint: outputMint,
         tokenProgram: outputTokenProgram,
       },
       {
-        payer: manager,
+        payer: signer,
         ata: this.base.getVaultAta(fund, outputMint, outputTokenProgram),
         owner: this.base.getVaultPda(fund),
         mint: outputMint,
@@ -386,46 +387,10 @@ export class JupiterClient {
     }
 
     // Transfer SOL to wSOL ATA if needed for the vault
-    if (
-      inputMint.toBase58() === "So11111111111111111111111111111111111111112"
-    ) {
-      let wsolBalance: BN;
-      const vaultPda = this.base.getVaultPda(fund);
-      const vaultWsolAta = this.base.getVaultAta(fund, inputMint);
-      try {
-        wsolBalance = new BN(
-          (
-            await this.base.provider.connection.getTokenAccountBalance(
-              vaultWsolAta,
-            )
-          ).value.amount,
-        );
-      } catch (err) {
-        wsolBalance = new BN(0);
-      }
-      const solBalance = new BN(
-        await this.base.provider.connection.getBalance(vaultPda),
-      );
-      const delta = amount.sub(wsolBalance);
-
-      if (solBalance.lt(delta)) {
-        throw new Error(
-          `Insufficient balance in treasury (${vaultPda.toBase58()}) for swap. solBalance: ${solBalance}, lamports needed: ${delta}`,
-        );
-      }
-      if (delta.gt(new BN(0)) && solBalance.gt(delta)) {
-        preInstructions.push(
-          await this.base.program.methods
-            .wsolWrap(delta)
-            .accountsPartial({
-              fund,
-              vault: vaultPda,
-              vaultWsolAta,
-              wsolMint: inputMint,
-              signer: manager,
-            })
-            .instruction(),
-        );
+    if (inputMint.equals(WSOL)) {
+      const wrapSolIx = await this.base.maybeWrapSol(fund, amount, signer);
+      if (wrapSolIx) {
+        preInstructions.push(wrapSolIx);
       }
     }
 

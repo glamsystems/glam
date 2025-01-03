@@ -11,8 +11,6 @@ import { BaseClient, TxOptions } from "./base";
 import {
   createAssociatedTokenAccountIdempotentInstruction,
   createTransferCheckedInstruction,
-  TOKEN_PROGRAM_ID,
-  unpackMint,
 } from "@solana/spl-token";
 import {
   CompanyModel,
@@ -337,15 +335,6 @@ export class FundClient {
     return await this.base.sendAndConfirm(tx);
   }
 
-  async fetchMintWithOwner(asset: PublicKey) {
-    const connection = this.base.provider.connection;
-    const commitment = "confirmed";
-    const info = await connection.getAccountInfo(asset, { commitment });
-    const tokenProgram = info?.owner || TOKEN_PROGRAM_ID;
-    let mint = unpackMint(asset, info, tokenProgram);
-    return { mint, tokenProgram };
-  }
-
   public async depositTx(
     fund: PublicKey,
     asset: PublicKey,
@@ -355,7 +344,7 @@ export class FundClient {
     const signer = txOptions.signer || this.base.getSigner();
     const treasury = this.base.getVaultPda(fund);
 
-    const { mint, tokenProgram } = await this.fetchMintWithOwner(asset);
+    const { mint, tokenProgram } = await this.base.fetchMintWithOwner(asset);
 
     const signerAta = this.base.getAta(asset, signer, tokenProgram);
     const treasuryAta = this.base.getVaultAta(fund, asset, tokenProgram);
@@ -390,7 +379,7 @@ export class FundClient {
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const { tokenProgram } = await this.fetchMintWithOwner(asset);
+    const { tokenProgram } = await this.base.fetchMintWithOwner(asset);
     const signerAta = this.base.getAta(asset, signer, tokenProgram);
 
     // @ts-ignore

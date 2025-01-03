@@ -19,6 +19,8 @@ import {
 
 import { BaseClient, TxOptions } from "./base";
 import { AccountMeta } from "@solana/web3.js";
+import { WSOL } from "../constants";
+import { createAssociatedTokenAccountIdempotentInstruction } from "@solana/spl-token";
 
 interface OrderConstants {
   perpBaseScale: number;
@@ -433,6 +435,14 @@ export class DriftClient {
     const { mint, oracle, marketPDA, vaultPDA } =
       marketConfigs.spot[marketIndex];
 
+    const preInstructions = [];
+    if (mint === WSOL.toBase58()) {
+      const wrapSolIx = await this.base.maybeWrapSol(fund, amount, signer);
+      if (wrapSolIx) {
+        preInstructions.push(wrapSolIx);
+      }
+    }
+
     const tx = await this.base.program.methods
       .driftDeposit(marketIndex, amount)
       .accountsPartial({
@@ -448,6 +458,7 @@ export class DriftClient {
         { pubkey: new PublicKey(oracle), isSigner: false, isWritable: false },
         { pubkey: new PublicKey(marketPDA), isSigner: false, isWritable: true },
       ])
+      .preInstructions(preInstructions)
       .transaction();
 
     return await this.base.intoVersionedTransaction({
@@ -465,10 +476,16 @@ export class DriftClient {
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const [user, userStats] = this.getUser(fund, subAccountId);
-    const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
-    const { mint, vaultPDA } = marketConfigs.spot[marketIndex];
+    const [user, userStats] = this.getUser(fund, subAccountId);
+    const driftState = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
+
+    const { mint: m, vaultPDA: d } = marketConfigs.spot[marketIndex];
+    const mint = new PublicKey(m);
+    const driftAta = new PublicKey(d); // drift vault ata
+    const vault = this.base.getVaultPda(fund);
+    const vaultAta = this.base.getVaultAta(fund, mint); // glam vault ata
+
     const remainingAccounts = await this.composeRemainingAccounts(
       fund,
       subAccountId,
@@ -477,19 +494,33 @@ export class DriftClient {
       marketConfigs,
     );
 
+    const { tokenProgram } = await this.base.fetchMintWithOwner(mint);
+
+    // Create vault ata in case it doesn't exist
+    const preInstructions = [
+      createAssociatedTokenAccountIdempotentInstruction(
+        signer,
+        vaultAta,
+        vault,
+        mint,
+        tokenProgram,
+      ),
+    ];
+
     const tx = await this.base.program.methods
       .driftWithdraw(marketIndex, amount)
       .accountsPartial({
         fund,
-        vaultAta: this.base.getVaultAta(fund, new PublicKey(mint)),
-        driftAta: new PublicKey(vaultPDA),
+        vaultAta: vaultAta,
+        driftAta,
         user,
         userStats,
-        state,
+        state: driftState,
         signer,
         driftSigner: DRIFT_VAULT,
       })
       .remainingAccounts(remainingAccounts)
+      .preInstructions(preInstructions)
       .transaction();
 
     return await this.base.intoVersionedTransaction({

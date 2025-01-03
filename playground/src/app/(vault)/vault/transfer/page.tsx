@@ -33,7 +33,7 @@ import { WarningCard } from "@/components/WarningCard";
 import { PublicKey } from "@solana/web3.js";
 import { ClickToCopyText } from "@/components/ClickToCopyText";
 
-const venues: [string, ...string[]] = ["Treasury", "Drift", "Manager"];
+const venues = ["Treasury", "Drift", "Manager"] as const;
 const transferSchema = z.object({
   origin: z.enum(venues),
   destination: z.enum(venues),

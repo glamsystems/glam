@@ -4,7 +4,6 @@ export * from "./clientConfig";
 export * from "./client";
 export * from "./client/jupiter";
 export * from "./client/drift";
-export * from "./utils/offchain";
 export * from "./utils/helpers";
 export * from "./utils/priorityfee";
 export * from "./constants";
