@@ -42,7 +42,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { TreeNodeData } from "@/components/CustomTree";
 import ToolbarTree from "@/components/ToolbarTree";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import {
   vaultTreeDataPermissions,
   mintTreeDataPermissions,

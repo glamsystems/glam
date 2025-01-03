@@ -33,7 +33,7 @@ import { WarningCard } from "@/components/WarningCard";
 import { PublicKey } from "@solana/web3.js";
 import { ClickToCopyText } from "@/components/ClickToCopyText";
 
-const venues = ["Treasury", "Drift", "Manager"] as const;
+const venues = ["Vault", "Drift", "Owner"] as const;
 const transferSchema = z.object({
   origin: z.enum(venues),
   destination: z.enum(venues),
@@ -59,7 +59,7 @@ export default function Transfer() {
   const [warning, setWarning] = useState<string>("");
   const [transferButtonDisabled, setTransferButtonDisabled] = useState(false);
 
-  const treasuryAssets = () => {
+  const vaultAssets = () => {
     const assets = (treasury?.tokenAccounts || []).map((ta) => {
       const jupToken = jupTokenList?.find(
         (t) => t.address === ta.mint.toBase58(),
@@ -105,13 +105,13 @@ export default function Transfer() {
   };
 
   useEffect(() => {
-    setFromAssetList(treasuryAssets());
+    setFromAssetList(vaultAssets());
   }, [treasury, jupTokenList, activeFund]);
 
   const form = useForm<TransferSchema>({
     resolver: zodResolver(transferSchema),
     defaultValues: {
-      origin: "Treasury",
+      origin: "Vault",
       destination: "Drift",
       amount: 0,
       amountAsset: "SOL",
@@ -120,9 +120,9 @@ export default function Transfer() {
 
   const from = form.watch("origin");
   useEffect(() => {
-    if (from === "Manager") {
+    if (from === "Owner") {
       setWarning(
-        "Sending FROM Manager is currently not implemented. You can just transfer any asset from any wallet to the vault address below.",
+        "To deposit into the vault, transfer any asset from any wallet to the vault address provided below.",
       );
       setTransferButtonDisabled(true);
       return;
@@ -137,13 +137,13 @@ export default function Transfer() {
       return;
     }
 
-    setFromAssetList(treasuryAssets());
+    setFromAssetList(vaultAssets());
   }, [from, driftUser, driftMarketConfigs]);
 
-  const transferTreasuryManager = async (symbol: string, amount: number) => {
+  const withdrawFromVault = async (symbol: string, amount: number) => {
     if (!activeFund?.pubkey || !glamClient) return; // already checked, to avoid type issue
 
-    const asset = treasuryAssets().find((a) => a.symbol === symbol);
+    const asset = vaultAssets().find((a) => a.symbol === symbol);
     if (!asset) {
       toast({
         title: "Asset not found",
@@ -160,12 +160,12 @@ export default function Transfer() {
         amount * 10 ** (asset?.decimals || 9),
       );
       toast({
-        title: `Transfered ${amount} ${asset?.symbol} from treasury to manager`,
+        title: `Withdraw ${amount} ${asset?.symbol} from vault`,
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
       });
     } catch (error: any) {
       toast({
-        title: "Failed to transfer to manager",
+        title: "Failed to withdraw from vault",
         description: parseTxError(error),
         variant: "destructive",
       });
@@ -202,7 +202,7 @@ export default function Transfer() {
       return;
     }
 
-    if (origin === "Manager") {
+    if (origin === "Owner") {
       toast({
         title: "Invalid 'From'",
         description: "Not yet implemented",
@@ -211,8 +211,8 @@ export default function Transfer() {
       return;
     }
 
-    if (origin === "Treasury" && destination === "Manager") {
-      return transferTreasuryManager(amountAsset, amount);
+    if (origin === "Vault" && destination === "Owner") {
+      return withdrawFromVault(amountAsset, amount);
     }
 
     const spotMarket = driftMarketConfigs.spot.find(
@@ -231,7 +231,7 @@ export default function Transfer() {
     try {
       setIsTxPending(true);
       const txId =
-        origin === "Treasury"
+        origin === "Vault"
           ? await glamClient.drift.deposit(
               activeFund.pubkey,
               new anchor.BN(amount * 10 ** decimals),
@@ -299,15 +299,15 @@ export default function Transfer() {
                           value={field.value}
                           onValueChange={(value) => {
                             field.onChange(value);
-                            if (value === "Treasury") {
+                            if (value === "Vault") {
                               form.setValue("destination", "Drift");
                             } else {
-                              form.setValue("destination", "Treasury");
+                              form.setValue("destination", "Vault");
                             }
                           }}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Treasury" />
+                            <SelectValue placeholder="Vault" />
                           </SelectTrigger>
                           <SelectContent>
                             {transferSchema.shape.origin._def.values.map(
@@ -335,10 +335,10 @@ export default function Transfer() {
                           value={field.value}
                           onValueChange={(value) => {
                             field.onChange(value);
-                            if (value === "Treasury") {
+                            if (value === "Vault") {
                               form.setValue("origin", "Drift");
                             } else {
-                              form.setValue("origin", "Treasury");
+                              form.setValue("origin", "Vault");
                             }
                           }}
                         >

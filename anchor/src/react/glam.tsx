@@ -183,7 +183,7 @@ export function GlamProvider({
   };
 
   const { data: allFundsData } = useQuery({
-    queryKey: ["/funds"],
+    queryKey: ["/funds", activeFund?.pubkey],
     queryFn: () => glamClient.fetchAllFunds(),
   });
   useEffect(() => {
@@ -373,7 +373,6 @@ export function GlamProvider({
     driftMarketConfigs,
     driftUser,
     refresh: async () => {
-      console.log("glam context provider refresh");
       refreshTreasury();
     },
   };

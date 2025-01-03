@@ -6,6 +6,10 @@ import React, { useCallback, useMemo } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";
 import { usePubkeyLabels } from "@/hooks/usePubkeyLabels";
+import {
+  mintTreeDataPermissions,
+  vaultTreeDataPermissions,
+} from "./access/data/permissions";
 
 export default function PageAccess({
   perms,
@@ -21,7 +25,30 @@ export default function PageAccess({
   const data = useMemo(() => {
     if (!fund) return [];
 
-    return (fund.delegateAcls || []).map((acl: any) => {
+    let treeDataPermissions = vaultTreeDataPermissions;
+    if (perms === "mint") {
+      treeDataPermissions = mintTreeDataPermissions;
+    } else if (perms === "all") {
+      treeDataPermissions.children = (
+        vaultTreeDataPermissions.children || []
+      ).concat(mintTreeDataPermissions.children || []);
+    }
+
+    const flatPermissions =
+      treeDataPermissions.children?.flatMap(
+        (lvl1: any) => lvl1.children?.map((node: any) => node.id) || [],
+      ) || [];
+
+    const owner = fund.manager?.pubkey
+      ? [
+          {
+            pubkey: fund.manager.pubkey.toBase58(),
+            label: "Owner",
+            tags: flatPermissions,
+          },
+        ]
+      : [];
+    const delegates = (fund.delegateAcls || []).map((acl: any) => {
       const pubkey = acl.pubkey.toBase58();
       return {
         pubkey,
@@ -29,6 +56,7 @@ export default function PageAccess({
         tags: (acl.permissions || []).map((x: any) => Object.keys(x)[0]),
       };
     });
+    return owner.concat(delegates);
   }, [fund, getLabel]);
 
   const handleSuccess = useCallback(() => {
