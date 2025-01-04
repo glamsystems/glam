@@ -44,7 +44,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
     useGlam();
   const [open, setOpen] = React.useState(false);
   const { state } = useSidebar();
-  const { theme, systemTheme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const [defaultSparkleImage, setDefaultSparkleImage] = React.useState(
     "/default-sparkle-light.svg",
   );
@@ -60,13 +60,12 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
   const fundModel = allFunds.find((f) => f.idStr === activeFund?.address);
 
   React.useEffect(() => {
-    const currentTheme = theme === "system" ? systemTheme : theme;
     setDefaultSparkleImage(
-      currentTheme === "dark"
+      resolvedTheme === "dark"
         ? "/default-sparkle-light.svg"
         : "/default-sparkle-dark.svg",
     );
-  }, [theme, systemTheme]);
+  }, [resolvedTheme]);
 
   const isCollapsed = state === "collapsed";
 

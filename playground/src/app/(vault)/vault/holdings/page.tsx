@@ -24,7 +24,12 @@ import { DangerCard } from "@/components/DangerCard";
 import { parseTxError } from "@/lib/error";
 import { toast } from "@/components/ui/use-toast";
 import { ExplorerLink } from "@/components/ExplorerLink";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { AlertTriangle } from "lucide-react";
 
 const SKELETON_ROW_COUNT = 5;
@@ -179,6 +184,11 @@ export default function Holdings() {
         title: "Vault closed",
         description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
       });
+
+      // Reload the page after 1 second if vault is closed
+      window.setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (e) {
       toast({
         title: "Error closing vault",
@@ -186,6 +196,7 @@ export default function Holdings() {
         variant: "destructive",
       });
     }
+
     setIsTxPending(false);
   };
 
@@ -208,7 +219,9 @@ export default function Holdings() {
         <SheetContent side="right" className="p-12 sm:max-w-none w-1/2">
           <SheetHeader>
             <SheetTitle>Vault Details</SheetTitle>
-            <SheetDescription>Review vault information, account addresses, and closure controls.</SheetDescription>
+            <SheetDescription>
+              Review vault information, account addresses, and closure controls.
+            </SheetDescription>
           </SheetHeader>
 
           <div className="grid grid-cols-[200px_1fr] gap-6 py-6">
@@ -250,10 +263,10 @@ export default function Holdings() {
                         <ClickToCopyText text={activeFund?.address || ""} />
                       </div>
                       <div className="flex gap-2 items-center">
-                      <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">
-                        Do not send assets to this account.
-                      </p>
+                        <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">
+                          Do not send assets to this account.
+                        </p>
                       </div>
                     </div>
                   </AccordionContent>
