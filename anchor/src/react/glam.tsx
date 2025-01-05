@@ -244,20 +244,20 @@ export function GlamProvider({
   // Fetch token prices https://station.jup.ag/docs/apis/price-api-v2
   //
   const { data: jupTokenPricesData } = useQuery({
-    queryKey: ["/jup-token-prices"],
-    enabled: !!treasury?.tokenAccounts?.length,
+    queryKey: ["/jup-token-prices", treasury?.pubkey],
     refetchInterval: 10_000,
     queryFn: () => {
       const tokenMints = new Set([] as string[]);
 
-      // Token accounts owned by the treasury
-      treasury.tokenAccounts.forEach((ta: TokenAccount) => {
-        tokenMints.add(ta.mint.toBase58());
-      });
       tokenMints.add(WSOL.toBase58()); // Always add wSOL feed so that we can price SOL
 
+      // Token accounts owned by the treasury
+      (treasury.tokenAccounts || []).forEach((ta: TokenAccount) => {
+        tokenMints.add(ta.mint.toBase58());
+      });
+
       // Drift spot positions
-      driftUser.spotPositions.forEach((position) => {
+      (driftUser.spotPositions || []).forEach((position) => {
         const marketConfig = driftMarketConfigs.spot.find(
           (m) => position.marketIndex === m.marketIndex,
         );
