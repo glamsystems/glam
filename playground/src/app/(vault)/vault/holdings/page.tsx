@@ -45,7 +45,7 @@ export default function Holdings() {
     glamClient,
   } = useGlam();
 
-  const [showZeroBalances, setShowZeroBalances] = useState(false);
+  const [showZeroBalances, setShowZeroBalances] = useState(true);
   const [isLoadingData, setIsLoading] = useState(true);
   const [isTxPending, setIsTxPending] = useState(false);
 
@@ -117,7 +117,7 @@ export default function Holdings() {
             price,
             balance: ta.uiAmount,
             decimals: ta.decimals,
-            notional: ta.uiAmount * price,
+            notional: ta.uiAmount * price || 0,
             logoURI,
             location: "vault",
             lst: tags.indexOf("lst") >= 0,
@@ -226,7 +226,7 @@ export default function Holdings() {
 
           <div className="grid grid-cols-[200px_1fr] gap-6 py-6">
             <div className="flex flex-col items-center justify-center">
-              <QRCodeSVG value={vaultAddress} level="M" size={200} />
+              <QRCodeSVG value={`solana:vaultAddress`} level="M" size={200} />
               <p className="mt-2 text-sm text-muted-foreground text-left">
                 This is the address of your Vault. Deposit funds by scanning the
                 QR code or copying the address.

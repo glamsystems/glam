@@ -60,6 +60,7 @@ export function DataTableToolbar<TData>({
         )}
 
         <Checkbox
+          defaultChecked={true}
           id="zero-balances"
           onCheckedChange={(checked: boolean) => {
             setShowZeroBalances(checked);

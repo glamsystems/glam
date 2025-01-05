@@ -117,7 +117,7 @@ export const columns: ColumnDef<Holding>[] = [
 
       return (
         <div className="w-[80px]">
-          {isSkeletonRow(row) || row.original.notional === 0 ? (
+          {isSkeletonRow(row) || row.original.notional === -1 ? (
             <VariableWidthSkeleton minWidth={40} maxWidth={80} height={20} />
           ) : (
             <span>
@@ -140,8 +140,8 @@ export const columns: ColumnDef<Holding>[] = [
               <NumberFormatter
                 value={holding.notional}
                 addCommas={true}
-                minDecimalPlaces={0}
-                maxDecimalPlaces={9}
+                minDecimalPlaces={2}
+                maxDecimalPlaces={2}
               />
             </span>
           )}
