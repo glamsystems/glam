@@ -45,7 +45,7 @@ export class ShareClassClient {
         mint: tokenAccount.mint,
         programId: TOKEN_2022_PROGRAM_ID,
         decimals: mint.decimals,
-        amount: Number(tokenAccount.amount),
+        amount: tokenAccount.amount.toString(),
         uiAmount: Number(tokenAccount.amount) / 10 ** mint.decimals,
         frozen: tokenAccount.isFrozen,
       } as TokenAccount;

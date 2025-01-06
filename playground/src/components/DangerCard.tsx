@@ -10,10 +10,18 @@ interface Props {
 
 export const DangerCard: React.FC<Props> = ({ message, className }) => (
   <Card
-    className={cn("border border-destructive/20 bg-destructive/5 p-4", className)}
+    className={cn(
+      "border border-destructive/20 bg-destructive/5 p-4",
+      className,
+    )}
   >
     <div className="flex">
-      <p className="text-sm text-destructive">{message}</p>
+      <p
+        style={{ whiteSpace: "pre-line" }}
+        className="text-sm text-destructive"
+      >
+        {message}
+      </p>
     </div>
   </Card>
 );

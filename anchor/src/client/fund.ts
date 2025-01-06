@@ -3,6 +3,7 @@ import {
   PublicKey,
   VersionedTransaction,
   Transaction,
+  TransactionInstruction,
   TransactionSignature,
   ComputeBudgetProgram,
 } from "@solana/web3.js";
@@ -131,14 +132,17 @@ export class FundClient {
   ): Promise<TransactionSignature> {
     const openfunds = this.base.getOpenfundsPDA(fundPDA);
 
-    return await this.base.program.methods
+    const tx = await this.base.program.methods
       .closeFund()
       .accounts({
         fund: fundPDA,
         openfunds,
       })
       .preInstructions(txOptions.preInstructions || [])
-      .rpc();
+      .transaction();
+
+    const vTx = await this.base.intoVersionedTransaction({ tx, ...txOptions });
+    return await this.base.sendAndConfirm(vTx);
   }
 
   /**
@@ -291,6 +295,26 @@ export class FundClient {
    * @param txOptions
    * @returns
    */
+  public async closeTokenAccountsIx(
+    fund: PublicKey,
+    tokenAccounts: PublicKey[],
+  ): Promise<TransactionInstruction> {
+    // @ts-ignore
+    return await this.base.program.methods
+      .closeTokenAccounts()
+      .accounts({
+        fund,
+      })
+      .remainingAccounts(
+        tokenAccounts.map((account) => ({
+          pubkey: account,
+          isSigner: false,
+          isWritable: true,
+        })),
+      )
+      .instruction();
+  }
+
   public async closeTokenAccountsTx(
     fund: PublicKey,
     tokenAccounts: PublicKey[],
@@ -370,6 +394,36 @@ export class FundClient {
     );
 
     return await this.base.intoVersionedTransaction({ tx, ...txOptions });
+  }
+
+  public async withdrawIxs(
+    fund: PublicKey,
+    asset: PublicKey,
+    amount: number | BN,
+    txOptions: TxOptions,
+  ): Promise<TransactionInstruction[]> {
+    const signer = txOptions.signer || this.base.getSigner();
+    const { tokenProgram } = await this.base.fetchMintWithOwner(asset);
+    const signerAta = this.base.getAta(asset, signer, tokenProgram);
+
+    return [
+      createAssociatedTokenAccountIdempotentInstruction(
+        signer,
+        signerAta,
+        signer,
+        asset,
+        tokenProgram,
+      ),
+      // @ts-ignore
+      await this.base.program.methods
+        .withdraw(new BN(amount))
+        .accounts({
+          fund,
+          asset,
+          tokenProgram,
+        })
+        .instruction(),
+    ];
   }
 
   public async withdrawTx(
