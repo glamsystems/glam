@@ -3,7 +3,8 @@
 import { DataTable } from "./components/data-table";
 import { columns } from "./components/columns";
 import React, { useEffect, useMemo, useState } from "react";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { BN } from "@coral-xyz/anchor";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam } from "@glam/anchor/react";
 import { Holding } from "./data/holdingSchema";
@@ -45,7 +46,7 @@ export default function Holdings() {
     glamClient,
   } = useGlam();
 
-  const [showZeroBalances, setShowZeroBalances] = useState(false);
+  const [showZeroBalances, setShowZeroBalances] = useState(true);
   const [isLoadingData, setIsLoading] = useState(true);
   const [isTxPending, setIsTxPending] = useState(false);
 
@@ -59,6 +60,7 @@ export default function Holdings() {
     mint: "",
     ata: "",
     price: 0,
+    amount: "0",
     balance: 0,
     decimals: 9,
     notional: 0,
@@ -86,6 +88,7 @@ export default function Holdings() {
         mint: "",
         ata: "",
         price: price,
+        amount: "" + treasury?.balanceLamports || "0",
         balance: solBalance,
         decimals: 9,
         notional: solBalance * price || 0,
@@ -115,9 +118,10 @@ export default function Holdings() {
             mint: ta.mint.toBase58(),
             ata: ta.pubkey.toBase58(),
             price,
+            amount: ta.amount,
             balance: ta.uiAmount,
             decimals: ta.decimals,
-            notional: ta.uiAmount * price,
+            notional: ta.uiAmount * price || 0,
             logoURI,
             location: "vault",
             lst: tags.indexOf("lst") >= 0,
@@ -135,14 +139,17 @@ export default function Holdings() {
         const price = prices?.find((p) => p.mint === market?.mint)?.price || 0;
         // @ts-ignore: balance is UI amount added by glam api, it doesn't existing in the drift sdk types
         const balance = Number(p.balance);
+        const decimals = market?.decimals || 9;
+        const amount = new BN(balance).mul(new BN(10 ** decimals));
         return {
           name: `${p.marketIndex}`,
           symbol: market?.symbol || "",
           mint: "NA",
           ata: "NA",
           price,
+          amount: amount.toString(),
           balance,
-          decimals: market?.decimals || 9,
+          decimals,
           notional: balance * price || 0,
           logoURI: "https://avatars.githubusercontent.com/u/83389928?s=48&v=4",
           location: "drift",
@@ -176,10 +183,39 @@ export default function Holdings() {
     if (!activeFund?.pubkey) {
       return;
     }
+    const fund = activeFund.pubkey;
+
+    console.log(tableData);
+    const tokenAccounts = (tableData || [])
+      .filter((d) => d.ata)
+      .map((d) => new PublicKey(d.ata));
+
+    let preInstructions = (
+      await Promise.all(
+        (tableData || [])
+          .filter((d) => d.balance > 0 && d.mint)
+          .map(async (d) => {
+            console.log("withdraw", d.name);
+            return await glamClient.fund.withdrawIxs(
+              fund,
+              new PublicKey(d.mint),
+              new BN(d.amount),
+              {},
+            );
+          }),
+      )
+    ).flat();
+
+    console.log("closing ATAs:", tokenAccounts);
+    preInstructions.push(
+      await glamClient.fund.closeTokenAccountsIx(fund, tokenAccounts),
+    );
 
     setIsTxPending(true);
     try {
-      const txSig = await glamClient.fund.closeFund(activeFund.pubkey);
+      const txSig = await glamClient.fund.closeFund(fund, {
+        preInstructions,
+      });
       toast({
         title: "Vault closed",
         description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
@@ -226,7 +262,7 @@ export default function Holdings() {
 
           <div className="grid grid-cols-[200px_1fr] gap-6 py-6">
             <div className="flex flex-col items-center justify-center">
-              <QRCodeSVG value={vaultAddress} level="M" size={200} />
+              <QRCodeSVG value={`solana:vaultAddress`} level="M" size={200} />
               <p className="mt-2 text-sm text-muted-foreground text-left">
                 This is the address of your Vault. Deposit funds by scanning the
                 QR code or copying the address.
@@ -282,7 +318,14 @@ export default function Holdings() {
               </AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-4">
-                  <DangerCard message="Before closing your vault, transfer all assets and close all token accounts, noting that any remaining SOL will automatically return to your wallet." />
+                  <DangerCard
+                    message={`Only the owner can close this vault.
+                      All assets are transferred to the owner as part of the closing transaction.
+                      If there are too many assets in the vault, the closing transaction might be too big and therefore fail -- in this case please manually transfer assets and/or close empty token accounts.`}
+                  />
+                  <DangerCard
+                    message={`Do NOT send any asset to this vault while closing, or you risk to permanently loose them.`}
+                  />
                   <Button
                     onClick={closeVault}
                     variant="destructive"

@@ -66,7 +66,7 @@ export type TokenAccount = {
   mint: PublicKey;
   programId: PublicKey;
   decimals: number;
-  amount: number;
+  amount: string;
   uiAmount: number;
   frozen: boolean;
 };

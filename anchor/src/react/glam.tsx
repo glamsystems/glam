@@ -61,7 +61,7 @@ interface UserWallet {
 
 interface Treasury {
   pubkey: PublicKey;
-  balanceLamports: number;
+  balanceLamports: number; // TODO: this should be a BN or string, it works until ~9M SOL
   tokenAccounts: TokenAccount[];
 }
 
@@ -119,7 +119,7 @@ const fetchBalances = async (glamClient: GlamClient, owner: PublicKey) => {
       mint: WSOL,
       programId: TOKEN_PROGRAM_ID,
       pubkey: getAssociatedTokenAddressSync(WSOL, owner, true),
-      amount: 0,
+      amount: "0",
       uiAmount: 0,
       decimals: 9,
       frozen: false,
