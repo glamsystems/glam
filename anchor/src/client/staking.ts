@@ -193,7 +193,7 @@ export class StakingClient {
         Buffer.from(accountId),
         fundPDA.toBuffer(),
       ],
-      this.base.programId,
+      this.base.program.programId,
     );
   }
 

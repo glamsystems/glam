@@ -1,6 +1,6 @@
 "use client";
 
-import { useCluster } from "@/components/solana-cluster-provider";
+import { useCluster } from "@glam/anchor/react";
 
 export function ellipsify(str = "", len = 4) {
   if (str.length > 30) {

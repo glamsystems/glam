@@ -22,6 +22,7 @@ import {
 } from "@solana/spl-token";
 import { DriftMarketConfigs, GlamDriftUser } from "../client/drift";
 import { TokenAccount } from "../client/base";
+import { useCluster } from "./cluster-provider";
 
 export interface JupTokenListItem {
   address: string;
@@ -134,9 +135,7 @@ const fetchBalances = async (glamClient: GlamClient, owner: PublicKey) => {
 
 export function GlamProvider({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   const setActiveFund = useSetAtom(fundAtom);
   const setFundsList = useSetAtom(fundsListAtom);
 
@@ -144,6 +143,7 @@ export function GlamProvider({
   const [userWallet, setUserWallet] = useState({} as UserWallet);
   const wallet = useWallet();
   const { connection } = useConnection();
+  const { cluster } = useCluster();
 
   const glamClient = useMemo(
     () =>
@@ -151,8 +151,9 @@ export function GlamProvider({
         provider: new AnchorProvider(connection, wallet as AnchorWallet, {
           commitment: "confirmed",
         }),
+        cluster: cluster.network,
       }),
-    [connection, wallet],
+    [connection, wallet, cluster],
   );
   const [allFunds, setAllFunds] = useState([] as FundModel[]);
   const [jupTokenList, setJupTokenList] = useState([] as JupTokenListItem[]);
@@ -238,13 +239,14 @@ export function GlamProvider({
     }
 
     refreshTreasury();
-  }, [allFundsData, activeFund, wallet]);
+  }, [allFundsData, activeFund, wallet, cluster]);
 
   //
   // Fetch token prices https://station.jup.ag/docs/apis/price-api-v2
   //
   const { data: jupTokenPricesData } = useQuery({
     queryKey: ["/jup-token-prices", treasury?.pubkey],
+    enabled: cluster.network === "mainnet-beta",
     refetchInterval: 10_000,
     queryFn: () => {
       const tokenMints = new Set([] as string[]);
@@ -332,6 +334,7 @@ export function GlamProvider({
   //
   const { data: marketConfigs } = useQuery({
     queryKey: ["drift-market-configs"],
+    enabled: cluster.network === "mainnet-beta",
     queryFn: async () => {
       const response = await fetch(
         "https://api.glam.systems/v0/drift/market_configs/",

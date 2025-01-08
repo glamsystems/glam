@@ -31,7 +31,7 @@ try {
   const config = fs.readFileSync(configPath, "utf8");
   const { keypair_path, helius_api_key, priority_fee_level, fund } =
     JSON.parse(config);
-  process.env.ANCHOR_PROVIDER_URL = `https://mainnet.helius-rpc.com/?api-key=${helius_api_key}`;
+  process.env.ANCHOR_PROVIDER_URL = `https://devnet.helius-rpc.com/?api-key=${helius_api_key}`;
   process.env.ANCHOR_WALLET = keypair_path;
   if (fund) {
     fundPDA = new PublicKey(fund);

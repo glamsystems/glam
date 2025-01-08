@@ -4,20 +4,13 @@ import { clusterApiUrl, Connection } from "@solana/web3.js";
 import { atom, useAtomValue, useSetAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { createContext, ReactNode, useContext } from "react";
-import toast from "react-hot-toast";
+import { ClusterNetwork } from "../clientConfig";
 
 interface Cluster {
   name: string;
   endpoint: string;
   network?: ClusterNetwork;
   active?: boolean;
-}
-
-export enum ClusterNetwork {
-  Mainnet = "mainnet-beta",
-  Testnet = "testnet",
-  Devnet = "devnet",
-  Custom = "custom",
 }
 
 const defaultClusters: Cluster[] = [
@@ -29,28 +22,33 @@ const defaultClusters: Cluster[] = [
   },
   {
     name: "devnet",
-    endpoint: clusterApiUrl("devnet"),
+    endpoint:
+      process.env.NEXT_PUBLIC_SOLANA_RPC?.replace("mainnet", "devnet") ||
+      clusterApiUrl("devnet"),
     network: ClusterNetwork.Devnet,
   },
-  {
+  // {
+  //   name: "testnet",
+  //   endpoint: clusterApiUrl("testnet"),
+  //   network: ClusterNetwork.Testnet,
+  // },
+];
+
+if (process.env.NODE_ENV === "development") {
+  defaultClusters.push({
     name: "localnet",
     endpoint: "http://localhost:8899",
     network: ClusterNetwork.Custom,
-  },
-  {
-    name: "testnet",
-    endpoint: clusterApiUrl("testnet"),
-    network: ClusterNetwork.Testnet,
-  },
-];
+  });
+}
 
 const clusterAtom = atomWithStorage<Cluster>(
   "solana-cluster",
-  defaultClusters[0]
+  defaultClusters[0],
 );
 const clustersAtom = atomWithStorage<Cluster[]>(
   "solana-clusters",
-  defaultClusters
+  defaultClusters,
 );
 
 const activeClustersAtom = atom<Cluster[]>((get) => {
@@ -78,7 +76,7 @@ interface ClusterProviderContext {
 }
 
 const Context = createContext<ClusterProviderContext>(
-  {} as ClusterProviderContext
+  {} as ClusterProviderContext,
 );
 
 export function ClusterProvider({ children }: { children: ReactNode }) {
@@ -95,7 +93,7 @@ export function ClusterProvider({ children }: { children: ReactNode }) {
         new Connection(cluster.endpoint);
         setClusters([...clusters, cluster]);
       } catch (err) {
-        toast.error(`${err}`);
+        throw err;
       }
     },
     deleteCluster: (cluster: Cluster) => {
