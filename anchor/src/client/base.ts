@@ -29,8 +29,14 @@ import {
 } from "@solana/spl-token";
 import { WSOL, USDC } from "../constants";
 
-import { GlamIDL, GlamProgram, getGlamProgramId } from "../glamExports";
-import { ClusterOrCustom, GlamClientConfig } from "../clientConfig";
+import {
+  Glam,
+  GlamIDL,
+  GlamIDLJson,
+  GlamProgram,
+  getGlamProgramId,
+} from "../glamExports";
+import { ClusterNetwork, GlamClientConfig } from "../clientConfig";
 import {
   FundAccount,
   FundMetadataAccount,
@@ -72,17 +78,15 @@ export type TokenAccount = {
 };
 
 export class BaseClient {
-  cluster: ClusterOrCustom;
+  cluster: ClusterNetwork;
   provider: anchor.Provider;
   program: GlamProgram;
-  programId: PublicKey;
   jupiterApi: string;
   blockhashWithCache: BlockhashWithCache;
 
   public constructor(config?: GlamClientConfig) {
     if (config?.provider) {
       this.provider = config?.provider;
-      this.program = new Program(GlamIDL, this.provider) as GlamProgram;
     } else {
       const defaultProvider = anchor.AnchorProvider.env();
       const url = defaultProvider.connection.rpcEndpoint;
@@ -100,17 +104,29 @@ export class BaseClient {
         },
       );
       anchor.setProvider(this.provider);
-      this.program = anchor.workspace.Glam as GlamProgram;
     }
 
     // autodetect mainnet
     const defaultCluster = this.provider.connection.rpcEndpoint.includes(
       "mainnet",
     )
-      ? "mainnet-beta"
-      : "devnet";
+      ? ClusterNetwork.Mainnet
+      : ClusterNetwork.Devnet;
     this.cluster = config?.cluster || defaultCluster;
-    this.programId = getGlamProgramId(this.cluster);
+
+    if (this.cluster === ClusterNetwork.Mainnet) {
+      this.program = new Program(GlamIDL, this.provider) as GlamProgram;
+    } else {
+      const GlamIDLDevnet = { ...GlamIDLJson };
+      GlamIDLDevnet.address = getGlamProgramId(
+        ClusterNetwork.Devnet,
+      ).toBase58();
+      this.program = new Program(
+        GlamIDLDevnet as Glam,
+        this.provider,
+      ) as GlamProgram;
+    }
+
     this.jupiterApi = config?.jupiterApi || JUPITER_API_DEFAULT;
     this.blockhashWithCache = new BlockhashWithCache(
       this.provider,
@@ -119,7 +135,7 @@ export class BaseClient {
   }
 
   isMainnet(): boolean {
-    return this.cluster === "mainnet-beta";
+    return this.cluster === ClusterNetwork.Mainnet;
   }
 
   isPhantom(): boolean {
@@ -350,7 +366,7 @@ export class BaseClient {
         manager.toBuffer(),
         Uint8Array.from(createdKey),
       ],
-      this.programId,
+      this.program.programId,
     );
     return pda;
   }
@@ -358,7 +374,7 @@ export class BaseClient {
   getVaultPda(fundPDA: PublicKey): PublicKey {
     const [pda, _bump] = PublicKey.findProgramAddressSync(
       [Buffer.from("treasury"), fundPDA.toBuffer()],
-      this.programId,
+      this.program.programId,
     );
     return pda;
   }
@@ -449,7 +465,11 @@ export class BaseClient {
   }
 
   getOpenfundsPDA(fundPDA: PublicKey): PublicKey {
-    return FundModel.openfundsPda(fundPDA);
+    const [pda, _] = PublicKey.findProgramAddressSync(
+      [Buffer.from("openfunds"), fundPDA.toBuffer()],
+      this.program.programId,
+    );
+    return pda;
   }
 
   getShareClassPDA(fundPDA: PublicKey, shareId: number = 0): PublicKey {
@@ -560,7 +580,7 @@ export class BaseClient {
       0x31, 0x68, 0xa8, 0xd6, 0x86, 0xb4, 0xad, 0x9a,
     ]);
     const accounts = await this.provider.connection.getParsedProgramAccounts(
-      this.programId,
+      this.program.programId,
       {
         filters: [{ memcmp: { offset: 0, bytes: bs58.encode(bytes) } }],
       },

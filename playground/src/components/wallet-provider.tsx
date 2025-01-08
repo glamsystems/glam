@@ -8,17 +8,13 @@ import {
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 
-import {
-  ClusterNetwork,
-  useCluster,
-} from "@/components/solana-cluster-provider";
-
 // To use default styles:
 // import "@solana/wallet-adapter-react-ui/styles.css";
 import "./wallet-styles.css";
+import { ClusterNetwork, useCluster } from "@glam/anchor/react";
 
 function toWalletAdapterNetwork(
-  cluster?: ClusterNetwork
+  cluster?: ClusterNetwork,
 ): WalletAdapterNetwork | undefined {
   switch (cluster) {
     case ClusterNetwork.Mainnet:
@@ -46,7 +42,7 @@ export default function AppWalletProvider({
       // manually add any legacy wallet adapters here
       // new UnsafeBurnerWalletAdapter(),
     ],
-    [walletAdapterNetwork]
+    [walletAdapterNetwork],
   );
 
   return (

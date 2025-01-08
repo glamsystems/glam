@@ -6,8 +6,7 @@ import { ReactQueryProvider } from "./react-query-provider";
 import React from "react";
 import MobileOverlay from "@/components/MobileOverlay";
 import dynamic from "next/dynamic";
-import { ClusterProvider } from "@/components/solana-cluster-provider";
-import { GlamProvider } from "@glam/anchor/react";
+import { ClusterProvider, GlamProvider } from "@glam/anchor/react";
 
 const inter = Inter({ subsets: ["latin"] });
 

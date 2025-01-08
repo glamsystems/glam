@@ -74,7 +74,7 @@ export class MarinadeClient {
   ): [PublicKey, number] {
     return PublicKey.findProgramAddressSync(
       [Buffer.from("ticket"), Buffer.from(ticketId), fundPDA.toBuffer()],
-      this.base.programId,
+      this.base.program.programId,
     );
   }
 

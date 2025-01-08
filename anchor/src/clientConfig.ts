@@ -1,12 +1,14 @@
 import { Provider, Wallet } from "@coral-xyz/anchor";
-import { Cluster } from "@solana/web3.js";
 
-export type ClusterOrCustom = Cluster | "custom";
-
+export enum ClusterNetwork {
+  Mainnet = "mainnet-beta",
+  Testnet = "testnet",
+  Devnet = "devnet",
+  Custom = "custom",
+}
 export type GlamClientConfig = {
-  mainnet?: boolean;
   provider?: Provider;
   wallet?: Wallet;
-  cluster?: ClusterOrCustom;
+  cluster?: ClusterNetwork;
   jupiterApi?: string;
 };

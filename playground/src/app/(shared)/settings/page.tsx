@@ -30,7 +30,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useCluster } from "@/components/solana-cluster-provider";
 import { toast } from "@/components/ui/use-toast";
 import { PlusIcon, ResetIcon } from "@radix-ui/react-icons";
 import { Label } from "@/components/ui/label";
@@ -47,6 +46,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   getPriorityFeeEstimate,
   GLAM_PROGRAM_ID_MAINNET,
+  useCluster,
 } from "@glam/anchor/react";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
@@ -90,7 +90,7 @@ type FormKey = keyof typeof PERSISTED_FIELDS;
 function usePersistedForm<T extends z.ZodTypeAny>(
   formKey: FormKey,
   schema: T,
-  defaultValues: z.infer<T>
+  defaultValues: z.infer<T>,
 ): UseFormReturn<z.infer<T>> {
   const form = useForm<z.infer<T>>({
     resolver: zodResolver(schema),
@@ -186,7 +186,7 @@ const SettingsPage: React.FC = () => {
   const priorityFeeForm = usePersistedForm(
     "priorityFee",
     priorityFeeFormSchema,
-    PRIORITY_FEE_FORM_DEFAULT_VALUES
+    PRIORITY_FEE_FORM_DEFAULT_VALUES,
   );
 
   const feeOption = priorityFeeForm.watch("option");
@@ -201,7 +201,7 @@ const SettingsPage: React.FC = () => {
         process.env.NEXT_PUBLIC_HELIUS_API_KEY!,
         undefined,
         [GLAM_PROGRAM_ID_MAINNET.toBase58()],
-        "High"
+        "High",
       ),
   });
   useEffect(() => {
@@ -252,7 +252,7 @@ const SettingsPage: React.FC = () => {
             label: capitalizeWords(ce.label),
             url: truncateUrl(ce.endpoint),
             isCustom: true,
-          })
+          }),
         )
       : [];
 
@@ -270,7 +270,7 @@ const SettingsPage: React.FC = () => {
     setEndpoints(updatedEndpoints);
     localStorage.setItem(
       "customEndpoints",
-      JSON.stringify(updatedEndpoints.filter((e) => e.isCustom))
+      JSON.stringify(updatedEndpoints.filter((e) => e.isCustom)),
     );
 
     // Automatically set the new endpoint as active
@@ -301,12 +301,12 @@ const SettingsPage: React.FC = () => {
 
   const deleteCustomEndpoint = (endpointToDelete: string) => {
     const updatedEndpoints = endpoints.filter(
-      (e) => e.value !== endpointToDelete
+      (e) => e.value !== endpointToDelete,
     );
     setEndpoints(updatedEndpoints);
     localStorage.setItem(
       "customEndpoints",
-      JSON.stringify(updatedEndpoints.filter((e) => e.isCustom))
+      JSON.stringify(updatedEndpoints.filter((e) => e.isCustom)),
     );
 
     if (rpcForm.getValues("activeEndpoint") === endpointToDelete) {
@@ -343,7 +343,7 @@ const SettingsPage: React.FC = () => {
                         >
                           {field.value
                             ? endpoints.find(
-                                (endpoint) => endpoint.value === field.value
+                                (endpoint) => endpoint.value === field.value,
                               )?.label
                             : "Select endpoint..."}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -367,7 +367,7 @@ const SettingsPage: React.FC = () => {
                                     handleEndpointChange(
                                       currentValue === field.value
                                         ? ""
-                                        : currentValue
+                                        : currentValue,
                                     );
                                     setOpen(false);
                                   }}
@@ -379,7 +379,7 @@ const SettingsPage: React.FC = () => {
                                           "mr-2 h-4 w-4",
                                           field.value === endpoint.value
                                             ? "opacity-100"
-                                            : "opacity-0"
+                                            : "opacity-0",
                                         )}
                                       />
                                       <div className="flex flex-col">
@@ -533,7 +533,7 @@ const SettingsPage: React.FC = () => {
                 <div
                   className={cn(
                     feeOption === "multiple" ? "grid-cols-3" : "grid-cols-2",
-                    "grid gap-4"
+                    "grid gap-4",
                   )}
                 >
                   <div className="space-y-2">
@@ -559,7 +559,7 @@ const SettingsPage: React.FC = () => {
                               field.onChange(val.toString());
                               priorityFeeForm.setValue(
                                 "multiplier",
-                                val.toString()
+                                val.toString(),
                               );
                             }}
                             value={field.value}
