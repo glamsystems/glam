@@ -203,10 +203,8 @@ export default function GlamDisclaimerContent() {
 
         <section className="mb-6">
           <h2 className="text-lg font-semibold mb-2">
-            12. Additional Information and Disclaimers
+            12. Nature of Information
           </h2>
-
-          <h3 className="text-md font-semibold mb-2">Nature of Information</h3>
           <ul className="list-disc pl-6 mb-4">
             <li>
               All content available through GLAM is{" "}
@@ -228,7 +226,8 @@ export default function GlamDisclaimerContent() {
             </li>
           </ul>
 
-          <h3 className="text-md font-semibold mb-2">Informational Purposes</h3>
+          <h2 className="text-lg font-semibold mb-2">
+            13. Informational Purposes</h2>
           <p className="mb-4">
             While GLAM provides information about cryptoassets and related
             technologies, users should not rely solely on this information for
@@ -236,9 +235,9 @@ export default function GlamDisclaimerContent() {
             research and seek professional advice when necessary.
           </p>
 
-          <h3 className="text-md font-semibold mb-2">
-            Performance Information
-          </h3>
+          <h2 className="text-lg font-semibold mb-2">
+            14. Performance Information
+          </h2>
           <p className="mb-4">
             Any performance information or historical data presented through
             GLAM must be considered in conjunction with applicable disclosures.{" "}
@@ -248,7 +247,9 @@ export default function GlamDisclaimerContent() {
             The cryptoasset market is highly volatile and unpredictable.
           </p>
 
-          <h3 className="text-md font-semibold mb-2">Third-Party Content</h3>
+          <h2 className="text-lg font-semibold mb-2">
+            15. Third-Party Content
+          </h2>
           <p className="mb-4">
             GLAM may include content from third-party sources. While we strive
             to provide accurate and up-to-date information, we do not endorse or
@@ -257,7 +258,9 @@ export default function GlamDisclaimerContent() {
             thinking when interpreting such information.
           </p>
 
-          <h3 className="text-md font-semibold mb-2">Regulatory Compliance</h3>
+          <h2 className="text-lg font-semibold mb-2">
+           16. Regulatory Compliance
+          </h2>
           <p className="mb-4">
             Users are responsible for ensuring their use of GLAM complies with
             all applicable laws and regulations in their jurisdiction.
@@ -266,17 +269,16 @@ export default function GlamDisclaimerContent() {
             jurisdictions.
           </p>
 
-          <h3 className="text-md font-semibold mb-2">
-            Consultation Recommendation
-          </h3>
+          <h2 className="text-lg font-semibold mb-2">
+           17. Professional Advice
+          </h2>
           <p className="mb-4">
-            Given the complex nature of cryptoassets and the potential risks
+          Given the complex nature of cryptoassets and the potential risks
             involved, we strongly recommend that users consult with qualified
             professionals, including legal and tax advisors, before making any
             decisions based on the information provided by GLAM.
           </p>
         </section>
       </div>
-    </PageContentWrapper>
-  );
+    </PageContentWrapper>);
 }
