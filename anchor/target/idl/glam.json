@@ -1,5 +1,5 @@
 {
-  "address": "GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP",
+  "address": "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc",
   "metadata": {
     "name": "glam",
     "version": "0.3.10",
@@ -72,11 +72,11 @@
           }
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
-          "name": "openfunds",
+          "name": "metadata",
           "writable": true
         },
         {
@@ -196,7 +196,7 @@
           "writable": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -247,7 +247,7 @@
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -270,7 +270,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -336,11 +336,11 @@
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
-          "name": "openfunds",
+          "name": "metadata",
           "writable": true
         },
         {
@@ -363,7 +363,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -404,7 +404,7 @@
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -427,7 +427,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -473,7 +473,7 @@
           }
         },
         {
-          "name": "openfunds",
+          "name": "metadata",
           "writable": true
         },
         {
@@ -516,7 +516,7 @@
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -539,7 +539,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -591,7 +591,7 @@
           "signer": true
         },
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -613,7 +613,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -658,14 +658,14 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
           "writable": true
         },
         {
-          "name": "state",
+          "name": "drift_state",
           "writable": true
         },
         {
@@ -687,7 +687,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -761,7 +761,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
@@ -772,7 +772,7 @@
           "writable": true
         },
         {
-          "name": "state",
+          "name": "drift_state",
           "writable": true
         },
         {
@@ -794,7 +794,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -843,7 +843,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
@@ -854,7 +854,7 @@
           "writable": true
         },
         {
-          "name": "state",
+          "name": "drift_state",
           "writable": true
         },
         {
@@ -876,7 +876,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -941,7 +941,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
@@ -952,7 +952,7 @@
           "writable": true
         },
         {
-          "name": "state",
+          "name": "drift_state",
           "writable": true
         },
         {
@@ -974,7 +974,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1027,14 +1027,14 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
           "writable": true
         },
         {
-          "name": "state",
+          "name": "drift_state",
           "writable": true
         },
         {
@@ -1056,7 +1056,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1116,7 +1116,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
@@ -1141,7 +1141,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1195,7 +1195,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
@@ -1220,7 +1220,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1274,7 +1274,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
@@ -1299,7 +1299,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1353,7 +1353,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
@@ -1364,7 +1364,7 @@
           "writable": true
         },
         {
-          "name": "state",
+          "name": "drift_state",
           "writable": true
         },
         {
@@ -1389,7 +1389,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1579,7 +1579,7 @@
           "writable": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -1630,7 +1630,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -1652,7 +1652,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1720,7 +1720,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -1742,7 +1742,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1805,7 +1805,7 @@
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -1828,7 +1828,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1904,7 +1904,7 @@
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1929,7 +1929,7 @@
           }
         },
         {
-          "name": "openfunds",
+          "name": "metadata",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1949,7 +1949,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1974,7 +1974,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -2031,7 +2031,7 @@
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -2054,7 +2054,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -2267,7 +2267,7 @@
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -2290,7 +2290,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -2360,7 +2360,7 @@
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -2383,7 +2383,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -2477,7 +2477,7 @@
           "signer": true
         },
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -2499,7 +2499,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -2678,7 +2678,7 @@
           "signer": true
         },
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -2700,7 +2700,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -2890,7 +2890,7 @@
           "signer": true
         },
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -2912,7 +2912,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -2991,7 +2991,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -3013,7 +3013,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -3077,7 +3077,7 @@
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -3100,7 +3100,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -3224,7 +3224,7 @@
           "writable": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -3274,7 +3274,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -3296,7 +3296,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -3353,7 +3353,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -3375,7 +3375,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -3440,7 +3440,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "share_class",
@@ -3475,7 +3475,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -3573,7 +3573,7 @@
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -3596,7 +3596,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -3665,7 +3665,7 @@
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -3713,7 +3713,7 @@
           "writable": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -3771,7 +3771,7 @@
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -3794,7 +3794,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -3867,7 +3867,7 @@
           "signer": true
         },
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -3889,7 +3889,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -4056,7 +4056,7 @@
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -4079,7 +4079,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -4269,7 +4269,7 @@
           "signer": true
         },
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -4291,7 +4291,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -4383,7 +4383,7 @@
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -4406,7 +4406,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -4499,7 +4499,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -4521,7 +4521,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -4694,7 +4694,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -4716,7 +4716,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -4811,7 +4811,7 @@
           }
         },
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "src_account_policy",
@@ -4905,7 +4905,7 @@
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -4954,7 +4954,7 @@
           "writable": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -5006,7 +5006,7 @@
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -5029,7 +5029,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -5095,7 +5095,7 @@
           }
         },
         {
-          "name": "manager_ata",
+          "name": "signer_ata",
           "writable": true,
           "pda": {
             "seeds": [
@@ -5193,7 +5193,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -5215,7 +5215,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -5283,7 +5283,7 @@
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -5306,7 +5306,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -5352,7 +5352,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -5374,7 +5374,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -5438,7 +5438,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -5460,7 +5460,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -5595,7 +5595,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -5617,7 +5617,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -5864,13 +5864,58 @@
   "errors": [
     {
       "code": 6000,
-      "name": "InvalidAssetForSwap",
-      "msg": "Asset cannot be swapped"
+      "name": "InvalidShareClass",
+      "msg": "Share class not allowed to subscribe"
     },
     {
       "code": 6001,
-      "name": "InvalidSwap",
-      "msg": "Swap failed"
+      "name": "InvalidAssetSubscribe",
+      "msg": "Asset not allowed to subscribe"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidPricingOracle",
+      "msg": "Invalid oracle for asset price"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidRemainingAccounts",
+      "msg": "Invalid accounts: the transaction is malformed"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidTreasuryAccount",
+      "msg": "Invalid treasury ata"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidSignerAccount",
+      "msg": "Invalid signer ata"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidAssetPrice",
+      "msg": "Invalid asset price"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidStableCoinPriceForSubscribe",
+      "msg": "Subscription not allowed: invalid stable coin price"
+    },
+    {
+      "code": 6008,
+      "name": "SubscribeRedeemDisable",
+      "msg": "Fund is disabled for subscription and redemption"
+    },
+    {
+      "code": 6009,
+      "name": "InvalidPolicyAccount",
+      "msg": "Policy account is mandatory"
+    },
+    {
+      "code": 6010,
+      "name": "PriceTooOld",
+      "msg": "Price is too old"
     }
   ],
   "types": [
@@ -6132,7 +6177,7 @@
             "name": "IntegrationAcls"
           },
           {
-            "name": "ExternalTreasuryAccounts"
+            "name": "ExternalVaultAccounts"
           },
           {
             "name": "LockUp"
@@ -6387,15 +6432,15 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "manager",
+            "name": "owner",
             "type": "pubkey"
           },
           {
-            "name": "treasury",
+            "name": "vault",
             "type": "pubkey"
           },
           {
-            "name": "openfunds",
+            "name": "metadata",
             "type": "pubkey"
           },
           {
@@ -6403,7 +6448,7 @@
             "type": "pubkey"
           },
           {
-            "name": "share_classes",
+            "name": "mints",
             "type": {
               "vec": "pubkey"
             }
@@ -6417,7 +6462,7 @@
             "type": "string"
           },
           {
-            "name": "openfunds_uri",
+            "name": "metadata_uri",
             "type": "string"
           },
           {
@@ -8745,9 +8790,24 @@
   ],
   "constants": [
     {
-      "name": "SEED",
+      "name": "SEED_METADATA",
       "type": "string",
-      "value": "\"anchor\""
+      "value": "\"openfunds\""
+    },
+    {
+      "name": "SEED_MINT",
+      "type": "string",
+      "value": "\"share\""
+    },
+    {
+      "name": "SEED_STATE",
+      "type": "string",
+      "value": "\"fund\""
+    },
+    {
+      "name": "SEED_VAULT",
+      "type": "string",
+      "value": "\"treasury\""
     }
   ]
 }

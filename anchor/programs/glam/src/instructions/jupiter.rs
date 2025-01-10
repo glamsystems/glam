@@ -43,10 +43,9 @@ impl anchor_lang::Id for Jupiter {
 
 #[derive(Accounts)]
 pub struct JupiterSwap<'info> {
-    // fund can mutate: output_mint can be added to assets
     #[account(mut)]
-    pub fund: Box<Account<'info, FundAccount>>,
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    pub state: Box<Account<'info, StateAccount>>,
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     /// CHECK: no need to deser because we transfer_checked from
@@ -187,7 +186,7 @@ fn is_lst<'info>(mint: &Pubkey, stake_pool_account: Option<&AccountInfo<'info>>)
 }
 
 #[access_control(
-    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterSwap)
+    acl::check_integration(&ctx.accounts.state, IntegrationName::JupiterSwap)
 )]
 #[vault_signer_seeds]
 pub fn swap_handler<'c: 'info, 'info>(
@@ -195,8 +194,8 @@ pub fn swap_handler<'c: 'info, 'info>(
     amount: u64,
     data: Vec<u8>,
 ) -> Result<()> {
-    let fund = ctx.accounts.fund.clone();
-    let assets = ctx.accounts.fund.assets_mut().unwrap();
+    let state = ctx.accounts.state.clone();
+    let assets = ctx.accounts.state.assets_mut().unwrap();
 
     // Check if input and output mints are in the assets allowlist
     let input_in_assets = assets.contains(&ctx.accounts.input_mint.key());
@@ -221,7 +220,7 @@ pub fn swap_handler<'c: 'info, 'info>(
     {
         accepted_permissions.push(Permission::JupiterSwapLst);
     }
-    acl::check_access_any(&fund, &ctx.accounts.signer.key, accepted_permissions)?;
+    acl::check_access_any(&state, &ctx.accounts.signer.key, accepted_permissions)?;
 
     // TODO: should we add missing assets to the list after permission check?
     // This will gradually expand the assets allowlist and auto escalate JupiterSwapFundAssets privilege over time
@@ -307,9 +306,9 @@ pub fn swap_handler<'c: 'info, 'info>(
 #[derive(Accounts)]
 pub struct InitLockedVoterEscrow<'info> {
     #[account()]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     #[account(mut)]
@@ -327,10 +326,10 @@ pub struct InitLockedVoterEscrow<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::StakeJup)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::StakeJup)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
+    acl::check_integration(&ctx.accounts.state, IntegrationName::JupiterVote)
 )]
 #[vault_signer_seeds]
 pub fn init_locked_voter_escrow_handler<'info>(ctx: Context<InitLockedVoterEscrow>) -> Result<()> {
@@ -352,9 +351,9 @@ pub fn init_locked_voter_escrow_handler<'info>(ctx: Context<InitLockedVoterEscro
 #[derive(Accounts)]
 pub struct ToogleMaxLock<'info> {
     #[account()]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     #[account(mut)]
@@ -372,12 +371,12 @@ pub struct ToogleMaxLock<'info> {
 
 #[access_control(
     acl::check_access_any(
-        &ctx.accounts.fund,
+        &ctx.accounts.state,
         &ctx.accounts.signer.key,
         vec![Permission::StakeJup, Permission::UnstakeJup])
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
+    acl::check_integration(&ctx.accounts.state, IntegrationName::JupiterVote)
 )]
 #[vault_signer_seeds]
 pub fn toggle_max_lock_handler<'info>(ctx: Context<ToogleMaxLock>, value: bool) -> Result<()> {
@@ -400,9 +399,9 @@ pub fn toggle_max_lock_handler<'info>(ctx: Context<ToogleMaxLock>, value: bool) 
 #[derive(Accounts)]
 pub struct IncreaseLockedAmount<'info> {
     #[account()]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     #[account(mut)]
@@ -425,10 +424,10 @@ pub struct IncreaseLockedAmount<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::StakeJup)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::StakeJup)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
+    acl::check_integration(&ctx.accounts.state, IntegrationName::JupiterVote)
 )]
 #[vault_signer_seeds]
 pub fn increase_locked_amount_handler<'info>(
@@ -457,9 +456,9 @@ pub fn increase_locked_amount_handler<'info>(
 #[derive(Accounts)]
 pub struct PartialUnstaking<'info> {
     #[account()]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     #[account(mut)]
@@ -480,10 +479,10 @@ pub struct PartialUnstaking<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::UnstakeJup)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::UnstakeJup)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
+    acl::check_integration(&ctx.accounts.state, IntegrationName::JupiterVote)
 )]
 #[vault_signer_seeds]
 pub fn open_partial_unstaking_handler<'info>(
@@ -510,10 +509,10 @@ pub fn open_partial_unstaking_handler<'info>(
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::UnstakeJup)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::UnstakeJup)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
+    acl::check_integration(&ctx.accounts.state, IntegrationName::JupiterVote)
 )]
 #[vault_signer_seeds]
 pub fn merge_partial_unstaking_handler<'info>(ctx: Context<PartialUnstaking>) -> Result<()> {
@@ -533,9 +532,9 @@ pub fn merge_partial_unstaking_handler<'info>(ctx: Context<PartialUnstaking>) ->
 #[derive(Accounts)]
 pub struct WithdrawAllStakedJup<'info> {
     #[account()]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     #[account(mut)]
@@ -558,10 +557,10 @@ pub struct WithdrawAllStakedJup<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::UnstakeJup)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::UnstakeJup)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
+    acl::check_integration(&ctx.accounts.state, IntegrationName::JupiterVote)
 )]
 #[vault_signer_seeds]
 pub fn withdraw_all_staked_jup_handler<'info>(ctx: Context<WithdrawAllStakedJup>) -> Result<()> {
@@ -585,9 +584,9 @@ pub fn withdraw_all_staked_jup_handler<'info>(ctx: Context<WithdrawAllStakedJup>
 #[derive(Accounts)]
 pub struct WithdrawPartialUnstaking<'info> {
     #[account()]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     #[account(mut)]
@@ -613,10 +612,10 @@ pub struct WithdrawPartialUnstaking<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::UnstakeJup)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::UnstakeJup)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
+    acl::check_integration(&ctx.accounts.state, IntegrationName::JupiterVote)
 )]
 #[vault_signer_seeds]
 pub fn withdraw_partial_unstaking_handler<'info>(
@@ -643,9 +642,9 @@ pub fn withdraw_partial_unstaking_handler<'info>(
 #[derive(Accounts)]
 pub struct NewVote<'info> {
     #[account()]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     #[account(mut)]
@@ -663,10 +662,10 @@ pub struct NewVote<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::VoteOnProposal)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::VoteOnProposal)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
+    acl::check_integration(&ctx.accounts.state, IntegrationName::JupiterVote)
 )]
 #[vault_signer_seeds]
 pub fn new_vote_handler<'info>(ctx: Context<NewVote>) -> Result<()> {
@@ -690,9 +689,9 @@ pub fn new_vote_handler<'info>(ctx: Context<NewVote>) -> Result<()> {
 #[derive(Accounts)]
 pub struct CastVote<'info> {
     #[account(mut)]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     #[account(mut)]
@@ -718,10 +717,10 @@ pub struct CastVote<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::VoteOnProposal)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::VoteOnProposal)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.fund, IntegrationName::JupiterVote)
+    acl::check_integration(&ctx.accounts.state, IntegrationName::JupiterVote)
 )]
 #[vault_signer_seeds]
 pub fn cast_vote_handler<'info>(ctx: Context<CastVote>, side: u8) -> Result<()> {

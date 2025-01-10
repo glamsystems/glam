@@ -30,9 +30,9 @@ pub struct StakePoolDepositSol<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     /// CHECK: checked by stake pool program
@@ -69,9 +69,9 @@ pub struct StakePoolDepositSol<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Stake)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Stake)
 )]
-#[access_control(acl::check_stake_pool_integration(&ctx.accounts.fund, &ctx.accounts.stake_pool_program.key))]
+#[access_control(acl::check_stake_pool_integration(&ctx.accounts.state, &ctx.accounts.stake_pool_program.key))]
 #[vault_signer_seeds]
 pub fn deposit_sol_handler<'c: 'info, 'info>(
     ctx: Context<StakePoolDepositSol>,
@@ -116,9 +116,9 @@ pub struct StakePoolDepositStake<'info> {
     pub signer: Signer<'info>,
 
     #[account(mut)]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     #[account(mut)]
@@ -172,9 +172,9 @@ pub struct StakePoolDepositStake<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Stake)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Stake)
 )]
-#[access_control(acl::check_stake_pool_integration(&ctx.accounts.fund, &ctx.accounts.stake_pool_program.key))]
+#[access_control(acl::check_stake_pool_integration(&ctx.accounts.state, &ctx.accounts.stake_pool_program.key))]
 #[vault_signer_seeds]
 pub fn deposit_stake_handler<'c: 'info, 'info>(ctx: Context<StakePoolDepositStake>) -> Result<()> {
     let vec_ix = deposit_stake(
@@ -216,9 +216,9 @@ pub fn deposit_stake_handler<'c: 'info, 'info>(ctx: Context<StakePoolDepositStak
         let _ = invoke_signed(&ix, &account_infos, vault_signer_seeds);
     }
 
-    let fund = &mut ctx.accounts.fund;
+    let fund = &mut ctx.accounts.state;
     fund.delete_from_engine_field(
-        EngineFieldName::ExternalTreasuryAccounts,
+        EngineFieldName::ExternalVaultAccounts,
         ctx.accounts.vault_stake_account.key(),
     );
 
@@ -230,9 +230,9 @@ pub struct StakePoolWithdrawSol<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     /// CHECK: checked by stake pool program
@@ -267,9 +267,9 @@ pub struct StakePoolWithdrawSol<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::LiquidUnstake)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::LiquidUnstake)
 )]
-#[access_control(acl::check_stake_pool_integration(&ctx.accounts.fund, &ctx.accounts.stake_pool_program.key))]
+#[access_control(acl::check_stake_pool_integration(&ctx.accounts.state, &ctx.accounts.stake_pool_program.key))]
 #[vault_signer_seeds]
 pub fn withdraw_sol_handler<'c: 'info, 'info>(
     ctx: Context<StakePoolWithdrawSol>,
@@ -317,9 +317,9 @@ pub struct StakePoolWithdrawStake<'info> {
     pub signer: Signer<'info>,
 
     #[account(mut)]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     /// CHECK: will be initialized in the instruction
@@ -360,10 +360,10 @@ pub struct StakePoolWithdrawStake<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Unstake)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Unstake)
 )]
 #[access_control(
-    acl::check_stake_pool_integration(&ctx.accounts.fund, &ctx.accounts.stake_pool_program.key)
+    acl::check_stake_pool_integration(&ctx.accounts.state, &ctx.accounts.stake_pool_program.key)
 )]
 #[vault_signer_seeds]
 pub fn withdraw_stake_handler<'c: 'info, 'info>(
@@ -372,11 +372,11 @@ pub fn withdraw_stake_handler<'c: 'info, 'info>(
     stake_account_bump: u8,
     stake_account_id: String,
 ) -> Result<()> {
-    let fund_key = ctx.accounts.fund.key();
+    let state_key = ctx.accounts.state.key();
     let stake_account_seeds = &[
         b"stake_account".as_ref(),
         stake_account_id.as_bytes(),
-        fund_key.as_ref(),
+        state_key.as_ref(),
         &[stake_account_bump],
     ];
 
@@ -434,9 +434,9 @@ pub fn withdraw_stake_handler<'c: 'info, 'info>(
     )?;
 
     // Add stake account to the fund params
-    let fund = &mut ctx.accounts.fund;
+    let fund = &mut ctx.accounts.state;
     fund.add_to_engine_field(
-        EngineFieldName::ExternalTreasuryAccounts,
+        EngineFieldName::ExternalVaultAccounts,
         ctx.accounts.vault_stake_account.key(),
     );
 

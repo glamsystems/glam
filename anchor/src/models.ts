@@ -151,8 +151,8 @@ export class FundModel extends FundIdlModel {
       id: fundPDA,
       name: fundAccount.name,
       uri: fundAccount.uri,
-      manager: new ManagerModel({ pubkey: fundAccount.manager }),
-      openfundsUri: fundAccount.openfundsUri,
+      manager: new ManagerModel({ pubkey: fundAccount.owner }),
+      openfundsUri: fundAccount.metadataUri,
       shareClasses: [],
     };
 
@@ -180,7 +180,7 @@ export class FundModel extends FundIdlModel {
     fundModel.rawOpenfunds = new FundOpenfundsModel(fundOpenfundsFields);
 
     // Build the array of ShareClassModel
-    fundAccount.shareClasses.forEach((_, i) => {
+    fundAccount.mints.forEach((_, i) => {
       const shareClassIdlModel = {} as any;
       shareClassIdlModel["fundId"] = fundPDA;
 

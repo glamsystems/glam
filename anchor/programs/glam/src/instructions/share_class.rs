@@ -1,4 +1,5 @@
 use crate::{
+    constants::*,
     error::{AccessError, FundError, ShareClassError},
     policy_hook::TRANSFER_HOOK_EXTRA_ACCOUNTS,
     state::*,
@@ -35,9 +36,9 @@ pub struct AddShareClass<'info> {
     #[account(
       mut,
       seeds = [
-        b"share".as_ref(),
-        &[fund.share_classes.len() as u8],
-        fund.key().as_ref()
+        SEED_MINT.as_ref(),
+        &[state.mints.len() as u8],
+        state.key().as_ref()
       ],
       bump
     )]
@@ -53,11 +54,11 @@ pub struct AddShareClass<'info> {
     )]
     pub extra_account_meta_list: UncheckedAccount<'info>,
 
-    #[account(mut, constraint = fund.manager == signer.key() @ AccessError::NotAuthorized)]
-    pub fund: Box<Account<'info, FundAccount>>,
+    #[account(mut, constraint = state.owner == signer.key() @ AccessError::NotAuthorized)]
+    pub state: Box<Account<'info, StateAccount>>,
 
     #[account(mut)]
-    pub openfunds: Box<Account<'info, FundMetadataAccount>>,
+    pub metadata: Box<Account<'info, MetadataAccount>>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -71,12 +72,12 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
     share_class_metadata: ShareClassModel,
 ) -> Result<()> {
     //
-    // Add share class to fund
+    // Add share class to state
     //
-    let fund = &mut ctx.accounts.fund;
-    let fund_key = fund.key();
-    let share_class_idx = fund.share_classes.len() as u8;
-    fund.share_classes.push(ctx.accounts.share_class_mint.key());
+    let state = &mut ctx.accounts.state;
+    let state_key = state.key();
+    let share_class_idx = state.mints.len() as u8;
+    state.mints.push(ctx.accounts.share_class_mint.key());
 
     //
     // Compute and add share class params
@@ -128,14 +129,14 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
     raw_openfunds.has_lock_up_for_redemption = Some(policy_has_lock_up);
 
     share_class_metadata.raw_openfunds = Some(raw_openfunds);
-    fund.params.push(share_class_params);
+    state.params.push(share_class_params);
 
     let share_class_fields = Vec::<ShareClassField>::from(&share_class_metadata.clone());
 
     //
     // Add share class data to openfunds
     //
-    let openfunds = &mut ctx.accounts.openfunds;
+    let openfunds = &mut ctx.accounts.metadata;
     openfunds.share_classes.push(share_class_fields.clone());
 
     //
@@ -155,7 +156,7 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
     let seeds = &[
         "share".as_bytes(),
         &[share_class_idx],
-        fund_key.as_ref(),
+        state_key.as_ref(),
         &[ctx.bumps.share_class_mint],
     ];
     let signer_seeds = &[&seeds[..]];
@@ -260,8 +261,8 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
 
     // Init transfer hook ExtraAccountMetaList
     let account_metas = vec![
-        // index 5, fund
-        ExtraAccountMeta::new_with_pubkey(&fund_key, false, false)?,
+        // index 5, state
+        ExtraAccountMeta::new_with_pubkey(&state_key, false, false)?,
         // index 6, src_account_policy
         ExtraAccountMeta::new_with_seeds(
             &[
@@ -321,7 +322,7 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
             &share_metadata.key(),
             &share_self_authority.key(),
             spl_token_metadata_interface::state::Field::Key("FundId".to_string()),
-            fund_key.to_string(),
+            state_key.to_string(),
         ),
         &[share_mint.clone(), share_self_authority.clone()],
         signer_seeds,
@@ -346,11 +347,11 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
 #[derive(Accounts)]
 #[instruction(share_class_id: u8)]
 pub struct SetTokenAccountsStates<'info> {
-    #[account(mut, seeds = [b"share".as_ref(), &[share_class_id], fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_MINT.as_ref(), &[share_class_id], state.key().as_ref()], bump)]
     pub share_class_mint: InterfaceAccount<'info, Mint>,
 
     #[account(mut)]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -358,8 +359,8 @@ pub struct SetTokenAccountsStates<'info> {
     pub token_2022_program: Program<'info, Token2022>,
 }
 
-#[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::SetTokenAccountsStates))]
-#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Mint))]
+#[access_control(acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::SetTokenAccountsStates))]
+#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Mint))]
 #[share_class_signer_seeds]
 pub fn set_token_accounts_states_handler<'info>(
     ctx: Context<'_, '_, 'info, 'info, SetTokenAccountsStates<'info>>,
@@ -443,7 +444,7 @@ pub struct ForceTransferShare<'info> {
 
     #[account(
         mut,
-        seeds = [b"share".as_ref(), &[share_class_id], fund.key().as_ref()],
+        seeds = [SEED_MINT.as_ref(), &[share_class_id], state.key().as_ref()],
         bump,
         mint::authority = share_class_mint,
         mint::token_program = token_2022_program
@@ -451,7 +452,7 @@ pub struct ForceTransferShare<'info> {
     pub share_class_mint: InterfaceAccount<'info, Mint>,
 
     #[account(mut)]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -459,8 +460,8 @@ pub struct ForceTransferShare<'info> {
     pub token_2022_program: Program<'info, Token2022>,
 }
 
-#[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::ForceTransferShare))]
-#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Mint))]
+#[access_control(acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::ForceTransferShare))]
+#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Mint))]
 #[share_class_signer_seeds]
 pub fn force_transfer_share_handler(
     ctx: Context<ForceTransferShare>,
@@ -512,7 +513,7 @@ pub struct BurnShare<'info> {
 
     #[account(
         mut,
-        seeds = [b"share".as_ref(), &[share_class_id], fund.key().as_ref()],
+        seeds = [SEED_MINT.as_ref(), &[share_class_id], state.key().as_ref()],
         bump,
         mint::authority = share_class_mint,
         mint::token_program = token_2022_program
@@ -520,7 +521,7 @@ pub struct BurnShare<'info> {
     pub share_class_mint: InterfaceAccount<'info, Mint>,
 
     #[account(mut)]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -528,8 +529,8 @@ pub struct BurnShare<'info> {
     pub token_2022_program: Program<'info, Token2022>,
 }
 
-#[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::BurnShare))]
-#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Mint))]
+#[access_control(acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::BurnShare))]
+#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Mint))]
 #[share_class_signer_seeds]
 pub fn burn_share_handler(ctx: Context<BurnShare>, share_class_id: u8, amount: u64) -> Result<()> {
     #[cfg(not(feature = "mainnet"))]
@@ -571,7 +572,7 @@ pub struct MintShare<'info> {
 
     #[account(
         mut,
-        seeds = [b"share".as_ref(), &[share_class_id], fund.key().as_ref()],
+        seeds = [SEED_MINT.as_ref(), &[share_class_id], state.key().as_ref()],
         bump,
         mint::authority = share_class_mint,
         mint::token_program = token_2022_program
@@ -579,7 +580,7 @@ pub struct MintShare<'info> {
     share_class_mint: InterfaceAccount<'info, Mint>,
 
     #[account(mut)]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -587,8 +588,8 @@ pub struct MintShare<'info> {
     pub token_2022_program: Program<'info, Token2022>,
 }
 
-#[access_control(acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::MintShare))]
-#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Mint))]
+#[access_control(acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::MintShare))]
+#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Mint))]
 #[share_class_signer_seeds]
 pub fn mint_share_handler<'info>(
     ctx: Context<'_, '_, '_, 'info, MintShare<'info>>,
@@ -616,15 +617,15 @@ pub fn mint_share_handler<'info>(
 pub struct UpdateShareClass<'info> {
     #[account(
         mut,
-        seeds = [b"share".as_ref(), &[share_class_id], fund.key().as_ref()],
+        seeds = [SEED_MINT.as_ref(), &[share_class_id], state.key().as_ref()],
         bump,
         mint::authority = share_class_mint,
         mint::token_program = token_2022_program
     )]
     share_class_mint: InterfaceAccount<'info, Mint>,
 
-    #[account(mut, constraint = fund.manager == signer.key() @ AccessError::NotAuthorized)]
-    pub fund: Box<Account<'info, FundAccount>>,
+    #[account(mut, constraint = state.owner == signer.key() @ AccessError::NotAuthorized)]
+    pub state: Box<Account<'info, StateAccount>>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -637,16 +638,16 @@ pub fn update_share_class_handler(
     share_class_id: u8,
     share_class_model: ShareClassModel,
 ) -> Result<()> {
-    let fund = &mut ctx.accounts.fund;
+    let state = &mut ctx.accounts.state;
     if !share_class_model.allowlist.is_empty() {
-        let allowlist = fund.share_class_allowlist_mut(share_class_id as usize);
+        let allowlist = state.share_class_allowlist_mut(share_class_id as usize);
         if let Some(_allowlist) = allowlist {
             _allowlist.clear();
             _allowlist.extend(share_class_model.allowlist.clone());
         }
     }
     if !share_class_model.blocklist.is_empty() {
-        let blocklist = fund.share_class_blocklist_mut(share_class_id as usize);
+        let blocklist = state.share_class_blocklist_mut(share_class_id as usize);
         if let Some(_blocklist) = blocklist {
             _blocklist.clear();
             _blocklist.extend(share_class_model.blocklist.clone());
@@ -658,18 +659,18 @@ pub fn update_share_class_handler(
 #[derive(Accounts)]
 #[instruction(share_class_id: u8)]
 pub struct CloseShareClass<'info> {
-    #[account(mut, constraint = fund.manager == signer.key() @ AccessError::NotAuthorized)]
-    pub fund: Account<'info, FundAccount>,
+    #[account(mut, constraint = state.owner == signer.key() @ AccessError::NotAuthorized)]
+    pub state: Account<'info, StateAccount>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     #[account(
         mut,
         seeds = [
-          b"share".as_ref(),
+          SEED_MINT.as_ref(),
           &[share_class_id],
-          fund.key().as_ref()
+          state.key().as_ref()
         ],
         bump,
         mint::authority = share_class_mint,
@@ -686,7 +687,7 @@ pub struct CloseShareClass<'info> {
     pub extra_account_meta_list: UncheckedAccount<'info>,
 
     #[account(mut)]
-    pub openfunds: Box<Account<'info, FundMetadataAccount>>,
+    pub metadata: Box<Account<'info, MetadataAccount>>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -697,7 +698,7 @@ pub struct CloseShareClass<'info> {
 #[share_class_signer_seeds]
 pub fn close_share_class_handler(ctx: Context<CloseShareClass>, share_class_id: u8) -> Result<()> {
     require!(
-        (share_class_id as usize) < ctx.accounts.fund.share_classes.len(),
+        (share_class_id as usize) < ctx.accounts.state.mints.len(),
         FundError::NoShareClassInFund
     );
 
@@ -718,13 +719,10 @@ pub fn close_share_class_handler(ctx: Context<CloseShareClass>, share_class_id: 
         share_class_signer_seeds,
     ))?;
 
-    ctx.accounts
-        .fund
-        .share_classes
-        .remove(share_class_id as usize);
+    ctx.accounts.state.mints.remove(share_class_id as usize);
 
     ctx.accounts
-        .openfunds
+        .metadata
         .share_classes
         .remove(share_class_id as usize);
 

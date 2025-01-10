@@ -17,7 +17,7 @@ use crate::constants::{self, WSOL};
 use crate::error::{FundError, InvestorError, PolicyError};
 use crate::instructions::policy_hook::PolicyAccount;
 use crate::state::pyth_price::PriceExt;
-use crate::state::*;
+use crate::{constants::*, state::*};
 
 fn log_decimal(amount: u64, minus_decimals: i32) -> f64 {
     amount as f64 * 10f64.powf(minus_decimals as f64)
@@ -27,15 +27,15 @@ fn log_decimal(amount: u64, minus_decimals: i32) -> f64 {
 #[instruction(_share_class_id: u8)]
 pub struct Subscribe<'info> {
     #[account()]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     // the shares to mint
     #[account(
         mut,
-        seeds = [b"share".as_ref(), &[_share_class_id], fund.key().as_ref()],
+        seeds = [SEED_MINT.as_bytes(), &[_share_class_id], state.key().as_ref()],
         bump,
         mint::authority = share_class,
         mint::token_program = token_2022_program
@@ -89,29 +89,29 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     amount: u64,
     skip_state: bool,
 ) -> Result<()> {
-    let fund = &ctx.accounts.fund;
-    require!(fund.is_enabled(), FundError::FundNotActive);
+    let state = &ctx.accounts.state;
+    require!(state.is_enabled(), FundError::FundNotActive);
 
     let external_vault_accounts =
-        fund.get_pubkeys_from_engine_field(EngineFieldName::ExternalTreasuryAccounts);
+        state.get_pubkeys_from_engine_field(EngineFieldName::ExternalVaultAccounts);
 
     // If system program is in the external vault accounts, it means that
-    // the fund is disabled for subscription and redemption.
+    // the state is disabled for subscription and redemption.
     if external_vault_accounts.contains(&system_program::ID) {
         return err!(InvestorError::SubscribeRedeemDisable);
     }
 
-    if fund.share_classes.len() > 1 {
+    if state.mints.len() > 1 {
         // we need to define how to split the total amount into share classes
         panic!("not implemented")
     }
-    require!(fund.share_classes.len() > 0, FundError::NoShareClassInFund);
+    require!(state.mints.len() > 0, FundError::NoShareClassInFund);
     require!(
-        fund.share_classes[0] == ctx.accounts.share_class.key(),
+        state.mints[0] == ctx.accounts.share_class.key(),
         InvestorError::InvalidShareClass
     );
 
-    if let Some(share_class_blocklist) = fund.share_class_blocklist(0) {
+    if let Some(share_class_blocklist) = state.share_class_blocklist(0) {
         require!(
             share_class_blocklist.len() == 0
                 || !share_class_blocklist
@@ -121,7 +121,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         );
     }
 
-    if let Some(share_class_allowlist) = fund.share_class_allowlist(0) {
+    if let Some(share_class_allowlist) = state.share_class_allowlist(0) {
         require!(
             share_class_allowlist.len() == 0
                 || share_class_allowlist
@@ -132,7 +132,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     }
 
     // Lock-up
-    let lock_up = fund.share_class_lock_up(0);
+    let lock_up = state.share_class_lock_up(0);
     if lock_up > 0 {
         require!(
             ctx.accounts.signer_policy.is_some(),
@@ -154,15 +154,15 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         }
     }
 
-    let fund_assets = fund.assets().unwrap();
-    let asset_idx = fund_assets
+    let state_assets = state.assets().unwrap();
+    let asset_idx = state_assets
         .iter()
         .position(|&asset| asset == ctx.accounts.asset.key());
     require!(asset_idx.is_some(), InvestorError::InvalidAssetSubscribe);
     // msg!("asset={:?} idx={:?}", asset_key, asset_idx);
 
     let asset_idx = asset_idx.unwrap();
-    let asset_base = fund_assets[0];
+    let asset_base = state_assets[0];
     //TODO check if in_kind is allowed, or idx must be 0
 
     //
@@ -175,7 +175,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
 
     let aum_components = get_aum_components(
         Action::Subscribe,
-        fund_assets,
+        state_assets,
         ctx.remaining_accounts,
         &ctx.accounts.vault,
         &external_vault_accounts,
@@ -256,11 +256,11 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     if skip_state {
         // TODO: we should read share class symbol from metadata so that we don't need to pass it as an argument
         // mint shares to signer
-        let fund_key = ctx.accounts.fund.key();
+        let state_key = ctx.accounts.state.key();
         let seeds = &[
             "share".as_bytes(),
             &[0u8],
-            fund_key.as_ref(),
+            state_key.as_ref(),
             &[ctx.bumps.share_class],
         ];
         let signer_seeds = &[&seeds[..]];
@@ -286,8 +286,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
 
 #[derive(Accounts)]
 pub struct Redeem<'info> {
-    // fund.share_class[0] == ctx.accounts.share_class, checked in handler logic
-    pub fund: Account<'info, FundAccount>,
+    pub state: Account<'info, StateAccount>,
 
     // the shares to burn
     #[account(mut, mint::authority = share_class, mint::token_program = token_2022_program)]
@@ -299,7 +298,7 @@ pub struct Redeem<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     #[account(
@@ -325,31 +324,31 @@ pub fn redeem_handler<'c: 'info, 'info>(
     in_kind: bool,
     skip_state: bool,
 ) -> Result<()> {
-    let fund = &ctx.accounts.fund;
-    require!(fund.is_enabled(), FundError::FundNotActive);
+    let state = &ctx.accounts.state;
+    require!(state.is_enabled(), FundError::FundNotActive);
 
     let external_vault_accounts =
-        fund.get_pubkeys_from_engine_field(EngineFieldName::ExternalTreasuryAccounts);
+        state.get_pubkeys_from_engine_field(EngineFieldName::ExternalVaultAccounts);
 
     // If system program is in the external vault accounts, it means that
-    // the fund is disabled for subscription and redemption.
+    // the state is disabled for subscription and redemption.
     if external_vault_accounts.contains(&system_program::ID) {
         return err!(InvestorError::SubscribeRedeemDisable);
     }
 
-    if ctx.accounts.fund.share_classes.len() > 1 {
+    if ctx.accounts.state.mints.len() > 1 {
         // we need to define how to split the total amount into share classes
         panic!("not implemented")
     }
-    require!(fund.share_classes.len() > 0, FundError::NoShareClassInFund);
+    require!(state.mints.len() > 0, FundError::NoShareClassInFund);
     require!(
-        fund.share_classes[0] == ctx.accounts.share_class.key(),
+        state.mints[0] == ctx.accounts.share_class.key(),
         InvestorError::InvalidShareClass
     );
 
     // Lock-up
     let mut close_signer_policy = false;
-    let lock_up = fund.share_class_lock_up(0);
+    let lock_up = state.share_class_lock_up(0);
     if lock_up > 0 {
         require!(
             ctx.accounts.signer_policy.is_some(),
@@ -398,7 +397,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
         share_expo,
     );
 
-    let assets = fund.assets().unwrap();
+    let assets = state.assets().unwrap();
     let skip_prices = should_transfer_everything || in_kind;
     let aum_components = get_aum_components(
         Action::Redeem,

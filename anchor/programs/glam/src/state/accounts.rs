@@ -15,8 +15,8 @@ pub enum EngineFieldName {
     ShareClassBlocklist, // share class
     DelegateAcls,
     IntegrationAcls,
-    ExternalTreasuryAccounts, // external accounts with treasury assets
-    LockUp,                   // share class
+    ExternalVaultAccounts, // external accounts with vaultassets
+    LockUp,                // share class
     DriftMarketIndexesPerp,
     DriftMarketIndexesSpot,
     DriftOrderTypes,
@@ -50,21 +50,26 @@ pub struct EngineField {
     pub value: EngineFieldValue,
 }
 
+pub type StateAccount = FundAccount;
+pub type MetadataAccount = FundMetadataAccount;
+
 #[account]
 pub struct FundAccount {
-    pub manager: Pubkey,
-    pub treasury: Pubkey,
-    pub openfunds: Pubkey,
+    pub owner: Pubkey,
+    pub vault: Pubkey,
+    pub metadata: Pubkey,
     pub engine: Pubkey,
-    pub share_classes: Vec<Pubkey>,
+    pub mints: Vec<Pubkey>,
     pub name: String,
     pub uri: String,
-    pub openfunds_uri: String,
-    pub params: Vec<Vec<EngineField>>, // params[0]: EngineFundParams, ...
-                                       // params[1]: EngineShareClass0Params, ...
+    pub metadata_uri: String,
+
+    // params[0]: fund params
+    // params[1..n+1]: mints [0..n] params
+    pub params: Vec<Vec<EngineField>>,
 }
 impl FundAccount {
-    pub const INIT_SIZE: usize = 1024; // FIXME: too small?
+    pub const INIT_SIZE: usize = 2048; // TODO: auto extend account size if needed
 
     pub fn is_enabled(&self) -> bool {
         return true;

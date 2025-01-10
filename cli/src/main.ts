@@ -31,7 +31,8 @@ try {
   const config = fs.readFileSync(configPath, "utf8");
   const { keypair_path, helius_api_key, priority_fee_level, fund } =
     JSON.parse(config);
-  process.env.ANCHOR_PROVIDER_URL = `https://devnet.helius-rpc.com/?api-key=${helius_api_key}`;
+  // process.env.ANCHOR_PROVIDER_URL = `https://devnet.helius-rpc.com/?api-key=${helius_api_key}`;
+  process.env.ANCHOR_PROVIDER_URL = "http://localhost:8899";
   process.env.ANCHOR_WALLET = keypair_path;
   if (fund) {
     fundPDA = new PublicKey(fund);
@@ -68,6 +69,8 @@ program
       const vault = glamClient.getVaultPda(fundPDA);
       console.log("Vault:", vault.toBase58());
     }
+    const fa = await glamClient.fetchFund(fundPDA);
+    console.log(fa);
   });
 
 program
@@ -110,7 +113,7 @@ fund
     const fundData = JSON.parse(data);
 
     // Convert pubkey strings to PublicKey objects
-    for (let i = 0; i < fundData.shareClasses.length; ++i) {
+    for (let i = 0; i < fundData?.shareClasses?.length || 0; ++i) {
       fundData.shareClasses[i].asset = new PublicKey(
         fundData.shareClasses[i].asset,
       );
@@ -137,13 +140,13 @@ fund
 
     const preInstructions = [];
     const fundAccount = await glamClient.fetchFundAccount(fundPDA);
-    if (fundAccount.shareClasses.length > 0) {
+    if (fundAccount.mints.length > 0) {
       const closeShareClassIx = await glamClient.program.methods
         .closeShareClass(0)
         .accounts({
-          fund: fundPDA,
+          state: fundPDA,
           shareClassMint: glamClient.getShareClassPDA(fundPDA, 0),
-          openfunds: glamClient.getOpenfundsPDA(fundPDA),
+          metadata: glamClient.getOpenfundsPDA(fundPDA),
         })
         .instruction();
       preInstructions.push(closeShareClassIx);
@@ -152,8 +155,8 @@ fund
       const builder = await glamClient.program.methods
         .closeFund()
         .accounts({
-          fund: fundPDA,
-          openfunds: glamClient.getOpenfundsPDA(fundPDA),
+          state: fundPDA,
+          metadata: glamClient.getOpenfundsPDA(fundPDA),
         })
         .preInstructions(preInstructions);
 
@@ -293,7 +296,7 @@ integration
     try {
       const txSig = await glamClient.program.methods
         .updateFund(updatedFund)
-        .accounts({ fund: fundPDA })
+        .accounts({ state: fundPDA })
         .rpc();
       console.log(`${integration} enabled on fund ${fundPDA.toBase58()}`);
       console.log("txSig:", txSig);
@@ -332,7 +335,7 @@ integration
     try {
       const txSig = await glamClient.program.methods
         .updateFund(updatedFund)
-        .accounts({ fund: fundPDA })
+        .accounts({ state: fundPDA })
         .rpc();
       console.log(`${integration} disabled on fund ${fundPDA.toBase58()}`);
       console.log("txSig:", txSig);

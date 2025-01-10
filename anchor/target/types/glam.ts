@@ -78,11 +78,11 @@ export type Glam = {
           }
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
-          "name": "openfunds",
+          "name": "metadata",
           "writable": true
         },
         {
@@ -202,7 +202,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -253,7 +253,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -276,7 +276,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -342,11 +342,11 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
-          "name": "openfunds",
+          "name": "metadata",
           "writable": true
         },
         {
@@ -369,7 +369,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -410,7 +410,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -433,7 +433,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -479,7 +479,7 @@ export type Glam = {
           }
         },
         {
-          "name": "openfunds",
+          "name": "metadata",
           "writable": true
         },
         {
@@ -522,7 +522,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -545,7 +545,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -597,7 +597,7 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -619,7 +619,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -664,14 +664,14 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
           "writable": true
         },
         {
-          "name": "state",
+          "name": "driftState",
           "writable": true
         },
         {
@@ -693,7 +693,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -767,7 +767,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
@@ -778,7 +778,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "state",
+          "name": "driftState",
           "writable": true
         },
         {
@@ -800,7 +800,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -849,7 +849,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
@@ -860,7 +860,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "state",
+          "name": "driftState",
           "writable": true
         },
         {
@@ -882,7 +882,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -947,7 +947,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
@@ -958,7 +958,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "state",
+          "name": "driftState",
           "writable": true
         },
         {
@@ -980,7 +980,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1033,14 +1033,14 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
           "writable": true
         },
         {
-          "name": "state",
+          "name": "driftState",
           "writable": true
         },
         {
@@ -1062,7 +1062,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1122,7 +1122,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
@@ -1147,7 +1147,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1201,7 +1201,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
@@ -1226,7 +1226,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1280,7 +1280,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
@@ -1305,7 +1305,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1359,7 +1359,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
@@ -1370,7 +1370,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "state",
+          "name": "driftState",
           "writable": true
         },
         {
@@ -1395,7 +1395,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1585,7 +1585,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -1636,7 +1636,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -1658,7 +1658,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1726,7 +1726,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -1748,7 +1748,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1811,7 +1811,7 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -1834,7 +1834,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1910,7 +1910,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1935,7 +1935,7 @@ export type Glam = {
           }
         },
         {
-          "name": "openfunds",
+          "name": "metadata",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1955,7 +1955,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1980,7 +1980,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -2037,7 +2037,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -2060,7 +2060,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -2273,7 +2273,7 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -2296,7 +2296,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -2366,7 +2366,7 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -2389,7 +2389,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -2483,7 +2483,7 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -2505,7 +2505,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -2684,7 +2684,7 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -2706,7 +2706,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -2896,7 +2896,7 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -2918,7 +2918,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -2997,7 +2997,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -3019,7 +3019,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -3083,7 +3083,7 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -3106,7 +3106,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -3230,7 +3230,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -3280,7 +3280,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -3302,7 +3302,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -3359,7 +3359,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -3381,7 +3381,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -3446,7 +3446,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "shareClass",
@@ -3481,7 +3481,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -3579,7 +3579,7 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -3602,7 +3602,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -3671,7 +3671,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -3719,7 +3719,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -3777,7 +3777,7 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -3800,7 +3800,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -3873,7 +3873,7 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -3895,7 +3895,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -4062,7 +4062,7 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -4085,7 +4085,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -4275,7 +4275,7 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -4297,7 +4297,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -4389,7 +4389,7 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -4412,7 +4412,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -4505,7 +4505,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -4527,7 +4527,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -4700,7 +4700,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -4722,7 +4722,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -4817,7 +4817,7 @@ export type Glam = {
           }
         },
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "srcAccountPolicy",
@@ -4911,7 +4911,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -4960,7 +4960,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -5012,7 +5012,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -5035,7 +5035,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -5101,7 +5101,7 @@ export type Glam = {
           }
         },
         {
-          "name": "managerAta",
+          "name": "signerAta",
           "writable": true,
           "pda": {
             "seeds": [
@@ -5199,7 +5199,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -5221,7 +5221,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -5289,7 +5289,7 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -5312,7 +5312,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -5358,7 +5358,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -5380,7 +5380,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -5444,7 +5444,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -5466,7 +5466,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -5601,7 +5601,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -5623,7 +5623,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -5870,13 +5870,58 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "invalidAssetForSwap",
-      "msg": "Asset cannot be swapped"
+      "name": "invalidShareClass",
+      "msg": "Share class not allowed to subscribe"
     },
     {
       "code": 6001,
-      "name": "invalidSwap",
-      "msg": "Swap failed"
+      "name": "invalidAssetSubscribe",
+      "msg": "Asset not allowed to subscribe"
+    },
+    {
+      "code": 6002,
+      "name": "invalidPricingOracle",
+      "msg": "Invalid oracle for asset price"
+    },
+    {
+      "code": 6003,
+      "name": "invalidRemainingAccounts",
+      "msg": "Invalid accounts: the transaction is malformed"
+    },
+    {
+      "code": 6004,
+      "name": "invalidTreasuryAccount",
+      "msg": "Invalid treasury ata"
+    },
+    {
+      "code": 6005,
+      "name": "invalidSignerAccount",
+      "msg": "Invalid signer ata"
+    },
+    {
+      "code": 6006,
+      "name": "invalidAssetPrice",
+      "msg": "Invalid asset price"
+    },
+    {
+      "code": 6007,
+      "name": "invalidStableCoinPriceForSubscribe",
+      "msg": "Subscription not allowed: invalid stable coin price"
+    },
+    {
+      "code": 6008,
+      "name": "subscribeRedeemDisable",
+      "msg": "Fund is disabled for subscription and redemption"
+    },
+    {
+      "code": 6009,
+      "name": "invalidPolicyAccount",
+      "msg": "Policy account is mandatory"
+    },
+    {
+      "code": 6010,
+      "name": "priceTooOld",
+      "msg": "Price is too old"
     }
   ],
   "types": [
@@ -6138,7 +6183,7 @@ export type Glam = {
             "name": "integrationAcls"
           },
           {
-            "name": "externalTreasuryAccounts"
+            "name": "externalVaultAccounts"
           },
           {
             "name": "lockUp"
@@ -6393,15 +6438,15 @@ export type Glam = {
         "kind": "struct",
         "fields": [
           {
-            "name": "manager",
+            "name": "owner",
             "type": "pubkey"
           },
           {
-            "name": "treasury",
+            "name": "vault",
             "type": "pubkey"
           },
           {
-            "name": "openfunds",
+            "name": "metadata",
             "type": "pubkey"
           },
           {
@@ -6409,7 +6454,7 @@ export type Glam = {
             "type": "pubkey"
           },
           {
-            "name": "shareClasses",
+            "name": "mints",
             "type": {
               "vec": "pubkey"
             }
@@ -6423,7 +6468,7 @@ export type Glam = {
             "type": "string"
           },
           {
-            "name": "openfundsUri",
+            "name": "metadataUri",
             "type": "string"
           },
           {
@@ -8751,9 +8796,24 @@ export type Glam = {
   ],
   "constants": [
     {
-      "name": "seed",
+      "name": "seedMetadata",
       "type": "string",
-      "value": "\"anchor\""
+      "value": "\"openfunds\""
+    },
+    {
+      "name": "seedMint",
+      "type": "string",
+      "value": "\"share\""
+    },
+    {
+      "name": "seedState",
+      "type": "string",
+      "value": "\"fund\""
+    },
+    {
+      "name": "seedVault",
+      "type": "string",
+      "value": "\"treasury\""
     }
   ]
 };

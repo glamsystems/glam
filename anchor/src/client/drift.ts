@@ -325,16 +325,16 @@ export class DriftClient {
     const signer = txOptions.signer || this.base.getSigner();
 
     const [user, userStats] = this.getUser(fund);
-    const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
+    const driftState = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
     // @ts-ignore Type instantiation is excessively deep and possibly infinite.
     const tx = await this.base.program.methods
       .driftInitialize()
       .accounts({
-        fund,
+        state: fund,
         user,
         userStats,
-        state,
+        driftState,
         signer,
       })
       .transaction();
@@ -360,7 +360,7 @@ export class DriftClient {
     const tx = await this.base.program.methods
       .driftUpdateUserCustomMarginRatio(subAccountId, marginRatio)
       .accountsPartial({
-        fund,
+        state: fund,
         user,
         signer,
       })
@@ -384,7 +384,7 @@ export class DriftClient {
     const tx = await this.base.program.methods
       .driftUpdateUserMarginTradingEnabled(subAccountId, marginTradingEnabled)
       .accountsPartial({
-        fund,
+        state: fund,
         user,
         signer,
       })
@@ -408,7 +408,7 @@ export class DriftClient {
     const tx = await this.base.program.methods
       .driftUpdateUserDelegate(subAccountId, delegate)
       .accountsPartial({
-        fund,
+        state: fund,
         user,
         signer,
       })
@@ -430,7 +430,7 @@ export class DriftClient {
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
     const [user, userStats] = this.getUser(fund, subAccountId);
-    const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
+    const driftState = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
     const { mint, oracle, marketPDA, vaultPDA } =
       marketConfigs.spot[marketIndex];
@@ -446,12 +446,12 @@ export class DriftClient {
     const tx = await this.base.program.methods
       .driftDeposit(marketIndex, amount)
       .accountsPartial({
-        fund,
+        state: fund,
         vaultAta: this.base.getVaultAta(fund, new PublicKey(mint)),
         driftAta: new PublicKey(vaultPDA),
         user,
         userStats,
-        state,
+        driftState,
         signer,
       })
       .remainingAccounts([
@@ -510,12 +510,12 @@ export class DriftClient {
     const tx = await this.base.program.methods
       .driftWithdraw(marketIndex, amount)
       .accountsPartial({
-        fund,
+        state: fund,
         vaultAta: vaultAta,
         driftAta,
         user,
         userStats,
-        state: driftState,
+        driftState,
         signer,
         driftSigner: DRIFT_VAULT,
       })
@@ -547,14 +547,14 @@ export class DriftClient {
 
     const signer = txOptions.signer || this.base.getSigner();
     const [user] = this.getUser(fund, subAccountId);
-    const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
+    const driftState = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
     const tx = await this.base.program.methods
       .driftPlaceOrders([orderParams])
       .accountsPartial({
-        fund,
+        state: fund,
         user,
-        state,
+        driftState,
         signer,
       })
       .remainingAccounts(remainingAccounts)
@@ -577,7 +577,7 @@ export class DriftClient {
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
     const [user] = this.getUser(fund, subAccountId);
-    const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
+    const driftState = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
     const remainingAccounts = await this.composeRemainingAccounts(
       fund,
@@ -590,9 +590,9 @@ export class DriftClient {
     const tx = await this.base.program.methods
       .driftCancelOrders(marketType, marketIndex, direction)
       .accountsPartial({
-        fund,
+        state: fund,
         user,
-        state,
+        driftState,
         signer,
       })
       .remainingAccounts(remainingAccounts)

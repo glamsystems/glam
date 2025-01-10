@@ -133,7 +133,7 @@ export class JupiterClient {
         await this.base.program.methods
           .initLockedVoterEscrow()
           .accounts({
-            fund,
+            state: fund,
             locker: JUP_STAKE_LOCKER,
             escrow,
           })
@@ -152,7 +152,7 @@ export class JupiterClient {
     return await this.base.program.methods
       .increaseLockedAmount(amount)
       .accounts({
-        fund,
+        state: fund,
         locker: JUP_STAKE_LOCKER,
         escrow,
         escrowJupAta,
@@ -196,7 +196,7 @@ export class JupiterClient {
         await this.base.program.methods
           .newVote()
           .accounts({
-            fund,
+            state: fund,
             vote,
             proposal,
           })
@@ -211,7 +211,7 @@ export class JupiterClient {
     return await this.base.program.methods
       .castVote(side)
       .accounts({
-        fund,
+        state: fund,
         escrow,
         proposal,
         vote,
@@ -292,7 +292,7 @@ export class JupiterClient {
     const tx = await this.base.program.methods
       .jupiterSwap(amount, swapIx.data)
       .accountsPartial({
-        fund,
+        state: fund,
         signer,
         vault: this.base.getVaultPda(fund),
         inputVaultAta: this.base.getVaultAta(

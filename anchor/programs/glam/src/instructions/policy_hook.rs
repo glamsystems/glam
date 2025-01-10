@@ -105,7 +105,7 @@ pub struct TransferHook<'info> {
     )]
     pub extra_account_meta_list: UncheckedAccount<'info>,
 
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
     /// CHECK: PolicyAccount, handled explicitly, may or may not exist
     #[account(

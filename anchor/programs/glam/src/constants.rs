@@ -2,7 +2,18 @@ use anchor_lang::prelude::*;
 use solana_program::pubkey;
 
 #[constant]
-pub const SEED: &str = "anchor";
+pub const SEED_STATE: &str = "fund";
+#[constant]
+pub const SEED_VAULT: &str = "treasury";
+#[constant]
+pub const SEED_METADATA: &str = "openfunds";
+#[constant]
+pub const SEED_MINT: &str = "share";
+
+pub const DEFAULT_DRIFT_USER_NAME: [u8; 32] = [
+    b'G', b'L', b'A', b'M', b' ', b'*', b'.', b'+', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+];
 
 pub const MAX_ASSETS: usize = 5;
 pub const MAX_SHARE_CLASSES: usize = 3;

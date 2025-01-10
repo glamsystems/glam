@@ -31,16 +31,16 @@ describe("glam_crud", () => {
     const shareClassBlocklist = [];
 
     const fundForTest = { ...testFundModel };
-    fundForTest.shareClasses![0].allowlist = shareClassAllowlist;
+    fundForTest.mints![0].allowlist = shareClassAllowlist;
 
     const fundData = await createFundForTest(glamClient, fundForTest);
     fundPDA = fundData.fundPDA;
 
     const fundModel = await glamClient.fetchFund(fundPDA);
 
-    expect(fundModel.shareClasses.length).toEqual(1);
-    expect(fundModel.shareClasses[0].allowlist).toEqual(shareClassAllowlist);
-    expect(fundModel.shareClasses[0].blocklist).toEqual(shareClassBlocklist);
+    expect(fundModel.mints.length).toEqual(1);
+    expect(fundModel.mints[0].allowlist).toEqual(shareClassAllowlist);
+    expect(fundModel.mints[0].blocklist).toEqual(shareClassBlocklist);
   });
 
   it("Update fund name", async () => {
@@ -74,9 +74,7 @@ describe("glam_crud", () => {
       throw e;
     }
     const fundModel = await glamClient.fetchFund(fundPDA);
-    expect(fundModel.shareClasses[0].allowlist).toEqual(
-      shareClassModel.allowlist,
-    );
+    expect(fundModel.mints[0].allowlist).toEqual(shareClassModel.allowlist);
   });
 
   it("Update fund asset allowlist", async () => {

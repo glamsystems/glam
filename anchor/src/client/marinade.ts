@@ -230,7 +230,7 @@ export class MarinadeClient {
     const tx = await this.base.program.methods
       .marinadeDepositSol(amount)
       .accountsPartial({
-        fund,
+        state: fund,
         vault,
         signer,
         reservePda: marinadeState.reserveAddress,
@@ -279,7 +279,7 @@ export class MarinadeClient {
     const tx = await this.base.program.methods
       .marinadeDepositStake(validatorIndex)
       .accountsPartial({
-        fund,
+        state: fund,
         vault,
         signer,
         marinadeState: marinadeState.marinadeStateAddress,
@@ -325,7 +325,7 @@ export class MarinadeClient {
     const tx = await this.base.program.methods
       .marinadeDelayedUnstake(amount, ticketId, bump)
       .accountsPartial({
-        fund,
+        state: fund,
         vault,
         signer,
         ticket,
@@ -355,7 +355,7 @@ export class MarinadeClient {
     const tx = await this.base.program.methods
       .marinadeClaimTickets()
       .accountsPartial({
-        fund,
+        state: fund,
         vault,
         signer,
         marinadeState: marinadeState.marinadeStateAddress,
@@ -390,7 +390,7 @@ export class MarinadeClient {
     const tx = await this.base.program.methods
       .marinadeLiquidUnstake(amount)
       .accountsPartial({
-        fund,
+        state: fund,
         vault,
         signer,
         marinadeState: marinadeState.marinadeStateAddress,

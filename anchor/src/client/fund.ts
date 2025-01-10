@@ -50,9 +50,9 @@ export class FundClient {
       const txSig = await this.base.program.methods
         .initializeFund(fundModel)
         .accountsPartial({
-          fund: fundPDA,
+          state: fundPDA,
           vault,
-          openfunds,
+          metadata: openfunds,
         })
         .rpc();
       return [txSig, fundPDA];
@@ -63,9 +63,9 @@ export class FundClient {
       const initFundIx = await this.base.program.methods
         .initializeFund(fundModel)
         .accountsPartial({
-          fund: fundPDA,
+          state: fundPDA,
           vault,
-          openfunds,
+          metadata: openfunds,
         })
         .instruction();
 
@@ -73,9 +73,9 @@ export class FundClient {
       const txSig = await this.base.program.methods
         .addShareClass(shareClasses[0])
         .accounts({
-          fund: fundPDA,
+          state: fundPDA,
           shareClassMint,
-          openfunds,
+          metadata: openfunds,
         })
         .preInstructions([initFundIx])
         .rpc();
@@ -86,9 +86,9 @@ export class FundClient {
     const txSig = await this.base.program.methods
       .initializeFund(fundModel)
       .accountsPartial({
-        fund: fundPDA,
+        state: fundPDA,
         vault,
-        openfunds,
+        metadata: openfunds,
       })
       .rpc();
 
@@ -99,9 +99,9 @@ export class FundClient {
         return await this.base.program.methods
           .addShareClass(shareClass)
           .accounts({
-            fund: fundPDA,
+            state: fundPDA,
             shareClassMint,
-            openfunds,
+            metadata: openfunds,
           })
           .preInstructions([
             // FIXME: estimate compute units
@@ -121,7 +121,7 @@ export class FundClient {
     return await this.base.program.methods
       .updateFund(new FundModel(updated))
       .accounts({
-        fund: fundPDA,
+        state: fundPDA,
       })
       .rpc();
   }
@@ -135,8 +135,8 @@ export class FundClient {
     const tx = await this.base.program.methods
       .closeFund()
       .accounts({
-        fund: fundPDA,
-        openfunds,
+        state: fundPDA,
+        metadata: openfunds,
       })
       .preInstructions(txOptions.preInstructions || [])
       .transaction();
@@ -273,7 +273,7 @@ export class FundClient {
     return await this.base.program.methods
       .setSubscribeRedeemEnabled(enabled)
       .accounts({
-        fund: fundPDA,
+        state: fundPDA,
       })
       .rpc();
   }
@@ -303,7 +303,7 @@ export class FundClient {
     return await this.base.program.methods
       .closeTokenAccounts()
       .accounts({
-        fund,
+        state: fund,
       })
       .remainingAccounts(
         tokenAccounts.map((account) => ({
@@ -324,7 +324,7 @@ export class FundClient {
     const tx = await this.base.program.methods
       .closeTokenAccounts()
       .accounts({
-        fund,
+        state: fund,
       })
       .remainingAccounts(
         tokenAccounts.map((account) => ({
@@ -418,7 +418,7 @@ export class FundClient {
       await this.base.program.methods
         .withdraw(new BN(amount))
         .accounts({
-          fund,
+          state: fund,
           asset,
           tokenProgram,
         })
@@ -440,7 +440,7 @@ export class FundClient {
     const tx = await this.base.program.methods
       .withdraw(new BN(amount))
       .accounts({
-        fund,
+        state: fund,
         asset,
         tokenProgram,
       })

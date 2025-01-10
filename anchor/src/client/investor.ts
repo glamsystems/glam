@@ -182,7 +182,7 @@ export class InvestorClient {
     const tx = await this.base.program.methods
       .subscribe(0, amount, skipState)
       .accounts({
-        fund,
+        state: fund,
         shareClass,
         asset,
         vaultAta,
@@ -280,7 +280,7 @@ export class InvestorClient {
     const tx = await this.base.program.methods
       .redeem(amount, inKind, skipState)
       .accounts({
-        fund,
+        state: fund,
         shareClass,
         signerShareAta,
         //TODO: only add if the fund has lock-up? (just for efficiency)

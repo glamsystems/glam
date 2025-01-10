@@ -60,8 +60,8 @@ export class ShareClassClient {
     return await this.base.program.methods
       .closeShareClass(shareClassId)
       .accounts({
-        fund: fundPDA,
-        openfunds,
+        state: fundPDA,
+        metadata: openfunds,
         shareClassMint,
       })
       .instruction();
@@ -79,8 +79,8 @@ export class ShareClassClient {
     return await this.base.program.methods
       .closeShareClass(shareClassId)
       .accounts({
-        fund: fundPDA,
-        openfunds,
+        state: fundPDA,
+        metadata: openfunds,
         shareClassMint,
       })
       .rpc();
@@ -141,7 +141,7 @@ export class ShareClassClient {
       .setTokenAccountsStates(shareClassId, frozen)
       .accounts({
         shareClassMint,
-        fund: fundPDA,
+        state: fundPDA,
       })
       .remainingAccounts(
         tokenAccounts.map((account) => ({
@@ -192,7 +192,7 @@ export class ShareClassClient {
           .setTokenAccountsStates(shareClassId, false)
           .accounts({
             shareClassMint,
-            fund: fundPDA,
+            state: fundPDA,
           })
           .remainingAccounts([
             { pubkey: mintTo, isSigner: false, isWritable: true },
@@ -206,7 +206,7 @@ export class ShareClassClient {
       .accounts({
         recipient,
         shareClassMint,
-        fund: fundPDA,
+        state: fundPDA,
       })
       .preInstructions(preInstructions)
       .rpc();
@@ -230,7 +230,7 @@ export class ShareClassClient {
           .setTokenAccountsStates(shareClassId, false)
           .accounts({
             shareClassMint,
-            fund: fundPDA,
+            state: fundPDA,
           })
           .remainingAccounts([
             { pubkey: ata, isSigner: false, isWritable: true },
@@ -244,7 +244,7 @@ export class ShareClassClient {
       .accounts({
         from,
         shareClassMint,
-        fund: fundPDA,
+        state: fundPDA,
       })
       .preInstructions(preInstructions)
       .rpc();
@@ -279,7 +279,7 @@ export class ShareClassClient {
           .setTokenAccountsStates(shareClassId, false)
           .accounts({
             shareClassMint,
-            fund: fundPDA,
+            state: fundPDA,
           })
           .remainingAccounts([
             // fromAta is already unfrozen, still add it to test the ix is idempotent
@@ -296,7 +296,7 @@ export class ShareClassClient {
         from,
         to,
         shareClassMint,
-        fund: fundPDA,
+        state: fundPDA,
       })
       .preInstructions(preInstructions)
       .rpc();

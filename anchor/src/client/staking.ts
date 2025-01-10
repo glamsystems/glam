@@ -354,7 +354,7 @@ export class StakingClient {
       .stakePoolDepositSol(amount)
       .accountsPartial({
         signer,
-        fund,
+        state: fund,
         vault,
         mintTo: this.base.getVaultAta(fund, poolMint),
         stakePoolProgram,
@@ -399,7 +399,7 @@ export class StakingClient {
       .stakePoolDepositStake()
       .accountsPartial({
         signer,
-        fund,
+        state: fund,
         vault,
         vaultStakeAccount: stakeAccount,
         mintTo: this.base.getVaultAta(fund, poolMint),
@@ -468,7 +468,7 @@ export class StakingClient {
             .deactivateStakeAccounts()
             .accountsPartial({
               signer,
-              fund,
+              state: fund,
               vault,
               clock: SYSVAR_CLOCK_PUBKEY,
               stakeProgram: StakeProgram.programId,
@@ -488,7 +488,7 @@ export class StakingClient {
       .stakePoolWithdrawStake(amount, stakeAccountId, bump)
       .accountsPartial({
         signer,
-        fund,
+        state: fund,
         vault,
         vaultStakeAccount: stakeAccountPda,
         stakePoolProgram,
@@ -528,7 +528,7 @@ export class StakingClient {
       .initializeAndDelegateStake(amount, stakeAccountId, bump)
       .accountsPartial({
         signer,
-        fund,
+        state: fund,
         vault,
         vaultStakeAccount: stakeAccountPda,
         vote,
@@ -555,7 +555,7 @@ export class StakingClient {
       .deactivateStakeAccounts()
       .accountsPartial({
         signer,
-        fund,
+        state: fund,
         vault,
         clock: SYSVAR_CLOCK_PUBKEY,
         stakeProgram: StakeProgram.programId,
@@ -585,7 +585,7 @@ export class StakingClient {
       .withdrawFromStakeAccounts()
       .accountsPartial({
         signer,
-        fund,
+        state: fund,
         vault,
         clock: SYSVAR_CLOCK_PUBKEY,
         stakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
@@ -617,7 +617,7 @@ export class StakingClient {
       .mergeStakeAccounts()
       .accountsPartial({
         signer,
-        fund,
+        state: fund,
         vault,
         toStake,
         fromStake,
@@ -647,7 +647,7 @@ export class StakingClient {
       .splitStakeAccount(lamports, newStakeAccountId, newStakeAccountBump)
       .accountsPartial({
         signer,
-        fund,
+        state: fund,
         vault,
         existingStake,
         newStake,
@@ -676,7 +676,7 @@ export class StakingClient {
       .redelegateStake(newStakeAccountId, newStakeAccountBump)
       .accountsPartial({
         signer,
-        fund,
+        state: fund,
         vault,
         vote,
         existingStake,

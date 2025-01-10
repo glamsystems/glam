@@ -49,7 +49,7 @@ export class WSolClient {
     const tx = await this.base.program.methods
       .wsolWrap(amount)
       .accountsPartial({
-        fund,
+        state: fund,
         vault,
         vaultWsolAta,
         wsolMint: WSOL,
@@ -74,7 +74,7 @@ export class WSolClient {
     const tx = await this.base.program.methods
       .wsolUnwrap()
       .accountsPartial({
-        fund,
+        state: fund,
         vault,
         vaultWsolAta,
         wsolMint: WSOL,

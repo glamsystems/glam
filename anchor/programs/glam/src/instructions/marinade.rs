@@ -1,4 +1,4 @@
-use crate::state::*;
+use crate::{constants::*, state::*};
 use anchor_lang::{prelude::*, system_program};
 use anchor_spl::{
     associated_token::AssociatedToken,
@@ -12,9 +12,9 @@ use marinade::program::MarinadeFinance;
 use marinade::state::delayed_unstake_ticket::TicketAccountData;
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Stake)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Stake)
 )]
-#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Marinade))]
+#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Marinade))]
 #[vault_signer_seeds]
 pub fn marinade_deposit_sol_handler<'c: 'info, 'info>(
     ctx: Context<MarinadeDepositSol>,
@@ -43,9 +43,9 @@ pub fn marinade_deposit_sol_handler<'c: 'info, 'info>(
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Stake)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Stake)
 )]
-#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Marinade))]
+#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Marinade))]
 #[vault_signer_seeds]
 pub fn marinade_deposit_stake_handler<'c: 'info, 'info>(
     ctx: Context<MarinadeDepositStake>,
@@ -76,9 +76,9 @@ pub fn marinade_deposit_stake_handler<'c: 'info, 'info>(
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Unstake)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Unstake)
 )]
-#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Marinade))]
+#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Marinade))]
 #[vault_signer_seeds]
 pub fn delayed_unstake_handler<'c: 'info, 'info>(
     ctx: Context<MarinadeDelayedUnstake>,
@@ -87,11 +87,11 @@ pub fn delayed_unstake_handler<'c: 'info, 'info>(
     ticket_bump: u8,
 ) -> Result<()> {
     // Create ticket account
-    let fund_key = ctx.accounts.fund.key();
+    let state_key = ctx.accounts.state.key();
     let seeds = &[
         b"ticket".as_ref(),
         ticket_id.as_bytes(),
-        fund_key.as_ref(),
+        state_key.as_ref(),
         &[ticket_bump],
     ];
     let signer_seeds = &[&seeds[..]];
@@ -129,10 +129,10 @@ pub fn delayed_unstake_handler<'c: 'info, 'info>(
     let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, vault_signer_seeds);
     let _ = order_unstake(cpi_ctx, msol_amount);
 
-    // Add new ticket account to the fund param
-    let fund = &mut ctx.accounts.fund;
-    fund.add_to_engine_field(
-        EngineFieldName::ExternalTreasuryAccounts,
+    // Add new ticket account to the state param
+    let state = &mut ctx.accounts.state;
+    state.add_to_engine_field(
+        EngineFieldName::ExternalVaultAccounts,
         ctx.accounts.ticket.key(),
     );
 
@@ -140,14 +140,14 @@ pub fn delayed_unstake_handler<'c: 'info, 'info>(
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Unstake)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Unstake)
 )]
-#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Marinade))]
+#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Marinade))]
 #[vault_signer_seeds]
 pub fn claim_tickets_handler<'info>(
     ctx: Context<'_, '_, '_, 'info, MarinadeClaimTickets<'info>>,
 ) -> Result<()> {
-    let fund = &mut ctx.accounts.fund;
+    let state = &mut ctx.accounts.state;
     ctx.remaining_accounts
         .iter()
         .for_each(|ticket_account_info| {
@@ -168,8 +168,8 @@ pub fn claim_tickets_handler<'info>(
             );
             let _ = claim(cpi_ctx);
 
-            fund.delete_from_engine_field(
-                EngineFieldName::ExternalTreasuryAccounts,
+            state.delete_from_engine_field(
+                EngineFieldName::ExternalVaultAccounts,
                 ticket_account_info.key(),
             );
         });
@@ -178,9 +178,9 @@ pub fn claim_tickets_handler<'info>(
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::LiquidUnstake)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::LiquidUnstake)
 )]
-#[access_control(acl::check_integration(&ctx.accounts.fund, IntegrationName::Marinade))]
+#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Marinade))]
 #[vault_signer_seeds]
 pub fn liquid_unstake_handler<'c: 'info, 'info>(
     ctx: Context<MarinadeLiquidUnstake>,
@@ -210,9 +210,9 @@ pub struct MarinadeDepositSol<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     /// CHECK: skip
@@ -261,9 +261,9 @@ pub struct MarinadeDepositStake<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     /// CHECK: skip
@@ -316,14 +316,15 @@ pub struct MarinadeDelayedUnstake<'info> {
     pub signer: Signer<'info>,
 
     #[account(mut)]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     /// CHECK: skip
-    // #[account(mut, seeds = [b"ticket".as_ref(), ticket_id.as_bytes(), fund.key().as_ref()], bump)]
+    // #[account(mut, seeds = [b"ticket".as_ref(), ticket_id.as_bytes(), state.key().as_ref()], bump)]
     // The line above wll cause "Error: memory allocation failed, out of memory"
+    // TODO: Use i64 type for ticket_id
     #[account(mut)]
     pub ticket: AccountInfo<'info>,
 
@@ -356,9 +357,9 @@ pub struct MarinadeClaimTickets<'info> {
     pub signer: Signer<'info>,
 
     #[account(mut)]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     /// CHECK: skip
@@ -381,9 +382,9 @@ pub struct MarinadeLiquidUnstake<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     /// CHECK: skip

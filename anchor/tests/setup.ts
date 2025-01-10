@@ -41,7 +41,7 @@ export const airdrop = async (
 };
 
 export const testFundModel = {
-  shareClasses: [
+  mints: [
     {
       // Glam Token
       name: "Glam Fund SOL-mSOL",

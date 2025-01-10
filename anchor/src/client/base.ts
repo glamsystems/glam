@@ -551,7 +551,7 @@ export class BaseClient {
       return await this.program.methods
         .wsolWrap(delta)
         .accountsPartial({
-          fund: fundPda,
+          state: fundPda,
           vault: vaultPda,
           vaultWsolAta,
           wsolMint: WSOL,
@@ -598,7 +598,7 @@ export class BaseClient {
     const fundAccount = await this.fetchFundAccount(fundPDA);
     const openfundsAccount = await this.fetchFundMetadataAccount(fundPDA);
 
-    if (fundAccount.shareClasses.length > 0) {
+    if (fundAccount.mints.length > 0) {
       const firstShareClass = await this.fetchShareClassAccount(fundPDA, 0);
       return FundModel.fromOnchainAccounts(
         fundPDA,
@@ -630,7 +630,7 @@ export class BaseClient {
     let mintCache = new Map<string, Mint>();
     const connection = this.provider.connection;
     const mintAddresses = fundAccounts
-      .map((f) => f.account.shareClasses[0])
+      .map((f) => f.account.mints[0])
       .filter((addr) => !!addr);
     const mintAccounts =
       await connection.getMultipleAccountsInfo(mintAddresses);
@@ -647,10 +647,8 @@ export class BaseClient {
       FundModel.fromOnchainAccounts(
         f.publicKey,
         f.account,
-        openfundsCache.get(f.account.openfunds.toBase58()),
-        mintCache.get(
-          f.account.shareClasses[0] ? f.account.shareClasses[0].toBase58() : "",
-        ),
+        openfundsCache.get(f.account.metadata.toBase58()),
+        mintCache.get(f.account.mints[0] ? f.account.mints[0].toBase58() : ""),
       ),
     );
   }
