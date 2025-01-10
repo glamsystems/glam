@@ -28,7 +28,7 @@ const formSchema = z.object({
 
 type FormSchema = z.infer<typeof formSchema>;
 
-export default function VaultContextPage() {
+export default function VaultPoliciesPage() {
   const { activeFund, glamClient, allFunds } = useGlam();
   const [isTxPending, setIsTxPending] = useState(false);
 

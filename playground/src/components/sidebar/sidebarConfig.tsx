@@ -274,11 +274,11 @@ const ALL_NAV_ITEMS = {
     shortcut: "",
     Icon: TargetIcon,
   },
-  vaultContext: {
-    route: "/vault/context",
-    text: "Context",
+  vaultPolicies: {
+    route: "/vault/policies",
+    text: "Policies",
     shortcut: "",
-    Icon: BoxModelIcon,
+    Icon: TransformIcon,
   },
   vaultDashboard: {
     route: "/vault",
@@ -317,7 +317,7 @@ const BASE_STRUCTURES = {
     },
     {
       group: "Configuration",
-      itemKeys: ["vaultAccess", "vaultContext", "vaultIntegrations"],
+      itemKeys: ["vaultAccess", "vaultPolicies", "vaultIntegrations"],
     },
   ],
   MINT: [
