@@ -319,9 +319,14 @@ export default function Holdings() {
               <AccordionContent>
                 <div className="space-y-4">
                   <DangerCard
-                    message={`Only the owner can close this vault.
-                      All assets are transferred to the owner as part of the closing transaction.
-                      If there are too many assets in the vault, the closing transaction might be too big and therefore fail -- in this case please manually transfer assets and/or close empty token accounts.`}
+                    message={`Only the owner can close this vault.`}
+                  />
+                  <DangerCard
+                    message={`All assets are transferred to the owner as part of the closing transaction.
+
+                    If the vault holds a large number of assets, the closing transaction may exceed network limits and fail.
+
+                    In this case please manually transfer assets and/or close empty token accounts.`}
                   />
                   <DangerCard
                     message={`Do NOT send any asset to this vault while closing, or you risk to permanently loose them.`}
