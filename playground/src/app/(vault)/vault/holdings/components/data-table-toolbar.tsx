@@ -9,12 +9,7 @@ import { DataTableRefresh } from "./data-table-refresh";
 
 import { useGlam } from "@glam/anchor/react";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { InfoIcon, QrCodeIcon, ScanIcon } from "lucide-react";
-import { TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Tooltip } from "recharts";
-import { cn } from "@/lib/utils";
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {QrCodeIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import React from "react";
