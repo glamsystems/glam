@@ -256,7 +256,7 @@ pub fn merge_stake_accounts_handler<'c: 'info, 'info>(
         ctx.accounts.clock.to_account_info(),
         ctx.accounts.stake_history.to_account_info(),
     ];
-    let _ = solana_program::program::invoke_signed(&ix[0], account_infos, vault_signer_seeds);
+    solana_program::program::invoke_signed(&ix[0], account_infos, vault_signer_seeds)?;
 
     // Remove the from_stake account from the state params
     let state = &mut ctx.accounts.state;
@@ -440,7 +440,6 @@ pub fn redelegate_stake_handler<'c: 'info, 'info>(
     )?;
 
     // redelegate
-
     solana_program::program::invoke_signed(
         &instructions[2],
         &[

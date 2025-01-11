@@ -29,7 +29,7 @@ type StakeAccountInfo = {
   address: PublicKey;
   lamports: number;
   state: string;
-  voter: string;
+  voter?: PublicKey; // if undefined, the stake account is not delegated
 };
 
 export class StakingClient {
@@ -149,7 +149,7 @@ export class StakingClient {
     lamports: BN,
   ): Promise<{ newStake: PublicKey; txSig: TransactionSignature }> {
     const newStakeAccountId = Date.now().toString();
-    const [newStake, bump] = this.getStakeAccountPDA(fund, newStakeAccountId);
+    const [newStake, bump] = this.getStakeAccountPda(fund, newStakeAccountId);
     const tx = await this.splitStakeAccountTx(
       fund,
       existingStake,
@@ -167,7 +167,7 @@ export class StakingClient {
     vote: PublicKey,
   ): Promise<{ newStake: PublicKey; txSig: TransactionSignature }> {
     const newStakeAccountId = Date.now().toString();
-    const [newStake, bump] = this.getStakeAccountPDA(fund, newStakeAccountId);
+    const [newStake, bump] = this.getStakeAccountPda(fund, newStakeAccountId);
     const tx = await this.redelegateStakeTx(
       fund,
       existingStake,
@@ -183,7 +183,7 @@ export class StakingClient {
    * Utils
    */
 
-  getStakeAccountPDA(
+  getStakeAccountPda(
     fundPDA: PublicKey,
     accountId: string,
   ): [PublicKey, number] {
@@ -267,11 +267,20 @@ export class StakingClient {
     const stakes = await Promise.all(
       accounts.map(async (account) => {
         const delegation = (account.account.data as ParsedAccountData).parsed
-          .info.stake.delegation;
-        const { activationEpoch, deactivationEpoch, voter } = delegation;
+          .info.stake?.delegation;
 
-        // possible state: 'active', 'inactive', 'activating', 'deactivating'
-        let state = "unknown";
+        let state = "undelegated";
+
+        if (!delegation) {
+          return {
+            address: account.pubkey,
+            lamports: account.account.lamports,
+            state,
+          };
+        }
+
+        // possible state if delegated: active, inactive, activating, deactivating
+        const { activationEpoch, deactivationEpoch, voter } = delegation;
         if (activationEpoch == epochInfo.epoch) {
           state = "activating";
         } else if (deactivationEpoch == epochInfo.epoch) {
@@ -285,7 +294,7 @@ export class StakingClient {
         return {
           address: account.pubkey,
           lamports: account.account.lamports,
-          voter,
+          voter: new PublicKey(voter),
           state,
         };
       }),
@@ -293,6 +302,15 @@ export class StakingClient {
 
     // order by lamports desc
     return stakes.sort((a, b) => b.lamports - a.lamports);
+  }
+
+  async getStakeAccountVoter(stakeAccount: PublicKey): Promise<PublicKey> {
+    const connection = this.base.provider.connection;
+    const accountInfo = await connection.getParsedAccountInfo(stakeAccount);
+    const delegation = (accountInfo.value.data as ParsedAccountData).parsed.info
+      .stake.delegation;
+    const { voter } = delegation;
+    return new PublicKey(voter);
   }
 
   async getStakePoolAccountData(
@@ -331,13 +349,13 @@ export class StakingClient {
    */
 
   public async stakePoolDepositSolTx(
-    fund: PublicKey,
+    state: PublicKey,
     stakePool: PublicKey,
     amount: BN,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(fund);
+    const vault = this.base.getVaultPda(state);
     const {
       programId: stakePoolProgram,
       poolMint,
@@ -354,9 +372,9 @@ export class StakingClient {
       .stakePoolDepositSol(amount)
       .accountsPartial({
         signer,
-        state: fund,
+        state,
         vault,
-        mintTo: this.base.getVaultAta(fund, poolMint),
+        mintTo: this.base.getVaultAta(state, poolMint),
         stakePoolProgram,
         stakePool,
         poolMint: poolMint,
@@ -374,13 +392,13 @@ export class StakingClient {
   }
 
   public async stakePoolDepositStakeTx(
-    fund: PublicKey,
+    state: PublicKey,
     stakePool: PublicKey,
     stakeAccount: PublicKey,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(fund);
+    const vault = this.base.getVaultPda(state);
     const {
       programId: stakePoolProgram,
       poolMint,
@@ -392,24 +410,35 @@ export class StakingClient {
       reserveStake,
     } = await this.getStakePoolAccountData(stakePool);
 
-    const validatorStakeAccounts =
-      await this.getStakeAccounts(withdrawAuthority);
+    // All stake accounts owned by the stake pool withdraw authority
+    const validatorStakeCandidates =
+      await this.getStakeAccountsWithStates(withdrawAuthority);
+
+    // Find a validator stake account to use from the list of candidates.
+    // The vault stake account must have the same vote address as the chosen validator stake account.
+    const vote = await this.getStakeAccountVoter(stakeAccount);
+    const validatorStakeAccount = validatorStakeCandidates.find(
+      (s) => s.voter && s.voter.equals(vote),
+    )?.address;
+    if (!validatorStakeAccount) {
+      throw new Error("Stake account cannot be deposited to the pool");
+    }
 
     const tx = await this.base.program.methods
       .stakePoolDepositStake()
       .accountsPartial({
         signer,
-        state: fund,
+        state,
         vault,
         vaultStakeAccount: stakeAccount,
-        mintTo: this.base.getVaultAta(fund, poolMint),
+        mintTo: this.base.getVaultAta(state, poolMint),
         poolMint,
         feeAccount,
         stakePool,
         depositAuthority,
         withdrawAuthority,
         validatorList,
-        validatorStakeAccount: validatorStakeAccounts[0],
+        validatorStakeAccount,
         reserveStakeAccount: reserveStake,
         stakePoolProgram,
         clock: SYSVAR_CLOCK_PUBKEY,
@@ -425,14 +454,14 @@ export class StakingClient {
   }
 
   public async stakePoolWithdrawStakeTx(
-    fund: PublicKey,
+    state: PublicKey,
     stakePool: PublicKey,
     amount: BN,
     deactivate: boolean = false,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(fund);
+    const vault = this.base.getVaultPda(state);
     const {
       programId: stakePoolProgram,
       poolMint,
@@ -443,22 +472,19 @@ export class StakingClient {
       reserveStake,
     } = await this.getStakePoolAccountData(stakePool);
 
-    const validatorStakeAccounts =
-      await this.getStakeAccounts(withdrawAuthority);
-
-    // If there are multiple validator stake accounts, use the first one that is
-    // not the reserve stake account. Otherwise, use the reserve stake account.
     // The reserve stake account should NOT be used for withdrawals unless we have no other options.
+    const validatorStakeCandidates = (
+      await this.getStakeAccountsWithStates(withdrawAuthority)
+    ).filter((s) => !s.address.equals(reserveStake));
+    console.log("validatorStakeCandidates", validatorStakeCandidates);
     const validatorStakeAccount =
-      validatorStakeAccounts.length > 1
-        ? validatorStakeAccounts[0].equals(reserveStake)
-          ? validatorStakeAccounts[1]
-          : validatorStakeAccounts[0]
-        : reserveStake;
+      validatorStakeCandidates.length === 0
+        ? reserveStake
+        : validatorStakeCandidates[0].address;
 
     const stakeAccountId = Date.now().toString();
-    const [stakeAccountPda, bump] = this.getStakeAccountPDA(
-      fund,
+    const [stakeAccountPda, bump] = this.getStakeAccountPda(
+      state,
       stakeAccountId,
     );
 
@@ -468,7 +494,7 @@ export class StakingClient {
             .deactivateStakeAccounts()
             .accountsPartial({
               signer,
-              state: fund,
+              state,
               vault,
               clock: SYSVAR_CLOCK_PUBKEY,
               stakeProgram: StakeProgram.programId,
@@ -488,13 +514,13 @@ export class StakingClient {
       .stakePoolWithdrawStake(amount, stakeAccountId, bump)
       .accountsPartial({
         signer,
-        state: fund,
+        state,
         vault,
         vaultStakeAccount: stakeAccountPda,
         stakePoolProgram,
         stakePool,
         poolMint,
-        poolTokenAta: this.base.getVaultAta(fund, poolMint),
+        poolTokenAta: this.base.getVaultAta(state, poolMint),
         validatorList,
         validatorStakeAccount,
         withdrawAuthority,
@@ -520,7 +546,7 @@ export class StakingClient {
     const signer = txOptions.signer || this.base.getSigner();
     const vault = this.base.getVaultPda(fund);
     const stakeAccountId = Date.now().toString();
-    const [stakeAccountPda, bump] = this.getStakeAccountPDA(
+    const [stakeAccountPda, bump] = this.getStakeAccountPda(
       fund,
       stakeAccountId,
     );
@@ -632,7 +658,7 @@ export class StakingClient {
   }
 
   public async splitStakeAccountTx(
-    fund: PublicKey,
+    state: PublicKey,
     existingStake: PublicKey,
     lamports: BN,
     newStake: PublicKey,
@@ -641,13 +667,13 @@ export class StakingClient {
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(fund);
+    const vault = this.base.getVaultPda(state);
 
     const tx = await this.base.program.methods
       .splitStakeAccount(lamports, newStakeAccountId, newStakeAccountBump)
       .accountsPartial({
         signer,
-        state: fund,
+        state,
         vault,
         existingStake,
         newStake,
