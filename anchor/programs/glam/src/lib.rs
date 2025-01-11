@@ -755,8 +755,8 @@ pub mod glam {
     ///
     /// # Permission required
     /// - Any of
-    ///   - Permission::JupiterSwapAnyAsset: no restrictions.
-    ///   - Permission::JupiterSwapFundAssets: input and output are in the assets allowlist.
+    ///   - Permission::JupiterSwapAny: no restrictions.
+    ///   - Permission::JupiterSwapAllowlisted: input and output are in the assets allowlist.
     ///   - Permission::JupiterSwapLst: input and output assets are both LST.
     ///
     /// # Integration required

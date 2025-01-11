@@ -2018,8 +2018,8 @@ export type Glam = {
         "",
         "# Permission required",
         "- Any of",
-        "- Permission::JupiterSwapAnyAsset: no restrictions.",
-        "- Permission::JupiterSwapFundAssets: input and output are in the assets allowlist.",
+        "- Permission::JupiterSwapAny: no restrictions.",
+        "- Permission::JupiterSwapAllowlisted: input and output are in the assets allowlist.",
         "- Permission::JupiterSwapLst: input and output assets are both LST.",
         "",
         "# Integration required",
@@ -5870,58 +5870,13 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "invalidShareClass",
-      "msg": "Share class not allowed to subscribe"
+      "name": "invalidAssetForSwap",
+      "msg": "Asset cannot be swapped"
     },
     {
       "code": 6001,
-      "name": "invalidAssetSubscribe",
-      "msg": "Asset not allowed to subscribe"
-    },
-    {
-      "code": 6002,
-      "name": "invalidPricingOracle",
-      "msg": "Invalid oracle for asset price"
-    },
-    {
-      "code": 6003,
-      "name": "invalidRemainingAccounts",
-      "msg": "Invalid accounts: the transaction is malformed"
-    },
-    {
-      "code": 6004,
-      "name": "invalidTreasuryAccount",
-      "msg": "Invalid treasury ata"
-    },
-    {
-      "code": 6005,
-      "name": "invalidSignerAccount",
-      "msg": "Invalid signer ata"
-    },
-    {
-      "code": 6006,
-      "name": "invalidAssetPrice",
-      "msg": "Invalid asset price"
-    },
-    {
-      "code": 6007,
-      "name": "invalidStableCoinPriceForSubscribe",
-      "msg": "Subscription not allowed: invalid stable coin price"
-    },
-    {
-      "code": 6008,
-      "name": "subscribeRedeemDisable",
-      "msg": "Fund is disabled for subscription and redemption"
-    },
-    {
-      "code": 6009,
-      "name": "invalidPolicyAccount",
-      "msg": "Policy account is mandatory"
-    },
-    {
-      "code": 6010,
-      "name": "priceTooOld",
-      "msg": "Price is too old"
+      "name": "invalidSwap",
+      "msg": "Swap failed"
     }
   ],
   "types": [
@@ -7515,10 +7470,10 @@ export type Glam = {
             "name": "liquidUnstake"
           },
           {
-            "name": "jupiterSwapFundAssets"
+            "name": "jupiterSwapAllowlisted"
           },
           {
-            "name": "jupiterSwapAnyAsset"
+            "name": "jupiterSwapAny"
           },
           {
             "name": "wSolWrap"

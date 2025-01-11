@@ -21,8 +21,8 @@ pub enum Permission {
     Stake, // Stake with marinade or spl/sanctum stake pool programs
     Unstake,
     LiquidUnstake,
-    JupiterSwapFundAssets,
-    JupiterSwapAnyAsset,
+    JupiterSwapAllowlisted,
+    JupiterSwapAny,
     WSolWrap,
     WSolUnwrap,
     MintShare,

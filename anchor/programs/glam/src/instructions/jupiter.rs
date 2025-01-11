@@ -211,9 +211,9 @@ pub fn swap_handler<'c: 'info, 'info>(
     )?;
 
     // Build the list of accepted permissions and check access
-    let mut accepted_permissions = vec![Permission::JupiterSwapAnyAsset];
+    let mut accepted_permissions = vec![Permission::JupiterSwapAny];
     if input_in_assets && output_in_assets {
-        accepted_permissions.push(Permission::JupiterSwapFundAssets);
+        accepted_permissions.push(Permission::JupiterSwapAllowlisted);
     }
     if input_is_lst && (output_is_lst || output_in_assets)
         || output_is_lst && (input_is_lst || input_in_assets)
@@ -223,7 +223,7 @@ pub fn swap_handler<'c: 'info, 'info>(
     acl::check_access_any(&state, &ctx.accounts.signer.key, accepted_permissions)?;
 
     // TODO: should we add missing assets to the list after permission check?
-    // This will gradually expand the assets allowlist and auto escalate JupiterSwapFundAssets privilege over time
+    // This will gradually expand the assets allowlist and auto escalate JupiterSwapAllowlisted privilege over time
     if !input_in_assets {
         assets.push(ctx.accounts.input_mint.key());
     }

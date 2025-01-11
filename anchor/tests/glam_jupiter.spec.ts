@@ -139,7 +139,7 @@ describe("glam_jupiter", () => {
       const txId = await glamClient.fund.upsertDelegateAcls(fundPDA, [
         {
           pubkey: testSigner.publicKey,
-          permissions: [{ jupiterSwapFundAssets: {} }, { wSolWrap: {} }],
+          permissions: [{ jupiterSwapAllowlisted: {} }, { wSolWrap: {} }],
         },
       ]);
       console.log("Update delegate acl txId", txId);
@@ -202,7 +202,7 @@ describe("glam_jupiter", () => {
           permissions: [{ jupiterSwapLst: {} }, { wSolWrap: {} }],
         },
       ]);
-      console.log("Grant delegate jupiterSwapAnyAsset permission:", txSig);
+      console.log("Grant delegate jupiterSwapAny permission:", txSig);
     } catch (e) {
       console.error(e);
       throw e;
