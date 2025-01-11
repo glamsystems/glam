@@ -6,7 +6,7 @@ import { JupiterClient } from "./client/jupiter";
 import { MarinadeClient } from "./client/marinade";
 import { WSolClient } from "./client/wsol";
 import { StakingClient } from "./client/staking";
-import { FundClient } from "./client/fund";
+import { StateClient } from "./client/state";
 import { ShareClassClient } from "./client/shareclass";
 
 export { JUPITER_API_DEFAULT } from "./client/base";
@@ -23,7 +23,7 @@ export class GlamClient extends BaseClient {
   private _marinade?: MarinadeClient;
   private _wsol?: WSolClient;
   private _staking?: StakingClient;
-  private _fund?: FundClient;
+  private _state?: StateClient;
   private _shareClass?: ShareClassClient;
 
   public constructor(config?: GlamClientConfig) {
@@ -73,11 +73,11 @@ export class GlamClient extends BaseClient {
     return this._staking;
   }
 
-  get fund(): FundClient {
-    if (!this._fund) {
-      this._fund = new FundClient(this);
+  get state(): StateClient {
+    if (!this._state) {
+      this._state = new StateClient(this);
     }
-    return this._fund;
+    return this._state;
   }
 
   get shareClass(): ShareClassClient {

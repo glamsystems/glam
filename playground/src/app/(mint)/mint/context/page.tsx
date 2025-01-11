@@ -53,9 +53,8 @@ export default function MintContextPage() {
             fundDomicileAlpha2: fund.rawOpenfunds?.fundDomicileAlpha2,
           },
           shareClass: {
-            iSIN: fund.shareClasses[0].rawOpenfunds?.isin,
-            shareClassCurrency:
-              fund.shareClasses[0].rawOpenfunds?.shareClassCurrency,
+            iSIN: fund.mints[0].rawOpenfunds?.isin,
+            shareClassCurrency: fund.mints[0].rawOpenfunds?.shareClassCurrency,
           },
         });
 

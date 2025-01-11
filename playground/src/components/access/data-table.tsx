@@ -186,7 +186,7 @@ export function DataTable<TData extends KeyData>({
 
     try {
       // @ts-ignore
-      const txSig = await glamClient.fund.upsertDelegateAcls(
+      const txSig = await glamClient.state.upsertDelegateAcls(
         activeFund!.pubkey,
         delegateAcls,
       );
@@ -227,7 +227,7 @@ export function DataTable<TData extends KeyData>({
     }
 
     try {
-      const txSig = await glamClient.fund.deleteDelegateAcls(
+      const txSig = await glamClient.state.deleteDelegateAcls(
         activeFund!.pubkey,
         [pubkey],
       );

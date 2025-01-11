@@ -57,7 +57,7 @@ export default function PageIntegrations() {
               ],
             };
       try {
-        const txSig = await glamClient.fund.updateFund(
+        const txSig = await glamClient.state.updateState(
           activeFund.pubkey,
           updatedFund,
         );

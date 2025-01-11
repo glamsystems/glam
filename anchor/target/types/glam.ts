@@ -24,7 +24,7 @@ export type Glam = {
         "- `share_class_metadata`: An instance of `ShareClassModel` containing the metadata for the new share class.",
         "",
         "# Permission required",
-        "- Manager only, delegates not allowed"
+        "- Owner only, delegates not allowed"
       ],
       "discriminator": [
         34,
@@ -320,73 +320,6 @@ export type Glam = {
       ]
     },
     {
-      "name": "closeFund",
-      "docs": [
-        "Closes a fund and releases its resources.",
-        "",
-        "# Parameters",
-        "- `ctx`: The context for the transaction.",
-        "",
-        "# Permission required",
-        "- Manager only, delegates not allowed"
-      ],
-      "discriminator": [
-        230,
-        183,
-        3,
-        112,
-        236,
-        252,
-        5,
-        185
-      ],
-      "accounts": [
-        {
-          "name": "state",
-          "writable": true
-        },
-        {
-          "name": "metadata",
-          "writable": true
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  116,
-                  114,
-                  101,
-                  97,
-                  115,
-                  117,
-                  114,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "state"
-              }
-            ]
-          }
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": []
-    },
-    {
       "name": "closeShareClass",
       "docs": [
         "Closes a share class and releases its resources.",
@@ -396,7 +329,7 @@ export type Glam = {
         "- `share_class_id`: The id of the share class to be closed.",
         "",
         "# Permission required",
-        "- Manager only, delegates not allowed"
+        "- Owner only, delegates not allowed"
       ],
       "discriminator": [
         35,
@@ -500,15 +433,82 @@ export type Glam = {
       ]
     },
     {
-      "name": "closeTokenAccounts",
+      "name": "closeState",
       "docs": [
-        "Closes token accounts owned by the treasury.",
+        "Closes a state account and releases its resources.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
         "",
         "# Permission required",
-        "- Manager only, delegates not allowed"
+        "- Owner only, delegates not allowed"
+      ],
+      "discriminator": [
+        25,
+        1,
+        184,
+        101,
+        200,
+        245,
+        210,
+        246
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "writable": true
+        },
+        {
+          "name": "metadata",
+          "writable": true
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "closeTokenAccounts",
+      "docs": [
+        "Closes token accounts owned by the vault.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Owner only, delegates not allowed"
       ],
       "discriminator": [
         199,
@@ -924,7 +924,7 @@ export type Glam = {
       "name": "driftInitialize",
       "docs": [
         "drift",
-        "Initializes a drift account owned by fund treasury and creates a subaccount.",
+        "Initializes a drift account owned by vault and creates a subaccount.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
@@ -1886,27 +1886,27 @@ export type Glam = {
       ]
     },
     {
-      "name": "initializeFund",
+      "name": "initializeState",
       "docs": [
-        "Fund",
-        "Initializes a fund from the provided FundModel instance.",
+        "State",
+        "Initializes a state account from the provided StateModel instance.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `fund`: An instance of `FundModel` containing the details of the fund to be initialized.",
+        "- `fund`: An instance of `StateModel` containing the details of the state to be initialized.",
         "",
         "# Permission required",
-        "- Manager only, delegates not allowed"
+        "- Owner only, delegates not allowed"
       ],
       "discriminator": [
-        212,
-        42,
-        24,
-        245,
-        146,
-        141,
-        78,
-        198
+        190,
+        171,
+        224,
+        219,
+        217,
+        72,
+        199,
+        176
       ],
       "accounts": [
         {
@@ -1929,7 +1929,7 @@ export type Glam = {
               },
               {
                 "kind": "arg",
-                "path": "fund_model.created"
+                "path": "state_model.created"
               }
             ]
           }
@@ -1997,10 +1997,10 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "fund",
+          "name": "state",
           "type": {
             "defined": {
-              "name": "fundModel"
+              "name": "stateModel"
             }
           }
         }
@@ -3648,16 +3648,16 @@ export type Glam = {
     {
       "name": "setSubscribeRedeemEnabled",
       "docs": [
-        "Enables or disables the subscribe and redeem functionality for the fund.",
+        "Enables or disables the subscribe and redeem functionality.",
         "",
-        "This allows the manager to pause/unpause subscription and redemption of a fund.",
+        "This allows the owner to pause/unpause subscription and redemption of a fund.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
         "- `enabled`: A boolean indicating whether to enable or disable the subscribe and redeem functionality.",
         "",
         "# Permission required",
-        "- Manager only, delegates not allowed"
+        "- Owner only, delegates not allowed"
       ],
       "discriminator": [
         189,
@@ -4888,50 +4888,6 @@ export type Glam = {
       ]
     },
     {
-      "name": "updateFund",
-      "docs": [
-        "Updates an existing fund with new parameters.",
-        "",
-        "# Parameters",
-        "- `ctx`: The context for the transaction.",
-        "- `fund`: An instance of `FundModel` containing the updated details of the fund.",
-        "",
-        "# Permission required",
-        "- Manager only, delegates not allowed"
-      ],
-      "discriminator": [
-        132,
-        171,
-        13,
-        83,
-        34,
-        122,
-        82,
-        155
-      ],
-      "accounts": [
-        {
-          "name": "state",
-          "writable": true
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        }
-      ],
-      "args": [
-        {
-          "name": "fund",
-          "type": {
-            "defined": {
-              "name": "fundModel"
-            }
-          }
-        }
-      ]
-    },
-    {
       "name": "updateShareClass",
       "docs": [
         "Updates an existing share class with new metadata.",
@@ -4942,7 +4898,7 @@ export type Glam = {
         "- `share_class_metadata`: An instance of `ShareClassModel` containing the updated metadata for the new share class.",
         "",
         "# Permission required",
-        "- Manager only, delegates not allowed"
+        "- Owner only, delegates not allowed"
       ],
       "discriminator": [
         196,
@@ -4989,16 +4945,60 @@ export type Glam = {
       ]
     },
     {
+      "name": "updateState",
+      "docs": [
+        "Updates an existing state account with new parameters.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `fund`: An instance of `StateModel` containing the updated details of the state.",
+        "",
+        "# Permission required",
+        "- Owner only, delegates not allowed"
+      ],
+      "discriminator": [
+        135,
+        112,
+        215,
+        75,
+        247,
+        185,
+        53,
+        176
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "writable": true
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "state",
+          "type": {
+            "defined": {
+              "name": "stateModel"
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "withdraw",
       "docs": [
-        "Withdraw an asset from fund treasury into manager's wallet.",
+        "Withdraw asset from vault into owner's wallet.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
         "- `amount`: The amount to withdraw.",
         "",
         "# Permission required",
-        "- Manager only, delegates not allowed"
+        "- Owner only, delegates not allowed"
       ],
       "discriminator": [
         183,
@@ -5870,13 +5870,58 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "invalidAssetForSwap",
-      "msg": "Asset cannot be swapped"
+      "name": "invalidShareClass",
+      "msg": "Share class not allowed to subscribe"
     },
     {
       "code": 6001,
-      "name": "invalidSwap",
-      "msg": "Swap failed"
+      "name": "invalidAssetSubscribe",
+      "msg": "Asset not allowed to subscribe"
+    },
+    {
+      "code": 6002,
+      "name": "invalidPricingOracle",
+      "msg": "Invalid oracle for asset price"
+    },
+    {
+      "code": 6003,
+      "name": "invalidRemainingAccounts",
+      "msg": "Invalid accounts: the transaction is malformed"
+    },
+    {
+      "code": 6004,
+      "name": "invalidTreasuryAccount",
+      "msg": "Invalid treasury ata"
+    },
+    {
+      "code": 6005,
+      "name": "invalidSignerAccount",
+      "msg": "Invalid signer ata"
+    },
+    {
+      "code": 6006,
+      "name": "invalidAssetPrice",
+      "msg": "Invalid asset price"
+    },
+    {
+      "code": 6007,
+      "name": "invalidStableCoinPriceForSubscribe",
+      "msg": "Subscription not allowed: invalid stable coin price"
+    },
+    {
+      "code": 6008,
+      "name": "subscribeRedeemDisable",
+      "msg": "Fund is disabled for subscription and redemption"
+    },
+    {
+      "code": 6009,
+      "name": "invalidPolicyAccount",
+      "msg": "Policy account is mandatory"
+    },
+    {
+      "code": 6010,
+      "name": "priceTooOld",
+      "msg": "Price is too old"
     }
   ],
   "types": [
@@ -6054,7 +6099,7 @@ export type Glam = {
             }
           },
           {
-            "name": "manager",
+            "name": "owner",
             "type": {
               "option": "pubkey"
             }
@@ -6650,7 +6695,7 @@ export type Glam = {
         "kind": "struct",
         "fields": [
           {
-            "name": "fundPubkey",
+            "name": "statePubkey",
             "type": "pubkey"
           },
           {
@@ -6693,154 +6738,6 @@ export type Glam = {
                   "defined": {
                     "name": "fundManagerField"
                   }
-                }
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "fundModel",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "id",
-            "type": {
-              "option": "pubkey"
-            }
-          },
-          {
-            "name": "name",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "uri",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "openfundsUri",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "isEnabled",
-            "type": {
-              "option": "bool"
-            }
-          },
-          {
-            "name": "assets",
-            "type": {
-              "vec": "pubkey"
-            }
-          },
-          {
-            "name": "assetsWeights",
-            "type": {
-              "vec": "u32"
-            }
-          },
-          {
-            "name": "externalTreasuryAccounts",
-            "type": {
-              "vec": "pubkey"
-            }
-          },
-          {
-            "name": "shareClasses",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "shareClassModel"
-                }
-              }
-            }
-          },
-          {
-            "name": "company",
-            "type": {
-              "option": {
-                "defined": {
-                  "name": "companyModel"
-                }
-              }
-            }
-          },
-          {
-            "name": "manager",
-            "type": {
-              "option": {
-                "defined": {
-                  "name": "managerModel"
-                }
-              }
-            }
-          },
-          {
-            "name": "created",
-            "type": {
-              "option": {
-                "defined": {
-                  "name": "createdModel"
-                }
-              }
-            }
-          },
-          {
-            "name": "delegateAcls",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "delegateAcl"
-                }
-              }
-            }
-          },
-          {
-            "name": "integrationAcls",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "integrationAcl"
-                }
-              }
-            }
-          },
-          {
-            "name": "driftMarketIndexesPerp",
-            "type": {
-              "vec": "u32"
-            }
-          },
-          {
-            "name": "driftMarketIndexesSpot",
-            "type": {
-              "vec": "u32"
-            }
-          },
-          {
-            "name": "driftOrderTypes",
-            "type": {
-              "vec": "u32"
-            }
-          },
-          {
-            "name": "isRawOpenfunds",
-            "type": "bool"
-          },
-          {
-            "name": "rawOpenfunds",
-            "type": {
-              "option": {
-                "defined": {
-                  "name": "fundOpenfundsModel"
                 }
               }
             }
@@ -8679,6 +8576,148 @@ export type Glam = {
             "name": "valor",
             "type": {
               "option": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "stateModel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "uri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "metadataUri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "isEnabled",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "assets",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "externalVaultAccounts",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "mints",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "shareClassModel"
+                }
+              }
+            }
+          },
+          {
+            "name": "company",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "companyModel"
+                }
+              }
+            }
+          },
+          {
+            "name": "owner",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "managerModel"
+                }
+              }
+            }
+          },
+          {
+            "name": "created",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "createdModel"
+                }
+              }
+            }
+          },
+          {
+            "name": "delegateAcls",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "delegateAcl"
+                }
+              }
+            }
+          },
+          {
+            "name": "integrationAcls",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "integrationAcl"
+                }
+              }
+            }
+          },
+          {
+            "name": "driftMarketIndexesPerp",
+            "type": {
+              "vec": "u32"
+            }
+          },
+          {
+            "name": "driftMarketIndexesSpot",
+            "type": {
+              "vec": "u32"
+            }
+          },
+          {
+            "name": "driftOrderTypes",
+            "type": {
+              "vec": "u32"
+            }
+          },
+          {
+            "name": "isRawOpenfunds",
+            "type": "bool"
+          },
+          {
+            "name": "rawOpenfunds",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "fundOpenfundsModel"
+                }
+              }
             }
           }
         ]

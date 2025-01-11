@@ -306,17 +306,17 @@ export class MarinadeClient {
   }
 
   public async delayedUnstakeTx(
-    fund: PublicKey,
+    state: PublicKey,
     amount: BN,
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
     const ticketId = Date.now().toString();
-    const [ticket, bump] = this.getMarinadeTicketPDA(fund, ticketId);
-    const vault = this.base.getVaultPda(fund);
+    const [ticket, bump] = this.getMarinadeTicketPDA(state, ticketId);
+    const vault = this.base.getVaultPda(state);
     const marinadeState = this.getMarinadeState();
     const treasuryMsolAta = this.base.getVaultAta(
-      fund,
+      state,
       marinadeState.msolMintAddress,
     );
 
@@ -325,7 +325,7 @@ export class MarinadeClient {
     const tx = await this.base.program.methods
       .marinadeDelayedUnstake(amount, ticketId, bump)
       .accountsPartial({
-        state: fund,
+        state,
         vault,
         signer,
         ticket,
@@ -344,18 +344,18 @@ export class MarinadeClient {
   }
 
   public async claimTicketsTx(
-    fund: PublicKey,
+    state: PublicKey,
     tickets: PublicKey[],
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(fund);
+    const vault = this.base.getVaultPda(state);
     const marinadeState = this.getMarinadeState();
 
     const tx = await this.base.program.methods
       .marinadeClaimTickets()
       .accountsPartial({
-        state: fund,
+        state,
         vault,
         signer,
         marinadeState: marinadeState.marinadeStateAddress,

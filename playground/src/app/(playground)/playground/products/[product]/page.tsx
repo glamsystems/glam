@@ -14,7 +14,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { FundModel, ShareClassModel, useGlam } from "@glam/anchor/react";
+import { StateModel, ShareClassModel, useGlam } from "@glam/anchor/react";
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PublicKey } from "@solana/web3.js";
@@ -165,9 +165,9 @@ function processHolderData(
   };
 }
 
-async function updateHoldersData(fundModel: FundModel): Promise<HolderData[]> {
+async function updateHoldersData(fundModel: StateModel): Promise<HolderData[]> {
   const holdersData = await Promise.all(
-    fundModel.shareClasses.map(async (shareClassModel, i) => {
+    fundModel.mints.map(async (shareClassModel, i) => {
       const mintAddress = fundModel.shareClassMints[i].toBase58();
       const holderData = await fetchHolderData(mintAddress);
       if (!holderData) {
@@ -193,7 +193,7 @@ async function updateHoldersData(fundModel: FundModel): Promise<HolderData[]> {
   return holdersData.filter((item) => item !== null) as HolderData[];
 }
 
-const ChartComponent: React.FC<{ fundModel: FundModel; holdersConfig: any }> =
+const ChartComponent: React.FC<{ fundModel: StateModel; holdersConfig: any }> =
   React.memo(({ fundModel, holdersConfig }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [showSkeleton, setShowSkeleton] = useState(true); // **New State**
@@ -472,15 +472,13 @@ export default function ProductPage() {
     setSparkleColor(generatedColor);
   };
 
-  let mintData = (fundModel?.shareClasses || []).map(
-    (shareClass: any, j: number) => ({
-      mint: shareClass?.shareClassSymbol,
-      shares:
-        Number(shareClass?.shareClassSupply) /
-          10 ** (shareClass?.shareClassDecimals || 0) || 0,
-      fill: `var(--color-sc${j})`,
-    }),
-  );
+  let mintData = (fundModel?.mints || []).map((shareClass: any, j: number) => ({
+    mint: shareClass?.shareClassSymbol,
+    shares:
+      Number(shareClass?.shareClassSupply) /
+        10 ** (shareClass?.shareClassDecimals || 0) || 0,
+    fill: `var(--color-sc${j})`,
+  }));
 
   const totalShares = mintData.reduce(
     (acc: number, cur: any) => acc + cur.shares,
@@ -541,7 +539,7 @@ export default function ProductPage() {
               ref={sparkleContainerRef}
             >
               <Sparkle
-                address={fundModel?.shareClasses[0]?.fundId?.toBase58()!}
+                address={fundModel?.mints[0]?.fundId?.toBase58()!}
                 size={105}
                 onColorGenerated={handleColorGenerated}
               />
@@ -615,11 +613,11 @@ export default function ProductPage() {
               <p className="text-muted-foreground opacity-75 text-xs font-light">
                 Symbol
               </p>
-              {fundModel.shareClasses[0]?.symbol}
+              {fundModel.mints[0]?.symbol}
               <p className="text-muted-foreground opacity-25 text-xs font-light">
                 <ExplorerLink
-                  path={`/account/${fundModel?.shareClasses[0]?.fundId?.toBase58()}`}
-                  label={fundModel?.shareClasses[0]?.fundId?.toBase58() || ""}
+                  path={`/account/${fundModel?.mints[0]?.fundId?.toBase58()}`}
+                  label={fundModel?.mints[0]?.fundId?.toBase58() || ""}
                 />
               </p>
             </Card>
@@ -627,13 +625,12 @@ export default function ProductPage() {
               <p className="text-muted-foreground opacity-75 text-xs font-light">
                 Class Asset
               </p>
-              {fundModel.shareClasses[0]?.rawOpenfunds?.shareClassCurrency}
+              {fundModel.mints[0]?.rawOpenfunds?.shareClassCurrency}
               <p className="text-muted-foreground opacity-25 text-xs font-light">
                 <ExplorerLink
-                  path={`/account/${fundModel?.shareClasses[0]?.rawOpenfunds?.shareClassCurrency}`}
+                  path={`/account/${fundModel?.mints[0]?.rawOpenfunds?.shareClassCurrency}`}
                   label={
-                    fundModel?.shareClasses[0]?.rawOpenfunds
-                      ?.shareClassCurrency || ""
+                    fundModel?.mints[0]?.rawOpenfunds?.shareClassCurrency || ""
                   }
                 />
               </p>
@@ -866,7 +863,7 @@ export default function ProductPage() {
                             </dt>
                             <dd>
                               {
-                                fundModel.shareClasses[0]?.rawOpenfunds
+                                fundModel.mints[0]?.rawOpenfunds
                                   ?.shareClassCurrency
                               }
                             </dd>
@@ -877,7 +874,7 @@ export default function ProductPage() {
                             </dt>
                             <dd>
                               {
-                                fundModel.shareClasses[0]?.rawOpenfunds
+                                fundModel.mints[0]?.rawOpenfunds
                                   ?.shareClassLaunchDate
                               }
                             </dd>
@@ -888,7 +885,7 @@ export default function ProductPage() {
                             </dt>
                             <dd>
                               {
-                                fundModel.shareClasses[0]?.rawOpenfunds
+                                fundModel.mints[0]?.rawOpenfunds
                                   ?.shareClassLifecycle
                               }
                             </dd>
@@ -899,7 +896,7 @@ export default function ProductPage() {
                             </dt>
                             <dd>
                               {
-                                fundModel.shareClasses[0]?.rawOpenfunds
+                                fundModel.mints[0]?.rawOpenfunds
                                   ?.investmentStatus
                               }
                             </dd>
@@ -930,7 +927,7 @@ export default function ProductPage() {
                             </dt>
                             <dd>
                               {
-                                fundModel.shareClasses[0]?.rawOpenfunds
+                                fundModel.mints[0]?.rawOpenfunds
                                   ?.shareClassDistributionPolicy
                               }
                             </dd>
@@ -1012,7 +1009,7 @@ export default function ProductPage() {
                         <dl className="grid gap-2">
                           <div className="flex items-center justify-between">
                             <dt className="text-muted-foreground">
-                              Share Class 1 {fundModel?.shareClasses[0]?.symbol}
+                              Share Class 1 {fundModel?.mints[0]?.symbol}
                             </dt>
                             <ExplorerLink
                               path={`/account/${fundModel?.shareClassMints[0]}`}

@@ -26,7 +26,7 @@ import { AssetInput } from "@/components/AssetInput";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import React, { useState, useEffect } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { FundModel, useGlam, WSOL } from "@glam/anchor/react";
+import { StateModel, useGlam, WSOL } from "@glam/anchor/react";
 import { BN } from "@coral-xyz/anchor";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
@@ -72,11 +72,11 @@ function InvestorDisclaimers({
   direction,
   method,
 }: {
-  fund?: FundModel;
+  fund?: StateModel;
   direction: string;
   method: string;
 }) {
-  const share = fund?.shareClasses[0];
+  const share = fund?.mints[0];
   if (!fund || !share) return null;
 
   const lockUp = Number(share?.lockUpPeriodInSeconds || 0);
@@ -377,7 +377,7 @@ function InvestorDisclaimers({
   );
 }
 
-function InvestorWidget({ fundModel }: { fundModel?: FundModel }) {
+function InvestorWidget({ fundModel }: { fundModel?: StateModel }) {
   const { glamClient, userWallet } = useGlam();
   const queryClient = useQueryClient();
   const [isTxPending, setIsTxPending] = useState(false);
@@ -405,7 +405,7 @@ function InvestorWidget({ fundModel }: { fundModel?: FundModel }) {
     setBalance(0);
 
     if (direction === "redeem") {
-      const symbol = fundModel?.shareClasses[0]?.symbol || "Share";
+      const symbol = fundModel?.mints[0]?.symbol || "Share";
       const mint = fundModel?.shareClassMints[0];
       setAmountInAsset(symbol);
 
@@ -682,7 +682,7 @@ function InvestorWidget({ fundModel }: { fundModel?: FundModel }) {
 
 export default function Flows() {
   const { allFunds } = useGlam();
-  const [selectedFund, setSelectedFund] = useState<FundModel>();
+  const [selectedFund, setSelectedFund] = useState<StateModel>();
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -718,7 +718,7 @@ export default function Flows() {
                 <CommandEmpty>No product found.</CommandEmpty>
                 <CommandGroup>
                   {allFunds
-                    .filter((f) => f.shareClasses.length > 0)
+                    .filter((f) => f.mints.length > 0)
                     .map((f) => (
                       <CommandItem
                         key={f.idStr}

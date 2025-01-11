@@ -1,6 +1,6 @@
 use crate::{
     constants::*,
-    error::{AccessError, FundError, ShareClassError},
+    error::{AccessError, ShareClassError, StateError},
     policy_hook::TRANSFER_HOOK_EXTRA_ACCOUNTS,
     state::*,
     ID,
@@ -699,7 +699,7 @@ pub struct CloseShareClass<'info> {
 pub fn close_share_class_handler(ctx: Context<CloseShareClass>, share_class_id: u8) -> Result<()> {
     require!(
         (share_class_id as usize) < ctx.accounts.state.mints.len(),
-        FundError::NoShareClassInFund
+        StateError::NoShareClass
     );
 
     // Note: this is redundant because close_account should check that supply == 0

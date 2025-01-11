@@ -17,9 +17,9 @@ pub const DEFAULT_DRIFT_USER_NAME: [u8; 32] = [
 
 pub const MAX_ASSETS: usize = 5;
 pub const MAX_SHARE_CLASSES: usize = 3;
-pub const MAX_FUND_NAME: usize = 50;
-pub const MAX_FUND_SYMBOL: usize = 20;
-pub const MAX_FUND_URI: usize = 100;
+pub const MAX_SIZE_NAME: usize = 50;
+pub const MAX_SIZE_SYMBOL: usize = 20;
+pub const MAX_SIZE_URI: usize = 100;
 
 pub const WSOL: Pubkey = pubkey!("So11111111111111111111111111111111111111112");
 pub const MSOL: Pubkey = pubkey!("mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So");

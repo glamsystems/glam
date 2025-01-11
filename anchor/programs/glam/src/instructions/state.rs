@@ -1,6 +1,6 @@
 use crate::{
     constants::*,
-    error::{AccessError, FundError, ManagerError},
+    error::{AccessError, StateError},
     state::*,
 };
 use anchor_lang::{prelude::*, system_program};
@@ -14,14 +14,14 @@ use anchor_spl::{
 use glam_macros::vault_signer_seeds;
 
 #[derive(Accounts)]
-#[instruction(fund_model: FundModel)]
-pub struct InitializeFund<'info> {
+#[instruction(state_model: StateModel)]
+pub struct InitializeState<'info> {
     #[account(
         init,
         seeds = [
             SEED_STATE.as_bytes(),
             signer.key().as_ref(),
-            fund_model.created.as_ref().unwrap().key.as_ref()
+            state_model.created.as_ref().unwrap().key.as_ref()
         ],
         bump,
         payer = signer,
@@ -41,33 +41,26 @@ pub struct InitializeFund<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn initialize_fund_handler<'c: 'info, 'info>(
-    ctx: Context<'_, '_, 'c, 'info, InitializeFund<'info>>,
-    fund_model: FundModel,
+pub fn initialize_state_handler<'c: 'info, 'info>(
+    ctx: Context<'_, '_, 'c, 'info, InitializeState<'info>>,
+    state_model: StateModel,
 ) -> Result<()> {
     //
-    // Initialize the fund
+    // Initialize state account
     //
     let state = &mut ctx.accounts.state;
-
-    let model = fund_model.clone();
-    if let Some(fund_name) = model.name {
-        require!(
-            fund_name.len() < MAX_FUND_NAME,
-            ManagerError::InvalidFundName
-        );
-        state.name = fund_name;
+    let model = state_model.clone();
+    if let Some(name) = model.name {
+        require!(name.len() < MAX_SIZE_NAME, StateError::InvalidName);
+        state.name = name;
     }
     if let Some(fund_uri) = model.uri {
-        require!(fund_uri.len() < MAX_FUND_URI, ManagerError::InvalidFundUri);
+        require!(fund_uri.len() < MAX_SIZE_URI, StateError::InvalidUri);
         state.uri = fund_uri;
     }
-    if let Some(openfunds_uri) = model.openfunds_uri {
-        require!(
-            openfunds_uri.len() < MAX_FUND_URI,
-            ManagerError::InvalidFundUri
-        );
-        state.metadata_uri = openfunds_uri;
+    if let Some(metadata_uri) = model.metadata_uri {
+        require!(metadata_uri.len() < MAX_SIZE_URI, StateError::InvalidUri);
+        state.metadata_uri = metadata_uri;
     }
 
     state.vault = ctx.accounts.vault.key();
@@ -75,7 +68,10 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     state.owner = ctx.accounts.signer.key();
 
     //
-    // Set engine params
+    // Set state params
+    //
+    // state.params[0][0]: assets allowlists
+    // state.params[0][1]: integration acls
     //
     state.params = vec![vec![
         EngineField {
@@ -91,22 +87,22 @@ pub fn initialize_fund_handler<'c: 'info, 'info>(
     ]];
 
     //
-    // Initialize openfunds
+    // Initialize metadata account
     //
-    let openfunds = &mut ctx.accounts.metadata;
-    let openfunds_metadata = MetadataAccount::from(fund_model);
-    openfunds.fund_pubkey = state.key();
-    openfunds.company = openfunds_metadata.company;
-    openfunds.fund = openfunds_metadata.fund;
-    openfunds.share_classes = openfunds_metadata.share_classes;
-    openfunds.fund_managers = openfunds_metadata.fund_managers;
+    let metadata = &mut ctx.accounts.metadata;
+    let openfunds_metadata = MetadataAccount::from(state_model);
+    metadata.state_pubkey = state.key();
+    metadata.company = openfunds_metadata.company;
+    metadata.fund = openfunds_metadata.fund;
+    metadata.share_classes = openfunds_metadata.share_classes;
+    metadata.fund_managers = openfunds_metadata.fund_managers;
 
     msg!("State account created: {}", ctx.accounts.state.key());
     Ok(())
 }
 
 #[derive(Accounts)]
-pub struct UpdateFund<'info> {
+pub struct UpdateState<'info> {
     #[account(mut, constraint = state.owner == signer.key() @ AccessError::NotAuthorized)]
     pub state: Account<'info, StateAccount>,
 
@@ -114,31 +110,37 @@ pub struct UpdateFund<'info> {
     pub signer: Signer<'info>,
 }
 
-pub fn update_fund_handler<'c: 'info, 'info>(
-    ctx: Context<'_, '_, 'c, 'info, UpdateFund<'info>>,
-    fund_model: FundModel,
+pub fn update_state_handler<'c: 'info, 'info>(
+    ctx: Context<'_, '_, 'c, 'info, UpdateState<'info>>,
+    state_model: StateModel,
 ) -> Result<()> {
     let state = &mut ctx.accounts.state;
 
-    if let Some(name) = fund_model.name {
-        require!(name.as_bytes().len() <= 50, ManagerError::InvalidFundName);
+    if let Some(name) = state_model.name {
+        require!(
+            name.as_bytes().len() <= MAX_SIZE_NAME,
+            StateError::InvalidName
+        );
         state.name = name;
     }
-    if let Some(uri) = fund_model.uri {
-        require!(uri.as_bytes().len() <= 100, ManagerError::InvalidFundName);
+    if let Some(uri) = state_model.uri {
+        require!(
+            uri.as_bytes().len() <= MAX_SIZE_URI,
+            StateError::InvalidName
+        );
         state.uri = uri;
     }
 
-    if let Some(manager_model) = fund_model.manager {
+    if let Some(manager_model) = state_model.owner {
         if let Some(manager) = manager_model.pubkey {
             state.owner = manager
         }
     }
 
-    if !fund_model.assets.is_empty() {
+    if !state_model.assets.is_empty() {
         let assets = state.assets_mut().unwrap();
         assets.clear();
-        assets.extend(fund_model.assets.clone());
+        assets.extend(state_model.assets.clone());
     }
 
     // One of the engine field in `fund.params[0]` stores the existing acls of the fund,
@@ -152,7 +154,7 @@ pub fn update_fund_handler<'c: 'info, 'info>(
     //
     // 2) a fund acl with same pubkey doesn't exist
     //   - add the acl
-    if !fund_model.delegate_acls.is_empty() {
+    if !state_model.delegate_acls.is_empty() {
         // Add the acls field if it doesn't exist
         let delegate_acls_field_exists = state.params[0]
             .iter()
@@ -166,7 +168,7 @@ pub fn update_fund_handler<'c: 'info, 'info>(
             });
         }
 
-        let to_delete: Vec<Pubkey> = fund_model
+        let to_delete: Vec<Pubkey> = state_model
             .delegate_acls
             .clone()
             .iter()
@@ -182,7 +184,7 @@ pub fn update_fund_handler<'c: 'info, 'info>(
                 }
             }
         }
-        let to_upsert = fund_model
+        let to_upsert = state_model
             .delegate_acls
             .clone()
             .into_iter()
@@ -206,7 +208,7 @@ pub fn update_fund_handler<'c: 'info, 'info>(
     }
 
     // Update integration acls for the state
-    if !fund_model.integration_acls.is_empty() {
+    if !state_model.integration_acls.is_empty() {
         // Check if the integrations field exists
         // Add the integrations field if it doesn't exist
         let integration_acl_field_exists = state.params[0]
@@ -226,19 +228,19 @@ pub fn update_fund_handler<'c: 'info, 'info>(
                 (name, value)
             {
                 val.clear();
-                val.extend(fund_model.integration_acls.clone());
+                val.extend(state_model.integration_acls.clone());
             }
         }
     }
 
-    if !fund_model.drift_market_indexes_perp.is_empty() {
+    if !state_model.drift_market_indexes_perp.is_empty() {
         let mut found = false;
         for EngineField { name, value } in &mut state.params[0] {
             if let (EngineFieldName::DriftMarketIndexesPerp, EngineFieldValue::VecU32 { val }) =
                 (name, value)
             {
                 val.clear();
-                val.extend(fund_model.drift_market_indexes_perp.clone());
+                val.extend(state_model.drift_market_indexes_perp.clone());
                 found = true;
             }
         }
@@ -246,20 +248,20 @@ pub fn update_fund_handler<'c: 'info, 'info>(
             state.params[0].push(EngineField {
                 name: EngineFieldName::DriftMarketIndexesPerp,
                 value: EngineFieldValue::VecU32 {
-                    val: fund_model.drift_market_indexes_perp,
+                    val: state_model.drift_market_indexes_perp,
                 },
             });
         }
     }
 
-    if !fund_model.drift_market_indexes_spot.is_empty() {
+    if !state_model.drift_market_indexes_spot.is_empty() {
         let mut found = false;
         for EngineField { name, value } in &mut state.params[0] {
             if let (EngineFieldName::DriftMarketIndexesSpot, EngineFieldValue::VecU32 { val }) =
                 (name, value)
             {
                 val.clear();
-                val.extend(fund_model.drift_market_indexes_spot.clone());
+                val.extend(state_model.drift_market_indexes_spot.clone());
                 found = true;
             }
         }
@@ -267,20 +269,20 @@ pub fn update_fund_handler<'c: 'info, 'info>(
             state.params[0].push(EngineField {
                 name: EngineFieldName::DriftMarketIndexesSpot,
                 value: EngineFieldValue::VecU32 {
-                    val: fund_model.drift_market_indexes_spot,
+                    val: state_model.drift_market_indexes_spot,
                 },
             });
         }
     }
 
-    if !fund_model.drift_order_types.is_empty() {
+    if !state_model.drift_order_types.is_empty() {
         let mut found = false;
         for EngineField { name, value } in &mut state.params[0] {
             if let (EngineFieldName::DriftOrderTypes, EngineFieldValue::VecU32 { val }) =
                 (name, value)
             {
                 val.clear();
-                val.extend(fund_model.drift_order_types.clone());
+                val.extend(state_model.drift_order_types.clone());
                 found = true;
             }
         }
@@ -288,7 +290,7 @@ pub fn update_fund_handler<'c: 'info, 'info>(
             state.params[0].push(EngineField {
                 name: EngineFieldName::DriftOrderTypes,
                 value: EngineFieldValue::VecU32 {
-                    val: fund_model.drift_order_types,
+                    val: state_model.drift_order_types,
                 },
             });
         }
@@ -298,7 +300,7 @@ pub fn update_fund_handler<'c: 'info, 'info>(
 }
 
 #[derive(Accounts)]
-pub struct CloseFund<'info> {
+pub struct CloseState<'info> {
     #[account(mut, close = signer, constraint = state.owner == signer.key() @ AccessError::NotAuthorized)]
     pub state: Account<'info, StateAccount>,
 
@@ -315,10 +317,10 @@ pub struct CloseFund<'info> {
 }
 
 #[vault_signer_seeds]
-pub fn close_fund_handler(ctx: Context<CloseFund>) -> Result<()> {
+pub fn close_state_handler(ctx: Context<CloseState>) -> Result<()> {
     require!(
         ctx.accounts.state.mints.len() == 0,
-        FundError::CantCloseShareClasses
+        StateError::ShareClassesNotClosed
     );
 
     if ctx.accounts.vault.lamports() > 0 {
@@ -336,7 +338,7 @@ pub fn close_fund_handler(ctx: Context<CloseFund>) -> Result<()> {
         )?;
     }
 
-    msg!("Fund closed: {}", ctx.accounts.state.key());
+    msg!("State account closed: {}", ctx.accounts.state.key());
     Ok(())
 }
 
@@ -403,12 +405,12 @@ pub struct Withdraw<'info> {
 
 #[vault_signer_seeds]
 pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
-    //TODO: atm we allow transfers only from vaults (to their manager),
+    //TODO: atm we allow transfers only from vaults (to their owner),
     //      i.e. funds with no share classes.
     //      We may want to enable transfers for funds with external assets.
     require!(
         ctx.accounts.state.mints.len() == 0,
-        FundError::WithdrawDenied
+        StateError::WithdrawDenied
     );
 
     transfer_checked(

@@ -1,5 +1,5 @@
 {
-  "name": "GLAM Vault XYZ 1",
+  "name": "GLAM Vault XYZ 3",
   "isEnabled": true,
   "assets": [
     "So11111111111111111111111111111111111111112",
@@ -12,5 +12,6 @@
     "emailAddressOfManCo": "hello@glam.systems",
     "fundWebsiteOfManCo": "https://glam.systems"
   },
-  "manager": { "portfolioManagerName": "glam.sol" }
+  "isRawOpenfunds": true,
+  "owner": { "portfolioManagerName": "glam.sol" }
 }

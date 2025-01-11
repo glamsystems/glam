@@ -196,7 +196,7 @@ export default function Holdings() {
           .filter((d) => d.balance > 0 && d.mint)
           .map(async (d) => {
             console.log("withdraw", d.name);
-            return await glamClient.fund.withdrawIxs(
+            return await glamClient.state.withdrawIxs(
               fund,
               new PublicKey(d.mint),
               new BN(d.amount),
@@ -208,12 +208,12 @@ export default function Holdings() {
 
     console.log("closing ATAs:", tokenAccounts);
     preInstructions.push(
-      await glamClient.fund.closeTokenAccountsIx(fund, tokenAccounts),
+      await glamClient.state.closeTokenAccountsIx(fund, tokenAccounts),
     );
 
     setIsTxPending(true);
     try {
-      const txSig = await glamClient.fund.closeFund(fund, {
+      const txSig = await glamClient.state.closeState(fund, {
         preInstructions,
       });
       toast({

@@ -18,7 +18,7 @@ import {
 import { useForm } from "react-hook-form";
 import {
   CompanyModel,
-  FundModel,
+  StateModel,
   FundOpenfundsModel,
   ManagerModel,
   ShareClassOpenfundsModel,
@@ -138,7 +138,7 @@ export default function MultiStepForm() {
           pubkey: glamClient.getSigner(),
           kind: { wallet: {} },
         } as Partial<ManagerModel>,
-        shareClasses: [
+        mints: [
           {
             uri: "",
             fundId: null,
@@ -160,9 +160,12 @@ export default function MultiStepForm() {
             } as Partial<ShareClassOpenfundsModel>,
           },
         ],
-      } as Partial<FundModel>;
+      } as Partial<StateModel>;
 
-      const [txSig, fundPDA] = await glamClient.fund.createFund(fundData, true);
+      const [txSig, fundPDA] = await glamClient.state.createState(
+        fundData,
+        true,
+      );
       setActiveFund({
         address: fundPDA.toBase58(),
         pubkey: fundPDA,

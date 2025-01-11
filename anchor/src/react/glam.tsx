@@ -11,7 +11,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { atomWithStorage } from "jotai/utils";
 
-import type { FundModel } from "../models";
+import type { StateModel } from "../models";
 import { GlamClient } from "../client";
 import { useAtomValue, useSetAtom } from "jotai/react";
 import { PublicKey } from "@solana/web3.js";
@@ -43,7 +43,7 @@ interface GlamProviderContext {
   activeFund?: FundCache;
   treasury?: Treasury;
   fundsList: FundCache[];
-  allFunds: FundModel[];
+  allFunds: StateModel[];
   userWallet: UserWallet;
   prices: TokenPrice[];
   setActiveFund: (f: FundCache) => void;
@@ -97,7 +97,7 @@ const deserializeFundCache = (f: any) => {
   return f as FundCache;
 };
 
-const toFundCache = (f: FundModel) => {
+const toFundCache = (f: StateModel) => {
   return {
     pubkey: f.id,
     sparkleKey: f.sparkleKey,
@@ -155,7 +155,7 @@ export function GlamProvider({
       }),
     [connection, wallet, cluster],
   );
-  const [allFunds, setAllFunds] = useState([] as FundModel[]);
+  const [allFunds, setAllFunds] = useState([] as StateModel[]);
   const [jupTokenList, setJupTokenList] = useState([] as JupTokenListItem[]);
   const [tokenPrices, setTokenPrices] = useState([] as TokenPrice[]);
   const [driftMarketConfigs, setDriftMarketConfigs] = useState(
@@ -192,7 +192,7 @@ export function GlamProvider({
       console.log("All funds:", allFundsData);
     }
     const fundModels = (allFundsData || []).sort(
-      (a: FundModel, b: FundModel) => {
+      (a: StateModel, b: StateModel) => {
         if (!a.rawOpenfunds?.fundLaunchDate) {
           return 1;
         }
@@ -212,8 +212,8 @@ export function GlamProvider({
     setAllFunds(fundModels);
 
     const fundList = [] as FundCache[];
-    fundModels.forEach((f: FundModel) => {
-      if (wallet?.publicKey?.equals(f.manager!.pubkey!)) {
+    fundModels.forEach((f: StateModel) => {
+      if (wallet?.publicKey?.equals(f.owner!.pubkey!)) {
         const fundCache = toFundCache(f);
         fundList.push(fundCache);
       } else {

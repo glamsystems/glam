@@ -4,30 +4,46 @@ use anchor_lang::prelude::*;
 pub enum AccessError {
     #[msg("Signer is not authorized")]
     NotAuthorized,
+
     #[msg("Integration is disabled")]
     IntegrationDisabled,
 }
 
 #[error_code]
-pub enum ManagerError {
-    #[msg("Error closing account: not empty")]
-    CloseNotEmptyError,
-    #[msg("Invalid fund name: max 50 chars")]
-    InvalidFundName,
-    #[msg("Too many assets: max 50")]
-    InvalidFundSymbol,
-    #[msg("Too many assets: max 20")]
-    InvalidFundUri,
+pub enum StateError {
+    #[msg("Name too long: max 50 chars")]
+    InvalidName,
+
+    #[msg("Symbol too long: max 50 chars")]
+    InvalidSymbol,
+
+    #[msg("Uri too long: max 20")]
+    InvalidUri,
+
     #[msg("Too many assets: max 100")]
     InvalidAssetsLen,
-    #[msg("Number of weights should match number of assets")]
-    InvalidAssetsWeights,
+
+    #[msg("State account is disabled")]
+    Disabled,
+
+    #[msg("No share class found")]
+    NoShareClass,
+
+    #[msg("Glam state account can't be closed. Close share classes first")]
+    ShareClassesNotClosed,
+
+    #[msg("Error closing state account: not empty")]
+    CloseNotEmptyError,
+
+    #[msg("Withdraw denied. Only vaults allow withdraws (funds and mints don't)")]
+    WithdrawDenied,
 }
 
 #[error_code]
 pub enum SwapError {
     #[msg("Asset cannot be swapped")]
     InvalidAssetForSwap,
+
     #[msg("Swap failed")]
     InvalidSwap,
 }
@@ -56,18 +72,6 @@ pub enum InvestorError {
     InvalidPolicyAccount,
     #[msg("Price is too old")]
     PriceTooOld,
-}
-
-#[error_code]
-pub enum FundError {
-    #[msg("Fund is not active")]
-    FundNotActive,
-    #[msg("No share class found")]
-    NoShareClassInFund,
-    #[msg("Fund can't be closed. Close share classes first")]
-    CantCloseShareClasses,
-    #[msg("Withdraw denied. Only vaults allow withdraws (funds and mints don't).")]
-    WithdrawDenied,
 }
 
 #[error_code]

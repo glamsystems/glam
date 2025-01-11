@@ -204,21 +204,6 @@ impl FundAccount {
         return None;
     }
 
-    pub fn assets_weights(&self) -> Option<&Vec<u32>> {
-        for EngineField { name, value } in &self.params[0] {
-            match name {
-                EngineFieldName::AssetsWeights => {
-                    return match value {
-                        EngineFieldValue::VecU32 { val: v } => Some(v),
-                        _ => None,
-                    };
-                }
-                _ => { /* ignore */ }
-            }
-        }
-        return None;
-    }
-
     pub fn delegate_acls(&self) -> Option<&Vec<DelegateAcl>> {
         for EngineField { name, value } in &self.params[0] {
             match name {
@@ -359,7 +344,7 @@ impl FundAccount {
 
 #[account]
 pub struct FundMetadataAccount {
-    pub fund_pubkey: Pubkey,
+    pub state_pubkey: Pubkey,
     pub company: Vec<CompanyField>,
     pub fund: Vec<FundField>,
     pub share_classes: Vec<Vec<ShareClassField>>,
@@ -369,26 +354,26 @@ impl FundMetadataAccount {
     pub const INIT_SIZE: usize = 1024;
 }
 
-impl From<FundModel> for FundMetadataAccount {
-    fn from(model: FundModel) -> Self {
+impl From<StateModel> for FundMetadataAccount {
+    fn from(model: StateModel) -> Self {
         let company = if let Some(company) = &model.company {
             company.into()
         } else {
             vec![]
         };
-        let fund_managers = if let Some(manager) = &model.manager {
+        let fund_managers = if let Some(manager) = &model.owner {
             vec![manager.into()]
         } else {
             vec![]
         };
         let share_classes = model
-            .share_classes
+            .mints
             .iter()
             .map(|share_class| share_class.into())
             .collect::<Vec<_>>();
         let fund = model.into();
         FundMetadataAccount {
-            fund_pubkey: Pubkey::default(),
+            state_pubkey: Pubkey::default(),
             company,
             fund,
             share_classes,

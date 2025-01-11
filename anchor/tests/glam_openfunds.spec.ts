@@ -1,6 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
 import {
-  FundModel,
+  StateModel,
   FundOpenfundsModel,
   GlamClient,
   ShareClassOpenfundsModel,
@@ -15,8 +15,8 @@ describe("glam_openfunds", () => {
   const manager = glamClient.getSigner();
 
   // fund1: 1 share class + implicit fields
-  const fund1 = {
-    shareClasses: [
+  const state1 = {
+    mints: [
       {
         // Glam Token
         name: "Glam Investment Fund BTC-SOL",
@@ -59,16 +59,16 @@ describe("glam_openfunds", () => {
       fundWebsiteOfManCo: "https://glam.systems",
     },
     // Openfunds Manager (simplified)
-    manager: {
+    owner: {
       portfolioManagerName: "0x0ece.sol",
       pubkey: manager,
       kind: { wallet: {} },
     },
-  } as Partial<FundModel>;
+  } as Partial<StateModel>;
 
   // fund1b: 1 share class, all fields explicit
-  const fund1b = {
-    shareClasses: [
+  const state1b = {
+    mints: [
       {
         // Glam Token
         name: "Glam Investment Fund BTC-SOL",
@@ -127,20 +127,20 @@ describe("glam_openfunds", () => {
       fundWebsiteOfManCo: "https://glam.systems",
     },
     // Openfunds Manager (simplified)
-    manager: {
+    owner: {
       portfolioManagerName: "0x0ece.sol",
       pubkey: null,
       kind: { wallet: {} },
     },
-  } as Partial<FundModel>;
+  } as Partial<StateModel>;
 
   // TODO: fund2 with 2 share classes
 
   it("Initialize fund with 1 share class", async () => {
-    let txId, fundPDA;
+    let txId, statePda;
     try {
-      [txId, fundPDA] = await glamClient.fund.createFund(fund1);
-      console.log(`Fund ${fundPDA} initialized, txId: ${txId}`);
+      [txId, statePda] = await glamClient.state.createState(state1);
+      console.log(`Glam state ${statePda} initialized, txId: ${txId}`);
     } catch (e) {
       console.error(e);
       throw e;
@@ -148,10 +148,10 @@ describe("glam_openfunds", () => {
   });
 
   it("Initialize fund with 1 share class (b)", async () => {
-    let txId, fundPDA;
+    let txId, statePda;
     try {
-      [txId, fundPDA] = await glamClient.fund.createFund(fund1b);
-      console.log(`Fund ${fundPDA} initialized, txId: ${txId}`);
+      [txId, statePda] = await glamClient.state.createState(state1b);
+      console.log(`Glam state ${statePda} initialized, txId: ${txId}`);
     } catch (e) {
       console.error(e);
       throw e;

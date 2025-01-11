@@ -37,7 +37,7 @@ export function DataTableRowActions({
   const close = async (product: Product) => {
     console.log("Close product", product);
     const fundPda = new PublicKey(product.id);
-    const fundModel = await glamClient.fetchFund(fundPda);
+    const fundModel = await glamClient.fetchState(fundPda);
     if (!fundModel.manager?.pubkey?.equals(glamClient.getSigner())) {
       toast({
         title: `${product.product} cannot be closed`,
@@ -73,7 +73,7 @@ export function DataTableRowActions({
         );
       }
 
-      const txSig = await glamClient.fund.closeFund(fundPda, {
+      const txSig = await glamClient.state.closeState(fundPda, {
         preInstructions,
       });
       toast({

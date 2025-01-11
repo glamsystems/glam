@@ -63,9 +63,10 @@ export function DataTableRowActions<TData>({
     }
 
     try {
-      const txId = await glamClient.fund.closeTokenAccounts(activeFund.pubkey, [
-        new PublicKey(ata),
-      ]);
+      const txId = await glamClient.state.closeTokenAccounts(
+        activeFund.pubkey,
+        [new PublicKey(ata)],
+      );
       toast({
         title: `Closed token account`,
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,

@@ -18,22 +18,21 @@ const GlamProgramId = new PublicKey(GlamIDLJson.address);
 // has 100+ options.
 
 // @ts-ignore
-export type FundAccount = IdlAccounts<Glam>["fundAccount"];
-export type FundMetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
+export type StateAccount = IdlAccounts<Glam>["fundAccount"];
+export type MetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
 
-export type FundModelType = IdlTypes<Glam>["fundModel"];
-export class FundIdlModel implements FundModelType {
+export type StateModelType = IdlTypes<Glam>["stateModel"];
+export class StateIdlModel implements StateModelType {
   id: PublicKey | null;
   name: string | null;
   uri: string | null;
-  openfundsUri: string | null;
+  metadataUri: string | null;
   isEnabled: boolean | null;
   assets: PublicKey[];
-  assetsWeights: number[]; // deprecated
-  externalTreasuryAccounts: PublicKey[];
-  shareClasses: ShareClassModel[];
+  externalVaultAccounts: PublicKey[];
+  mints: ShareClassModel[];
   company: CompanyModel | null;
-  manager: ManagerModel | null;
+  owner: ManagerModel | null;
   created: CreatedModel | null;
   delegateAcls: DelegateAcl[];
   integrationAcls: IntegrationAcl[];
@@ -43,18 +42,17 @@ export class FundIdlModel implements FundModelType {
   isRawOpenfunds: boolean;
   rawOpenfunds: FundOpenfundsModel | null;
 
-  constructor(data: Partial<FundModelType>) {
+  constructor(data: Partial<StateModelType>) {
     this.id = data.id ?? null;
     this.name = data.name ?? null;
     this.uri = data.uri ?? null;
-    this.openfundsUri = data.openfundsUri ?? null;
+    this.metadataUri = data.metadataUri ?? null;
     this.isEnabled = data.isEnabled ?? null;
     this.assets = data.assets ?? [];
-    this.assetsWeights = data.assetsWeights ?? [];
-    this.externalTreasuryAccounts = data.externalTreasuryAccounts ?? [];
-    this.shareClasses = data.shareClasses ?? [];
+    this.externalVaultAccounts = data.externalVaultAccounts ?? [];
+    this.mints = data.mints ?? [];
     this.company = data.company ?? null;
-    this.manager = data.manager ?? null;
+    this.owner = data.owner ?? null;
     this.created = data.created ?? null;
     this.delegateAcls = data.delegateAcls ?? [];
     this.integrationAcls = data.integrationAcls ?? [];
@@ -65,8 +63,8 @@ export class FundIdlModel implements FundModelType {
     this.rawOpenfunds = data.rawOpenfunds ?? null;
   }
 }
-export class FundModel extends FundIdlModel {
-  constructor(data: Partial<FundIdlModel>) {
+export class StateModel extends StateIdlModel {
+  constructor(data: Partial<StateIdlModel>) {
     super(data);
   }
 
@@ -97,7 +95,7 @@ export class FundModel extends FundIdlModel {
   }
 
   get productType() {
-    if (this.shareClasses.length === 0) {
+    if (this.mints.length === 0) {
       return "Vault";
     }
     if (
@@ -110,17 +108,15 @@ export class FundModel extends FundIdlModel {
   }
 
   get shareClassMints() {
-    if (this.shareClasses.length > 0 && !this.id) {
+    if (this.mints.length > 0 && !this.id) {
       // If share classes are set, fund ID should be set as well
       throw new Error("Fund ID not set");
     }
-    return this.shareClasses.map((_, i) =>
-      ShareClassModel.mintAddress(this.id!, i),
-    );
+    return this.mints.map((_, i) => ShareClassModel.mintAddress(this.id!, i));
   }
 
   get sparkleKey() {
-    if (this.shareClasses.length === 0) {
+    if (this.mints.length === 0) {
       return this.idStr;
     }
     return this.shareClassMints[0].toBase58() || this.idStr;
@@ -137,33 +133,33 @@ export class FundModel extends FundIdlModel {
   /**
    * Build a FundModel from onchain accounts
    *
-   * @param fundAccount provides core fund data
+   * @param stateAccount provides core fund data
    * @param openfundsAccount includes fund rawOpenfunds data and share class rawOpenfunds data
    * @param shareClassMint provides share class data
    */
   static fromOnchainAccounts(
-    fundPDA: PublicKey,
-    fundAccount: FundAccount,
-    openfundsAccount?: FundMetadataAccount,
+    statePda: PublicKey,
+    stateAccount: StateAccount,
+    openfundsAccount?: MetadataAccount,
     shareClassMint?: Mint,
   ) {
-    let fundModel: Partial<FundIdlModel> = {
-      id: fundPDA,
-      name: fundAccount.name,
-      uri: fundAccount.uri,
-      manager: new ManagerModel({ pubkey: fundAccount.owner }),
-      openfundsUri: fundAccount.metadataUri,
-      shareClasses: [],
+    let stateModel: Partial<StateIdlModel> = {
+      id: statePda,
+      name: stateAccount.name,
+      uri: stateAccount.uri,
+      owner: new ManagerModel({ pubkey: stateAccount.owner }),
+      metadataUri: stateAccount.metadataUri,
+      mints: [],
     };
 
     // All fields in fund params[0] should be available on the FundModel
-    fundAccount.params[0].forEach((param) => {
+    stateAccount.params[0].forEach((param) => {
       const name = Object.keys(param.name)[0];
       // @ts-ignore
       const value = Object.values(param.value)[0].val;
-      if (new FundIdlModel({}).hasOwnProperty(name)) {
+      if (new StateIdlModel({}).hasOwnProperty(name)) {
         // @ts-ignore
-        fundModel[name] = value;
+        stateModel[name] = value;
       } else {
         console.warn(`Fund param ${name} not found in FundIdlModel`);
       }
@@ -177,14 +173,14 @@ export class FundModel extends FundIdlModel {
       // @ts-ignore
       fundOpenfundsFields[name] = value;
     });
-    fundModel.rawOpenfunds = new FundOpenfundsModel(fundOpenfundsFields);
+    stateModel.rawOpenfunds = new FundOpenfundsModel(fundOpenfundsFields);
 
     // Build the array of ShareClassModel
-    fundAccount.mints.forEach((_, i) => {
+    stateAccount.mints.forEach((_, i) => {
       const shareClassIdlModel = {} as any;
-      shareClassIdlModel["fundId"] = fundPDA;
+      shareClassIdlModel["fundId"] = statePda;
 
-      fundAccount.params[i + 1].forEach((param) => {
+      stateAccount.params[i + 1].forEach((param) => {
         const name = Object.keys(param.name)[0];
         // @ts-ignore
         const value = Object.values(param.value)[0].val;
@@ -236,16 +232,16 @@ export class FundModel extends FundIdlModel {
 
       // fundModel.shareClasses should never be null
       // non-null assertion is safe and is needed to suppress type error
-      fundModel.shareClasses!.push(new ShareClassModel(shareClassIdlModel));
+      stateModel.mints!.push(new ShareClassModel(shareClassIdlModel));
     });
 
-    fundModel.name =
-      fundModel.name ||
-      fundModel.rawOpenfunds?.legalFundNameIncludingUmbrella ||
-      (fundModel.shareClasses && fundModel.shareClasses[0]?.name);
+    stateModel.name =
+      stateModel.name ||
+      stateModel.rawOpenfunds?.legalFundNameIncludingUmbrella ||
+      (stateModel.mints && stateModel.mints[0]?.name);
 
     // @ts-ignore
-    return new FundModel(fundModel);
+    return new StateModel(stateModel);
   }
 }
 
@@ -443,11 +439,11 @@ export class ManagerModel implements ManagerModelType {
 export type CreatedModelType = IdlTypes<Glam>["createdModel"];
 export class CreatedModel implements CreatedModelType {
   key: number[]; // Uint8Array;
-  manager: PublicKey | null;
+  owner: PublicKey | null;
 
   constructor(obj: Partial<CreatedModelType>) {
     this.key = obj.key ?? [];
-    this.manager = obj.manager ?? null;
+    this.owner = obj.owner ?? null;
   }
 }
 

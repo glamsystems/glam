@@ -66,17 +66,19 @@ function Subitems({ obj }: { obj: any[] }) {
             {typeof value === "string"
               ? value.substring(0, 40) + (value.length > 40 ? "..." : "")
               : value.constructor.name === "PublicKey"
-              ? // <ExplorerLink
-                //   path={`account/${value.toString()}`}
-                //   label={value.toString()}
-                // />
-                value.toString()
-              : value.constructor.name === "Array"
-              ? value.join("\n")
-              : value.constructor.name === "Object"
-              ? //@ts-ignore
-                Object.values(value)[0].val.toString().replaceAll(",", "\n")
-              : value.constructor.name}
+                ? // <ExplorerLink
+                  //   path={`account/${value.toString()}`}
+                  //   label={value.toString()}
+                  // />
+                  value.toString()
+                : value.constructor.name === "Array"
+                  ? value.join("\n")
+                  : value.constructor.name === "Object"
+                    ? //@ts-ignore
+                      Object.values(value)[0]
+                        .val.toString()
+                        .replaceAll(",", "\n")
+                    : value.constructor.name}
           </p>
         </span>
       </li>
@@ -103,16 +105,16 @@ function Items({ obj }: { obj: any }) {
               {typeof value === "string"
                 ? value.substring(0, 40) + (value.length > 40 ? "..." : "")
                 : value.constructor.name === "PublicKey"
-                ? // <ExplorerLink
-                  //   path={`account/${value.toString()}`}
-                  //   label={value.toString()}
-                  // />
-                  value.toString()
-                : value.constructor.name === "Array"
-                ? value[0]?.name || value[0]?.constructor.name === "Array"
-                  ? "---v"
-                  : value.join("\n")
-                : value.constructor.name}
+                  ? // <ExplorerLink
+                    //   path={`account/${value.toString()}`}
+                    //   label={value.toString()}
+                    // />
+                    value.toString()
+                  : value.constructor.name === "Array"
+                    ? value[0]?.name || value[0]?.constructor.name === "Array"
+                      ? "---v"
+                      : value.join("\n")
+                    : value.constructor.name}
             </p>
           </span>
         </li>
@@ -138,7 +140,7 @@ function FundAccount({ fundId }: { fundId: any }) {
     // using wallet?.publicKey in queryKey will auto-refresh when wallet changes
     queryKey: ["fund-account", fundId],
     enabled: !!fundId,
-    queryFn: () => glamClient.fetchFundAccount(new PublicKey(fundId)),
+    queryFn: () => glamClient.fetchStateAccount(new PublicKey(fundId)),
   });
 
   if (!fundAccount) return null;
@@ -188,11 +190,11 @@ function MetadataAccount({ fundId }: { fundId: any }) {
     // using wallet?.publicKey in queryKey will auto-refresh when wallet changes
     queryKey: ["metadata-account", fundId],
     enabled: !!fundId,
-    queryFn: () => glamClient.fetchFundMetadataAccount(new PublicKey(fundId)),
+    queryFn: () => glamClient.fetchMetadataAccount(new PublicKey(fundId)),
   });
 
   if (!metaAccount) return null;
-  const metaId = glamClient.getOpenfundsPDA(new PublicKey(fundId)).toString();
+  const metaId = glamClient.getOpenfundsPda(new PublicKey(fundId)).toString();
 
   return (
     <TooltipProvider>

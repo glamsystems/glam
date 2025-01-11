@@ -20,7 +20,12 @@ import {
   createTransferCheckedWithTransferHookInstruction,
 } from "@solana/spl-token";
 
-import { testFundModel, createFundForTest, str2seed, sleep } from "./setup";
+import {
+  stateModelForTest,
+  createGlamStateForTest,
+  str2seed,
+  sleep,
+} from "./setup";
 import { GlamClient, WSOL } from "../src";
 
 describe("glam_policy_hook", () => {
@@ -41,21 +46,22 @@ describe("glam_policy_hook", () => {
   const btc = tokenKeypairs[1]; // 8 decimals, token2022
   const BTC_TOKEN_PROGRAM_ID = TOKEN_2022_PROGRAM_ID;
 
-  const shareClass = {
-    ...testFundModel.shareClasses![0],
+  const mint = {
+    ...stateModelForTest.mints![0],
     lockUpPeriodInSeconds: 5,
     lockUpComment: "lock-up test",
     permanentDelegate: new PublicKey(0),
   } as any;
-  const fundExample = {
-    ...testFundModel,
+
+  const stateModel = {
+    ...stateModelForTest,
     name: "Glam Investment",
     assets: [WSOL, usdc.publicKey, btc.publicKey],
-    shareClasses: [shareClass],
+    mints: [mint],
   } as any;
 
-  const fundPDA = glamClient.getFundPDA(fundExample);
-  const sharePDA = glamClient.getShareClassPDA(fundPDA, 0);
+  const statePda = glamClient.getStatePda(stateModel);
+  const sharePDA = glamClient.getShareClassPda(statePda, 0);
 
   const connection = glamClient.provider.connection;
   const commitment = "confirmed";
@@ -150,7 +156,7 @@ describe("glam_policy_hook", () => {
       //
       // create fund
       //
-      const fundData = await createFundForTest(glamClient, fundExample);
+      await createGlamStateForTest(glamClient, stateModel);
     } catch (e) {
       console.error(e);
       throw e;
@@ -159,11 +165,10 @@ describe("glam_policy_hook", () => {
 
   it("Fund created", async () => {
     try {
-      const fund = await glamClient.fetchFund(fundPDA);
-      console.log("fund", fund);
-      expect(fund.shareClasses[0]?.lockUpPeriodInSeconds).toEqual(5);
-      expect(fund.shareClasses[0]?.symbol).toEqual("GBS");
-      expect(fund.shareClasses[0]?.permanentDelegate).toEqual(sharePDA);
+      const state = await glamClient.fetchState(statePda);
+      expect(state.mints[0]?.lockUpPeriodInSeconds).toEqual(5);
+      expect(state.mints[0]?.symbol).toEqual("GBS");
+      expect(state.mints[0]?.permanentDelegate).toEqual(sharePDA);
     } catch (e) {
       console.error(e);
       throw e;
@@ -174,7 +179,7 @@ describe("glam_policy_hook", () => {
     const amount = new BN(50 * 10 ** 9);
     const expectedShares = amount.toString(); // 1 SOL = 1 share
     try {
-      const txId = await glamClient.investor.subscribe(fundPDA, WSOL, amount);
+      const txId = await glamClient.investor.subscribe(statePda, WSOL, amount);
       console.log("subscribe sol:", txId);
     } catch (e) {
       console.error(e);
@@ -202,7 +207,7 @@ describe("glam_policy_hook", () => {
     const amount = new BN(10 * 10 ** 9);
 
     try {
-      const txId = await glamClient.investor.redeem(fundPDA, amount);
+      const txId = await glamClient.investor.redeem(statePda, amount);
       expect(txId).toBeUndefined();
     } catch (err) {
       expect(err.message).toContain("Policy violation: lock-up period");
@@ -246,7 +251,7 @@ describe("glam_policy_hook", () => {
     const amount = new BN(10 * 10 ** 9);
 
     try {
-      const txId = await glamClient.investor.redeem(fundPDA, amount);
+      const txId = await glamClient.investor.redeem(statePda, amount);
       console.log("manager redeems shares:", txId);
     } catch (err) {
       throw err;
@@ -284,7 +289,7 @@ describe("glam_policy_hook", () => {
     }
 
     try {
-      const txId = await glamClientAlice.investor.redeem(fundPDA, amount);
+      const txId = await glamClientAlice.investor.redeem(statePda, amount);
       console.log("alice redeems shares:", txId);
     } catch (err) {
       throw err;

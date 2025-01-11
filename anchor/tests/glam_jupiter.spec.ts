@@ -1,15 +1,14 @@
 import {
   airdrop,
-  createFundForTest,
+  createGlamStateForTest,
   quoteResponseForTest,
   str2seed,
   swapInstructionsForTest,
-  testFundModel,
+  stateModelForTest,
 } from "./setup";
 import {
-  FundModel,
+  StateModel,
   GlamClient,
-  JITOSOL,
   JUP_STAKE_LOCKER,
   JUP_VOTE_PROGRAM,
 } from "../src";
@@ -21,31 +20,30 @@ import { PublicKey } from "@solana/web3.js";
 
 describe("glam_jupiter", () => {
   const glamClient = new GlamClient();
-  let fundPDA;
+  let statePda;
 
   it("Initialize fund", async () => {
-    const fundData = await createFundForTest(glamClient, {
-      ...testFundModel,
+    const stateData = await createGlamStateForTest(glamClient, {
+      ...stateModelForTest,
       integrationAcls: [
         { name: { jupiterSwap: {} }, features: [] },
         { name: { jupiterVote: {} }, features: [] },
       ],
     });
-    fundPDA = fundData.fundPDA;
+    statePda = stateData.statePda;
 
-    const fund = await glamClient.fetchFund(fundPDA);
-    expect(fund.shareClasses.length).toEqual(1);
+    const state = await glamClient.fetchState(statePda);
+    expect(state.mints.length).toEqual(1);
 
-    // Airdrop some SOL to the treasury
-    const airdrop = await glamClient.provider.connection.requestAirdrop(
-      glamClient.getVaultPda(fundPDA),
+    await airdrop(
+      glamClient.provider.connection,
+      glamClient.getVaultPda(statePda),
       1_000_000_000,
     );
-    await glamClient.provider.connection.confirmTransaction(airdrop);
   });
 
   it("Swap end to end", async () => {
-    const treasury = glamClient.getVaultPda(fundPDA);
+    const vault = glamClient.getVaultPda(statePda);
 
     const signer = glamClient.getSigner();
     const inputSignerAta = glamClient.getAta(WSOL);
@@ -59,16 +57,16 @@ describe("glam_jupiter", () => {
     );
 
     // Pre-checks: the following accounts should not exist
-    const beforeTreasuryBalance =
-      await glamClient.provider.connection.getBalance(treasury);
-    expect(beforeTreasuryBalance).toEqual(1_000_000_000);
-    const beforeNoAccounts = [
+    const vaultBalanceBefore =
+      await glamClient.provider.connection.getBalance(vault);
+    expect(vaultBalanceBefore).toEqual(1_000_000_000);
+    const noAccountsBefore = [
       glamClient.getAta(WSOL),
       glamClient.getAta(MSOL),
-      glamClient.getVaultAta(fundPDA, WSOL),
-      glamClient.getVaultAta(fundPDA, MSOL),
+      glamClient.getVaultAta(statePda, WSOL),
+      glamClient.getVaultAta(statePda, MSOL),
     ];
-    beforeNoAccounts.forEach(async (account) => {
+    noAccountsBefore.forEach(async (account) => {
       try {
         await getAccount(glamClient.provider.connection, account, "confirmed");
         expect(0).toEqual(1);
@@ -81,7 +79,7 @@ describe("glam_jupiter", () => {
     const amount = 50_000_000;
     try {
       const txId = await glamClient.jupiter.swap(
-        fundPDA,
+        statePda,
         undefined,
         quoteResponse,
         swapInstructions,
@@ -93,12 +91,12 @@ describe("glam_jupiter", () => {
     }
 
     // Post-checks: the following accounts should exist and have 0 balance
-    const afterAccounts = [
+    const accountsAfter = [
       glamClient.getAta(WSOL),
       glamClient.getAta(MSOL),
-      glamClient.getVaultAta(fundPDA, WSOL),
+      glamClient.getVaultAta(statePda, WSOL),
     ];
-    afterAccounts.forEach(async (account) => {
+    accountsAfter.forEach(async (account) => {
       try {
         const acc = await getAccount(
           glamClient.provider.connection,
@@ -111,17 +109,17 @@ describe("glam_jupiter", () => {
       }
     });
 
-    // treasury: less SOL
-    const afterTreasuryBalance =
-      await glamClient.provider.connection.getBalance(treasury);
-    expect(afterTreasuryBalance).toEqual(950_000_000); // minus 50_000_000
+    // vault: less SOL
+    const vaultBalanceAfter =
+      await glamClient.provider.connection.getBalance(vault);
+    expect(vaultBalanceAfter).toEqual(950_000_000); // minus 50_000_000
 
-    // treasury: more mSOL
-    const treasuryMsol = await getAccount(
+    // vault: more mSOL
+    const vaultMsol = await getAccount(
       glamClient.provider.connection,
-      glamClient.getTreasuryAta(fundPDA, MSOL),
+      glamClient.getVaultAta(statePda, MSOL),
     );
-    expect(treasuryMsol.amount.toString()).toEqual("41795954");
+    expect(vaultMsol.amount.toString()).toEqual("41795954");
   }, 15_000);
 
   it("Swap access control #1", async () => {
@@ -134,9 +132,9 @@ describe("glam_jupiter", () => {
     await glamClient.provider.connection.confirmTransaction(airdrop);
 
     // grant delegate permissions
-    // testSigner is only allowed to swap fund assets
+    // testSigner is only allowed to swap allowlisted assets
     try {
-      const txId = await glamClient.fund.upsertDelegateAcls(fundPDA, [
+      const txId = await glamClient.state.upsertDelegateAcls(statePda, [
         {
           pubkey: testSigner.publicKey,
           permissions: [{ jupiterSwapAllowlisted: {} }, { wSolWrap: {} }],
@@ -147,24 +145,24 @@ describe("glam_jupiter", () => {
       console.error(e);
       throw e;
     }
-    let fundModel = await glamClient.fetchFund(fundPDA);
-    expect(fundModel.delegateAcls.length).toEqual(1);
+    let stateModel = await glamClient.fetchState(statePda);
+    expect(stateModel.delegateAcls.length).toEqual(1);
 
     // The test fund has 2 assets, WSOL and MSOL. Update to WSOL only.
-    let updatedFund = new FundModel({ assets: [WSOL] });
+    let updatedFund = new StateModel({ assets: [WSOL] });
     try {
       await glamClient.program.methods
-        .updateFund(updatedFund)
+        .updateState(updatedFund)
         .accounts({
-          fund: fundPDA,
+          state: statePda,
         })
         .rpc();
     } catch (e) {
       console.error(e);
       throw e;
     }
-    fundModel = await glamClient.fetchFund(fundPDA);
-    expect(fundModel.assets).toEqual([WSOL]);
+    stateModel = await glamClient.fetchState(statePda);
+    expect(stateModel.assets).toEqual([WSOL]);
 
     const quoteParams = {
       inputMint: WSOL.toBase58(),
@@ -178,7 +176,7 @@ describe("glam_jupiter", () => {
     // and testSigner doesn't have swapAny or swapLst permission
     try {
       const delegateSwapTx = await glamClient.jupiter.swapTx(
-        fundPDA,
+        statePda,
         quoteParams,
         undefined,
         undefined,
@@ -196,7 +194,7 @@ describe("glam_jupiter", () => {
 
     // allow testSigner to swap LST
     try {
-      const txSig = await glamClient.fund.upsertDelegateAcls(fundPDA, [
+      const txSig = await glamClient.state.upsertDelegateAcls(statePda, [
         {
           pubkey: testSigner.publicKey,
           permissions: [{ jupiterSwapLst: {} }, { wSolWrap: {} }],
@@ -212,7 +210,7 @@ describe("glam_jupiter", () => {
     // and asset list should be updated accordingly to include MSOL
     try {
       const delegateSwapTx = await glamClient.jupiter.swapTx(
-        fundPDA,
+        statePda,
         quoteParams,
         undefined,
         undefined,
@@ -224,8 +222,8 @@ describe("glam_jupiter", () => {
       console.error(e);
       throw e;
     }
-    fundModel = await glamClient.fetchFund(fundPDA);
-    expect(fundModel.assets).toEqual([WSOL, MSOL]);
+    stateModel = await glamClient.fetchState(statePda);
+    expect(stateModel.assets).toEqual([WSOL, MSOL]);
   }, 30_000);
 
   it("Swap back end to end", async () => {
@@ -408,7 +406,7 @@ describe("glam_jupiter", () => {
     const amount = 41_000_000;
     try {
       const txId = await glamClient.jupiter.swap(
-        fundPDA,
+        statePda,
         {
           inputMint: MSOL.toBase58(),
           outputMint: WSOL.toBase58(),
@@ -429,7 +427,7 @@ describe("glam_jupiter", () => {
     // treasury: more mSOL
     const vaultMsol = await getAccount(
       glamClient.provider.connection,
-      glamClient.getVaultAta(fundPDA, MSOL),
+      glamClient.getVaultAta(statePda, MSOL),
     );
     expect(vaultMsol.amount.toString()).toEqual("42591005");
   });
@@ -437,10 +435,10 @@ describe("glam_jupiter", () => {
   it("Swap by providing quote params", async () => {
     const amount = 50_000_000;
     try {
-      const txIdWrap = await glamClient.wsol.wrap(fundPDA, new BN(amount));
+      const txIdWrap = await glamClient.wsol.wrap(statePda, new BN(amount));
       console.log("wrap before swap txId", txIdWrap);
 
-      const txIdSwap = await glamClient.jupiter.swap(fundPDA, {
+      const txIdSwap = await glamClient.jupiter.swap(statePda, {
         inputMint: WSOL.toBase58(),
         outputMint: MSOL.toBase58(),
         amount,
@@ -488,11 +486,11 @@ describe("glam_jupiter", () => {
     );
 
     try {
-      const txIdWrap = await glamClient.wsol.wrap(fundPDA, new BN(amount));
+      const txIdWrap = await glamClient.wsol.wrap(statePda, new BN(amount));
       console.log("wrap before swap txId", txIdWrap);
 
       const txIdSwap = await glamClient.jupiter.swap(
-        fundPDA,
+        statePda,
         quoteParams,
         quoteResponse,
         swapInstructions,
@@ -507,7 +505,7 @@ describe("glam_jupiter", () => {
   }, 15_000);
 
   it("Create JUP escrow", async () => {
-    const treasury = glamClient.getVaultPda(fundPDA);
+    const treasury = glamClient.getVaultPda(statePda);
     const [escrow] = PublicKey.findProgramAddressSync(
       [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), treasury.toBuffer()],
       JUP_VOTE_PROGRAM,
@@ -516,7 +514,7 @@ describe("glam_jupiter", () => {
       const txId = await glamClient.program.methods
         .initLockedVoterEscrow()
         .accounts({
-          fund: fundPDA,
+          state: statePda,
           locker: JUP_STAKE_LOCKER,
           escrow,
         })

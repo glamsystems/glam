@@ -12,7 +12,7 @@ export class ShareClassClient {
   public constructor(readonly base: BaseClient) {}
 
   public async getHolders(fundPDA: PublicKey, shareClassId: number = 0) {
-    const shareClassMint = this.base.getShareClassPDA(fundPDA, shareClassId);
+    const shareClassMint = this.base.getShareClassPda(fundPDA, shareClassId);
     const connection = this.base.provider.connection;
     const mint = await getMint(
       connection,
@@ -53,8 +53,8 @@ export class ShareClassClient {
   }
 
   public async closeShareClassIx(fundPDA: PublicKey, shareClassId: number = 0) {
-    const openfunds = this.base.getOpenfundsPDA(fundPDA);
-    const shareClassMint = this.base.getShareClassPDA(fundPDA, shareClassId);
+    const openfunds = this.base.getOpenfundsPda(fundPDA);
+    const shareClassMint = this.base.getShareClassPda(fundPDA, shareClassId);
 
     // @ts-ignore Type instantiation is excessively deep and possibly infinite.
     return await this.base.program.methods
@@ -72,8 +72,8 @@ export class ShareClassClient {
     shareClassId: number = 0,
     txOptions: TxOptions = {},
   ) {
-    const openfunds = this.base.getOpenfundsPDA(fundPDA);
-    const shareClassMint = this.base.getShareClassPDA(fundPDA, shareClassId);
+    const openfunds = this.base.getOpenfundsPda(fundPDA);
+    const shareClassMint = this.base.getShareClassPda(fundPDA, shareClassId);
 
     // @ts-ignore Type instantiation is excessively deep and possibly infinite.
     return await this.base.program.methods
@@ -102,7 +102,7 @@ export class ShareClassClient {
     setFrozen: boolean = true,
     txOptions: TxOptions = {},
   ) {
-    const shareClassMint = this.base.getShareClassPDA(fundPDA, shareClassId);
+    const shareClassMint = this.base.getShareClassPda(fundPDA, shareClassId);
     const ata = this.base.getShareClassAta(owner, shareClassMint);
     const ixCreateAta = createAssociatedTokenAccountIdempotentInstruction(
       this.base.getSigner(),
@@ -136,7 +136,7 @@ export class ShareClassClient {
     frozen: boolean,
     txOptions: TxOptions = {},
   ) {
-    const shareClassMint = this.base.getShareClassPDA(fundPDA, shareClassId);
+    const shareClassMint = this.base.getShareClassPda(fundPDA, shareClassId);
     return await this.base.program.methods
       .setTokenAccountsStates(shareClassId, frozen)
       .accounts({
@@ -173,7 +173,7 @@ export class ShareClassClient {
     forceThaw: boolean = false,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const shareClassMint = this.base.getShareClassPDA(fundPDA, shareClassId);
+    const shareClassMint = this.base.getShareClassPda(fundPDA, shareClassId);
     const mintTo = this.base.getShareClassAta(recipient, shareClassMint);
 
     const preInstructions = [];
@@ -220,7 +220,7 @@ export class ShareClassClient {
     forceThaw: boolean = false,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const shareClassMint = this.base.getShareClassPDA(fundPDA, shareClassId);
+    const shareClassMint = this.base.getShareClassPda(fundPDA, shareClassId);
     const ata = this.base.getShareClassAta(from, shareClassMint);
 
     const preInstructions = [];
@@ -259,7 +259,7 @@ export class ShareClassClient {
     forceThaw: boolean = false,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const shareClassMint = this.base.getShareClassPDA(fundPDA, shareClassId);
+    const shareClassMint = this.base.getShareClassPda(fundPDA, shareClassId);
     const fromAta = this.base.getShareClassAta(from, shareClassMint);
     const toAta = this.base.getShareClassAta(to, shareClassMint);
 

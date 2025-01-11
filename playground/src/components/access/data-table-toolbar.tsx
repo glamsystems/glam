@@ -98,7 +98,7 @@ export function DataTableToolbar<TData>({
 
     try {
       // @ts-ignore
-      const txSig = await glamClient.fund.upsertDelegateAcls(
+      const txSig = await glamClient.state.upsertDelegateAcls(
         activeFund!.pubkey,
         delegateAcls,
       );

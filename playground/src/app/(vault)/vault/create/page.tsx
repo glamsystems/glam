@@ -70,7 +70,7 @@ export default function Create() {
         assets: values.assets.map((address) => new PublicKey(address)),
       };
 
-      const [txId, fundPDA] = await glamClient.fund.createFund(fund);
+      const [txId, fundPDA] = await glamClient.state.createState(fund);
       const vault = glamClient.getVaultPda(fundPDA).toBase58();
 
       // Reset form

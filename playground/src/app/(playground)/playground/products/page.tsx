@@ -4,7 +4,7 @@ import { DataTable } from "../products/components/data-table";
 import { columns } from "../products/components/columns";
 import React, { useMemo } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { FundModel, useGlam } from "@glam/anchor/react";
+import { StateModel, useGlam } from "@glam/anchor/react";
 
 export default function Products() {
   const { allFunds } = useGlam();
@@ -22,7 +22,7 @@ export default function Products() {
         id: f.idStr,
         sparkleKey: f.sparkleKey,
         name: f.name || f.idStr || "",
-        symbol: f.shareClasses[0]?.symbol || "-",
+        symbol: f.mints[0]?.symbol || "-",
         baseAsset: f.rawOpenfunds?.fundCurrency || "SOL",
         inception: f.rawOpenfunds?.fundLaunchDate || "-",
         status: "active",

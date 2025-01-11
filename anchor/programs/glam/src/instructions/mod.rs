@@ -1,5 +1,4 @@
 pub mod drift;
-pub mod fund;
 pub mod investor;
 pub mod jupiter;
 pub mod marinade;
@@ -7,10 +6,10 @@ pub mod policy_hook;
 pub mod share_class;
 pub mod stake;
 pub mod stake_pool;
+pub mod state;
 pub mod wsol;
 
 pub use drift::*;
-pub use fund::*;
 pub use investor::*;
 pub use jupiter::*;
 pub use marinade::*;
@@ -18,4 +17,5 @@ pub use policy_hook::*;
 pub use share_class::*;
 pub use stake::*;
 pub use stake_pool::*;
+pub use state::*;
 pub use wsol::*;

@@ -154,7 +154,7 @@ export default function Transfer() {
 
     try {
       setIsTxPending(true);
-      const txId = await glamClient.fund.withdraw(
+      const txId = await glamClient.state.withdraw(
         activeFund.pubkey,
         new PublicKey(asset?.address || 0),
         amount * 10 ** (asset?.decimals || 9),

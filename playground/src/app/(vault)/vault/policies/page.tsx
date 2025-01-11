@@ -78,7 +78,7 @@ export default function VaultPoliciesPage() {
       let updatedFund = {
         assets: form.getValues().assets.map((a) => new PublicKey(a)),
       };
-      const txSig = await glamClient.fund.updateFund(fund.id!, updatedFund);
+      const txSig = await glamClient.state.updateState(fund.id!, updatedFund);
       toast({
         title: "Assets allowlist updated",
         description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,

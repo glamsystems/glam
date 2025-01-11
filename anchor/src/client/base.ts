@@ -38,9 +38,9 @@ import {
 } from "../glamExports";
 import { ClusterNetwork, GlamClientConfig } from "../clientConfig";
 import {
-  FundAccount,
-  FundMetadataAccount,
-  FundModel,
+  StateAccount,
+  MetadataAccount,
+  StateModel,
   ShareClassModel,
 } from "../models";
 import { AssetMeta, ASSETS_MAINNET, ASSETS_TESTS } from "./assets";
@@ -352,18 +352,18 @@ export class BaseClient {
     );
   }
 
-  getFundPDA(fundModel: Partial<FundModel>): PublicKey {
-    const createdKey = fundModel?.created?.key || [
+  getStatePda(stateModel: Partial<StateModel>): PublicKey {
+    const createdKey = stateModel?.created?.key || [
       ...Buffer.from(
-        anchor.utils.sha256.hash(this.getFundName(fundModel)),
+        anchor.utils.sha256.hash(this.getName(stateModel)),
       ).subarray(0, 8),
     ];
 
-    const manager = this.getSigner();
+    const owner = stateModel.owner?.pubkey || this.getSigner();
     const [pda, _bump] = PublicKey.findProgramAddressSync(
       [
         anchor.utils.bytes.utf8.encode("fund"),
-        manager.toBuffer(),
+        owner.toBuffer(),
         Uint8Array.from(createdKey),
       ],
       this.program.programId,
@@ -380,11 +380,11 @@ export class BaseClient {
   }
 
   getVaultAta(
-    fundPDA: PublicKey,
+    statePda: PublicKey,
     mint: PublicKey,
     programId?: PublicKey,
   ): PublicKey {
-    return this.getAta(mint, this.getVaultPda(fundPDA), programId);
+    return this.getAta(mint, this.getVaultPda(statePda), programId);
   }
 
   /**
@@ -464,50 +464,52 @@ export class BaseClient {
     return { mint, tokenProgram };
   }
 
-  getOpenfundsPDA(fundPDA: PublicKey): PublicKey {
+  getOpenfundsPda(statePda: PublicKey): PublicKey {
     const [pda, _] = PublicKey.findProgramAddressSync(
-      [Buffer.from("openfunds"), fundPDA.toBuffer()],
+      [Buffer.from("openfunds"), statePda.toBuffer()],
       this.program.programId,
     );
     return pda;
   }
 
-  getShareClassPDA(fundPDA: PublicKey, shareId: number = 0): PublicKey {
-    return ShareClassModel.mintAddress(fundPDA, shareId);
+  getShareClassPda(statePda: PublicKey, mintIdx: number = 0): PublicKey {
+    return ShareClassModel.mintAddress(statePda, mintIdx);
   }
 
   getShareClassAta(user: PublicKey, shareClassPDA: PublicKey): PublicKey {
     return this.getAta(shareClassPDA, user, TOKEN_2022_PROGRAM_ID);
   }
 
-  getFundName(fundModel: Partial<FundModel>) {
-    const fundName =
-      fundModel.name ||
-      fundModel.rawOpenfunds?.legalFundNameIncludingUmbrella ||
-      (fundModel.shareClasses && fundModel.shareClasses[0]?.name);
-    if (!fundName) {
-      throw new Error("Fund name not be inferred from fund model");
+  getName(stateModel: Partial<StateModel>) {
+    const name =
+      stateModel.name ||
+      stateModel.rawOpenfunds?.legalFundNameIncludingUmbrella ||
+      (stateModel.mints && stateModel.mints[0]?.name);
+    if (!name) {
+      throw new Error("Name not be inferred from state model");
     }
-    return fundName;
+    return name;
   }
 
   // @ts-ignore
-  public async fetchFundAccount(fundPDA: PublicKey): Promise<FundAccount> {
-    return await this.program.account.fundAccount.fetch(fundPDA);
+  public async fetchStateAccount(statePda: PublicKey): Promise<StateAccount> {
+    // stateAccount is a type alias of fundAccount
+    return await this.program.account.fundAccount.fetch(statePda);
   }
 
-  public async fetchFundMetadataAccount(
+  public async fetchMetadataAccount(
     fundPDA: PublicKey,
-  ): Promise<FundMetadataAccount> {
-    const openfunds = this.getOpenfundsPDA(fundPDA);
+  ): Promise<MetadataAccount> {
+    const openfunds = this.getOpenfundsPda(fundPDA);
+    // metadataAccount is a type alias of fundMetadataAccount
     return await this.program.account.fundMetadataAccount.fetch(openfunds);
   }
 
   public async fetchShareClassAccount(
     fundPDA: PublicKey,
-    shareId: number,
+    mintIdx: number,
   ): Promise<Mint> {
-    const shareClassMint = this.getShareClassPDA(fundPDA, shareId);
+    const shareClassMint = this.getShareClassPda(fundPDA, mintIdx);
     const connection = this.provider.connection;
     return await getMint(
       connection,
@@ -591,37 +593,37 @@ export class BaseClient {
   /**
    * Fetch fund data from onchain accounts and build a FundModel
    *
-   * @param fundPDA
+   * @param statePda
    * @returns
    */
-  public async fetchFund(fundPDA: PublicKey): Promise<FundModel> {
-    const fundAccount = await this.fetchFundAccount(fundPDA);
-    const openfundsAccount = await this.fetchFundMetadataAccount(fundPDA);
+  public async fetchState(statePda: PublicKey): Promise<StateModel> {
+    const stateAccount = await this.fetchStateAccount(statePda);
+    const metadataAccount = await this.fetchMetadataAccount(statePda);
 
-    if (fundAccount.mints.length > 0) {
-      const firstShareClass = await this.fetchShareClassAccount(fundPDA, 0);
-      return FundModel.fromOnchainAccounts(
-        fundPDA,
-        fundAccount,
-        openfundsAccount,
+    if (stateAccount.mints.length > 0) {
+      const firstShareClass = await this.fetchShareClassAccount(statePda, 0);
+      return StateModel.fromOnchainAccounts(
+        statePda,
+        stateAccount,
+        metadataAccount,
         firstShareClass,
       );
     }
 
-    return FundModel.fromOnchainAccounts(
-      fundPDA,
-      fundAccount,
-      openfundsAccount,
+    return StateModel.fromOnchainAccounts(
+      statePda,
+      stateAccount,
+      metadataAccount,
     );
   }
 
-  public async fetchAllFunds(): Promise<FundModel[]> {
+  public async fetchAllFunds(): Promise<StateModel[]> {
     const fundAccounts = await this.program.account.fundAccount.all();
 
     const openfundsAccounts =
       await this.program.account.fundMetadataAccount.all();
 
-    let openfundsCache = new Map<string, FundMetadataAccount>();
+    let openfundsCache = new Map<string, MetadataAccount>();
     openfundsAccounts.forEach((of) => {
       openfundsCache.set(of.publicKey.toBase58(), of.account);
     });
@@ -644,7 +646,7 @@ export class BaseClient {
     });
 
     return fundAccounts.map((f) =>
-      FundModel.fromOnchainAccounts(
+      StateModel.fromOnchainAccounts(
         f.publicKey,
         f.account,
         openfundsCache.get(f.account.metadata.toBase58()),

@@ -14,7 +14,7 @@ use pyth_solana_receiver_sdk::price_update::Price;
 use solana_program::stake::state::warmup_cooldown_rate;
 
 use crate::constants::{self, WSOL};
-use crate::error::{FundError, InvestorError, PolicyError};
+use crate::error::{InvestorError, PolicyError, StateError};
 use crate::instructions::policy_hook::PolicyAccount;
 use crate::state::pyth_price::PriceExt;
 use crate::{constants::*, state::*};
@@ -90,7 +90,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     skip_state: bool,
 ) -> Result<()> {
     let state = &ctx.accounts.state;
-    require!(state.is_enabled(), FundError::FundNotActive);
+    require!(state.is_enabled(), StateError::Disabled);
 
     let external_vault_accounts =
         state.get_pubkeys_from_engine_field(EngineFieldName::ExternalVaultAccounts);
@@ -105,7 +105,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         // we need to define how to split the total amount into share classes
         panic!("not implemented")
     }
-    require!(state.mints.len() > 0, FundError::NoShareClassInFund);
+    require!(state.mints.len() > 0, StateError::NoShareClass);
     require!(
         state.mints[0] == ctx.accounts.share_class.key(),
         InvestorError::InvalidShareClass
@@ -325,7 +325,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
     skip_state: bool,
 ) -> Result<()> {
     let state = &ctx.accounts.state;
-    require!(state.is_enabled(), FundError::FundNotActive);
+    require!(state.is_enabled(), StateError::Disabled);
 
     let external_vault_accounts =
         state.get_pubkeys_from_engine_field(EngineFieldName::ExternalVaultAccounts);
@@ -340,7 +340,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
         // we need to define how to split the total amount into share classes
         panic!("not implemented")
     }
-    require!(state.mints.len() > 0, FundError::NoShareClassInFund);
+    require!(state.mints.len() > 0, StateError::NoShareClass);
     require!(
         state.mints[0] == ctx.accounts.share_class.key(),
         InvestorError::InvalidShareClass

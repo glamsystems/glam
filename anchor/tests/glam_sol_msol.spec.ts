@@ -9,14 +9,14 @@ import {
 } from "@solana/spl-token";
 
 import {
-  testFundModel,
-  createFundForTest,
+  stateModelForTest,
   quoteResponseForTest,
   swapInstructionsForTest,
   sleep,
   airdrop,
+  createGlamStateForTest,
 } from "./setup";
-import { FundModel, GlamClient, MSOL, WSOL } from "../src";
+import { StateModel, GlamClient, MSOL, WSOL } from "../src";
 
 describe("glam_sol_msol", () => {
   const glamClient = new GlamClient();
@@ -33,8 +33,8 @@ describe("glam_sol_msol", () => {
   const glamClientBob = new GlamClient({ wallet: new Wallet(bob) });
   const glamClientEve = new GlamClient({ wallet: new Wallet(eve) });
 
-  const testFund = {
-    ...testFundModel,
+  const stateForTest = {
+    ...stateModelForTest,
     name: "Glam SOL-mSOL",
     assets: [WSOL, MSOL],
     integrationAcls: [
@@ -42,11 +42,11 @@ describe("glam_sol_msol", () => {
       { name: { jupiterSwap: {} }, features: [] },
       { name: { nativeStaking: {} }, features: [] },
     ],
-  } as Partial<FundModel>;
+  } as Partial<StateModel>;
 
-  const fundPDA = glamClient.getFundPDA(testFund);
-  const vaultPda = glamClient.getVaultPda(fundPDA);
-  const sharePDA = glamClient.getShareClassPDA(fundPDA, 0);
+  const statePda = glamClient.getStatePda(stateForTest);
+  const vaultPda = glamClient.getVaultPda(statePda);
+  const sharePda = glamClient.getShareClassPda(statePda, 0);
 
   const connection = glamClient.provider.connection;
   const commitment = "confirmed";
@@ -58,18 +58,14 @@ describe("glam_sol_msol", () => {
       await Promise.all(
         userKeypairs.map(async (user) => {
           // send 10 SOL to each user
-          const airdrop = await connection.requestAirdrop(
-            user.publicKey,
-            10_000_000_000,
-          );
-          return await connection.confirmTransaction(airdrop);
+          await airdrop(connection, user.publicKey, 10_000_000_000);
         }),
       );
 
       //
       // create fund
       //
-      const fundData = await createFundForTest(glamClient, testFund);
+      const fundData = await createGlamStateForTest(glamClient, stateForTest);
 
       // default vote account
       const voteAccountStatus = await connection.getVoteAccounts();
@@ -85,8 +81,8 @@ describe("glam_sol_msol", () => {
 
   it("Fund created", async () => {
     try {
-      const fund = await glamClient.fetchFundAccount(fundPDA);
-      expect(fund.name).toEqual(testFund.name);
+      const state = await glamClient.fetchStateAccount(statePda);
+      expect(state.name).toEqual(stateForTest.name);
     } catch (e) {
       console.error(e);
     }
@@ -96,7 +92,7 @@ describe("glam_sol_msol", () => {
     const amount = new BN(1_000_000_000);
     try {
       const txId = await glamClientAlice.investor.subscribe(
-        fundPDA,
+        statePda,
         WSOL,
         amount,
       );
@@ -108,14 +104,14 @@ describe("glam_sol_msol", () => {
 
     const shares = await getMint(
       connection,
-      sharePDA,
+      sharePda,
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("1.00");
     const sharesAta = await getAccount(
       connection,
-      glamClientAlice.getShareClassAta(alice.publicKey, sharePDA),
+      glamClientAlice.getShareClassAta(alice.publicKey, sharePda),
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
@@ -126,7 +122,7 @@ describe("glam_sol_msol", () => {
     const amount = new BN(2_000_000_000);
     try {
       const txId = await glamClientBob.investor.subscribe(
-        fundPDA,
+        statePda,
         WSOL,
         amount,
       );
@@ -138,14 +134,14 @@ describe("glam_sol_msol", () => {
 
     const shares = await getMint(
       connection,
-      sharePDA,
+      sharePda,
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("3.00");
     const sharesAta = await getAccount(
       connection,
-      glamClientBob.getShareClassAta(bob.publicKey, sharePDA),
+      glamClientBob.getShareClassAta(bob.publicKey, sharePda),
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
@@ -156,7 +152,7 @@ describe("glam_sol_msol", () => {
     const amount = new BN(3_000_000_000);
     try {
       const txId = await glamClientAlice.investor.subscribe(
-        fundPDA,
+        statePda,
         WSOL,
         amount,
       );
@@ -168,14 +164,14 @@ describe("glam_sol_msol", () => {
 
     const shares = await getMint(
       connection,
-      sharePDA,
+      sharePda,
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("6.00");
     const sharesAta = await getAccount(
       connection,
-      glamClientAlice.getShareClassAta(alice.publicKey, sharePDA),
+      glamClientAlice.getShareClassAta(alice.publicKey, sharePda),
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
@@ -185,7 +181,11 @@ describe("glam_sol_msol", () => {
   it("Alice redeems 2 shares", async () => {
     const amount = new BN(2_000_000_000);
     try {
-      const txId = await glamClientAlice.investor.redeem(fundPDA, amount, true);
+      const txId = await glamClientAlice.investor.redeem(
+        statePda,
+        amount,
+        true,
+      );
       console.log("tx:", txId);
     } catch (e) {
       console.error(e);
@@ -194,14 +194,14 @@ describe("glam_sol_msol", () => {
 
     const shares = await getMint(
       connection,
-      sharePDA,
+      sharePda,
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("4.00");
     const sharesAta = await getAccount(
       connection,
-      glamClientAlice.getShareClassAta(alice.publicKey, sharePDA),
+      glamClientAlice.getShareClassAta(alice.publicKey, sharePda),
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
@@ -225,13 +225,12 @@ describe("glam_sol_msol", () => {
        The fund has 6 SOL for 4 shares (share price is 1.5 SOL).
        With 3 SOL, Alice gets 2 shares.
        The fund has 9 SOL for 6 shares. */
-    const airdrop = await connection.requestAirdrop(vaultPda, 2_000_000_000);
-    await connection.confirmTransaction(airdrop);
+    await airdrop(connection, vaultPda, 2_000_000_000);
 
     const amount = new BN(3_000_000_000);
     try {
       const txId = await glamClientAlice.investor.subscribe(
-        fundPDA,
+        statePda,
         WSOL,
         amount,
       );
@@ -243,14 +242,14 @@ describe("glam_sol_msol", () => {
 
     const shares = await getMint(
       connection,
-      sharePDA,
+      sharePda,
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("6.00");
     const sharesAta = await getAccount(
       connection,
-      glamClientAlice.getShareClassAta(alice.publicKey, sharePDA),
+      glamClientAlice.getShareClassAta(alice.publicKey, sharePda),
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
@@ -267,7 +266,11 @@ describe("glam_sol_msol", () => {
 
     const amount = new BN(1_000_000_000);
     try {
-      const txId = await glamClientAlice.investor.redeem(fundPDA, amount, true);
+      const txId = await glamClientAlice.investor.redeem(
+        statePda,
+        amount,
+        true,
+      );
       console.log("tx:", txId);
     } catch (e) {
       console.error(e);
@@ -276,14 +279,14 @@ describe("glam_sol_msol", () => {
 
     const shares = await getMint(
       connection,
-      sharePDA,
+      sharePda,
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("5.00");
     const sharesAta = await getAccount(
       connection,
-      glamClientAlice.getShareClassAta(alice.publicKey, sharePDA),
+      glamClientAlice.getShareClassAta(alice.publicKey, sharePda),
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
@@ -321,7 +324,7 @@ describe("glam_sol_msol", () => {
     const amount = 50_000_000;
     try {
       const txId = await glamClient.jupiter.swap(
-        fundPDA,
+        statePda,
         undefined,
         quoteResponse,
         swapInstructions,
@@ -342,7 +345,7 @@ describe("glam_sol_msol", () => {
     const amount = new BN(3_000_000_000);
     try {
       const txId = await glamClientAlice.investor.subscribe(
-        fundPDA,
+        statePda,
         WSOL,
         amount,
       );
@@ -354,14 +357,14 @@ describe("glam_sol_msol", () => {
 
     const shares = await getMint(
       connection,
-      sharePDA,
+      sharePda,
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("6.50");
     const sharesAta = await getAccount(
       connection,
-      glamClientAlice.getShareClassAta(alice.publicKey, sharePDA),
+      glamClientAlice.getShareClassAta(alice.publicKey, sharePda),
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
@@ -374,7 +377,11 @@ describe("glam_sol_msol", () => {
 
     const amount = new BN(1_000_000_000);
     try {
-      const txId = await glamClientAlice.investor.redeem(fundPDA, amount, true);
+      const txId = await glamClientAlice.investor.redeem(
+        statePda,
+        amount,
+        true,
+      );
       console.log("tx:", txId);
     } catch (e) {
       console.error(e);
@@ -383,14 +390,14 @@ describe("glam_sol_msol", () => {
 
     const shares = await getMint(
       connection,
-      sharePDA,
+      sharePda,
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("5.50");
     const sharesAta = await getAccount(
       connection,
-      glamClientAlice.getShareClassAta(alice.publicKey, sharePDA),
+      glamClientAlice.getShareClassAta(alice.publicKey, sharePda),
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
@@ -416,13 +423,13 @@ describe("glam_sol_msol", () => {
   it("Manager orders marinade delayed stake and delegates stake", async () => {
     try {
       let txSig = await glamClient.marinade.delayedUnstake(
-        fundPDA,
+        statePda,
         new BN(30_000_000),
       );
       console.log("delayedUnstake txSig", txSig);
 
       txSig = await glamClient.staking.initializeAndDelegateStake(
-        fundPDA,
+        statePda,
         defaultVote,
         new BN(2_000_000_000),
       );
@@ -437,7 +444,7 @@ describe("glam_sol_msol", () => {
     /* The fund has ~11 SOL for 5.5 shares. */
     try {
       const txId = await glamClientEve.investor.subscribe(
-        fundPDA,
+        statePda,
         WSOL,
         new BN(1_000_000_000),
       );
@@ -449,14 +456,14 @@ describe("glam_sol_msol", () => {
 
     let shares = await getMint(
       connection,
-      sharePDA,
+      sharePda,
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("6.00");
     const sharesAtaEpoch0 = await getAccount(
       connection,
-      glamClientAlice.getShareClassAta(eve.publicKey, sharePDA),
+      glamClientAlice.getShareClassAta(eve.publicKey, sharePda),
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
@@ -467,7 +474,7 @@ describe("glam_sol_msol", () => {
     /* The fund has ~12 SOL for 6.0 shares. */
     try {
       const txId = await glamClientEve.investor.subscribe(
-        fundPDA,
+        statePda,
         WSOL,
         new BN(1_000_000_000),
       );
@@ -479,14 +486,14 @@ describe("glam_sol_msol", () => {
 
     shares = await getMint(
       connection,
-      sharePDA,
+      sharePda,
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
     expect((Number(shares.supply) / 1e9).toFixed(2)).toEqual("6.50");
     const sharesAtaEpoch1 = await getAccount(
       connection,
-      glamClientAlice.getShareClassAta(eve.publicKey, sharePDA),
+      glamClientAlice.getShareClassAta(eve.publicKey, sharePda),
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
