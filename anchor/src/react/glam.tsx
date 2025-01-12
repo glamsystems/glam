@@ -194,7 +194,7 @@ export function GlamProvider({
   });
   useEffect(() => {
     if (process.env.NODE_ENV === "development") {
-      console.log("All glam states:", allGlamStatesData);
+      console.log(`[${cluster.network}] all glam states:`, allGlamStatesData);
     }
     const stateModels = (allGlamStatesData || []).sort(
       (a: StateModel, b: StateModel) => {

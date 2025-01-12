@@ -48,7 +48,7 @@ import {
   mintTreeDataPermissions,
 } from "./data/permissions";
 import { toast } from "../ui/use-toast";
-import { useGlam } from "@glam/anchor/react";
+import { DelegateAcl, useGlam } from "@glam/anchor/react";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { parseTxError } from "@/lib/error";
 import { PublicKey } from "@solana/web3.js";
@@ -181,7 +181,10 @@ export function DataTable<TData extends KeyData>({
 
     const delegateAcls = [
       //@ts-ignore
-      { pubkey, permissions: permissions.map((p) => ({ [p]: {} })) },
+      {
+        pubkey,
+        permissions: permissions.map((p) => ({ [p!]: {} })),
+      } as DelegateAcl,
     ];
 
     try {

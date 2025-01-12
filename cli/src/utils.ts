@@ -1,14 +1,7 @@
 import fs from "fs";
-import * as anchor from "@coral-xyz/anchor";
-import { Connection } from "@solana/web3.js";
-import { ClusterNetwork, GlamClient } from "@glam/anchor";
 
-export const getGlamClient = () => {
-  return new GlamClient();
-};
-
-export const setFundToConfig = (fund, path) => {
+export const setStateToConfig = (statePda, path) => {
   const config = fs.readFileSync(path, "utf8");
-  const updatedConfig = { ...JSON.parse(config), fund };
-  fs.writeFileSync(path, JSON.stringify(updatedConfig, null, 2), "utf8");
+  const updated = { ...JSON.parse(config), glam_state: statePda };
+  fs.writeFileSync(path, JSON.stringify(updated, null, 2), "utf8");
 };

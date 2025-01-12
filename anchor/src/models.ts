@@ -11,7 +11,7 @@ export const GlamIntegrations =
 
 export const VaultIntegrations = GlamIntegrations.filter((i) => i !== "Mint");
 
-const GlamProgramId = new PublicKey(GlamIDLJson.address);
+const GLAM_PROGRAM_ID_DEFAULT = new PublicKey(GlamIDLJson.address);
 
 // FIXME: Anchor is not able to handle enums with too many options
 // The culprit of so many broken types suppressed by @ts-ignore is ShareClassFieldName, which
@@ -64,8 +64,14 @@ export class StateIdlModel implements StateModelType {
   }
 }
 export class StateModel extends StateIdlModel {
-  constructor(data: Partial<StateIdlModel>) {
+  readonly glamProgramId: PublicKey;
+
+  constructor(
+    data: Partial<StateIdlModel>,
+    glamProgramId = GLAM_PROGRAM_ID_DEFAULT,
+  ) {
     super(data);
+    this.glamProgramId = glamProgramId;
   }
 
   get idStr() {
@@ -78,7 +84,7 @@ export class StateModel extends StateIdlModel {
     }
     const [pda, _bump] = PublicKey.findProgramAddressSync(
       [Buffer.from("treasury"), this.id.toBuffer()],
-      GlamProgramId,
+      this.glamProgramId,
     );
     return pda;
   }
@@ -89,7 +95,7 @@ export class StateModel extends StateIdlModel {
     }
     const [pda, _] = PublicKey.findProgramAddressSync(
       [Buffer.from("openfunds"), this.id.toBuffer()],
-      GlamProgramId,
+      this.glamProgramId,
     );
     return pda;
   }
@@ -112,7 +118,9 @@ export class StateModel extends StateIdlModel {
       // If share classes are set, fund ID should be set as well
       throw new Error("Fund ID not set");
     }
-    return this.mints.map((_, i) => ShareClassModel.mintAddress(this.id!, i));
+    return this.mints.map((_, i) =>
+      ShareClassModel.mintAddress(this.id!, i, this.glamProgramId),
+    );
   }
 
   get sparkleKey() {
@@ -122,16 +130,8 @@ export class StateModel extends StateIdlModel {
     return this.shareClassMints[0].toBase58() || this.idStr;
   }
 
-  static openfundsPda(fundPda: PublicKey) {
-    const [pda, _] = PublicKey.findProgramAddressSync(
-      [Buffer.from("openfunds"), fundPda.toBuffer()],
-      GlamProgramId,
-    );
-    return pda;
-  }
-
   /**
-   * Build a FundModel from onchain accounts
+   * Build a StateModel from onchain accounts
    *
    * @param stateAccount provides core fund data
    * @param openfundsAccount includes fund rawOpenfunds data and share class rawOpenfunds data
@@ -142,6 +142,7 @@ export class StateModel extends StateIdlModel {
     stateAccount: StateAccount,
     openfundsAccount?: MetadataAccount,
     shareClassMint?: Mint,
+    glamProgramId: PublicKey = GLAM_PROGRAM_ID_DEFAULT,
   ) {
     let stateModel: Partial<StateIdlModel> = {
       id: statePda,
@@ -152,7 +153,7 @@ export class StateModel extends StateIdlModel {
       mints: [],
     };
 
-    // All fields in fund params[0] should be available on the FundModel
+    // All fields in fund params[0] should be available on the StateModel
     stateAccount.params[0].forEach((param) => {
       const name = Object.keys(param.name)[0];
       // @ts-ignore
@@ -165,7 +166,7 @@ export class StateModel extends StateIdlModel {
       }
     });
 
-    // Build fundModel.rawOpenfunds from openfunds account
+    // Build stateModel.rawOpenfunds from openfunds account
     const fundOpenfundsFields = {};
     openfundsAccount?.fund.forEach((param) => {
       const name = Object.keys(param.name)[0];
@@ -230,7 +231,7 @@ export class StateModel extends StateIdlModel {
         }
       }
 
-      // fundModel.shareClasses should never be null
+      // stateModel.shareClasses should never be null
       // non-null assertion is safe and is needed to suppress type error
       stateModel.mints!.push(new ShareClassModel(shareClassIdlModel));
     });
@@ -240,8 +241,7 @@ export class StateModel extends StateIdlModel {
       stateModel.rawOpenfunds?.legalFundNameIncludingUmbrella ||
       (stateModel.mints && stateModel.mints[0]?.name);
 
-    // @ts-ignore
-    return new StateModel(stateModel);
+    return new StateModel(stateModel, glamProgramId);
   }
 }
 
@@ -323,10 +323,14 @@ export class ShareClassModel extends ShareClassIdlModel {
     super(data);
   }
 
-  static mintAddress(fundPDA: PublicKey, idx: number = 0): PublicKey {
+  static mintAddress(
+    statePda: PublicKey,
+    idx: number = 0,
+    glamProgramId: PublicKey = GLAM_PROGRAM_ID_DEFAULT,
+  ): PublicKey {
     const [pda, _] = PublicKey.findProgramAddressSync(
-      [Buffer.from("share"), Uint8Array.from([idx % 256]), fundPDA.toBuffer()],
-      GlamProgramId,
+      [Buffer.from("share"), Uint8Array.from([idx % 256]), statePda.toBuffer()],
+      glamProgramId,
     );
     return pda;
   }
@@ -454,7 +458,7 @@ export class DelegateAcl implements DelegateAclType {
   permissions: Permission[];
 
   constructor(obj: Partial<DelegateAclType>) {
-    this.pubkey = obj.pubkey;
+    this.pubkey = obj.pubkey!;
     this.permissions = obj.permissions ?? [];
   }
 }
@@ -466,7 +470,7 @@ export class IntegrationAcl implements IntegrationAclType {
   features: { all: {} }[];
 
   constructor(obj: Partial<IntegrationAclType>) {
-    this.name = obj.name;
+    this.name = obj.name!;
     this.features = obj.features ?? [];
   }
 }

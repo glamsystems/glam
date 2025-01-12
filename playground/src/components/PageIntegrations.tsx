@@ -51,6 +51,7 @@ export default function PageIntegrations() {
               integrationAcls: [
                 ...stateModel!.integrationAcls,
                 {
+                  // @ts-ignore
                   name: { [integration]: {} } as IntegrationName,
                   features: [],
                 },

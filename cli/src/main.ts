@@ -5,6 +5,7 @@ import {
   PriorityLevel,
   WSOL,
   getPriorityFeeEstimate,
+  GlamClient,
 } from "@glam/anchor";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { Command } from "commander";
@@ -12,7 +13,7 @@ import { Command } from "commander";
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { getGlamClient, setFundToConfig } from "./utils";
+import { setStateToConfig } from "./utils";
 import { QuoteParams } from "anchor/src/client/jupiter";
 import { VersionedTransaction } from "@solana/web3.js";
 
@@ -29,13 +30,25 @@ let heliusApiKey;
 let priorityFeeLevel = "Low" as PriorityLevel; // Defaults to Low
 try {
   const config = fs.readFileSync(configPath, "utf8");
-  const { keypair_path, helius_api_key, priority_fee_level, fund } =
-    JSON.parse(config);
-  // process.env.ANCHOR_PROVIDER_URL = `https://devnet.helius-rpc.com/?api-key=${helius_api_key}`;
-  process.env.ANCHOR_PROVIDER_URL = "http://localhost:8899";
+  const {
+    keypair_path,
+    helius_api_key,
+    priority_fee_level,
+    cluster,
+    glam_state,
+  } = JSON.parse(config);
+  if (cluster.toLowerCase().startsWith("mainnet")) {
+    process.env.ANCHOR_PROVIDER_URL = `https://mainnet.helius-rpc.com/?api-key=${helius_api_key}`;
+  } else if (cluster.toLowerCase().startsWith("devnet")) {
+    process.env.ANCHOR_PROVIDER_URL = `https://devnet.helius-rpc.com/?api-key=${helius_api_key}`;
+  } else if (cluster.toLowerCase().startsWith("localnet")) {
+    process.env.ANCHOR_PROVIDER_URL = "http://localhost:8899";
+  } else {
+    throw new Error(`Unsupported cluster: ${cluster}`);
+  }
   process.env.ANCHOR_WALLET = keypair_path;
-  if (fund) {
-    statePda = new PublicKey(fund);
+  if (glam_state) {
+    statePda = new PublicKey(glam_state);
   }
   heliusApiKey = helius_api_key;
   priorityFeeLevel = priority_fee_level ?? priorityFeeLevel;
@@ -48,7 +61,7 @@ const cliTxOptions = {
     await getPriorityFeeEstimate(heliusApiKey, tx, undefined, priorityFeeLevel),
 };
 
-const glamClient = getGlamClient();
+const glamClient = new GlamClient();
 
 const program = new Command();
 
@@ -64,16 +77,11 @@ program
     console.log("Wallet connected:", glamClient.getSigner().toBase58());
     console.log("RPC endpoint:", glamClient.provider.connection.rpcEndpoint);
     console.log("Priority fee level:", priorityFeeLevel);
-    console.log(
-      "Active state account:",
-      statePda ? statePda.toBase58() : "not set",
-    );
+    console.log("Glam state:", statePda ? statePda.toBase58() : "not set");
     if (statePda) {
       const vault = glamClient.getVaultPda(statePda);
       console.log("Active vault:", vault.toBase58());
     }
-    const fa = await glamClient.fetchState(statePda);
-    console.log(fa);
   });
 
 program
@@ -104,8 +112,25 @@ fund
   .command("set <fund>")
   .description("Set active fund")
   .action((fund) => {
-    setFundToConfig(fund, configPath);
+    setStateToConfig(fund, configPath);
     console.log("Active fund set to:", fund);
+  });
+
+fund
+  .command("view [state]")
+  .description("View a glam state")
+  .action(async (state?) => {
+    if (state) {
+      const glamState = await glamClient.fetchState(new PublicKey(state));
+      console.log(JSON.stringify(glamState, null, 2));
+      return;
+    }
+    if (statePda) {
+      const glamState = await glamClient.fetchState(statePda);
+      console.log(JSON.stringify(glamState, null, 2));
+      return;
+    }
+    console.error("Please specify a glam state to view.");
   });
 
 fund
@@ -113,22 +138,22 @@ fund
   .description("Create fund from a json file")
   .action(async (file) => {
     const data = fs.readFileSync(file, "utf8");
-    const fundData = JSON.parse(data);
+    const glamState = JSON.parse(data);
 
     // Convert pubkey strings to PublicKey objects
-    for (let i = 0; i < fundData?.shareClasses?.length || 0; ++i) {
-      fundData.shareClasses[i].asset = new PublicKey(
-        fundData.shareClasses[i].asset,
+    for (let i = 0; i < glamState?.shareClasses?.length || 0; ++i) {
+      glamState.shareClasses[i].asset = new PublicKey(
+        glamState.shareClasses[i].asset,
       );
     }
-    fundData.assets = fundData.assets.map((a) => new PublicKey(a));
+    glamState.assets = glamState.assets.map((a) => new PublicKey(a));
 
     try {
-      const [txSig, fundPDA] = await glamClient.state.createState(fundData);
-      console.log("Fund created:", fundPDA.toBase58());
+      const [txSig, statePda] = await glamClient.state.createState(glamState);
+      console.log("Glam state created:", statePda.toBase58());
       console.log("txSig:", txSig);
 
-      setFundToConfig(fundPDA.toBase58(), configPath);
+      setStateToConfig(statePda.toBase58(), configPath);
     } catch (e) {
       console.error(e);
       process.exit(1);
@@ -139,17 +164,17 @@ fund
   .command("close <fund>")
   .description("Close the fund")
   .action(async (f) => {
-    const fundPDA = new PublicKey(f);
+    const statePda = new PublicKey(f);
 
     const preInstructions = [];
-    const fundAccount = await glamClient.fetchStateAccount(fundPDA);
-    if (fundAccount.mints.length > 0) {
+    const stateAccount = await glamClient.fetchStateAccount(statePda);
+    if (stateAccount.mints.length > 0) {
       const closeShareClassIx = await glamClient.program.methods
         .closeShareClass(0)
         .accounts({
-          state: fundPDA,
-          shareClassMint: glamClient.getShareClassPda(fundPDA, 0),
-          metadata: glamClient.getOpenfundsPda(fundPDA),
+          state: statePda,
+          shareClassMint: glamClient.getShareClassPda(statePda, 0),
+          metadata: glamClient.getOpenfundsPda(statePda),
         })
         .instruction();
       preInstructions.push(closeShareClassIx);
@@ -158,13 +183,13 @@ fund
       const builder = await glamClient.program.methods
         .closeState()
         .accounts({
-          state: fundPDA,
-          metadata: glamClient.getOpenfundsPda(fundPDA),
+          state: statePda,
+          metadata: glamClient.getOpenfundsPda(statePda),
         })
         .preInstructions(preInstructions);
 
       const txSig = await builder.rpc();
-      console.log(`Fund ${fundPDA.toBase58()} closed:`, txSig);
+      console.log(`Fund ${statePda.toBase58()} closed:`, txSig);
     } catch (e) {
       console.error(e);
       process.exit(1);
@@ -206,12 +231,12 @@ delegate
       process.exit(1);
     }
 
-    const fundModel = await glamClient.fetchState(statePda);
-    const cnt = fundModel.delegateAcls.length;
+    const stateModel = await glamClient.fetchState(statePda);
+    const cnt = stateModel.delegateAcls.length;
     console.log(
       `Fund ${statePda.toBase58()} has ${cnt} delegate acl${cnt > 1 ? "s" : ""}`,
     );
-    for (let [i, acl] of fundModel.delegateAcls.entries()) {
+    for (let [i, acl] of stateModel.delegateAcls.entries()) {
       console.log(
         `[${i}] ${acl.pubkey.toBase58()}:`,
         acl.permissions.map((p) => Object.keys(p)[0]).join(", "),
@@ -257,14 +282,14 @@ integration
       process.exit(1);
     }
 
-    const fundModel = await glamClient.fetchState(statePda);
-    const cnt = fundModel.integrationAcls.length;
+    const stateModel = await glamClient.fetchState(statePda);
+    const cnt = stateModel.integrationAcls.length;
     console.log(
       `Fund ${statePda.toBase58()} has ${cnt} integration${
         cnt > 1 ? "s" : ""
       } enabled`,
     );
-    for (let [i, acl] of fundModel.integrationAcls.entries()) {
+    for (let [i, acl] of stateModel.integrationAcls.entries()) {
       console.log(`[${i}] ${Object.keys(acl.name)[0]}`);
     }
   });
@@ -278,8 +303,8 @@ integration
       process.exit(1);
     }
 
-    const fundModel = await glamClient.fetchState(statePda);
-    const acl = fundModel.integrationAcls.find(
+    const stateModel = await glamClient.fetchState(statePda);
+    const acl = stateModel.integrationAcls.find(
       (integ) => Object.keys(integ.name)[0] === integration,
     );
     if (acl) {
@@ -291,7 +316,7 @@ integration
 
     const updatedFund = new StateModel({
       integrationAcls: [
-        ...fundModel.integrationAcls,
+        ...stateModel.integrationAcls,
         { name: { [integration]: {} } as IntegrationName, features: [] },
       ],
     });
@@ -318,8 +343,8 @@ integration
       process.exit(1);
     }
 
-    const fundModel = await glamClient.fetchState(statePda);
-    const acl = fundModel.integrationAcls.find(
+    const stateModel = await glamClient.fetchState(statePda);
+    const acl = stateModel.integrationAcls.find(
       (integ) => Object.keys(integ.name)[0] === integration,
     );
     if (!acl) {
@@ -330,7 +355,7 @@ integration
     }
 
     const updatedFund = new StateModel({
-      integrationAcls: fundModel.integrationAcls.filter(
+      integrationAcls: stateModel.integrationAcls.filter(
         (integ) => Object.keys(integ.name)[0] !== integration,
       ),
     });

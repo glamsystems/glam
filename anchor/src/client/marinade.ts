@@ -25,42 +25,42 @@ export class MarinadeClient {
    */
 
   public async depositSol(
-    fund: PublicKey,
+    statePda: PublicKey,
     amount: BN,
   ): Promise<TransactionSignature> {
-    const tx = await this.depositSolTx(fund, amount, {});
+    const tx = await this.depositSolTx(statePda, amount, {});
     return await this.base.sendAndConfirm(tx);
   }
 
   public async depositStake(
-    fund: PublicKey,
+    statePda: PublicKey,
     stakeAccount: PublicKey,
   ): Promise<TransactionSignature> {
-    const tx = await this.depositStakeTx(fund, stakeAccount, {});
+    const tx = await this.depositStakeTx(statePda, stakeAccount, {});
     return await this.base.sendAndConfirm(tx);
   }
 
   public async liquidUnstake(
-    fund: PublicKey,
+    statePda: PublicKey,
     amount: BN,
   ): Promise<TransactionSignature> {
-    const tx = await this.liquidUnstakeTx(fund, amount, {});
+    const tx = await this.liquidUnstakeTx(statePda, amount, {});
     return await this.base.sendAndConfirm(tx);
   }
 
   public async delayedUnstake(
-    fund: PublicKey,
+    statePda: PublicKey,
     amount: BN,
   ): Promise<TransactionSignature> {
-    const tx = await this.delayedUnstakeTx(fund, amount, {});
+    const tx = await this.delayedUnstakeTx(statePda, amount, {});
     return await this.base.sendAndConfirm(tx);
   }
 
   public async claimTickets(
-    fund: PublicKey,
+    statePda: PublicKey,
     tickets: PublicKey[],
   ): Promise<TransactionSignature> {
-    const tx = await this.claimTicketsTx(fund, tickets, {});
+    const tx = await this.claimTicketsTx(statePda, tickets, {});
     return await this.base.sendAndConfirm(tx);
   }
 
@@ -68,17 +68,17 @@ export class MarinadeClient {
    * Utils
    */
 
-  getMarinadeTicketPDA(
-    fundPDA: PublicKey,
+  getMarinadeTicketPda(
+    state: PublicKey,
     ticketId: string,
   ): [PublicKey, number] {
     return PublicKey.findProgramAddressSync(
-      [Buffer.from("ticket"), Buffer.from(ticketId), fundPDA.toBuffer()],
+      [Buffer.from("ticket"), Buffer.from(ticketId), state.toBuffer()],
       this.base.program.programId,
     );
   }
 
-  async getExistingTickets(fundPDA: PublicKey): Promise<PublicKey[]> {
+  async getExistingTickets(state: PublicKey): Promise<PublicKey[]> {
     const accounts =
       await this.base.provider.connection.getParsedProgramAccounts(
         MARINADE_PROGRAM_ID,
@@ -90,7 +90,7 @@ export class MarinadeClient {
             {
               memcmp: {
                 offset: 40,
-                bytes: this.base.getVaultPda(fundPDA).toBase58(),
+                bytes: this.base.getVaultPda(state).toBase58(),
               },
             },
           ],
@@ -99,7 +99,7 @@ export class MarinadeClient {
     return accounts.map((a) => a.pubkey);
   }
 
-  async getTickets(fundPDA: PublicKey): Promise<
+  async getTickets(state: PublicKey): Promise<
     {
       address: PublicKey;
       lamports: number;
@@ -124,7 +124,7 @@ export class MarinadeClient {
             {
               memcmp: {
                 offset: 40,
-                bytes: this.base.getVaultPda(fundPDA).toBase58(),
+                bytes: this.base.getVaultPda(state).toBase58(),
               },
             },
           ],
@@ -213,12 +213,12 @@ export class MarinadeClient {
    */
 
   public async depositSolTx(
-    fund: PublicKey,
+    statePda: PublicKey,
     amount: BN,
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(fund);
+    const vault = this.base.getVaultPda(statePda);
     const marinadeState = this.getMarinadeState();
     const vaultMsolAta = getAssociatedTokenAddressSync(
       marinadeState.msolMintAddress,
@@ -230,7 +230,7 @@ export class MarinadeClient {
     const tx = await this.base.program.methods
       .marinadeDepositSol(amount)
       .accountsPartial({
-        state: fund,
+        state: statePda,
         vault,
         signer,
         reservePda: marinadeState.reserveAddress,
@@ -252,12 +252,12 @@ export class MarinadeClient {
   }
 
   public async depositStakeTx(
-    fund: PublicKey,
+    statePda: PublicKey,
     stakeAccount: PublicKey,
     txOptions: TxOptions,
   ): Promise<any> {
     const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(fund);
+    const vault = this.base.getVaultPda(statePda);
 
     const stakeAccountInfo = await this.getParsedStakeAccountInfo(stakeAccount);
     console.log("Stake account info", stakeAccountInfo);
@@ -279,7 +279,7 @@ export class MarinadeClient {
     const tx = await this.base.program.methods
       .marinadeDepositStake(validatorIndex)
       .accountsPartial({
-        state: fund,
+        state: statePda,
         vault,
         signer,
         marinadeState: marinadeState.marinadeStateAddress,
@@ -290,7 +290,7 @@ export class MarinadeClient {
         duplicationFlag,
         msolMint: MSOL,
         msolMintAuthority: await marinadeState.mSolMintAuthority(),
-        mintTo: this.base.getVaultAta(fund, MSOL),
+        mintTo: this.base.getVaultAta(statePda, MSOL),
         marinadeProgram: MARINADE_PROGRAM_ID,
         clock: SYSVAR_CLOCK_PUBKEY,
         rent: SYSVAR_RENT_PUBKEY,
@@ -312,7 +312,7 @@ export class MarinadeClient {
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
     const ticketId = Date.now().toString();
-    const [ticket, bump] = this.getMarinadeTicketPDA(state, ticketId);
+    const [ticket, bump] = this.getMarinadeTicketPda(state, ticketId);
     const vault = this.base.getVaultPda(state);
     const marinadeState = this.getMarinadeState();
     const treasuryMsolAta = this.base.getVaultAta(

@@ -16,19 +16,19 @@ export class WSolClient {
    */
 
   public async wrap(
-    fund: PublicKey,
+    statePda: PublicKey,
     amount: BN,
     txOptions: TxOptions = {} as TxOptions,
   ): Promise<TransactionSignature> {
-    const tx = await this.wrapTx(fund, amount, txOptions);
+    const tx = await this.wrapTx(statePda, amount, txOptions);
     return await this.base.sendAndConfirm(tx);
   }
 
   public async unwrap(
-    fund: PublicKey,
+    statePda: PublicKey,
     txOptions: TxOptions = {} as TxOptions,
   ): Promise<TransactionSignature> {
-    const tx = await this.unwrapTx(fund, txOptions);
+    const tx = await this.unwrapTx(statePda, txOptions);
     return await this.base.sendAndConfirm(tx);
   }
 
@@ -37,19 +37,19 @@ export class WSolClient {
    */
 
   public async wrapTx(
-    fund: PublicKey,
+    statePda: PublicKey,
     amount: BN,
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(fund);
-    const vaultWsolAta = this.base.getVaultAta(fund, WSOL);
+    const vault = this.base.getVaultPda(statePda);
+    const vaultWsolAta = this.base.getVaultAta(statePda, WSOL);
 
     // @ts-ignore
     const tx = await this.base.program.methods
       .wsolWrap(amount)
       .accountsPartial({
-        state: fund,
+        state: statePda,
         vault,
         vaultWsolAta,
         wsolMint: WSOL,
@@ -64,17 +64,17 @@ export class WSolClient {
   }
 
   public async unwrapTx(
-    fund: PublicKey,
+    statePda: PublicKey,
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(fund);
-    const vaultWsolAta = this.base.getVaultAta(fund, WSOL);
+    const vault = this.base.getVaultPda(statePda);
+    const vaultWsolAta = this.base.getVaultAta(statePda, WSOL);
 
     const tx = await this.base.program.methods
       .wsolUnwrap()
       .accountsPartial({
-        state: fund,
+        state: statePda,
         vault,
         vaultWsolAta,
         wsolMint: WSOL,

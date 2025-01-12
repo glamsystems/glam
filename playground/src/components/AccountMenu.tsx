@@ -31,7 +31,6 @@ import Link from "next/link";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useTheme } from "next-themes";
 import Image from "next/image";
-import { useWallet } from "@solana/wallet-adapter-react";
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
@@ -42,10 +41,10 @@ interface ProductSwitcherProps extends PopoverTriggerProps {}
 export default function ProductSwitcher({ className }: ProductSwitcherProps) {
   const {
     userWallet,
-    allGlamStates: allFunds,
-    glamStatesList: fundsList,
-    activeGlamState: activeFund,
-    setActiveProduct: setActiveFund,
+    allGlamStates,
+    glamStatesList,
+    activeGlamState,
+    setActiveGlamState,
   } = useGlam();
   const [open, setOpen] = React.useState(false);
   const { state } = useSidebar();
@@ -56,13 +55,15 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
 
   const { funds, mints, vaults } = React.useMemo(() => {
     return {
-      funds: fundsList.filter((f) => f.product === "Fund"),
-      mints: fundsList.filter((f) => f.product === "Mint"),
-      vaults: fundsList.filter((f) => f.product === "Vault"),
+      funds: glamStatesList.filter((s) => s.product === "Fund"),
+      mints: glamStatesList.filter((s) => s.product === "Mint"),
+      vaults: glamStatesList.filter((s) => s.product === "Vault"),
     };
-  }, [fundsList]);
+  }, [glamStatesList]);
 
-  const fundModel = allFunds.find((f) => f.idStr === activeFund?.address);
+  const stateModel = allGlamStates.find(
+    (s) => s.idStr === activeGlamState?.address,
+  );
 
   React.useEffect(() => {
     setDefaultSparkleImage(
@@ -108,7 +109,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
     );
   }
 
-  if (!activeFund) return null;
+  if (!activeGlamState) return null;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -125,8 +126,8 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
           )}
         >
           <span className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10">
-            {fundModel?.sparkleKey ? (
-              <Sparkle address={fundModel?.sparkleKey} size={30} />
+            {stateModel?.sparkleKey ? (
+              <Sparkle address={stateModel?.sparkleKey} size={30} />
             ) : (
               <Image
                 src={defaultSparkleImage}
@@ -143,10 +144,12 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
             )}
           >
             <span className="min-w-0 text-ellipsis whitespace-nowrap truncate">
-              {activeFund.name ? (
-                <span>{activeFund.name}</span>
+              {activeGlamState.name ? (
+                <span>{activeGlamState.name}</span>
               ) : (
-                <TruncateAddress address={activeFund?.address || "Select"} />
+                <TruncateAddress
+                  address={activeGlamState?.address || "Select"}
+                />
               )}
             </span>
             <ChevronDownIcon className="ml-auto h-4 w-4 shrink-0 opacity-50" />
@@ -156,7 +159,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
       <PopoverContent className="w-full p-0 transition-all" align="start">
         <Command>
           <CommandList className="overflow-hidden h-full">
-            {fundsList.length > 0 && (
+            {glamStatesList.length > 0 && (
               <>
                 {[
                   { key: "Funds", items: funds },
@@ -170,7 +173,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
                         <CommandItem
                           key={product.name || product.address}
                           onSelect={() => {
-                            setActiveFund(product);
+                            setActiveGlamState(product);
                             setOpen(false);
                           }}
                           className="text-sm cursor-pointer h-8"
@@ -191,7 +194,7 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
                           <CheckIcon
                             className={cn(
                               "ml-auto h-4 w-4",
-                              activeFund?.address === product.address
+                              activeGlamState?.address === product.address
                                 ? "opacity-100"
                                 : "opacity-0",
                             )}

@@ -109,7 +109,7 @@ export default function MultiStepForm() {
     fundManager: {},
     shareClass: {},
   });
-  const { glamClient, setActiveProduct: setActiveFund } = useGlam();
+  const { glamClient, setActiveGlamState } = useGlam();
 
   const totalSteps =
     selectedTemplate === "Basic" ? TOTAL_STEPS.BASIC : TOTAL_STEPS.OPENFUNDS;
@@ -123,7 +123,7 @@ export default function MultiStepForm() {
     });
 
     try {
-      const fundData = {
+      const glamState = {
         name: basicInfoFormData.name,
         isEnabled: true,
         rawOpenfunds: {
@@ -134,7 +134,7 @@ export default function MultiStepForm() {
         company: {
           fundGroupName: openfundsData.company.fundGroupName,
         } as Partial<CompanyModel>,
-        manager: {
+        owner: {
           pubkey: glamClient.getSigner(),
           kind: { wallet: {} },
         } as Partial<ManagerModel>,
@@ -162,14 +162,14 @@ export default function MultiStepForm() {
         ],
       } as Partial<StateModel>;
 
-      const [txSig, fundPDA] = await glamClient.state.createState(
-        fundData,
+      const [txSig, statePda] = await glamClient.state.createState(
+        glamState,
         true,
       );
-      setActiveFund({
-        address: fundPDA.toBase58(),
-        pubkey: fundPDA,
-        sparkleKey: fundPDA.toBase58(),
+      setActiveGlamState({
+        address: statePda.toBase58(),
+        pubkey: statePda,
+        sparkleKey: statePda.toBase58(),
         name: basicInfoFormData.name,
         product: "Mint",
       });
@@ -179,7 +179,7 @@ export default function MultiStepForm() {
       });
     } catch (error) {
       toast({
-        title: "Failed to create fund",
+        title: "Failed to create mint",
         description: parseTxError(error),
         variant: "destructive",
       });

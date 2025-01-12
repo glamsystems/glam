@@ -85,14 +85,14 @@ export class JupiterClient {
    */
 
   public async swap(
-    fund: PublicKey,
+    statePda: PublicKey,
     quoteParams?: QuoteParams,
     quoteResponse?: QuoteResponse,
     swapInstructions?: SwapInstructions,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const tx = await this.swapTx(
-      fund,
+      statePda,
       quoteParams,
       quoteResponse,
       swapInstructions,
@@ -104,17 +104,17 @@ export class JupiterClient {
   /**
    * Stake JUP. The escrow account will be created if it doesn't exist.
    *
-   * @param fund
+   * @param statePda
    * @param amount
    * @param txOptions
    * @returns
    */
   public async stakeJup(
-    fund: PublicKey,
+    statePda: PublicKey,
     amount: BN,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const vault = this.base.getVaultPda(fund);
+    const vault = this.base.getVaultPda(statePda);
     const [escrow] = PublicKey.findProgramAddressSync(
       [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), vault.toBuffer()],
       JUP_VOTE_PROGRAM,
@@ -133,7 +133,7 @@ export class JupiterClient {
         await this.base.program.methods
           .initLockedVoterEscrow()
           .accounts({
-            state: fund,
+            state: statePda,
             locker: JUP_STAKE_LOCKER,
             escrow,
           })
@@ -152,7 +152,7 @@ export class JupiterClient {
     return await this.base.program.methods
       .increaseLockedAmount(amount)
       .accounts({
-        state: fund,
+        state: statePda,
         locker: JUP_STAKE_LOCKER,
         escrow,
         escrowJupAta,
@@ -165,7 +165,7 @@ export class JupiterClient {
   /**
    * Vote on a proposal. The vote account will be created if it doesn't exist.
    *
-   * @param fund
+   * @param statePda
    * @param proposal
    * @param governor
    * @param side
@@ -173,13 +173,13 @@ export class JupiterClient {
    * @returns
    */
   public async voteOnProposal(
-    fund: PublicKey,
+    statePda: PublicKey,
     proposal: PublicKey,
     governor: PublicKey,
     side: number,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const vault = this.base.getVaultPda(fund);
+    const vault = this.base.getVaultPda(statePda);
     const [vote] = PublicKey.findProgramAddressSync(
       [Buffer.from("Vote"), proposal.toBuffer(), vault.toBuffer()],
       GOVERNANCE_PROGRAM_ID,
@@ -196,7 +196,7 @@ export class JupiterClient {
         await this.base.program.methods
           .newVote()
           .accounts({
-            state: fund,
+            state: statePda,
             vote,
             proposal,
           })
@@ -211,7 +211,7 @@ export class JupiterClient {
     return await this.base.program.methods
       .castVote(side)
       .accounts({
-        state: fund,
+        state: statePda,
         escrow,
         proposal,
         vote,
@@ -226,7 +226,7 @@ export class JupiterClient {
    */
 
   async swapTx(
-    fund: PublicKey,
+    statePda: PublicKey,
     quoteParams?: QuoteParams,
     quoteResponse?: QuoteResponse,
     swapInstructions?: SwapInstructions,
@@ -280,7 +280,7 @@ export class JupiterClient {
       ASSETS_MAINNET.get(outputMint.toBase58())?.stateAccount || null;
 
     const preInstructions = await this.getPreInstructions(
-      fund,
+      statePda,
       signer,
       inputMint,
       outputMint,
@@ -292,16 +292,16 @@ export class JupiterClient {
     const tx = await this.base.program.methods
       .jupiterSwap(amount, swapIx.data)
       .accountsPartial({
-        state: fund,
+        state: statePda,
         signer,
-        vault: this.base.getVaultPda(fund),
+        vault: this.base.getVaultPda(statePda),
         inputVaultAta: this.base.getVaultAta(
-          fund,
+          statePda,
           inputMint,
           inputTokenProgram,
         ),
         outputVaultAta: this.base.getVaultAta(
-          fund,
+          statePda,
           outputMint,
           outputTokenProgram,
         ),
@@ -335,7 +335,7 @@ export class JupiterClient {
    */
 
   getPreInstructions = async (
-    fund: PublicKey,
+    statePda: PublicKey,
     signer: PublicKey,
     inputMint: PublicKey,
     outputMint: PublicKey,
@@ -362,8 +362,8 @@ export class JupiterClient {
       },
       {
         payer: signer,
-        ata: this.base.getVaultAta(fund, outputMint, outputTokenProgram),
-        owner: this.base.getVaultPda(fund),
+        ata: this.base.getVaultAta(statePda, outputMint, outputTokenProgram),
+        owner: this.base.getVaultPda(statePda),
         mint: outputMint,
         tokenProgram: outputTokenProgram,
       },
@@ -388,7 +388,7 @@ export class JupiterClient {
 
     // Transfer SOL to wSOL ATA if needed for the vault
     if (inputMint.equals(WSOL)) {
-      const wrapSolIx = await this.base.maybeWrapSol(fund, amount, signer);
+      const wrapSolIx = await this.base.maybeWrapSol(statePda, amount, signer);
       if (wrapSolIx) {
         preInstructions.push(wrapSolIx);
       }

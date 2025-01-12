@@ -165,10 +165,12 @@ function processHolderData(
   };
 }
 
-async function updateHoldersData(fundModel: StateModel): Promise<HolderData[]> {
+async function updateHoldersData(
+  stateModel: StateModel,
+): Promise<HolderData[]> {
   const holdersData = await Promise.all(
-    fundModel.mints.map(async (shareClassModel, i) => {
-      const mintAddress = fundModel.shareClassMints[i].toBase58();
+    stateModel.mints.map(async (shareClassModel, i) => {
+      const mintAddress = stateModel.shareClassMints[i].toBase58();
       const holderData = await fetchHolderData(mintAddress);
       if (!holderData) {
         console.error(`Failed to fetch holder data for mint: ${mintAddress}`);

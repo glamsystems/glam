@@ -23,7 +23,7 @@ import { useState, useRef } from "react";
 import { TreeNodeData } from "@/components/CustomTree";
 import { toast } from "@/components/ui/use-toast";
 import { PublicKey } from "@solana/web3.js";
-import { useGlam } from "@glam/anchor/react";
+import { DelegateAcl, useGlam } from "@glam/anchor/react";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { parseTxError } from "@/lib/error";
 import { usePubkeyLabels } from "@/hooks/usePubkeyLabels";
@@ -92,12 +92,14 @@ export function DataTableToolbar<TData>({
     }
 
     const delegateAcls = [
-      //@ts-ignore
-      { pubkey, permissions: permissions.map((p) => ({ [p]: {} })) },
+      // @ts-ignore
+      {
+        pubkey,
+        permissions: permissions.map((p) => ({ [p!]: {} })),
+      } as DelegateAcl,
     ];
 
     try {
-      // @ts-ignore
       const txSig = await glamClient.state.upsertDelegateAcls(
         activeFund!.pubkey,
         delegateAcls,

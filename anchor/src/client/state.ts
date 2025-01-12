@@ -115,28 +115,28 @@ export class StateClient {
   }
 
   public async updateState(
-    fundPDA: PublicKey,
+    statePda: PublicKey,
     updated: Partial<StateModel>,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     return await this.base.program.methods
       .updateState(new StateModel(updated))
       .accounts({
-        state: fundPDA,
+        state: statePda,
       })
       .rpc();
   }
 
   public async closeState(
-    fundPDA: PublicKey,
+    statePda: PublicKey,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const openfunds = this.base.getOpenfundsPda(fundPDA);
+    const openfunds = this.base.getOpenfundsPda(statePda);
 
     const tx = await this.base.program.methods
       .closeState()
       .accounts({
-        state: fundPDA,
+        state: statePda,
         metadata: openfunds,
       })
       .preInstructions(txOptions.preInstructions || [])
@@ -148,8 +148,6 @@ export class StateClient {
 
   /**
    * Create a full state model from a partial state model
-   *
-   * @param fundModel
    */
   enrichStateModel(partialStateModel: Partial<StateModel>): StateModel {
     const stateModel = { ...partialStateModel };
@@ -255,53 +253,56 @@ export class StateClient {
   }
 
   public async upsertDelegateAcls(
-    fundPDA: PublicKey,
+    statePda: PublicKey,
     delegateAcls: DelegateAcl[],
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const updatedFund = new StateModel({ delegateAcls });
-    return await this.updateState(fundPDA, updatedFund, txOptions);
+    return await this.updateState(statePda, updatedFund, txOptions);
   }
 
   public async setSubscribeRedeemEnabled(
-    fundPDA: PublicKey,
+    statePda: PublicKey,
     enabled: boolean,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     return await this.base.program.methods
       .setSubscribeRedeemEnabled(enabled)
       .accounts({
-        state: fundPDA,
+        state: statePda,
       })
       .rpc();
   }
 
   public async closeTokenAccounts(
-    fund: PublicKey,
+    statePda: PublicKey,
     tokenAccounts: PublicKey[],
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const tx = await this.closeTokenAccountsTx(fund, tokenAccounts, txOptions);
+    const tx = await this.closeTokenAccountsTx(
+      statePda,
+      tokenAccounts,
+      txOptions,
+    );
     return await this.base.sendAndConfirm(tx);
   }
 
   /**
    * Close fund treasury's token accounts
    *
-   * @param fund
+   * @param statePda
    * @param tokenAccounts
    * @param txOptions
    * @returns
    */
   public async closeTokenAccountsIx(
-    fund: PublicKey,
+    statePda: PublicKey,
     tokenAccounts: PublicKey[],
   ): Promise<TransactionInstruction> {
-    // @ts-ignore
     return await this.base.program.methods
       .closeTokenAccounts()
       .accounts({
-        state: fund,
+        state: statePda,
       })
       .remainingAccounts(
         tokenAccounts.map((account) => ({
@@ -314,7 +315,7 @@ export class StateClient {
   }
 
   public async closeTokenAccountsTx(
-    fund: PublicKey,
+    statePda: PublicKey,
     tokenAccounts: PublicKey[],
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
@@ -322,7 +323,7 @@ export class StateClient {
     const tx = await this.base.program.methods
       .closeTokenAccounts()
       .accounts({
-        state: fund,
+        state: statePda,
       })
       .remainingAccounts(
         tokenAccounts.map((account) => ({
@@ -338,51 +339,51 @@ export class StateClient {
   /* Deposit & Withdraw */
 
   public async deposit(
-    fund: PublicKey,
+    statePda: PublicKey,
     asset: PublicKey,
     amount: number | BN,
     txOptions: TxOptions = {} as TxOptions,
   ): Promise<TransactionSignature> {
-    const tx = await this.depositTx(fund, asset, amount, txOptions);
+    const tx = await this.depositTx(statePda, asset, amount, txOptions);
     return await this.base.sendAndConfirm(tx);
   }
 
   public async withdraw(
-    fund: PublicKey,
+    statePda: PublicKey,
     asset: PublicKey,
     amount: number | BN,
     txOptions: TxOptions = {} as TxOptions,
   ): Promise<TransactionSignature> {
-    const tx = await this.withdrawTx(fund, asset, amount, txOptions);
+    const tx = await this.withdrawTx(statePda, asset, amount, txOptions);
     return await this.base.sendAndConfirm(tx);
   }
 
   public async depositTx(
-    fund: PublicKey,
+    statePda: PublicKey,
     asset: PublicKey,
     amount: number | BN,
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const treasury = this.base.getVaultPda(fund);
+    const vault = this.base.getVaultPda(statePda);
 
     const { mint, tokenProgram } = await this.base.fetchMintWithOwner(asset);
 
     const signerAta = this.base.getAta(asset, signer, tokenProgram);
-    const treasuryAta = this.base.getVaultAta(fund, asset, tokenProgram);
+    const vaultAta = this.base.getVaultAta(statePda, asset, tokenProgram);
 
     const tx = new Transaction().add(
       createAssociatedTokenAccountIdempotentInstruction(
         signer,
-        treasuryAta,
-        treasury,
+        vaultAta,
+        vault,
         asset,
         tokenProgram,
       ),
       createTransferCheckedInstruction(
         signerAta,
         asset,
-        treasuryAta,
+        vaultAta,
         signer,
         new BN(amount).toNumber(),
         mint.decimals,
@@ -395,7 +396,7 @@ export class StateClient {
   }
 
   public async withdrawIxs(
-    fund: PublicKey,
+    statePda: PublicKey,
     asset: PublicKey,
     amount: number | BN,
     txOptions: TxOptions,
@@ -412,11 +413,10 @@ export class StateClient {
         asset,
         tokenProgram,
       ),
-      // @ts-ignore
       await this.base.program.methods
         .withdraw(new BN(amount))
         .accounts({
-          state: fund,
+          state: statePda,
           asset,
           tokenProgram,
         })
@@ -425,7 +425,7 @@ export class StateClient {
   }
 
   public async withdrawTx(
-    fund: PublicKey,
+    statePda: PublicKey,
     asset: PublicKey,
     amount: number | BN,
     txOptions: TxOptions,
@@ -434,11 +434,10 @@ export class StateClient {
     const { tokenProgram } = await this.base.fetchMintWithOwner(asset);
     const signerAta = this.base.getAta(asset, signer, tokenProgram);
 
-    // @ts-ignore
     const tx = await this.base.program.methods
       .withdraw(new BN(amount))
       .accounts({
-        state: fund,
+        state: statePda,
         asset,
         tokenProgram,
       })
