@@ -82,7 +82,7 @@ program
   .option("-m, --manager-only", "Only list funds with full manager access")
   .option("-a, --all", "All GLAM funds")
   .action(async () => {
-    const funds = await glamClient.fetchAllFunds();
+    const funds = await glamClient.fetchAllGlamStates();
     funds
       .sort((a, b) =>
         a.rawOpenfunds.fundLaunchDate > b.rawOpenfunds.fundLaunchDate ? 1 : -1,

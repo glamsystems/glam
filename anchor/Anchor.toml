@@ -18,8 +18,8 @@ glam = "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
-#cluster = "devnet"
+# cluster = "localnet"
+cluster = "devnet"
 #cluster = "mainnet"
 wallet = "~/.config/solana/id.json"
 

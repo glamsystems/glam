@@ -310,8 +310,8 @@ const DEFAULT_PERPS_FORM_VALUES: PerpsSchema = {
 
 export default function Trade() {
   const {
-    activeFund,
-    treasury,
+    activeGlamState: activeFund,
+    vault: treasury,
     userWallet,
     glamClient,
     jupTokenList,

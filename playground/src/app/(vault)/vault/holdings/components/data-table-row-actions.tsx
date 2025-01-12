@@ -42,7 +42,12 @@ export function DataTableRowActions<TData>({
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
-  const { glamClient, activeFund, treasury, refresh } = useGlam();
+  const {
+    glamClient,
+    activeGlamState: activeFund,
+    vault: treasury,
+    refresh,
+  } = useGlam();
 
   const copyToClipboard = (
     e: React.MouseEvent,

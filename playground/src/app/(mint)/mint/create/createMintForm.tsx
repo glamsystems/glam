@@ -109,7 +109,7 @@ export default function MultiStepForm() {
     fundManager: {},
     shareClass: {},
   });
-  const { glamClient, setActiveFund } = useGlam();
+  const { glamClient, setActiveProduct: setActiveFund } = useGlam();
 
   const totalSteps =
     selectedTemplate === "Basic" ? TOTAL_STEPS.BASIC : TOTAL_STEPS.OPENFUNDS;

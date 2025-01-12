@@ -5,7 +5,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { redirect } from "next/navigation";
 
 export default function VaultsHome() {
-  const { activeFund } = useGlam();
+  const { activeGlamState: activeFund } = useGlam();
   const wallet = useWallet();
 
   redirect(

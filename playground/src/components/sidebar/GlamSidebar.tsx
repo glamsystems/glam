@@ -67,7 +67,7 @@ export default function RefactoredSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isHovered, setIsHovered] = useState(false);
-  const { userWallet, activeFund } = useGlam();
+  const { userWallet, activeGlamState: activeFund } = useGlam();
 
   // Get navigation items based on current path
   const navList = getNavigationItems(pathname);

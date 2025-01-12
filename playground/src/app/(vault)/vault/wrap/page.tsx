@@ -26,7 +26,12 @@ const wrapSchema = z.object({
 type WrapSchema = z.infer<typeof wrapSchema>;
 
 export default function Wrap() {
-  const { activeFund, treasury, userWallet, glamClient } = useGlam();
+  const {
+    activeGlamState: activeFund,
+    vault: treasury,
+    userWallet,
+    glamClient,
+  } = useGlam();
 
   const [amountAsset, setAmountAsset] = useState<string>("SOL");
   const [direction, setDirection] = useState<string>("wrap");

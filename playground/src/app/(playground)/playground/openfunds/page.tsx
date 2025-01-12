@@ -212,7 +212,7 @@ function MetadataAccount({ fundId }: { fundId: any }) {
 }
 
 export default function Openfunds() {
-  const { allFunds, activeFund } = useGlam();
+  const { allGlamStates: allFunds, activeGlamState: activeFund } = useGlam();
 
   const fundId = activeFund?.address;
   // const fundId = "APx491vs2rRkGUCLp4kVDHz8J2Pc9cry3ZvVDJ7goVTB";

@@ -39,7 +39,8 @@ type CreateSchema = z.infer<typeof createSchema>;
 export default function Create() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const { glamClient, userWallet, setActiveFund, jupTokenList } = useGlam();
+  const { glamClient, userWallet, setActiveGlamState, jupTokenList } =
+    useGlam();
   const { setVisible: setWalletModalVisible } = useWalletModal();
 
   const form = useForm<CreateSchema>({
@@ -63,15 +64,14 @@ export default function Create() {
 
     setIsLoading(true);
     try {
-      const fund = {
+      const glamState = {
         name: values.productName,
-        shareClasses: [],
         isEnabled: true,
         assets: values.assets.map((address) => new PublicKey(address)),
       };
 
-      const [txId, fundPDA] = await glamClient.state.createState(fund);
-      const vault = glamClient.getVaultPda(fundPDA).toBase58();
+      const [txId, statePd] = await glamClient.state.createState(glamState);
+      const vault = glamClient.getVaultPda(statePd).toBase58();
 
       // Reset form
       form.reset({
@@ -102,10 +102,10 @@ export default function Create() {
         ),
       });
 
-      setActiveFund({
-        address: fundPDA.toBase58(),
-        pubkey: fundPDA,
-        sparkleKey: fundPDA.toBase58(),
+      setActiveGlamState({
+        address: statePd.toBase58(),
+        pubkey: statePd,
+        sparkleKey: statePd.toBase58(),
         name: values.productName,
         product: "Vault",
       });

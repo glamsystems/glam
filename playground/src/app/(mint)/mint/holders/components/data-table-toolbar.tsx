@@ -39,7 +39,7 @@ export function DataTableToolbar<TData>({
   const [publicKey, setPublicKey] = useState<string>("");
   const [ata, setAta] = useState<string>("");
 
-  const { glamClient, activeFund } = useGlam();
+  const { glamClient, activeGlamState: activeFund } = useGlam();
 
   React.useEffect(() => {
     if (!glamClient || !activeFund?.pubkey) {

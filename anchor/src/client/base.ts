@@ -617,8 +617,8 @@ export class BaseClient {
     );
   }
 
-  public async fetchAllFunds(): Promise<StateModel[]> {
-    const fundAccounts = await this.program.account.fundAccount.all();
+  public async fetchAllGlamStates(): Promise<StateModel[]> {
+    const stateAccounts = await this.program.account.fundAccount.all();
 
     const openfundsAccounts =
       await this.program.account.fundMetadataAccount.all();
@@ -631,7 +631,7 @@ export class BaseClient {
     /* fetch first mint */
     let mintCache = new Map<string, Mint>();
     const connection = this.provider.connection;
-    const mintAddresses = fundAccounts
+    const mintAddresses = stateAccounts
       .map((f) => f.account.mints[0])
       .filter((addr) => !!addr);
     const mintAccounts =
@@ -645,7 +645,7 @@ export class BaseClient {
       mintCache.set(mintAddresses[j].toBase58(), mintInfo);
     });
 
-    return fundAccounts.map((f) =>
+    return stateAccounts.map((f) =>
       StateModel.fromOnchainAccounts(
         f.publicKey,
         f.account,

@@ -7,7 +7,7 @@ import PageContentWrapper from "@/components/PageContentWrapper";
 import { StateModel, useGlam } from "@glam/anchor/react";
 
 export default function Products() {
-  const { allFunds } = useGlam();
+  const { allGlamStates: allFunds } = useGlam();
   const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {

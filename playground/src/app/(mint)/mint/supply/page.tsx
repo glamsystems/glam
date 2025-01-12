@@ -27,7 +27,7 @@ const supplySchema = z.object({
 type SupplySchema = z.infer<typeof supplySchema>;
 
 export default function SupplyPage() {
-  const { activeFund, glamClient } = useGlam();
+  const { activeGlamState: activeFund, glamClient } = useGlam();
 
   const [txStates, setTxStates] = React.useState({
     mintTxPending: false,

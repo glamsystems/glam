@@ -48,7 +48,7 @@ export function DataTableToolbar<TData>({
   const [treeData, setTreeData] = useState<TreeNodeData>(treeDataPermissions);
 
   const { updateLabel } = usePubkeyLabels();
-  const { glamClient, activeFund } = useGlam();
+  const { glamClient, activeGlamState: activeFund } = useGlam();
 
   const toggleExpandCollapse = () => {
     setIsExpanded(!isExpanded);

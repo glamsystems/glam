@@ -17,7 +17,11 @@ import { useForm } from "react-hook-form";
 
 export default function Risk() {
   // @ts-ignore
-  const { allFunds, activeFund, glamClient } = useGlam();
+  const {
+    allGlamStates: allFunds,
+    activeGlamState: activeFund,
+    glamClient,
+  } = useGlam();
 
   const fundId = activeFund?.address;
   const fund: any = fundId

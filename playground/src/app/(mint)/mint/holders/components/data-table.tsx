@@ -64,7 +64,7 @@ export function DataTable<TData extends HoldersData>({
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
-  const { glamClient, activeFund } = useGlam();
+  const { glamClient, activeGlamState: activeFund } = useGlam();
 
   const thawOrFreeAccount = async (ata: string, frozen: boolean) => {
     if (!activeFund?.pubkey || !glamClient) {

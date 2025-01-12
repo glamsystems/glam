@@ -30,7 +30,7 @@ interface SchemaGroup {
 }
 
 export default function MintContextPage() {
-  const { activeFund, allFunds } = useGlam();
+  const { activeGlamState: activeFund, allGlamStates: allFunds } = useGlam();
 
   const [openfundsData, setOpenfundsData] = useState<Record<string, any>>({
     company: {},

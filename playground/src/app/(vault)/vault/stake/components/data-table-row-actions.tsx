@@ -33,7 +33,7 @@ export function DataTableRowActions<TData>({
   const isClosable = ticketOrStake.status === "inactive";
   const isPendingOrDeactivating = ticketOrStake.status === "deactivating";
 
-  const { glamClient, activeFund } = useGlam();
+  const { glamClient, activeGlamState: activeFund } = useGlam();
 
   const handleClaimTicket = async () => {
     if (!activeFund?.pubkey || !glamClient) {

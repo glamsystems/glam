@@ -66,8 +66,13 @@ import { useQuery } from "@tanstack/react-query";
 import { stakePoolsStateAccounts } from "./data/data";
 
 export default function Stake() {
-  const { activeFund, treasury, userWallet, glamClient, jupTokenList } =
-    useGlam();
+  const {
+    activeGlamState: activeFund,
+    vault,
+    userWallet,
+    glamClient,
+    jupTokenList,
+  } = useGlam();
 
   const [ticketsAndStakes, setTicketsAndStakes] = useState<TicketOrStake[]>([]);
   const [isLoadingTableData, setIsLoadingTableData] = useState<boolean>(true); // New loading state
@@ -105,12 +110,12 @@ export default function Stake() {
 
   const { data } = useQuery({
     queryKey: ["tickets-and-stakes"],
-    enabled: (activeFund?.pubkey && treasury) !== undefined,
+    enabled: (activeFund?.pubkey && vault) !== undefined,
     queryFn: () =>
       Promise.all([
         glamClient.marinade.getTickets(activeFund!.pubkey),
         glamClient.staking.getStakeAccountsWithStates(
-          new PublicKey(treasury!.pubkey),
+          new PublicKey(vault!.pubkey),
         ),
       ]),
   });
@@ -119,14 +124,17 @@ export default function Stake() {
       return;
     }
     const [tickets, stakes] = data;
-    const transformedStakes = stakes.map((stakeAccount) => ({
-      publicKey: stakeAccount.address.toBase58(),
-      lamports: stakeAccount.lamports,
-      service: "native",
-      validator: stakeAccount.voter,
-      status: stakeAccount.state,
-      type: "stake-account" as const,
-    }));
+    const transformedStakes = stakes.map((stakeAccount) => {
+      const { address, lamports, state, voter } = stakeAccount;
+      return {
+        publicKey: address.toBase58(),
+        lamports: lamports,
+        service: "native",
+        validator: voter ? voter.toBase58() : "-",
+        status: state,
+        type: "stake-account" as const,
+      };
+    });
     const transformedTickets = tickets.map((ticket) => ({
       publicKey: ticket.address.toBase58(),
       lamports: ticket.lamports,
@@ -140,9 +148,9 @@ export default function Stake() {
   }, [data]);
 
   useEffect(() => {
-    const solBalance = Number(treasury?.balanceLamports) / LAMPORTS_PER_SOL;
+    const solBalance = Number(vault?.balanceLamports) / LAMPORTS_PER_SOL;
     setBalance(solBalance);
-  }, [treasury]);
+  }, [vault]);
 
   const form = useForm<StakeService>({
     resolver: zodResolver(stakeServiceSchema),

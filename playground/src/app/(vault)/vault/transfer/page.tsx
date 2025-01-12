@@ -45,8 +45,8 @@ type TransferSchema = z.infer<typeof transferSchema>;
 
 export default function Transfer() {
   const {
-    activeFund,
-    treasury,
+    activeGlamState: activeFund,
+    vault: treasury,
     glamClient,
     driftMarketConfigs,
     driftUser,

@@ -304,11 +304,23 @@ export class StakingClient {
     return stakes.sort((a, b) => b.lamports - a.lamports);
   }
 
-  async getStakeAccountVoter(stakeAccount: PublicKey): Promise<PublicKey> {
+  async getStakeAccountVoter(
+    stakeAccount: PublicKey,
+  ): Promise<PublicKey | null> {
     const connection = this.base.provider.connection;
     const accountInfo = await connection.getParsedAccountInfo(stakeAccount);
+    if (!accountInfo || !accountInfo.value) {
+      console.warn("No account info found:", stakeAccount.toBase58());
+      return null;
+    }
+
     const delegation = (accountInfo.value.data as ParsedAccountData).parsed.info
-      .stake.delegation;
+      .stake?.delegation;
+    if (!delegation) {
+      console.warn("No delegation found:", stakeAccount.toBase58());
+      return null;
+    }
+
     const { voter } = delegation;
     return new PublicKey(voter);
   }
@@ -417,6 +429,12 @@ export class StakingClient {
     // Find a validator stake account to use from the list of candidates.
     // The vault stake account must have the same vote address as the chosen validator stake account.
     const vote = await this.getStakeAccountVoter(stakeAccount);
+    if (!vote) {
+      throw new Error(
+        "Stake account is undelegated. Cannot be deposited to the pool.",
+      );
+    }
+
     const validatorStakeAccount = validatorStakeCandidates.find(
       (s) => s.voter && s.voter.equals(vote),
     )?.address;

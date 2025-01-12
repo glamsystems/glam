@@ -40,8 +40,13 @@ type PopoverTriggerProps = React.ComponentPropsWithoutRef<
 interface ProductSwitcherProps extends PopoverTriggerProps {}
 
 export default function ProductSwitcher({ className }: ProductSwitcherProps) {
-  const { userWallet, allFunds, fundsList, activeFund, setActiveFund } =
-    useGlam();
+  const {
+    userWallet,
+    allGlamStates: allFunds,
+    glamStatesList: fundsList,
+    activeGlamState: activeFund,
+    setActiveProduct: setActiveFund,
+  } = useGlam();
   const [open, setOpen] = React.useState(false);
   const { state } = useSidebar();
   const { resolvedTheme } = useTheme();

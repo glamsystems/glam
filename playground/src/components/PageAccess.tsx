@@ -16,7 +16,7 @@ export default function PageAccess({
 }: {
   perms: "vault" | "mint" | "all";
 }) {
-  const { allFunds, activeFund } = useGlam();
+  const { allGlamStates: allFunds, activeGlamState: activeFund } = useGlam();
   const { getLabel } = usePubkeyLabels();
 
   const fundId = activeFund?.address;
@@ -39,10 +39,10 @@ export default function PageAccess({
         (lvl1: any) => lvl1.children?.map((node: any) => node.id) || [],
       ) || [];
 
-    const owner = fund.manager?.pubkey
+    const owner = fund.owner?.pubkey
       ? [
           {
-            pubkey: fund.manager.pubkey.toBase58(),
+            pubkey: fund.owner.pubkey.toBase58(),
             label: "Owner",
             tags: flatPermissions,
           },

@@ -37,8 +37,8 @@ const SKELETON_ROW_COUNT = 5;
 
 export default function Holdings() {
   const {
-    activeFund,
-    treasury,
+    activeGlamState,
+    vault,
     driftMarketConfigs,
     driftUser,
     jupTokenList,
@@ -78,7 +78,7 @@ export default function Holdings() {
   useEffect(() => {
     const holdings: Holding[] = [];
 
-    const solBalance = Number(treasury?.balanceLamports) / LAMPORTS_PER_SOL;
+    const solBalance = Number(vault?.balanceLamports) / LAMPORTS_PER_SOL;
     if (solBalance > 0) {
       const mint = "So11111111111111111111111111111111111111112";
       const price = prices?.find((p) => p.mint === mint)?.price || 0;
@@ -88,7 +88,7 @@ export default function Holdings() {
         mint: "",
         ata: "",
         price: price,
-        amount: "" + treasury?.balanceLamports || "0",
+        amount: "" + vault?.balanceLamports || "0",
         balance: solBalance,
         decimals: 9,
         notional: solBalance * price || 0,
@@ -99,9 +99,9 @@ export default function Holdings() {
       });
     }
 
-    if (treasury?.tokenAccounts) {
+    if (vault?.tokenAccounts) {
       holdings.push(
-        ...treasury.tokenAccounts.map((ta) => {
+        ...vault.tokenAccounts.map((ta) => {
           const jupToken = jupTokenList?.find(
             (t) => t.address === ta.mint.toBase58(),
           );
@@ -165,25 +165,25 @@ export default function Holdings() {
       return b.balance - a.balance;
     });
     setTableData(holdings);
-  }, [treasury, driftUser, jupTokenList, prices]);
+  }, [vault, driftUser, jupTokenList, prices]);
 
   useEffect(() => {
-    if (activeFund && treasury && jupTokenList && prices) {
+    if (activeGlamState && vault && jupTokenList && prices) {
       setIsLoading(false);
     } else {
       setIsLoading(true);
     }
-  }, [treasury, jupTokenList, prices, activeFund]);
+  }, [vault, jupTokenList, prices, activeGlamState]);
 
-  const vaultAddress = treasury?.pubkey ? treasury.pubkey.toBase58() : "";
+  const vaultAddress = vault?.pubkey ? vault.pubkey.toBase58() : "";
 
   const closeVault = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
-    if (!activeFund?.pubkey) {
+    if (!activeGlamState?.pubkey) {
       return;
     }
-    const fund = activeFund.pubkey;
+    const statePda = activeGlamState.pubkey;
 
     console.log(tableData);
     const tokenAccounts = (tableData || [])
@@ -197,7 +197,7 @@ export default function Holdings() {
           .map(async (d) => {
             console.log("withdraw", d.name);
             return await glamClient.state.withdrawIxs(
-              fund,
+              statePda,
               new PublicKey(d.mint),
               new BN(d.amount),
               {},
@@ -208,12 +208,12 @@ export default function Holdings() {
 
     console.log("closing ATAs:", tokenAccounts);
     preInstructions.push(
-      await glamClient.state.closeTokenAccountsIx(fund, tokenAccounts),
+      await glamClient.state.closeTokenAccountsIx(statePda, tokenAccounts),
     );
 
     setIsTxPending(true);
     try {
-      const txSig = await glamClient.state.closeState(fund, {
+      const txSig = await glamClient.state.closeState(statePda, {
         preInstructions,
       });
       toast({
@@ -274,7 +274,7 @@ export default function Holdings() {
                 <p className="text-sm text-muted-foreground">Name</p>
                 <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2">
                   <span className="flex-1 text-sm font-medium">
-                    {activeFund?.name || "Unnamed Vault"}
+                    {activeGlamState?.name || "Unnamed Vault"}
                   </span>
                 </div>
               </div>
@@ -296,7 +296,9 @@ export default function Holdings() {
                   <AccordionContent>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2">
-                        <ClickToCopyText text={activeFund?.address || ""} />
+                        <ClickToCopyText
+                          text={activeGlamState?.address || ""}
+                        />
                       </div>
                       <div className="flex gap-2 items-center">
                         <AlertTriangle className="h-4 w-4 text-muted-foreground" />
@@ -329,7 +331,7 @@ export default function Holdings() {
                     In this case please manually transfer assets and/or close empty token accounts.`}
                   />
                   <DangerCard
-                    message={`Do NOT send any asset to this vault while closing, or you risk to permanently loose them.`}
+                    message={`Do NOT send any asset to this vault while closing, or you risk to permanently lose them.`}
                   />
                   <Button
                     onClick={closeVault}

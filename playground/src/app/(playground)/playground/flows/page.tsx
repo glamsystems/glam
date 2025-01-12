@@ -681,7 +681,7 @@ function InvestorWidget({ fundModel }: { fundModel?: StateModel }) {
 }
 
 export default function Flows() {
-  const { allFunds } = useGlam();
+  const { allGlamStates: allFunds } = useGlam();
   const [selectedFund, setSelectedFund] = useState<StateModel>();
   const [open, setOpen] = React.useState(false);
 

@@ -28,7 +28,7 @@ type TransferSchema = z.infer<typeof transferSchema>;
 
 export default function TransferPage() {
   const [isTxPending, setIsTxPending] = React.useState(false);
-  const { activeFund, glamClient } = useGlam();
+  const { activeGlamState: activeFund, glamClient } = useGlam();
 
   const [tokenHolders, setTokenHolders] = React.useState<
     { value: string; label: string }[]

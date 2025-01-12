@@ -10,7 +10,7 @@ import {
 import { useGlam } from "@glam/anchor/react";
 
 export default function HoldersPage() {
-  const { glamClient, activeFund } = useGlam();
+  const { glamClient, activeGlamState: activeFund } = useGlam();
   const [holders, setHolders] = React.useState([] as HoldersData[]);
 
   React.useEffect(() => {
