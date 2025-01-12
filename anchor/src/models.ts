@@ -241,6 +241,7 @@ export class StateModel extends StateIdlModel {
       stateModel.rawOpenfunds?.legalFundNameIncludingUmbrella ||
       (stateModel.mints && stateModel.mints[0]?.name);
 
+    // @ts-ignore
     return new StateModel(stateModel, glamProgramId);
   }
 }
