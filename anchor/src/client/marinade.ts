@@ -374,12 +374,12 @@ export class MarinadeClient {
   }
 
   public async liquidUnstakeTx(
-    fund: PublicKey,
+    statePda: PublicKey,
     amount: BN,
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(fund);
+    const vault = this.base.getVaultPda(statePda);
     const marinadeState = this.getMarinadeState();
     const treasuryMsolAta = getAssociatedTokenAddressSync(
       marinadeState.msolMintAddress,
@@ -390,7 +390,7 @@ export class MarinadeClient {
     const tx = await this.base.program.methods
       .marinadeLiquidUnstake(amount)
       .accountsPartial({
-        state: fund,
+        state: statePda,
         vault,
         signer,
         marinadeState: marinadeState.marinadeStateAddress,

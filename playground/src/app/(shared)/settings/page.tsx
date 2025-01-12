@@ -293,9 +293,13 @@ const SettingsPage: React.FC = () => {
         setCluster(clusterEndpoint);
       }
       toast({
-        title: "Endpoint changed",
-        description: `Active endpoint set to ${selectedEndpoint.label}`,
+        title: "RPC endpoint changed",
+        description: `Active RPC endpoint set to ${selectedEndpoint.label}`,
       });
+      // Reload the page to force refreshing account menu
+      window.setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     }
   };
 

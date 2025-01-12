@@ -61,14 +61,14 @@ describe("glam_policy_hook", () => {
   } as any;
 
   const statePda = glamClient.getStatePda(stateModel);
-  const sharePDA = glamClient.getShareClassPda(statePda, 0);
+  const sharePda = glamClient.getShareClassPda(statePda, 0);
 
   const connection = glamClient.provider.connection;
   const commitment = "confirmed";
 
   // manager
   const managerSharesAta = getAssociatedTokenAddressSync(
-    sharePDA,
+    sharePda,
     wallet.publicKey,
     false,
     TOKEN_2022_PROGRAM_ID,
@@ -77,7 +77,7 @@ describe("glam_policy_hook", () => {
 
   // alice
   const aliceSharesAta = getAssociatedTokenAddressSync(
-    sharePDA,
+    sharePda,
     alice.publicKey,
     false,
     TOKEN_2022_PROGRAM_ID,
@@ -168,7 +168,7 @@ describe("glam_policy_hook", () => {
       const state = await glamClient.fetchState(statePda);
       expect(state.mints[0]?.lockUpPeriodInSeconds).toEqual(5);
       expect(state.mints[0]?.symbol).toEqual("GBS");
-      expect(state.mints[0]?.permanentDelegate).toEqual(sharePDA);
+      expect(state.mints[0]?.permanentDelegate).toEqual(sharePda);
     } catch (e) {
       console.error(e);
       throw e;
@@ -188,7 +188,7 @@ describe("glam_policy_hook", () => {
 
     const shares = await getMint(
       connection,
-      sharePDA,
+      sharePda,
       commitment,
       TOKEN_2022_PROGRAM_ID,
     );
@@ -218,13 +218,13 @@ describe("glam_policy_hook", () => {
         wallet.publicKey,
         aliceSharesAta,
         alice.publicKey,
-        sharePDA,
+        sharePda,
         TOKEN_2022_PROGRAM_ID,
       ),
       await createTransferCheckedWithTransferHookInstruction(
         connection,
         managerSharesAta,
-        sharePDA,
+        sharePda,
         aliceSharesAta,
         wallet.publicKey,
         amount,
@@ -262,13 +262,13 @@ describe("glam_policy_hook", () => {
         wallet.publicKey,
         aliceSharesAta,
         alice.publicKey,
-        sharePDA,
+        sharePda,
         TOKEN_2022_PROGRAM_ID,
       ),
       await createTransferCheckedWithTransferHookInstruction(
         connection,
         managerSharesAta,
-        sharePDA,
+        sharePda,
         aliceSharesAta,
         wallet.publicKey,
         amount,

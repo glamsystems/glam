@@ -19,10 +19,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PublicKey } from "@solana/web3.js";
 import Sparkle from "@/utils/Sparkle";
-import SparkleColorMatcher, {
-  getColorInfo,
-  ColorInfo,
-} from "@/utils/SparkleColorMatcher";
+import { getColorInfo, ColorInfo } from "@/utils/SparkleColorMatcher";
 import TruncateAddress from "@/utils/TruncateAddress";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -449,7 +446,6 @@ export default function ProductPage() {
         animate={{ opacity: 1 }}
         transition={{ ease: "easeInOut", duration: 0 }}
       >
-        {/*<SparkleBackground rows={6} cols={6} size={24} gap={5} static={false} visibleCount={252}  fadeInSpeed={1}/>*/}
         <SparkleBackground
           fadeOut={true}
           rows={6}
@@ -547,7 +543,7 @@ export default function ProductPage() {
               ref={sparkleContainerRef}
             >
               <Sparkle
-                address={stateModel?.mints[0]?.fundId?.toBase58()!}
+                address={stateModel.shareClassMints[0].toBase58()}
                 size={105}
                 onColorGenerated={handleColorGenerated}
               />
@@ -1012,20 +1008,24 @@ export default function ProductPage() {
                         </ul>
                       </div>
                       <Separator className="my-4" />
-                      <div className="grid gap-2">
-                        <div className="font-medium">Share Class Accounts</div>
-                        <dl className="grid gap-2">
-                          <div className="flex items-center justify-between">
-                            <dt className="text-muted-foreground">
-                              Share Class 1 {stateModel?.mints[0]?.symbol}
-                            </dt>
-                            <ExplorerLink
-                              path={`/account/${stateModel?.shareClassMints[0]}`}
-                              label={stateModel?.shareClassMints[0].toBase58()}
-                            />
+                      {stateModel.shareClassMints.length > 0 && (
+                        <div className="grid gap-2">
+                          <div className="font-medium">
+                            Share Class Accounts
                           </div>
-                        </dl>
-                      </div>
+                          <dl className="grid gap-2">
+                            <div className="flex items-center justify-between">
+                              <dt className="text-muted-foreground">
+                                Share Class 1 {stateModel?.mints[0]?.symbol}
+                              </dt>
+                              <ExplorerLink
+                                path={`/account/${stateModel?.shareClassMints[0]}`}
+                                label={stateModel?.shareClassMints[0].toBase58()}
+                              />
+                            </div>
+                          </dl>
+                        </div>
+                      )}
                     </TabsContent>
                   </Tabs>
                 </CardContent>

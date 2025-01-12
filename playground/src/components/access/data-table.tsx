@@ -286,6 +286,9 @@ export function DataTable<TData extends KeyData>({
                   key={row.id}
                   open={activeRow === row.original.pubkey}
                   onOpenChange={(open) => {
+                    if (row.original.label === "Owner") {
+                      return; // Prevent modifying owner permissions
+                    }
                     if (open) {
                       setActiveRow(row.original.pubkey);
                       const currentPermissions = row.original.tags;
