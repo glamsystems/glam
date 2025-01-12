@@ -96,7 +96,8 @@ fn parse_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
     let mut res = true;
     res &= ctx.remaining_accounts.len() > 9;
 
-    res &= ctx.remaining_accounts[0].key() == ctx.accounts.output_token_program.key();
+    res &= ctx.remaining_accounts[0].key() == ctx.accounts.output_token_program.key()
+        || ctx.remaining_accounts[0].key() == ctx.accounts.input_token_program.key();
     res &= ctx.remaining_accounts[1].key() == ctx.accounts.signer.key();
     res &= ctx.remaining_accounts[2].key() == ctx.accounts.input_signer_ata.key();
     res &= ctx.remaining_accounts[3].key() == ctx.accounts.output_signer_ata.key();
@@ -114,7 +115,8 @@ fn parse_exact_out_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
     let mut res = true;
     res &= ctx.remaining_accounts.len() > 11;
 
-    res &= ctx.remaining_accounts[0].key() == ctx.accounts.output_token_program.key();
+    res &= ctx.remaining_accounts[0].key() == ctx.accounts.output_token_program.key()
+        || ctx.remaining_accounts[0].key() == ctx.accounts.input_token_program.key();
     res &= ctx.remaining_accounts[1].key() == ctx.accounts.signer.key();
     res &= ctx.remaining_accounts[2].key() == ctx.accounts.input_signer_ata.key();
     res &= ctx.remaining_accounts[3].key() == ctx.accounts.output_signer_ata.key();
@@ -136,7 +138,8 @@ fn parse_shared_accounts_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
     let mut res = true;
     res &= ctx.remaining_accounts.len() > 13;
 
-    res &= ctx.remaining_accounts[0].key() == ctx.accounts.output_token_program.key();
+    res &= ctx.remaining_accounts[0].key() == ctx.accounts.output_token_program.key()
+        || ctx.remaining_accounts[0].key() == ctx.accounts.input_token_program.key();
     // res &= ctx.remaining_accounts[1].key() - programAuthority ignored
 
     res &= ctx.remaining_accounts[2].key() == ctx.accounts.signer.key();
