@@ -19,6 +19,7 @@ idl-build = ["mainnet", "anchor-lang/idl-build", "anchor-spl/idl-build"]
 anchor-lang = { workspace = true }
 anchor-spl = { workspace = true }
 solana-program = { workspace = true }
+solana-security-txt = { workspace = true }
 
 spl-transfer-hook-interface = { workspace = true }
 spl-tlv-account-resolution = { workspace = true }

@@ -1,6 +1,7 @@
 pub mod constants;
 pub mod error;
 pub mod instructions;
+pub mod security_txt;
 pub mod state;
 
 use crate::instructions::{state as glam_state, *};
