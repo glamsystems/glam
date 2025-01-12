@@ -54,6 +54,7 @@ import { parseTxError } from "@/lib/error";
 import { PublicKey } from "@solana/web3.js";
 import { KeyData } from "./columns";
 import { usePubkeyLabels } from "@/hooks/usePubkeyLabels";
+import { cn } from "@/lib/utils";
 
 interface DataTableProps<TData extends KeyData> {
   columns: ColumnDef<TData>[];
@@ -304,7 +305,10 @@ export function DataTable<TData extends KeyData>({
                   <SheetTrigger asChild>
                     <TableRow
                       data-state={row.getIsSelected() && "selected"}
-                      className="cursor-pointer"
+                      className={cn(
+                        "cursor-pointer",
+                        row.original.label === "Owner" && "bg-muted",
+                      )}
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id}>
