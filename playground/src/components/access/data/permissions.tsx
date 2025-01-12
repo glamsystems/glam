@@ -47,12 +47,12 @@ export const vaultTreeDataPermissions: TreeNodeData = {
         },
         {
           id: "stakeJup",
-          label: "Stake JUP tokens for governance/voting",
+          label: "Stake JUP tokens for voting on governance proposals",
           description: "",
         },
         {
           id: "unstakeJup",
-          label: "Unstake JUP tolens",
+          label: "Unstake JUP tokens",
           description: "",
         },
         {

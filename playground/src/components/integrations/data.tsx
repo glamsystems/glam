@@ -2,34 +2,32 @@ import { VaultIntegrations } from "../../../../anchor/src";
 
 const metadata = {
   Drift: {
-    description: "Trade on Drift, a decentralized exchange",
-    labels: ["DeFi"],
+    description: "Trade perpetual futures on Drift, a decentralized exchange.",
+    labels: ["DEX","Derivatives"],
   },
   SplStakePool: {
-    description:
-      "SPL liquid staking protocol that allows users to stake their SOL and receive LST",
-    labels: ["LST"],
+    description: "Stake SOL with the SPL liquid staking protocol and receive liquid staked tokens.",
+    labels: ["Staking","LST"],
   },
   SanctumStakePool: {
-    description:
-      "Sanctum liquid staking protocol that allows users to stake their SOL and receive LST",
-    labels: ["LST"],
+    description: "Stake SOL with the Sanctum liquid staking protocol and receive liquid staked tokens.",
+    labels: ["Staking","LST"],
   },
   NativeStaking: {
-    description: "Stake SOL natively",
+    description: "Stake SOL natively to secure the Solana network and earn yield.",
     labels: ["Staking"],
   },
   Marinade: {
-    description: "Stake SOL and receive mSOL",
-    labels: ["LST"],
+    description: "Stake SOL with Marinade and receive mSOL, a liquid staking token.",
+    labels: ["Staking","LST"],
   },
   JupiterSwap: {
-    description: "Swap tokens with Jupiter",
-    labels: ["DeFi", "LST"],
+    description: "Swap tokens using Jupiter, a DEX aggregator with access to multiple liquidity sources.",
+    labels: ["DEX"],
   },
   JupiterVote: {
-    description: "Vote on Jupiter DAO proposals",
-    labels: ["DAO"],
+    description: "Participate in Jupiter DAO governance by voting on proposals.",
+    labels: ["Governance"],
   },
 } as { [key: string]: { description: string; labels: string[] } };
 

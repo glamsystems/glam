@@ -97,11 +97,14 @@ export default function PageIntegrations() {
     <PageContentWrapper>
       <div className="flex">
         <Tabs defaultValue="all">
-          <div>
+          <div className="flex items-center justify-start gap-4">
             <TabsList>
               <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="active">Active</TabsTrigger>
             </TabsList>
+            <div className="text-muted-foreground text-sm">
+              Click on an integration to toggle it on or off.
+            </div>
           </div>
           <TabsContent value="all">
             <IntegrationsList
@@ -118,10 +121,6 @@ export default function PageIntegrations() {
             />
           </TabsContent>
         </Tabs>
-      </div>
-
-      <div className="text-muted-foreground text-sm mt-4">
-        Click on an integration to toggle it on or off.
       </div>
     </PageContentWrapper>
   );

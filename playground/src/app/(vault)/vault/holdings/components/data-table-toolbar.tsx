@@ -1,6 +1,6 @@
 "use client";
 
-import { Cross2Icon, PlusIcon } from "@radix-ui/react-icons";
+import { Cross2Icon, MixerHorizontalIcon, PlusIcon, ReloadIcon } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,10 @@ import { DataTableRefresh } from "./data-table-refresh";
 
 import { useGlam } from "@glam/anchor/react";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { InfoIcon, QrCodeIcon, ScanIcon } from "lucide-react";
+import {QrCodeIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
+import React from "react";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -58,16 +60,35 @@ export function DataTableToolbar<TData>({
             <Cross2Icon className="ml-2 h-4 w-4" />
           </Button>
         )}
-
-        <Checkbox
-          defaultChecked={true}
-          id="zero-balances"
-          onCheckedChange={(checked: boolean) => {
-            setShowZeroBalances(checked);
-          }}
-        />
-        <Label htmlFor="zero-balances">Show Zero Balances</Label>
       </div>
+
+      <Popover>
+       <PopoverTrigger>
+         <Button
+           variant="outline"
+           size="icon"
+           className={"mr-2 h-8 flex"}
+         >
+           <MixerHorizontalIcon className="h-4 w-4" />
+         </Button>
+       </PopoverTrigger>
+        <PopoverContent
+          className={"mr-2"}
+          align={"end"}
+        >
+          <div className="flex items-center space-x-2">
+            <Switch
+              defaultChecked={true}
+              id="zero-balances"
+              onCheckedChange={(checked: boolean) => {
+                setShowZeroBalances(checked);
+              }}
+            />
+          <Label htmlFor="zero-balances">Show Zero Balances</Label>
+        </div>
+        </PopoverContent>
+      </Popover>
+
       <DataTableRefresh onClick={async () => await refresh()} table={table} />
     </div>
   );
