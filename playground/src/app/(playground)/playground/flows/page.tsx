@@ -681,7 +681,7 @@ function InvestorWidget({ fundModel }: { fundModel?: StateModel }) {
 }
 
 export default function Flows() {
-  const { allGlamStates: allFunds } = useGlam();
+  const { allGlamStates } = useGlam();
   const [selectedFund, setSelectedFund] = useState<StateModel>();
   const [open, setOpen] = React.useState(false);
 
@@ -717,7 +717,7 @@ export default function Flows() {
               <CommandList>
                 <CommandEmpty>No product found.</CommandEmpty>
                 <CommandGroup>
-                  {allFunds
+                  {allGlamStates
                     .filter((f) => f.mints.length > 0)
                     .map((f) => (
                       <CommandItem

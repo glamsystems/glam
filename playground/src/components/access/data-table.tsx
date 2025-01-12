@@ -119,7 +119,7 @@ export function DataTable<TData extends KeyData>({
     setIsExpanded(!isExpanded);
   };
 
-  const { glamClient, activeGlamState: activeFund } = useGlam();
+  const { glamClient, activeGlamState } = useGlam();
 
   // Helper function to reset states
   const resetStates = () => {
@@ -180,9 +180,9 @@ export function DataTable<TData extends KeyData>({
     }
 
     const delegateAcls = [
-      //@ts-ignore
       {
         pubkey,
+        //@ts-ignore
         permissions: permissions.map((p) => ({ [p!]: {} })),
       } as DelegateAcl,
     ];
@@ -190,7 +190,7 @@ export function DataTable<TData extends KeyData>({
     try {
       // @ts-ignore
       const txSig = await glamClient.state.upsertDelegateAcls(
-        activeFund!.pubkey,
+        activeGlamState!.pubkey,
         delegateAcls,
       );
 
@@ -231,7 +231,7 @@ export function DataTable<TData extends KeyData>({
 
     try {
       const txSig = await glamClient.state.deleteDelegateAcls(
-        activeFund!.pubkey,
+        activeGlamState!.pubkey,
         [pubkey],
       );
 

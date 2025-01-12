@@ -48,7 +48,7 @@ export function DataTableToolbar<TData>({
   const [treeData, setTreeData] = useState<TreeNodeData>(treeDataPermissions);
 
   const { updateLabel } = usePubkeyLabels();
-  const { glamClient, activeGlamState: activeFund } = useGlam();
+  const { glamClient, activeGlamState } = useGlam();
 
   const toggleExpandCollapse = () => {
     setIsExpanded(!isExpanded);
@@ -92,16 +92,16 @@ export function DataTableToolbar<TData>({
     }
 
     const delegateAcls = [
-      // @ts-ignore
       {
         pubkey,
+        // @ts-ignore
         permissions: permissions.map((p) => ({ [p!]: {} })),
       } as DelegateAcl,
     ];
 
     try {
       const txSig = await glamClient.state.upsertDelegateAcls(
-        activeFund!.pubkey,
+        activeGlamState!.pubkey,
         delegateAcls,
       );
 

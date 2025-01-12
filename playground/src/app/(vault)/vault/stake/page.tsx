@@ -66,13 +66,8 @@ import { useQuery } from "@tanstack/react-query";
 import { stakePoolsStateAccounts } from "./data/data";
 
 export default function Stake() {
-  const {
-    activeGlamState: activeFund,
-    vault,
-    userWallet,
-    glamClient,
-    jupTokenList,
-  } = useGlam();
+  const { activeGlamState, vault, userWallet, glamClient, jupTokenList } =
+    useGlam();
 
   const [ticketsAndStakes, setTicketsAndStakes] = useState<TicketOrStake[]>([]);
   const [isLoadingTableData, setIsLoadingTableData] = useState<boolean>(true); // New loading state
@@ -110,10 +105,10 @@ export default function Stake() {
 
   const { data } = useQuery({
     queryKey: ["tickets-and-stakes"],
-    enabled: (activeFund?.pubkey && vault) !== undefined,
+    enabled: (activeGlamState?.pubkey && vault) !== undefined,
     queryFn: () =>
       Promise.all([
-        glamClient.marinade.getTickets(activeFund!.pubkey),
+        glamClient.marinade.getTickets(activeGlamState!.pubkey),
         glamClient.staking.getStakeAccountsWithStates(
           new PublicKey(vault!.pubkey),
         ),
@@ -194,7 +189,7 @@ export default function Stake() {
       return;
     }
 
-    if (!activeFund?.pubkey) {
+    if (!activeGlamState?.pubkey) {
       toast({
         title: "Fund not found for the connected wallet.",
         variant: "destructive",
@@ -221,7 +216,7 @@ export default function Stake() {
     const stakeFnMap: any = {
       "Native Staking": async () => {
         return await glamClient.staking.initializeAndDelegateStake(
-          activeFund.pubkey,
+          activeGlamState.pubkey,
           new PublicKey(values.validatorAddress!),
           new BN(values.amountIn * LAMPORTS_PER_SOL),
         );
@@ -229,14 +224,14 @@ export default function Stake() {
       "Liquid Staking": async () => {
         if (values.poolTokenSymbol === "mSOL") {
           return await glamClient.marinade.depositSol(
-            activeFund.pubkey,
+            activeGlamState.pubkey,
             new BN(values.amountIn * LAMPORTS_PER_SOL),
           );
         }
         // Other LSTs
         const stateAccount = new PublicKey(values.stakePool!);
         return await glamClient.staking.stakePoolDepositSol(
-          activeFund.pubkey,
+          activeGlamState.pubkey,
           stateAccount,
           new BN(values.amountIn * LAMPORTS_PER_SOL),
         );

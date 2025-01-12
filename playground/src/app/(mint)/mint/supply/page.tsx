@@ -27,7 +27,7 @@ const supplySchema = z.object({
 type SupplySchema = z.infer<typeof supplySchema>;
 
 export default function SupplyPage() {
-  const { activeGlamState: activeFund, glamClient } = useGlam();
+  const { activeGlamState, glamClient } = useGlam();
 
   const [txStates, setTxStates] = React.useState({
     mintTxPending: false,
@@ -41,7 +41,7 @@ export default function SupplyPage() {
   useEffect(() => {
     const fetchData = async () => {
       const tokenAccounts = await glamClient.shareClass.getHolders(
-        activeFund!.pubkey,
+        activeGlamState!.pubkey,
         0,
       );
       const tokenHolders = tokenAccounts.map((ta) => ({
@@ -50,8 +50,8 @@ export default function SupplyPage() {
       }));
       setTokenHolders(tokenHolders);
     };
-    activeFund?.pubkey && fetchData();
-  }, [glamClient, activeFund]);
+    activeGlamState?.pubkey && fetchData();
+  }, [glamClient, activeGlamState]);
 
   const form = useForm<SupplySchema>({
     resolver: zodResolver(supplySchema),
@@ -63,7 +63,7 @@ export default function SupplyPage() {
 
   const onSubmit: SubmitHandler<SupplySchema> = async (values, event) => {
     const submitter = (event?.nativeEvent as SubmitEvent)?.submitter?.id;
-    if (!submitter || !activeFund?.pubkey) {
+    if (!submitter || !activeGlamState?.pubkey) {
       return;
     }
 
@@ -100,14 +100,14 @@ export default function SupplyPage() {
       const txSig =
         submitter === "mint"
           ? await glamClient.shareClass.mintShare(
-              activeFund.pubkey,
+              activeGlamState.pubkey,
               0,
               pubkey,
               new BN(amount * 10 ** 9),
               true, // force thawing token account if it's frozen
             )
           : await glamClient.shareClass.burnShare(
-              activeFund.pubkey,
+              activeGlamState.pubkey,
               0,
               new BN(amount * 10 ** 9),
               pubkey,

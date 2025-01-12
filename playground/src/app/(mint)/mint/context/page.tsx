@@ -30,7 +30,7 @@ interface SchemaGroup {
 }
 
 export default function MintContextPage() {
-  const { activeGlamState: activeFund, allGlamStates: allFunds } = useGlam();
+  const { activeGlamState, allGlamStates } = useGlam();
 
   const [openfundsData, setOpenfundsData] = useState<Record<string, any>>({
     company: {},
@@ -40,8 +40,10 @@ export default function MintContextPage() {
   });
 
   useEffect(() => {
-    if (activeFund?.pubkey && allFunds) {
-      const fund = allFunds.find((f) => f.id && f.id.equals(activeFund.pubkey));
+    if (activeGlamState?.pubkey && allGlamStates) {
+      const fund = allGlamStates.find(
+        (f) => f.id && f.id.equals(activeGlamState.pubkey),
+      );
       if (fund) {
         setOpenfundsData({
           ...openfundsData,
@@ -61,7 +63,7 @@ export default function MintContextPage() {
         console.log("openfundsData", openfundsData);
       }
     }
-  }, [activeFund, allFunds]);
+  }, [activeGlamState, allGlamStates]);
 
   const handleOpenfundsChange = (data: Record<string, any>) => {
     // Create a new object to store grouped data

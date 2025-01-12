@@ -16,11 +16,12 @@ export default function PageAccess({
 }: {
   perms: "vault" | "mint" | "all";
 }) {
-  const { allGlamStates: allFunds, activeGlamState: activeFund } = useGlam();
+  const { allGlamStates, activeGlamState } = useGlam();
   const { getLabel } = usePubkeyLabels();
 
-  const fundId = activeFund?.address;
-  const fund = (allFunds || []).find((f) => f.idStr === fundId);
+  const fund = (allGlamStates || []).find(
+    (s) => s.idStr === activeGlamState?.address,
+  );
 
   const data = useMemo(() => {
     if (!fund) return [];

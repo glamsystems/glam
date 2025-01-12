@@ -33,10 +33,10 @@ export function DataTableRowActions<TData>({
   const isClosable = ticketOrStake.status === "inactive";
   const isPendingOrDeactivating = ticketOrStake.status === "deactivating";
 
-  const { glamClient, activeGlamState: activeFund } = useGlam();
+  const { glamClient, activeGlamState } = useGlam();
 
   const handleClaimTicket = async () => {
-    if (!activeFund?.pubkey || !glamClient) {
+    if (!activeGlamState?.pubkey || !glamClient) {
       console.error("No fund selected");
       return;
     }
@@ -45,9 +45,10 @@ export function DataTableRowActions<TData>({
       const ticketPublicKey = new PublicKey(ticketOrStake.publicKey);
       console.log("Claim marinade ticket:", ticketPublicKey.toBase58());
 
-      const txId = await glamClient.marinade.claimTickets(activeFund.pubkey, [
-        ticketPublicKey,
-      ]);
+      const txId = await glamClient.marinade.claimTickets(
+        activeGlamState.pubkey,
+        [ticketPublicKey],
+      );
 
       toast({
         title: "Marinade ticket claimed successfully",
@@ -65,7 +66,7 @@ export function DataTableRowActions<TData>({
   };
 
   const handlDeactivateStake = async () => {
-    if (!activeFund?.pubkey || !glamClient) {
+    if (!activeGlamState?.pubkey || !glamClient) {
       console.error("No fund selected");
       return;
     }
@@ -75,7 +76,7 @@ export function DataTableRowActions<TData>({
       console.log("Deactivate stake account:", accountPublicKey.toBase58());
 
       const txId = await glamClient.staking.deactivateStakeAccounts(
-        activeFund.pubkey,
+        activeGlamState.pubkey,
         [accountPublicKey],
       );
 
@@ -107,7 +108,7 @@ export function DataTableRowActions<TData>({
   };
 
   const handleWithdrawStake = async () => {
-    if (!activeFund?.pubkey || !glamClient) {
+    if (!activeGlamState?.pubkey || !glamClient) {
       console.error("No fund selected");
       return;
     }
@@ -117,7 +118,7 @@ export function DataTableRowActions<TData>({
       console.log("Withdraw from stake account:", accountPublicKey.toBase58());
 
       const txId = await glamClient.staking.withdrawFromStakeAccounts(
-        activeFund.pubkey,
+        activeGlamState.pubkey,
         [accountPublicKey],
       );
 

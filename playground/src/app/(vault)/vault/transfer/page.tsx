@@ -45,8 +45,8 @@ type TransferSchema = z.infer<typeof transferSchema>;
 
 export default function Transfer() {
   const {
-    activeGlamState: activeFund,
-    vault: treasury,
+    activeGlamState,
+    vault,
     glamClient,
     driftMarketConfigs,
     driftUser,
@@ -60,7 +60,7 @@ export default function Transfer() {
   const [transferButtonDisabled, setTransferButtonDisabled] = useState(false);
 
   const vaultAssets = () => {
-    const assets = (treasury?.tokenAccounts || []).map((ta) => {
+    const assets = (vault?.tokenAccounts || []).map((ta) => {
       const jupToken = jupTokenList?.find(
         (t) => t.address === ta.mint.toBase58(),
       );
@@ -74,7 +74,7 @@ export default function Transfer() {
         balance:
           /* combine SOL + wSOL balances */
           symbol === "SOL"
-            ? ta.uiAmount + (treasury?.balanceLamports || 0) / LAMPORTS_PER_SOL
+            ? ta.uiAmount + (vault?.balanceLamports || 0) / LAMPORTS_PER_SOL
             : ta.uiAmount,
       } as Asset;
     });
@@ -106,7 +106,7 @@ export default function Transfer() {
 
   useEffect(() => {
     setFromAssetList(vaultAssets());
-  }, [treasury, jupTokenList, activeFund]);
+  }, [vault, jupTokenList, activeGlamState]);
 
   const form = useForm<TransferSchema>({
     resolver: zodResolver(transferSchema),
@@ -141,7 +141,7 @@ export default function Transfer() {
   }, [from, driftUser, driftMarketConfigs]);
 
   const withdrawFromVault = async (symbol: string, amount: number) => {
-    if (!activeFund?.pubkey || !glamClient) return; // already checked, to avoid type issue
+    if (!activeGlamState?.pubkey || !glamClient) return; // already checked, to avoid type issue
 
     const asset = vaultAssets().find((a) => a.symbol === symbol);
     if (!asset) {
@@ -155,7 +155,7 @@ export default function Transfer() {
     try {
       setIsTxPending(true);
       const txId = await glamClient.state.withdraw(
-        activeFund.pubkey,
+        activeGlamState.pubkey,
         new PublicKey(asset?.address || 0),
         amount * 10 ** (asset?.decimals || 9),
       );
@@ -183,7 +183,7 @@ export default function Transfer() {
 
     console.log("Submitting transfer", values);
 
-    if (!activeFund?.pubkey) {
+    if (!activeGlamState?.pubkey) {
       toast({
         title: "Invalid fund",
         description: "Please select a valid fund",
@@ -233,7 +233,7 @@ export default function Transfer() {
       const txId =
         origin === "Vault"
           ? await glamClient.drift.deposit(
-              activeFund.pubkey,
+              activeGlamState.pubkey,
               new anchor.BN(amount * 10 ** decimals),
               marketIndex,
               0,
@@ -241,7 +241,7 @@ export default function Transfer() {
               { getPriorityFeeMicroLamports },
             )
           : await glamClient.drift.withdraw(
-              activeFund.pubkey,
+              activeGlamState.pubkey,
               new anchor.BN(amount * 10 ** decimals),
               marketIndex,
               0,
@@ -365,7 +365,9 @@ export default function Transfer() {
               {warning && (
                 <>
                   <WarningCard className="p-2" message={warning} />
-                  <ClickToCopyText text={activeFund?.pubkey.toBase58() || ""} />
+                  <ClickToCopyText
+                    text={activeGlamState?.pubkey.toBase58() || ""}
+                  />
                 </>
               )}
 

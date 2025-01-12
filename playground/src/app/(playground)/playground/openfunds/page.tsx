@@ -212,12 +212,12 @@ function MetadataAccount({ fundId }: { fundId: any }) {
 }
 
 export default function Openfunds() {
-  const { allGlamStates: allFunds, activeGlamState: activeFund } = useGlam();
+  const { allGlamStates, activeGlamState } = useGlam();
 
-  const fundId = activeFund?.address;
+  const fundId = activeGlamState?.address;
   // const fundId = "APx491vs2rRkGUCLp4kVDHz8J2Pc9cry3ZvVDJ7goVTB";
   const fund: any = fundId
-    ? (allFunds || []).find((f: any) => f.idStr === fundId)
+    ? (allGlamStates || []).find((f: any) => f.idStr === fundId)
     : undefined;
 
   return (

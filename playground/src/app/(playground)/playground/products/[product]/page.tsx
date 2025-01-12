@@ -314,9 +314,9 @@ export default function ProductPage() {
   const params = useParams();
   const router = useRouter();
   const { product } = params;
-  const { allGlamStates: allFunds } = useGlam();
+  const { allGlamStates } = useGlam();
 
-  const isAllFundsLoading = !allFunds;
+  const isAllFundsLoading = !allGlamStates;
 
   const fundPublicKey = useMemo(() => {
     if (!product) return null;
@@ -329,9 +329,10 @@ export default function ProductPage() {
   }, [product]);
 
   const stateModel = useMemo(() => {
-    if (!allFunds || allFunds.length === 0 || !fundPublicKey) return null;
-    return allFunds.find((f) => f.idStr === product);
-  }, [allFunds, fundPublicKey, product]);
+    if (!allGlamStates || allGlamStates.length === 0 || !fundPublicKey)
+      return null;
+    return allGlamStates.find((f) => f.idStr === product);
+  }, [allGlamStates, fundPublicKey, product]);
 
   //Mark the client as ready once mounted (to prevent server-side rendering issues)
   useEffect(() => {
@@ -360,7 +361,7 @@ export default function ProductPage() {
       "Fund:",
       stateModel,
       "AllFunds:",
-      allFunds,
+      allGlamStates,
     );
 
     if (clientReady && !isAllFundsLoading) {
@@ -369,7 +370,7 @@ export default function ProductPage() {
         router.push("/");
         return;
       }
-      if (allFunds && allFunds.length > 0 && !stateModel) {
+      if (allGlamStates && allGlamStates.length > 0 && !stateModel) {
         console.log("Redirecting: Valid public key but no matching fund");
         router.push("/");
       }
@@ -380,7 +381,7 @@ export default function ProductPage() {
     stateModel,
     isAllFundsLoading,
     router,
-    allFunds,
+    allGlamStates,
   ]);
 
   // Calculating color info based on sparkleColor (must be declared at the top level)
@@ -465,7 +466,10 @@ export default function ProductPage() {
     );
   }
 
-  if (!fundPublicKey || (allFunds && allFunds.length > 0 && !stateModel)) {
+  if (
+    !fundPublicKey ||
+    (allGlamStates && allGlamStates.length > 0 && !stateModel)
+  ) {
     router.push("/");
     return null;
   }

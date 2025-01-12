@@ -28,7 +28,7 @@ type TransferSchema = z.infer<typeof transferSchema>;
 
 export default function TransferPage() {
   const [isTxPending, setIsTxPending] = React.useState(false);
-  const { activeGlamState: activeFund, glamClient } = useGlam();
+  const { activeGlamState, glamClient } = useGlam();
 
   const [tokenHolders, setTokenHolders] = React.useState<
     { value: string; label: string }[]
@@ -36,7 +36,7 @@ export default function TransferPage() {
   useEffect(() => {
     const fetchData = async () => {
       const tokenAccounts = await glamClient.shareClass.getHolders(
-        activeFund!.pubkey,
+        activeGlamState!.pubkey,
         0,
       );
       const tokenHolders = tokenAccounts.map((ta) => ({
@@ -45,8 +45,8 @@ export default function TransferPage() {
       }));
       setTokenHolders(tokenHolders);
     };
-    activeFund?.pubkey && fetchData();
-  }, [glamClient, activeFund]);
+    activeGlamState?.pubkey && fetchData();
+  }, [glamClient, activeGlamState]);
 
   const form = useForm<TransferSchema>({
     resolver: zodResolver(transferSchema),
@@ -98,14 +98,14 @@ export default function TransferPage() {
       return;
     }
 
-    if (!activeFund?.pubkey || !glamClient) {
+    if (!activeGlamState?.pubkey || !glamClient) {
       return;
     }
 
     setIsTxPending(true);
     try {
       const txId = await glamClient.shareClass.forceTransferShare(
-        activeFund.pubkey,
+        activeGlamState.pubkey,
         0,
         new BN(amount * 10 ** 9),
         fromPubkey,

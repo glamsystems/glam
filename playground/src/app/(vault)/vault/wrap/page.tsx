@@ -26,12 +26,7 @@ const wrapSchema = z.object({
 type WrapSchema = z.infer<typeof wrapSchema>;
 
 export default function Wrap() {
-  const {
-    activeGlamState: activeFund,
-    vault: treasury,
-    userWallet,
-    glamClient,
-  } = useGlam();
+  const { activeGlamState, vault, userWallet, glamClient } = useGlam();
 
   const [amountAsset, setAmountAsset] = useState<string>("SOL");
   const [direction, setDirection] = useState<string>("wrap");
@@ -50,16 +45,15 @@ export default function Wrap() {
   });
 
   useEffect(() => {
-    if (activeFund?.pubkey && treasury) {
-      const solBalance = (treasury?.balanceLamports || 0) / LAMPORTS_PER_SOL;
+    if (activeGlamState?.pubkey && vault) {
+      const solBalance = (vault?.balanceLamports || 0) / LAMPORTS_PER_SOL;
       const wSolBalance =
-        treasury?.tokenAccounts?.find((ta) => ta.mint.equals(WSOL))?.uiAmount ||
-        0;
+        vault?.tokenAccounts?.find((ta) => ta.mint.equals(WSOL))?.uiAmount || 0;
       setSolBalance(solBalance);
       setWSolBalance(wSolBalance);
       setDisplayBalance(solBalance);
     }
-  }, [activeFund, treasury, glamClient]);
+  }, [activeGlamState, vault, glamClient]);
 
   const onSubmit: SubmitHandler<WrapSchema> = async (values, _event) => {
     if (values.amount === 0) {
@@ -78,7 +72,7 @@ export default function Wrap() {
       return;
     }
 
-    if (!activeFund?.pubkey) {
+    if (!activeGlamState?.pubkey) {
       toast({
         title: "Fund not found for the connected wallet.",
         variant: "destructive",
@@ -91,7 +85,7 @@ export default function Wrap() {
       let txId;
       if (direction === "wrap") {
         txId = await glamClient.wsol.wrap(
-          activeFund.pubkey,
+          activeGlamState.pubkey,
           new BN(values.amount * LAMPORTS_PER_SOL),
           {
             getPriorityFeeMicroLamports,
@@ -99,7 +93,7 @@ export default function Wrap() {
         );
       } else {
         // Unwrap means unwrap all, there's no amount
-        txId = await glamClient.wsol.unwrap(activeFund.pubkey, {
+        txId = await glamClient.wsol.unwrap(activeGlamState.pubkey, {
           getPriorityFeeMicroLamports,
         });
       }
