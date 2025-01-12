@@ -15,8 +15,8 @@ pub enum EngineFieldName {
     ShareClassBlocklist, // share class
     DelegateAcls,
     IntegrationAcls,
-    ExternalTreasuryAccounts, // external accounts with treasury assets
-    LockUp,                   // share class
+    ExternalVaultAccounts, // external accounts with vaultassets
+    LockUp,                // share class
     DriftMarketIndexesPerp,
     DriftMarketIndexesSpot,
     DriftOrderTypes,
@@ -50,21 +50,26 @@ pub struct EngineField {
     pub value: EngineFieldValue,
 }
 
+pub type StateAccount = FundAccount;
+pub type MetadataAccount = FundMetadataAccount;
+
 #[account]
 pub struct FundAccount {
-    pub manager: Pubkey,
-    pub treasury: Pubkey,
-    pub openfunds: Pubkey,
+    pub owner: Pubkey,
+    pub vault: Pubkey,
+    pub metadata: Pubkey,
     pub engine: Pubkey,
-    pub share_classes: Vec<Pubkey>,
+    pub mints: Vec<Pubkey>,
     pub name: String,
     pub uri: String,
-    pub openfunds_uri: String,
-    pub params: Vec<Vec<EngineField>>, // params[0]: EngineFundParams, ...
-                                       // params[1]: EngineShareClass0Params, ...
+    pub metadata_uri: String,
+
+    // params[0]: fund params
+    // params[1..n+1]: mints [0..n] params
+    pub params: Vec<Vec<EngineField>>,
 }
 impl FundAccount {
-    pub const INIT_SIZE: usize = 1024; // FIXME: too small?
+    pub const INIT_SIZE: usize = 2048; // TODO: auto extend account size if needed
 
     pub fn is_enabled(&self) -> bool {
         return true;
@@ -190,21 +195,6 @@ impl FundAccount {
                 EngineFieldName::Assets => {
                     return match value {
                         EngineFieldValue::VecPubkey { val: v } => Some(v),
-                        _ => None,
-                    };
-                }
-                _ => { /* ignore */ }
-            }
-        }
-        return None;
-    }
-
-    pub fn assets_weights(&self) -> Option<&Vec<u32>> {
-        for EngineField { name, value } in &self.params[0] {
-            match name {
-                EngineFieldName::AssetsWeights => {
-                    return match value {
-                        EngineFieldValue::VecU32 { val: v } => Some(v),
                         _ => None,
                     };
                 }
@@ -354,7 +344,7 @@ impl FundAccount {
 
 #[account]
 pub struct FundMetadataAccount {
-    pub fund_pubkey: Pubkey,
+    pub state_pubkey: Pubkey,
     pub company: Vec<CompanyField>,
     pub fund: Vec<FundField>,
     pub share_classes: Vec<Vec<ShareClassField>>,
@@ -364,26 +354,26 @@ impl FundMetadataAccount {
     pub const INIT_SIZE: usize = 1024;
 }
 
-impl From<FundModel> for FundMetadataAccount {
-    fn from(model: FundModel) -> Self {
+impl From<StateModel> for FundMetadataAccount {
+    fn from(model: StateModel) -> Self {
         let company = if let Some(company) = &model.company {
             company.into()
         } else {
             vec![]
         };
-        let fund_managers = if let Some(manager) = &model.manager {
+        let fund_managers = if let Some(manager) = &model.owner {
             vec![manager.into()]
         } else {
             vec![]
         };
         let share_classes = model
-            .share_classes
+            .mints
             .iter()
             .map(|share_class| share_class.into())
             .collect::<Vec<_>>();
         let fund = model.into();
         FundMetadataAccount {
-            fund_pubkey: Pubkey::default(),
+            state_pubkey: Pubkey::default(),
             company,
             fund,
             share_classes,

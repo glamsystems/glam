@@ -11,7 +11,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { atomWithStorage } from "jotai/utils";
 
-import type { FundModel } from "../models";
+import type { StateModel } from "../models";
 import { GlamClient } from "../client";
 import { useAtomValue, useSetAtom } from "jotai/react";
 import { PublicKey } from "@solana/web3.js";
@@ -40,16 +40,16 @@ interface TokenPrice {
 
 interface GlamProviderContext {
   glamClient: GlamClient;
-  activeFund?: FundCache;
-  treasury?: Treasury;
-  fundsList: FundCache[];
-  allFunds: FundModel[];
+  activeGlamState?: GlamStateCache;
+  vault?: Vault;
+  glamStatesList: GlamStateCache[];
+  allGlamStates: StateModel[];
   userWallet: UserWallet;
   prices: TokenPrice[];
-  setActiveFund: (f: FundCache) => void;
   jupTokenList?: JupTokenListItem[];
   driftMarketConfigs: DriftMarketConfigs;
   driftUser: GlamDriftUser;
+  setActiveGlamState: (f: GlamStateCache) => void;
   refresh: () => Promise<void>;
 }
 
@@ -60,13 +60,13 @@ interface UserWallet {
   tokenAccounts: TokenAccount[];
 }
 
-interface Treasury {
+interface Vault {
   pubkey: PublicKey;
   balanceLamports: number; // TODO: this should be a BN or string, it works until ~9M SOL
   tokenAccounts: TokenAccount[];
 }
 
-interface FundCache {
+interface GlamStateCache {
   address: string;
   pubkey: PublicKey;
   sparkleKey: string;
@@ -78,15 +78,18 @@ const GlamContext = createContext<GlamProviderContext>(
   {} as GlamProviderContext,
 );
 
-const fundAtom = atomWithStorage<FundCache>("active-fund", {} as FundCache);
-const fundsListAtom = atomWithStorage<FundCache[]>(
-  "funds-list",
-  [] as FundCache[],
+const activeGlamStateAtom = atomWithStorage<GlamStateCache>(
+  "active-glam-state",
+  {} as GlamStateCache,
+);
+const glamStatesListAtom = atomWithStorage<GlamStateCache[]>(
+  "glam-states-list",
+  [] as GlamStateCache[],
 );
 
-// In order to properly deser funds, we need to
+// In order to properly deser states, we need to
 // convert string -> pubkey (and maybe more in future)
-const deserializeFundCache = (f: any) => {
+const deserializeGlamStateCache = (f: any) => {
   if (!f) {
     return undefined;
   }
@@ -94,17 +97,17 @@ const deserializeFundCache = (f: any) => {
     f.address = f.pubkey;
     f.pubkey = new PublicKey(f.pubkey);
   }
-  return f as FundCache;
+  return f as GlamStateCache;
 };
 
-const toFundCache = (f: FundModel) => {
+const toStateCache = (f: StateModel) => {
   return {
     pubkey: f.id,
     sparkleKey: f.sparkleKey,
     address: f.idStr,
     name: f.name,
     product: f.productType,
-  } as FundCache;
+  } as GlamStateCache;
 };
 
 const fetchBalances = async (glamClient: GlamClient, owner: PublicKey) => {
@@ -136,10 +139,10 @@ const fetchBalances = async (glamClient: GlamClient, owner: PublicKey) => {
 export function GlamProvider({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const setActiveFund = useSetAtom(fundAtom);
-  const setFundsList = useSetAtom(fundsListAtom);
+  const setActiveGlamState = useSetAtom(activeGlamStateAtom);
+  const setGlamStatesList = useSetAtom(glamStatesListAtom);
 
-  const [treasury, setTreasury] = useState({} as Treasury);
+  const [vault, setVault] = useState({} as Vault);
   const [userWallet, setUserWallet] = useState({} as UserWallet);
   const wallet = useWallet();
   const { connection } = useConnection();
@@ -155,7 +158,7 @@ export function GlamProvider({
       }),
     [connection, wallet, cluster],
   );
-  const [allFunds, setAllFunds] = useState([] as FundModel[]);
+  const [allGlamStates, setAllGlamStates] = useState([] as StateModel[]);
   const [jupTokenList, setJupTokenList] = useState([] as JupTokenListItem[]);
   const [tokenPrices, setTokenPrices] = useState([] as TokenPrice[]);
   const [driftMarketConfigs, setDriftMarketConfigs] = useState(
@@ -163,36 +166,38 @@ export function GlamProvider({
   );
   const [driftUser, setDriftUser] = useState({} as GlamDriftUser);
 
-  const activeFund = deserializeFundCache(useAtomValue(fundAtom)) as FundCache;
+  const activeGlamState = deserializeGlamStateCache(
+    useAtomValue(activeGlamStateAtom),
+  ) as GlamStateCache;
 
   //
-  // Fetch all funds
+  // Fetch all glam states
   //
-  const refreshTreasury = async () => {
-    if (activeFund?.pubkey && wallet?.publicKey) {
+  const refreshVaultHoldings = async () => {
+    if (activeGlamState?.pubkey && wallet?.publicKey) {
       console.log(
-        "fetching treasury data for fund",
-        activeFund.pubkey.toBase58(),
+        "fetching vault data for active glam state:",
+        activeGlamState.pubkey.toBase58(),
       );
-      const treasury = glamClient.getVaultPda(activeFund.pubkey);
-      const balances = await fetchBalances(glamClient, treasury);
-      setTreasury({
+      const vault = glamClient.getVaultPda(activeGlamState.pubkey);
+      const balances = await fetchBalances(glamClient, vault);
+      setVault({
         ...balances,
-        pubkey: treasury,
-      } as Treasury);
+        pubkey: vault,
+      } as Vault);
     }
   };
 
-  const { data: allFundsData } = useQuery({
-    queryKey: ["/funds", activeFund?.pubkey],
-    queryFn: () => glamClient.fetchAllFunds(),
+  const { data: allGlamStatesData } = useQuery({
+    queryKey: ["/all-glam-states", activeGlamState?.pubkey],
+    queryFn: () => glamClient.fetchAllGlamStates(),
   });
   useEffect(() => {
     if (process.env.NODE_ENV === "development") {
-      console.log("All funds:", allFundsData);
+      console.log(`[${cluster.network}] all glam states:`, allGlamStatesData);
     }
-    const fundModels = (allFundsData || []).sort(
-      (a: FundModel, b: FundModel) => {
+    const stateModels = (allGlamStatesData || []).sort(
+      (a: StateModel, b: StateModel) => {
         if (!a.rawOpenfunds?.fundLaunchDate) {
           return 1;
         }
@@ -209,43 +214,45 @@ export function GlamProvider({
         return 0;
       },
     );
-    setAllFunds(fundModels);
+    setAllGlamStates(stateModels);
 
-    const fundList = [] as FundCache[];
-    fundModels.forEach((f: FundModel) => {
-      if (wallet?.publicKey?.equals(f.manager!.pubkey!)) {
-        const fundCache = toFundCache(f);
-        fundList.push(fundCache);
+    const glamStatesList = [] as GlamStateCache[];
+    stateModels.forEach((f: StateModel) => {
+      if (wallet?.publicKey?.equals(f.owner!.pubkey!)) {
+        const stateCache = toStateCache(f);
+        glamStatesList.push(stateCache);
       } else {
         // Iterate over delegateAcls to find funds that the wallet has access to
         f.delegateAcls.forEach((acl: any) => {
           if (wallet?.publicKey?.equals(acl.pubkey)) {
-            fundList.push(toFundCache(f));
+            glamStatesList.push(toStateCache(f));
           }
         });
       }
     });
-    if (fundList.length > 0) {
-      setFundsList(fundList);
+    if (glamStatesList.length > 0) {
+      setGlamStatesList(glamStatesList);
       if (
-        !activeFund ||
-        !fundList.find(
-          (f) =>
-            f.pubkey && activeFund.pubkey && f.pubkey.equals(activeFund.pubkey),
+        !activeGlamState ||
+        !glamStatesList.find(
+          (state) =>
+            state.pubkey &&
+            activeGlamState.pubkey &&
+            state.pubkey.equals(activeGlamState.pubkey),
         )
       ) {
-        setActiveFund(fundList[0]);
+        setActiveGlamState(glamStatesList[0]);
       }
     }
 
-    refreshTreasury();
-  }, [allFundsData, activeFund, wallet, cluster]);
+    refreshVaultHoldings();
+  }, [allGlamStatesData, activeGlamState, wallet, cluster]);
 
   //
   // Fetch token prices https://station.jup.ag/docs/apis/price-api-v2
   //
   const { data: jupTokenPricesData } = useQuery({
-    queryKey: ["/jup-token-prices", treasury?.pubkey],
+    queryKey: ["/jup-token-prices", vault?.pubkey],
     enabled: cluster.network === "mainnet-beta",
     refetchInterval: 10_000,
     queryFn: () => {
@@ -253,8 +260,8 @@ export function GlamProvider({
 
       tokenMints.add(WSOL.toBase58()); // Always add wSOL feed so that we can price SOL
 
-      // Token accounts owned by the treasury
-      (treasury.tokenAccounts || []).forEach((ta: TokenAccount) => {
+      // Token accounts owned by the vault
+      (vault.tokenAccounts || []).forEach((ta: TokenAccount) => {
         tokenMints.add(ta.mint.toBase58());
       });
 
@@ -350,33 +357,33 @@ export function GlamProvider({
   // Fetch drift positions
   //
   const { data: driftUserData } = useQuery({
-    queryKey: ["/drift-positions", treasury?.pubkey],
-    enabled: !!treasury,
+    queryKey: ["/drift-positions", vault?.pubkey],
+    enabled: !!vault,
     refetchInterval: 30 * 1000,
     queryFn: () => {
       return fetch(
-        `https://api.glam.systems/v0/drift/user?authority=${treasury?.pubkey.toBase58()}&accountId=0`,
+        `https://api.glam.systems/v0/drift/user?authority=${vault?.pubkey.toBase58()}&accountId=0`,
       ).then((res) => res.json());
     },
   });
   useEffect(() => {
     setDriftUser(driftUserData || {});
-  }, [driftUserData, activeFund]);
+  }, [driftUserData, activeGlamState]);
 
   const value: GlamProviderContext = {
     glamClient,
-    activeFund,
-    treasury,
-    fundsList: useAtomValue(fundsListAtom),
-    allFunds, // TODO: only keep one of allFunds or fundsList
+    activeGlamState,
+    vault,
+    glamStatesList: useAtomValue(glamStatesListAtom),
+    allGlamStates,
     userWallet,
     jupTokenList,
     prices: tokenPrices,
-    setActiveFund,
+    setActiveGlamState,
     driftMarketConfigs,
     driftUser,
     refresh: async () => {
-      refreshTreasury();
+      refreshVaultHoldings();
     },
   };
 

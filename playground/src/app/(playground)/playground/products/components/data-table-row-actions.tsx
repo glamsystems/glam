@@ -37,11 +37,11 @@ export function DataTableRowActions({
   const close = async (product: Product) => {
     console.log("Close product", product);
     const fundPda = new PublicKey(product.id);
-    const fundModel = await glamClient.fetchFund(fundPda);
-    if (!fundModel.manager?.pubkey?.equals(glamClient.getSigner())) {
+    const stateModel = await glamClient.fetchState(fundPda);
+    if (!stateModel.owner?.pubkey?.equals(glamClient.getSigner())) {
       toast({
         title: `${product.product} cannot be closed`,
-        description: "Only the  manager can close the fund",
+        description: "Only the owner can close the state account",
         variant: "destructive",
       });
       return;
@@ -52,7 +52,7 @@ export function DataTableRowActions({
 
       // If the product is a Mint or Fund, close share class first
       if (product.product === "Mint" || product.product === "Fund") {
-        const mintAddress = fundModel.shareClassMints[0];
+        const mintAddress = stateModel.shareClassMints[0];
         const mint = await getMint(
           glamClient.provider.connection,
           mintAddress,
@@ -73,7 +73,7 @@ export function DataTableRowActions({
         );
       }
 
-      const txSig = await glamClient.fund.closeFund(fundPda, {
+      const txSig = await glamClient.state.closeState(fundPda, {
         preInstructions,
       });
       toast({

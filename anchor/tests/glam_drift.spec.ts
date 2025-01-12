@@ -1,6 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import { DriftMarketConfigs, GlamClient } from "../src";
-import { airdrop, createFundForTest } from "./setup";
+import { airdrop, createGlamStateForTest } from "./setup";
 import {
   getOrderParams,
   MarketType,
@@ -49,7 +49,7 @@ describe("glam_drift", () => {
   const glamClient = new GlamClient();
   const commitment = "confirmed";
 
-  let fundPDA, treasuryPDA, sharePDA;
+  let statePda, vaultPda;
   const marketConfigs: DriftMarketConfigs = {
     orderConstants: {
       perpBaseScale: 9,
@@ -104,22 +104,21 @@ describe("glam_drift", () => {
     ],
   };
 
-  it("Create and initialize fund", async () => {
-    const fundData = await createFundForTest();
-    fundPDA = fundData.fundPDA;
-    treasuryPDA = fundData.treasuryPDA;
-    sharePDA = fundData.sharePDA;
+  it("Create and initialize glam state", async () => {
+    const stateData = await createGlamStateForTest();
+    statePda = stateData.statePda;
+    vaultPda = stateData.vaultPda;
 
-    const fund = await glamClient.fetchFundAccount(fundPDA);
-    expect(fund.shareClasses.length).toEqual(1);
-    expect(fund.name).toEqual("Glam Fund SOL-mSOL");
+    const state = await glamClient.fetchStateAccount(statePda);
+    expect(state.mints.length).toEqual(1);
+    expect(state.name).toEqual("Glam Fund SOL-mSOL");
 
     // Enable drift integration
-    const updatedFund = {
+    const updated = {
       integrationAcls: [{ name: { drift: {} }, features: [] }],
     };
     try {
-      const txSig = await glamClient.fund.updateFund(fundPDA, updatedFund);
+      const txSig = await glamClient.state.updateState(statePda, updated);
       console.log("Enable drift integration tx:", txSig);
     } catch (e) {
       console.error(e);
@@ -127,17 +126,17 @@ describe("glam_drift", () => {
     }
   });
 
-  it("Airdrop 10 SOL to treasury and wrap it", async () => {
+  it("Airdrop 10 SOL to vault and wrap it", async () => {
     const connection = glamClient.provider.connection;
     const lamports = 10_000_000_000;
-    await airdrop(connection, treasuryPDA, lamports);
+    await airdrop(connection, vaultPda, lamports);
 
     try {
       const txSig = await glamClient.wsol.wrap(
-        fundPDA,
+        statePda,
         new anchor.BN(lamports),
       );
-      console.log("Wrappped 10 SOL in treasury:", txSig);
+      console.log("Wrappped 10 SOL in vault:", txSig);
     } catch (e) {
       console.error(e);
       throw e;
@@ -146,7 +145,7 @@ describe("glam_drift", () => {
 
   it("Drift initialize", async () => {
     try {
-      const txId = await glamClient.drift.initialize(fundPDA);
+      const txId = await glamClient.drift.initialize(statePda);
       console.log("driftInitialize", txId);
     } catch (e) {
       console.error(e);
@@ -157,7 +156,7 @@ describe("glam_drift", () => {
   it("Drift: update trader", async () => {
     const trader = glamClient.getSigner();
     try {
-      const txId = await glamClient.drift.updateUserDelegate(fundPDA, trader);
+      const txId = await glamClient.drift.updateUserDelegate(statePda, trader);
       console.log("driftUpdateUserDelegate", txId);
     } catch (e) {
       console.error(e);
@@ -170,7 +169,7 @@ describe("glam_drift", () => {
 
     try {
       const txId = await glamClient.drift.deposit(
-        fundPDA,
+        statePda,
         amount,
         1,
         0,
@@ -188,7 +187,7 @@ describe("glam_drift", () => {
     const amount = new anchor.BN(1_000_000_000);
     try {
       const txId = await glamClient.drift.withdraw(
-        fundPDA,
+        statePda,
         amount,
         1,
         0,
@@ -214,7 +213,7 @@ describe("glam_drift", () => {
 
     try {
       const txId = await glamClient.drift.placeOrder(
-        fundPDA,
+        statePda,
         orderParams,
         0,
         marketConfigs,
@@ -230,7 +229,7 @@ describe("glam_drift", () => {
     try {
       // SOL perp market index is 0
       const txId = await glamClient.drift.cancelOrders(
-        fundPDA,
+        statePda,
         MarketType.PERP,
         0,
         PositionDirection.LONG,
@@ -247,7 +246,7 @@ describe("glam_drift", () => {
 
   it("Drift: constrain market", async () => {
     try {
-      const txId = await glamClient.fund.updateFund(fundPDA, {
+      const txId = await glamClient.state.updateState(statePda, {
         driftMarketIndexesPerp: [2, 3],
       });
       console.log("driftPlaceOrders", txId);
@@ -269,7 +268,7 @@ describe("glam_drift", () => {
 
     try {
       const txId = await glamClient.drift.placeOrder(
-        fundPDA,
+        statePda,
         orderParams,
         0,
         marketConfigs,

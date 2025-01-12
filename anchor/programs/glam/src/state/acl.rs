@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use super::FundAccount;
+use super::StateAccount;
 use crate::error::AccessError;
 use spl_stake_pool::ID as SPL_STAKE_POOL_PROGRAM_ID;
 
@@ -21,8 +21,8 @@ pub enum Permission {
     Stake, // Stake with marinade or spl/sanctum stake pool programs
     Unstake,
     LiquidUnstake,
-    JupiterSwapFundAssets,
-    JupiterSwapAnyAsset,
+    JupiterSwapAllowlisted,
+    JupiterSwapAny,
     WSolWrap,
     WSolUnwrap,
     MintShare,
@@ -67,8 +67,8 @@ pub struct IntegrationAcl {
     pub features: Vec<IntegrationFeature>,
 }
 
-pub fn check_access(fund: &FundAccount, signer: &Pubkey, permission: Permission) -> Result<()> {
-    if fund.manager == *signer {
+pub fn check_access(fund: &StateAccount, signer: &Pubkey, permission: Permission) -> Result<()> {
+    if fund.owner == *signer {
         return Ok(());
     }
 
@@ -90,11 +90,11 @@ pub fn check_access(fund: &FundAccount, signer: &Pubkey, permission: Permission)
 }
 
 pub fn check_access_any(
-    fund: &FundAccount,
+    fund: &StateAccount,
     signer: &Pubkey,
     allowed_permissions: Vec<Permission>,
 ) -> Result<()> {
-    if fund.manager == *signer {
+    if fund.owner == *signer {
         return Ok(());
     }
 
@@ -120,7 +120,7 @@ pub fn check_access_any(
     return Err(AccessError::NotAuthorized.into());
 }
 
-pub fn check_integration(fund: &FundAccount, integration: IntegrationName) -> Result<()> {
+pub fn check_integration(fund: &StateAccount, integration: IntegrationName) -> Result<()> {
     #[cfg(not(feature = "mainnet"))]
     msg!("Checking integration {:?} is enabled", integration);
 
@@ -135,7 +135,10 @@ pub fn check_integration(fund: &FundAccount, integration: IntegrationName) -> Re
     return Err(AccessError::IntegrationDisabled.into());
 }
 
-pub fn check_stake_pool_integration(fund: &FundAccount, stake_pool_program: &Pubkey) -> Result<()> {
+pub fn check_stake_pool_integration(
+    fund: &StateAccount,
+    stake_pool_program: &Pubkey,
+) -> Result<()> {
     let integration = if stake_pool_program == &SPL_STAKE_POOL_PROGRAM_ID {
         IntegrationName::SplStakePool
     } else {

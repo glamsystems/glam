@@ -18,7 +18,7 @@
         "- `share_class_metadata`: An instance of `ShareClassModel` containing the metadata for the new share class.",
         "",
         "# Permission required",
-        "- Manager only, delegates not allowed"
+        "- Owner only, delegates not allowed"
       ],
       "discriminator": [
         34,
@@ -72,11 +72,11 @@
           }
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
-          "name": "openfunds",
+          "name": "metadata",
           "writable": true
         },
         {
@@ -196,7 +196,7 @@
           "writable": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -247,7 +247,7 @@
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -270,7 +270,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -314,73 +314,6 @@
       ]
     },
     {
-      "name": "close_fund",
-      "docs": [
-        "Closes a fund and releases its resources.",
-        "",
-        "# Parameters",
-        "- `ctx`: The context for the transaction.",
-        "",
-        "# Permission required",
-        "- Manager only, delegates not allowed"
-      ],
-      "discriminator": [
-        230,
-        183,
-        3,
-        112,
-        236,
-        252,
-        5,
-        185
-      ],
-      "accounts": [
-        {
-          "name": "fund",
-          "writable": true
-        },
-        {
-          "name": "openfunds",
-          "writable": true
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  116,
-                  114,
-                  101,
-                  97,
-                  115,
-                  117,
-                  114,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "fund"
-              }
-            ]
-          }
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": []
-    },
-    {
       "name": "close_share_class",
       "docs": [
         "Closes a share class and releases its resources.",
@@ -390,7 +323,7 @@
         "- `share_class_id`: The id of the share class to be closed.",
         "",
         "# Permission required",
-        "- Manager only, delegates not allowed"
+        "- Owner only, delegates not allowed"
       ],
       "discriminator": [
         35,
@@ -404,7 +337,7 @@
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -427,7 +360,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -473,7 +406,7 @@
           }
         },
         {
-          "name": "openfunds",
+          "name": "metadata",
           "writable": true
         },
         {
@@ -494,29 +427,33 @@
       ]
     },
     {
-      "name": "close_token_accounts",
+      "name": "close_state",
       "docs": [
-        "Closes token accounts owned by the treasury.",
+        "Closes a state account and releases its resources.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
         "",
         "# Permission required",
-        "- Manager only, delegates not allowed"
+        "- Owner only, delegates not allowed"
       ],
       "discriminator": [
-        199,
-        170,
-        37,
-        55,
-        63,
-        183,
-        235,
-        143
+        25,
+        1,
+        184,
+        101,
+        200,
+        245,
+        210,
+        246
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
+          "writable": true
+        },
+        {
+          "name": "metadata",
           "writable": true
         },
         {
@@ -539,7 +476,70 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "close_token_accounts",
+      "docs": [
+        "Closes token accounts owned by the vault.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Owner only, delegates not allowed"
+      ],
+      "discriminator": [
+        199,
+        170,
+        37,
+        55,
+        63,
+        183,
+        235,
+        143
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "writable": true
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "state"
               }
             ]
           }
@@ -591,7 +591,7 @@
           "signer": true
         },
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -613,7 +613,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -658,14 +658,14 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
           "writable": true
         },
         {
-          "name": "state",
+          "name": "drift_state",
           "writable": true
         },
         {
@@ -687,7 +687,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -761,7 +761,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
@@ -772,7 +772,7 @@
           "writable": true
         },
         {
-          "name": "state",
+          "name": "drift_state",
           "writable": true
         },
         {
@@ -794,7 +794,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -843,7 +843,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
@@ -854,7 +854,7 @@
           "writable": true
         },
         {
-          "name": "state",
+          "name": "drift_state",
           "writable": true
         },
         {
@@ -876,7 +876,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -918,7 +918,7 @@
       "name": "drift_initialize",
       "docs": [
         "Drift",
-        "Initializes a drift account owned by fund treasury and creates a subaccount.",
+        "Initializes a drift account owned by vault and creates a subaccount.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
@@ -941,7 +941,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
@@ -952,7 +952,7 @@
           "writable": true
         },
         {
-          "name": "state",
+          "name": "drift_state",
           "writable": true
         },
         {
@@ -974,7 +974,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1027,14 +1027,14 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
           "writable": true
         },
         {
-          "name": "state",
+          "name": "drift_state",
           "writable": true
         },
         {
@@ -1056,7 +1056,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1116,7 +1116,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
@@ -1141,7 +1141,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1195,7 +1195,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
@@ -1220,7 +1220,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1274,7 +1274,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
@@ -1299,7 +1299,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1353,7 +1353,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "user",
@@ -1364,7 +1364,7 @@
           "writable": true
         },
         {
-          "name": "state",
+          "name": "drift_state",
           "writable": true
         },
         {
@@ -1389,7 +1389,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1579,7 +1579,7 @@
           "writable": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -1630,7 +1630,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -1652,7 +1652,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1720,7 +1720,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -1742,7 +1742,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1805,7 +1805,7 @@
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -1828,7 +1828,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1880,31 +1880,31 @@
       ]
     },
     {
-      "name": "initialize_fund",
+      "name": "initialize_state",
       "docs": [
-        "Fund",
-        "Initializes a fund from the provided FundModel instance.",
+        "State",
+        "Initializes a state account from the provided StateModel instance.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `fund`: An instance of `FundModel` containing the details of the fund to be initialized.",
+        "- `fund`: An instance of `StateModel` containing the details of the state to be initialized.",
         "",
         "# Permission required",
-        "- Manager only, delegates not allowed"
+        "- Owner only, delegates not allowed"
       ],
       "discriminator": [
-        212,
-        42,
-        24,
-        245,
-        146,
-        141,
-        78,
-        198
+        190,
+        171,
+        224,
+        219,
+        217,
+        72,
+        199,
+        176
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1923,13 +1923,13 @@
               },
               {
                 "kind": "arg",
-                "path": "fund_model.created"
+                "path": "state_model.created"
               }
             ]
           }
         },
         {
-          "name": "openfunds",
+          "name": "metadata",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1949,7 +1949,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1974,7 +1974,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -1991,10 +1991,10 @@
       ],
       "args": [
         {
-          "name": "fund",
+          "name": "state",
           "type": {
             "defined": {
-              "name": "FundModel"
+              "name": "StateModel"
             }
           }
         }
@@ -2012,8 +2012,8 @@
         "",
         "# Permission required",
         "- Any of",
-        "- Permission::JupiterSwapAnyAsset: no restrictions.",
-        "- Permission::JupiterSwapFundAssets: input and output are in the assets allowlist.",
+        "- Permission::JupiterSwapAny: no restrictions.",
+        "- Permission::JupiterSwapAllowlisted: input and output are in the assets allowlist.",
         "- Permission::JupiterSwapLst: input and output assets are both LST.",
         "",
         "# Integration required",
@@ -2031,7 +2031,7 @@
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -2054,7 +2054,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -2267,7 +2267,7 @@
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -2290,7 +2290,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -2360,7 +2360,7 @@
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -2383,7 +2383,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -2477,7 +2477,7 @@
           "signer": true
         },
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -2499,7 +2499,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -2678,7 +2678,7 @@
           "signer": true
         },
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -2700,7 +2700,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -2890,7 +2890,7 @@
           "signer": true
         },
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -2912,7 +2912,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -2991,7 +2991,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -3013,7 +3013,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -3077,7 +3077,7 @@
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -3100,7 +3100,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -3224,7 +3224,7 @@
           "writable": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -3274,7 +3274,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -3296,7 +3296,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -3353,7 +3353,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -3375,7 +3375,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -3440,7 +3440,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "share_class",
@@ -3475,7 +3475,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -3573,7 +3573,7 @@
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -3596,7 +3596,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -3642,16 +3642,16 @@
     {
       "name": "set_subscribe_redeem_enabled",
       "docs": [
-        "Enables or disables the subscribe and redeem functionality for the fund.",
+        "Enables or disables the subscribe and redeem functionality.",
         "",
-        "This allows the manager to pause/unpause subscription and redemption of a fund.",
+        "This allows the owner to pause/unpause subscription and redemption of a fund.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
         "- `enabled`: A boolean indicating whether to enable or disable the subscribe and redeem functionality.",
         "",
         "# Permission required",
-        "- Manager only, delegates not allowed"
+        "- Owner only, delegates not allowed"
       ],
       "discriminator": [
         189,
@@ -3665,7 +3665,7 @@
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -3713,7 +3713,7 @@
           "writable": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -3771,7 +3771,7 @@
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -3794,7 +3794,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -3867,7 +3867,7 @@
           "signer": true
         },
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -3889,7 +3889,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -4056,7 +4056,7 @@
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -4079,7 +4079,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -4269,7 +4269,7 @@
           "signer": true
         },
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -4291,7 +4291,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -4383,7 +4383,7 @@
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -4406,7 +4406,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -4499,7 +4499,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -4521,7 +4521,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -4694,7 +4694,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -4716,7 +4716,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -4811,7 +4811,7 @@
           }
         },
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "src_account_policy",
@@ -4882,50 +4882,6 @@
       ]
     },
     {
-      "name": "update_fund",
-      "docs": [
-        "Updates an existing fund with new parameters.",
-        "",
-        "# Parameters",
-        "- `ctx`: The context for the transaction.",
-        "- `fund`: An instance of `FundModel` containing the updated details of the fund.",
-        "",
-        "# Permission required",
-        "- Manager only, delegates not allowed"
-      ],
-      "discriminator": [
-        132,
-        171,
-        13,
-        83,
-        34,
-        122,
-        82,
-        155
-      ],
-      "accounts": [
-        {
-          "name": "fund",
-          "writable": true
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        }
-      ],
-      "args": [
-        {
-          "name": "fund",
-          "type": {
-            "defined": {
-              "name": "FundModel"
-            }
-          }
-        }
-      ]
-    },
-    {
       "name": "update_share_class",
       "docs": [
         "Updates an existing share class with new metadata.",
@@ -4936,7 +4892,7 @@
         "- `share_class_metadata`: An instance of `ShareClassModel` containing the updated metadata for the new share class.",
         "",
         "# Permission required",
-        "- Manager only, delegates not allowed"
+        "- Owner only, delegates not allowed"
       ],
       "discriminator": [
         196,
@@ -4954,7 +4910,7 @@
           "writable": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -4983,16 +4939,60 @@
       ]
     },
     {
+      "name": "update_state",
+      "docs": [
+        "Updates an existing state account with new parameters.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `fund`: An instance of `StateModel` containing the updated details of the state.",
+        "",
+        "# Permission required",
+        "- Owner only, delegates not allowed"
+      ],
+      "discriminator": [
+        135,
+        112,
+        215,
+        75,
+        247,
+        185,
+        53,
+        176
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "writable": true
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "state",
+          "type": {
+            "defined": {
+              "name": "StateModel"
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "withdraw",
       "docs": [
-        "Withdraw an asset from fund treasury into manager's wallet.",
+        "Withdraw asset from vault into owner's wallet.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
         "- `amount`: The amount to withdraw.",
         "",
         "# Permission required",
-        "- Manager only, delegates not allowed"
+        "- Owner only, delegates not allowed"
       ],
       "discriminator": [
         183,
@@ -5006,7 +5006,7 @@
       ],
       "accounts": [
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -5029,7 +5029,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -5095,7 +5095,7 @@
           }
         },
         {
-          "name": "manager_ata",
+          "name": "signer_ata",
           "writable": true,
           "pda": {
             "seeds": [
@@ -5193,7 +5193,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -5215,7 +5215,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -5283,7 +5283,7 @@
           "signer": true
         },
         {
-          "name": "fund",
+          "name": "state",
           "writable": true
         },
         {
@@ -5306,7 +5306,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -5352,7 +5352,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -5374,7 +5374,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -5438,7 +5438,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -5460,7 +5460,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -5595,7 +5595,7 @@
       ],
       "accounts": [
         {
-          "name": "fund"
+          "name": "state"
         },
         {
           "name": "vault",
@@ -5617,7 +5617,7 @@
               },
               {
                 "kind": "account",
-                "path": "fund"
+                "path": "state"
               }
             ]
           }
@@ -6048,7 +6048,7 @@
             }
           },
           {
-            "name": "manager",
+            "name": "owner",
             "type": {
               "option": "pubkey"
             }
@@ -6132,7 +6132,7 @@
             "name": "IntegrationAcls"
           },
           {
-            "name": "ExternalTreasuryAccounts"
+            "name": "ExternalVaultAccounts"
           },
           {
             "name": "LockUp"
@@ -6387,15 +6387,15 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "manager",
+            "name": "owner",
             "type": "pubkey"
           },
           {
-            "name": "treasury",
+            "name": "vault",
             "type": "pubkey"
           },
           {
-            "name": "openfunds",
+            "name": "metadata",
             "type": "pubkey"
           },
           {
@@ -6403,7 +6403,7 @@
             "type": "pubkey"
           },
           {
-            "name": "share_classes",
+            "name": "mints",
             "type": {
               "vec": "pubkey"
             }
@@ -6417,7 +6417,7 @@
             "type": "string"
           },
           {
-            "name": "openfunds_uri",
+            "name": "metadata_uri",
             "type": "string"
           },
           {
@@ -6644,7 +6644,7 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "fund_pubkey",
+            "name": "state_pubkey",
             "type": "pubkey"
           },
           {
@@ -6687,154 +6687,6 @@
                   "defined": {
                     "name": "FundManagerField"
                   }
-                }
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "FundModel",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "id",
-            "type": {
-              "option": "pubkey"
-            }
-          },
-          {
-            "name": "name",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "uri",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "openfunds_uri",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "is_enabled",
-            "type": {
-              "option": "bool"
-            }
-          },
-          {
-            "name": "assets",
-            "type": {
-              "vec": "pubkey"
-            }
-          },
-          {
-            "name": "assets_weights",
-            "type": {
-              "vec": "u32"
-            }
-          },
-          {
-            "name": "external_treasury_accounts",
-            "type": {
-              "vec": "pubkey"
-            }
-          },
-          {
-            "name": "share_classes",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "ShareClassModel"
-                }
-              }
-            }
-          },
-          {
-            "name": "company",
-            "type": {
-              "option": {
-                "defined": {
-                  "name": "CompanyModel"
-                }
-              }
-            }
-          },
-          {
-            "name": "manager",
-            "type": {
-              "option": {
-                "defined": {
-                  "name": "ManagerModel"
-                }
-              }
-            }
-          },
-          {
-            "name": "created",
-            "type": {
-              "option": {
-                "defined": {
-                  "name": "CreatedModel"
-                }
-              }
-            }
-          },
-          {
-            "name": "delegate_acls",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "DelegateAcl"
-                }
-              }
-            }
-          },
-          {
-            "name": "integration_acls",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "IntegrationAcl"
-                }
-              }
-            }
-          },
-          {
-            "name": "drift_market_indexes_perp",
-            "type": {
-              "vec": "u32"
-            }
-          },
-          {
-            "name": "drift_market_indexes_spot",
-            "type": {
-              "vec": "u32"
-            }
-          },
-          {
-            "name": "drift_order_types",
-            "type": {
-              "vec": "u32"
-            }
-          },
-          {
-            "name": "is_raw_openfunds",
-            "type": "bool"
-          },
-          {
-            "name": "raw_openfunds",
-            "type": {
-              "option": {
-                "defined": {
-                  "name": "FundOpenfundsModel"
                 }
               }
             }
@@ -7464,10 +7316,10 @@
             "name": "LiquidUnstake"
           },
           {
-            "name": "JupiterSwapFundAssets"
+            "name": "JupiterSwapAllowlisted"
           },
           {
-            "name": "JupiterSwapAnyAsset"
+            "name": "JupiterSwapAny"
           },
           {
             "name": "WSolWrap"
@@ -8679,6 +8531,148 @@
       }
     },
     {
+      "name": "StateModel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "uri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "metadata_uri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "is_enabled",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "assets",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "external_vault_accounts",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "mints",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "ShareClassModel"
+                }
+              }
+            }
+          },
+          {
+            "name": "company",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "CompanyModel"
+                }
+              }
+            }
+          },
+          {
+            "name": "owner",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "ManagerModel"
+                }
+              }
+            }
+          },
+          {
+            "name": "created",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "CreatedModel"
+                }
+              }
+            }
+          },
+          {
+            "name": "delegate_acls",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "DelegateAcl"
+                }
+              }
+            }
+          },
+          {
+            "name": "integration_acls",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "IntegrationAcl"
+                }
+              }
+            }
+          },
+          {
+            "name": "drift_market_indexes_perp",
+            "type": {
+              "vec": "u32"
+            }
+          },
+          {
+            "name": "drift_market_indexes_spot",
+            "type": {
+              "vec": "u32"
+            }
+          },
+          {
+            "name": "drift_order_types",
+            "type": {
+              "vec": "u32"
+            }
+          },
+          {
+            "name": "is_raw_openfunds",
+            "type": "bool"
+          },
+          {
+            "name": "raw_openfunds",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "FundOpenfundsModel"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "Vote",
       "docs": [
         "Account: Vote"
@@ -8745,9 +8739,24 @@
   ],
   "constants": [
     {
-      "name": "SEED",
+      "name": "SEED_METADATA",
       "type": "string",
-      "value": "\"anchor\""
+      "value": "\"openfunds\""
+    },
+    {
+      "name": "SEED_MINT",
+      "type": "string",
+      "value": "\"share\""
+    },
+    {
+      "name": "SEED_STATE",
+      "type": "string",
+      "value": "\"fund\""
+    },
+    {
+      "name": "SEED_VAULT",
+      "type": "string",
+      "value": "\"treasury\""
     }
   ]
 }

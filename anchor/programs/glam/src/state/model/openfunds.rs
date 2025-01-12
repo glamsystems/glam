@@ -7,8 +7,8 @@ use super::*;
 
 // Fund
 
-impl From<FundModel> for Vec<FundField> {
-    fn from(model: FundModel) -> Self {
+impl From<StateModel> for Vec<FundField> {
+    fn from(model: StateModel) -> Self {
         let mut res = vec![];
         // Raw Openfund fields
         if let Some(model) = model.raw_openfunds {

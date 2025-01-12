@@ -15,7 +15,7 @@ import {
 
 import { BaseClient, TxOptions } from "./base";
 import { WSOL } from "../constants";
-import { FundModel } from "../models";
+import { StateModel } from "../models";
 
 export class InvestorClient {
   public constructor(readonly base: BaseClient) {}
@@ -25,19 +25,19 @@ export class InvestorClient {
    */
 
   public async subscribe(
-    fund: PublicKey,
+    statePda: PublicKey,
     asset: PublicKey,
     amount: BN,
-    fundModel?: FundModel,
+    stateModel?: StateModel,
     shareClassId: number = 0,
     skipState: boolean = true,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const tx = await this.subscribeTx(
-      fund,
+      statePda,
       asset,
       amount,
-      fundModel,
+      stateModel,
       shareClassId,
       skipState,
       txOptions,
@@ -46,19 +46,19 @@ export class InvestorClient {
   }
 
   public async redeem(
-    fund: PublicKey,
+    statePda: PublicKey,
     amount: BN,
     inKind: boolean = false,
-    fundModel?: FundModel,
+    stateModel?: StateModel,
     shareClassId: number = 0,
     skipState: boolean = true,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const tx = await this.redeemTx(
-      fund,
+      statePda,
       amount,
       inKind,
-      fundModel,
+      stateModel,
       shareClassId,
       skipState,
       txOptions,
@@ -71,10 +71,10 @@ export class InvestorClient {
    */
 
   public async subscribeTx(
-    fund: PublicKey,
+    statePda: PublicKey,
     asset: PublicKey,
     amount: BN,
-    fundModel?: FundModel,
+    stateModel?: StateModel,
     shareClassId: number = 0,
     skipState: boolean = true,
     txOptions: TxOptions = {},
@@ -82,13 +82,17 @@ export class InvestorClient {
     const signer = txOptions.signer || this.base.getSigner();
 
     // share class token to receive
-    const shareClass = this.base.getShareClassPDA(fund, shareClassId);
+    const shareClass = this.base.getShareClassPda(statePda, shareClassId);
     const signerShareAta = this.base.getShareClassAta(signer, shareClass);
 
     // asset token to transfer
     const assetMeta = this.base.getAssetMeta(asset.toBase58());
-    const vault = this.base.getVaultPda(fund);
-    const vaultAta = this.base.getVaultAta(fund, asset, assetMeta?.programId);
+    const vault = this.base.getVaultPda(statePda);
+    const vaultAta = this.base.getVaultAta(
+      statePda,
+      asset,
+      assetMeta?.programId,
+    );
     const signerAssetAta = getAssociatedTokenAddressSync(
       asset,
       signer,
@@ -100,12 +104,16 @@ export class InvestorClient {
     // 1. treasury atas + pricing to compute AUM
     // 2. marinade ticket
     // 3. stake accounts
-    if (!fundModel) {
-      fundModel = await this.base.fetchFund(fund);
+    if (!stateModel) {
+      stateModel = await this.base.fetchState(statePda);
     }
-    let remainingAccounts = fundModel.assets.flatMap((asset) => {
+    let remainingAccounts = stateModel.assets.flatMap((asset) => {
       const assetMeta = this.base.getAssetMeta(asset.toBase58());
-      const vaultAta = this.base.getVaultAta(fund, asset, assetMeta?.programId);
+      const vaultAta = this.base.getVaultAta(
+        statePda,
+        asset,
+        assetMeta?.programId,
+      );
 
       return [
         { pubkey: vaultAta, isSigner: false, isWritable: false },
@@ -120,7 +128,7 @@ export class InvestorClient {
     });
 
     remainingAccounts = remainingAccounts.concat(
-      fundModel.externalTreasuryAccounts.map((address) => ({
+      stateModel.externalVaultAccounts.map((address) => ({
         pubkey: address,
         isSigner: false,
         isWritable: false,
@@ -182,7 +190,7 @@ export class InvestorClient {
     const tx = await this.base.program.methods
       .subscribe(0, amount, skipState)
       .accounts({
-        fund,
+        state: statePda,
         shareClass,
         asset,
         vaultAta,
@@ -199,10 +207,10 @@ export class InvestorClient {
   }
 
   public async redeemTx(
-    fund: PublicKey,
+    statePda: PublicKey,
     amount: BN,
     inKind: boolean = false,
-    fundModel?: FundModel,
+    stateModel?: StateModel,
     shareClassId: number = 0,
     skipState: boolean = true,
     txOptions: TxOptions = {},
@@ -210,17 +218,20 @@ export class InvestorClient {
     const signer = txOptions.signer || this.base.getSigner();
 
     // share class token to receive
-    const shareClass = this.base.getShareClassPDA(fund, shareClassId);
+    const shareClass = this.base.getShareClassPda(statePda, shareClassId);
     const signerShareAta = this.base.getShareClassAta(signer, shareClass);
 
     // remaining accounts = assets + signer atas + treasury atas + pricing to compute AUM
-    if (!fundModel) {
-      //@ts-ignore
-      fundModel = await this.base.fetchFund(fund);
+    if (!stateModel) {
+      stateModel = await this.base.fetchState(statePda);
     }
-    let remainingAccounts = (fundModel.assets || []).flatMap((asset: any) => {
+    let remainingAccounts = (stateModel.assets || []).flatMap((asset: any) => {
       const assetMeta = this.base.getAssetMeta(asset.toBase58());
-      const vaultAta = this.base.getVaultAta(fund, asset, assetMeta?.programId);
+      const vaultAta = this.base.getVaultAta(
+        statePda,
+        asset,
+        assetMeta?.programId,
+      );
       const signerAta = getAssociatedTokenAddressSync(
         asset,
         signer,
@@ -243,7 +254,7 @@ export class InvestorClient {
     });
 
     remainingAccounts = remainingAccounts.concat(
-      (fundModel.externalTreasuryAccounts || []).map((address: PublicKey) => ({
+      (stateModel.externalVaultAccounts || []).map((address: PublicKey) => ({
         pubkey: address,
         isSigner: false,
         isWritable: false,
@@ -252,7 +263,7 @@ export class InvestorClient {
 
     const preInstructions = (
       await Promise.all(
-        (fundModel.assets || []).map(async (asset: any, j: number) => {
+        (stateModel.assets || []).map(async (asset: any, j: number) => {
           // not in kind, we only need the base asset ATA
           if (!inKind && j > 0) {
             return null;
@@ -280,7 +291,7 @@ export class InvestorClient {
     const tx = await this.base.program.methods
       .redeem(amount, inKind, skipState)
       .accounts({
-        fund,
+        state: statePda,
         shareClass,
         signerShareAta,
         //TODO: only add if the fund has lock-up? (just for efficiency)

@@ -232,14 +232,13 @@ filename = "./fixtures/accounts/J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn.jso
 address = "3R3nGZpQs2aZo5FDQvd2MUQ6R7KhAPainds6uT6uE2mn"
 filename = "./fixtures/accounts/3R3nGZpQs2aZo5FDQvd2MUQ6R7KhAPainds6uT6uE2mn.json"
 
-[[test.validator.account]] # validator stake account
+[[test.validator.account]] # stake account delegated to StepeLdhJ2znRjHcZdjwMWsC4nTRURNKQY8Nca82LJp
 address = "HUQEx8TDgEnhtuq6iXj9Rg3yVyX4tF85kS1k7jTnAaqR"
 filename = "./fixtures/accounts/HUQEx8TDgEnhtuq6iXj9Rg3yVyX4tF85kS1k7jTnAaqR.json"
 
-# uncomment for stake-pool test
-#[[test.validator.account]] # vote account
-#address = "StepeLdhJ2znRjHcZdjwMWsC4nTRURNKQY8Nca82LJp"
-#filename = "./fixtures/accounts/StepeLdhJ2znRjHcZdjwMWsC4nTRURNKQY8Nca82LJp.json"
+[[test.validator.account]] # stake account delegated to GJQjnyhSG9jN1AdMHTSyTxUR44hJHEGCmNzkidw9z3y8
+address = "8y2hnDmfyvP4FyotiTHWSq7es78zA8P9M46JSByy9Zma"
+filename = "./fixtures/accounts/8y2hnDmfyvP4FyotiTHWSq7es78zA8P9M46JSByy9Zma.json"
 
 #
 # Stake pool - SanctumSpl

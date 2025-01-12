@@ -5,10 +5,10 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { redirect } from "next/navigation";
 
 export default function VaultsHome() {
-  const { activeFund } = useGlam();
+  const { activeGlamState } = useGlam();
   const wallet = useWallet();
 
   redirect(
-    wallet.connected && activeFund ? "/vault/holdings" : "/vault/create",
+    wallet.connected && activeGlamState ? "/vault/holdings" : "/vault/create",
   );
 }

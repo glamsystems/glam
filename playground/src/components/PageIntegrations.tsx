@@ -16,14 +16,14 @@ import { allIntegrations, Integration } from "./integrations/data";
 import { useGlam, IntegrationName } from "@glam/anchor/react";
 
 export default function PageIntegrations() {
-  const { glamClient, allFunds, activeFund } = useGlam();
+  const { glamClient, allGlamStates, activeGlamState } = useGlam();
   const [selected, setSelected] = useState(0);
 
   const toggleIntegration = useCallback(
     async (integ: Integration) => {
       setSelected(integ.id);
 
-      if (!activeFund?.address) {
+      if (!activeGlamState?.address) {
         return;
       }
 
@@ -36,30 +36,31 @@ export default function PageIntegrations() {
 
       const action = integ.enabled ? "disable" : "enable";
 
-      const fundModel = (allFunds || []).find(
-        (f) => f.idStr === activeFund?.address,
+      const stateModel = (allGlamStates || []).find(
+        (s) => s.idStr === activeGlamState?.address,
       );
-      const updatedFund =
+      const updated =
         action === "disable"
           ? {
-              integrationAcls: fundModel!.integrationAcls.filter(
+              integrationAcls: stateModel!.integrationAcls.filter(
                 // @ts-ignore
                 (acl) => Object.keys(acl.name)[0] !== integration,
               ),
             }
           : {
               integrationAcls: [
-                ...fundModel!.integrationAcls,
+                ...stateModel!.integrationAcls,
                 {
+                  // @ts-ignore
                   name: { [integration]: {} } as IntegrationName,
                   features: [],
                 },
               ],
             };
       try {
-        const txSig = await glamClient.fund.updateFund(
-          activeFund.pubkey,
-          updatedFund,
+        const txSig = await glamClient.state.updateState(
+          activeGlamState.pubkey,
+          updated,
         );
         toast({
           title: `Successfully ${action}d integration ${integration}`,
@@ -75,13 +76,13 @@ export default function PageIntegrations() {
         });
       }
     },
-    [activeFund, glamClient, allFunds],
+    [activeGlamState, glamClient, allGlamStates],
   );
 
   useEffect(() => {
     const enabled =
-      (allFunds || [])
-        .find((f) => f.idStr === activeFund?.address)
+      (allGlamStates || [])
+        .find((s) => s.idStr === activeGlamState?.address)
         ?.integrationAcls.map((acl) =>
           Object.keys(acl.name)[0].toLowerCase(),
         ) || [];
@@ -91,7 +92,7 @@ export default function PageIntegrations() {
         allIntegrations[index].enabled = true;
       }
     });
-  }, [allFunds, activeFund]);
+  }, [allGlamStates, activeGlamState]);
 
   return (
     <PageContentWrapper>

@@ -1,10 +1,11 @@
 import * as anchor from "@coral-xyz/anchor";
 import {
-  FundModel,
+  StateModel,
   IntegrationName,
   PriorityLevel,
   WSOL,
   getPriorityFeeEstimate,
+  GlamClient,
 } from "@glam/anchor";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { Command } from "commander";
@@ -12,7 +13,7 @@ import { Command } from "commander";
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { getGlamClient, setFundToConfig } from "./utils";
+import { setStateToConfig } from "./utils";
 import { QuoteParams } from "anchor/src/client/jupiter";
 import { VersionedTransaction } from "@solana/web3.js";
 
@@ -24,17 +25,30 @@ const configPath = path.join(
   "config.json",
 );
 
-let fundPDA;
+let statePda;
 let heliusApiKey;
 let priorityFeeLevel = "Low" as PriorityLevel; // Defaults to Low
 try {
   const config = fs.readFileSync(configPath, "utf8");
-  const { keypair_path, helius_api_key, priority_fee_level, fund } =
-    JSON.parse(config);
-  process.env.ANCHOR_PROVIDER_URL = `https://devnet.helius-rpc.com/?api-key=${helius_api_key}`;
+  const {
+    keypair_path,
+    helius_api_key,
+    priority_fee_level,
+    cluster,
+    glam_state,
+  } = JSON.parse(config);
+  if (cluster.toLowerCase().startsWith("mainnet")) {
+    process.env.ANCHOR_PROVIDER_URL = `https://mainnet.helius-rpc.com/?api-key=${helius_api_key}`;
+  } else if (cluster.toLowerCase().startsWith("devnet")) {
+    process.env.ANCHOR_PROVIDER_URL = `https://devnet.helius-rpc.com/?api-key=${helius_api_key}`;
+  } else if (cluster.toLowerCase().startsWith("localnet")) {
+    process.env.ANCHOR_PROVIDER_URL = "http://localhost:8899";
+  } else {
+    throw new Error(`Unsupported cluster: ${cluster}`);
+  }
   process.env.ANCHOR_WALLET = keypair_path;
-  if (fund) {
-    fundPDA = new PublicKey(fund);
+  if (glam_state) {
+    statePda = new PublicKey(glam_state);
   }
   heliusApiKey = helius_api_key;
   priorityFeeLevel = priority_fee_level ?? priorityFeeLevel;
@@ -47,7 +61,7 @@ const cliTxOptions = {
     await getPriorityFeeEstimate(heliusApiKey, tx, undefined, priorityFeeLevel),
 };
 
-const glamClient = getGlamClient();
+const glamClient = new GlamClient();
 
 const program = new Command();
 
@@ -63,10 +77,10 @@ program
     console.log("Wallet connected:", glamClient.getSigner().toBase58());
     console.log("RPC endpoint:", glamClient.provider.connection.rpcEndpoint);
     console.log("Priority fee level:", priorityFeeLevel);
-    console.log("Active fund:", fundPDA ? fundPDA.toBase58() : "not set");
-    if (fundPDA) {
-      const vault = glamClient.getVaultPda(fundPDA);
-      console.log("Vault:", vault.toBase58());
+    console.log("Glam state:", statePda ? statePda.toBase58() : "not set");
+    if (statePda) {
+      const vault = glamClient.getVaultPda(statePda);
+      console.log("Active vault:", vault.toBase58());
     }
   });
 
@@ -76,12 +90,12 @@ program
   .option("-m, --manager-only", "Only list funds with full manager access")
   .option("-a, --all", "All GLAM funds")
   .action(async () => {
-    const funds = await glamClient.fetchAllFunds();
+    const funds = await glamClient.fetchAllGlamStates();
     funds
       .sort((a, b) =>
         a.rawOpenfunds.fundLaunchDate > b.rawOpenfunds.fundLaunchDate ? 1 : -1,
       )
-      .map((f: FundModel) => {
+      .map((f: StateModel) => {
         console.log(
           f.id.toBase58(),
           "\t",
@@ -98,8 +112,25 @@ fund
   .command("set <fund>")
   .description("Set active fund")
   .action((fund) => {
-    setFundToConfig(fund, configPath);
+    setStateToConfig(fund, configPath);
     console.log("Active fund set to:", fund);
+  });
+
+fund
+  .command("view [state]")
+  .description("View a glam state")
+  .action(async (state?) => {
+    if (state) {
+      const glamState = await glamClient.fetchState(new PublicKey(state));
+      console.log(JSON.stringify(glamState, null, 2));
+      return;
+    }
+    if (statePda) {
+      const glamState = await glamClient.fetchState(statePda);
+      console.log(JSON.stringify(glamState, null, 2));
+      return;
+    }
+    console.error("Please specify a glam state to view.");
   });
 
 fund
@@ -107,22 +138,22 @@ fund
   .description("Create fund from a json file")
   .action(async (file) => {
     const data = fs.readFileSync(file, "utf8");
-    const fundData = JSON.parse(data);
+    const glamState = JSON.parse(data);
 
     // Convert pubkey strings to PublicKey objects
-    for (let i = 0; i < fundData.shareClasses.length; ++i) {
-      fundData.shareClasses[i].asset = new PublicKey(
-        fundData.shareClasses[i].asset,
+    for (let i = 0; i < glamState?.shareClasses?.length || 0; ++i) {
+      glamState.shareClasses[i].asset = new PublicKey(
+        glamState.shareClasses[i].asset,
       );
     }
-    fundData.assets = fundData.assets.map((a) => new PublicKey(a));
+    glamState.assets = glamState.assets.map((a) => new PublicKey(a));
 
     try {
-      const [txSig, fundPDA] = await glamClient.fund.createFund(fundData);
-      console.log("Fund created:", fundPDA.toBase58());
+      const [txSig, statePda] = await glamClient.state.createState(glamState);
+      console.log("Glam state created:", statePda.toBase58());
       console.log("txSig:", txSig);
 
-      setFundToConfig(fundPDA.toBase58(), configPath);
+      setStateToConfig(statePda.toBase58(), configPath);
     } catch (e) {
       console.error(e);
       process.exit(1);
@@ -133,32 +164,32 @@ fund
   .command("close <fund>")
   .description("Close the fund")
   .action(async (f) => {
-    const fundPDA = new PublicKey(f);
+    const statePda = new PublicKey(f);
 
     const preInstructions = [];
-    const fundAccount = await glamClient.fetchFundAccount(fundPDA);
-    if (fundAccount.shareClasses.length > 0) {
+    const stateAccount = await glamClient.fetchStateAccount(statePda);
+    if (stateAccount.mints.length > 0) {
       const closeShareClassIx = await glamClient.program.methods
         .closeShareClass(0)
         .accounts({
-          fund: fundPDA,
-          shareClassMint: glamClient.getShareClassPDA(fundPDA, 0),
-          openfunds: glamClient.getOpenfundsPDA(fundPDA),
+          state: statePda,
+          shareClassMint: glamClient.getShareClassPda(statePda, 0),
+          metadata: glamClient.getOpenfundsPda(statePda),
         })
         .instruction();
       preInstructions.push(closeShareClassIx);
     }
     try {
       const builder = await glamClient.program.methods
-        .closeFund()
+        .closeState()
         .accounts({
-          fund: fundPDA,
-          openfunds: glamClient.getOpenfundsPDA(fundPDA),
+          state: statePda,
+          metadata: glamClient.getOpenfundsPda(statePda),
         })
         .preInstructions(preInstructions);
 
       const txSig = await builder.rpc();
-      console.log(`Fund ${fundPDA.toBase58()} closed:`, txSig);
+      console.log(`Fund ${statePda.toBase58()} closed:`, txSig);
     } catch (e) {
       console.error(e);
       process.exit(1);
@@ -169,7 +200,7 @@ fund
   .command("withdraw <asset> <amount>")
   .description("Withdraw <asset> (mint address) from the vault")
   .action(async (asset, amount) => {
-    if (!fundPDA) {
+    if (!statePda) {
       console.error("Error: fund not set");
       process.exit(1);
     }
@@ -182,8 +213,8 @@ fund
 
     const { mint } = await glamClient.fetchMintWithOwner(new PublicKey(asset));
 
-    await glamClient.fund.withdraw(
-      fundPDA,
+    await glamClient.state.withdraw(
+      statePda,
       new PublicKey(asset),
       new anchor.BN(parseFloat(amount) * mint.decimals),
       cliTxOptions,
@@ -195,17 +226,17 @@ delegate
   .command("get")
   .description("List fund delegates and permissions")
   .action(async () => {
-    if (!fundPDA) {
+    if (!statePda) {
       console.error("Error: fund not set");
       process.exit(1);
     }
 
-    const fundModel = await glamClient.fetchFund(fundPDA);
-    const cnt = fundModel.delegateAcls.length;
+    const stateModel = await glamClient.fetchState(statePda);
+    const cnt = stateModel.delegateAcls.length;
     console.log(
-      `Fund ${fundPDA.toBase58()} has ${cnt} delegate acl${cnt > 1 ? "s" : ""}`,
+      `Fund ${statePda.toBase58()} has ${cnt} delegate acl${cnt > 1 ? "s" : ""}`,
     );
-    for (let [i, acl] of fundModel.delegateAcls.entries()) {
+    for (let [i, acl] of stateModel.delegateAcls.entries()) {
       console.log(
         `[${i}] ${acl.pubkey.toBase58()}:`,
         acl.permissions.map((p) => Object.keys(p)[0]).join(", "),
@@ -217,7 +248,7 @@ delegate
   .command("set <pubkey> <permissions>")
   .description("Set delegate permissions")
   .action(async (pubkey, permissions) => {
-    if (!fundPDA) {
+    if (!statePda) {
       console.error("Error: fund not set");
       process.exit(1);
     }
@@ -226,7 +257,7 @@ delegate
       [p]: {},
     }));
     try {
-      const txSig = await glamClient.fund.upsertDelegateAcls(fundPDA, [
+      const txSig = await glamClient.state.upsertDelegateAcls(statePda, [
         {
           pubkey: new PublicKey(pubkey),
           permissions: glamPermissions,
@@ -246,19 +277,19 @@ integration
   .command("get")
   .description("List enabled integrations")
   .action(async () => {
-    if (!fundPDA) {
+    if (!statePda) {
       console.error("Error: fund not set");
       process.exit(1);
     }
 
-    const fundModel = await glamClient.fetchFund(fundPDA);
-    const cnt = fundModel.integrationAcls.length;
+    const stateModel = await glamClient.fetchState(statePda);
+    const cnt = stateModel.integrationAcls.length;
     console.log(
-      `Fund ${fundPDA.toBase58()} has ${cnt} integration${
+      `Fund ${statePda.toBase58()} has ${cnt} integration${
         cnt > 1 ? "s" : ""
       } enabled`,
     );
-    for (let [i, acl] of fundModel.integrationAcls.entries()) {
+    for (let [i, acl] of stateModel.integrationAcls.entries()) {
       console.log(`[${i}] ${Object.keys(acl.name)[0]}`);
     }
   });
@@ -267,35 +298,35 @@ integration
   .command("enable <integration>")
   .description("Enable an integration")
   .action(async (integration) => {
-    if (!fundPDA) {
+    if (!statePda) {
       console.error("Error: fund not set");
       process.exit(1);
     }
 
-    const fundModel = await glamClient.fetchFund(fundPDA);
-    const acl = fundModel.integrationAcls.find(
+    const stateModel = await glamClient.fetchState(statePda);
+    const acl = stateModel.integrationAcls.find(
       (integ) => Object.keys(integ.name)[0] === integration,
     );
     if (acl) {
       console.log(
-        `${integration} is already enabled on fund ${fundPDA.toBase58()}`,
+        `${integration} is already enabled on fund ${statePda.toBase58()}`,
       );
       process.exit(0);
     }
 
-    const updatedFund = new FundModel({
+    const updatedFund = new StateModel({
       integrationAcls: [
-        ...fundModel.integrationAcls,
+        ...stateModel.integrationAcls,
         { name: { [integration]: {} } as IntegrationName, features: [] },
       ],
     });
 
     try {
       const txSig = await glamClient.program.methods
-        .updateFund(updatedFund)
-        .accounts({ fund: fundPDA })
+        .updateState(updatedFund)
+        .accounts({ state: statePda })
         .rpc();
-      console.log(`${integration} enabled on fund ${fundPDA.toBase58()}`);
+      console.log(`${integration} enabled on fund ${statePda.toBase58()}`);
       console.log("txSig:", txSig);
     } catch (e) {
       console.error(e);
@@ -307,34 +338,34 @@ integration
   .command("disable <integration>")
   .description("Disable an integration")
   .action(async (integration) => {
-    if (!fundPDA) {
+    if (!statePda) {
       console.error("Error: fund not set");
       process.exit(1);
     }
 
-    const fundModel = await glamClient.fetchFund(fundPDA);
-    const acl = fundModel.integrationAcls.find(
+    const stateModel = await glamClient.fetchState(statePda);
+    const acl = stateModel.integrationAcls.find(
       (integ) => Object.keys(integ.name)[0] === integration,
     );
     if (!acl) {
       console.log(
-        `${integration} is not enabled on fund ${fundPDA.toBase58()}`,
+        `${integration} is not enabled on fund ${statePda.toBase58()}`,
       );
       process.exit(0);
     }
 
-    const updatedFund = new FundModel({
-      integrationAcls: fundModel.integrationAcls.filter(
+    const updatedFund = new StateModel({
+      integrationAcls: stateModel.integrationAcls.filter(
         (integ) => Object.keys(integ.name)[0] !== integration,
       ),
     });
 
     try {
       const txSig = await glamClient.program.methods
-        .updateFund(updatedFund)
-        .accounts({ fund: fundPDA })
+        .updateState(updatedFund)
+        .accounts({ state: statePda })
         .rpc();
-      console.log(`${integration} disabled on fund ${fundPDA.toBase58()}`);
+      console.log(`${integration} disabled on fund ${statePda.toBase58()}`);
       console.log("txSig:", txSig);
     } catch (e) {
       console.error(e);
@@ -347,14 +378,14 @@ jup
   .command("stake <amount>")
   .description("Stake JUP tokens")
   .action(async (amount) => {
-    if (!fundPDA) {
+    if (!statePda) {
       console.error("Error: fund not set");
       process.exit(1);
     }
 
     try {
       const txId = await glamClient.jupiter.stakeJup(
-        fundPDA,
+        statePda,
         new anchor.BN(amount * 10 ** 6), // decimals 6
       );
       console.log("stakeJup txId", txId);
@@ -368,7 +399,7 @@ jup
   .command("unstake")
   .description("Unstake JUP tokens")
   .action(async () => {
-    if (!fundPDA) {
+    if (!statePda) {
       console.error("Error: fund not set");
       process.exit(1);
     }
@@ -380,7 +411,7 @@ const vote = fund
   .command("vote <proposal> <side>")
   .description("Vote on a proposal")
   .action(async (_proposal, side) => {
-    if (!fundPDA) {
+    if (!statePda) {
       console.error("Error: fund not set");
       process.exit(1);
     }
@@ -400,7 +431,7 @@ const vote = fund
 
     try {
       const txId = await glamClient.jupiter.voteOnProposal(
-        fundPDA,
+        statePda,
         proposal,
         governor,
         Number(side),
@@ -416,14 +447,14 @@ fund
   .command("wrap <amount>")
   .description("Wrap SOL")
   .action(async (amount) => {
-    if (!fundPDA) {
+    if (!statePda) {
       console.error("Error: fund not set");
       process.exit(1);
     }
 
     try {
       const txSig = await glamClient.wsol.wrap(
-        fundPDA,
+        statePda,
         new anchor.BN(parseFloat(amount) * LAMPORTS_PER_SOL),
         cliTxOptions,
       );
@@ -438,13 +469,13 @@ fund
   .command("unwrap")
   .description("Unwrap wSOL")
   .action(async () => {
-    if (!fundPDA) {
+    if (!statePda) {
       console.error("Error: fund not set");
       process.exit(1);
     }
 
     try {
-      const txSig = await glamClient.wsol.unwrap(fundPDA, cliTxOptions);
+      const txSig = await glamClient.wsol.unwrap(statePda, cliTxOptions);
       console.log(`All wSOL unwrapped:`, txSig);
     } catch (e) {
       console.error(e);
@@ -460,13 +491,13 @@ fund
     "Show all assets including token accounts with 0 balance",
   )
   .action(async (options) => {
-    if (!fundPDA) {
+    if (!statePda) {
       console.error("Error: fund not set");
       process.exit(1);
     }
 
     const { all } = options;
-    const vault = glamClient.getVaultPda(fundPDA);
+    const vault = glamClient.getVaultPda(statePda);
     const tokenAccounts = await glamClient.getTokenAccountsByOwner(vault);
     const solBalance = await glamClient.provider.connection.getBalance(vault);
 
@@ -543,7 +574,7 @@ fund
     console.log("Quote params:", quoteParams);
     try {
       const txSig = await glamClient.jupiter.swap(
-        fundPDA,
+        statePda,
         quoteParams,
         undefined,
         undefined,
@@ -568,14 +599,14 @@ lst
   .command("unstake <asset> <amount>")
   .description("Unstake <amount> worth of <asset> (mint address)")
   .action(async (asset, amount) => {
-    if (!fundPDA) {
+    if (!statePda) {
       console.error("Error: fund not set");
       process.exit(1);
     }
 
     try {
       const txSig = await glamClient.staking.unstake(
-        fundPDA,
+        statePda,
         new PublicKey(asset),
         //TODO: better decimals (even though all LSTs have 9 right now)
         new anchor.BN(parseFloat(amount) * LAMPORTS_PER_SOL),
@@ -591,14 +622,14 @@ lst
   .command("list")
   .description("List all staking accounts")
   .action(async () => {
-    if (!fundPDA) {
+    if (!statePda) {
       console.error("Error: fund not set");
       process.exit(1);
     }
 
     try {
       let stakeAccounts = await glamClient.staking.getStakeAccountsWithStates(
-        glamClient.getVaultPda(fundPDA),
+        glamClient.getVaultPda(statePda),
       );
       console.log(
         "Account                                     ",
@@ -625,14 +656,14 @@ lst
   .command("withdraw <accounts>")
   .description("Withdraw staking accounts (comma-separated)")
   .action(async (accounts) => {
-    if (!fundPDA) {
+    if (!statePda) {
       console.error("Error: fund not set");
       process.exit(1);
     }
 
     try {
       const txSig = await glamClient.staking.withdrawFromStakeAccounts(
-        fundPDA,
+        statePda,
         accounts.split(",").map((addr: string) => new PublicKey(addr)),
       );
       console.log(`Withdrew from ${accounts}:`, txSig);
@@ -645,13 +676,13 @@ lst
   .command("marinade-list")
   .description("List all Marinade tickets")
   .action(async () => {
-    if (!fundPDA) {
+    if (!statePda) {
       console.error("Error: fund not set");
       process.exit(1);
     }
 
     try {
-      let stakeAccounts = await glamClient.marinade.getTickets(fundPDA);
+      let stakeAccounts = await glamClient.marinade.getTickets(statePda);
       console.log(
         "Ticket                                      ",
         "\t",
@@ -677,14 +708,14 @@ lst
   .command("marinade-claim <tickets>")
   .description("Claim Marinade tickets (comma-separated)")
   .action(async (tickets) => {
-    if (!fundPDA) {
+    if (!statePda) {
       console.error("Error: fund not set");
       process.exit(1);
     }
 
     try {
       const txSig = await glamClient.marinade.claimTickets(
-        fundPDA,
+        statePda,
         tickets.split(",").map((addr: string) => new PublicKey(addr)),
       );
       console.log(`Claimed ${tickets}:`, txSig);

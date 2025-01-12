@@ -14,15 +14,12 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { FundModel, ShareClassModel, useGlam } from "@glam/anchor/react";
+import { StateModel, useGlam } from "@glam/anchor/react";
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PublicKey } from "@solana/web3.js";
 import Sparkle from "@/utils/Sparkle";
-import SparkleColorMatcher, {
-  getColorInfo,
-  ColorInfo,
-} from "@/utils/SparkleColorMatcher";
+import { getColorInfo, ColorInfo } from "@/utils/SparkleColorMatcher";
 import TruncateAddress from "@/utils/TruncateAddress";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -165,10 +162,12 @@ function processHolderData(
   };
 }
 
-async function updateHoldersData(fundModel: FundModel): Promise<HolderData[]> {
+async function updateHoldersData(
+  stateModel: StateModel,
+): Promise<HolderData[]> {
   const holdersData = await Promise.all(
-    fundModel.shareClasses.map(async (shareClassModel, i) => {
-      const mintAddress = fundModel.shareClassMints[i].toBase58();
+    stateModel.mints.map(async (shareClassModel, i) => {
+      const mintAddress = stateModel.shareClassMints[i].toBase58();
       const holderData = await fetchHolderData(mintAddress);
       if (!holderData) {
         console.error(`Failed to fetch holder data for mint: ${mintAddress}`);
@@ -193,7 +192,7 @@ async function updateHoldersData(fundModel: FundModel): Promise<HolderData[]> {
   return holdersData.filter((item) => item !== null) as HolderData[];
 }
 
-const ChartComponent: React.FC<{ fundModel: FundModel; holdersConfig: any }> =
+const ChartComponent: React.FC<{ fundModel: StateModel; holdersConfig: any }> =
   React.memo(({ fundModel, holdersConfig }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [showSkeleton, setShowSkeleton] = useState(true); // **New State**
@@ -312,9 +311,9 @@ export default function ProductPage() {
   const params = useParams();
   const router = useRouter();
   const { product } = params;
-  const { allFunds } = useGlam();
+  const { allGlamStates } = useGlam();
 
-  const isAllFundsLoading = !allFunds;
+  const isAllFundsLoading = !allGlamStates;
 
   const fundPublicKey = useMemo(() => {
     if (!product) return null;
@@ -326,10 +325,11 @@ export default function ProductPage() {
     }
   }, [product]);
 
-  const fundModel = useMemo(() => {
-    if (!allFunds || allFunds.length === 0 || !fundPublicKey) return null;
-    return allFunds.find((f) => f.idStr === product);
-  }, [allFunds, fundPublicKey, product]);
+  const stateModel = useMemo(() => {
+    if (!allGlamStates || allGlamStates.length === 0 || !fundPublicKey)
+      return null;
+    return allGlamStates.find((f) => f.idStr === product);
+  }, [allGlamStates, fundPublicKey, product]);
 
   //Mark the client as ready once mounted (to prevent server-side rendering issues)
   useEffect(() => {
@@ -356,9 +356,9 @@ export default function ProductPage() {
       "PublicKey:",
       fundPublicKey,
       "Fund:",
-      fundModel,
+      stateModel,
       "AllFunds:",
-      allFunds,
+      allGlamStates,
     );
 
     if (clientReady && !isAllFundsLoading) {
@@ -367,7 +367,7 @@ export default function ProductPage() {
         router.push("/");
         return;
       }
-      if (allFunds && allFunds.length > 0 && !fundModel) {
+      if (allGlamStates && allGlamStates.length > 0 && !stateModel) {
         console.log("Redirecting: Valid public key but no matching fund");
         router.push("/");
       }
@@ -375,10 +375,10 @@ export default function ProductPage() {
   }, [
     clientReady,
     fundPublicKey,
-    fundModel,
+    stateModel,
     isAllFundsLoading,
     router,
-    allFunds,
+    allGlamStates,
   ]);
 
   // Calculating color info based on sparkleColor (must be declared at the top level)
@@ -438,7 +438,7 @@ export default function ProductPage() {
     return () => window.removeEventListener("resize", updateSparkleSize);
   }, []);
 
-  if (!clientReady || isAllFundsLoading || !fundModel) {
+  if (!clientReady || isAllFundsLoading || !stateModel) {
     return (
       <motion.div
         className="flex mt-[30vh] justify-center items-end"
@@ -446,7 +446,6 @@ export default function ProductPage() {
         animate={{ opacity: 1 }}
         transition={{ ease: "easeInOut", duration: 0 }}
       >
-        {/*<SparkleBackground rows={6} cols={6} size={24} gap={5} static={false} visibleCount={252}  fadeInSpeed={1}/>*/}
         <SparkleBackground
           fadeOut={true}
           rows={6}
@@ -463,7 +462,10 @@ export default function ProductPage() {
     );
   }
 
-  if (!fundPublicKey || (allFunds && allFunds.length > 0 && !fundModel)) {
+  if (
+    !fundPublicKey ||
+    (allGlamStates && allGlamStates.length > 0 && !stateModel)
+  ) {
     router.push("/");
     return null;
   }
@@ -472,7 +474,7 @@ export default function ProductPage() {
     setSparkleColor(generatedColor);
   };
 
-  let mintData = (fundModel?.shareClasses || []).map(
+  let mintData = (stateModel?.mints || []).map(
     (shareClass: any, j: number) => ({
       mint: shareClass?.shareClassSymbol,
       shares:
@@ -541,7 +543,7 @@ export default function ProductPage() {
               ref={sparkleContainerRef}
             >
               <Sparkle
-                address={fundModel?.shareClasses[0]?.fundId?.toBase58()!}
+                address={stateModel.shareClassMints[0].toBase58()}
                 size={105}
                 onColorGenerated={handleColorGenerated}
               />
@@ -551,10 +553,10 @@ export default function ProductPage() {
           <Card className="col-span-4 row-span-1 flex flex-col items-start justify-start p-2 overflow-clip">
             <CardHeader className="p-0 w-full">
               <CardTitle className="text-xl font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
-                {fundModel.name}
+                {stateModel.name}
               </CardTitle>
               <CardDescription className="text-sm text-muted-foreground mt-2 line-clamp-2 overflow-clip">
-                {fundModel.rawOpenfunds?.investmentObjective}
+                {stateModel.rawOpenfunds?.investmentObjective}
               </CardDescription>
             </CardHeader>
           </Card>
@@ -615,11 +617,11 @@ export default function ProductPage() {
               <p className="text-muted-foreground opacity-75 text-xs font-light">
                 Symbol
               </p>
-              {fundModel.shareClasses[0]?.symbol}
+              {stateModel.mints[0]?.symbol}
               <p className="text-muted-foreground opacity-25 text-xs font-light">
                 <ExplorerLink
-                  path={`/account/${fundModel?.shareClasses[0]?.fundId?.toBase58()}`}
-                  label={fundModel?.shareClasses[0]?.fundId?.toBase58() || ""}
+                  path={`/account/${stateModel?.mints[0]?.fundId?.toBase58()}`}
+                  label={stateModel?.mints[0]?.fundId?.toBase58() || ""}
                 />
               </p>
             </Card>
@@ -627,13 +629,12 @@ export default function ProductPage() {
               <p className="text-muted-foreground opacity-75 text-xs font-light">
                 Class Asset
               </p>
-              {fundModel.shareClasses[0]?.rawOpenfunds?.shareClassCurrency}
+              {stateModel.mints[0]?.rawOpenfunds?.shareClassCurrency}
               <p className="text-muted-foreground opacity-25 text-xs font-light">
                 <ExplorerLink
-                  path={`/account/${fundModel?.shareClasses[0]?.rawOpenfunds?.shareClassCurrency}`}
+                  path={`/account/${stateModel?.mints[0]?.rawOpenfunds?.shareClassCurrency}`}
                   label={
-                    fundModel?.shareClasses[0]?.rawOpenfunds
-                      ?.shareClassCurrency || ""
+                    stateModel?.mints[0]?.rawOpenfunds?.shareClassCurrency || ""
                   }
                 />
               </p>
@@ -810,7 +811,7 @@ export default function ProductPage() {
                         className="flex-1 mx-auto aspect-square max-h-[256px] self-center"
                       >
                         <ChartComponent
-                          fundModel={fundModel}
+                          fundModel={stateModel}
                           holdersConfig={holdersConfig}
                         />
                       </ChartContainer>
@@ -833,14 +834,14 @@ export default function ProductPage() {
                             <span className="text-muted-foreground">
                               Base Asset
                             </span>
-                            <span>{fundModel.rawOpenfunds?.fundCurrency}</span>
+                            <span>{stateModel.rawOpenfunds?.fundCurrency}</span>
                           </li>
                           <li className="flex items-center justify-between">
                             <span className="text-muted-foreground">
                               Launch Date
                             </span>
                             <span>
-                              {fundModel.rawOpenfunds?.fundLaunchDate}
+                              {stateModel.rawOpenfunds?.fundLaunchDate}
                             </span>
                           </li>
                           <li className="flex items-center justify-between">
@@ -848,10 +849,10 @@ export default function ProductPage() {
                               Domicile
                             </span>
                             <span>
-                              {fundModel.rawOpenfunds?.fundDomicileAlpha2 ===
+                              {stateModel.rawOpenfunds?.fundDomicileAlpha2 ===
                               "XS"
                                 ? "Solana"
-                                : fundModel.rawOpenfunds?.fundDomicileAlpha2}
+                                : stateModel.rawOpenfunds?.fundDomicileAlpha2}
                             </span>
                           </li>
                         </ul>
@@ -866,7 +867,7 @@ export default function ProductPage() {
                             </dt>
                             <dd>
                               {
-                                fundModel.shareClasses[0]?.rawOpenfunds
+                                stateModel.mints[0]?.rawOpenfunds
                                   ?.shareClassCurrency
                               }
                             </dd>
@@ -877,7 +878,7 @@ export default function ProductPage() {
                             </dt>
                             <dd>
                               {
-                                fundModel.shareClasses[0]?.rawOpenfunds
+                                stateModel.mints[0]?.rawOpenfunds
                                   ?.shareClassLaunchDate
                               }
                             </dd>
@@ -888,7 +889,7 @@ export default function ProductPage() {
                             </dt>
                             <dd>
                               {
-                                fundModel.shareClasses[0]?.rawOpenfunds
+                                stateModel.mints[0]?.rawOpenfunds
                                   ?.shareClassLifecycle
                               }
                             </dd>
@@ -899,7 +900,7 @@ export default function ProductPage() {
                             </dt>
                             <dd>
                               {
-                                fundModel.shareClasses[0]?.rawOpenfunds
+                                stateModel.mints[0]?.rawOpenfunds
                                   ?.investmentStatus
                               }
                             </dd>
@@ -930,7 +931,7 @@ export default function ProductPage() {
                             </dt>
                             <dd>
                               {
-                                fundModel.shareClasses[0]?.rawOpenfunds
+                                stateModel.mints[0]?.rawOpenfunds
                                   ?.shareClassDistributionPolicy
                               }
                             </dd>
@@ -945,8 +946,8 @@ export default function ProductPage() {
                           <li className="flex items-center justify-between">
                             <span className="text-muted-foreground">Fund</span>
                             <ExplorerLink
-                              path={`/account/${fundModel?.idStr}`}
-                              label={fundModel?.idStr}
+                              path={`/account/${stateModel?.idStr}`}
+                              label={stateModel?.idStr}
                             />
                           </li>
                           <li className="flex items-center justify-between">
@@ -954,10 +955,10 @@ export default function ProductPage() {
                               Manager
                             </span>
                             <ExplorerLink
-                              path={`/account/${fundModel?.manager?.portfolioManagerName || fundModel?.manager?.pubkey}`}
+                              path={`/account/${stateModel?.owner?.portfolioManagerName || stateModel?.owner?.pubkey}`}
                               label={
-                                fundModel?.manager?.portfolioManagerName ||
-                                fundModel?.manager?.pubkey?.toBase58() ||
+                                stateModel?.owner?.portfolioManagerName ||
+                                stateModel?.owner?.pubkey?.toBase58() ||
                                 ""
                               }
                             />
@@ -967,8 +968,8 @@ export default function ProductPage() {
                               Treasury
                             </span>
                             <ExplorerLink
-                              path={`/account/${fundModel.vaultPda}`}
-                              label={fundModel?.vaultPda.toBase58()}
+                              path={`/account/${stateModel.vaultPda}`}
+                              label={stateModel?.vaultPda.toBase58()}
                             />
                           </li>
                           <li className="flex items-center justify-between">
@@ -976,8 +977,8 @@ export default function ProductPage() {
                               Metadata
                             </span>
                             <ExplorerLink
-                              path={`/account/${fundModel?.openfundsPda}`}
-                              label={fundModel?.openfundsPda.toBase58()}
+                              path={`/account/${stateModel?.openfundsPda}`}
+                              label={stateModel?.openfundsPda.toBase58()}
                             />
                           </li>
                           <li className="flex items-center justify-between">
@@ -1007,20 +1008,24 @@ export default function ProductPage() {
                         </ul>
                       </div>
                       <Separator className="my-4" />
-                      <div className="grid gap-2">
-                        <div className="font-medium">Share Class Accounts</div>
-                        <dl className="grid gap-2">
-                          <div className="flex items-center justify-between">
-                            <dt className="text-muted-foreground">
-                              Share Class 1 {fundModel?.shareClasses[0]?.symbol}
-                            </dt>
-                            <ExplorerLink
-                              path={`/account/${fundModel?.shareClassMints[0]}`}
-                              label={fundModel?.shareClassMints[0].toBase58()}
-                            />
+                      {stateModel.shareClassMints.length > 0 && (
+                        <div className="grid gap-2">
+                          <div className="font-medium">
+                            Share Class Accounts
                           </div>
-                        </dl>
-                      </div>
+                          <dl className="grid gap-2">
+                            <div className="flex items-center justify-between">
+                              <dt className="text-muted-foreground">
+                                Share Class 1 {stateModel?.mints[0]?.symbol}
+                              </dt>
+                              <ExplorerLink
+                                path={`/account/${stateModel?.shareClassMints[0]}`}
+                                label={stateModel?.shareClassMints[0].toBase58()}
+                              />
+                            </div>
+                          </dl>
+                        </div>
+                      )}
                     </TabsContent>
                   </Tabs>
                 </CardContent>

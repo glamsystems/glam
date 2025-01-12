@@ -7,15 +7,14 @@ use anchor_spl::token::{
 };
 use glam_macros::vault_signer_seeds;
 
-use crate::constants::WSOL;
-use crate::state::*;
+use crate::{constants::*, state::*};
 
 #[derive(Accounts)]
 pub struct WSolWrap<'info> {
     #[account()]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     #[account(
@@ -37,7 +36,7 @@ pub struct WSolWrap<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::WSolWrap)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::WSolWrap)
 )]
 #[vault_signer_seeds]
 pub fn wrap_handler(ctx: Context<WSolWrap>, lamports: u64) -> Result<()> {
@@ -69,9 +68,9 @@ pub fn wrap_handler(ctx: Context<WSolWrap>, lamports: u64) -> Result<()> {
 #[derive(Accounts)]
 pub struct WSolUnwrap<'info> {
     #[account()]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     #[account(
@@ -91,7 +90,7 @@ pub struct WSolUnwrap<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::WSolUnwrap)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::WSolUnwrap)
 )]
 #[vault_signer_seeds]
 pub fn unwrap_handler(ctx: Context<WSolUnwrap>) -> Result<()> {

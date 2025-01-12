@@ -67,7 +67,7 @@ export default function RefactoredSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isHovered, setIsHovered] = useState(false);
-  const { userWallet, activeFund } = useGlam();
+  const { userWallet, activeGlamState } = useGlam();
 
   // Get navigation items based on current path
   const navList = getNavigationItems(pathname);
@@ -78,8 +78,9 @@ export default function RefactoredSidebar() {
     }
 
     if (
-      !activeFund ||
-      (typeof activeFund === "object" && Object.keys(activeFund).length === 0)
+      !activeGlamState ||
+      (typeof activeGlamState === "object" &&
+        Object.keys(activeGlamState).length === 0)
     ) {
       return items.filter((item) =>
         ["/", "/flows", "/create"].includes(item.route),

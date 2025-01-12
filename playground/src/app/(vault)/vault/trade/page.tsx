@@ -310,8 +310,8 @@ const DEFAULT_PERPS_FORM_VALUES: PerpsSchema = {
 
 export default function Trade() {
   const {
-    activeFund,
-    treasury,
+    activeGlamState,
+    vault,
     userWallet,
     glamClient,
     jupTokenList,
@@ -375,7 +375,7 @@ export default function Trade() {
   );
 
   const fromAssetList = useMemo(() => {
-    const assets = (treasury?.tokenAccounts || [])
+    const assets = (vault?.tokenAccounts || [])
       .map((ta) => {
         const jupToken = jupTokenList?.find(
           (t) => t.address === ta.mint.toBase58(),
@@ -390,15 +390,14 @@ export default function Trade() {
           balance:
             /* combine SOL + wSOL balances */
             symbol === "SOL"
-              ? ta.uiAmount +
-                (treasury?.balanceLamports || 0) / LAMPORTS_PER_SOL
+              ? ta.uiAmount + (vault?.balanceLamports || 0) / LAMPORTS_PER_SOL
               : ta.uiAmount,
         } as Asset;
       })
       .filter((a) => a.balance > 0);
 
     return assets;
-  }, [treasury, jupTokenList, activeFund]);
+  }, [vault, jupTokenList, activeGlamState]);
 
   const swapForm = usePersistedForm("swap", swapSchema, {
     ...DEFAULT_SWAP_FORM_VALUES,
@@ -569,7 +568,7 @@ export default function Trade() {
     setIsSubmitTxPending(true);
     try {
       const txId = await glamClient.jupiter.swap(
-        activeFund!.pubkey,
+        activeGlamState!.pubkey,
         undefined,
         quoteResponseForSwap,
         undefined,
@@ -671,7 +670,7 @@ export default function Trade() {
     setIsSubmitTxPending(true);
     try {
       const txId = await glamClient.drift.placeOrder(
-        activeFund!.pubkey,
+        activeGlamState!.pubkey,
         orderParams,
         0,
         driftMarketConfigs,
@@ -727,7 +726,7 @@ export default function Trade() {
     setIsSubmitTxPending(true);
     try {
       const txId = await glamClient.drift.placeOrder(
-        activeFund!.pubkey,
+        activeGlamState!.pubkey,
         orderParams,
         0,
         driftMarketConfigs,
@@ -858,8 +857,8 @@ export default function Trade() {
     perpsForm.setValue("notional", perpsNotional);
   }, [watchPerpsLimitPrice, watchPerpsSize]);
 
-  const driftUserAccount = activeFund?.pubkey
-    ? glamClient.drift.getUser(activeFund.pubkey)[0].toBase58()
+  const driftUserAccount = activeGlamState?.pubkey
+    ? glamClient.drift.getUser(activeGlamState.pubkey)[0].toBase58()
     : "";
 
   /**
@@ -870,7 +869,7 @@ export default function Trade() {
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!activeFund?.pubkey || !userWallet.pubkey || !treasury) {
+    if (!activeGlamState?.pubkey || !userWallet.pubkey || !vault) {
       console.error(
         `Cannot submit ${activeTab} order due to missing fund, wallet, or treasury`,
       );
@@ -899,7 +898,7 @@ export default function Trade() {
   ) => {
     event.preventDefault();
 
-    if (!activeFund?.pubkey || !userWallet.pubkey || !treasury) {
+    if (!activeGlamState?.pubkey || !userWallet.pubkey || !vault) {
       console.error(
         "Cannot cancel orders due to missing fund, wallet, or treasury",
       );
@@ -944,7 +943,7 @@ export default function Trade() {
     setIsCancelTxPending(true);
     try {
       const txId = await glamClient.drift.cancelOrders(
-        activeFund!.pubkey,
+        activeGlamState!.pubkey,
         marketType === "Perps" ? MarketType.PERP : MarketType.SPOT,
         marketConfig?.marketIndex!,
         PositionDirection.LONG,
@@ -969,7 +968,7 @@ export default function Trade() {
   const handleSettle = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
-    if (!activeFund?.pubkey || !userWallet.pubkey || !treasury) {
+    if (!activeGlamState?.pubkey || !userWallet.pubkey || !vault) {
       console.error(
         "Cannot cancel orders due to missing fund, wallet, or treasury",
       );

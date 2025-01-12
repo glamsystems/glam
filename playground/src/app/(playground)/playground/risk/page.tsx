@@ -16,12 +16,11 @@ import schema from "../../../../data/glamRiskSchema.json";
 import { useForm } from "react-hook-form";
 
 export default function Risk() {
-  // @ts-ignore
-  const { allFunds, activeFund, glamClient } = useGlam();
+  const { allGlamStates, activeGlamState, glamClient } = useGlam();
 
-  const fundId = activeFund?.address;
+  const fundId = activeGlamState?.address;
   const fund: any = fundId
-    ? (allFunds || []).find((f: any) => f.idStr === fundId)
+    ? (allGlamStates || []).find((f: any) => f.idStr === fundId)
     : undefined;
 
   const driftForm = useForm<any>({

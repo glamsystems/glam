@@ -38,9 +38,9 @@ import {
 } from "../glamExports";
 import { ClusterNetwork, GlamClientConfig } from "../clientConfig";
 import {
-  FundAccount,
-  FundMetadataAccount,
-  FundModel,
+  StateAccount,
+  MetadataAccount,
+  StateModel,
   ShareClassModel,
 } from "../models";
 import { AssetMeta, ASSETS_MAINNET, ASSETS_TESTS } from "./assets";
@@ -352,18 +352,18 @@ export class BaseClient {
     );
   }
 
-  getFundPDA(fundModel: Partial<FundModel>): PublicKey {
-    const createdKey = fundModel?.created?.key || [
+  getStatePda(stateModel: Partial<StateModel>): PublicKey {
+    const createdKey = stateModel?.created?.key || [
       ...Buffer.from(
-        anchor.utils.sha256.hash(this.getFundName(fundModel)),
+        anchor.utils.sha256.hash(this.getName(stateModel)),
       ).subarray(0, 8),
     ];
 
-    const manager = this.getSigner();
+    const owner = stateModel.owner?.pubkey || this.getSigner();
     const [pda, _bump] = PublicKey.findProgramAddressSync(
       [
         anchor.utils.bytes.utf8.encode("fund"),
-        manager.toBuffer(),
+        owner.toBuffer(),
         Uint8Array.from(createdKey),
       ],
       this.program.programId,
@@ -371,20 +371,20 @@ export class BaseClient {
     return pda;
   }
 
-  getVaultPda(fundPDA: PublicKey): PublicKey {
+  getVaultPda(statePda: PublicKey): PublicKey {
     const [pda, _bump] = PublicKey.findProgramAddressSync(
-      [Buffer.from("treasury"), fundPDA.toBuffer()],
+      [Buffer.from("treasury"), statePda.toBuffer()],
       this.program.programId,
     );
     return pda;
   }
 
   getVaultAta(
-    fundPDA: PublicKey,
+    statePda: PublicKey,
     mint: PublicKey,
     programId?: PublicKey,
   ): PublicKey {
-    return this.getAta(mint, this.getVaultPda(fundPDA), programId);
+    return this.getAta(mint, this.getVaultPda(statePda), programId);
   }
 
   /**
@@ -427,18 +427,18 @@ export class BaseClient {
       );
   }
 
-  async getTreasuryBalance(fundPDA: PublicKey): Promise<number> {
-    const treasury = this.getVaultPda(fundPDA);
-    const lamports = await this.provider.connection.getBalance(treasury);
+  async getVaultBalance(statePda: PublicKey): Promise<number> {
+    const vault = this.getVaultPda(statePda);
+    const lamports = await this.provider.connection.getBalance(vault);
     return lamports / LAMPORTS_PER_SOL;
   }
 
-  async getTreasuryTokenBalance(
-    fundPDA: PublicKey,
+  async getVaultTokenBalance(
+    statePda: PublicKey,
     mint: PublicKey,
     programId?: PublicKey,
   ): Promise<number> {
-    const ata = this.getVaultAta(fundPDA, mint);
+    const ata = this.getVaultAta(statePda, mint);
     const _mint = await getMint(this.provider.connection, mint);
     try {
       const account = await getAccount(this.provider.connection, ata);
@@ -464,50 +464,60 @@ export class BaseClient {
     return { mint, tokenProgram };
   }
 
-  getOpenfundsPDA(fundPDA: PublicKey): PublicKey {
+  getOpenfundsPda(statePda: PublicKey): PublicKey {
     const [pda, _] = PublicKey.findProgramAddressSync(
-      [Buffer.from("openfunds"), fundPDA.toBuffer()],
+      [Buffer.from("openfunds"), statePda.toBuffer()],
       this.program.programId,
     );
     return pda;
   }
 
-  getShareClassPDA(fundPDA: PublicKey, shareId: number = 0): PublicKey {
-    return ShareClassModel.mintAddress(fundPDA, shareId);
+  getShareClassPda(statePda: PublicKey, mintIdx: number = 0): PublicKey {
+    const [pda, _] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from("share"),
+        Uint8Array.from([mintIdx % 256]),
+        statePda.toBuffer(),
+      ],
+      this.program.programId,
+    );
+    return pda;
   }
 
   getShareClassAta(user: PublicKey, shareClassPDA: PublicKey): PublicKey {
     return this.getAta(shareClassPDA, user, TOKEN_2022_PROGRAM_ID);
   }
 
-  getFundName(fundModel: Partial<FundModel>) {
-    const fundName =
-      fundModel.name ||
-      fundModel.rawOpenfunds?.legalFundNameIncludingUmbrella ||
-      (fundModel.shareClasses && fundModel.shareClasses[0]?.name);
-    if (!fundName) {
-      throw new Error("Fund name not be inferred from fund model");
+  getName(stateModel: Partial<StateModel>) {
+    const name =
+      stateModel.name ||
+      stateModel.rawOpenfunds?.legalFundNameIncludingUmbrella ||
+      (stateModel.mints && stateModel.mints[0]?.name);
+    if (!name) {
+      throw new Error("Name not be inferred from state model");
     }
-    return fundName;
+    return name;
   }
 
   // @ts-ignore
-  public async fetchFundAccount(fundPDA: PublicKey): Promise<FundAccount> {
-    return await this.program.account.fundAccount.fetch(fundPDA);
+  public async fetchStateAccount(statePda: PublicKey): Promise<StateAccount> {
+    // stateAccount is a type alias of fundAccount
+    return await this.program.account.fundAccount.fetch(statePda);
   }
 
-  public async fetchFundMetadataAccount(
-    fundPDA: PublicKey,
-  ): Promise<FundMetadataAccount> {
-    const openfunds = this.getOpenfundsPDA(fundPDA);
+  public async fetchMetadataAccount(
+    state: PublicKey,
+  ): Promise<MetadataAccount> {
+    const openfunds = this.getOpenfundsPda(state);
+    // metadataAccount is a type alias of fundMetadataAccount
     return await this.program.account.fundMetadataAccount.fetch(openfunds);
   }
 
   public async fetchShareClassAccount(
-    fundPDA: PublicKey,
-    shareId: number,
+    state: PublicKey,
+    mintIdx: number,
   ): Promise<Mint> {
-    const shareClassMint = this.getShareClassPDA(fundPDA, shareId);
+    const shareClassMint = this.getShareClassPda(state, mintIdx);
     const connection = this.provider.connection;
     return await getMint(
       connection,
@@ -524,12 +534,12 @@ export class BaseClient {
    * @returns
    */
   public async maybeWrapSol(
-    fundPda: PublicKey,
+    state: PublicKey,
     amount: number | anchor.BN,
     signer?: PublicKey,
   ): Promise<TransactionInstruction | null> {
-    const vaultPda = this.getVaultPda(fundPda);
-    const vaultWsolAta = this.getVaultAta(fundPda, WSOL);
+    const vaultPda = this.getVaultPda(state);
+    const vaultWsolAta = this.getVaultAta(state, WSOL);
     let wsolBalance = new anchor.BN(0);
     try {
       wsolBalance = new anchor.BN(
@@ -551,7 +561,7 @@ export class BaseClient {
       return await this.program.methods
         .wsolWrap(delta)
         .accountsPartial({
-          fund: fundPda,
+          state,
           vault: vaultPda,
           vaultWsolAta,
           wsolMint: WSOL,
@@ -575,7 +585,7 @@ export class BaseClient {
     return "";
   }
 
-  public async listFunds(): Promise<PublicKey[]> {
+  public async listGlamStates(): Promise<PublicKey[]> {
     const bytes = Uint8Array.from([
       0x31, 0x68, 0xa8, 0xd6, 0x86, 0xb4, 0xad, 0x9a,
     ]);
@@ -589,39 +599,41 @@ export class BaseClient {
   }
 
   /**
-   * Fetch fund data from onchain accounts and build a FundModel
+   * Fetch glam state from onchain accounts and build a StateModel
    *
-   * @param fundPDA
+   * @param statePda
    * @returns
    */
-  public async fetchFund(fundPDA: PublicKey): Promise<FundModel> {
-    const fundAccount = await this.fetchFundAccount(fundPDA);
-    const openfundsAccount = await this.fetchFundMetadataAccount(fundPDA);
+  public async fetchState(statePda: PublicKey): Promise<StateModel> {
+    const stateAccount = await this.fetchStateAccount(statePda);
+    const metadataAccount = await this.fetchMetadataAccount(statePda);
 
-    if (fundAccount.shareClasses.length > 0) {
-      const firstShareClass = await this.fetchShareClassAccount(fundPDA, 0);
-      return FundModel.fromOnchainAccounts(
-        fundPDA,
-        fundAccount,
-        openfundsAccount,
+    if (stateAccount.mints.length > 0) {
+      const firstShareClass = await this.fetchShareClassAccount(statePda, 0);
+      return StateModel.fromOnchainAccounts(
+        statePda,
+        stateAccount,
+        metadataAccount,
         firstShareClass,
+        this.program.programId,
       );
     }
 
-    return FundModel.fromOnchainAccounts(
-      fundPDA,
-      fundAccount,
-      openfundsAccount,
+    return StateModel.fromOnchainAccounts(
+      statePda,
+      stateAccount,
+      metadataAccount,
+      undefined,
+      this.program.programId,
     );
   }
 
-  public async fetchAllFunds(): Promise<FundModel[]> {
-    const fundAccounts = await this.program.account.fundAccount.all();
-
+  public async fetchAllGlamStates(): Promise<StateModel[]> {
+    const stateAccounts = await this.program.account.fundAccount.all();
     const openfundsAccounts =
       await this.program.account.fundMetadataAccount.all();
 
-    let openfundsCache = new Map<string, FundMetadataAccount>();
+    let openfundsCache = new Map<string, MetadataAccount>();
     openfundsAccounts.forEach((of) => {
       openfundsCache.set(of.publicKey.toBase58(), of.account);
     });
@@ -629,8 +641,8 @@ export class BaseClient {
     /* fetch first mint */
     let mintCache = new Map<string, Mint>();
     const connection = this.provider.connection;
-    const mintAddresses = fundAccounts
-      .map((f) => f.account.shareClasses[0])
+    const mintAddresses = stateAccounts
+      .map((s) => s.account.mints[0])
       .filter((addr) => !!addr);
     const mintAccounts =
       await connection.getMultipleAccountsInfo(mintAddresses);
@@ -643,14 +655,13 @@ export class BaseClient {
       mintCache.set(mintAddresses[j].toBase58(), mintInfo);
     });
 
-    return fundAccounts.map((f) =>
-      FundModel.fromOnchainAccounts(
+    return stateAccounts.map((f) =>
+      StateModel.fromOnchainAccounts(
         f.publicKey,
         f.account,
-        openfundsCache.get(f.account.openfunds.toBase58()),
-        mintCache.get(
-          f.account.shareClasses[0] ? f.account.shareClasses[0].toBase58() : "",
-        ),
+        openfundsCache.get(f.account.metadata.toBase58()),
+        mintCache.get(f.account.mints[0] ? f.account.mints[0].toBase58() : ""),
+        this.program.programId,
       ),
     );
   }

@@ -4,31 +4,31 @@ import { DataTable } from "../products/components/data-table";
 import { columns } from "../products/components/columns";
 import React, { useMemo } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { FundModel, useGlam } from "@glam/anchor/react";
+import { useGlam } from "@glam/anchor/react";
 
 export default function Products() {
-  const { allFunds } = useGlam();
+  const { allGlamStates } = useGlam();
   const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
-    if (allFunds) {
+    if (allGlamStates) {
       setIsLoading(false);
     }
-  }, [allFunds]);
+  }, [allGlamStates]);
 
   const products = useMemo(
     () =>
-      (allFunds || []).map((f) => ({
+      (allGlamStates || []).map((f) => ({
         id: f.idStr,
         sparkleKey: f.sparkleKey,
         name: f.name || f.idStr || "",
-        symbol: f.shareClasses[0]?.symbol || "-",
+        symbol: f.mints[0]?.symbol || "-",
         baseAsset: f.rawOpenfunds?.fundCurrency || "SOL",
         inception: f.rawOpenfunds?.fundLaunchDate || "-",
         status: "active",
         product: f.productType,
       })),
-    [allFunds],
+    [allGlamStates],
   );
 
   return (

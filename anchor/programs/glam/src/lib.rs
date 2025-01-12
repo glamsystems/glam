@@ -3,9 +3,9 @@ pub mod error;
 pub mod instructions;
 pub mod state;
 
+use crate::instructions::{state as glam_state, *};
 use anchor_lang::prelude::*;
 
-use crate::instructions::*;
 pub use constants::*;
 pub use state::model::*;
 
@@ -23,90 +23,90 @@ pub mod glam {
     use super::*;
 
     //////////////////////////////////////////////////////////////////////
-    /// Fund
+    /// State
     //////////////////////////////////////////////////////////////////////
 
-    /// Initializes a fund from the provided FundModel instance.
+    /// Initializes a state account from the provided StateModel instance.
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
-    /// - `fund`: An instance of `FundModel` containing the details of the fund to be initialized.
+    /// - `fund`: An instance of `StateModel` containing the details of the state to be initialized.
     ///
     /// # Permission required
-    /// - Manager only, delegates not allowed
-    pub fn initialize_fund<'c: 'info, 'info>(
-        ctx: Context<'_, '_, 'c, 'info, InitializeFund<'info>>,
-        fund: FundModel,
+    /// - Owner only, delegates not allowed
+    pub fn initialize_state<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, InitializeState<'info>>,
+        state: StateModel,
     ) -> Result<()> {
-        fund::initialize_fund_handler(ctx, fund)
+        glam_state::initialize_state_handler(ctx, state)
     }
 
-    /// Updates an existing fund with new parameters.
+    /// Updates an existing state account with new parameters.
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
-    /// - `fund`: An instance of `FundModel` containing the updated details of the fund.
+    /// - `fund`: An instance of `StateModel` containing the updated details of the state.
     ///
     /// # Permission required
-    /// - Manager only, delegates not allowed
-    pub fn update_fund<'c: 'info, 'info>(
-        ctx: Context<'_, '_, 'c, 'info, UpdateFund<'info>>,
-        fund: FundModel,
+    /// - Owner only, delegates not allowed
+    pub fn update_state<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, UpdateState<'info>>,
+        state: StateModel,
     ) -> Result<()> {
-        fund::update_fund_handler(ctx, fund)
+        glam_state::update_state_handler(ctx, state)
     }
 
-    /// Closes a fund and releases its resources.
+    /// Closes a state account and releases its resources.
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
     ///
     /// # Permission required
-    /// - Manager only, delegates not allowed
-    pub fn close_fund(ctx: Context<CloseFund>) -> Result<()> {
-        fund::close_fund_handler(ctx)
+    /// - Owner only, delegates not allowed
+    pub fn close_state(ctx: Context<CloseState>) -> Result<()> {
+        glam_state::close_state_handler(ctx)
     }
 
-    /// Enables or disables the subscribe and redeem functionality for the fund.
+    /// Enables or disables the subscribe and redeem functionality.
     ///
-    /// This allows the manager to pause/unpause subscription and redemption of a fund.
+    /// This allows the owner to pause/unpause subscription and redemption of a fund.
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
     /// - `enabled`: A boolean indicating whether to enable or disable the subscribe and redeem functionality.
     ///
     /// # Permission required
-    /// - Manager only, delegates not allowed
+    /// - Owner only, delegates not allowed
     pub fn set_subscribe_redeem_enabled(
         ctx: Context<SetSubscribeRedeemEnabled>,
         enabled: bool,
     ) -> Result<()> {
-        fund::set_subscribe_redeem_enabled_handler(ctx, enabled)
+        glam_state::set_subscribe_redeem_enabled_handler(ctx, enabled)
     }
 
-    /// Closes token accounts owned by the treasury.
+    /// Closes token accounts owned by the vault.
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
     ///
     /// # Permission required
-    /// - Manager only, delegates not allowed
+    /// - Owner only, delegates not allowed
     pub fn close_token_accounts<'info>(
         ctx: Context<'_, '_, '_, 'info, CloseTokenAccounts<'info>>,
     ) -> Result<()> {
-        fund::close_token_accounts_handler(ctx)
+        glam_state::close_token_accounts_handler(ctx)
     }
 
-    /// Withdraw an asset from fund treasury into manager's wallet.
+    /// Withdraw asset from vault into owner's wallet.
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
     /// - `amount`: The amount to withdraw.
     ///
     /// # Permission required
-    /// - Manager only, delegates not allowed
+    /// - Owner only, delegates not allowed
     pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
-        fund::withdraw(ctx, amount)
+        glam_state::withdraw(ctx, amount)
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -120,7 +120,7 @@ pub mod glam {
     /// - `share_class_metadata`: An instance of `ShareClassModel` containing the metadata for the new share class.
     ///
     /// # Permission required
-    /// - Manager only, delegates not allowed
+    /// - Owner only, delegates not allowed
     pub fn add_share_class<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, AddShareClass<'info>>,
         share_class_metadata: ShareClassModel,
@@ -136,7 +136,7 @@ pub mod glam {
     /// - `share_class_metadata`: An instance of `ShareClassModel` containing the updated metadata for the new share class.
     ///
     /// # Permission required
-    /// - Manager only, delegates not allowed
+    /// - Owner only, delegates not allowed
     pub fn update_share_class(
         ctx: Context<UpdateShareClass>,
         share_class_id: u8,
@@ -152,7 +152,7 @@ pub mod glam {
     /// - `share_class_id`: The id of the share class to be closed.
     ///
     /// # Permission required
-    /// - Manager only, delegates not allowed
+    /// - Owner only, delegates not allowed
     pub fn close_share_class(ctx: Context<CloseShareClass>, share_class_id: u8) -> Result<()> {
         share_class::close_share_class_handler(ctx, share_class_id)
     }
@@ -272,7 +272,7 @@ pub mod glam {
     /// Drift
     //////////////////////////////////////////////////////////////////////
 
-    /// Initializes a drift account owned by fund treasury and creates a subaccount.
+    /// Initializes a drift account owned by vault and creates a subaccount.
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
@@ -755,8 +755,8 @@ pub mod glam {
     ///
     /// # Permission required
     /// - Any of
-    ///   - Permission::JupiterSwapAnyAsset: no restrictions.
-    ///   - Permission::JupiterSwapFundAssets: input and output are in the assets allowlist.
+    ///   - Permission::JupiterSwapAny: no restrictions.
+    ///   - Permission::JupiterSwapAllowlisted: input and output are in the assets allowlist.
     ///   - Permission::JupiterSwapLst: input and output assets are both LST.
     ///
     /// # Integration required

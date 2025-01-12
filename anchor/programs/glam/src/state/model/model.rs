@@ -8,23 +8,22 @@ use super::super::acl::*;
 // - Openfunds Fund Essential + Core
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
-pub struct FundModel {
+pub struct StateModel {
     // Core
     pub id: Option<Pubkey>,
     pub name: Option<String>,
     pub uri: Option<String>,
-    pub openfunds_uri: Option<String>,
+    pub metadata_uri: Option<String>,
     pub is_enabled: Option<bool>,
 
     // Assets
     pub assets: Vec<Pubkey>,
-    pub assets_weights: Vec<u32>, // deprecated
-    pub external_treasury_accounts: Vec<Pubkey>,
+    pub external_vault_accounts: Vec<Pubkey>,
 
     // Relationships
-    pub share_classes: Vec<ShareClassModel>,
+    pub mints: Vec<ShareClassModel>,
     pub company: Option<CompanyModel>,
-    pub manager: Option<ManagerModel>,
+    pub owner: Option<ManagerModel>,
     pub created: Option<CreatedModel>,
 
     // ACLs
@@ -62,8 +61,8 @@ pub struct FundOpenfundsModel {
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
 pub struct CreatedModel {
-    pub key: [u8; 8],
-    pub manager: Option<Pubkey>,
+    pub key: [u8; 8], // seed for computing state PDA
+    pub owner: Option<Pubkey>,
 }
 
 // Share Class

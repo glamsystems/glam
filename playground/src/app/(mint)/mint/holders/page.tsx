@@ -10,16 +10,16 @@ import {
 import { useGlam } from "@glam/anchor/react";
 
 export default function HoldersPage() {
-  const { glamClient, activeFund } = useGlam();
+  const { glamClient, activeGlamState } = useGlam();
   const [holders, setHolders] = React.useState([] as HoldersData[]);
 
   React.useEffect(() => {
     const fetchData = async () => {
-      if (!glamClient || !activeFund?.pubkey) {
+      if (!glamClient || !activeGlamState?.pubkey) {
         return;
       }
       const tokenAccounts = await glamClient.shareClass.getHolders(
-        activeFund.pubkey,
+        activeGlamState.pubkey,
         0,
       );
 
@@ -36,7 +36,7 @@ export default function HoldersPage() {
     };
 
     fetchData();
-  }, [glamClient, activeFund]);
+  }, [glamClient, activeGlamState]);
 
   return (
     <PageContentWrapper>

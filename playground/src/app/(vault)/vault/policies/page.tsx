@@ -29,10 +29,12 @@ const formSchema = z.object({
 type FormSchema = z.infer<typeof formSchema>;
 
 export default function VaultPoliciesPage() {
-  const { activeFund, glamClient, allFunds } = useGlam();
   const [isTxPending, setIsTxPending] = useState(false);
 
-  const fund = allFunds?.find((f) => f.idStr === activeFund?.address);
+  const { activeGlamState, glamClient, allGlamStates } = useGlam();
+  const state = allGlamStates?.find(
+    (s) => s.idStr === activeGlamState?.address,
+  );
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -42,29 +44,29 @@ export default function VaultPoliciesPage() {
   });
 
   useEffect(() => {
-    if (fund) {
+    if (state) {
       form.setValue(
         "assets",
-        fund.assets.map((a) => a.toBase58()),
+        state.assets.map((a) => a.toBase58()),
       );
     }
-  }, [fund]);
+  }, [state]);
 
   const handleReset = (event: React.MouseEvent) => {
     event.preventDefault();
-    form.setValue("assets", fund?.assets.map((a) => a.toBase58()) || []);
+    form.setValue("assets", state?.assets.map((a) => a.toBase58()) || []);
   };
 
   const handleUpdateAssets = async (event: React.MouseEvent) => {
     event.preventDefault();
-    if (!fund) {
+    if (!state) {
       return;
     }
-    const fundAssets = fund.assets.map((a) => a.toBase58()).sort();
+    const vaultAssets = state.assets.map((a) => a.toBase58()).sort();
     const formAssets = form.getValues().assets.sort();
     if (
-      fund.assets.length === formAssets.length ||
-      fundAssets.every((value, index) => value === formAssets[index])
+      state.assets.length === formAssets.length &&
+      vaultAssets.every((value, index) => value === formAssets[index])
     ) {
       toast({
         title: "No changes detected",
@@ -75,10 +77,10 @@ export default function VaultPoliciesPage() {
 
     setIsTxPending(true);
     try {
-      let updatedFund = {
+      let updated = {
         assets: form.getValues().assets.map((a) => new PublicKey(a)),
       };
-      const txSig = await glamClient.fund.updateFund(fund.id!, updatedFund);
+      const txSig = await glamClient.state.updateState(state.id!, updated);
       toast({
         title: "Assets allowlist updated",
         description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,

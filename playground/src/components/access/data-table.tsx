@@ -48,12 +48,13 @@ import {
   mintTreeDataPermissions,
 } from "./data/permissions";
 import { toast } from "../ui/use-toast";
-import { useGlam } from "@glam/anchor/react";
+import { DelegateAcl, useGlam } from "@glam/anchor/react";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { parseTxError } from "@/lib/error";
 import { PublicKey } from "@solana/web3.js";
 import { KeyData } from "./columns";
 import { usePubkeyLabels } from "@/hooks/usePubkeyLabels";
+import { cn } from "@/lib/utils";
 
 interface DataTableProps<TData extends KeyData> {
   columns: ColumnDef<TData>[];
@@ -119,7 +120,7 @@ export function DataTable<TData extends KeyData>({
     setIsExpanded(!isExpanded);
   };
 
-  const { glamClient, activeFund } = useGlam();
+  const { glamClient, activeGlamState } = useGlam();
 
   // Helper function to reset states
   const resetStates = () => {
@@ -180,14 +181,17 @@ export function DataTable<TData extends KeyData>({
     }
 
     const delegateAcls = [
-      //@ts-ignore
-      { pubkey, permissions: permissions.map((p) => ({ [p]: {} })) },
+      {
+        pubkey,
+        //@ts-ignore
+        permissions: permissions.map((p) => ({ [p!]: {} })),
+      } as DelegateAcl,
     ];
 
     try {
       // @ts-ignore
-      const txSig = await glamClient.fund.upsertDelegateAcls(
-        activeFund!.pubkey,
+      const txSig = await glamClient.state.upsertDelegateAcls(
+        activeGlamState!.pubkey,
         delegateAcls,
       );
 
@@ -227,8 +231,8 @@ export function DataTable<TData extends KeyData>({
     }
 
     try {
-      const txSig = await glamClient.fund.deleteDelegateAcls(
-        activeFund!.pubkey,
+      const txSig = await glamClient.state.deleteDelegateAcls(
+        activeGlamState!.pubkey,
         [pubkey],
       );
 
@@ -283,6 +287,9 @@ export function DataTable<TData extends KeyData>({
                   key={row.id}
                   open={activeRow === row.original.pubkey}
                   onOpenChange={(open) => {
+                    if (row.original.label === "Owner") {
+                      return; // Prevent modifying owner permissions
+                    }
                     if (open) {
                       setActiveRow(row.original.pubkey);
                       const currentPermissions = row.original.tags;
@@ -298,7 +305,10 @@ export function DataTable<TData extends KeyData>({
                   <SheetTrigger asChild>
                     <TableRow
                       data-state={row.getIsSelected() && "selected"}
-                      className="cursor-pointer"
+                      className={cn(
+                        "cursor-pointer",
+                        row.original.label === "Owner" && "bg-muted",
+                      )}
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id}>

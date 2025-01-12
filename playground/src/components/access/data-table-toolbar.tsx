@@ -23,7 +23,7 @@ import { useState, useRef } from "react";
 import { TreeNodeData } from "@/components/CustomTree";
 import { toast } from "@/components/ui/use-toast";
 import { PublicKey } from "@solana/web3.js";
-import { useGlam } from "@glam/anchor/react";
+import { DelegateAcl, useGlam } from "@glam/anchor/react";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { parseTxError } from "@/lib/error";
 import { usePubkeyLabels } from "@/hooks/usePubkeyLabels";
@@ -48,7 +48,7 @@ export function DataTableToolbar<TData>({
   const [treeData, setTreeData] = useState<TreeNodeData>(treeDataPermissions);
 
   const { updateLabel } = usePubkeyLabels();
-  const { glamClient, activeFund } = useGlam();
+  const { glamClient, activeGlamState } = useGlam();
 
   const toggleExpandCollapse = () => {
     setIsExpanded(!isExpanded);
@@ -92,14 +92,16 @@ export function DataTableToolbar<TData>({
     }
 
     const delegateAcls = [
-      //@ts-ignore
-      { pubkey, permissions: permissions.map((p) => ({ [p]: {} })) },
+      {
+        pubkey,
+        // @ts-ignore
+        permissions: permissions.map((p) => ({ [p!]: {} })),
+      } as DelegateAcl,
     ];
 
     try {
-      // @ts-ignore
-      const txSig = await glamClient.fund.upsertDelegateAcls(
-        activeFund!.pubkey,
+      const txSig = await glamClient.state.upsertDelegateAcls(
+        activeGlamState!.pubkey,
         delegateAcls,
       );
 

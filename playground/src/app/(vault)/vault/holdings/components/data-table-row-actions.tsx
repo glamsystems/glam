@@ -42,7 +42,7 @@ export function DataTableRowActions<TData>({
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
-  const { glamClient, activeFund, treasury, refresh } = useGlam();
+  const { glamClient, activeGlamState, vault: vault, refresh } = useGlam();
 
   const copyToClipboard = (
     e: React.MouseEvent,
@@ -58,14 +58,15 @@ export function DataTableRowActions<TData>({
   };
 
   const closeAta = async (ata: string) => {
-    if (!activeFund?.pubkey || !glamClient) {
+    if (!activeGlamState?.pubkey || !glamClient) {
       return;
     }
 
     try {
-      const txId = await glamClient.fund.closeTokenAccounts(activeFund.pubkey, [
-        new PublicKey(ata),
-      ]);
+      const txId = await glamClient.state.closeTokenAccounts(
+        activeGlamState.pubkey,
+        [new PublicKey(ata)],
+      );
       toast({
         title: `Closed token account`,
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
@@ -81,13 +82,13 @@ export function DataTableRowActions<TData>({
   };
 
   const unstake = async (mint: string, amount: BN) => {
-    if (!activeFund?.pubkey || !glamClient) {
+    if (!activeGlamState?.pubkey || !glamClient) {
       return;
     }
 
     try {
       const txId = await glamClient.staking.unstake(
-        activeFund.pubkey,
+        activeGlamState.pubkey,
         new PublicKey(mint),
         amount,
         { getPriorityFeeMicroLamports },
@@ -214,7 +215,7 @@ export function DataTableRowActions<TData>({
 
         {holding.location === "drift" && (
           <Link
-            href={`https://app.drift.trade/overview/balances?authority=${treasury?.pubkey}`}
+            href={`https://app.drift.trade/overview/balances?authority=${vault?.pubkey}`}
             target="_blank"
           >
             <DropdownMenuItem className="cursor-pointer">

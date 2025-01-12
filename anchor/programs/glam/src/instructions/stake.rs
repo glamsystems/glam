@@ -1,4 +1,4 @@
-use crate::state::*;
+use crate::{constants::*, state::*};
 use anchor_lang::{prelude::*, system_program};
 use anchor_spl::stake::{
     deactivate_stake, withdraw, DeactivateStake, Stake, StakeAccount, Withdraw,
@@ -11,9 +11,9 @@ pub struct InitializeAndDelegateStake<'info> {
     pub signer: Signer<'info>,
 
     #[account(mut)]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     /// CHECK: will be initialized in the instruction
@@ -35,10 +35,10 @@ pub struct InitializeAndDelegateStake<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Stake)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Stake)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.fund, IntegrationName::NativeStaking)
+    acl::check_integration(&ctx.accounts.state, IntegrationName::NativeStaking)
 )]
 #[vault_signer_seeds]
 pub fn initialize_and_delegate_stake_handler<'c: 'info, 'info>(
@@ -47,11 +47,11 @@ pub fn initialize_and_delegate_stake_handler<'c: 'info, 'info>(
     stake_account_id: String,
     stake_account_bump: u8,
 ) -> Result<()> {
-    let fund_key = ctx.accounts.fund.key();
+    let state_key = ctx.accounts.state.key();
     let stake_account_seeds = &[
         b"stake_account".as_ref(),
         stake_account_id.as_bytes(),
-        fund_key.as_ref(),
+        state_key.as_ref(),
         &[stake_account_bump],
     ];
     let signer_seeds = &[&stake_account_seeds[..], (*vault_signer_seeds)[0]];
@@ -112,10 +112,10 @@ pub fn initialize_and_delegate_stake_handler<'c: 'info, 'info>(
         vault_signer_seeds,
     )?;
 
-    // Add the stake account to the fund params
-    let fund = &mut ctx.accounts.fund;
-    fund.add_to_engine_field(
-        EngineFieldName::ExternalTreasuryAccounts,
+    // Add the stake account to the state params
+    let state = &mut ctx.accounts.state;
+    state.add_to_engine_field(
+        EngineFieldName::ExternalVaultAccounts,
         ctx.accounts.vault_stake_account.key(),
     );
 
@@ -127,9 +127,9 @@ pub struct DeactivateStakeAccounts<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     pub clock: Sysvar<'info, Clock>,
@@ -137,10 +137,10 @@ pub struct DeactivateStakeAccounts<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Unstake)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Unstake)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.fund, IntegrationName::NativeStaking)
+    acl::check_integration(&ctx.accounts.state, IntegrationName::NativeStaking)
 )]
 #[vault_signer_seeds]
 pub fn deactivate_stake_accounts_handler<'info>(
@@ -167,9 +167,9 @@ pub struct WithdrawFromStakeAccounts<'info> {
     pub signer: Signer<'info>,
 
     #[account(mut)]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     pub clock: Sysvar<'info, Clock>,
@@ -178,16 +178,16 @@ pub struct WithdrawFromStakeAccounts<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Unstake)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Unstake)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.fund, IntegrationName::NativeStaking)
+    acl::check_integration(&ctx.accounts.state, IntegrationName::NativeStaking)
 )]
 #[vault_signer_seeds]
 pub fn withdraw_from_stake_accounts_handler<'info>(
     ctx: Context<'_, '_, '_, 'info, WithdrawFromStakeAccounts<'info>>,
 ) -> Result<()> {
-    let fund = &mut ctx.accounts.fund;
+    let state = &mut ctx.accounts.state;
     ctx.remaining_accounts.iter().for_each(|stake_account| {
         let lamports = stake_account.get_lamports();
         let cpi_ctx = CpiContext::new_with_signer(
@@ -204,10 +204,7 @@ pub fn withdraw_from_stake_accounts_handler<'info>(
 
         let _ = withdraw(cpi_ctx, lamports, None);
 
-        fund.delete_from_engine_field(
-            EngineFieldName::ExternalTreasuryAccounts,
-            stake_account.key(),
-        );
+        state.delete_from_engine_field(EngineFieldName::ExternalVaultAccounts, stake_account.key());
     });
 
     Ok(())
@@ -219,9 +216,9 @@ pub struct MergeStakeAccounts<'info> {
     pub signer: Signer<'info>,
 
     #[account(mut)]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     #[account(mut)]
@@ -238,10 +235,10 @@ pub struct MergeStakeAccounts<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Stake)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Stake)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.fund, IntegrationName::NativeStaking)
+    acl::check_integration(&ctx.accounts.state, IntegrationName::NativeStaking)
 )]
 #[vault_signer_seeds]
 pub fn merge_stake_accounts_handler<'c: 'info, 'info>(
@@ -259,12 +256,12 @@ pub fn merge_stake_accounts_handler<'c: 'info, 'info>(
         ctx.accounts.clock.to_account_info(),
         ctx.accounts.stake_history.to_account_info(),
     ];
-    let _ = solana_program::program::invoke_signed(&ix[0], account_infos, vault_signer_seeds);
+    solana_program::program::invoke_signed(&ix[0], account_infos, vault_signer_seeds)?;
 
-    // Remove the from_stake account from the fund params
-    let fund = &mut ctx.accounts.fund;
-    fund.delete_from_engine_field(
-        EngineFieldName::ExternalTreasuryAccounts,
+    // Remove the from_stake account from the state params
+    let state = &mut ctx.accounts.state;
+    state.delete_from_engine_field(
+        EngineFieldName::ExternalVaultAccounts,
         ctx.accounts.from_stake.key(),
     );
 
@@ -277,9 +274,9 @@ pub struct SplitStakeAccount<'info> {
     pub signer: Signer<'info>,
 
     #[account(mut)]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     #[account(mut)]
@@ -296,10 +293,10 @@ pub struct SplitStakeAccount<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Unstake)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Unstake)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.fund, IntegrationName::NativeStaking)
+    acl::check_integration(&ctx.accounts.state, IntegrationName::NativeStaking)
 )]
 #[vault_signer_seeds]
 pub fn split_stake_account_handler<'c: 'info, 'info>(
@@ -308,11 +305,11 @@ pub fn split_stake_account_handler<'c: 'info, 'info>(
     new_stake_account_id: String,
     new_stake_account_bump: u8,
 ) -> Result<()> {
-    let fund_key = ctx.accounts.fund.key();
+    let state_key = ctx.accounts.state.key();
     let stake_account_seeds = &[
         b"stake_account".as_ref(),
         new_stake_account_id.as_bytes(),
-        fund_key.as_ref(),
+        state_key.as_ref(),
         &[new_stake_account_bump],
     ];
 
@@ -354,10 +351,10 @@ pub fn split_stake_account_handler<'c: 'info, 'info>(
         vault_signer_seeds,
     )?;
 
-    // Add the new stake account to the fund params
-    let fund = &mut ctx.accounts.fund;
-    fund.add_to_engine_field(
-        EngineFieldName::ExternalTreasuryAccounts,
+    // Add the new stake account to the state params
+    let state = &mut ctx.accounts.state;
+    state.add_to_engine_field(
+        EngineFieldName::ExternalVaultAccounts,
         ctx.accounts.new_stake.key(),
     );
 
@@ -370,9 +367,9 @@ pub struct RedelegateStake<'info> {
     pub signer: Signer<'info>,
 
     #[account(mut)]
-    pub fund: Box<Account<'info, FundAccount>>,
+    pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [b"treasury".as_ref(), fund.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     #[account(mut)]
@@ -395,10 +392,10 @@ pub struct RedelegateStake<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.fund, &ctx.accounts.signer.key, Permission::Stake)
+    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Stake)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.fund, IntegrationName::NativeStaking)
+    acl::check_integration(&ctx.accounts.state, IntegrationName::NativeStaking)
 )]
 #[vault_signer_seeds]
 pub fn redelegate_stake_handler<'c: 'info, 'info>(
@@ -406,12 +403,12 @@ pub fn redelegate_stake_handler<'c: 'info, 'info>(
     new_stake_account_id: String,
     new_stake_account_bump: u8,
 ) -> Result<()> {
-    let fund_key = ctx.accounts.fund.key();
+    let state_key = ctx.accounts.state.key();
 
     let stake_account_seeds = &[
         b"stake_account".as_ref(),
         new_stake_account_id.as_bytes(),
-        fund_key.as_ref(),
+        state_key.as_ref(),
         &[new_stake_account_bump],
     ];
 
@@ -443,7 +440,6 @@ pub fn redelegate_stake_handler<'c: 'info, 'info>(
     )?;
 
     // redelegate
-
     solana_program::program::invoke_signed(
         &instructions[2],
         &[
@@ -457,14 +453,14 @@ pub fn redelegate_stake_handler<'c: 'info, 'info>(
         vault_signer_seeds,
     )?;
 
-    // Remove existing stake account from the fund params and add the new one
-    let fund = &mut ctx.accounts.fund;
-    fund.delete_from_engine_field(
-        EngineFieldName::ExternalTreasuryAccounts,
+    // Remove existing stake account from the state params and add the new one
+    let state = &mut ctx.accounts.state;
+    state.delete_from_engine_field(
+        EngineFieldName::ExternalVaultAccounts,
         ctx.accounts.existing_stake.key(),
     );
-    fund.add_to_engine_field(
-        EngineFieldName::ExternalTreasuryAccounts,
+    state.add_to_engine_field(
+        EngineFieldName::ExternalVaultAccounts,
         ctx.accounts.new_stake.key(),
     );
 

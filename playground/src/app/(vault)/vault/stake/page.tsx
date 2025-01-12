@@ -66,7 +66,7 @@ import { useQuery } from "@tanstack/react-query";
 import { stakePoolsStateAccounts } from "./data/data";
 
 export default function Stake() {
-  const { activeFund, treasury, userWallet, glamClient, jupTokenList } =
+  const { activeGlamState, vault, userWallet, glamClient, jupTokenList } =
     useGlam();
 
   const [ticketsAndStakes, setTicketsAndStakes] = useState<TicketOrStake[]>([]);
@@ -105,12 +105,12 @@ export default function Stake() {
 
   const { data } = useQuery({
     queryKey: ["tickets-and-stakes"],
-    enabled: (activeFund?.pubkey && treasury) !== undefined,
+    enabled: (activeGlamState?.pubkey && vault) !== undefined,
     queryFn: () =>
       Promise.all([
-        glamClient.marinade.getTickets(activeFund!.pubkey),
+        glamClient.marinade.getTickets(activeGlamState!.pubkey),
         glamClient.staking.getStakeAccountsWithStates(
-          new PublicKey(treasury!.pubkey),
+          new PublicKey(vault!.pubkey),
         ),
       ]),
   });
@@ -119,14 +119,17 @@ export default function Stake() {
       return;
     }
     const [tickets, stakes] = data;
-    const transformedStakes = stakes.map((stakeAccount) => ({
-      publicKey: stakeAccount.address.toBase58(),
-      lamports: stakeAccount.lamports,
-      service: "native",
-      validator: stakeAccount.voter,
-      status: stakeAccount.state,
-      type: "stake-account" as const,
-    }));
+    const transformedStakes = stakes.map((stakeAccount) => {
+      const { address, lamports, state, voter } = stakeAccount;
+      return {
+        publicKey: address.toBase58(),
+        lamports: lamports,
+        service: "native",
+        validator: voter ? voter.toBase58() : "-",
+        status: state,
+        type: "stake-account" as const,
+      };
+    });
     const transformedTickets = tickets.map((ticket) => ({
       publicKey: ticket.address.toBase58(),
       lamports: ticket.lamports,
@@ -140,9 +143,9 @@ export default function Stake() {
   }, [data]);
 
   useEffect(() => {
-    const solBalance = Number(treasury?.balanceLamports) / LAMPORTS_PER_SOL;
+    const solBalance = Number(vault?.balanceLamports) / LAMPORTS_PER_SOL;
     setBalance(solBalance);
-  }, [treasury]);
+  }, [vault]);
 
   const form = useForm<StakeService>({
     resolver: zodResolver(stakeServiceSchema),
@@ -186,7 +189,7 @@ export default function Stake() {
       return;
     }
 
-    if (!activeFund?.pubkey) {
+    if (!activeGlamState?.pubkey) {
       toast({
         title: "Fund not found for the connected wallet.",
         variant: "destructive",
@@ -213,7 +216,7 @@ export default function Stake() {
     const stakeFnMap: any = {
       "Native Staking": async () => {
         return await glamClient.staking.initializeAndDelegateStake(
-          activeFund.pubkey,
+          activeGlamState.pubkey,
           new PublicKey(values.validatorAddress!),
           new BN(values.amountIn * LAMPORTS_PER_SOL),
         );
@@ -221,14 +224,14 @@ export default function Stake() {
       "Liquid Staking": async () => {
         if (values.poolTokenSymbol === "mSOL") {
           return await glamClient.marinade.depositSol(
-            activeFund.pubkey,
+            activeGlamState.pubkey,
             new BN(values.amountIn * LAMPORTS_PER_SOL),
           );
         }
         // Other LSTs
         const stateAccount = new PublicKey(values.stakePool!);
         return await glamClient.staking.stakePoolDepositSol(
-          activeFund.pubkey,
+          activeGlamState.pubkey,
           stateAccount,
           new BN(values.amountIn * LAMPORTS_PER_SOL),
         );

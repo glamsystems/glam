@@ -4,7 +4,7 @@ import {
   WSOL,
   MSOL,
   USDC,
-  FundModel,
+  StateModel,
   ShareClassOpenfundsModel,
   FundOpenfundsModel,
 } from "../src";
@@ -40,8 +40,8 @@ export const airdrop = async (
   );
 };
 
-export const testFundModel = {
-  shareClasses: [
+export const stateModelForTest = {
+  mints: [
     {
       // Glam Token
       name: "Glam Fund SOL-mSOL",
@@ -100,28 +100,22 @@ export const testFundModel = {
     fundWebsiteOfManCo: "https://glam.systems",
   },
   // Openfunds Manager (simplified)
-  manager: {
+  owner: {
     portfolioManagerName: "glam.sol",
   },
-} as Partial<FundModel>;
+} as Partial<StateModel>;
 
-export const createFundForTest = async (
+export const createGlamStateForTest = async (
   glamClient: GlamClient = new GlamClient(),
-  testFund: Partial<FundModel> = testFundModel,
+  stateForTest: Partial<StateModel> = stateModelForTest,
 ) => {
-  let txId, fundPDA;
-  try {
-    [txId, fundPDA] = await glamClient.fund.createFund(testFund);
-    console.log(`Fund ${fundPDA} initialized, txId: ${txId}`);
-  } catch (e) {
-    console.error(e);
-    throw e;
-  }
+  const [txId, statePda] = await glamClient.state.createState(stateForTest);
+  console.log(`State ${statePda} initialized, txId: ${txId}`);
 
   return {
-    fundPDA,
-    treasuryPDA: glamClient.getVaultPda(fundPDA),
-    sharePDA: glamClient.getShareClassPDA(fundPDA, 0),
+    statePda,
+    vaultPda: glamClient.getVaultPda(statePda),
+    mintPda: glamClient.getShareClassPda(statePda, 0),
   };
 };
 

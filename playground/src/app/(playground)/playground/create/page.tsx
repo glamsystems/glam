@@ -20,7 +20,7 @@ import {
   useGlam,
   MSOL,
   WSOL,
-  FundModel,
+  StateModel,
   ShareClassOpenfundsModel,
   ManagerModel,
   FundOpenfundsModel,
@@ -57,7 +57,7 @@ export default function Create() {
     setIsLoading(true);
     try {
       const fund = {
-        shareClasses: [
+        mints: [
           {
             uri: "",
             fundId: null,
@@ -123,9 +123,9 @@ export default function Create() {
         manager: {
           portfolioManagerName: "GLAM",
         } as Partial<ManagerModel>,
-      } as Partial<FundModel>;
+      } as Partial<StateModel>;
 
-      const [txId, fundPDA] = await glamClient.fund.createFund(fund);
+      const [txId, fundPDA] = await glamClient.state.createState(fund);
 
       toast({
         title: "Fund Created",

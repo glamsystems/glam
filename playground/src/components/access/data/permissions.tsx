@@ -31,12 +31,12 @@ export const vaultTreeDataPermissions: TreeNodeData = {
       collapsed: false,
       children: [
         {
-          id: "jupiterSwapFundAssets",
-          label: "Swap (only predefined assets)",
+          id: "jupiterSwapAllowlisted",
+          label: "Swap (only assets defined in the allowlist)",
           description: "",
         },
         {
-          id: "jupiterSwapAnyAsset",
+          id: "jupiterSwapAny",
           label: "Swap (any asset)",
           description: "",
         },
@@ -80,7 +80,7 @@ export const vaultTreeDataPermissions: TreeNodeData = {
         },
         {
           id: "liquidUnstake",
-          label: "Marinade liquid unstake (not recommended)",
+          label: "Liquid unstake (not recommended)",
           description: "",
         },
       ],

@@ -16,11 +16,12 @@ export default function PageAccess({
 }: {
   perms: "vault" | "mint" | "all";
 }) {
-  const { allFunds, activeFund } = useGlam();
+  const { allGlamStates, activeGlamState } = useGlam();
   const { getLabel } = usePubkeyLabels();
 
-  const fundId = activeFund?.address;
-  const fund = (allFunds || []).find((f) => f.idStr === fundId);
+  const fund = (allGlamStates || []).find(
+    (s) => s.idStr === activeGlamState?.address,
+  );
 
   const data = useMemo(() => {
     if (!fund) return [];
@@ -39,10 +40,10 @@ export default function PageAccess({
         (lvl1: any) => lvl1.children?.map((node: any) => node.id) || [],
       ) || [];
 
-    const owner = fund.manager?.pubkey
+    const owner = fund.owner?.pubkey
       ? [
           {
-            pubkey: fund.manager.pubkey.toBase58(),
+            pubkey: fund.owner.pubkey.toBase58(),
             label: "Owner",
             tags: flatPermissions,
           },

@@ -39,15 +39,18 @@ export function DataTableToolbar<TData>({
   const [publicKey, setPublicKey] = useState<string>("");
   const [ata, setAta] = useState<string>("");
 
-  const { glamClient, activeFund } = useGlam();
+  const { glamClient, activeGlamState } = useGlam();
 
   React.useEffect(() => {
-    if (!glamClient || !activeFund?.pubkey) {
+    if (!glamClient || !activeGlamState?.pubkey) {
       return;
     }
     // Set ata if public key is valid
     try {
-      const shareClassMint = glamClient.getShareClassPDA(activeFund.pubkey, 0);
+      const shareClassMint = glamClient.getShareClassPda(
+        activeGlamState.pubkey,
+        0,
+      );
       const ata = glamClient.getShareClassAta(
         new PublicKey(publicKey),
         shareClassMint,
@@ -63,7 +66,7 @@ export function DataTableToolbar<TData>({
   ) => {
     event.preventDefault();
 
-    if (!activeFund?.pubkey || !glamClient) {
+    if (!activeGlamState?.pubkey || !glamClient) {
       return;
     }
 
@@ -82,7 +85,7 @@ export function DataTableToolbar<TData>({
 
     try {
       const txSig = await glamClient.shareClass.createTokenAccount(
-        activeFund.pubkey,
+        activeGlamState.pubkey,
         pubkey,
         0,
         false,
