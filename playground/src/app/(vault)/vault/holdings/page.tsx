@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { useGlam } from "@glam/anchor/react";
+import { useGlam, WSOL } from "@glam/anchor/react";
 import { Holding } from "./data/holdingSchema";
 import {
   Sheet,
@@ -62,7 +62,7 @@ export default function Holdings() {
     price: 0,
     amount: "0",
     balance: 0,
-    decimals: 9,
+    decimals: 0,
     notional: 0,
     logoURI: "",
     location: "",
@@ -77,21 +77,19 @@ export default function Holdings() {
 
   useEffect(() => {
     const holdings: Holding[] = [];
-
-    const solBalance = Number(vault?.balanceLamports) / LAMPORTS_PER_SOL;
-    if (solBalance > 0) {
-      const mint = "So11111111111111111111111111111111111111112";
+    if (vault.uiAmount && vault.balanceLamports > 0) {
+      const mint = WSOL.toBase58();
       const price = prices?.find((p) => p.mint === mint)?.price || 0;
       holdings.push({
         name: "Solana",
         symbol: "SOL",
         mint: "",
         ata: "",
-        price: price,
-        amount: "" + vault?.balanceLamports || "0",
-        balance: solBalance,
+        price,
+        amount: vault?.balanceLamports.toString() || "NaN",
+        balance: vault?.uiAmount || NaN,
         decimals: 9,
-        notional: solBalance * price || 0,
+        notional: vault.uiAmount * price || 0,
         location: "vault",
         logoURI:
           "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
@@ -101,32 +99,34 @@ export default function Holdings() {
 
     if (vault?.tokenAccounts) {
       holdings.push(
-        ...vault.tokenAccounts.map((ta) => {
-          const jupToken = jupTokenList?.find(
-            (t) => t.address === ta.mint.toBase58(),
-          );
-          const logoURI = jupToken?.logoURI || "";
-          const name = jupToken?.name || "Unknown";
-          const symbol = jupToken?.symbol || ta.mint.toBase58();
-          const price =
-            prices?.find((p) => p.mint === ta.mint.toBase58())?.price || 0;
-          const tags = jupToken?.tags || [];
+        ...vault.tokenAccounts.map(
+          ({ mint, pubkey, amount, uiAmount, decimals }) => {
+            const jupToken = jupTokenList?.find(
+              (t) => t.address === mint.toBase58(),
+            );
+            const logoURI = jupToken?.logoURI || "";
+            const name = jupToken?.name || "Unknown";
+            const symbol = jupToken?.symbol || mint.toBase58();
+            const price =
+              prices?.find((p) => p.mint === mint.toBase58())?.price || 0;
+            const tags = jupToken?.tags || [];
 
-          return {
-            name,
-            symbol: symbol === "SOL" ? "wSOL" : symbol,
-            mint: ta.mint.toBase58(),
-            ata: ta.pubkey.toBase58(),
-            price,
-            amount: ta.amount,
-            balance: ta.uiAmount,
-            decimals: ta.decimals,
-            notional: ta.uiAmount * price || 0,
-            logoURI,
-            location: "vault",
-            lst: tags.indexOf("lst") >= 0,
-          };
-        }),
+            return {
+              name,
+              symbol: symbol === "SOL" ? "wSOL" : symbol,
+              mint: mint.toBase58(),
+              ata: pubkey.toBase58(),
+              price,
+              amount,
+              balance: uiAmount,
+              decimals,
+              notional: uiAmount * price || 0,
+              logoURI,
+              location: "vault",
+              lst: tags.indexOf("lst") >= 0,
+            };
+          },
+        ),
       );
     }
 
@@ -137,7 +137,8 @@ export default function Holdings() {
       const driftHoldings = spotPositions.map((p) => {
         const market = spotMarkets.find((m) => m.marketIndex === p.marketIndex);
         const price = prices?.find((p) => p.mint === market?.mint)?.price || 0;
-        // @ts-ignore: balance is UI amount added by glam api, it doesn't existing in the drift sdk types
+        // FIXME: balance is UI amount added by glam api, it doesn't existing in the drift sdk types
+        // @ts-ignore
         const balance = Number(p.balance);
         const decimals = market?.decimals || 9;
         const amount = new BN(balance).mul(new BN(10 ** decimals));
@@ -185,17 +186,16 @@ export default function Holdings() {
     }
     const statePda = activeGlamState.pubkey;
 
-    console.log(tableData);
     const tokenAccounts = (tableData || [])
-      .filter((d) => d.ata)
+      .filter((d) => d.ata && d.location === "vault")
       .map((d) => new PublicKey(d.ata));
 
     let preInstructions = (
       await Promise.all(
         (tableData || [])
-          .filter((d) => d.balance > 0 && d.mint)
+          .filter((d) => d.balance > 0 && d.mint && d.location === "vault")
           .map(async (d) => {
-            console.log("withdraw", d.name);
+            console.log(`withdraw ${d.name} from ${d.location}`);
             return await glamClient.state.withdrawIxs(
               statePda,
               new PublicKey(d.mint),
@@ -247,6 +247,7 @@ export default function Holdings() {
               : tableData.filter((d) => d.balance > 0)
         }
         columns={columns}
+        showZeroBalances={showZeroBalances}
         setShowZeroBalances={setShowZeroBalances}
         onOpenSheet={openSheet}
       />

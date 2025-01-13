@@ -14,12 +14,8 @@ import { atomWithStorage } from "jotai/utils";
 import type { StateModel } from "../models";
 import { GlamClient } from "../client";
 import { useAtomValue, useSetAtom } from "jotai/react";
-import { PublicKey } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { WSOL } from "../constants";
-import {
-  getAssociatedTokenAddressSync,
-  TOKEN_PROGRAM_ID,
-} from "@solana/spl-token";
 import { DriftMarketConfigs, GlamDriftUser } from "../client/drift";
 import { TokenAccount } from "../client/base";
 import { useCluster } from "./cluster-provider";
@@ -41,7 +37,7 @@ interface TokenPrice {
 interface GlamProviderContext {
   glamClient: GlamClient;
   activeGlamState?: GlamStateCache;
-  vault?: Vault;
+  vault: Vault;
   glamStatesList: GlamStateCache[];
   allGlamStates: StateModel[];
   userWallet: UserWallet;
@@ -57,12 +53,14 @@ interface UserWallet {
   queryKey: string[];
   pubkey?: PublicKey; // if pubkey is null, wallet is not connected
   balanceLamports: number;
+  uiAmount: number;
   tokenAccounts: TokenAccount[];
 }
 
 interface Vault {
   pubkey: PublicKey;
   balanceLamports: number; // TODO: this should be a BN or string, it works until ~9M SOL
+  uiAmount: number;
   tokenAccounts: TokenAccount[];
 }
 
@@ -114,25 +112,12 @@ const fetchBalances = async (glamClient: GlamClient, owner: PublicKey) => {
   const balanceLamports =
     await glamClient.provider.connection.getBalance(owner);
   const tokenAccounts = await glamClient.getTokenAccountsByOwner(owner);
-
-  // Add wSOL account if it doesn't exist, so that we can properly combine SOL and wSOL balances
-  // FIXME: this leads to a bug on holdings page that the wSOL ata has balance 0 but cannot be closed
-  if (!tokenAccounts.find((ta) => ta.mint.equals(WSOL))) {
-    tokenAccounts.push({
-      owner,
-      mint: WSOL,
-      programId: TOKEN_PROGRAM_ID,
-      pubkey: getAssociatedTokenAddressSync(WSOL, owner, true),
-      amount: "0",
-      uiAmount: 0,
-      decimals: 9,
-      frozen: false,
-    });
-  }
+  const uiAmount = balanceLamports / LAMPORTS_PER_SOL;
 
   return {
     balanceLamports,
     tokenAccounts,
+    uiAmount,
   };
 };
 

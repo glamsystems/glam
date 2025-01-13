@@ -59,7 +59,6 @@ export class StateClient {
     }
 
     if (singleTx) {
-      // @ts-ignore
       const initStateIx = await this.base.program.methods
         .initializeState(stateModel)
         .accountsPartial({
@@ -150,7 +149,6 @@ export class StateClient {
    * Create a full state model from a partial state model
    */
   enrichStateModel(partialStateModel: Partial<StateModel>): StateModel {
-    const stateModel = { ...partialStateModel };
     const owner = this.base.getSigner();
     const defaultDate = new Date().toISOString().split("T")[0];
 
@@ -158,52 +156,57 @@ export class StateClient {
     // useful for computing state account PDA in the future
     const createdKey = [
       ...Buffer.from(
-        anchor.utils.sha256.hash(this.base.getName(stateModel)),
+        anchor.utils.sha256.hash(this.base.getName(partialStateModel)),
       ).subarray(0, 8),
     ];
-    stateModel.created = {
+    partialStateModel.created = {
       key: createdKey,
       owner,
     };
 
-    stateModel.rawOpenfunds = new FundOpenfundsModel(
-      stateModel.rawOpenfunds ?? {},
+    partialStateModel.rawOpenfunds = new FundOpenfundsModel(
+      partialStateModel.rawOpenfunds ?? {},
     );
 
-    stateModel.owner = new ManagerModel({
-      ...(stateModel.owner || {}),
+    partialStateModel.owner = new ManagerModel({
+      ...(partialStateModel.owner || {}),
       pubkey: owner,
     });
 
-    stateModel.company = new CompanyModel(stateModel.company || {});
+    partialStateModel.company = new CompanyModel(
+      partialStateModel.company || {},
+    );
 
-    if (stateModel.mints?.length == 1) {
-      const shareClass = stateModel.mints[0];
-      stateModel.name = stateModel.name || shareClass.name;
+    if (partialStateModel.mints?.length == 1) {
+      const shareClass = partialStateModel.mints[0];
+      partialStateModel.name = partialStateModel.name || shareClass.name;
 
-      stateModel.rawOpenfunds.fundCurrency =
-        stateModel.rawOpenfunds?.fundCurrency ||
+      partialStateModel.rawOpenfunds.fundCurrency =
+        partialStateModel.rawOpenfunds?.fundCurrency ||
         shareClass.rawOpenfunds?.shareClassCurrency ||
         null;
-    } else if (stateModel.mints?.length && stateModel.mints.length > 1) {
+    } else if (
+      partialStateModel.mints?.length &&
+      partialStateModel.mints.length > 1
+    ) {
       throw new Error("Fund with more than 1 share class is not supported");
     }
 
-    if (stateModel.isEnabled) {
-      stateModel.rawOpenfunds.fundLaunchDate =
-        stateModel.rawOpenfunds?.fundLaunchDate || defaultDate;
+    if (partialStateModel.isEnabled) {
+      partialStateModel.rawOpenfunds.fundLaunchDate =
+        partialStateModel.rawOpenfunds?.fundLaunchDate || defaultDate;
     }
 
     // fields containing fund id / pda
-    const statePda = this.base.getStatePda(stateModel);
-    stateModel.uri =
-      stateModel.uri || `https://gui.glam.systems/products/${statePda}`;
-    stateModel.metadataUri =
-      stateModel.metadataUri ||
+    const statePda = this.base.getStatePda(partialStateModel);
+    partialStateModel.uri =
+      partialStateModel.uri || `https://gui.glam.systems/products/${statePda}`;
+    partialStateModel.metadataUri =
+      partialStateModel.metadataUri ||
       `https://api.glam.systems/v0/openfunds?fund=${statePda}&format=csv`;
 
     // build openfunds models for each share classes
-    (stateModel.mints || []).forEach(
+    (partialStateModel.mints || []).forEach(
       (shareClass: ShareClassModel, i: number) => {
         if (shareClass.rawOpenfunds) {
           if (shareClass.rawOpenfunds.shareClassLifecycle === "active") {
@@ -226,12 +229,12 @@ export class StateClient {
     );
 
     // convert partial share class models to full share class models
-    stateModel.mints = (stateModel.mints || []).map(
+    partialStateModel.mints = (partialStateModel.mints || []).map(
       // @ts-ignore
       (s) => new ShareClassModel(s),
     );
 
-    return new StateModel(stateModel);
+    return new StateModel(partialStateModel, this.base.program.programId);
   }
 
   /**
