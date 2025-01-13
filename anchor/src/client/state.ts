@@ -92,9 +92,12 @@ export class StateClient {
       .rpc();
 
     const addShareClassTxs = await Promise.all(
-      mints.map(async (shareClass: any, j: number) => {
+      mints.map(async (shareClass, j: number) => {
         const shareClassMint = this.base.getShareClassPda(statePda, j);
 
+        // FIXME: setting rawOpenfunds to null is a workarond for
+        // Access violation in stack frame 5 at address 0x200005ff8 of size 8
+        shareClass.rawOpenfunds = null;
         return await this.base.program.methods
           .addShareClass(shareClass)
           .accounts({

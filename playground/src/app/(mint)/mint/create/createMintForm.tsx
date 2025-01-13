@@ -174,7 +174,7 @@ export default function MultiStepForm() {
         product: "Mint",
       });
       toast({
-        title: "Fund created successfully",
+        title: "Mint created successfully",
         description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
       });
     } catch (error) {
