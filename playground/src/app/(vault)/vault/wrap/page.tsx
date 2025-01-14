@@ -46,7 +46,7 @@ export default function Wrap() {
 
   useEffect(() => {
     if (activeGlamState?.pubkey && vault) {
-      const solBalance = (vault?.balanceLamports || 0) / LAMPORTS_PER_SOL;
+      const solBalance = vault?.uiAmount || NaN;
       const wSolBalance =
         vault?.tokenAccounts?.find((ta) => ta.mint.equals(WSOL))?.uiAmount || 0;
       setSolBalance(solBalance);

@@ -68,7 +68,7 @@ export type TxOptions = {
 
 export type TokenAccount = {
   owner: PublicKey;
-  pubkey: PublicKey;
+  pubkey: PublicKey; // ata
   mint: PublicKey;
   programId: PublicKey;
   decimals: number;

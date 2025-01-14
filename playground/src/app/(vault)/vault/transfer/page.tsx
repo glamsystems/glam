@@ -24,7 +24,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/use-toast";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { useGlam } from "@glam/anchor/react";
+import { useGlam, WSOL } from "@glam/anchor/react";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { parseTxError } from "@/lib/error";
 import { ExplorerLink } from "@/components/ExplorerLink";
@@ -60,24 +60,35 @@ export default function Transfer() {
   const [transferButtonDisabled, setTransferButtonDisabled] = useState(false);
 
   const vaultAssets = () => {
-    const assets = (vault?.tokenAccounts || []).map((ta) => {
-      const jupToken = jupTokenList?.find(
-        (t) => t.address === ta.mint.toBase58(),
-      );
-      const name = jupToken?.name || "Unknown";
-      const symbol = jupToken?.symbol || ta.mint.toBase58();
-      return {
-        name,
-        symbol,
-        address: ta.mint.toBase58(),
-        decimals: ta.decimals,
-        balance:
-          /* combine SOL + wSOL balances */
-          symbol === "SOL"
-            ? ta.uiAmount + (vault?.balanceLamports || 0) / LAMPORTS_PER_SOL
-            : ta.uiAmount,
-      } as Asset;
-    });
+    const assets = (vault?.tokenAccounts || []).map(
+      ({ mint, uiAmount, decimals }) => {
+        const jupToken = jupTokenList?.find(
+          (t) => t.address === mint.toBase58(),
+        );
+        const name = jupToken?.name || "Unknown";
+        const symbol = jupToken?.symbol || mint.toBase58();
+        // If vault holds wSOL, combine SOL + wSOL balance
+        const balance =
+          symbol === "SOL" ? uiAmount + (vault?.uiAmount || 0) : uiAmount;
+        return {
+          name,
+          symbol,
+          address: mint.toBase58(),
+          decimals: decimals,
+          balance,
+        } as Asset;
+      },
+    );
+    // If vault does not hold wSOL, explicitly add SOL
+    if (!assets.find((a) => a.symbol === "SOL")) {
+      assets.push({
+        name: "SOL",
+        symbol: "SOL",
+        address: WSOL.toBase58(),
+        decimals: 9,
+        balance: vault.uiAmount || NaN,
+      });
+    }
     return assets;
   };
 
@@ -126,13 +137,12 @@ export default function Transfer() {
       );
       setTransferButtonDisabled(true);
       return;
-    } else {
-      setWarning("");
     }
+
+    setWarning("");
     setTransferButtonDisabled(false);
 
     if (from === "Drift") {
-      console.log(driftUser.spotPositions);
       setFromAssetList(driftAssets());
       return;
     }

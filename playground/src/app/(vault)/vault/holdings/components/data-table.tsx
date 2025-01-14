@@ -29,6 +29,7 @@ import { DataTableToolbar } from "./data-table-toolbar";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  showZeroBalances: boolean;
   setShowZeroBalances: (showZeroBalances: boolean) => void;
   onOpenSheet: () => void;
 }
@@ -36,6 +37,7 @@ interface DataTableProps<TData, TValue> {
 export function DataTable<TData, TValue>({
   columns,
   data,
+  showZeroBalances,
   setShowZeroBalances,
   onOpenSheet,
 }: DataTableProps<TData, TValue>) {
@@ -72,6 +74,7 @@ export function DataTable<TData, TValue>({
     <div className="space-y-4 w-full">
       <DataTableToolbar
         table={table}
+        showZeroBalances={showZeroBalances}
         setShowZeroBalances={setShowZeroBalances}
         onOpenSheet={onOpenSheet}
       />
