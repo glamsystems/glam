@@ -1,5 +1,5 @@
 {
-  "name": "GLAM Fund XYZ",
+  "name": "GLAM Mint XYZ",
   "isEnabled": true,
   "assets": [
     "So11111111111111111111111111111111111111112",
@@ -20,8 +20,8 @@
     "emailAddressOfManCo": "hello@glam.systems",
     "fundWebsiteOfManCo": "https://glam.systems"
   },
-  "manager": { "portfolioManagerName": "glam.sol" },
-  "shareClasses": [
+  "owner": { "portfolioManagerName": "glam.sol" },
+  "mints": [
     {
       "name": "GLAM Token XYZ",
       "symbol": "[TBD]",

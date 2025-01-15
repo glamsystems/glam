@@ -162,6 +162,23 @@ export class JupiterClient {
       .rpc();
   }
 
+  public async unstakeJup(statePda: PublicKey, txOptions: TxOptions = {}) {
+    const vault = this.base.getVaultPda(statePda);
+    const [escrow] = PublicKey.findProgramAddressSync(
+      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), vault.toBuffer()],
+      JUP_VOTE_PROGRAM,
+    );
+
+    return await this.base.program.methods
+      .toggleMaxLock(false)
+      .accounts({
+        state: statePda,
+        locker: JUP_STAKE_LOCKER,
+        escrow,
+      })
+      .rpc();
+  }
+
   /**
    * Vote on a proposal. The vote account will be created if it doesn't exist.
    *
