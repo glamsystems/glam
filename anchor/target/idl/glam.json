@@ -77,7 +77,28 @@
         },
         {
           "name": "metadata",
-          "writable": true
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "state"
+              }
+            ]
+          }
         },
         {
           "name": "signer",
@@ -118,7 +139,7 @@
         "- Permission::BurnShare",
         "",
         "# Integration required",
-        "- IntegrationName::Mint"
+        "- Integration::Mint"
       ],
       "discriminator": [
         111,
@@ -233,7 +254,7 @@
         "- Permission::VoteOnProposal",
         "",
         "# Integration required",
-        "- IntegrationName::JupiterVote"
+        "- Integration::JupiterVote"
       ],
       "discriminator": [
         20,
@@ -258,14 +279,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -348,14 +366,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -407,7 +422,28 @@
         },
         {
           "name": "metadata",
-          "writable": true
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "state"
+              }
+            ]
+          }
         },
         {
           "name": "signer",
@@ -454,7 +490,28 @@
         },
         {
           "name": "metadata",
-          "writable": true
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "state"
+              }
+            ]
+          }
         },
         {
           "name": "vault",
@@ -464,14 +521,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -527,14 +581,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -572,7 +623,7 @@
         "- Permission::Unstake",
         "",
         "# Integration required",
-        "- IntegrationName::NativeStaking"
+        "- Integration::NativeStaking"
       ],
       "discriminator": [
         58,
@@ -601,14 +652,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -644,7 +692,7 @@
         "- Permission::DriftCancelOrders",
         "",
         "# Integration required",
-        "- IntegrationName::Drift"
+        "- Integration::Drift"
       ],
       "discriminator": [
         98,
@@ -675,14 +723,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -747,7 +792,7 @@
         "- Permission::DriftDeleteUser",
         "",
         "# Integration required",
-        "- IntegrationName::Drift"
+        "- Integration::Drift"
       ],
       "discriminator": [
         179,
@@ -782,14 +827,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -829,7 +871,7 @@
         "- Permission::DriftDeposit",
         "",
         "# Integration required",
-        "- IntegrationName::Drift"
+        "- Integration::Drift"
       ],
       "discriminator": [
         252,
@@ -864,14 +906,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -927,7 +966,7 @@
         "- Permission::DriftInitialize",
         "",
         "# Integration required",
-        "- IntegrationName::Drift"
+        "- Integration::Drift"
       ],
       "discriminator": [
         21,
@@ -962,14 +1001,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -1013,7 +1049,7 @@
         "- Additional permission Permission::DriftSpotMarket or Permission::DriftPerpMarket is required depending on market type.",
         "",
         "# Integration required",
-        "- IntegrationName::Drift"
+        "- Integration::Drift"
       ],
       "discriminator": [
         117,
@@ -1044,14 +1080,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -1102,7 +1135,7 @@
         "- Permission::DriftUpdateUser",
         "",
         "# Integration required",
-        "- IntegrationName::Drift"
+        "- Integration::Drift"
       ],
       "discriminator": [
         4,
@@ -1129,14 +1162,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -1181,7 +1211,7 @@
         "- Permission::DriftUpdateUser",
         "",
         "# Integration required",
-        "- IntegrationName::Drift"
+        "- Integration::Drift"
       ],
       "discriminator": [
         36,
@@ -1208,14 +1238,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -1260,7 +1287,7 @@
         "- Permission::DriftUpdateUser",
         "",
         "# Integration required",
-        "- IntegrationName::Drift"
+        "- Integration::Drift"
       ],
       "discriminator": [
         157,
@@ -1287,14 +1314,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -1339,7 +1363,7 @@
         "- Permission::DriftWithdraw",
         "",
         "# Integration required",
-        "- IntegrationName::Drift"
+        "- Integration::Drift"
       ],
       "discriminator": [
         86,
@@ -1377,14 +1401,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -1441,7 +1462,7 @@
         "- Permission::ForceTransferShare",
         "",
         "# Integration required",
-        "- IntegrationName::Mint"
+        "- Integration::Mint"
       ],
       "discriminator": [
         71,
@@ -1616,7 +1637,7 @@
         "- Permission::StakeJup",
         "",
         "# Integration required",
-        "- IntegrationName::JupiterVote"
+        "- Integration::JupiterVote"
       ],
       "discriminator": [
         5,
@@ -1640,14 +1661,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -1706,7 +1724,7 @@
         "- Permission::StakeJup",
         "",
         "# Integration required",
-        "- IntegrationName::JupiterVote"
+        "- Integration::JupiterVote"
       ],
       "discriminator": [
         148,
@@ -1730,14 +1748,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -1786,7 +1801,7 @@
         "- Permission::Stake",
         "",
         "# Integration required",
-        "- IntegrationName::NativeStaking"
+        "- Integration::NativeStaking"
       ],
       "discriminator": [
         71,
@@ -1816,14 +1831,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -1911,10 +1923,11 @@
               {
                 "kind": "const",
                 "value": [
-                  102,
-                  117,
-                  110,
-                  100
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
                 ]
               },
               {
@@ -1929,32 +1942,6 @@
           }
         },
         {
-          "name": "metadata",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  111,
-                  112,
-                  101,
-                  110,
-                  102,
-                  117,
-                  110,
-                  100,
-                  115
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "state"
-              }
-            ]
-          }
-        },
-        {
           "name": "vault",
           "writable": true,
           "pda": {
@@ -1962,14 +1949,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -1983,6 +1967,31 @@
           "name": "signer",
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "metadata",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "state"
+              }
+            ]
+          }
         },
         {
           "name": "system_program",
@@ -2017,7 +2026,7 @@
         "- Permission::JupiterSwapLst: input and output assets are both LST.",
         "",
         "# Integration required",
-        "- IntegrationName::JupiterSwap"
+        "- Integration::JupiterSwap"
       ],
       "discriminator": [
         116,
@@ -2042,14 +2051,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -2248,7 +2254,7 @@
         "- Permission::Unstake",
         "",
         "# Integration required",
-        "- IntegrationName::Marinade"
+        "- Integration::Marinade"
       ],
       "discriminator": [
         14,
@@ -2278,14 +2284,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -2341,7 +2344,7 @@
         "- Permission::Unstake",
         "",
         "# Integration required",
-        "- IntegrationName::Marinade"
+        "- Integration::Marinade"
       ],
       "discriminator": [
         117,
@@ -2371,14 +2374,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -2458,7 +2458,7 @@
         "- Permission::Stake",
         "",
         "# Integration required",
-        "- IntegrationName::Marinade"
+        "- Integration::Marinade"
       ],
       "discriminator": [
         64,
@@ -2487,14 +2487,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -2659,7 +2656,7 @@
         "- Permission::Stake",
         "",
         "# Integration required",
-        "- IntegrationName::Marinade"
+        "- Integration::Marinade"
       ],
       "discriminator": [
         69,
@@ -2688,14 +2685,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -2871,7 +2865,7 @@
         "- Permission::LiquidUnstake",
         "",
         "# Integration required",
-        "- IntegrationName::Marinade"
+        "- Integration::Marinade"
       ],
       "discriminator": [
         29,
@@ -2900,14 +2894,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -2977,7 +2968,7 @@
         "- Permission::UnstakeJup",
         "",
         "# Integration required",
-        "- IntegrationName::JupiterVote"
+        "- Integration::JupiterVote"
       ],
       "discriminator": [
         190,
@@ -3001,14 +2992,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -3058,7 +3046,7 @@
         "- Permission::Stake",
         "",
         "# Integration required",
-        "- IntegrationName::NativeStaking"
+        "- Integration::NativeStaking"
       ],
       "discriminator": [
         173,
@@ -3088,14 +3076,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -3146,7 +3131,7 @@
         "- Permission::MintShare",
         "",
         "# Integration required",
-        "- IntegrationName::Mint"
+        "- Integration::Mint"
       ],
       "discriminator": [
         145,
@@ -3260,7 +3245,7 @@
         "- Permission::VoteOnProposal",
         "",
         "# Integration required",
-        "- IntegrationName::JupiterVote"
+        "- Integration::JupiterVote"
       ],
       "discriminator": [
         163,
@@ -3284,14 +3269,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -3339,7 +3321,7 @@
         "- Permission::UnstakeJup",
         "",
         "# Integration required",
-        "- IntegrationName::JupiterVote"
+        "- Integration::JupiterVote"
       ],
       "discriminator": [
         201,
@@ -3363,14 +3345,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -3463,14 +3442,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -3554,7 +3530,7 @@
         "- Permission::Unstake",
         "",
         "# Integration required",
-        "- IntegrationName::NativeStaking"
+        "- Integration::NativeStaking"
       ],
       "discriminator": [
         240,
@@ -3584,14 +3560,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -3695,7 +3668,7 @@
         "- Permission::SetTokenAccountsStates",
         "",
         "# Integration required",
-        "- IntegrationName::Mint"
+        "- Integration::Mint"
       ],
       "discriminator": [
         50,
@@ -3752,7 +3725,7 @@
         "- Permission::Unstake",
         "",
         "# Integration required",
-        "- IntegrationName::NativeStaking"
+        "- Integration::NativeStaking"
       ],
       "discriminator": [
         130,
@@ -3782,14 +3755,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -3848,7 +3818,7 @@
         "- Permission::Stake",
         "",
         "# Integration required",
-        "- IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used."
+        "- Integration::SplStakePool or Integration::SanctumStakePool, depending on the stake pool program used."
       ],
       "discriminator": [
         147,
@@ -3877,14 +3847,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -4037,7 +4004,7 @@
         "- Permission::Stake",
         "",
         "# Integration required",
-        "- IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used."
+        "- Integration::SplStakePool or Integration::SanctumStakePool, depending on the stake pool program used."
       ],
       "discriminator": [
         212,
@@ -4067,14 +4034,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -4250,7 +4214,7 @@
         "- Permission::LiquidUnstake",
         "",
         "# Integration required",
-        "- IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used."
+        "- Integration::SplStakePool or Integration::SanctumStakePool, depending on the stake pool program used."
       ],
       "discriminator": [
         179,
@@ -4279,14 +4243,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -4364,7 +4325,7 @@
         "- Permission::Unstake",
         "",
         "# Integration required",
-        "- IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used."
+        "- Integration::SplStakePool or Integration::SanctumStakePool, depending on the stake pool program used."
       ],
       "discriminator": [
         7,
@@ -4394,14 +4355,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -4509,14 +4467,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -4680,7 +4635,7 @@
         "- Permission::UnstakeJup",
         "",
         "# Integration required",
-        "- IntegrationName::JupiterVote"
+        "- Integration::JupiterVote"
       ],
       "discriminator": [
         163,
@@ -4704,14 +4659,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -5017,14 +4969,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -5179,7 +5128,7 @@
         "- Permission::UnstakeJup",
         "",
         "# Integration required",
-        "- IntegrationName::JupiterVote"
+        "- Integration::JupiterVote"
       ],
       "discriminator": [
         210,
@@ -5203,14 +5152,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -5264,7 +5210,7 @@
         "- Permission::Unstake",
         "",
         "# Integration required",
-        "- IntegrationName::NativeStaking"
+        "- Integration::NativeStaking"
       ],
       "discriminator": [
         93,
@@ -5294,14 +5240,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -5338,7 +5281,7 @@
         "- Permission::UnstakeJup",
         "",
         "# Integration required",
-        "- IntegrationName::JupiterVote"
+        "- Integration::JupiterVote"
       ],
       "discriminator": [
         201,
@@ -5362,14 +5305,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -5448,14 +5388,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -5605,14 +5542,11 @@
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -5757,32 +5691,6 @@
       ]
     },
     {
-      "name": "FundAccount",
-      "discriminator": [
-        49,
-        104,
-        168,
-        214,
-        134,
-        180,
-        173,
-        154
-      ]
-    },
-    {
-      "name": "FundMetadataAccount",
-      "discriminator": [
-        214,
-        24,
-        35,
-        92,
-        16,
-        104,
-        166,
-        6
-      ]
-    },
-    {
       "name": "Governor",
       "discriminator": [
         37,
@@ -5848,6 +5756,19 @@
       ]
     },
     {
+      "name": "StateAccount",
+      "discriminator": [
+        142,
+        247,
+        54,
+        95,
+        85,
+        133,
+        249,
+        103
+      ]
+    },
+    {
       "name": "Vote",
       "discriminator": [
         96,
@@ -5864,168 +5785,29 @@
   "errors": [
     {
       "code": 6000,
-      "name": "InvalidName",
-      "msg": "Name too long: max 50 chars"
+      "name": "InvalidAssetForSwap",
+      "msg": "Asset cannot be swapped"
     },
     {
       "code": 6001,
-      "name": "InvalidSymbol",
-      "msg": "Symbol too long: max 50 chars"
-    },
-    {
-      "code": 6002,
-      "name": "InvalidUri",
-      "msg": "Uri too long: max 20"
-    },
-    {
-      "code": 6003,
-      "name": "InvalidAssetsLen",
-      "msg": "Too many assets: max 100"
-    },
-    {
-      "code": 6004,
-      "name": "Disabled",
-      "msg": "State account is disabled"
-    },
-    {
-      "code": 6005,
-      "name": "NoShareClass",
-      "msg": "No share class found"
-    },
-    {
-      "code": 6006,
-      "name": "ShareClassesNotClosed",
-      "msg": "Glam state account can't be closed. Close share classes first"
-    },
-    {
-      "code": 6007,
-      "name": "CloseNotEmptyError",
-      "msg": "Error closing state account: not empty"
-    },
-    {
-      "code": 6008,
-      "name": "WithdrawDenied",
-      "msg": "Withdraw denied. Only vaults allow withdraws (funds and mints don't)"
+      "name": "InvalidSwap",
+      "msg": "Swap failed"
     }
   ],
   "types": [
     {
-      "name": "CompanyField",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "name",
-            "type": {
-              "defined": {
-                "name": "CompanyFieldName"
-              }
-            }
-          },
-          {
-            "name": "value",
-            "type": "string"
-          }
-        ]
-      }
-    },
-    {
-      "name": "CompanyFieldName",
+      "name": "AccountType",
       "type": {
         "kind": "enum",
         "variants": [
           {
-            "name": "FundGroupName"
+            "name": "Vault"
           },
           {
-            "name": "ManCo"
+            "name": "Mint"
           },
           {
-            "name": "DomicileOfManCo"
-          },
-          {
-            "name": "BICOfCustodian"
-          },
-          {
-            "name": "CollateralManagerName"
-          },
-          {
-            "name": "CustodianBankName"
-          },
-          {
-            "name": "DomicileOfCustodianBank"
-          },
-          {
-            "name": "FundAdministratorName"
-          },
-          {
-            "name": "FundAdvisorName"
-          },
-          {
-            "name": "FundPromoterName"
-          },
-          {
-            "name": "IsSelfManagedInvestmentCompany"
-          },
-          {
-            "name": "LEIOfCustodianBank"
-          },
-          {
-            "name": "LEIOfManCo"
-          },
-          {
-            "name": "PortfolioManagingCompanyName"
-          },
-          {
-            "name": "SecuritiesLendingCounterpartyName"
-          },
-          {
-            "name": "SwapCounterpartyName"
-          },
-          {
-            "name": "AddressofManCo"
-          },
-          {
-            "name": "AuditorName"
-          },
-          {
-            "name": "CityofManCo"
-          },
-          {
-            "name": "EmailAddressOfManCo"
-          },
-          {
-            "name": "FundWebsiteOfManCo"
-          },
-          {
-            "name": "IsUNPRISignatory"
-          },
-          {
-            "name": "PhoneCountryCodeofManCo"
-          },
-          {
-            "name": "PhoneNumberofManCo"
-          },
-          {
-            "name": "SubInvestmentAdvisorName"
-          },
-          {
-            "name": "ZIPCodeofManCo"
-          },
-          {
-            "name": "DomicileOfUmbrella"
-          },
-          {
-            "name": "HasUmbrella"
-          },
-          {
-            "name": "LEIOfUmbrella"
-          },
-          {
-            "name": "Umbrella"
-          },
-          {
-            "name": "GlobalIntermediaryIdentificationNumberOfUmbrella"
+            "name": "Fund"
           }
         ]
       }
@@ -6083,6 +5865,10 @@
             }
           },
           {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
             "name": "owner",
             "type": {
               "option": "pubkey"
@@ -6109,6 +5895,10 @@
                 }
               }
             }
+          },
+          {
+            "name": "expires_at",
+            "type": "i64"
           }
         ]
       }
@@ -6143,28 +5933,10 @@
         "kind": "enum",
         "variants": [
           {
-            "name": "TimeCreated"
-          },
-          {
-            "name": "IsEnabled"
-          },
-          {
-            "name": "Assets"
-          },
-          {
-            "name": "AssetsWeights"
-          },
-          {
             "name": "ShareClassAllowlist"
           },
           {
             "name": "ShareClassBlocklist"
-          },
-          {
-            "name": "DelegateAcls"
-          },
-          {
-            "name": "IntegrationAcls"
           },
           {
             "name": "ExternalVaultAccounts"
@@ -6318,36 +6090,6 @@
                 }
               }
             ]
-          },
-          {
-            "name": "VecDelegateAcl",
-            "fields": [
-              {
-                "name": "val",
-                "type": {
-                  "vec": {
-                    "defined": {
-                      "name": "DelegateAcl"
-                    }
-                  }
-                }
-              }
-            ]
-          },
-          {
-            "name": "VecIntegrationAcl",
-            "fields": [
-              {
-                "name": "val",
-                "type": {
-                  "vec": {
-                    "defined": {
-                      "name": "IntegrationAcl"
-                    }
-                  }
-                }
-              }
-            ]
           }
         ]
       }
@@ -6411,319 +6153,6 @@
                 "u128",
                 9
               ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "FundAccount",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "owner",
-            "type": "pubkey"
-          },
-          {
-            "name": "vault",
-            "type": "pubkey"
-          },
-          {
-            "name": "metadata",
-            "type": "pubkey"
-          },
-          {
-            "name": "engine",
-            "type": "pubkey"
-          },
-          {
-            "name": "mints",
-            "type": {
-              "vec": "pubkey"
-            }
-          },
-          {
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "name": "uri",
-            "type": "string"
-          },
-          {
-            "name": "metadata_uri",
-            "type": "string"
-          },
-          {
-            "name": "params",
-            "type": {
-              "vec": {
-                "vec": {
-                  "defined": {
-                    "name": "EngineField"
-                  }
-                }
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "FundField",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "name",
-            "type": {
-              "defined": {
-                "name": "FundFieldName"
-              }
-            }
-          },
-          {
-            "name": "value",
-            "type": "string"
-          }
-        ]
-      }
-    },
-    {
-      "name": "FundFieldName",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "FundDomicileAlpha2"
-          },
-          {
-            "name": "FundDomicileAlpha3"
-          },
-          {
-            "name": "LegalFundNameIncludingUmbrella"
-          },
-          {
-            "name": "FiscalYearEnd"
-          },
-          {
-            "name": "FundCurrency"
-          },
-          {
-            "name": "FundLaunchDate"
-          },
-          {
-            "name": "InvestmentObjective"
-          },
-          {
-            "name": "IsETC"
-          },
-          {
-            "name": "IsEUDirectiveRelevant"
-          },
-          {
-            "name": "IsFundOfFunds"
-          },
-          {
-            "name": "IsPassiveFund"
-          },
-          {
-            "name": "IsREIT"
-          },
-          {
-            "name": "LegalForm"
-          },
-          {
-            "name": "LegalFundNameOnly"
-          },
-          {
-            "name": "OpenEndedOrClosedEndedFundStructure"
-          },
-          {
-            "name": "TypeOfEUDirective"
-          },
-          {
-            "name": "UCITSVersion"
-          },
-          {
-            "name": "CurrencyHedgePortfolio"
-          },
-          {
-            "name": "DepositoryName"
-          },
-          {
-            "name": "FundValuationPoint"
-          },
-          {
-            "name": "FundValuationPointTimeZone"
-          },
-          {
-            "name": "FundValuationPointTimeZoneUsingTZDatabase"
-          },
-          {
-            "name": "HasCollateralManager"
-          },
-          {
-            "name": "HasEmbeddedDerivatives"
-          },
-          {
-            "name": "HasSecuritiesLending"
-          },
-          {
-            "name": "HasSwap"
-          },
-          {
-            "name": "IsLeveraged"
-          },
-          {
-            "name": "IsShariaCompliant"
-          },
-          {
-            "name": "IsShort"
-          },
-          {
-            "name": "LEIofDepositoryBank"
-          },
-          {
-            "name": "LEIOfFund"
-          },
-          {
-            "name": "LocationOfBearerShare"
-          },
-          {
-            "name": "LocationOfShareRegister"
-          },
-          {
-            "name": "MaximumLeverageInFund"
-          },
-          {
-            "name": "MiFIDSecuritiesClassification"
-          },
-          {
-            "name": "MoneyMarketTypeOfFund"
-          },
-          {
-            "name": "TrusteeName"
-          },
-          {
-            "name": "AuMFund"
-          },
-          {
-            "name": "AuMFundDate"
-          },
-          {
-            "name": "NoSFund"
-          },
-          {
-            "name": "NoSFundDate"
-          }
-        ]
-      }
-    },
-    {
-      "name": "FundManagerField",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "name",
-            "type": {
-              "defined": {
-                "name": "FundManagerFieldName"
-              }
-            }
-          },
-          {
-            "name": "value",
-            "type": "string"
-          }
-        ]
-      }
-    },
-    {
-      "name": "FundManagerFieldName",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "PortfolioManagerForename"
-          },
-          {
-            "name": "PortfolioManagerName"
-          },
-          {
-            "name": "PortfolioManagerYearOfBirth"
-          },
-          {
-            "name": "PortfolioManagerYearOfExperienceStart"
-          },
-          {
-            "name": "PortfolioManagerBriefBiography"
-          },
-          {
-            "name": "PortfolioManagerType"
-          },
-          {
-            "name": "PortfolioManagerRoleStartingDate"
-          },
-          {
-            "name": "PortfolioManagerRoleEndDate"
-          }
-        ]
-      }
-    },
-    {
-      "name": "FundMetadataAccount",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "state_pubkey",
-            "type": "pubkey"
-          },
-          {
-            "name": "company",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "CompanyField"
-                }
-              }
-            }
-          },
-          {
-            "name": "fund",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "FundField"
-                }
-              }
-            }
-          },
-          {
-            "name": "share_classes",
-            "type": {
-              "vec": {
-                "vec": {
-                  "defined": {
-                    "name": "ShareClassField"
-                  }
-                }
-              }
-            }
-          },
-          {
-            "name": "fund_managers",
-            "type": {
-              "vec": {
-                "vec": {
-                  "defined": {
-                    "name": "FundManagerField"
-                  }
-                }
-              }
             }
           }
         ]
@@ -6914,47 +6343,7 @@
       }
     },
     {
-      "name": "IntegrationAcl",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "name",
-            "type": {
-              "defined": {
-                "name": "IntegrationName"
-              }
-            }
-          },
-          {
-            "name": "features",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "IntegrationFeature"
-                }
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "IntegrationFeature",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "All"
-          }
-        ]
-      }
-    },
-    {
-      "name": "IntegrationName",
-      "docs": [
-        "* Integration ACL"
-      ],
+      "name": "Integration",
       "type": {
         "kind": "enum",
         "variants": [
@@ -6975,9 +6364,6 @@
           },
           {
             "name": "JupiterSwap"
-          },
-          {
-            "name": "Mint"
           },
           {
             "name": "JupiterVote"
@@ -7115,6 +6501,41 @@
           },
           {
             "name": "Perp"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Metadata",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "template",
+            "type": {
+              "defined": {
+                "name": "MetadataType"
+              }
+            }
+          },
+          {
+            "name": "pubkey",
+            "type": "pubkey"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MetadataType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Openfunds"
           }
         ]
       }
@@ -7582,730 +7003,6 @@
       }
     },
     {
-      "name": "ShareClassField",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "name",
-            "type": {
-              "defined": {
-                "name": "ShareClassFieldName"
-              }
-            }
-          },
-          {
-            "name": "value",
-            "type": "string"
-          }
-        ]
-      }
-    },
-    {
-      "name": "ShareClassFieldName",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "ISIN"
-          },
-          {
-            "name": "ShareClassCurrency"
-          },
-          {
-            "name": "AllInFeeApplied"
-          },
-          {
-            "name": "AllInFeeDate"
-          },
-          {
-            "name": "AllInFeeIncludesTransactionCosts"
-          },
-          {
-            "name": "AllInFeeMaximum"
-          },
-          {
-            "name": "AppliedSubscriptionFeeInFavourOfDistributor"
-          },
-          {
-            "name": "AppliedSubscriptionFeeInFavourOfDistributorReferenceDate"
-          },
-          {
-            "name": "Benchmark"
-          },
-          {
-            "name": "CountryLegalRegistration"
-          },
-          {
-            "name": "CountryMarketingDistribution"
-          },
-          {
-            "name": "CurrencyHedgeShareClass"
-          },
-          {
-            "name": "CurrencyOfMinimalSubscription"
-          },
-          {
-            "name": "DistributionDeclarationFrequency"
-          },
-          {
-            "name": "FullShareClassName"
-          },
-          {
-            "name": "HasAllInFee"
-          },
-          {
-            "name": "HasOngoingCharges"
-          },
-          {
-            "name": "HasPerformanceFee"
-          },
-          {
-            "name": "HasSubscriptionFeeInFavourOfDistributor"
-          },
-          {
-            "name": "InvestmentStatus"
-          },
-          {
-            "name": "IsETF"
-          },
-          {
-            "name": "IsRDRCompliant"
-          },
-          {
-            "name": "IsTrailerFeeClean"
-          },
-          {
-            "name": "ManagementFeeApplied"
-          },
-          {
-            "name": "ManagementFeeAppliedReferenceDate"
-          },
-          {
-            "name": "ManagementFeeMaximum"
-          },
-          {
-            "name": "MaximumSubscriptionFeeInFavourOfDistributor"
-          },
-          {
-            "name": "MinimalInitialSubscriptionCategory"
-          },
-          {
-            "name": "MinimalInitialSubscriptionInAmount"
-          },
-          {
-            "name": "MinimalInitialSubscriptionInShares"
-          },
-          {
-            "name": "MinimalSubsequentSubscriptionCategory"
-          },
-          {
-            "name": "MinimalSubsequentSubscriptionInAmount"
-          },
-          {
-            "name": "MinimalSubsequentSubscriptionInShares"
-          },
-          {
-            "name": "MinimumSubscriptionFeeInFavourOfDistributor"
-          },
-          {
-            "name": "OngoingCharges"
-          },
-          {
-            "name": "OngoingChargesDate"
-          },
-          {
-            "name": "PerformanceFeeApplied"
-          },
-          {
-            "name": "PerformanceFeeAppliedReferenceDate"
-          },
-          {
-            "name": "PerformanceFeeInProspectus"
-          },
-          {
-            "name": "PerformanceFeeInProspectusReferenceDate"
-          },
-          {
-            "name": "RecordDateForSRRI"
-          },
-          {
-            "name": "ShareClassDistributionPolicy"
-          },
-          {
-            "name": "ShareClassExtension"
-          },
-          {
-            "name": "ShareClassLaunchDate"
-          },
-          {
-            "name": "ShareClassLifecycle"
-          },
-          {
-            "name": "SRRI"
-          },
-          {
-            "name": "TERExcludingPerformanceFee"
-          },
-          {
-            "name": "TERExcludingPerformanceFeeDate"
-          },
-          {
-            "name": "TERIncludingPerformanceFee"
-          },
-          {
-            "name": "TERIncludingPerformanceFeeDate"
-          },
-          {
-            "name": "TransferAgentName"
-          },
-          {
-            "name": "BICOfTransferAgent"
-          },
-          {
-            "name": "DomicileOfTransferAgent"
-          },
-          {
-            "name": "FormOfShare"
-          },
-          {
-            "name": "HasDurationHedge"
-          },
-          {
-            "name": "TypeOfEqualization"
-          },
-          {
-            "name": "IsMultiseries"
-          },
-          {
-            "name": "SeriesIssuance"
-          },
-          {
-            "name": "SeriesFrequency"
-          },
-          {
-            "name": "DoesFundIssueSidePocket"
-          },
-          {
-            "name": "HasRedemptionGates"
-          },
-          {
-            "name": "TypeOfAlternativeFundStructureVehicle"
-          },
-          {
-            "name": "BloombergCode"
-          },
-          {
-            "name": "FIGICode"
-          },
-          {
-            "name": "AbbreviatedShareClassName"
-          },
-          {
-            "name": "ValuationFrequency"
-          },
-          {
-            "name": "NAVPublicationTime"
-          },
-          {
-            "name": "IsShareClassEligibleForUCITS"
-          },
-          {
-            "name": "InvestmentStatusDate"
-          },
-          {
-            "name": "LaunchPrice"
-          },
-          {
-            "name": "LaunchPriceCurrency"
-          },
-          {
-            "name": "LaunchPriceDate"
-          },
-          {
-            "name": "EFAMAMainEFCCategory"
-          },
-          {
-            "name": "EFAMAEFCClassificationType"
-          },
-          {
-            "name": "EFAMAActiveEFCClassification"
-          },
-          {
-            "name": "EFAMAEFCInvestmentTheme"
-          },
-          {
-            "name": "PricingMethodology"
-          },
-          {
-            "name": "SinglePricingType"
-          },
-          {
-            "name": "SwingFactor"
-          },
-          {
-            "name": "StandardMinimumRemainingAmount"
-          },
-          {
-            "name": "StandardMinimumRemainingShares"
-          },
-          {
-            "name": "CurrencyOfMinimumRemainingAmount"
-          },
-          {
-            "name": "StandardMinimumRemainingCategory"
-          },
-          {
-            "name": "HurdleRate"
-          },
-          {
-            "name": "HighWaterMark"
-          },
-          {
-            "name": "HasAppliedSubscriptionFeeInFavourOfFund"
-          },
-          {
-            "name": "AppliedSubscriptionFeeInFavourOfFund"
-          },
-          {
-            "name": "AppliedSubscriptionFeeInFavourOfFundReferenceDate"
-          },
-          {
-            "name": "MaximumSubscriptionFeeInFavourOfFund"
-          },
-          {
-            "name": "HasAppliedRedemptionFeeInFavourOfFund"
-          },
-          {
-            "name": "AppliedRedemptionFeeInFavourOfFund"
-          },
-          {
-            "name": "AppliedRedemptionFeeInFavourOfFundReferenceDate"
-          },
-          {
-            "name": "MaximumRedemptionFeeInFavourOfFund"
-          },
-          {
-            "name": "EquivalentTrailerFeeCleanISIN"
-          },
-          {
-            "name": "HasSeparateDistributionFee"
-          },
-          {
-            "name": "DistributionFee"
-          },
-          {
-            "name": "DistributionFeeMaximum"
-          },
-          {
-            "name": "IASector"
-          },
-          {
-            "name": "AbsorbingFundFullShareClassName"
-          },
-          {
-            "name": "AbsorbingFundShareClassISIN"
-          },
-          {
-            "name": "AdministrationFeeMaximum"
-          },
-          {
-            "name": "AnnualDistributionAtFiscalYearEnd"
-          },
-          {
-            "name": "AnnualDistributionYieldAtFiscalYearEnd"
-          },
-          {
-            "name": "AppliedRedemptionFeeInFavourOfDistributor"
-          },
-          {
-            "name": "AppliedRedemptionFeeInFavourOfDistributorReferenceDate"
-          },
-          {
-            "name": "BankDetailsSSIForPaymentsProvision"
-          },
-          {
-            "name": "BankDetailsLevelApplication"
-          },
-          {
-            "name": "BenchmarkBloombergTicker"
-          },
-          {
-            "name": "CalculationDateOffsetForRedemption"
-          },
-          {
-            "name": "CalculationDateOffsetForSubscription"
-          },
-          {
-            "name": "CalendarOrBusinessDaysForCutOffDateOffsetForRedemption"
-          },
-          {
-            "name": "CalendarOrBusinessDaysForCutOffDateOffsetForSubscription"
-          },
-          {
-            "name": "CalendarOrBusinessDaysForPrePaymentDaysForSubscription"
-          },
-          {
-            "name": "CalendarOrBusinessDaysForSettlementPeriodForRedemption"
-          },
-          {
-            "name": "CalendarOrBusinessDaysForSettlementPeriodForSubscription"
-          },
-          {
-            "name": "CalendarOrBusinessDaysForTransactions"
-          },
-          {
-            "name": "CFICode"
-          },
-          {
-            "name": "ContingentDeferredSalesChargeExitFee"
-          },
-          {
-            "name": "ContingentDeferredSalesChargeUpfrontFee"
-          },
-          {
-            "name": "CountryISOCodeAlpha2"
-          },
-          {
-            "name": "CountryISOCodeAlpha3"
-          },
-          {
-            "name": "CountryName"
-          },
-          {
-            "name": "CurrenciesOfMulticurrencyShareClass"
-          },
-          {
-            "name": "CurrencyOfMinimalOrMaximumRedemption"
-          },
-          {
-            "name": "CustodianFeeApplied"
-          },
-          {
-            "name": "CustodianFeeAppliedReferenceDate"
-          },
-          {
-            "name": "CustodianFeeMaximum"
-          },
-          {
-            "name": "CutOffDateOffsetForRedemption"
-          },
-          {
-            "name": "CutOffDateOffsetForSubscription"
-          },
-          {
-            "name": "CutOffTimeForRedemption"
-          },
-          {
-            "name": "CutOffTimeForSubscription"
-          },
-          {
-            "name": "CutOffTimeForSwitchIn"
-          },
-          {
-            "name": "CutOffTimeForSwitchOut"
-          },
-          {
-            "name": "DealingDaysOfMultipleRedemptionTradeCycles"
-          },
-          {
-            "name": "DealingDaysOfMultipleSubscriptionTradeCycles"
-          },
-          {
-            "name": "DisseminationRecipient"
-          },
-          {
-            "name": "DistributionFeeReferenceDate"
-          },
-          {
-            "name": "DoesShareClassApplyMandatoryConversion"
-          },
-          {
-            "name": "DoesShareClassApplyPartialDealingDays"
-          },
-          {
-            "name": "DoesShareClassApplyPartialPaymentDays"
-          },
-          {
-            "name": "DormantEndDate"
-          },
-          {
-            "name": "DormantStartDate"
-          },
-          {
-            "name": "ExDividendDateCalendar"
-          },
-          {
-            "name": "ExitCostDescription"
-          },
-          {
-            "name": "HasContingentDeferredSalesChargeFee"
-          },
-          {
-            "name": "HasDilutionLevyAppliedByFund"
-          },
-          {
-            "name": "HasEqualizationMethodForDistribution"
-          },
-          {
-            "name": "HasEqualizationMethodForPerformanceFee"
-          },
-          {
-            "name": "HasForcedRedemption"
-          },
-          {
-            "name": "HasForwardPricing"
-          },
-          {
-            "name": "HasHighWaterMark"
-          },
-          {
-            "name": "HasLockUpForRedemption"
-          },
-          {
-            "name": "HasPreNoticeForSwitchIn"
-          },
-          {
-            "name": "HasPreNoticeForSwitchOut"
-          },
-          {
-            "name": "HasPrePaymentForSubscription"
-          },
-          {
-            "name": "HasRedemptionFeeInFavourOfDistributor"
-          },
-          {
-            "name": "HasTripartiteReport"
-          },
-          {
-            "name": "InvestmentStatusDescription"
-          },
-          {
-            "name": "IrregularRedemptionDealingDays"
-          },
-          {
-            "name": "IrregularSubscriptionDealingDays"
-          },
-          {
-            "name": "IsMulticurrencyShareClass"
-          },
-          {
-            "name": "IsRestrictedToSeparateFeeArrangement"
-          },
-          {
-            "name": "IsStructuredFinanceProduct"
-          },
-          {
-            "name": "IsValidISIN"
-          },
-          {
-            "name": "LiquidationStartDate"
-          },
-          {
-            "name": "LockUpComment"
-          },
-          {
-            "name": "LockUpPeriodInDays"
-          },
-          {
-            "name": "ManagementFeeMinimum"
-          },
-          {
-            "name": "MandatoryShareConversionDescriptionDetails"
-          },
-          {
-            "name": "MarketsRelevantToFundTradingCalendar"
-          },
-          {
-            "name": "MaximalNumberOfPossibleDecimalsAmount"
-          },
-          {
-            "name": "MaximalNumberOfPossibleDecimalsNAV"
-          },
-          {
-            "name": "MaximalNumberOfPossibleDecimalsShares"
-          },
-          {
-            "name": "MaximumInitialRedemptionInAmount"
-          },
-          {
-            "name": "MaximumInitialRedemptionInShares"
-          },
-          {
-            "name": "MaximumRedemptionFeeInFavourOfDistributor"
-          },
-          {
-            "name": "MaximumSubsequentRedemptionInAmount"
-          },
-          {
-            "name": "MaximumSubsequentRedemptionInShares"
-          },
-          {
-            "name": "MergerRatio"
-          },
-          {
-            "name": "MinimalInitialRedemptionInAmount"
-          },
-          {
-            "name": "MinimalInitialRedemptionInShares"
-          },
-          {
-            "name": "MinimalRedemptionCategory"
-          },
-          {
-            "name": "MinimalSubsequentRedemptionInAmount"
-          },
-          {
-            "name": "MinimalSubsequentRedemptionInShares"
-          },
-          {
-            "name": "MinimumRedemptionFeeInFavourOfDistributor"
-          },
-          {
-            "name": "MinimumRedemptionFeeInFavourOfFund"
-          },
-          {
-            "name": "MinimumSubscriptionFeeInFavourOfFund"
-          },
-          {
-            "name": "MonthlyRedemptionDealingDays"
-          },
-          {
-            "name": "MonthlySubscriptionDealingDays"
-          },
-          {
-            "name": "NasdaqFundNetworkNFNIdentifier"
-          },
-          {
-            "name": "NoTradingDate"
-          },
-          {
-            "name": "NumberOfPossibleRedemptionsWithinPeriod"
-          },
-          {
-            "name": "NumberOfPossibleSubscriptionsWithinPeriod"
-          },
-          {
-            "name": "PartialDealingDaysDateAndTime"
-          },
-          {
-            "name": "PartialPaymentDaysDateAndTime"
-          },
-          {
-            "name": "PaymentDateCalendar"
-          },
-          {
-            "name": "PerformanceFeeMinimum"
-          },
-          {
-            "name": "PreNoticeCutOffForRedemption"
-          },
-          {
-            "name": "PreNoticeCutOffForSubscription"
-          },
-          {
-            "name": "PrePaymentCutOffTimeForSubscription"
-          },
-          {
-            "name": "PrePaymentDaysForSubscription"
-          },
-          {
-            "name": "RecordDateCalendar"
-          },
-          {
-            "name": "RedemptionTradeCyclePeriod"
-          },
-          {
-            "name": "RoundingMethodForPrices"
-          },
-          {
-            "name": "RoundingMethodForRedemptionInAmount"
-          },
-          {
-            "name": "RoundingMethodForRedemptionInShares"
-          },
-          {
-            "name": "RoundingMethodForSubscriptionInAmount"
-          },
-          {
-            "name": "RoundingMethodForSubscriptionInShares"
-          },
-          {
-            "name": "SettlementPeriodForRedemption"
-          },
-          {
-            "name": "SettlementPeriodForSubscription"
-          },
-          {
-            "name": "SettlementPeriodForSwitchIn"
-          },
-          {
-            "name": "SettlementPeriodForSwitchOut"
-          },
-          {
-            "name": "ShareClassDividendType"
-          },
-          {
-            "name": "SingleRegisterAccountRestrictions"
-          },
-          {
-            "name": "SubscriptionPeriodEndDate"
-          },
-          {
-            "name": "SubscriptionPeriodStartDate"
-          },
-          {
-            "name": "SubscriptionTradeCyclePeriod"
-          },
-          {
-            "name": "SwitchInNoticePeriod"
-          },
-          {
-            "name": "SwitchOutNoticePeriod"
-          },
-          {
-            "name": "TerminationDate"
-          },
-          {
-            "name": "TimeZoneForCutOff"
-          },
-          {
-            "name": "TimeZoneForCutOffUsingTZDatabase"
-          },
-          {
-            "name": "ValuationFrequencyDetail"
-          },
-          {
-            "name": "ValuationReduction"
-          },
-          {
-            "name": "WeeklyRedemptionDealingDays"
-          },
-          {
-            "name": "WeeklySubscriptionDealingDays"
-          },
-          {
-            "name": "YearlyRedemptionDealingDays"
-          },
-          {
-            "name": "YearlySubscriptionDealingDays"
-          },
-          {
-            "name": "CUSIP"
-          },
-          {
-            "name": "Valor"
-          },
-          {
-            "name": "FundId"
-          },
-          {
-            "name": "ImageUri"
-          }
-        ]
-      }
-    },
-    {
       "name": "ShareClassModel",
       "type": {
         "kind": "struct",
@@ -8329,7 +7026,7 @@
             }
           },
           {
-            "name": "fund_id",
+            "name": "state_pubkey",
             "type": {
               "option": "pubkey"
             }
@@ -8344,20 +7041,6 @@
             "name": "image_uri",
             "type": {
               "option": "string"
-            }
-          },
-          {
-            "name": "is_raw_openfunds",
-            "type": "bool"
-          },
-          {
-            "name": "raw_openfunds",
-            "type": {
-              "option": {
-                "defined": {
-                  "name": "ShareClassOpenfundsModel"
-                }
-              }
             }
           },
           {
@@ -8385,6 +7068,20 @@
           {
             "name": "default_account_state_frozen",
             "type": "bool"
+          },
+          {
+            "name": "is_raw_openfunds",
+            "type": "bool"
+          },
+          {
+            "name": "raw_openfunds",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "ShareClassOpenfundsModel"
+                }
+              }
+            }
           }
         ]
       }
@@ -8566,14 +7263,116 @@
       }
     },
     {
+      "name": "StateAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "account_type",
+            "type": {
+              "defined": {
+                "name": "AccountType"
+              }
+            }
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "enabled",
+            "type": "bool"
+          },
+          {
+            "name": "created",
+            "type": "i64"
+          },
+          {
+            "name": "engine",
+            "type": "pubkey"
+          },
+          {
+            "name": "mints",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "metadata",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "Metadata"
+                }
+              }
+            }
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "assets",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "delegate_acls",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "DelegateAcl"
+                }
+              }
+            }
+          },
+          {
+            "name": "integrations",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "Integration"
+                }
+              }
+            }
+          },
+          {
+            "name": "params",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": {
+                    "name": "EngineField"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "StateModel",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "id",
+            "name": "account_type",
             "type": {
-              "option": "pubkey"
+              "option": {
+                "defined": {
+                  "name": "AccountType"
+                }
+              }
             }
           },
           {
@@ -8589,13 +7388,7 @@
             }
           },
           {
-            "name": "metadata_uri",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "is_enabled",
+            "name": "enabled",
             "type": {
               "option": "bool"
             }
@@ -8603,21 +7396,27 @@
           {
             "name": "assets",
             "type": {
-              "vec": "pubkey"
+              "option": {
+                "vec": "pubkey"
+              }
             }
           },
           {
             "name": "external_vault_accounts",
             "type": {
-              "vec": "pubkey"
+              "option": {
+                "vec": "pubkey"
+              }
             }
           },
           {
             "name": "mints",
             "type": {
-              "vec": {
-                "defined": {
-                  "name": "ShareClassModel"
+              "option": {
+                "vec": {
+                  "defined": {
+                    "name": "ShareClassModel"
+                  }
                 }
               }
             }
@@ -8655,19 +7454,23 @@
           {
             "name": "delegate_acls",
             "type": {
-              "vec": {
-                "defined": {
-                  "name": "DelegateAcl"
+              "option": {
+                "vec": {
+                  "defined": {
+                    "name": "DelegateAcl"
+                  }
                 }
               }
             }
           },
           {
-            "name": "integration_acls",
+            "name": "integrations",
             "type": {
-              "vec": {
-                "defined": {
-                  "name": "IntegrationAcl"
+              "option": {
+                "vec": {
+                  "defined": {
+                    "name": "Integration"
+                  }
                 }
               }
             }
@@ -8675,24 +7478,36 @@
           {
             "name": "drift_market_indexes_perp",
             "type": {
-              "vec": "u32"
+              "option": {
+                "vec": "u32"
+              }
             }
           },
           {
             "name": "drift_market_indexes_spot",
             "type": {
-              "vec": "u32"
+              "option": {
+                "vec": "u32"
+              }
             }
           },
           {
             "name": "drift_order_types",
             "type": {
-              "vec": "u32"
+              "option": {
+                "vec": "u32"
+              }
             }
           },
           {
-            "name": "is_raw_openfunds",
-            "type": "bool"
+            "name": "metadata",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "Metadata"
+                }
+              }
+            }
           },
           {
             "name": "raw_openfunds",
@@ -8776,22 +7591,22 @@
     {
       "name": "SEED_METADATA",
       "type": "string",
-      "value": "\"openfunds\""
+      "value": "\"metadata\""
     },
     {
       "name": "SEED_MINT",
       "type": "string",
-      "value": "\"share\""
+      "value": "\"mint\""
     },
     {
       "name": "SEED_STATE",
       "type": "string",
-      "value": "\"fund\""
+      "value": "\"state\""
     },
     {
       "name": "SEED_VAULT",
       "type": "string",
-      "value": "\"treasury\""
+      "value": "\"vault\""
     }
   ]
 }

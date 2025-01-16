@@ -7,15 +7,9 @@ use super::openfunds::*;
 
 #[derive(AnchorDeserialize, AnchorSerialize, PartialEq, Clone, Debug, Copy)]
 pub enum EngineFieldName {
-    TimeCreated,
-    IsEnabled,
-    Assets,
-    AssetsWeights,
-    ShareClassAllowlist, // share class
-    ShareClassBlocklist, // share class
-    DelegateAcls,
-    IntegrationAcls,
-    ExternalVaultAccounts, // external accounts with vaultassets
+    ShareClassAllowlist,   // share class
+    ShareClassBlocklist,   // share class
+    ExternalVaultAccounts, // external accounts with vault assets
     LockUp,                // share class
     DriftMarketIndexesPerp,
     DriftMarketIndexesSpot,
@@ -40,8 +34,6 @@ pub enum EngineFieldValue {
     Timestamp { val: i64 },
     VecPubkey { val: Vec<Pubkey> },
     VecU32 { val: Vec<u32> },
-    VecDelegateAcl { val: Vec<DelegateAcl> },
-    VecIntegrationAcl { val: Vec<IntegrationAcl> },
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
@@ -50,244 +42,163 @@ pub struct EngineField {
     pub value: EngineFieldValue,
 }
 
-pub type StateAccount = FundAccount;
-pub type MetadataAccount = FundMetadataAccount;
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug, PartialEq)]
+pub enum AccountType {
+    Vault,
+    Mint,
+    Fund,
+    // ... more account types
+}
+
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug, PartialEq, Copy)]
+pub enum MetadataType {
+    Openfunds,
+    // ... more metadata types
+}
+
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
+pub struct Metadata {
+    pub template: MetadataType,
+    pub pubkey: Pubkey, // metadata account pubkey
+    pub uri: String,
+}
 
 #[account]
-pub struct FundAccount {
+pub struct StateAccount {
+    pub account_type: AccountType,
     pub owner: Pubkey,
     pub vault: Pubkey,
-    pub metadata: Pubkey,
+    pub enabled: bool,
+    pub created: i64,
     pub engine: Pubkey,
     pub mints: Vec<Pubkey>,
+    pub metadata: Option<Metadata>,
     pub name: String,
     pub uri: String,
-    pub metadata_uri: String,
+    pub assets: Vec<Pubkey>,
+    pub delegate_acls: Vec<DelegateAcl>,
+    pub integrations: Vec<Integration>,
 
-    // params[0]: fund params
+    // params[0]: state params
     // params[1..n+1]: mints [0..n] params
     pub params: Vec<Vec<EngineField>>,
 }
-impl FundAccount {
+impl StateAccount {
     pub const INIT_SIZE: usize = 2048; // TODO: auto extend account size if needed
-
-    pub fn is_enabled(&self) -> bool {
-        return true;
-    }
 
     // return the share class lockup period in s. 0 == no lockup (default).
     pub fn share_class_lock_up(&self, share_class_id: usize) -> i64 {
-        let param_idx = share_class_id + 1;
-        for EngineField { name, value } in &self.params[param_idx] {
-            match name {
-                EngineFieldName::LockUp => {
-                    return match value {
-                        EngineFieldValue::Timestamp { val: v } => {
-                            if *v > 0 {
-                                *v
-                            } else {
-                                0
-                            }
-                        }
-                        _ => 0,
-                    };
-                }
-                _ => { /* ignore */ }
-            }
-        }
-        return 0;
+        self.params
+            .get(share_class_id + 1)
+            .and_then(|params| {
+                params
+                    .iter()
+                    .find(|EngineField { name, .. }| *name == EngineFieldName::LockUp)
+                    .and_then(|EngineField { value, .. }| match value {
+                        EngineFieldValue::Timestamp { val: v } if *v > 0 => Some(*v),
+                        _ => None,
+                    })
+            })
+            .unwrap_or(0)
     }
 
     pub fn share_class_allowlist(&self, share_class_id: usize) -> Option<&Vec<Pubkey>> {
-        // params[1]: share class 0 acls
-        // params[2]: share class 1 acls
-        // ...
-        let param_idx = share_class_id + 1;
-        for EngineField { name, value } in &self.params[param_idx] {
-            match name {
-                EngineFieldName::ShareClassAllowlist => {
-                    return match value {
-                        EngineFieldValue::VecPubkey { val: v } => Some(v),
-                        _ => None,
-                    };
-                }
-                _ => { /* ignore */ }
-            }
-        }
-        return None;
+        self.params.get(share_class_id + 1).and_then(|params| {
+            params
+                .iter()
+                .find(|EngineField { name, .. }| *name == EngineFieldName::ShareClassAllowlist)
+                .and_then(|EngineField { value, .. }| match value {
+                    EngineFieldValue::VecPubkey { val } => Some(val),
+                    _ => None,
+                })
+        })
     }
 
     pub fn share_class_allowlist_mut(&mut self, share_class_id: usize) -> Option<&mut Vec<Pubkey>> {
-        // params[1]: share class 0 acls
-        // params[2]: share class 1 acls
-        // ...
-        let param_idx = share_class_id + 1;
-        self.params[param_idx]
-            .iter_mut()
-            .find_map(|EngineField { name, value }| {
-                if *name == EngineFieldName::ShareClassAllowlist {
-                    match value {
-                        EngineFieldValue::VecPubkey { val } => Some(val),
-                        _ => None,
-                    }
-                } else {
-                    None
-                }
-            })
+        self.params.get_mut(share_class_id + 1).and_then(|params| {
+            params
+                .iter_mut()
+                .find(|EngineField { name, .. }| *name == EngineFieldName::ShareClassAllowlist)
+                .and_then(|EngineField { value, .. }| match value {
+                    EngineFieldValue::VecPubkey { val } => Some(val),
+                    _ => None,
+                })
+        })
     }
 
     pub fn share_class_blocklist(&self, share_class_id: usize) -> Option<&Vec<Pubkey>> {
-        // params[1]: share class 0 acls
-        // params[2]: share class 1 acls
-        // ...
-        let param_idx = share_class_id + 1;
-        for EngineField { name, value } in &self.params[param_idx] {
-            match name {
-                EngineFieldName::ShareClassBlocklist => {
-                    return match value {
-                        EngineFieldValue::VecPubkey { val: v } => Some(v),
-                        _ => None,
-                    };
-                }
-                _ => { /* ignore */ }
-            }
-        }
-        return None;
+        self.params.get(share_class_id + 1).and_then(|params| {
+            params
+                .iter()
+                .find(|EngineField { name, .. }| *name == EngineFieldName::ShareClassBlocklist)
+                .and_then(|EngineField { value, .. }| match value {
+                    EngineFieldValue::VecPubkey { val } => Some(val),
+                    _ => None,
+                })
+        })
     }
 
     pub fn share_class_blocklist_mut(&mut self, share_class_id: usize) -> Option<&mut Vec<Pubkey>> {
-        // params[1]: share class 0 acls
-        // params[2]: share class 1 acls
-        // ...
-        let param_idx = share_class_id + 1;
-        self.params[param_idx]
-            .iter_mut()
-            .find_map(|EngineField { name, value }| {
-                if *name == EngineFieldName::ShareClassBlocklist {
-                    match value {
-                        EngineFieldValue::VecPubkey { val } => Some(val),
-                        _ => None,
-                    }
-                } else {
-                    None
-                }
-            })
-    }
-
-    pub fn assets(&self) -> Option<&Vec<Pubkey>> {
-        for EngineField { name, value } in &self.params[0] {
-            match name {
-                EngineFieldName::Assets => {
-                    return match value {
-                        EngineFieldValue::VecPubkey { val: v } => Some(v),
-                        _ => None,
-                    };
-                }
-                _ => { /* ignore */ }
-            }
-        }
-        return None;
-    }
-
-    pub fn assets_mut(&mut self) -> Option<&mut Vec<Pubkey>> {
-        for EngineField { name, value } in &mut self.params[0] {
-            match name {
-                EngineFieldName::Assets => {
-                    return match value {
-                        EngineFieldValue::VecPubkey { val: v } => Some(v),
-                        _ => None,
-                    };
-                }
-                _ => { /* ignore */ }
-            }
-        }
-        return None;
-    }
-
-    pub fn delegate_acls(&self) -> Option<&Vec<DelegateAcl>> {
-        for EngineField { name, value } in &self.params[0] {
-            match name {
-                EngineFieldName::DelegateAcls => {
-                    return match value {
-                        EngineFieldValue::VecDelegateAcl { val: v } => Some(v),
-                        _ => None,
-                    };
-                }
-                _ => { /* ignore */ }
-            }
-        }
-        return None;
-    }
-
-    pub fn integration_acls(&self) -> Option<&Vec<IntegrationAcl>> {
-        for EngineField { name, value } in &self.params[0] {
-            match name {
-                EngineFieldName::IntegrationAcls => {
-                    return match value {
-                        EngineFieldValue::VecIntegrationAcl { val: v } => Some(v),
-                        _ => None,
-                    };
-                }
-                _ => { /* ignore */ }
-            }
-        }
-        return None;
+        self.params.get_mut(share_class_id + 1).and_then(|params| {
+            params
+                .iter_mut()
+                .find(|EngineField { name, .. }| *name == EngineFieldName::ShareClassBlocklist)
+                .and_then(|EngineField { value, .. }| match value {
+                    EngineFieldValue::VecPubkey { val } => Some(val),
+                    _ => None,
+                })
+        })
     }
 
     pub fn drift_order_types(&self) -> Option<&Vec<u32>> {
-        for EngineField { name, value } in &self.params[0] {
-            match name {
-                EngineFieldName::DriftOrderTypes => {
-                    return match value {
-                        EngineFieldValue::VecU32 { val: v } => Some(v),
-                        _ => None,
-                    };
-                }
-                _ => { /* ignore */ }
-            }
-        }
-        return None;
+        self.params.get(0).and_then(|params| {
+            params
+                .iter()
+                .find(|EngineField { name, .. }| *name == EngineFieldName::DriftOrderTypes)
+                .and_then(|EngineField { value, .. }| match value {
+                    EngineFieldValue::VecU32 { val } => Some(val),
+                    _ => None,
+                })
+        })
     }
 
     pub fn drift_market_indexes_perp(&self) -> Option<&Vec<u32>> {
-        for EngineField { name, value } in &self.params[0] {
-            match name {
-                EngineFieldName::DriftMarketIndexesPerp => {
-                    return match value {
-                        EngineFieldValue::VecU32 { val: v } => Some(v),
-                        _ => None,
-                    };
-                }
-                _ => { /* ignore */ }
-            }
-        }
-        return None;
+        self.params.get(0).and_then(|params| {
+            params
+                .iter()
+                .find(|EngineField { name, .. }| *name == EngineFieldName::DriftMarketIndexesPerp)
+                .and_then(|EngineField { value, .. }| match value {
+                    EngineFieldValue::VecU32 { val } => Some(val),
+                    _ => None,
+                })
+        })
     }
 
     pub fn drift_market_indexes_spot(&self) -> Option<&Vec<u32>> {
-        for EngineField { name, value } in &self.params[0] {
-            match name {
-                EngineFieldName::DriftMarketIndexesSpot => {
-                    return match value {
-                        EngineFieldValue::VecU32 { val: v } => Some(v),
-                        _ => None,
-                    };
-                }
-                _ => { /* ignore */ }
-            }
-        }
-        return None;
+        self.params.get(0).and_then(|params| {
+            params
+                .iter()
+                .find(|EngineField { name, .. }| *name == EngineFieldName::DriftMarketIndexesSpot)
+                .and_then(|EngineField { value, .. }| match value {
+                    EngineFieldValue::VecU32 { val } => Some(val),
+                    _ => None,
+                })
+        })
     }
 
     pub fn add_to_engine_field(&mut self, engine_field_name: EngineFieldName, pubkey: Pubkey) {
-        // Try to find the MarinadeTickets field, if it exists.
-        let mut engine_field = self.params[0]
-            .iter_mut()
-            .find(|field| field.name == engine_field_name);
+        let mut engine_field = self.params.get_mut(0).and_then(|params| {
+            params
+                .iter_mut()
+                .find(|field| field.name == engine_field_name)
+        });
 
         // If the field does not exist, create it and push it to params.
         if engine_field.is_none() {
-            msg!("Adding engine field {:?} to fund params", engine_field_name);
+            msg!(
+                "Adding engine field {:?} to state params",
+                engine_field_name
+            );
             self.params[0].push(EngineField {
                 name: engine_field_name,
                 value: EngineFieldValue::VecPubkey { val: Vec::new() },
@@ -314,17 +225,19 @@ impl FundAccount {
     }
 
     pub fn delete_from_engine_field(&mut self, engine_field_name: EngineFieldName, pubkey: Pubkey) {
-        for EngineField { name, value } in &mut self.params[0] {
-            if *name == engine_field_name {
-                if let EngineFieldValue::VecPubkey { val } = value {
-                    if let Some(pos) = val.iter().position(|t| *t == pubkey) {
-                        val.remove(pos);
-                        msg!(
-                            "Removed pubkey {:?} from engine field {:?}",
-                            pubkey,
-                            engine_field_name
-                        );
-                    }
+        if let Some(field) = self
+            .params
+            .get_mut(0)
+            .and_then(|params| params.iter_mut().find(|f| f.name == engine_field_name))
+        {
+            if let EngineFieldValue::VecPubkey { val } = &mut field.value {
+                if let Some(pos) = val.iter().position(|t| *t == pubkey) {
+                    val.remove(pos);
+                    msg!(
+                        "Removed pubkey {:?} from engine field {:?}",
+                        pubkey,
+                        engine_field_name
+                    );
                 }
             }
         }
@@ -343,37 +256,36 @@ impl FundAccount {
 }
 
 #[account]
-pub struct FundMetadataAccount {
-    pub state_pubkey: Pubkey,
+pub struct OpenfundsMetadataAccount {
+    pub fund_id: Pubkey,
     pub company: Vec<CompanyField>,
     pub fund: Vec<FundField>,
     pub share_classes: Vec<Vec<ShareClassField>>,
     pub fund_managers: Vec<Vec<FundManagerField>>,
 }
-impl FundMetadataAccount {
+impl OpenfundsMetadataAccount {
     pub const INIT_SIZE: usize = 1024;
 }
 
-impl From<StateModel> for FundMetadataAccount {
+impl From<StateModel> for OpenfundsMetadataAccount {
     fn from(model: StateModel) -> Self {
-        let company = if let Some(company) = &model.company {
-            company.into()
-        } else {
-            vec![]
-        };
-        let fund_managers = if let Some(manager) = &model.owner {
-            vec![manager.into()]
-        } else {
-            vec![]
-        };
+        let fund = model.clone().into();
+        let company = model.company.as_ref().map(|c| c.into()).unwrap_or_default();
+        let fund_managers = model
+            .owner
+            .as_ref()
+            .map(|m| vec![m.into()])
+            .unwrap_or_default();
+
         let share_classes = model
             .mints
+            .unwrap_or_default()
             .iter()
             .map(|share_class| share_class.into())
             .collect::<Vec<_>>();
-        let fund = model.into();
-        FundMetadataAccount {
-            state_pubkey: Pubkey::default(),
+
+        OpenfundsMetadataAccount {
+            fund_id: Pubkey::default(),
             company,
             fund,
             share_classes,

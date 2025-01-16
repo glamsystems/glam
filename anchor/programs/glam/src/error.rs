@@ -7,17 +7,23 @@ pub enum AccessError {
 
     #[msg("Integration is disabled")]
     IntegrationDisabled,
+
+    #[msg("Wrong state account type")]
+    WrongStateType,
 }
 
 #[error_code]
 pub enum StateError {
-    #[msg("Name too long: max 50 chars")]
+    #[msg("Invalid account type")]
+    InvalidAccountType,
+
+    #[msg("Name too long: max 64 chars")]
     InvalidName,
 
-    #[msg("Symbol too long: max 50 chars")]
+    #[msg("Symbol too long: max 32 chars")]
     InvalidSymbol,
 
-    #[msg("Uri too long: max 20")]
+    #[msg("Uri too long: max 128 chars")]
     InvalidUri,
 
     #[msg("Too many assets: max 100")]

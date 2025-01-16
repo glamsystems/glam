@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use super::StateAccount;
+use super::{AccountType, StateAccount};
 use crate::error::AccessError;
 use spl_stake_pool::ID as SPL_STAKE_POOL_PROGRAM_ID;
 
@@ -35,40 +35,26 @@ pub enum Permission {
     JupiterSwapLst, // Swap LSTs
 }
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug, PartialEq)]
 pub struct DelegateAcl {
     pub pubkey: Pubkey,
     pub permissions: Vec<Permission>,
+    pub expires_at: i64, // Unix timestamp
 }
 
-/**
- * Integration ACL
- */
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, PartialEq, Debug)]
-pub enum IntegrationName {
+pub enum Integration {
     Drift,
     SplStakePool,
     SanctumStakePool,
     NativeStaking,
     Marinade,
     JupiterSwap, // Jupiter Swap
-    Mint,        // GLAM Mint
     JupiterVote, // Jupiter Vote
 }
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone, PartialEq, Debug)]
-pub enum IntegrationFeature {
-    All,
-}
-
-#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
-pub struct IntegrationAcl {
-    pub name: IntegrationName,
-    pub features: Vec<IntegrationFeature>,
-}
-
-pub fn check_access(fund: &StateAccount, signer: &Pubkey, permission: Permission) -> Result<()> {
-    if fund.owner == *signer {
+pub fn check_access(state: &StateAccount, signer: &Pubkey, permission: Permission) -> Result<()> {
+    if state.owner == *signer {
         return Ok(());
     }
 
@@ -79,22 +65,21 @@ pub fn check_access(fund: &StateAccount, signer: &Pubkey, permission: Permission
         permission
     );
 
-    if let Some(acls) = fund.delegate_acls() {
-        for acl in acls {
-            if acl.pubkey == *signer && acl.permissions.contains(&permission) {
-                return Ok(());
-            }
+    for acl in state.delegate_acls.clone() {
+        if acl.pubkey == *signer && acl.permissions.contains(&permission) {
+            return Ok(());
         }
     }
+
     return Err(AccessError::NotAuthorized.into());
 }
 
 pub fn check_access_any(
-    fund: &StateAccount,
+    state: &StateAccount,
     signer: &Pubkey,
     allowed_permissions: Vec<Permission>,
 ) -> Result<()> {
-    if fund.owner == *signer {
+    if state.owner == *signer {
         return Ok(());
     }
 
@@ -105,44 +90,50 @@ pub fn check_access_any(
         allowed_permissions
     );
 
-    if let Some(acls) = fund.delegate_acls() {
-        for acl in acls {
-            if acl.pubkey == *signer
-                && acl
-                    .permissions
-                    .iter()
-                    .any(|p| allowed_permissions.contains(p))
-            {
-                return Ok(());
-            }
+    for acl in state.delegate_acls.clone() {
+        if acl.pubkey == *signer
+            && acl
+                .permissions
+                .iter()
+                .any(|p| allowed_permissions.contains(p))
+        {
+            return Ok(());
         }
     }
+
     return Err(AccessError::NotAuthorized.into());
 }
 
-pub fn check_integration(fund: &StateAccount, integration: IntegrationName) -> Result<()> {
+pub fn check_state_type(state: &StateAccount, accont_type: AccountType) -> Result<()> {
+    #[cfg(not(feature = "mainnet"))]
+    msg!("Checking state account type {:?}", accont_type);
+
+    if state.account_type == accont_type {
+        Ok(())
+    } else {
+        Err(AccessError::WrongStateType.into())
+    }
+}
+
+pub fn check_integration(state: &StateAccount, integration: Integration) -> Result<()> {
     #[cfg(not(feature = "mainnet"))]
     msg!("Checking integration {:?} is enabled", integration);
 
-    if let Some(acls) = fund.integration_acls() {
-        for acl in acls {
-            if acl.name == integration {
-                return Ok(());
-            }
-        }
+    if state.integrations.contains(&integration) {
+        Ok(())
+    } else {
+        Err(AccessError::IntegrationDisabled.into())
     }
-
-    return Err(AccessError::IntegrationDisabled.into());
 }
 
 pub fn check_stake_pool_integration(
-    fund: &StateAccount,
+    state: &StateAccount,
     stake_pool_program: &Pubkey,
 ) -> Result<()> {
     let integration = if stake_pool_program == &SPL_STAKE_POOL_PROGRAM_ID {
-        IntegrationName::SplStakePool
+        Integration::SplStakePool
     } else {
-        IntegrationName::SanctumStakePool
+        Integration::SanctumStakePool
     };
-    check_integration(fund, integration)
+    check_integration(state, integration)
 }

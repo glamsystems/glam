@@ -90,7 +90,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     skip_state: bool,
 ) -> Result<()> {
     let state = &ctx.accounts.state;
-    require!(state.is_enabled(), StateError::Disabled);
+    require!(state.enabled, StateError::Disabled);
 
     let external_vault_accounts =
         state.get_pubkeys_from_engine_field(EngineFieldName::ExternalVaultAccounts);
@@ -154,7 +154,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         }
     }
 
-    let state_assets = state.assets().unwrap();
+    let state_assets = &state.assets;
     let asset_idx = state_assets
         .iter()
         .position(|&asset| asset == ctx.accounts.asset.key());
@@ -175,7 +175,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
 
     let aum_components = get_aum_components(
         Action::Subscribe,
-        state_assets,
+        &state_assets,
         ctx.remaining_accounts,
         &ctx.accounts.vault,
         &external_vault_accounts,
@@ -325,7 +325,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
     skip_state: bool,
 ) -> Result<()> {
     let state = &ctx.accounts.state;
-    require!(state.is_enabled(), StateError::Disabled);
+    require!(state.enabled, StateError::Disabled);
 
     let external_vault_accounts =
         state.get_pubkeys_from_engine_field(EngineFieldName::ExternalVaultAccounts);
@@ -397,11 +397,11 @@ pub fn redeem_handler<'c: 'info, 'info>(
         share_expo,
     );
 
-    let assets = state.assets().unwrap();
+    let assets = &state.assets;
     let skip_prices = should_transfer_everything || in_kind;
     let aum_components = get_aum_components(
         Action::Redeem,
-        assets,
+        &assets,
         ctx.remaining_accounts,
         &ctx.accounts.vault,
         &external_vault_accounts,

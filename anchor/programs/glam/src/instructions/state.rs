@@ -3,7 +3,7 @@ use crate::{
     error::{AccessError, StateError},
     state::*,
 };
-use anchor_lang::{prelude::*, system_program};
+use anchor_lang::{prelude::*, solana_program, system_program, Discriminator};
 use anchor_spl::{
     token::{close_account as close_token_account, CloseAccount as CloseTokenAccount, Token},
     token_2022::{
@@ -29,14 +29,15 @@ pub struct InitializeState<'info> {
     )]
     pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(init, seeds = [SEED_METADATA.as_bytes(), state.key().as_ref()], bump, payer = signer, space = MetadataAccount::INIT_SIZE)]
-    pub metadata: Box<Account<'info, MetadataAccount>>,
-
     #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
+
+    /// CHECK: Manually initialized metadata account according to template provided in state model
+    #[account(mut, seeds = [SEED_METADATA.as_bytes(), state.key().as_ref()], bump)]
+    pub metadata: AccountInfo<'info>,
 
     pub system_program: Program<'info, System>,
 }
@@ -50,52 +51,69 @@ pub fn initialize_state_handler<'c: 'info, 'info>(
     //
     let state = &mut ctx.accounts.state;
     let model = state_model.clone();
+
+    state.account_type = model.account_type.ok_or(StateError::InvalidAccountType)?;
+
     if let Some(name) = model.name {
-        require!(name.len() < MAX_SIZE_NAME, StateError::InvalidName);
+        require!(name.len() <= MAX_SIZE_NAME, StateError::InvalidName);
         state.name = name;
     }
-    if let Some(fund_uri) = model.uri {
-        require!(fund_uri.len() < MAX_SIZE_URI, StateError::InvalidUri);
-        state.uri = fund_uri;
+    if let Some(uri) = model.uri {
+        require!(uri.len() < MAX_SIZE_URI, StateError::InvalidUri);
+        state.uri = uri;
     }
-    if let Some(metadata_uri) = model.metadata_uri {
-        require!(metadata_uri.len() < MAX_SIZE_URI, StateError::InvalidUri);
-        state.metadata_uri = metadata_uri;
+    if let Some(metadata) = model.metadata {
+        require!(metadata.uri.len() < MAX_SIZE_URI, StateError::InvalidUri);
+        state.metadata = Some(Metadata {
+            template: metadata.template,
+            pubkey: metadata.pubkey,
+            uri: metadata.uri,
+        });
+
+        if metadata.template == MetadataType::Openfunds {
+            let rent = Rent::get()?;
+            let space = 8 + OpenfundsMetadataAccount::INIT_SIZE;
+            let lamports = rent.minimum_balance(space);
+
+            let create_account_ix = solana_program::system_instruction::create_account(
+                ctx.accounts.signer.key,
+                ctx.accounts.metadata.key,
+                lamports,
+                space as u64,
+                &crate::ID,
+            );
+
+            solana_program::program::invoke_signed(
+                &create_account_ix,
+                &[
+                    ctx.accounts.signer.to_account_info(),
+                    ctx.accounts.metadata.to_account_info(),
+                    ctx.accounts.system_program.to_account_info(),
+                ],
+                &[&[
+                    SEED_METADATA.as_bytes(),
+                    state.key().as_ref(),
+                    &[ctx.bumps.metadata],
+                ]],
+            )?;
+
+            let discriminator = OpenfundsMetadataAccount::discriminator();
+            let mut metadata_data = ctx.accounts.metadata.try_borrow_mut_data()?;
+            metadata_data[..8].copy_from_slice(&discriminator);
+
+            let openfunds_metadata = OpenfundsMetadataAccount::from(state_model);
+            openfunds_metadata.try_serialize(&mut &mut metadata_data[8..])?;
+        }
     }
 
     state.vault = ctx.accounts.vault.key();
-    state.metadata = ctx.accounts.metadata.key();
     state.owner = ctx.accounts.signer.key();
-
-    //
-    // Set state params
-    //
-    // state.params[0][0]: assets allowlists
-    // state.params[0][1]: integration acls
-    //
-    state.params = vec![vec![
-        EngineField {
-            name: EngineFieldName::Assets,
-            value: EngineFieldValue::VecPubkey { val: model.assets },
-        },
-        EngineField {
-            name: EngineFieldName::IntegrationAcls,
-            value: EngineFieldValue::VecIntegrationAcl {
-                val: model.integration_acls,
-            },
-        },
-    ]];
-
-    //
-    // Initialize metadata account
-    //
-    let metadata = &mut ctx.accounts.metadata;
-    let openfunds_metadata = MetadataAccount::from(state_model);
-    metadata.state_pubkey = state.key();
-    metadata.company = openfunds_metadata.company;
-    metadata.fund = openfunds_metadata.fund;
-    metadata.share_classes = openfunds_metadata.share_classes;
-    metadata.fund_managers = openfunds_metadata.fund_managers;
+    state.created = Clock::get()?.unix_timestamp;
+    state.enabled = model.enabled.unwrap_or(true);
+    state.assets = model.assets.unwrap_or_default();
+    state.integrations = model.integrations.unwrap_or_default();
+    state.delegate_acls = model.delegate_acls.unwrap_or_default();
+    state.params = vec![vec![]];
 
     msg!("State account created: {}", ctx.accounts.state.key());
     Ok(())
@@ -124,10 +142,7 @@ pub fn update_state_handler<'c: 'info, 'info>(
         state.name = name;
     }
     if let Some(uri) = state_model.uri {
-        require!(
-            uri.as_bytes().len() <= MAX_SIZE_URI,
-            StateError::InvalidName
-        );
+        require!(uri.as_bytes().len() <= MAX_SIZE_URI, StateError::InvalidUri);
         state.uri = uri;
     }
 
@@ -137,162 +152,78 @@ pub fn update_state_handler<'c: 'info, 'info>(
         }
     }
 
-    if !state_model.assets.is_empty() {
-        let assets = state.assets_mut().unwrap();
-        assets.clear();
-        assets.extend(state_model.assets.clone());
+    if let Some(assets) = state_model.assets {
+        state.assets = assets;
     }
 
-    // One of the engine field in `fund.params[0]` stores the existing acls of the fund,
-    // and `fund_model.acls` is new acls to be upserted or deleted.
-    //
-    // For each acl in `fund_model.acls` we check two cases:
-    //
-    // 1) a fund acl with same pubkey exists
-    //   - acl.permissions is empty, delete the fund acl
-    //   - acl.permissions is not empty, update permissions
-    //
-    // 2) a fund acl with same pubkey doesn't exist
-    //   - add the acl
-    if !state_model.delegate_acls.is_empty() {
-        // Add the acls field if it doesn't exist
-        let delegate_acls_field_exists = state.params[0]
-            .iter()
-            .any(|field| field.name == EngineFieldName::DelegateAcls);
-
-        if !delegate_acls_field_exists {
-            msg!("Adding acls field to state params");
-            state.params[0].push(EngineField {
-                name: EngineFieldName::DelegateAcls,
-                value: EngineFieldValue::VecDelegateAcl { val: Vec::new() },
-            });
-        }
-
-        let to_delete: Vec<Pubkey> = state_model
-            .delegate_acls
-            .clone()
-            .iter()
-            .filter(|acl| acl.permissions.is_empty())
-            .map(|acl| acl.pubkey)
-            .collect();
-        if !to_delete.is_empty() {
-            for EngineField { name, value } in &mut state.params[0] {
-                if let (EngineFieldName::DelegateAcls, EngineFieldValue::VecDelegateAcl { val }) =
-                    (name, value)
-                {
-                    val.retain(|acl| !to_delete.contains(&acl.pubkey));
-                }
-            }
-        }
-        let to_upsert = state_model
-            .delegate_acls
-            .clone()
-            .into_iter()
-            .filter(|acl| !acl.permissions.is_empty());
-
-        for new_acl in to_upsert {
-            for EngineField { name, value } in &mut state.params[0] {
-                if let (EngineFieldName::DelegateAcls, EngineFieldValue::VecDelegateAcl { val }) =
-                    (name, value)
-                {
-                    if let Some(existing_acl) =
-                        val.iter_mut().find(|acl| acl.pubkey == new_acl.pubkey)
-                    {
-                        existing_acl.permissions = new_acl.permissions.clone();
-                    } else {
-                        val.push(new_acl.clone());
-                    }
-                }
-            }
-        }
+    if let Some(integrations) = state_model.integrations {
+        state.integrations = integrations;
     }
 
-    // Update integration acls for the state
-    if !state_model.integration_acls.is_empty() {
-        // Check if the integrations field exists
-        // Add the integrations field if it doesn't exist
-        let integration_acl_field_exists = state.params[0]
-            .iter()
-            .any(|field| field.name == EngineFieldName::IntegrationAcls);
-
-        if !integration_acl_field_exists {
-            msg!("Adding integrations field to state params");
-            state.params[0].push(EngineField {
-                name: EngineFieldName::IntegrationAcls,
-                value: EngineFieldValue::VecIntegrationAcl { val: Vec::new() },
-            });
-        }
-
-        for EngineField { name, value } in &mut state.params[0] {
-            if let (EngineFieldName::IntegrationAcls, EngineFieldValue::VecIntegrationAcl { val }) =
-                (name, value)
-            {
-                val.clear();
-                val.extend(state_model.integration_acls.clone());
+    // update or add delegate acls
+    // if permissions is empty, delete the entry
+    if let Some(delegate_acls) = state_model.delegate_acls {
+        state.delegate_acls.retain_mut(|da| {
+            if let Some(d) = delegate_acls.iter().find(|d| d.pubkey == da.pubkey) {
+                da.permissions = d.permissions.clone();
+                !d.permissions.is_empty()
+            } else {
+                true
             }
-        }
+        });
     }
 
-    if !state_model.drift_market_indexes_perp.is_empty() {
-        let mut found = false;
-        for EngineField { name, value } in &mut state.params[0] {
-            if let (EngineFieldName::DriftMarketIndexesPerp, EngineFieldValue::VecU32 { val }) =
-                (name, value)
-            {
-                val.clear();
-                val.extend(state_model.drift_market_indexes_perp.clone());
-                found = true;
-            }
-        }
-        if !found {
+    if let Some(market_indexes_perp) = state_model.drift_market_indexes_perp {
+        let Some(EngineField { value, .. }) = state.params[0]
+            .iter_mut()
+            .find(|f| f.name == EngineFieldName::DriftMarketIndexesPerp)
+        else {
             state.params[0].push(EngineField {
                 name: EngineFieldName::DriftMarketIndexesPerp,
                 value: EngineFieldValue::VecU32 {
-                    val: state_model.drift_market_indexes_perp,
+                    val: market_indexes_perp.clone(),
                 },
             });
+            return Ok(());
+        };
+
+        if let EngineFieldValue::VecU32 { val } = value {
+            *val = market_indexes_perp;
         }
     }
 
-    if !state_model.drift_market_indexes_spot.is_empty() {
-        let mut found = false;
-        for EngineField { name, value } in &mut state.params[0] {
-            if let (EngineFieldName::DriftMarketIndexesSpot, EngineFieldValue::VecU32 { val }) =
-                (name, value)
-            {
-                val.clear();
-                val.extend(state_model.drift_market_indexes_spot.clone());
-                found = true;
-            }
-        }
-        if !found {
+    if let Some(market_indexes_spot) = state_model.drift_market_indexes_spot {
+        let Some(EngineField { value, .. }) = state.params[0]
+            .iter_mut()
+            .find(|f| f.name == EngineFieldName::DriftMarketIndexesSpot)
+        else {
             state.params[0].push(EngineField {
                 name: EngineFieldName::DriftMarketIndexesSpot,
                 value: EngineFieldValue::VecU32 {
-                    val: state_model.drift_market_indexes_spot,
+                    val: market_indexes_spot.clone(),
                 },
             });
+            return Ok(());
+        };
+
+        if let EngineFieldValue::VecU32 { val } = value {
+            *val = market_indexes_spot;
         }
     }
 
-    if !state_model.drift_order_types.is_empty() {
-        let mut found = false;
-        for EngineField { name, value } in &mut state.params[0] {
-            if let (EngineFieldName::DriftOrderTypes, EngineFieldValue::VecU32 { val }) =
-                (name, value)
-            {
-                val.clear();
-                val.extend(state_model.drift_order_types.clone());
-                found = true;
-            }
-        }
-        if !found {
-            state.params[0].push(EngineField {
-                name: EngineFieldName::DriftOrderTypes,
-                value: EngineFieldValue::VecU32 {
-                    val: state_model.drift_order_types,
-                },
+    if let Some(drift_order_types) = state_model.drift_order_types {
+        let idx = state.params[0]
+            .iter()
+            .position(|f| f.name == EngineFieldName::DriftOrderTypes)
+            .unwrap_or_else(|| {
+                state.params[0].push(EngineField {
+                    name: EngineFieldName::DriftOrderTypes,
+                    value: EngineFieldValue::VecU32 { val: Vec::new() },
+                });
+                state.params[0].len() - 1
             });
+        if let EngineFieldValue::VecU32 { val } = &mut state.params[0][idx].value {
+            *val = drift_order_types;
         }
     }
 
@@ -304,8 +235,9 @@ pub struct CloseState<'info> {
     #[account(mut, close = signer, constraint = state.owner == signer.key() @ AccessError::NotAuthorized)]
     pub state: Account<'info, StateAccount>,
 
-    #[account(mut, close = signer)]
-    pub metadata: Account<'info, MetadataAccount>,
+    /// CHECK: Manually deserialized
+    #[account(mut, seeds = [SEED_METADATA.as_bytes(), state.key().as_ref()], bump)]
+    pub metadata: AccountInfo<'info>,
 
     #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
@@ -337,6 +269,11 @@ pub fn close_state_handler(ctx: Context<CloseState>) -> Result<()> {
             vault_signer_seeds,
         )?;
     }
+
+    close_account_info(
+        ctx.accounts.metadata.to_account_info(),
+        ctx.accounts.signer.to_account_info(),
+    )?;
 
     msg!("State account closed: {}", ctx.accounts.state.key());
     Ok(())

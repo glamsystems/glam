@@ -57,8 +57,9 @@ pub struct AddShareClass<'info> {
     #[account(mut, constraint = state.owner == signer.key() @ AccessError::NotAuthorized)]
     pub state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut)]
-    pub metadata: Box<Account<'info, MetadataAccount>>,
+    /// CHECK: Metadata
+    #[account(mut, seeds = [SEED_METADATA.as_bytes(), state.key().as_ref()], bump)]
+    pub metadata: AccountInfo<'info>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -134,10 +135,16 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
     let share_class_fields = Vec::<ShareClassField>::from(&share_class_metadata.clone());
 
     //
-    // Add share class data to openfunds
+    // Add share class data metadata, currently only openfunds metadata is supported
     //
-    let openfunds = &mut ctx.accounts.metadata;
-    openfunds.share_classes.push(share_class_fields.clone());
+    if let Some(metadata) = state.metadata.clone() {
+        if metadata.template == MetadataType::Openfunds {
+            let mut data_slice = ctx.accounts.metadata.data.borrow_mut(); // Borrow the mutable data
+            let data: &mut [u8] = &mut *data_slice; // Dereference and convert to `&mut [u8]`
+            let mut openfunds = OpenfundsMetadataAccount::try_deserialize(&mut &data[..])?; // Pass as `&mut &[u8]`
+            openfunds.share_classes.push(share_class_fields.clone());
+        }
+    }
 
     //
     // Initialize share class mint, extensions and metadata
@@ -360,7 +367,7 @@ pub struct SetTokenAccountsStates<'info> {
 }
 
 #[access_control(acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::SetTokenAccountsStates))]
-#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Mint))]
+#[access_control(acl::check_state_type(&ctx.accounts.state, AccountType::Mint))]
 #[share_class_signer_seeds]
 pub fn set_token_accounts_states_handler<'info>(
     ctx: Context<'_, '_, 'info, 'info, SetTokenAccountsStates<'info>>,
@@ -461,7 +468,7 @@ pub struct ForceTransferShare<'info> {
 }
 
 #[access_control(acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::ForceTransferShare))]
-#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Mint))]
+#[access_control(acl::check_state_type(&ctx.accounts.state, AccountType::Mint))]
 #[share_class_signer_seeds]
 pub fn force_transfer_share_handler(
     ctx: Context<ForceTransferShare>,
@@ -530,7 +537,7 @@ pub struct BurnShare<'info> {
 }
 
 #[access_control(acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::BurnShare))]
-#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Mint))]
+#[access_control(acl::check_state_type(&ctx.accounts.state, AccountType::Mint))]
 #[share_class_signer_seeds]
 pub fn burn_share_handler(ctx: Context<BurnShare>, share_class_id: u8, amount: u64) -> Result<()> {
     #[cfg(not(feature = "mainnet"))]
@@ -589,7 +596,7 @@ pub struct MintShare<'info> {
 }
 
 #[access_control(acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::MintShare))]
-#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Mint))]
+#[access_control(acl::check_state_type(&ctx.accounts.state, AccountType::Mint))]
 #[share_class_signer_seeds]
 pub fn mint_share_handler<'info>(
     ctx: Context<'_, '_, '_, 'info, MintShare<'info>>,
@@ -686,8 +693,9 @@ pub struct CloseShareClass<'info> {
     )]
     pub extra_account_meta_list: UncheckedAccount<'info>,
 
-    #[account(mut)]
-    pub metadata: Box<Account<'info, MetadataAccount>>,
+    /// CHECK: Metadata
+    #[account(mut, seeds = [SEED_METADATA.as_bytes(), state.key().as_ref()], bump)]
+    pub metadata: AccountInfo<'info>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -721,10 +729,14 @@ pub fn close_share_class_handler(ctx: Context<CloseShareClass>, share_class_id: 
 
     ctx.accounts.state.mints.remove(share_class_id as usize);
 
-    ctx.accounts
-        .metadata
-        .share_classes
-        .remove(share_class_id as usize);
+    if let Some(metadata) = ctx.accounts.state.metadata.clone() {
+        if metadata.template == MetadataType::Openfunds {
+            let mut data_slice = ctx.accounts.metadata.data.borrow_mut(); // Borrow the mutable data
+            let data: &mut [u8] = &mut *data_slice; // Dereference and convert to `&mut [u8]`
+            let mut openfunds = OpenfundsMetadataAccount::try_deserialize(&mut &data[..])?;
+            openfunds.share_classes.remove(share_class_id as usize);
+        }
+    }
 
     close_account_info(
         ctx.accounts.extra_account_meta_list.to_account_info(),

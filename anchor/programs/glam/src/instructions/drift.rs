@@ -46,7 +46,7 @@ pub struct DriftInitialize<'info> {
 }
 
 #[access_control(acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::DriftInitialize))]
-#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Drift))]
+#[access_control(acl::check_integration(&ctx.accounts.state, Integration::Drift))]
 #[vault_signer_seeds]
 pub fn initialize_handler(ctx: Context<DriftInitialize>) -> Result<()> {
     initialize_user_stats(CpiContext::new_with_signer(
@@ -102,7 +102,7 @@ pub struct DriftUpdate<'info> {
 }
 
 #[access_control(acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::DriftUpdateUser))]
-#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Drift))]
+#[access_control(acl::check_integration(&ctx.accounts.state, Integration::Drift))]
 #[vault_signer_seeds]
 pub fn update_user_custom_margin_ratio_handler(
     ctx: Context<DriftUpdate>,
@@ -126,7 +126,7 @@ pub fn update_user_custom_margin_ratio_handler(
 }
 
 #[access_control(acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::DriftUpdateUser))]
-#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Drift))]
+#[access_control(acl::check_integration(&ctx.accounts.state, Integration::Drift))]
 #[vault_signer_seeds]
 pub fn update_user_margin_trading_enabled_handler(
     ctx: Context<DriftUpdate>,
@@ -150,7 +150,7 @@ pub fn update_user_margin_trading_enabled_handler(
 }
 
 #[access_control(acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::DriftUpdateUser))]
-#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Drift))]
+#[access_control(acl::check_integration(&ctx.accounts.state, Integration::Drift))]
 #[vault_signer_seeds]
 pub fn update_user_delegate_handler(
     ctx: Context<DriftUpdate>,
@@ -204,7 +204,7 @@ pub struct DriftDeposit<'info> {
 }
 
 #[access_control(acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::DriftDeposit))]
-#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Drift))]
+#[access_control(acl::check_integration(&ctx.accounts.state, Integration::Drift))]
 #[vault_signer_seeds]
 pub fn deposit_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftDeposit<'info>>,
@@ -267,7 +267,7 @@ pub struct DriftWithdraw<'info> {
 }
 
 #[access_control(acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::DriftWithdraw))]
-#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Drift))]
+#[access_control(acl::check_integration(&ctx.accounts.state, Integration::Drift))]
 #[vault_signer_seeds]
 pub fn withdraw_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftWithdraw<'info>>,
@@ -324,7 +324,7 @@ pub struct DriftDeleteUser<'info> {
 }
 
 #[access_control(acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::DriftDeleteUser))]
-#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Drift))]
+#[access_control(acl::check_integration(&ctx.accounts.state, Integration::Drift))]
 #[vault_signer_seeds]
 pub fn delete_user_handler(ctx: Context<DriftDeleteUser>) -> Result<()> {
     delete_user(CpiContext::new_with_signer(
@@ -365,7 +365,7 @@ pub struct DriftPlaceOrders<'info> {
 }
 
 #[access_control(acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::DriftPlaceOrders))]
-#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Drift))]
+#[access_control(acl::check_integration(&ctx.accounts.state, Integration::Drift))]
 #[vault_signer_seeds]
 pub fn place_orders_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftPlaceOrders<'info>>,
@@ -452,7 +452,7 @@ pub struct DriftCancelOrders<'info> {
 }
 
 #[access_control(acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::DriftCancelOrders))]
-#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Drift))]
+#[access_control(acl::check_integration(&ctx.accounts.state, Integration::Drift))]
 #[vault_signer_seeds]
 pub fn cancel_orders_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftCancelOrders<'info>>,

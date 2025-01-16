@@ -38,7 +38,7 @@ pub struct InitializeAndDelegateStake<'info> {
     acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Stake)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.state, IntegrationName::NativeStaking)
+    acl::check_integration(&ctx.accounts.state, Integration::NativeStaking)
 )]
 #[vault_signer_seeds]
 pub fn initialize_and_delegate_stake_handler<'c: 'info, 'info>(
@@ -140,7 +140,7 @@ pub struct DeactivateStakeAccounts<'info> {
     acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Unstake)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.state, IntegrationName::NativeStaking)
+    acl::check_integration(&ctx.accounts.state, Integration::NativeStaking)
 )]
 #[vault_signer_seeds]
 pub fn deactivate_stake_accounts_handler<'info>(
@@ -181,7 +181,7 @@ pub struct WithdrawFromStakeAccounts<'info> {
     acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Unstake)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.state, IntegrationName::NativeStaking)
+    acl::check_integration(&ctx.accounts.state, Integration::NativeStaking)
 )]
 #[vault_signer_seeds]
 pub fn withdraw_from_stake_accounts_handler<'info>(
@@ -238,7 +238,7 @@ pub struct MergeStakeAccounts<'info> {
     acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Stake)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.state, IntegrationName::NativeStaking)
+    acl::check_integration(&ctx.accounts.state, Integration::NativeStaking)
 )]
 #[vault_signer_seeds]
 pub fn merge_stake_accounts_handler<'c: 'info, 'info>(
@@ -296,7 +296,7 @@ pub struct SplitStakeAccount<'info> {
     acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Unstake)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.state, IntegrationName::NativeStaking)
+    acl::check_integration(&ctx.accounts.state, Integration::NativeStaking)
 )]
 #[vault_signer_seeds]
 pub fn split_stake_account_handler<'c: 'info, 'info>(
@@ -395,7 +395,7 @@ pub struct RedelegateStake<'info> {
     acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Stake)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.state, IntegrationName::NativeStaking)
+    acl::check_integration(&ctx.accounts.state, Integration::NativeStaking)
 )]
 #[vault_signer_seeds]
 pub fn redelegate_stake_handler<'c: 'info, 'info>(

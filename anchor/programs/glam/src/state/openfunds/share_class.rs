@@ -4,31 +4,36 @@ use anchor_lang::prelude::*;
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug, strum::Display)]
 pub enum ShareClassFieldName {
+    //
     // Essential
+    //
     ISIN,               // impl
     ShareClassCurrency, // impl
+
+    //
     // Core
-    AllInFeeApplied,
-    AllInFeeDate,
-    AllInFeeIncludesTransactionCosts,
-    AllInFeeMaximum,
+    //
+    // AllInFeeApplied,
+    // AllInFeeDate,
+    // AllInFeeIncludesTransactionCosts,
+    // AllInFeeMaximum,
     AppliedSubscriptionFeeInFavourOfDistributor, // impl
     AppliedSubscriptionFeeInFavourOfDistributorReferenceDate, // impl
-    Benchmark,
-    CountryLegalRegistration,
-    CountryMarketingDistribution,
-    CurrencyHedgeShareClass,
+    // Benchmark,
+    // CountryLegalRegistration,
+    // CountryMarketingDistribution,
+    // CurrencyHedgeShareClass,
     CurrencyOfMinimalSubscription, // impl
-    DistributionDeclarationFrequency,
+    // DistributionDeclarationFrequency,
     FullShareClassName, // impl
-    HasAllInFee,
-    HasOngoingCharges,
+    // HasAllInFee,
+    // HasOngoingCharges,
     HasPerformanceFee,                       // impl
     HasSubscriptionFeeInFavourOfDistributor, // impl
     InvestmentStatus,                        // impl
-    IsETF,
-    IsRDRCompliant,
-    IsTrailerFeeClean,
+    // IsETF,
+    // IsRDRCompliant,
+    // IsTrailerFeeClean,
     ManagementFeeApplied,                        // impl
     ManagementFeeAppliedReferenceDate,           // impl
     ManagementFeeMaximum,                        // impl
@@ -40,58 +45,61 @@ pub enum ShareClassFieldName {
     MinimalSubsequentSubscriptionInAmount,       // impl
     MinimalSubsequentSubscriptionInShares,       // impl
     MinimumSubscriptionFeeInFavourOfDistributor, // impl
-    OngoingCharges,
-    OngoingChargesDate,
-    PerformanceFeeApplied,
-    PerformanceFeeAppliedReferenceDate,
-    PerformanceFeeInProspectus,
-    PerformanceFeeInProspectusReferenceDate,
-    RecordDateForSRRI,
+    // OngoingCharges,
+    // OngoingChargesDate,
+    // PerformanceFeeApplied,
+    // PerformanceFeeAppliedReferenceDate,
+    // PerformanceFeeInProspectus,
+    // PerformanceFeeInProspectusReferenceDate,
+    // RecordDateForSRRI,
     ShareClassDistributionPolicy, // impl
     ShareClassExtension,          // impl
     ShareClassLaunchDate,         // impl
     ShareClassLifecycle,          // impl
     SRRI,                         // impl
-    TERExcludingPerformanceFee,
-    TERExcludingPerformanceFeeDate,
-    TERIncludingPerformanceFee,
-    TERIncludingPerformanceFeeDate,
+    // TERExcludingPerformanceFee,
+    // TERExcludingPerformanceFeeDate,
+    // TERIncludingPerformanceFee,
+    // TERIncludingPerformanceFeeDate,
+
+    //
     // Additional
-    TransferAgentName,
-    BICOfTransferAgent,
-    DomicileOfTransferAgent,
-    FormOfShare,
-    HasDurationHedge,
-    TypeOfEqualization,
-    IsMultiseries,
-    SeriesIssuance,
-    SeriesFrequency,
-    DoesFundIssueSidePocket,
-    HasRedemptionGates,
-    TypeOfAlternativeFundStructureVehicle,
-    BloombergCode,
-    FIGICode,
-    AbbreviatedShareClassName,
-    ValuationFrequency,
-    NAVPublicationTime,
-    IsShareClassEligibleForUCITS,
-    InvestmentStatusDate,
+    //
+    // TransferAgentName,
+    // BICOfTransferAgent,
+    // DomicileOfTransferAgent,
+    // FormOfShare,
+    // HasDurationHedge,
+    // TypeOfEqualization,
+    // IsMultiseries,
+    // SeriesIssuance,
+    // SeriesFrequency,
+    // DoesFundIssueSidePocket,
+    // HasRedemptionGates,
+    // TypeOfAlternativeFundStructureVehicle,
+    // BloombergCode,
+    // FIGICode,
+    // AbbreviatedShareClassName,
+    // ValuationFrequency,
+    // NAVPublicationTime,
+    // IsShareClassEligibleForUCITS,
+    // InvestmentStatusDate,
     LaunchPrice,         // impl
     LaunchPriceCurrency, // impl
     LaunchPriceDate,     // impl
-    EFAMAMainEFCCategory,
-    EFAMAEFCClassificationType,
-    EFAMAActiveEFCClassification,
-    EFAMAEFCInvestmentTheme,
-    PricingMethodology,
-    SinglePricingType,
-    SwingFactor,
-    StandardMinimumRemainingAmount,
-    StandardMinimumRemainingShares,
-    CurrencyOfMinimumRemainingAmount,
-    StandardMinimumRemainingCategory,
-    HurdleRate,
-    HighWaterMark,
+    // EFAMAMainEFCCategory,
+    // EFAMAEFCClassificationType,
+    // EFAMAActiveEFCClassification,
+    // EFAMAEFCInvestmentTheme,
+    // PricingMethodology,
+    // SinglePricingType,
+    // SwingFactor,
+    // StandardMinimumRemainingAmount,
+    // StandardMinimumRemainingShares,
+    // CurrencyOfMinimumRemainingAmount,
+    // StandardMinimumRemainingCategory,
+    // HurdleRate,
+    // HighWaterMark,
     HasAppliedSubscriptionFeeInFavourOfFund,           // impl
     AppliedSubscriptionFeeInFavourOfFund,              // impl
     AppliedSubscriptionFeeInFavourOfFundReferenceDate, // impl
@@ -100,84 +108,87 @@ pub enum ShareClassFieldName {
     AppliedRedemptionFeeInFavourOfFund,                // impl
     AppliedRedemptionFeeInFavourOfFundReferenceDate,   // impl
     MaximumRedemptionFeeInFavourOfFund,                // impl
-    EquivalentTrailerFeeCleanISIN,
-    HasSeparateDistributionFee,
-    DistributionFee,
-    DistributionFeeMaximum,
-    IASector,
+    // EquivalentTrailerFeeCleanISIN,
+    // HasSeparateDistributionFee,
+    // DistributionFee,
+    // DistributionFeeMaximum,
+    // IASector,
+
+    //
     // Full
-    AbsorbingFundFullShareClassName,
-    AbsorbingFundShareClassISIN,
-    AdministrationFeeMaximum,
-    AnnualDistributionAtFiscalYearEnd,
-    AnnualDistributionYieldAtFiscalYearEnd,
+    //
+    // AbsorbingFundFullShareClassName,
+    // AbsorbingFundShareClassISIN,
+    // AdministrationFeeMaximum,
+    // AnnualDistributionAtFiscalYearEnd,
+    // AnnualDistributionYieldAtFiscalYearEnd,
     AppliedRedemptionFeeInFavourOfDistributor, // impl
     AppliedRedemptionFeeInFavourOfDistributorReferenceDate, // impl
-    BankDetailsSSIForPaymentsProvision,
-    BankDetailsLevelApplication,
-    BenchmarkBloombergTicker,
-    CalculationDateOffsetForRedemption,
-    CalculationDateOffsetForSubscription,
-    CalendarOrBusinessDaysForCutOffDateOffsetForRedemption,
-    CalendarOrBusinessDaysForCutOffDateOffsetForSubscription,
-    CalendarOrBusinessDaysForPrePaymentDaysForSubscription,
-    CalendarOrBusinessDaysForSettlementPeriodForRedemption,
-    CalendarOrBusinessDaysForSettlementPeriodForSubscription,
-    CalendarOrBusinessDaysForTransactions,
-    CFICode,
-    ContingentDeferredSalesChargeExitFee,
-    ContingentDeferredSalesChargeUpfrontFee,
-    CountryISOCodeAlpha2,
-    CountryISOCodeAlpha3,
-    CountryName,
-    CurrenciesOfMulticurrencyShareClass,
+    // BankDetailsSSIForPaymentsProvision,
+    // BankDetailsLevelApplication,
+    // BenchmarkBloombergTicker,
+    // CalculationDateOffsetForRedemption,
+    // CalculationDateOffsetForSubscription,
+    // CalendarOrBusinessDaysForCutOffDateOffsetForRedemption,
+    // CalendarOrBusinessDaysForCutOffDateOffsetForSubscription,
+    // CalendarOrBusinessDaysForPrePaymentDaysForSubscription,
+    // CalendarOrBusinessDaysForSettlementPeriodForRedemption,
+    // CalendarOrBusinessDaysForSettlementPeriodForSubscription,
+    // CalendarOrBusinessDaysForTransactions,
+    // CFICode,
+    // ContingentDeferredSalesChargeExitFee,
+    // ContingentDeferredSalesChargeUpfrontFee,
+    // CountryISOCodeAlpha2,
+    // CountryISOCodeAlpha3,
+    // CountryName,
+    // CurrenciesOfMulticurrencyShareClass,
     CurrencyOfMinimalOrMaximumRedemption, // impl
-    CustodianFeeApplied,
-    CustodianFeeAppliedReferenceDate,
-    CustodianFeeMaximum,
+    // CustodianFeeApplied,
+    // CustodianFeeAppliedReferenceDate,
+    // CustodianFeeMaximum,
     CutOffDateOffsetForRedemption,   // impl
     CutOffDateOffsetForSubscription, // impl
     CutOffTimeForRedemption,         // impl
     CutOffTimeForSubscription,       // impl
-    CutOffTimeForSwitchIn,
-    CutOffTimeForSwitchOut,
-    DealingDaysOfMultipleRedemptionTradeCycles,
-    DealingDaysOfMultipleSubscriptionTradeCycles,
-    DisseminationRecipient,
-    DistributionFeeReferenceDate,
-    DoesShareClassApplyMandatoryConversion,
-    DoesShareClassApplyPartialDealingDays,
-    DoesShareClassApplyPartialPaymentDays,
-    DormantEndDate,
-    DormantStartDate,
-    ExDividendDateCalendar,
-    ExitCostDescription,
-    HasContingentDeferredSalesChargeFee,
-    HasDilutionLevyAppliedByFund,
-    HasEqualizationMethodForDistribution,
-    HasEqualizationMethodForPerformanceFee,
-    HasForcedRedemption,
-    HasForwardPricing,
-    HasHighWaterMark,
+    // CutOffTimeForSwitchIn,
+    // CutOffTimeForSwitchOut,
+    // DealingDaysOfMultipleRedemptionTradeCycles,
+    // DealingDaysOfMultipleSubscriptionTradeCycles,
+    // DisseminationRecipient,
+    // DistributionFeeReferenceDate,
+    // DoesShareClassApplyMandatoryConversion,
+    // DoesShareClassApplyPartialDealingDays,
+    // DoesShareClassApplyPartialPaymentDays,
+    // DormantEndDate,
+    // DormantStartDate,
+    // ExDividendDateCalendar,
+    // ExitCostDescription,
+    // HasContingentDeferredSalesChargeFee,
+    // HasDilutionLevyAppliedByFund,
+    // HasEqualizationMethodForDistribution,
+    // HasEqualizationMethodForPerformanceFee,
+    // HasForcedRedemption,
+    // HasForwardPricing,
+    // HasHighWaterMark,
     HasLockUpForRedemption, // impl
-    HasPreNoticeForSwitchIn,
-    HasPreNoticeForSwitchOut,
-    HasPrePaymentForSubscription,
+    // HasPreNoticeForSwitchIn,
+    // HasPreNoticeForSwitchOut,
+    // HasPrePaymentForSubscription,
     HasRedemptionFeeInFavourOfDistributor, // impl
-    HasTripartiteReport,
-    InvestmentStatusDescription,
-    IrregularRedemptionDealingDays,
-    IrregularSubscriptionDealingDays,
-    IsMulticurrencyShareClass,
-    IsRestrictedToSeparateFeeArrangement,
-    IsStructuredFinanceProduct,
+    // HasTripartiteReport,
+    // InvestmentStatusDescription,
+    // IrregularRedemptionDealingDays,
+    // IrregularSubscriptionDealingDays,
+    // IsMulticurrencyShareClass,
+    // IsRestrictedToSeparateFeeArrangement,
+    // IsStructuredFinanceProduct,
     IsValidISIN, // impl
-    LiquidationStartDate,
+    // LiquidationStartDate,
     LockUpComment,        // impl
     LockUpPeriodInDays,   // impl
     ManagementFeeMinimum, // impl
-    MandatoryShareConversionDescriptionDetails,
-    MarketsRelevantToFundTradingCalendar,
+    // MandatoryShareConversionDescriptionDetails,
+    // MarketsRelevantToFundTradingCalendar,
     MaximalNumberOfPossibleDecimalsAmount,     // impl
     MaximalNumberOfPossibleDecimalsNAV,        // impl
     MaximalNumberOfPossibleDecimalsShares,     // impl
@@ -186,7 +197,7 @@ pub enum ShareClassFieldName {
     MaximumRedemptionFeeInFavourOfDistributor, // impl
     MaximumSubsequentRedemptionInAmount,       // impl
     MaximumSubsequentRedemptionInShares,       // impl
-    MergerRatio,
+    // MergerRatio,
     MinimalInitialRedemptionInAmount,          // impl
     MinimalInitialRedemptionInShares,          // impl
     MinimalRedemptionCategory,                 // impl
@@ -195,51 +206,54 @@ pub enum ShareClassFieldName {
     MinimumRedemptionFeeInFavourOfDistributor, // impl
     MinimumRedemptionFeeInFavourOfFund,        // impl
     MinimumSubscriptionFeeInFavourOfFund,      // impl
-    MonthlyRedemptionDealingDays,
-    MonthlySubscriptionDealingDays,
-    NasdaqFundNetworkNFNIdentifier,
-    NoTradingDate,
-    NumberOfPossibleRedemptionsWithinPeriod,
-    NumberOfPossibleSubscriptionsWithinPeriod,
-    PartialDealingDaysDateAndTime,
-    PartialPaymentDaysDateAndTime,
-    PaymentDateCalendar,
+    // MonthlyRedemptionDealingDays,
+    // MonthlySubscriptionDealingDays,
+    // NasdaqFundNetworkNFNIdentifier,
+    // NoTradingDate,
+    // NumberOfPossibleRedemptionsWithinPeriod,
+    // NumberOfPossibleSubscriptionsWithinPeriod,
+    // PartialDealingDaysDateAndTime,
+    // PartialPaymentDaysDateAndTime,
+    // PaymentDateCalendar,
     PerformanceFeeMinimum, // impl
-    PreNoticeCutOffForRedemption,
-    PreNoticeCutOffForSubscription,
-    PrePaymentCutOffTimeForSubscription,
-    PrePaymentDaysForSubscription,
-    RecordDateCalendar,
-    RedemptionTradeCyclePeriod,
+    // PreNoticeCutOffForRedemption,
+    // PreNoticeCutOffForSubscription,
+    // PrePaymentCutOffTimeForSubscription,
+    // PrePaymentDaysForSubscription,
+    // RecordDateCalendar,
+    // RedemptionTradeCyclePeriod,
     RoundingMethodForPrices,               // impl
     RoundingMethodForRedemptionInAmount,   // impl
     RoundingMethodForRedemptionInShares,   // impl
     RoundingMethodForSubscriptionInAmount, // impl
     RoundingMethodForSubscriptionInShares, // impl
-    SettlementPeriodForRedemption,
-    SettlementPeriodForSubscription,
-    SettlementPeriodForSwitchIn,
-    SettlementPeriodForSwitchOut,
+    // SettlementPeriodForRedemption,
+    // SettlementPeriodForSubscription,
+    // SettlementPeriodForSwitchIn,
+    // SettlementPeriodForSwitchOut,
     ShareClassDividendType, // impl
-    SingleRegisterAccountRestrictions,
-    SubscriptionPeriodEndDate,
-    SubscriptionPeriodStartDate,
-    SubscriptionTradeCyclePeriod,
-    SwitchInNoticePeriod,
-    SwitchOutNoticePeriod,
-    TerminationDate,
-    TimeZoneForCutOff,
-    TimeZoneForCutOffUsingTZDatabase,
-    ValuationFrequencyDetail,
-    ValuationReduction,
-    WeeklyRedemptionDealingDays,
-    WeeklySubscriptionDealingDays,
-    YearlyRedemptionDealingDays,
-    YearlySubscriptionDealingDays,
+    // SingleRegisterAccountRestrictions,
+    // SubscriptionPeriodEndDate,
+    // SubscriptionPeriodStartDate,
+    // SubscriptionTradeCyclePeriod,
+    // SwitchInNoticePeriod,
+    // SwitchOutNoticePeriod,
+    // TerminationDate,
+    // TimeZoneForCutOff,
+    // TimeZoneForCutOffUsingTZDatabase,
+    // ValuationFrequencyDetail,
+    // ValuationReduction,
+    // WeeklyRedemptionDealingDays,
+    // WeeklySubscriptionDealingDays,
+    // YearlyRedemptionDealingDays,
+    // YearlySubscriptionDealingDays,
     // Full | Country
     CUSIP, // impl
     Valor, // impl
+
+    //
     // Glam Extensions
+    //
     FundId,   // impl
     ImageUri, // impl
 }
