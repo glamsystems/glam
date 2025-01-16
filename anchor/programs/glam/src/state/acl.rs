@@ -33,6 +33,7 @@ pub enum Permission {
     VoteOnProposal, // New vote and cast vote
     UnstakeJup,     // Unstake JUP
     JupiterSwapLst, // Swap LSTs
+    InitKamino,
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug, PartialEq)]
@@ -51,6 +52,7 @@ pub enum Integration {
     Marinade,
     JupiterSwap, // Jupiter Swap
     JupiterVote, // Jupiter Vote
+    KaminoLending,
 }
 
 pub fn check_access(state: &StateAccount, signer: &Pubkey, permission: Permission) -> Result<()> {

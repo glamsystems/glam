@@ -1,12 +1,14 @@
 pub mod constants;
+pub mod cpi_autogen;
 pub mod error;
 pub mod instructions;
 pub mod security_txt;
 pub mod state;
 pub mod utils;
 
-use crate::instructions::{state as glam_state, *};
 use anchor_lang::prelude::*;
+use cpi_autogen::kamino_lending::*;
+use instructions::{state as glam_state, *};
 
 pub use constants::*;
 pub use state::model::*;
@@ -890,6 +892,16 @@ pub mod glam {
     /// - Integration::JupiterVote
     pub fn cast_vote<'info>(ctx: Context<CastVote>, side: u8) -> Result<()> {
         jupiter::cast_vote_handler(ctx, side)
+    }
+
+    //////////////////////////////////////////////////////////////////////
+    // Kamino
+    //////////////////////////////////////////////////////////////////////
+    pub fn init_user_metadata<'info>(
+        ctx: Context<KaminoLendingInitUserMetadata>,
+        user_lookup_table: Pubkey,
+    ) -> Result<()> {
+        cpi_autogen::kamino_lending::kamino_lending_init_user_metadata(ctx, user_lookup_table)
     }
 
     //////////////////////////////////////////////////////////////////////

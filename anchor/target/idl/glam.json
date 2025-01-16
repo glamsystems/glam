@@ -1,5 +1,5 @@
 {
-  "address": "GLAMbTqav9N9witRjswJ8enwp9vv5G8bsSJ2kPJ4rcyc",
+  "address": "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc",
   "metadata": {
     "name": "glam",
     "version": "0.4.1",
@@ -1853,6 +1853,85 @@
         }
       ],
       "args": []
+    },
+    {
+      "name": "init_user_metadata",
+      "discriminator": [
+        117,
+        169,
+        176,
+        69,
+        197,
+        23,
+        15,
+        162
+      ],
+      "accounts": [
+        {
+          "name": "glam_state",
+          "writable": true
+        },
+        {
+          "name": "glam_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glam_state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glam_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "address": "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"
+        },
+        {
+          "name": "owner"
+        },
+        {
+          "name": "fee_payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user_metadata",
+          "writable": true
+        },
+        {
+          "name": "referrer_user_metadata"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "user_lookup_table",
+          "type": "pubkey"
+        }
+      ]
     },
     {
       "name": "initialize_and_delegate_stake",
@@ -6859,6 +6938,9 @@
           },
           {
             "name": "JupiterVote"
+          },
+          {
+            "name": "KaminoLending"
           }
         ]
       }
@@ -7624,6 +7706,9 @@
           },
           {
             "name": "JupiterSwapLst"
+          },
+          {
+            "name": "InitKamino"
           }
         ]
       }

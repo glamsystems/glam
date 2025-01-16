@@ -1861,6 +1861,85 @@ export type Glam = {
       "args": []
     },
     {
+      "name": "initUserMetadata",
+      "discriminator": [
+        117,
+        169,
+        176,
+        69,
+        197,
+        23,
+        15,
+        162
+      ],
+      "accounts": [
+        {
+          "name": "glamState",
+          "writable": true
+        },
+        {
+          "name": "glamVault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"
+        },
+        {
+          "name": "owner"
+        },
+        {
+          "name": "feePayer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "userMetadata",
+          "writable": true
+        },
+        {
+          "name": "referrerUserMetadata"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "userLookupTable",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
       "name": "initializeAndDelegateStake",
       "docs": [
         "Initializes a stake account and delegates it to a validator.",
@@ -6865,6 +6944,9 @@ export type Glam = {
           },
           {
             "name": "jupiterVote"
+          },
+          {
+            "name": "kaminoLending"
           }
         ]
       }
@@ -7630,6 +7712,9 @@ export type Glam = {
           },
           {
             "name": "jupiterSwapLst"
+          },
+          {
+            "name": "initKamino"
           }
         ]
       }

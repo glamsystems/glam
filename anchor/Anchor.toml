@@ -24,8 +24,9 @@ cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_crud"
+#test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_crud"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_mint"
+test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_kamino"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_investor"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_drift"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_marinade"
@@ -66,6 +67,13 @@ filename = "./fixtures/accounts/pyth/42amVS4KgzR9rA28tkVYqVXjq9Qa8dcZQMbH5EYFX6X
 [[test.validator.account]] # Sponsored pyth feed BTC/USD
 address = "4cSM2e6rvbGQUFiJbqytoVMi5GgghSMr8LwVrT9VPSPo"
 filename = "./fixtures/accounts/pyth/4cSM2e6rvbGQUFiJbqytoVMi5GgghSMr8LwVrT9VPSPo.json"
+
+#
+# Kamino
+#
+[[test.genesis]]
+address = "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"
+program = "fixtures/programs/KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD.so"
 
 #
 # Drift
