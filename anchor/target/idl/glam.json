@@ -5864,13 +5864,48 @@
   "errors": [
     {
       "code": 6000,
-      "name": "InvalidAssetForSwap",
-      "msg": "Asset cannot be swapped"
+      "name": "InvalidName",
+      "msg": "Name too long: max 50 chars"
     },
     {
       "code": 6001,
-      "name": "InvalidSwap",
-      "msg": "Swap failed"
+      "name": "InvalidSymbol",
+      "msg": "Symbol too long: max 50 chars"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidUri",
+      "msg": "Uri too long: max 20"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidAssetsLen",
+      "msg": "Too many assets: max 100"
+    },
+    {
+      "code": 6004,
+      "name": "Disabled",
+      "msg": "State account is disabled"
+    },
+    {
+      "code": 6005,
+      "name": "NoShareClass",
+      "msg": "No share class found"
+    },
+    {
+      "code": 6006,
+      "name": "ShareClassesNotClosed",
+      "msg": "Glam state account can't be closed. Close share classes first"
+    },
+    {
+      "code": 6007,
+      "name": "CloseNotEmptyError",
+      "msg": "Error closing state account: not empty"
+    },
+    {
+      "code": 6008,
+      "name": "WithdrawDenied",
+      "msg": "Withdraw denied. Only vaults allow withdraws (funds and mints don't)"
     }
   ],
   "types": [
