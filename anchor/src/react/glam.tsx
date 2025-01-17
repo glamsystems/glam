@@ -11,7 +11,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { atomWithStorage } from "jotai/utils";
 
-import type { StateModel } from "../models";
+import type { DelegateAcl, StateModel } from "../models";
 import { GlamClient } from "../client";
 import { useAtomValue, useSetAtom } from "jotai/react";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
@@ -36,9 +36,10 @@ interface TokenPrice {
 
 interface GlamProviderContext {
   glamClient: GlamClient;
-  activeGlamState?: GlamStateCache;
   vault: Vault;
+  activeGlamState?: GlamStateCache;
   glamStatesList: GlamStateCache[];
+  delegateAcls: DelegateAcl[];
   allGlamStates: StateModel[];
   userWallet: UserWallet;
   prices: TokenPrice[];
@@ -127,6 +128,7 @@ export function GlamProvider({
   const setActiveGlamState = useSetAtom(activeGlamStateAtom);
   const setGlamStatesList = useSetAtom(glamStatesListAtom);
 
+  const [delegateAcls, setDelegateAcls] = useState([] as DelegateAcl[]);
   const [vault, setVault] = useState({} as Vault);
   const [userWallet, setUserWallet] = useState({} as UserWallet);
   const wallet = useWallet();
@@ -162,7 +164,7 @@ export function GlamProvider({
     if (activeGlamState?.pubkey && wallet?.publicKey) {
       console.log(
         "fetching vault data for active glam state:",
-        activeGlamState.pubkey.toBase58(),
+        activeGlamState.address,
       );
       const vault = glamClient.getVaultPda(activeGlamState.pubkey);
       const balances = await fetchBalances(glamClient, vault);
@@ -231,7 +233,23 @@ export function GlamProvider({
     }
 
     refreshVaultHoldings();
-  }, [allGlamStatesData, activeGlamState, wallet, cluster]);
+  }, [allGlamStatesData, wallet, cluster]);
+
+  const refreshDelegateAcls = async () => {
+    if (activeGlamState?.pubkey) {
+      console.log(
+        "fetching delegate acls for active glam state:",
+        activeGlamState.address,
+      );
+      const glamState = await glamClient.fetchState(activeGlamState?.pubkey);
+      console.log("delegate acls:", glamState.delegateAcls);
+      setDelegateAcls(glamState.delegateAcls);
+    }
+  };
+
+  useEffect(() => {
+    refreshDelegateAcls();
+  }, [activeGlamState]);
 
   //
   // Fetch token prices https://station.jup.ag/docs/apis/price-api-v2
@@ -357,9 +375,10 @@ export function GlamProvider({
 
   const value: GlamProviderContext = {
     glamClient,
-    activeGlamState,
     vault,
+    activeGlamState,
     glamStatesList: useAtomValue(glamStatesListAtom),
+    delegateAcls,
     allGlamStates,
     userWallet,
     jupTokenList,
@@ -369,6 +388,7 @@ export function GlamProvider({
     driftUser,
     refresh: async () => {
       refreshVaultHoldings();
+      refreshDelegateAcls();
     },
   };
 

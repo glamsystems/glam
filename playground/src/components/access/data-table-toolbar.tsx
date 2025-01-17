@@ -48,7 +48,7 @@ export function DataTableToolbar<TData>({
   const [treeData, setTreeData] = useState<TreeNodeData>(treeDataPermissions);
 
   const { updateLabel } = usePubkeyLabels();
-  const { glamClient, activeGlamState } = useGlam();
+  const { glamClient, activeGlamState, refresh } = useGlam();
 
   const toggleExpandCollapse = () => {
     setIsExpanded(!isExpanded);
@@ -121,8 +121,6 @@ export function DataTableToolbar<TData>({
       setTreeData(treeDataPermissions);
       closeButtonRef.current?.click();
 
-      // Wait for blockchain confirmation and refresh
-      await new Promise((resolve) => setTimeout(resolve, 1000));
       onSuccess?.();
     } catch (e) {
       toast({
@@ -232,7 +230,7 @@ export function DataTableToolbar<TData>({
           </Button>
         )}
       </div>
-      <DataTableRefresh table={table} />
+      <DataTableRefresh onClick={refresh} table={table} />
     </div>
   );
 }

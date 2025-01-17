@@ -97,46 +97,48 @@ export default function VaultPoliciesPage() {
 
   return (
     <PageContentWrapper>
-      <Form {...form}>
-        <div className="flex space-x-4 space-y-4 items-top flex-col">
-          <FormField
-            control={form.control}
-            name="assets"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Vault Assets</FormLabel>
-                <FormControl>
-                  <TokenMultiSelect
-                    selected={field.value}
-                    onChange={field.onChange}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Select the assets allowed in the vault.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <div className="flex space-x-4">
-            <Button
-              className="w-1/2"
-              variant="ghost"
-              onClick={(event) => handleReset(event)}
-            >
-              Reset
-            </Button>
-            <Button
-              className="w-1/2"
-              type="submit"
-              loading={isTxPending}
-              onClick={(event) => handleUpdateAssets(event)}
-            >
-              Submit
-            </Button>
+      <div className="w-full xl:w-2/3 self-center">
+        <Form {...form}>
+          <div className="flex space-x-4 space-y-4 items-top flex-col ">
+            <FormField
+              control={form.control}
+              name="assets"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel>Vault Assets</FormLabel>
+                  <FormControl>
+                    <TokenMultiSelect
+                      selected={field.value}
+                      onChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Select the assets allowed in the vault.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="flex space-x-4">
+              <Button
+                className="w-1/2"
+                variant="ghost"
+                onClick={(event) => handleReset(event)}
+              >
+                Reset
+              </Button>
+              <Button
+                className="w-1/2"
+                type="submit"
+                loading={isTxPending}
+                onClick={(event) => handleUpdateAssets(event)}
+              >
+                Submit
+              </Button>
+            </div>
           </div>
-        </div>
-      </Form>
+        </Form>
+      </div>
     </PageContentWrapper>
   );
 }

@@ -1012,7 +1012,7 @@ export default function Trade() {
   const exactMode = swapForm.watch("exactMode");
   return (
     <PageContentWrapper>
-      <div className="w-4/6 self-center">
+      <div className="w-full xl:w-2/3 self-center">
         <Tabs
           defaultValue="swap"
           className="w-full"

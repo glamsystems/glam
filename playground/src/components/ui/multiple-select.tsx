@@ -51,6 +51,7 @@ function MultiSelect<T extends Option>({
   filterOption,
 }: MultiSelectProps<T>) {
   const [open, setOpen] = React.useState(false);
+  const [batchSize, setBatchSize] = React.useState(100);
   const [searchInputValue, setSearchInputValue] = React.useState("");
 
   const selectedSet = React.useMemo(() => new Set(selected), [selected]);
@@ -61,7 +62,10 @@ function MultiSelect<T extends Option>({
   );
 
   const filteredOptions = React.useMemo(() => {
-    if (!open) return [];
+    if (!open) {
+      setBatchSize(100);
+      return [];
+    }
     if (!searchInputValue) return availableOptions;
     return availableOptions.filter((option) =>
       filterOption
@@ -69,8 +73,6 @@ function MultiSelect<T extends Option>({
         : option.label.toLowerCase().includes(searchInputValue.toLowerCase()),
     );
   }, [open, availableOptions, searchInputValue, filterOption]);
-
-  const [batchSize, setBatchSize] = React.useState(100);
 
   React.useEffect(() => {
     if (batchSize < filteredOptions.length) {
