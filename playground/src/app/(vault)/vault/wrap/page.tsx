@@ -26,7 +26,7 @@ const wrapSchema = z.object({
 type WrapSchema = z.infer<typeof wrapSchema>;
 
 export default function Wrap() {
-  const { activeGlamState, vault, userWallet, glamClient } = useGlam();
+  const { activeGlamState, vault, userWallet, glamClient, refresh } = useGlam();
 
   const [amountAsset, setAmountAsset] = useState<string>("SOL");
   const [direction, setDirection] = useState<string>("wrap");
@@ -112,6 +112,8 @@ export default function Wrap() {
       });
     }
     setIsTxPending(false);
+
+    await refresh(); // refresh vault
   };
 
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
