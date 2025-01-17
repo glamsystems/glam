@@ -120,7 +120,7 @@ export function DataTable<TData extends KeyData>({
     setIsExpanded(!isExpanded);
   };
 
-  const { glamClient, activeGlamState } = useGlam();
+  const { glamClient, activeGlamState, refresh } = useGlam();
 
   // Helper function to reset states
   const resetStates = () => {

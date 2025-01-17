@@ -16,15 +16,15 @@ export default function PageAccess({
 }: {
   perms: "vault" | "mint" | "all";
 }) {
-  const { allGlamStates, activeGlamState } = useGlam();
+  const { delegateAcls, allGlamStates, activeGlamState, refresh } = useGlam();
   const { getLabel } = usePubkeyLabels();
 
-  const fund = (allGlamStates || []).find(
+  const state = (allGlamStates || []).find(
     (s) => s.idStr === activeGlamState?.address,
   );
 
   const data = useMemo(() => {
-    if (!fund) return [];
+    if (!state) return [];
 
     let treeDataPermissions = vaultTreeDataPermissions;
     if (perms === "mint") {
@@ -40,16 +40,16 @@ export default function PageAccess({
         (lvl1: any) => lvl1.children?.map((node: any) => node.id) || [],
       ) || [];
 
-    const owner = fund.owner?.pubkey
+    const owner = state.owner?.pubkey
       ? [
           {
-            pubkey: fund.owner.pubkey.toBase58(),
+            pubkey: state.owner.pubkey.toBase58(),
             label: "Owner",
             tags: flatPermissions,
           },
         ]
       : [];
-    const delegates = (fund.delegateAcls || []).map((acl: any) => {
+    const delegates = (delegateAcls || []).map((acl: any) => {
       const pubkey = acl.pubkey.toBase58();
       return {
         pubkey,
@@ -58,14 +58,10 @@ export default function PageAccess({
       };
     });
     return owner.concat(delegates);
-  }, [fund, getLabel]);
+  }, [state, getLabel]);
 
   const handleSuccess = useCallback(() => {
-    // Force a re-render when a key is modified
-    // This will cause getData to run again with the latest fund data
-    window.setTimeout(() => {
-      window.location.reload();
-    }, 1000);
+    refresh();
   }, []);
 
   return (
