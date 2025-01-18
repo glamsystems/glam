@@ -175,41 +175,26 @@ export function GlamProvider({
     }
   };
 
-  const { data: allGlamStatesData } = useQuery({
-    queryKey: ["/all-glam-states", activeGlamState?.pubkey],
+  const { data: glamStateModels } = useQuery({
+    queryKey: ["/all-glam-states", activeGlamState?.pubkey, cluster.network],
     queryFn: () => glamClient.fetchAllGlamStates(),
   });
   useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
-      console.log(`[${cluster.network}] all glam states:`, allGlamStatesData);
-    }
-    const stateModels = (allGlamStatesData || []).sort(
-      (a: StateModel, b: StateModel) => {
-        if (!a.rawOpenfunds?.fundLaunchDate) {
-          return 1;
-        }
-        if (!b.rawOpenfunds?.fundLaunchDate) {
-          return -1;
-        }
-        if (a.rawOpenfunds?.fundLaunchDate > b.rawOpenfunds?.fundLaunchDate) {
-          return -1;
-        } else if (
-          a.rawOpenfunds?.fundLaunchDate < b.rawOpenfunds?.fundLaunchDate
-        ) {
-          return 1;
-        }
-        return 0;
-      },
-    );
-    setAllGlamStates(stateModels);
+    if (!glamStateModels) return;
 
+    if (process.env.NODE_ENV === "development") {
+      console.log(`[${cluster.network}] all glam states:`, glamStateModels);
+    }
+
+    setAllGlamStates(glamStateModels);
+
+    // Find a list of glam states that the wallet has access to
     const glamStatesList = [] as GlamStateCache[];
-    stateModels.forEach((f: StateModel) => {
+    glamStateModels.forEach((f: StateModel) => {
       if (wallet?.publicKey?.equals(f.owner!.pubkey!)) {
         const stateCache = toStateCache(f);
         glamStatesList.push(stateCache);
       } else {
-        // Iterate over delegateAcls to find funds that the wallet has access to
         f.delegateAcls.forEach((acl: any) => {
           if (wallet?.publicKey?.equals(acl.pubkey)) {
             glamStatesList.push(toStateCache(f));
@@ -217,8 +202,9 @@ export function GlamProvider({
         });
       }
     });
+    setGlamStatesList(glamStatesList);
+
     if (glamStatesList.length > 0) {
-      setGlamStatesList(glamStatesList);
       if (
         !activeGlamState ||
         !glamStatesList.find(
@@ -230,10 +216,12 @@ export function GlamProvider({
       ) {
         setActiveGlamState(glamStatesList[0]);
       }
+    } else {
+      setActiveGlamState({} as GlamStateCache);
     }
 
     refreshVaultHoldings();
-  }, [allGlamStatesData, wallet, cluster]);
+  }, [glamStateModels, wallet, cluster]);
 
   const refreshDelegateAcls = async () => {
     if (activeGlamState?.pubkey) {

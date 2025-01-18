@@ -9,6 +9,8 @@ export default function VaultsHome() {
   const wallet = useWallet();
 
   redirect(
-    wallet.connected && activeGlamState ? "/vault/holdings" : "/vault/create",
+    wallet.connected && activeGlamState?.pubkey
+      ? "/vault/holdings"
+      : "/vault/create",
   );
 }
