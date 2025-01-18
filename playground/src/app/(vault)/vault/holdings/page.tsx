@@ -258,7 +258,10 @@ export default function Holdings() {
       />
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetTrigger asChild></SheetTrigger>
-        <SheetContent side="right" className="p-12 sm:max-w-none w-1/2">
+        <SheetContent
+          side="right"
+          className="p-12 sm:max-w-none w-1/2 overflow-y-auto max-h-screen"
+        >
           <SheetHeader>
             <SheetTitle>Vault Details</SheetTitle>
             <SheetDescription>
@@ -266,7 +269,7 @@ export default function Holdings() {
             </SheetDescription>
           </SheetHeader>
 
-          <div className="grid grid-cols-[200px_1fr] gap-6 py-6">
+          <div className="grid grid-cols-1 2xl:grid-cols-[200px_1fr] gap-6 py-6">
             <div className="flex flex-col items-center justify-center">
               <QRCodeSVG value={`solana:vaultAddress`} level="M" size={200} />
               <p className="mt-2 text-sm text-muted-foreground text-left">

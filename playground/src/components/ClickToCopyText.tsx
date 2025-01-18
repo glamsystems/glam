@@ -12,7 +12,7 @@ export const ClickToCopyText: React.FC<Props> = ({ text }) => {
   const [hasCopied, setHasCopied] = useState(false);
   return (
     <div
-      className="flex flex-row items-center space-x-2 text-sm text-muted-foreground cursor-pointer"
+      className="w-full justify-between flex flex-row items-center space-x-2 text-sm text-muted-foreground cursor-pointer"
       onClick={(e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
@@ -22,7 +22,7 @@ export const ClickToCopyText: React.FC<Props> = ({ text }) => {
         });
       }}
     >
-      <p>{text}</p>
+      <p className="truncate">{text}</p>
       {hasCopied ? (
         <CheckIcon className="h-4 w-4" />
       ) : (
