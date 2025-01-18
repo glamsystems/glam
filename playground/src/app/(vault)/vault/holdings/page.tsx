@@ -32,7 +32,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { AlertTriangle, InfoIcon } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const SKELETON_ROW_COUNT = 5;
