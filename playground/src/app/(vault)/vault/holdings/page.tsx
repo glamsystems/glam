@@ -44,6 +44,7 @@ export default function Holdings() {
     jupTokenList,
     prices,
     glamClient,
+    refresh,
   } = useGlam();
 
   const [showZeroBalances, setShowZeroBalances] = useState(true);
@@ -53,6 +54,10 @@ export default function Holdings() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const openSheet = () => setIsSheetOpen(true);
   const closeSheet = () => setIsSheetOpen(false);
+
+  useEffect(() => {
+    isSheetOpen || refresh();
+  }, [isSheetOpen]);
 
   const createSkeletonHolding = (): Holding => ({
     name: "",

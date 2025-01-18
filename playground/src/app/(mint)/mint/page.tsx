@@ -7,6 +7,8 @@ export default function MintsHome() {
   const { activeGlamState, userWallet } = useGlam();
 
   redirect(
-    activeGlamState && userWallet.pubkey ? "/mint/supply" : "/mint/create",
+    userWallet.pubkey && activeGlamState?.pubkey
+      ? "/mint/supply"
+      : "/mint/create",
   );
 }
