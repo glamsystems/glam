@@ -69,12 +69,12 @@ export const columns: ColumnDef<KeyData>[] = [
     cell: ({ row }) => {
       const tags = row.getValue("tags") as KeyData["tags"];
       return (
-        <div className="space-x-2">
+        <div className="">
           {tags.map((tag) => (
             <Badge
               key={tag}
               variant="default"
-              className={`my-1 pointer-events-none capitalize font-normal rounded-none dark:bg-opacity-25`}
+              className={`mr-2 my-1 pointer-events-none capitalize font-normal rounded-none dark:bg-opacity-25`}
             >
               {tag}
             </Badge>
