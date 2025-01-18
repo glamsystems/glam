@@ -31,7 +31,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, InfoIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const SKELETON_ROW_COUNT = 5;
 
@@ -270,12 +271,21 @@ export default function Holdings() {
           </SheetHeader>
 
           <div className="grid grid-cols-1 2xl:grid-cols-[200px_1fr] gap-6 py-6">
-            <div className="flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center justify-start">
               <QRCodeSVG value={`solana:vaultAddress`} level="M" size={200} />
-              <p className="mt-2 text-sm text-muted-foreground text-left">
-                This is the address of your Vault. Deposit funds by scanning the
-                QR code or copying the address.
+              <div className="flex flex-row items-center justify-center mt-2">
+              <p className="text-sm text-muted-foreground text-center">
+                This is your Vault address.
               </p>
+                <Popover>
+                  <PopoverTrigger>
+                    <InfoIcon className="ml-2 w-4 h-4 text-muted-foreground" />
+                  </PopoverTrigger>
+                  <PopoverContent>
+                    <p className="text-sm text-muted-foreground">Deposit funds by scanning the QR code or copying the address.</p>
+                    </PopoverContent>
+                </Popover>
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -340,7 +350,7 @@ export default function Holdings() {
                     In this case please manually transfer assets and/or close empty token accounts.`}
                   />
                   <DangerCard
-                    message={`Do NOT send any asset to this vault while closing, or you risk to permanently lose them.`}
+                    message={`DO NOT send any asset to this vault while closing, or you risk to permanently lose them.`}
                   />
                   <Button
                     onClick={closeVault}

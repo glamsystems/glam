@@ -150,7 +150,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({
           onCheckedChange={(checked) => handleCheck(checked === true)}
           className="mr-2"
         />
-        <span className={labelClass}>{node.label}</span>
+        <span className={labelClass + " truncate"}>{node.label}</span>
         {node.description && (
           <div className="ml-4 text-muted-foreground text-xs">
             {node.description}
