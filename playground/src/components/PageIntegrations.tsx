@@ -17,7 +17,8 @@ import { useGlam, IntegrationName } from "@glam/anchor/react";
 
 export default function PageIntegrations() {
   const { glamClient, allGlamStates, activeGlamState } = useGlam();
-  const [selected, setSelected] = useState(0);
+  const [selected, setSelected] = useState(-1);
+  const [integrations, setIntegrations] = useState(allIntegrations);
 
   const toggleIntegration = useCallback(
     async (integ: Integration) => {
@@ -62,12 +63,19 @@ export default function PageIntegrations() {
           activeGlamState.pubkey,
           updated,
         );
+
+        setIntegrations((prevIntegrations) =>
+          prevIntegrations.map((integration) =>
+            integration.id === integ.id
+              ? { ...integration, enabled: !integration.enabled }
+              : integration,
+          ),
+        );
+
         toast({
           title: `Successfully ${action}d integration ${integration}`,
           description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
         });
-
-        allIntegrations[integ.id].enabled = !integ.enabled;
       } catch (error) {
         toast({
           title: `Error enabling integration ${integration}`,
@@ -87,9 +95,9 @@ export default function PageIntegrations() {
           Object.keys(acl.name)[0].toLowerCase(),
         ) || [];
 
-    allIntegrations.forEach((integ, index) => {
+    integrations.forEach((integ, index) => {
       if (enabled.includes(integ.name.toLowerCase())) {
-        allIntegrations[index].enabled = true;
+        integrations[index].enabled = true;
       }
     });
   }, [allGlamStates, activeGlamState]);
@@ -109,14 +117,14 @@ export default function PageIntegrations() {
           </div>
           <TabsContent value="all">
             <IntegrationsList
-              items={allIntegrations}
+              items={integrations}
               selected={selected}
               onSelect={toggleIntegration}
             />
           </TabsContent>
           <TabsContent value="active">
             <IntegrationsList
-              items={allIntegrations.filter((integ) => integ.enabled)}
+              items={integrations.filter((integ) => integ.enabled)}
               selected={selected}
               onSelect={toggleIntegration}
             />
