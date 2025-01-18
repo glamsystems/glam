@@ -284,12 +284,12 @@ export function GlamProvider({
       const prices = Object.values(jupTokenPricesData.data).map(
         (p: any) =>
           ({
-            mint: p.id,
-            price: Number(p.price),
+            mint: p?.id,
+            price: Number(p?.price),
           }) as TokenPrice,
       );
 
-      setTokenPrices(prices);
+      setTokenPrices(prices.filter((p) => !!p.mint));
     }
   }, [jupTokenPricesData]);
 

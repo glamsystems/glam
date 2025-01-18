@@ -35,17 +35,12 @@ export default function PageAccess({
       ).concat(mintTreeDataPermissions.children || []);
     }
 
-    const flatPermissions =
-      treeDataPermissions.children?.flatMap(
-        (lvl1: any) => lvl1.children?.map((node: any) => node.id) || [],
-      ) || [];
-
     const owner = state.owner?.pubkey
       ? [
           {
             pubkey: state.owner.pubkey.toBase58(),
             label: "Owner",
-            tags: flatPermissions,
+            tags: ["Full Access"],
           },
         ]
       : [];

@@ -22,6 +22,7 @@ import {
   ShareClassModel,
   ShareClassOpenfundsModel,
 } from "../models";
+import { WSOL } from "../constants";
 
 export class StateClient {
   public constructor(readonly base: BaseClient) {}
@@ -440,6 +441,31 @@ export class StateClient {
     const { tokenProgram } = await this.base.fetchMintWithOwner(asset);
     const signerAta = this.base.getAta(asset, signer, tokenProgram);
 
+    const preInstructions = [
+      createAssociatedTokenAccountIdempotentInstruction(
+        signer,
+        signerAta,
+        signer,
+        asset,
+        tokenProgram,
+      ),
+    ];
+    const postInstructions = [];
+
+    if (asset.equals(WSOL)) {
+      const wrapSolIx = await this.base.maybeWrapSol(statePda, amount, signer);
+      if (wrapSolIx) {
+        preInstructions.push(wrapSolIx);
+        // If we need to wrap SOL, it means the wSOL balance will be drained,
+        // and we close the wSOL token account for convenience
+        postInstructions.push(
+          await this.closeTokenAccountsIx(statePda, [
+            this.base.getVaultAta(statePda, WSOL),
+          ]),
+        );
+      }
+    }
+
     const tx = await this.base.program.methods
       .withdraw(new BN(amount))
       .accounts({
@@ -447,15 +473,8 @@ export class StateClient {
         asset,
         tokenProgram,
       })
-      .preInstructions([
-        createAssociatedTokenAccountIdempotentInstruction(
-          signer,
-          signerAta,
-          signer,
-          asset,
-          tokenProgram,
-        ),
-      ])
+      .preInstructions(preInstructions)
+      .postInstructions(postInstructions)
       .transaction();
 
     return await this.base.intoVersionedTransaction({ tx, ...txOptions });
