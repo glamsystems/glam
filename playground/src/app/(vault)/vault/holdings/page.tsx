@@ -350,7 +350,7 @@ export default function Holdings() {
                     In this case please manually transfer assets and/or close empty token accounts.`}
                   />
                   <DangerCard
-                    message={`Do NOT send any asset to this vault while closing, or you risk to permanently lose them.`}
+                    message={`DO NOT send any asset to this vault while closing, or you risk to permanently lose them.`}
                   />
                   <Button
                     onClick={closeVault}
