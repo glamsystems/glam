@@ -24,7 +24,7 @@ const BetaWarning = () => {
     <motion.div
       className={cn(
         "border-t fixed w-full bottom-0 h-[48px] z-30 flex flex-row items-center justify-center bg-sidebar select-none sm:opacity-0 lg:opacity-100 pr-4",
-        isCollapsed ? "pl-12" : "pl-[244px]",
+        isCollapsed ? "pl-12" : "pl-[264px]",
         "transition-all duration-200 ease-linear" // Add smooth transition
       )}
       initial={{ opacity: 0 }}
