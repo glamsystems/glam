@@ -280,7 +280,7 @@ export default function Transfer() {
 
   return (
     <PageContentWrapper>
-      <div className="w-4/6 self-center">
+      <div className="w-full xl:w-2/3 self-center">
         <FormProvider {...form}>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

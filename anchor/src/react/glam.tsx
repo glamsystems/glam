@@ -20,6 +20,12 @@ import { DriftMarketConfigs, GlamDriftUser } from "../client/drift";
 import { TokenAccount } from "../client/base";
 import { useCluster } from "./cluster-provider";
 
+declare global {
+  interface Window {
+    glamClient: GlamClient;
+  }
+}
+
 export interface JupTokenListItem {
   address: string;
   name: string;
@@ -135,16 +141,17 @@ export function GlamProvider({
   const { connection } = useConnection();
   const { cluster } = useCluster();
 
-  const glamClient = useMemo(
-    () =>
-      new GlamClient({
-        provider: new AnchorProvider(connection, wallet as AnchorWallet, {
-          commitment: "confirmed",
-        }),
-        cluster: cluster.network,
+  const glamClient = useMemo(() => {
+    const glamClient = new GlamClient({
+      provider: new AnchorProvider(connection, wallet as AnchorWallet, {
+        commitment: "confirmed",
       }),
-    [connection, wallet, cluster],
-  );
+      cluster: cluster.network,
+    });
+    window.glamClient = glamClient;
+    return glamClient;
+  }, [connection, wallet, cluster]);
+
   const [allGlamStates, setAllGlamStates] = useState([] as StateModel[]);
   const [jupTokenList, setJupTokenList] = useState([] as JupTokenListItem[]);
   const [tokenPrices, setTokenPrices] = useState([] as TokenPrice[]);
