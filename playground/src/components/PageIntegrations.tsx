@@ -83,6 +83,7 @@ export default function PageIntegrations() {
           variant: "destructive",
         });
       }
+      setSelected(-1);
     },
     [activeGlamState, glamClient, allGlamStates],
   );

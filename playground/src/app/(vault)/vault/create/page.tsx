@@ -109,8 +109,9 @@ export default function Create() {
         name: values.productName,
         product: "Vault",
       });
+
       // Navigate using Next.js router
-      router.push("/vault/access");
+      router.push("/vault/holdings");
     } catch (error) {
       toast({
         title: "Error",
