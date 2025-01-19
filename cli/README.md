@@ -3,16 +3,16 @@
 A convenient way of interacting with the GLAM program.
 
 - [Build](#build)
-- [Setup](#setup)
+- [Configure](#configure)
 - [Docker](#docker)
 - [Usage](#usage)
   - [General Commands](#general-commands)
   - [Managing Products](#managing-products)
   - [Delegate Management](#delegate-management)
   - [Integration Management](#integration-management)
-  - [Jupiter (JUP) Staking](#jupiter-jup-staking)
-  - [Liquid Staking](#liquid-staking)
   - [Token Operations](#token-operations)
+  - [Liquid Staking](#liquid-staking)
+  - [Jupiter (JUP) Staking](#jupiter-jup-staking)
 
 ## Build
 
@@ -22,7 +22,7 @@ Clone https://github.com/glamsystems/glam/, enter the repo and run:
 pnpm install && pnpm run cli-build
 ```
 
-## Setup
+## Configure
 
 The CLI expects a configuration file at `~/.config/glam/config.json`. The file should contain the following content:
 
@@ -143,15 +143,21 @@ Priority fee: {
   ```
 
 - **View a GLAM Product**:
-  ```bash
-  glam-cli view [state] [--compact]
-  ```
 
----
+  - `--compact`: if set the output will be a compact json blob
+  - `state`: if not set the current active GLAM product will be used
+
+  ```bash
+  glam-cli view [--compact] [state]
+  ```
 
 ### Managing Products
 
 - **List Products**:
+
+  - By default only products the wallet has access to (either as owner or delegate) will be listed
+  - `--owner-only`: if set only products owned by the wallet will be listed
+  - `--all`: if set all products will be listed
 
   ```bash
   glam-cli list [--owner-only] [--all]
@@ -159,16 +165,20 @@ Priority fee: {
 
 - **Create a New Product**:
 
+  - See the `templates/` directory for available templates
+
   ```bash
   glam-cli create <path-to-json>
   ```
 
 - **Close a Product**:
+
+  - `state`: if not set the current active GLAM product will be used
+  - `--yes`: if set, no confirmation prompt will be shown
+
   ```bash
   glam-cli close [state] [--yes]
   ```
-
----
 
 ### Delegate Management
 
@@ -180,6 +190,9 @@ Priority fee: {
 
 - **Set Delegate Permissions**:
 
+  - `pubkey`: Public key of the delegate
+  - `permissions...`: A space-separated list of permissions. Available permissions can be found in `anchor/programs/glam/src/state/acl.rs`
+
   ```bash
   glam-cli delegate set <pubkey> <permissions...>
   ```
@@ -188,8 +201,6 @@ Priority fee: {
   ```bash
   glam-cli delegate delete <pubkey>
   ```
-
----
 
 ### Integration Management
 
@@ -201,79 +212,25 @@ Priority fee: {
 
 - **Enable an Integration**:
 
+  - `integration`: Name of the integration. Available integrations can be found in `anchor/programs/glam/src/state/acl.rs`
+
   ```bash
   glam-cli integration enable <integration>
   ```
 
 - **Disable an Integration**:
+
+  - `integration`: Name of the integration. Available integrations can be found in `anchor/programs/glam/src/state/acl.rs`
+
   ```bash
   glam-cli integration disable <integration>
   ```
 
----
-
-### Jupiter (JUP) Staking
-
-- **Stake JUP Tokens**:
-
-  ```bash
-  glam-cli jup stake <amount>
-  ```
-
-- **Unstake JUP Tokens**:
-
-  ```bash
-  glam-cli jup unstake
-  ```
-
-- **Vote on Proposals**:
-  ```bash
-  glam-cli vote <proposal> <side>
-  ```
-
----
-
-### Liquid Staking
-
-- **Stake into a Stake Pool**:
-
-  ```bash
-  glam-cli lst stake <stakepool> <amount>
-  ```
-
-- **Unstake Tokens**:
-
-  ```bash
-  glam-cli lst unstake <asset> <amount>
-  ```
-
-- **List Stake Accounts**:
-
-  ```bash
-  glam-cli lst list
-  ```
-
-- **Withdraw Staking Accounts**:
-
-  ```bash
-  glam-cli lst withdraw <accounts...>
-  ```
-
-- **Manage Marinade Tickets**:
-  - List Tickets:
-    ```bash
-    glam-cli lst marinade-list
-    ```
-  - Claim Tickets:
-    ```bash
-    glam-cli lst marinade-claim <tickets...>
-    ```
-
----
-
 ### Token Operations
 
 - **View Balances**:
+
+  - `--all`: if set all token accounts will be listed, including those with zero balances
 
   ```bash
   glam-cli balances [--all]
@@ -287,17 +244,97 @@ Priority fee: {
 
 - **Unwrap wSOL**:
 
+  - Unwraps all wSOL into SOL
+
   ```bash
   glam-cli unwrap
   ```
 
 - **Swap Tokens**:
 
+  - `from`: Source token mint
+  - `to`: Destination token mint
+  - `amount`: Amount to swap
+  - `--max-accounts`: Specify max accounts allowed
+  - `--slippage-bps`: Specify slippage bps
+  - `--only-direct-routes`: Direct routes only if set
+
   ```bash
   glam-cli swap <from> <to> <amount> [--max-accounts <num>] [--slippage-bps <bps>] [--only-direct-routes]
   ```
 
 - **Withdraw from Vault**:
+
+  - `asset`: Asset (token mint) to withdraw
+  - `amount`: Amount to withdraw
+  - `--yes`: Skip confirmation prompt
+
   ```bash
   glam-cli withdraw <asset> <amount> [--yes]
+  ```
+
+### Liquid Staking
+
+- **Stake into a Stake Pool**:
+
+  ```bash
+  glam-cli lst stake <stakepool> <amount>
+  ```
+
+- **Unstake Tokens**:
+
+  - Unstakes from a stake pool and gets tokens into a stake account (or a marinade ticket if asset is mSOL)
+  - `asset`: Asset (pool token mint) to unstake
+
+  ```bash
+  glam-cli lst unstake <asset> <amount>
+  ```
+
+- **List Stake Accounts**:
+
+  ```bash
+  glam-cli lst list
+  ```
+
+- **Withdraw Stake Accounts**:
+
+  - Withdraws SOL from stake accounts
+  - `accounts...`: A space-separated list of stake account pubkeys
+
+  ```bash
+  glam-cli lst withdraw <accounts...>
+  ```
+
+- **Manage Marinade Tickets**:
+
+  - List Tickets:
+
+    ```bash
+    glam-cli lst marinade-list
+    ```
+
+  - Claim Tickets:
+    ```bash
+    glam-cli lst marinade-claim <tickets...>
+    ```
+
+### Jupiter (JUP) Staking
+
+- **Stake JUP Tokens**:
+
+  ```bash
+  glam-cli jup stake <amount>
+  ```
+
+- **Unstake JUP Tokens**:
+
+  - Unstakes all JUP
+
+  ```bash
+  glam-cli jup unstake
+  ```
+
+- **Vote on Proposals**:
+  ```bash
+  glam-cli vote <proposal> <side>
   ```
