@@ -9,6 +9,11 @@ export const GlamIntegrations =
     ?.find((t) => t.name === "IntegrationName")
     ?.type?.variants?.map((v) => v.name) ?? [];
 
+export const GlamPermissions =
+  GlamIDLJson?.types
+    ?.find((t) => t.name === "Permission")
+    ?.type?.variants?.map((v) => v.name) ?? [];
+
 export const VaultIntegrations = GlamIntegrations.filter((i) => i !== "Mint");
 
 const GLAM_PROGRAM_ID_DEFAULT = new PublicKey(GlamIDLJson.address);

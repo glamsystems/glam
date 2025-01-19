@@ -5,6 +5,8 @@ import {
   WSOL,
   getPriorityFeeEstimate,
   GlamClient,
+  VaultIntegrations,
+  GlamPermissions,
 } from "@glam/anchor";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { Command } from "commander";
@@ -310,11 +312,17 @@ delegate
     }
   });
 
+const allowedPermissions = GlamPermissions.map(
+  (p) => p.slice(0, 1).toLowerCase() + p.slice(1),
+);
 delegate
-  .command("set <pubkey> <permissions...>")
-  .description(
-    "Set delegate permissions (a space-separated list of permissions)",
+  .command("set")
+  .argument("<pubkey>", "Delegate pubkey")
+  .argument(
+    "<permissions...>",
+    `A space-separated list of permissions to grant. Allowed values: ${allowedPermissions.join(", ")}.`,
   )
+  .description("Set delegate permissions")
   .action(async (pubkey, permissions) => {
     const statePda = cliConfig.glam_state
       ? new PublicKey(cliConfig.glam_state)
@@ -325,7 +333,12 @@ delegate
       process.exit(1);
     }
 
-    // TODO: validate permissions and show a list of available permissions
+    if (!permissions.every((p) => allowedPermissions.includes(p))) {
+      console.error(
+        `Invalid permissions: ${permissions}. Values must be among: ${allowedPermissions.join(", ")}`,
+      );
+      process.exit(1);
+    }
 
     try {
       const txSig = await glamClient.state.upsertDelegateAcls(statePda, [
@@ -397,9 +410,27 @@ integration
     }
   });
 
+const allowIntegrations = VaultIntegrations.map(
+  (i) => i.slice(0, 1).toLowerCase() + i.slice(1),
+);
+const integrationValidation = (input) => {
+  if (!allowIntegrations.includes(input)) {
+    console.error(
+      `Invalid input: "${input}". Allowed values are: ${allowIntegrations.join(", ")}`,
+    );
+    process.exit(1);
+  }
+  return input; // Return validated input
+};
+
 integration
-  .command("enable <integration>")
+  .command("enable")
   .description("Enable an integration")
+  .argument(
+    "<integration>",
+    `Integration to enable (must be one of: ${allowIntegrations.join(", ")})`,
+    integrationValidation,
+  )
   .action(async (integration) => {
     const statePda = cliConfig.glam_state
       ? new PublicKey(cliConfig.glam_state)
@@ -421,7 +452,7 @@ integration
       process.exit(1);
     }
 
-    const updatedFund = new StateModel({
+    const updated = new StateModel({
       integrationAcls: [
         ...stateModel.integrationAcls,
         { name: { [integration]: {} } as IntegrationName, features: [] },
@@ -430,7 +461,7 @@ integration
 
     try {
       const txSig = await glamClient.program.methods
-        .updateState(updatedFund)
+        .updateState(updated)
         .accounts({ state: statePda })
         .rpc();
       console.log("txSig:", txSig);
@@ -444,8 +475,13 @@ integration
   });
 
 integration
-  .command("disable <integration>")
+  .command("disable")
   .description("Disable an integration")
+  .argument(
+    "<integration>",
+    `Integration to disable (must be one of: ${allowIntegrations.join(", ")})`,
+    integrationValidation,
+  )
   .action(async (integration) => {
     const statePda = cliConfig.glam_state
       ? new PublicKey(cliConfig.glam_state)
