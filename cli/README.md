@@ -2,44 +2,74 @@
 
 A convenient way of interacting with the GLAM program.
 
+- [Build](#build)
+- [Setup](#setup)
+- [Docker](#docker)
+- [Usage](#usage)
+  - [General Commands](#general-commands)
+  - [Managing Products](#managing-products)
+  - [Delegate Management](#delegate-management)
+  - [Integration Management](#integration-management)
+  - [Jupiter (JUP) Staking](#jupiter-jup-staking)
+  - [Liquid Staking](#liquid-staking)
+  - [Token Operations](#token-operations)
+
 ## Build
 
 Clone https://github.com/glamsystems/glam/, enter the repo and run:
 
-```
+```bash
 pnpm install && pnpm run cli-build
 ```
 
-## config.json
+## Setup
 
-The CLI expects a configuration file at `~/.config/glam/cli/config.json` by default.
+The CLI expects a configuration file at `~/.config/glam/config.json`. The file should contain the following content:
 
-```
+```json
 {
-  "helius_api_key": "<your-helius-api-key>",
-  "keypair_path": "/path/to/keypair.json",
-  "priority_fee_level": "Low",
-  "fund": "optional_base58_fund_pubkey"
+  "cluster": "",
+  "json_rpc_url": "",
+  "keypair_path": "",
+  "priority_fee": {
+    "micro_lamports": 0,
+    "level": "",
+    "helius_api_key": ""
+  },
+  "glam_state": ""
 }
 ```
 
-`priority_fee_level`: optional. Default value is "Low". Other options are "Min", "Medium", "High", "VeryHigh", "UnsafeMax", "Default" (more info can be found [here](https://docs.helius.dev/solana-apis/priority-fee-api)).
+Here's a quick explanation of each field:
 
-`fund`: optional. If provided, the CLI will use this fund as the active fund. Active fund can be set using `fund set <pubkey>` command later on.
+- `cluster`: Value must be one of `mainnet-beta`, `devnet`, or `localnet`.
+- `json_rpc_url`: The URL of your preferred Solana JSON RPC endpoint.
+- `keypair_path`: Path to your keypair JSON file.
+- `priority_fee`:
+  - `micro_lamports`: Optional (defaults to 0). If provided, `level` and `helius_api_key` will be ignored.
+  - `level`: Optional (defaults to `Min`). Only applied if cluster is `mainnet-beta`. Other options are `Min`, `Medium`, `High`, `VeryHigh`, `UnsafeMax`, `Default` (more info can be found [here](https://docs.helius.dev/solana-apis/priority-fee-api)).
+  - `helius_api_key`: Optional. Only applied if cluster is `mainnet-beta`. If not provided `level` will be ignored. The API key is needed to fetch the priority fee estimate from Helius.
+- `glam_state`: Optional. If you want to set a default active GLAM state, you can do so here. Alternatively, you can use the `set` command to set the active GLAM state later on.
 
 ## Run the CLI
 
-```
+```bash
 node dist/cli/main.js -h
 ```
 
-# Docker
+To run the CLI in development mode:
 
-## Build docker image
-
-Run the following command from the root of the repo:
-
+```bash
+npx nx run cli:dev -- --args="command [options]"
 ```
+
+## Docker
+
+### Build docker image
+
+From the root of the repo:
+
+```bash
 docker build -f ./cli/Dockerfile -t glam-cli .
 ```
 
@@ -47,32 +77,36 @@ This builds a docker image and tags it as `glam-cli`.
 
 We have a pre-built docker image available at https://github.com/glamsystems/glam/pkgs/container/glam-cli. To pull the latest image, run:
 
-```
+```bash
 docker pull ghcr.io/glamsystems/glam-cli
 ```
 
-## Run the CLI in docker container
+### Run the CLI in docker container
 
-The docker image doesn't come with a configuration file or the keypair. They needed be provided to the container by mounting a volume from a local directory to the container's `/workspace` directory.
+The docker image doesn't come with a configuration file or a keypair. Instead, you'll need to provide them to the container by mounting a volume from a host directory to the container's `/workspace` directory.
 
-Create a local directory (for example, `$HOME/.glam-cli-docker`) and drop both the configuration file and keypair into it. Assuming the keypair filename is `keypair.json`, the configuration file should look like:
+Create a local directory (for example, `$HOME/.glam-cli-docker`) and place both the configuration file and keypair into it. Assuming your keypair filename is `keypair.json`, the directory and the config file should look like the following:
 
-```
+```bash
 $ ls $HOME/.glam-cli-docker
 config.json  keypair.json
 
 $ cat $HOME/.glam-cli-docker/config.json
 {
-  "helius_api_key": "[redacted]",
+  "cluster": "mainnet-beta",
+  "json_rpc_url": "[redacted]",
   "keypair_path": "/workspace/keypair.json",
-  "priority_fee_level": "Low",
-  "fund": "[redacted]"
+  "priority_fee": {
+    "level": "Min",
+    "helius_api_key": "[redacted]"
+  },
+  "glam_state": "[redacted]"
 }
 ```
 
-Run the following command to start the container and get the cli ready to use:
+To start the container and get the cli ready to use:
 
-```
+```bash
 docker run -it --rm -v $HOME/.glam-cli-docker:/workspace glam-cli bash
 ```
 
@@ -80,105 +114,190 @@ Replace `glam-cli` with `ghcr.io/glamsystems/glam-cli` if using the pre-built do
 
 Example usage:
 
-```
+```bash
 $ docker run -it --rm -v $HOME/.glam-cli-docker:/workspace glam-cli bash
 
 root@af07b0e1891d:/mnt/glam# node dist/cli/main.js env
-
 Wallet connected: [redacted]
-RPC endpoint: https://mainnet.helius-rpc.com/?api-key=[redacted]
-Priority fee level: Low
-Active fund: [redacted]
-Vault: [redacted]
+RPC endpoint: [redacted]
+Priority fee: {
+  level: 'Min',
+  helius_api_key: '[redacted]'
+}
 ```
 
-# Available Commands
+## Usage
 
-- env
+### General Commands
 
-  - Description: Displays the environment setup.
-  - Example: `node dist/cli/main.js env`
+- **View Environment Setup**:
 
-- funds
+  ```bash
+  glam-cli env
+  ```
 
-  - Description: Lists funds accessible by the connected wallet.
-  - Options (-m not supported yet):
-    - -m, --manager-only: Lists only funds with full manager access.
-    - -a, --all: Lists all GLAM funds.
+- **Set Active GLAM Product**:
 
-- fund
+  ```bash
+  glam-cli set <state>
+  ```
 
-  - Description: Manages a specific fund. All fund subcommands require an active fund that can be set using `fund set <pubkey>`.
-  - Subcommands
+- **View a GLAM Product**:
+  ```bash
+  glam-cli view [state] [--compact]
+  ```
 
-    - set \<pubkey>
+---
 
-      - Description: Sets active fund.
-      - Example: `node dist/cli/main.js fund set <pubkey>`
+### Managing Products
 
-    - create \<json>
+- **List Products**:
 
-      - Description: Creates a new fund from a json file. A few templates are available in `templates/`.
-      - Example: `node dist/cli/main.js fund create <json>`
+  ```bash
+  glam-cli list [--owner-only] [--all]
+  ```
 
-    - close \<pubkey>
+- **Create a New Product**:
 
-      - Description: Closes a fund with the given pubkey.
-      - Example: `node dist/cli/main.js fund close <pubkey>`
+  ```bash
+  glam-cli create <path-to-json>
+  ```
 
-    - wrap \<amount>
+- **Close a Product**:
+  ```bash
+  glam-cli close [state] [--yes]
+  ```
 
-      - Description: Wraps SOL into wSOL.
-      - Example: `node dist/cli/main.js fund wrap 0.1`
+---
 
-    - unwrap
+### Delegate Management
 
-      - Description: Unwraps all wSOL into SOL.
-      - Example: `node dist/cli/main.js fund unwrap`
+- **List Delegates**:
 
-    - balances
+  ```bash
+  glam-cli delegate list
+  ```
 
-      - Description: Displays asset balances within the fund.
-      - Options
-        - -a, --all: Includes token accounts with zero balances
-      - Example: `node dist/cli/main.js fund balances -a`
+- **Set Delegate Permissions**:
 
-    - swap \<from> \<to> \<amount>
+  ```bash
+  glam-cli delegate set <pubkey> <permissions...>
+  ```
 
-      - Description: Jupiter swap. `from` and `to` should be token mints.
-      - Options
-        - -m, --max-accounts \<num>: Limits the maximum number of accounts.
-        - -s, --slippage-bps \<bps>: Sets allowable slippage basis points.
-        - -d, --only-direct-routes: Limits to direct swap routes.
-      - Examples:
-        - `node dist/cli/main.js fund swap -s 50 -m 20 So11111111111111111111111111111111111111112 jupSoLaHXQiZZTSfEWMTRRgpnyFm8f6sZdosWBjx93v 0.2`
+- **Revoke Delegate Permissions**:
+  ```bash
+  glam-cli delegate delete <pubkey>
+  ```
 
-    - delegate get
+---
 
-      - Description: Displays all delegates on the active fund.
-      - Example: `node dist/cli/main.js fund delegate get`
+### Integration Management
 
-    - delegate set \<pubkey> \<permissions>
+- **List Enabled Integrations**:
 
-      - Description: Grants fund permissions to a delegate.
-      - Examples
-        - `node dist/cli/main.js fund delegate set <pubkey> jupiterSwapFundAssets,wSolWrap,wSolUnwrap`
-        - `node dist/cli/main.js fund delegate set <pubkey> driftDeposit,driftWithdraw,DriftPlaceOrders`
+  ```bash
+  glam-cli integration list
+  ```
 
-    - integration get
+- **Enable an Integration**:
 
-      - Description: Displays all enabled integrations.
-      - Example: `node dist/cli/main.js fund integration get`
+  ```bash
+  glam-cli integration enable <integration>
+  ```
 
-    - integration enable \<integ>
+- **Disable an Integration**:
+  ```bash
+  glam-cli integration disable <integration>
+  ```
 
-      - Description: Enables an integration.
-      - Examples
-        - `node dist/cli/main.js fund integration enable jupiter`
-        - `node dist/cli/main.js fund integration enable drift`
+---
 
-    - integration disable \<integ>
-      - Description: Disables an integration.
-      - Examples
-        - `node dist/cli/main.js fund integration disable jupiter`
-        - `node dist/cli/main.js fund integration disable drift`
+### Jupiter (JUP) Staking
+
+- **Stake JUP Tokens**:
+
+  ```bash
+  glam-cli jup stake <amount>
+  ```
+
+- **Unstake JUP Tokens**:
+
+  ```bash
+  glam-cli jup unstake
+  ```
+
+- **Vote on Proposals**:
+  ```bash
+  glam-cli vote <proposal> <side>
+  ```
+
+---
+
+### Liquid Staking
+
+- **Stake into a Stake Pool**:
+
+  ```bash
+  glam-cli lst stake <stakepool> <amount>
+  ```
+
+- **Unstake Tokens**:
+
+  ```bash
+  glam-cli lst unstake <asset> <amount>
+  ```
+
+- **List Stake Accounts**:
+
+  ```bash
+  glam-cli lst list
+  ```
+
+- **Withdraw Staking Accounts**:
+
+  ```bash
+  glam-cli lst withdraw <accounts...>
+  ```
+
+- **Manage Marinade Tickets**:
+  - List Tickets:
+    ```bash
+    glam-cli lst marinade-list
+    ```
+  - Claim Tickets:
+    ```bash
+    glam-cli lst marinade-claim <tickets...>
+    ```
+
+---
+
+### Token Operations
+
+- **View Balances**:
+
+  ```bash
+  glam-cli balances [--all]
+  ```
+
+- **Wrap SOL**:
+
+  ```bash
+  glam-cli wrap <amount>
+  ```
+
+- **Unwrap wSOL**:
+
+  ```bash
+  glam-cli unwrap
+  ```
+
+- **Swap Tokens**:
+
+  ```bash
+  glam-cli swap <from> <to> <amount> [--max-accounts <num>] [--slippage-bps <bps>] [--only-direct-routes]
+  ```
+
+- **Withdraw from Vault**:
+  ```bash
+  glam-cli withdraw <asset> <amount> [--yes]
+  ```
