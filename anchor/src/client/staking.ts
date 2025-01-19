@@ -82,6 +82,7 @@ export class StakingClient {
     statePda: PublicKey,
     stakePool: PublicKey,
     amount: BN,
+    txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const tx = await this.stakePoolDepositSolTx(statePda, stakePool, amount);
     return await this.base.sendAndConfirm(tx);

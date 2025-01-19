@@ -2,63 +2,47 @@ import * as anchor from "@coral-xyz/anchor";
 import {
   StateModel,
   IntegrationName,
-  PriorityLevel,
   WSOL,
   getPriorityFeeEstimate,
   GlamClient,
+  VaultIntegrations,
+  GlamPermissions,
 } from "@glam/anchor";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { Command } from "commander";
 
 import fs from "fs";
-import os from "os";
-import path from "path";
-import { setStateToConfig } from "./utils";
+import inquirer from "inquirer";
+
+import { loadingConfig, setStateToConfig } from "./utils";
 import { QuoteParams } from "anchor/src/client/jupiter";
 import { VersionedTransaction } from "@solana/web3.js";
 
-// By default config is at ~/.config/glam/cli/config.json
-// If running in docker, config is expected to be at /workspace/config.json
-const configHomeDefault = path.join(os.homedir(), ".config/glam/cli/");
-const configPath = path.join(
-  process.env.DOCKER ? "/workspace" : configHomeDefault,
-  "config.json",
-);
+const cliConfig = loadingConfig();
+const txOptions = {
+  getPriorityFeeMicroLamports: async (tx: VersionedTransaction) => {
+    if (cliConfig.cluster === "localnet" || cliConfig.cluster === "devnet") {
+      return 1_000_000;
+    }
 
-let statePda;
-let heliusApiKey;
-let priorityFeeLevel = "Low" as PriorityLevel; // Defaults to Low
-try {
-  const config = fs.readFileSync(configPath, "utf8");
-  const {
-    keypair_path,
-    helius_api_key,
-    priority_fee_level,
-    cluster,
-    glam_state,
-  } = JSON.parse(config);
-  if (cluster.toLowerCase().startsWith("mainnet")) {
-    process.env.ANCHOR_PROVIDER_URL = `https://mainnet.helius-rpc.com/?api-key=${helius_api_key}`;
-  } else if (cluster.toLowerCase().startsWith("devnet")) {
-    process.env.ANCHOR_PROVIDER_URL = `https://devnet.helius-rpc.com/?api-key=${helius_api_key}`;
-  } else if (cluster.toLowerCase().startsWith("localnet")) {
-    process.env.ANCHOR_PROVIDER_URL = "http://localhost:8899";
-  } else {
-    throw new Error(`Unsupported cluster: ${cluster}`);
-  }
-  process.env.ANCHOR_WALLET = keypair_path;
-  if (glam_state) {
-    statePda = new PublicKey(glam_state);
-  }
-  heliusApiKey = helius_api_key;
-  priorityFeeLevel = priority_fee_level ?? priorityFeeLevel;
-} catch (err) {
-  console.error(`Could not load config at ${configPath}:`, err.message);
-}
+    const { micro_lamports, helius_api_key, level } =
+      cliConfig.priority_fee || {};
 
-const cliTxOptions = {
-  getPriorityFeeMicroLamports: async (tx: VersionedTransaction) =>
-    await getPriorityFeeEstimate(heliusApiKey, tx, undefined, priorityFeeLevel),
+    // If micro_lamports is provided, use it
+    if (micro_lamports) {
+      return micro_lamports;
+    }
+
+    // If helius_api_key is not provided, return 0
+    return helius_api_key
+      ? await getPriorityFeeEstimate(
+          helius_api_key,
+          tx,
+          undefined,
+          level || "Min",
+        )
+      : 0;
+  },
 };
 
 const glamClient = new GlamClient();
@@ -67,8 +51,8 @@ const program = new Command();
 
 program
   .name("glam-cli")
-  .description("CLI for interacting with the GLAM onchain program")
-  .version("0.0.1");
+  .description("CLI for interacting with the GLAM Protocol")
+  .version("0.1.0");
 
 program
   .command("env")
@@ -76,95 +60,151 @@ program
   .action(async () => {
     console.log("Wallet connected:", glamClient.getSigner().toBase58());
     console.log("RPC endpoint:", glamClient.provider.connection.rpcEndpoint);
-    console.log("Priority fee level:", priorityFeeLevel);
-    console.log("Glam state:", statePda ? statePda.toBase58() : "not set");
-    if (statePda) {
-      const vault = glamClient.getVaultPda(statePda);
+    console.log("Priority fee:", cliConfig.priority_fee);
+    if (cliConfig.glam_state) {
+      const vault = glamClient.getVaultPda(new PublicKey(cliConfig.glam_state));
+      console.log("GLAM state:", cliConfig.glam_state);
       console.log("Active vault:", vault.toBase58());
+    } else {
+      console.log("No active GLAM product specified");
     }
   });
 
 program
-  .command("funds")
-  .description("List all funds the connected wallet has access to")
-  .option("-m, --manager-only", "Only list funds with full manager access")
-  .option("-a, --all", "All GLAM funds")
-  .action(async () => {
-    const funds = await glamClient.fetchAllGlamStates();
-    funds
+  .command("list")
+  .description(
+    "List glam products the wallet has access to (either as owner or delegate)",
+  )
+  .option("-o, --owner-only", "Only list products the wallet owns")
+  .option("-a, --all", "All GLAM products")
+  .action(async (options) => {
+    const { ownerOnly, all } = options;
+    if (ownerOnly && all) {
+      console.error(
+        "Options '--owner-only' and '--all' cannot be used together.",
+      );
+      process.exit(1);
+    }
+
+    const states = await glamClient.fetchAllGlamStates();
+    const signer = glamClient.getSigner();
+
+    const filteredStates = states.filter((state) => {
+      if (all) {
+        return true;
+      } else if (ownerOnly) {
+        return state.owner.pubkey.equals(signer);
+      } else {
+        return (
+          state.owner.pubkey.equals(signer) ||
+          state.delegateAcls.some((acl) => acl.pubkey.equals(signer))
+        );
+      }
+    });
+
+    filteredStates
       .sort((a, b) =>
-        a.rawOpenfunds.fundLaunchDate > b.rawOpenfunds.fundLaunchDate ? 1 : -1,
+        a.rawOpenfunds.fundLaunchDate > b.rawOpenfunds.fundLaunchDate ? -1 : 1,
       )
-      .map((f: StateModel) => {
+      .forEach((state) => {
         console.log(
-          f.id.toBase58(),
+          state.productType,
           "\t",
-          f.rawOpenfunds.fundLaunchDate,
+          state.id.toBase58(),
           "\t",
-          f.name,
+          state.rawOpenfunds.fundLaunchDate,
+          "\t",
+          state.name,
         );
       });
   });
 
-const fund = program.command("fund").description("Manage fund");
-
-fund
-  .command("set <fund>")
-  .description("Set active fund")
-  .action((fund) => {
-    setStateToConfig(fund, configPath);
-    console.log("Active fund set to:", fund);
+program
+  .command("set <state>")
+  .description("Set the active GLAM product by its state public key")
+  .action((state: string) => {
+    try {
+      new PublicKey(state); // for validation
+      setStateToConfig(state);
+      console.log("Set active GLAM product to:", state);
+    } catch (e) {
+      console.error("Not a valid pubkey:", state);
+      process.exit(1);
+    }
   });
 
-fund
+program
   .command("view [state]")
-  .description("View a glam state")
-  .action(async (state?) => {
-    if (state) {
-      const glamState = await glamClient.fetchState(new PublicKey(state));
-      console.log(JSON.stringify(glamState, null, 2));
-      return;
-    }
-    if (statePda) {
+  .description("View a GLAM product by its state pubkey")
+  .option("-c, --compact", "Compact output")
+  .action(async (state, options) => {
+    try {
+      const statePda = new PublicKey(state ? state : cliConfig.glam_state);
       const glamState = await glamClient.fetchState(statePda);
-      console.log(JSON.stringify(glamState, null, 2));
-      return;
+      console.log(
+        options?.compact
+          ? JSON.stringify(glamState)
+          : JSON.stringify(glamState, null, 2),
+      );
+    } catch (e) {
+      console.error("Not a valid GLAM state pubkey:", state);
+      process.exit(1);
     }
-    console.error("Please specify a glam state to view.");
   });
 
-fund
+program
   .command("create <path>")
-  .description("Create fund from a json file")
+  .description("Create a new GLAM product from a json file")
   .action(async (file) => {
     const data = fs.readFileSync(file, "utf8");
     const glamState = JSON.parse(data);
 
     // Convert pubkey strings to PublicKey objects
-    for (let i = 0; i < glamState?.shareClasses?.length || 0; ++i) {
-      glamState.shareClasses[i].asset = new PublicKey(
-        glamState.shareClasses[i].asset,
-      );
+    for (let i = 0; i < glamState?.mints?.length || 0; ++i) {
+      glamState.mints[i].asset = new PublicKey(glamState.mints[i].asset);
     }
     glamState.assets = glamState.assets.map((a) => new PublicKey(a));
 
     try {
       const [txSig, statePda] = await glamClient.state.createState(glamState);
-      console.log("Glam state created:", statePda.toBase58());
       console.log("txSig:", txSig);
+      console.log("GLAM state account created:", statePda.toBase58());
+      console.log("Vault:", glamClient.getVaultPda(statePda).toBase58());
 
-      setStateToConfig(statePda.toBase58(), configPath);
+      setStateToConfig(statePda.toBase58());
     } catch (e) {
       console.error(e);
       process.exit(1);
     }
   });
 
-fund
-  .command("close <fund>")
-  .description("Close the fund")
-  .action(async (f) => {
-    const statePda = new PublicKey(f);
+program
+  .command("close [state]")
+  .description("Close a GLAM product by its state pubkey")
+  .option("-y, --yes", "Skip confirmation prompt")
+  .action(async (state: string, options) => {
+    let statePda: PublicKey;
+    try {
+      statePda = new PublicKey(state || cliConfig.glam_state);
+    } catch (e) {
+      console.error("Not a valid pubkey:", state);
+      process.exit(1);
+    }
+
+    if (!options?.yes) {
+      const confirmation = await inquirer.prompt([
+        {
+          type: "confirm",
+          name: "proceed",
+          message: `Confirm closure of GLAM product with state pubkey ${statePda.toBase58()}?`,
+          default: false,
+        },
+      ]);
+      if (!confirmation.proceed) {
+        console.log("Operation cancelled by the user.");
+        process.exit(0);
+      }
+    }
 
     const preInstructions = [];
     const stateAccount = await glamClient.fetchStateAccount(statePda);
@@ -189,103 +229,179 @@ fund
         .preInstructions(preInstructions);
 
       const txSig = await builder.rpc();
-      console.log(`Fund ${statePda.toBase58()} closed:`, txSig);
+      console.log(
+        `GLAM product with state pubkey ${statePda.toBase58()} closed:`,
+        txSig,
+      );
+      setStateToConfig(null);
     } catch (e) {
       console.error(e);
       process.exit(1);
     }
   });
 
-fund
+program
   .command("withdraw <asset> <amount>")
   .description("Withdraw <asset> (mint address) from the vault")
-  .action(async (asset, amount) => {
+  .option("-y, --yes", "Skip confirmation prompt")
+  .action(async (asset, amount, options) => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
     if (!statePda) {
-      console.error("Error: fund not set");
+      console.error("GLAM state not set");
       process.exit(1);
     }
 
-    if (asset.toLowerCase() === "SOL") {
+    if (asset.toLowerCase() === "sol") {
       asset = WSOL.toBase58();
-    } else if (asset.toLowerCase() === "jitosol") {
-      asset = "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn";
     }
+    // TODO: support more token symbols
 
     const { mint } = await glamClient.fetchMintWithOwner(new PublicKey(asset));
 
-    await glamClient.state.withdraw(
+    if (!options?.yes) {
+      const confirmation = await inquirer.prompt([
+        {
+          type: "confirm",
+          name: "proceed",
+          message: `Confirm withdrawal of ${amount} ${asset}?`,
+          default: false,
+        },
+      ]);
+      if (!confirmation.proceed) {
+        console.log("Operation cancelled by the user.");
+        process.exit(0);
+      }
+    }
+
+    const txSig = await glamClient.state.withdraw(
       statePda,
       new PublicKey(asset),
-      new anchor.BN(parseFloat(amount) * mint.decimals),
-      cliTxOptions,
+      new anchor.BN(parseFloat(amount) * 10 ** mint.decimals),
+      txOptions,
     );
+    console.log(`Withdrawn ${amount} ${asset}:`, txSig);
   });
 
-const delegate = fund.command("delegate").description("Manage fund delegates");
+const delegate = program.command("delegate").description("Manage delegates");
 delegate
-  .command("get")
-  .description("List fund delegates and permissions")
+  .command("list")
+  .description("List delegates and permissions")
   .action(async () => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
     if (!statePda) {
-      console.error("Error: fund not set");
+      console.error("GLAM state not found in config file");
       process.exit(1);
     }
 
     const stateModel = await glamClient.fetchState(statePda);
     const cnt = stateModel.delegateAcls.length;
     console.log(
-      `Fund ${statePda.toBase58()} has ${cnt} delegate acl${cnt > 1 ? "s" : ""}`,
+      `${stateModel.name} (${statePda.toBase58()}) has ${cnt} delegate${cnt > 1 ? "s" : ""}`,
     );
     for (let [i, acl] of stateModel.delegateAcls.entries()) {
       console.log(
         `[${i}] ${acl.pubkey.toBase58()}:`,
+        // @ts-ignore
         acl.permissions.map((p) => Object.keys(p)[0]).join(", "),
       );
     }
   });
 
+const allowedPermissions = GlamPermissions.map(
+  (p) => p.slice(0, 1).toLowerCase() + p.slice(1),
+);
 delegate
-  .command("set <pubkey> <permissions>")
+  .command("set")
+  .argument("<pubkey>", "Delegate pubkey")
+  .argument(
+    "<permissions...>",
+    `A space-separated list of permissions to grant. Allowed values: ${allowedPermissions.join(", ")}.`,
+  )
   .description("Set delegate permissions")
   .action(async (pubkey, permissions) => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
     if (!statePda) {
-      console.error("Error: fund not set");
+      console.error("GLAM state not found in config file");
       process.exit(1);
     }
 
-    const glamPermissions = permissions.split(",").map((p) => ({
-      [p]: {},
-    }));
+    if (!permissions.every((p) => allowedPermissions.includes(p))) {
+      console.error(
+        `Invalid permissions: ${permissions}. Values must be among: ${allowedPermissions.join(", ")}`,
+      );
+      process.exit(1);
+    }
+
     try {
       const txSig = await glamClient.state.upsertDelegateAcls(statePda, [
         {
           pubkey: new PublicKey(pubkey),
-          permissions: glamPermissions,
+          permissions: permissions.map((p) => ({
+            [p]: {},
+          })),
         },
       ]);
-      console.log(`Granted ${pubkey} permissions ${permissions}:`, txSig);
+      console.log("txSig:", txSig);
+      console.log(`Granted ${pubkey} permissions ${permissions}`);
     } catch (e) {
       console.error(e);
       process.exit(1);
     }
   });
 
-const integration = fund
+delegate
+  .command("delete <pubkey>")
+  .description("Revoke all delegate permissions for a pubkey")
+  .action(async (pubkey) => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
+    if (!statePda) {
+      console.error("GLAM state not found in config file");
+      process.exit(1);
+    }
+
+    try {
+      const txSig = await glamClient.state.deleteDelegateAcls(statePda, [
+        new PublicKey(pubkey),
+      ]);
+      console.log("txSig:", txSig);
+      console.log(`Revoked ${pubkey} access to ${statePda.toBase58()}`);
+    } catch (e) {
+      console.error(e);
+      process.exit(1);
+    }
+  });
+
+const integration = program
   .command("integration")
-  .description("Manage fund integrations");
+  .description("Manage integrations");
 integration
-  .command("get")
+  .command("list")
   .description("List enabled integrations")
   .action(async () => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
     if (!statePda) {
-      console.error("Error: fund not set");
+      console.error("GLAM state not found in config file");
       process.exit(1);
     }
 
     const stateModel = await glamClient.fetchState(statePda);
     const cnt = stateModel.integrationAcls.length;
     console.log(
-      `Fund ${statePda.toBase58()} has ${cnt} integration${
+      `${stateModel.name} (${statePda.toBase58()}) has ${cnt} integration${
         cnt > 1 ? "s" : ""
       } enabled`,
     );
@@ -294,12 +410,34 @@ integration
     }
   });
 
+const allowIntegrations = VaultIntegrations.map(
+  (i) => i.slice(0, 1).toLowerCase() + i.slice(1),
+);
+const integrationValidation = (input) => {
+  if (!allowIntegrations.includes(input)) {
+    console.error(
+      `Invalid input: "${input}". Allowed values are: ${allowIntegrations.join(", ")}`,
+    );
+    process.exit(1);
+  }
+  return input; // Return validated input
+};
+
 integration
-  .command("enable <integration>")
+  .command("enable")
   .description("Enable an integration")
+  .argument(
+    "<integration>",
+    `Integration to enable (must be one of: ${allowIntegrations.join(", ")})`,
+    integrationValidation,
+  )
   .action(async (integration) => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
     if (!statePda) {
-      console.error("Error: fund not set");
+      console.error("GLAM state not found in config file");
       process.exit(1);
     }
 
@@ -309,12 +447,12 @@ integration
     );
     if (acl) {
       console.log(
-        `${integration} is already enabled on fund ${statePda.toBase58()}`,
+        `${integration} is already enabled on ${stateModel.name} (${statePda.toBase58()})`,
       );
-      process.exit(0);
+      process.exit(1);
     }
 
-    const updatedFund = new StateModel({
+    const updated = new StateModel({
       integrationAcls: [
         ...stateModel.integrationAcls,
         { name: { [integration]: {} } as IntegrationName, features: [] },
@@ -323,11 +461,13 @@ integration
 
     try {
       const txSig = await glamClient.program.methods
-        .updateState(updatedFund)
+        .updateState(updated)
         .accounts({ state: statePda })
         .rpc();
-      console.log(`${integration} enabled on fund ${statePda.toBase58()}`);
       console.log("txSig:", txSig);
+      console.log(
+        `${integration} enabled on ${stateModel} (${statePda.toBase58()})`,
+      );
     } catch (e) {
       console.error(e);
       process.exit(1);
@@ -335,26 +475,25 @@ integration
   });
 
 integration
-  .command("disable <integration>")
+  .command("disable")
   .description("Disable an integration")
+  .argument(
+    "<integration>",
+    `Integration to disable (must be one of: ${allowIntegrations.join(", ")})`,
+    integrationValidation,
+  )
   .action(async (integration) => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
     if (!statePda) {
-      console.error("Error: fund not set");
+      console.error("GLAM state not found in config file");
       process.exit(1);
     }
 
     const stateModel = await glamClient.fetchState(statePda);
-    const acl = stateModel.integrationAcls.find(
-      (integ) => Object.keys(integ.name)[0] === integration,
-    );
-    if (!acl) {
-      console.log(
-        `${integration} is not enabled on fund ${statePda.toBase58()}`,
-      );
-      process.exit(0);
-    }
-
-    const updatedFund = new StateModel({
+    const updated = new StateModel({
       integrationAcls: stateModel.integrationAcls.filter(
         (integ) => Object.keys(integ.name)[0] !== integration,
       ),
@@ -362,33 +501,40 @@ integration
 
     try {
       const txSig = await glamClient.program.methods
-        .updateState(updatedFund)
+        .updateState(updated)
         .accounts({ state: statePda })
         .rpc();
-      console.log(`${integration} disabled on fund ${statePda.toBase58()}`);
       console.log("txSig:", txSig);
+      console.log(
+        `${integration} disabled on ${stateModel.name} (${statePda.toBase58()})`,
+      );
     } catch (e) {
       console.error(e);
       process.exit(1);
     }
   });
 
-const jup = fund.command("jup").description("JUP staking");
+const jup = program.command("jup").description("JUP staking");
 jup
   .command("stake <amount>")
   .description("Stake JUP tokens")
   .action(async (amount) => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
     if (!statePda) {
-      console.error("Error: fund not set");
+      console.error("GLAM state not found in config file");
       process.exit(1);
     }
 
     try {
-      const txId = await glamClient.jupiter.stakeJup(
+      const txSig = await glamClient.jupiter.stakeJup(
         statePda,
         new anchor.BN(amount * 10 ** 6), // decimals 6
       );
-      console.log("stakeJup txId", txId);
+      console.log("txSig", txSig);
+      console.log(`Staked ${amount} JUP`);
     } catch (e) {
       console.error(e);
       throw e;
@@ -397,20 +543,35 @@ jup
 
 jup
   .command("unstake")
-  .description("Unstake JUP tokens")
+  .description("Unstake all JUP tokens")
   .action(async () => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
     if (!statePda) {
-      console.error("Error: fund not set");
+      console.error("GLAM state not found in config file");
       process.exit(1);
     }
-    console.error("Not implemented");
-    process.exit(1);
+
+    try {
+      const txSig = await glamClient.jupiter.unstakeJup(statePda);
+      console.log("txSig", txSig);
+      console.log("Unstaked all JUP tokens");
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
   });
 
-const vote = fund
+const vote = program
   .command("vote <proposal> <side>")
   .description("Vote on a proposal")
   .action(async (_proposal, side) => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
     if (!statePda) {
       console.error("Error: fund not set");
       process.exit(1);
@@ -443,21 +604,27 @@ const vote = fund
     }
   });
 
-fund
+program
   .command("wrap <amount>")
   .description("Wrap SOL")
   .action(async (amount) => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
     if (!statePda) {
-      console.error("Error: fund not set");
+      console.error("GLAM state not found in config file");
+      process.exit(1);
+    }
+
+    const lamports = new anchor.BN(parseFloat(amount) * LAMPORTS_PER_SOL);
+    if (lamports.lte(new anchor.BN(0))) {
+      console.error("Error: amount must be greater than 0");
       process.exit(1);
     }
 
     try {
-      const txSig = await glamClient.wsol.wrap(
-        statePda,
-        new anchor.BN(parseFloat(amount) * LAMPORTS_PER_SOL),
-        cliTxOptions,
-      );
+      const txSig = await glamClient.wsol.wrap(statePda, lamports, txOptions);
       console.log(`Wrapped ${amount} SOL:`, txSig);
     } catch (e) {
       console.error(e);
@@ -465,17 +632,21 @@ fund
     }
   });
 
-fund
+program
   .command("unwrap")
   .description("Unwrap wSOL")
   .action(async () => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
     if (!statePda) {
-      console.error("Error: fund not set");
+      console.error("GLAM state not found in config file");
       process.exit(1);
     }
 
     try {
-      const txSig = await glamClient.wsol.unwrap(statePda, cliTxOptions);
+      const txSig = await glamClient.wsol.unwrap(statePda, txOptions);
       console.log(`All wSOL unwrapped:`, txSig);
     } catch (e) {
       console.error(e);
@@ -483,7 +654,7 @@ fund
     }
   });
 
-fund
+program
   .command("balances")
   .description("Get fund balances")
   .option(
@@ -491,8 +662,12 @@ fund
     "Show all assets including token accounts with 0 balance",
   )
   .action(async (options) => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
     if (!statePda) {
-      console.error("Error: fund not set");
+      console.error("GLAM state not found in config file");
       process.exit(1);
     }
 
@@ -531,13 +706,21 @@ fund
     });
   });
 
-fund
+program
   .command("swap <from> <to> <amount>")
   .description("Swap fund assets")
   .option("-m, --max-accounts <num>", "Specify max accounts allowed")
   .option("-s, --slippage-bps <bps>", "Specify slippage bps")
   .option("-d, --only-direct-routes", "Direct routes only")
   .action(async (from, to, amount, options) => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+    if (!statePda) {
+      console.error("GLAM state not found in config file");
+      process.exit(1);
+    }
+
     const { maxAccounts, slippageBps, onlyDirectRoutes } = options;
 
     const response = await fetch("https://tokens.jup.ag/tokens?tags=verified");
@@ -578,7 +761,7 @@ fund
         quoteParams,
         undefined,
         undefined,
-        cliTxOptions,
+        txOptions,
       );
       console.log(`Swapped ${amount} ${from} to ${to}`);
     } catch (e) {
@@ -587,20 +770,45 @@ fund
     }
   });
 
-const lst = fund.command("lst").description("Liquid staking");
+const lst = program.command("lst").description("Liquid staking");
 lst
-  .command("stake <asset> <amount>")
-  .description("Stake <amount> SOL into <asset> (mint address)")
-  .action(async (asset, amount) => {
-    console.error("Not implemented");
-    process.exit(1);
+  .command("stake <stakepool> <amount>")
+  .description("Stake <amount> SOL into <stakepool>")
+  .action(async (stakepool, amount) => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
+    if (!statePda) {
+      console.error("GLAM state not found in config file");
+      process.exit(1);
+    }
+
+    try {
+      const txSig = await glamClient.staking.stakePoolDepositSol(
+        statePda,
+        new PublicKey(stakepool),
+        //TODO: better decimals (even though all LSTs have 9 right now)
+        new anchor.BN(parseFloat(amount) * LAMPORTS_PER_SOL),
+        txOptions,
+      );
+      console.log("txSig", txSig);
+      console.log(`Staked ${amount} SOL into ${stakepool}`);
+    } catch (e) {
+      console.error(e);
+      process.exit(1);
+    }
   });
 lst
   .command("unstake <asset> <amount>")
   .description("Unstake <amount> worth of <asset> (mint address)")
   .action(async (asset, amount) => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
     if (!statePda) {
-      console.error("Error: fund not set");
+      console.error("GLAM state not found in config file");
       process.exit(1);
     }
 
@@ -610,7 +818,7 @@ lst
         new PublicKey(asset),
         //TODO: better decimals (even though all LSTs have 9 right now)
         new anchor.BN(parseFloat(amount) * LAMPORTS_PER_SOL),
-        cliTxOptions,
+        txOptions,
       );
       console.log(`Unstaked ${amount} ${asset}:`, txSig);
     } catch (e) {
@@ -620,10 +828,14 @@ lst
   });
 lst
   .command("list")
-  .description("List all staking accounts")
+  .description("List all stake accounts")
   .action(async () => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
     if (!statePda) {
-      console.error("Error: fund not set");
+      console.error("GLAM state not found in config file");
       process.exit(1);
     }
 
@@ -653,18 +865,22 @@ lst
     }
   });
 lst
-  .command("withdraw <accounts>")
-  .description("Withdraw staking accounts (comma-separated)")
+  .command("withdraw <accounts...>")
+  .description("Withdraw staking accounts (space-separated pubkeys)")
   .action(async (accounts) => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
     if (!statePda) {
-      console.error("Error: fund not set");
+      console.error("GLAM state not found in config file");
       process.exit(1);
     }
 
     try {
       const txSig = await glamClient.staking.withdrawFromStakeAccounts(
         statePda,
-        accounts.split(",").map((addr: string) => new PublicKey(addr)),
+        accounts.map((addr: string) => new PublicKey(addr)),
       );
       console.log(`Withdrew from ${accounts}:`, txSig);
     } catch (e) {
@@ -676,8 +892,12 @@ lst
   .command("marinade-list")
   .description("List all Marinade tickets")
   .action(async () => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
     if (!statePda) {
-      console.error("Error: fund not set");
+      console.error("GLAM state not found in config file");
       process.exit(1);
     }
 
@@ -705,18 +925,22 @@ lst
     }
   });
 lst
-  .command("marinade-claim <tickets>")
-  .description("Claim Marinade tickets (comma-separated)")
+  .command("marinade-claim <tickets...>")
+  .description("Claim Marinade tickets (space-separated)")
   .action(async (tickets) => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
     if (!statePda) {
-      console.error("Error: fund not set");
+      console.error("GLAM state not found in config file");
       process.exit(1);
     }
 
     try {
       const txSig = await glamClient.marinade.claimTickets(
         statePda,
-        tickets.split(",").map((addr: string) => new PublicKey(addr)),
+        tickets.map((addr: string) => new PublicKey(addr)),
       );
       console.log(`Claimed ${tickets}:`, txSig);
     } catch (e) {
@@ -725,16 +949,17 @@ lst
     }
   });
 
-program.parse(process.argv);
-
 //
-// For testing/debugging purpose, we can run arbitrary code in the main function
+// Run the CLI in development mode as follows:
+// npx nx run cli:dev -- --args="fund view <pubkey>"
 //
-async function main(): Promise<void> {
-  console.log("Main() called");
-}
-
-if (process.argv.length === 2 && !process.argv[1].endsWith(".js")) {
-  // Not called as a cli, run main function
-  main();
+if (process.env.NODE_ENV === "development") {
+  const argv = [
+    process.argv[0], // Node.js binary path
+    process.argv[1], // Script path
+    ...process.argv[2].split(" "), // Split the concatenated arguments
+  ];
+  program.parse(argv);
+} else {
+  program.parse(process.argv);
 }

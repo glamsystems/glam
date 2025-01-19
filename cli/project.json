@@ -22,20 +22,11 @@
         "production": {}
       }
     },
-    "main": {
+    "dev": {
       "executor": "@nx/js:node",
-      "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "cli:build",
+        "buildTarget": "cli:build:development",
         "inspect": false
-      },
-      "configurations": {
-        "development": {
-          "buildTarget": "cli:build:development"
-        },
-        "production": {
-          "buildTarget": "cli:build:production"
-        }
       }
     },
     "test": {
