@@ -7,6 +7,7 @@ import {
   GlamClient,
   VaultIntegrations,
   GlamPermissions,
+  GlamError,
 } from "@glam/anchor";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { Command } from "commander";
@@ -14,7 +15,7 @@ import { Command } from "commander";
 import fs from "fs";
 import inquirer from "inquirer";
 
-import { loadingConfig, setStateToConfig } from "./utils";
+import { loadingConfig, parseTxError, setStateToConfig } from "./utils";
 import { QuoteParams } from "anchor/src/client/jupiter";
 import { VersionedTransaction } from "@solana/web3.js";
 
@@ -173,7 +174,7 @@ program
 
       setStateToConfig(statePda.toBase58());
     } catch (e) {
-      console.error(e);
+      console.error(parseTxError(e));
       process.exit(1);
     }
   });
@@ -235,7 +236,7 @@ program
       );
       setStateToConfig(null);
     } catch (e) {
-      console.error(e);
+      console.error(parseTxError(e));
       process.exit(1);
     }
   });
@@ -275,13 +276,18 @@ program
       }
     }
 
-    const txSig = await glamClient.state.withdraw(
-      statePda,
-      new PublicKey(asset),
-      new anchor.BN(parseFloat(amount) * 10 ** mint.decimals),
-      txOptions,
-    );
-    console.log(`Withdrawn ${amount} ${asset}:`, txSig);
+    try {
+      const txSig = await glamClient.state.withdraw(
+        statePda,
+        new PublicKey(asset),
+        new anchor.BN(parseFloat(amount) * 10 ** mint.decimals),
+        txOptions,
+      );
+      console.log(`Withdrawn ${amount} ${asset}:`, txSig);
+    } catch (e) {
+      console.error(parseTxError(e));
+      process.exit(1);
+    }
   });
 
 const delegate = program.command("delegate").description("Manage delegates");
@@ -352,7 +358,7 @@ delegate
       console.log("txSig:", txSig);
       console.log(`Granted ${pubkey} permissions ${permissions}`);
     } catch (e) {
-      console.error(e);
+      console.error(parseTxError(e));
       process.exit(1);
     }
   });
@@ -377,7 +383,7 @@ delegate
       console.log("txSig:", txSig);
       console.log(`Revoked ${pubkey} access to ${statePda.toBase58()}`);
     } catch (e) {
-      console.error(e);
+      console.error(parseTxError(e));
       process.exit(1);
     }
   });
@@ -469,7 +475,7 @@ integration
         `${integration} enabled on ${stateModel} (${statePda.toBase58()})`,
       );
     } catch (e) {
-      console.error(e);
+      console.error(parseTxError(e));
       process.exit(1);
     }
   });
@@ -509,7 +515,7 @@ integration
         `${integration} disabled on ${stateModel.name} (${statePda.toBase58()})`,
       );
     } catch (e) {
-      console.error(e);
+      console.error(parseTxError(e));
       process.exit(1);
     }
   });
@@ -536,7 +542,7 @@ jup
       console.log("txSig", txSig);
       console.log(`Staked ${amount} JUP`);
     } catch (e) {
-      console.error(e);
+      console.error(parseTxError(e));
       throw e;
     }
   });
@@ -559,7 +565,7 @@ jup
       console.log("txSig", txSig);
       console.log("Unstaked all JUP tokens");
     } catch (e) {
-      console.error(e);
+      console.error(parseTxError(e));
       throw e;
     }
   });
@@ -597,9 +603,9 @@ const vote = program
         governor,
         Number(side),
       );
-      console.log("castVote txId", txId);
+      console.log("castVote:", txId);
     } catch (e) {
-      console.error(e);
+      console.error(parseTxError(e));
       throw e;
     }
   });
@@ -627,7 +633,7 @@ program
       const txSig = await glamClient.wsol.wrap(statePda, lamports, txOptions);
       console.log(`Wrapped ${amount} SOL:`, txSig);
     } catch (e) {
-      console.error(e);
+      console.error(parseTxError(e));
       process.exit(1);
     }
   });
@@ -649,7 +655,7 @@ program
       const txSig = await glamClient.wsol.unwrap(statePda, txOptions);
       console.log(`All wSOL unwrapped:`, txSig);
     } catch (e) {
-      console.error(e);
+      console.error(parseTxError(e));
       process.exit(1);
     }
   });
@@ -765,7 +771,7 @@ program
       );
       console.log(`Swapped ${amount} ${from} to ${to}`);
     } catch (e) {
-      console.error(e);
+      console.error(parseTxError(e));
       process.exit(1);
     }
   });
@@ -795,7 +801,7 @@ lst
       console.log("txSig", txSig);
       console.log(`Staked ${amount} SOL into ${stakepool}`);
     } catch (e) {
-      console.error(e);
+      console.error(parseTxError(e));
       process.exit(1);
     }
   });
@@ -822,7 +828,7 @@ lst
       );
       console.log(`Unstaked ${amount} ${asset}:`, txSig);
     } catch (e) {
-      console.error(e);
+      console.error(parseTxError(e));
       process.exit(1);
     }
   });
@@ -884,7 +890,7 @@ lst
       );
       console.log(`Withdrew from ${accounts}:`, txSig);
     } catch (e) {
-      console.error(e);
+      console.error(parseTxError(e));
       process.exit(1);
     }
   });
@@ -944,7 +950,7 @@ lst
       );
       console.log(`Claimed ${tickets}:`, txSig);
     } catch (e) {
-      console.error(e);
+      console.error(parseTxError(e));
       process.exit(1);
     }
   });

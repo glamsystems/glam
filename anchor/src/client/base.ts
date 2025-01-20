@@ -203,7 +203,7 @@ export class BaseClient {
             lookupTables,
           );
         } catch (e) {
-          console.error(e);
+          // TODO: add a flag to control if we should throw error on failed simulation
           // ignore
           // when we run tests with failure cases, this RPC call fails with
           // an incorrect error message so we should ignore it

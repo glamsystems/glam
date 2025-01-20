@@ -1,5 +1,9 @@
+import { AnchorError } from "@coral-xyz/anchor";
 import { PriorityLevel } from "@glam/anchor";
-import { PublicKey } from "@solana/web3.js";
+import {
+  PublicKey,
+  TransactionExpiredBlockheightExceededError,
+} from "@solana/web3.js";
 import fs from "fs";
 import os from "os";
 import path from "path";
@@ -66,4 +70,16 @@ export const setStateToConfig = (statePda: string) => {
   const config = fs.readFileSync(configPath, "utf8");
   const updated = { ...JSON.parse(config), glam_state: statePda };
   fs.writeFileSync(configPath, JSON.stringify(updated, null, 2), "utf8");
+};
+
+export const parseTxError = (error: any) => {
+  if (error instanceof TransactionExpiredBlockheightExceededError) {
+    return "Transaction expired";
+  }
+
+  if (error instanceof AnchorError) {
+    return error.error.errorMessage;
+  }
+
+  return error?.message || "Unknown error";
 };
