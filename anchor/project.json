@@ -1,7 +1,7 @@
 {
   "name": "anchor",
   "$schema": "../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "anchor/src",
+  "sourceRoot": "anchor/",
   "projectType": "library",
   "targets": {
     "build": {
@@ -11,7 +11,11 @@
         "outputPath": "dist/anchor",
         "main": "anchor/src/index.ts",
         "tsConfig": "anchor/tsconfig.lib.json",
-        "assets": [],
+        "assets": [
+          "anchor/README.md",
+          "anchor/target/idl/glam.json",
+          "anchor/target/types/glam.ts"
+        ],
         "project": "anchor/package.json",
         "compiler": "swc",
         "format": ["cjs", "esm"]
@@ -50,6 +54,13 @@
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "jestConfig": "anchor/jest.config.ts"
+      }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm publish --access public",
+        "cwd": "{workspaceRoot}/dist/anchor"
       }
     }
   },

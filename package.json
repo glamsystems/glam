@@ -20,7 +20,6 @@
     "@coral-xyz/anchor": "^0.30.1",
     "@drift-labs/sdk": "2.96.0-beta.14",
     "@hookform/resolvers": "^3.9.0",
-    "@marinade.finance/marinade-ts-sdk": "^5.0.13",
     "@pythnetwork/client": "^2.21.1",
     "@radix-ui/react-accordion": "^1.2.1",
     "@radix-ui/react-checkbox": "^1.1.1",
@@ -41,7 +40,6 @@
     "@radix-ui/react-toggle": "^1.1.0",
     "@radix-ui/react-toggle-group": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.2",
-    "@scure/base": "^1.1.7",
     "@solana-developers/preset-react": "^3.0.1",
     "@solana/spl-stake-pool": "^1.1.5",
     "@solana/spl-token": "^0.3.9",
@@ -51,11 +49,11 @@
     "@solana/wallet-adapter-react-ui": "^0.9.35",
     "@solana/wallet-adapter-solflare": "^0.6.28",
     "@solana/wallet-adapter-wallets": "^0.19.32",
-    "@solana/web3.js": "^1.94.0",
+    "@solana/web3.js": "^1.98.0",
     "@swc/helpers": "~0.5.11",
     "@tailwindcss/typography": "0.5.10",
-    "@tanstack/react-query": "^5.50.1",
-    "@tanstack/react-query-next-experimental": "^5.50.1",
+    "@tanstack/react-query": "^5.52.3",
+    "@tanstack/react-query-next-experimental": "^5.52.3",
     "@tanstack/react-table": "^8.19.2",
     "@tanstack/react-virtual": "^3.11.2",
     "@wallet-standard/react-core": "^0.1.4",
@@ -152,16 +150,14 @@
   },
   "pnpm": {
     "overrides": {
-      "@solana/web3.js@>=1.73.0 <1.73.5": ">=1.73.5",
+      "@solana/web3.js@>=1.73.0 <1.73.5": "^1.98.0",
       "bs58@>=4.0.1": "^5.0.0",
       "jsbi@>=3.2.5": "^4.3.0",
       "@solana/spl-token@>=0.0.1": "^0.3.9",
-      "@solana/spl-stake-pool@>=0.0.1": "^1.1.5"
-    },
-    "overridesComments": {
-      "jsbi@>=3.2.5": "Marinade SDK introduces a dependency conflict. This override is necessary to ensure the correct version is installed",
-      "@solana/spl-token@>=0.0.1": "Same as above",
-      "@solana/spl-stake-pool@>=0.0.1": "Same as above"
+      "@solana/spl-stake-pool@>=0.0.1": "^1.1.5",
+      "typescript@>=0.0.1": "^5.5.3",
+      "solana-bankrun@>=0.0.1": "^0.3.0",
+      "react@>16.0.0": "^18.3.1"
     }
   },
   "packageManager": "pnpm@9.1.2+sha512.127dc83b9ea10c32be65d22a8efb4a65fb952e8fefbdfded39bdc3c97efc32d31b48b00420df2c1187ace28c921c902f0cb5a134a4d032b8b5295cbfa2c681e2"
