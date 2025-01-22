@@ -35,12 +35,7 @@ const txOptions = {
 
     // If helius_api_key is not provided, return 0
     return helius_api_key
-      ? await getPriorityFeeEstimate(
-          helius_api_key,
-          tx,
-          undefined,
-          level || "Min",
-        )
+      ? await getPriorityFeeEstimate(helius_api_key, tx, undefined, level)
       : 0;
   },
 };
