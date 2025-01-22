@@ -6,7 +6,7 @@ WORKDIR /mnt/workspace
 
 COPY . ./
 RUN corepack enable pnpm
-RUN pnpm install && pnpm run pg-build
+RUN pnpm install && pnpm install --filter @glamsystems/glam-sdk && pnpm run pg-build
 
 # Final stage (runtime image)
 FROM node:20-slim AS runtime

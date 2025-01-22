@@ -57,6 +57,7 @@
     "@tanstack/react-table": "^8.19.2",
     "@tanstack/react-virtual": "^3.11.2",
     "@wallet-standard/react-core": "^0.1.4",
+    "@marinade.finance/marinade-ts-sdk": "^5.0.15",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "bs58": "^5.0.0",
