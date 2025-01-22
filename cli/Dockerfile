@@ -6,7 +6,7 @@ WORKDIR /mnt/workspace
 
 COPY . ./
 RUN corepack enable pnpm
-RUN pnpm install && npx nx reset && npx nx build cli
+RUN pnpm install && pnpm install --filter @glamsystems/glam-sdk && npx nx reset && npx nx run cli:build
 
 # Final stage (runtime image)
 FROM node:20-slim AS runtime

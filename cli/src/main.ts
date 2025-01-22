@@ -7,7 +7,6 @@ import {
   GlamClient,
   VaultIntegrations,
   GlamPermissions,
-  GlamError,
 } from "@glam/anchor";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { Command } from "commander";
