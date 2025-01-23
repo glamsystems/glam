@@ -18,7 +18,7 @@ export class BlockhashWithCache {
   constructor(
     provider: anchor.Provider,
     isBrowser: boolean,
-    ttl: number = 15_000,
+    ttl: number = 5_000,
   ) {
     this.provider = provider;
     this.isBrowser = isBrowser;

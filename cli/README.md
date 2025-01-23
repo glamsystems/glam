@@ -30,6 +30,7 @@ The CLI expects a configuration file at `~/.config/glam/config.json`. The file s
 {
   "cluster": "",
   "json_rpc_url": "",
+  "tx_rpc_url": "",
   "keypair_path": "",
   "priority_fee": {
     "micro_lamports": 0,
@@ -44,6 +45,7 @@ Here's a quick explanation of each field:
 
 - `cluster`: Value must be one of `mainnet-beta`, `devnet`, or `localnet`.
 - `json_rpc_url`: The URL of your preferred Solana JSON RPC endpoint.
+- `tx_rpc_url`: Optional. If not set it will default to `json_rpc_url`. Use this to specify a separate RPC endpoint you want to use for sending transactions.
 - `keypair_path`: Path to your keypair JSON file.
 - `priority_fee`:
   - `micro_lamports`: Optional (defaults to 0). If provided, `level` and `helius_api_key` will be ignored.

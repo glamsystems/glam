@@ -11,6 +11,7 @@ import path from "path";
 export type CliConfig = {
   cluster: string;
   json_rpc_url: string;
+  tx_rpc_url: string;
   keypair_path: string;
   priority_fee?: {
     micro_lamports?: number;
@@ -57,6 +58,10 @@ export const loadingConfig = () => {
     throw new Error(
       `Unsupported cluster: ${cliConfig.cluster}, must be mainnet-beta, devnet or localnet`,
     );
+  }
+
+  if (cliConfig.tx_rpc_url) {
+    process.env.TX_RPC = cliConfig.tx_rpc_url;
   }
 
   process.env.ANCHOR_PROVIDER_URL = cliConfig.json_rpc_url;

@@ -263,10 +263,19 @@ export class BaseClient {
     tx: VersionedTransaction | Transaction,
     signerOverride?: Keypair,
   ): Promise<TransactionSignature> {
+    // Use dedicated connection for sending transactions if available
+    const { NEXT_PUBLIC_TX_RPC, TX_RPC } = process.env;
+    const txConnection = new Connection(
+      NEXT_PUBLIC_TX_RPC || TX_RPC || this.provider.connection.rpcEndpoint,
+      {
+        commitment: "confirmed",
+      },
+    );
+
     // This is just a convenient method so that in tests we can send legacy
     // txs, for example transfer SOL, create ATA, etc.
     if (tx instanceof Transaction) {
-      return await sendAndConfirmTransaction(this.provider.connection, tx, [
+      return await sendAndConfirmTransaction(txConnection, tx, [
         signerOverride || this.getWallet().payer,
       ]);
     }
@@ -285,7 +294,7 @@ export class BaseClient {
       serializedTx = signedTx.serialize();
     }
 
-    const txSig = await connection.sendRawTransaction(serializedTx, {
+    const txSig = await txConnection.sendRawTransaction(serializedTx, {
       // skip simulation since we just did it to compute CUs
       // however this means that we need to reconstruct the error, if
       // the tx fails on chain execution.
