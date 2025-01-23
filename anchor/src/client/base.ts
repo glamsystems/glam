@@ -264,9 +264,10 @@ export class BaseClient {
     signerOverride?: Keypair,
   ): Promise<TransactionSignature> {
     // Use dedicated connection for sending transactions if available
-    const { NEXT_PUBLIC_TX_RPC, TX_RPC } = process.env;
     const txConnection = new Connection(
-      NEXT_PUBLIC_TX_RPC || TX_RPC || this.provider.connection.rpcEndpoint,
+      process.env?.NEXT_PUBLIC_TX_RPC ||
+        process.env.TX_RPC ||
+        this.provider.connection.rpcEndpoint,
       {
         commitment: "confirmed",
       },
