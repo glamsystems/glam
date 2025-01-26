@@ -24,46 +24,44 @@ const key2 = Keypair.fromSeed(str2seed("acl_test_key2"));
 describe("glam_crud", () => {
   const glamClient = new GlamClient();
   const glamClientCustomWallet = new GlamClient({ wallet: new Wallet(key1) });
-  let statePda: PublicKey;
+  let statePda: PublicKey, vaultPda: PublicKey;
 
   it("Initialize glam state", async () => {
-    const shareClassAllowlist = [glamClient.getSigner()];
-    const shareClassBlocklist = [];
+    const shareClassAllowlist = [key1.publicKey];
+    const shareClassBlocklist = [key2.publicKey];
 
     const stateForTest = { ...stateModelForTest };
     stateForTest.mints![0].allowlist = shareClassAllowlist;
+    stateForTest.mints![0].blocklist = shareClassBlocklist;
 
-    const stateData = await createGlamStateForTest(glamClient, stateForTest);
-    statePda = stateData.statePda;
+    const res = await createGlamStateForTest(glamClient, stateForTest);
+    statePda = res.statePda;
+    vaultPda = res.vaultPda;
 
     const stateModel = await glamClient.fetchState(statePda);
-
-    console.log("stateModel", stateModel);
 
     expect(stateModel.mints?.length).toEqual(1);
     expect(stateModel.mints![0].allowlist).toEqual(shareClassAllowlist);
     expect(stateModel.mints![0].blocklist).toEqual(shareClassBlocklist);
   });
 
-  /*
   it("Update name in state", async () => {
-    const updatedState = {
-      name: "Updated name in state",
-    } as Partial<StateModel>;
+    const name = "Updated name in state";
     try {
-      const txSig = await glamClient.state.updateState(statePda, updatedState);
+      const txSig = await glamClient.state.updateState(statePda, { name });
       console.log("Update name txSig", txSig);
     } catch (e) {
       console.error(e);
       throw e;
     }
     const state = await glamClient.fetchStateAccount(statePda);
-    expect(state.name).toEqual(updatedState.name);
+    expect(state.name).toEqual(name);
   });
 
   it("Update share class allowlist", async () => {
     const shareClassModel = new ShareClassModel({
       allowlist: [key1.publicKey, key2.publicKey],
+      blocklist: [],
     });
     try {
       const txSig = await glamClient.program.methods
@@ -79,14 +77,16 @@ describe("glam_crud", () => {
       throw e;
     }
     const stateModel = await glamClient.fetchState(statePda);
-    expect(stateModel.mints[0].allowlist).toEqual(shareClassModel.allowlist);
+    expect(stateModel.mints![0].allowlist).toEqual(shareClassModel.allowlist);
+    expect(stateModel.mints![0].blocklist).toEqual(shareClassModel.blocklist);
   });
 
   it("Update assets allowlist", async () => {
     // The test glam state has 2 assets, WSOL and MSOL. Update to USDC.
-    let updatedState = { assets: [USDC] };
     try {
-      const txSig = await glamClient.state.updateState(statePda, updatedState);
+      const txSig = await glamClient.state.updateState(statePda, {
+        assets: [USDC],
+      });
       console.log("Update assets (USDC) txSig", txSig);
     } catch (e) {
       console.error(e);
@@ -96,9 +96,10 @@ describe("glam_crud", () => {
     expect(stateModel.assets).toEqual([USDC]);
 
     // Update assets back to WSOL and MSOL
-    updatedState = { assets: [WSOL, MSOL] };
     try {
-      const txSig = await glamClient.state.updateState(statePda, updatedState);
+      const txSig = await glamClient.state.updateState(statePda, {
+        assets: [WSOL, MSOL],
+      });
       console.log("Update assets (WSOL and MSOL) txSig", txSig);
     } catch (e) {
       console.error(e);
@@ -111,53 +112,58 @@ describe("glam_crud", () => {
   it("[integration-acl] add and update", async () => {
     // 0 by default
     let stateModel = await glamClient.fetchState(statePda);
-    expect(stateModel.integrationAcls.length).toEqual(0);
+    expect(stateModel.integrations?.length).toEqual(0);
 
-    // 1 acl
-    let updatedState = {
-      integrationAcls: [{ name: { drift: {} }, features: [] }],
-    } as Partial<StateModel>;
+    // 1 integration
     try {
-      const txSig = await glamClient.state.updateState(statePda, updatedState);
-      console.log("Update integration acl txSig", txSig);
+      const txSig = await glamClient.state.updateState(statePda, {
+        integrations: [{ drift: {} }],
+      });
+      console.log("Update integrations (drift) txSig", txSig);
     } catch (e) {
       console.error(e);
       throw e;
     }
     stateModel = await glamClient.fetchState(statePda);
-    expect(stateModel.integrationAcls.length).toEqual(1);
-    expect(stateModel.integrationAcls).toEqual(updatedState.integrationAcls);
+    expect(stateModel.integrations?.length).toEqual(1);
+    expect(stateModel.integrations).toEqual([{ drift: {} }]);
 
     // 5 acls
-    updatedState = {
-      integrationAcls: [
-        { name: { drift: {} }, features: [] },
-        { name: { jupiterSwap: {} }, features: [] },
-        { name: { marinade: {} }, features: [] },
-        { name: { splStakePool: {} }, features: [] },
-        { name: { sanctumStakePool: {} }, features: [] },
+    const updated = {
+      integrations: [
+        { drift: {} },
+        { jupiterSwap: {} },
+        { marinade: {} },
+        { splStakePool: {} },
+        { sanctumStakePool: {} },
       ],
     };
     try {
-      const txSig = await glamClient.state.updateState(statePda, updatedState);
-      console.log("Update integration acl txSig", txSig);
+      const txSig = await glamClient.state.updateState(statePda, updated);
+      console.log(
+        "Update integrations (drift, jupiterSwap, marinade, splStakePool, sanctumStakePool) txSig",
+        txSig,
+      );
     } catch (e) {
       console.error(e);
       throw e;
     }
     stateModel = await glamClient.fetchState(statePda);
-    expect(stateModel.integrationAcls.length).toEqual(5);
-    expect(stateModel.integrationAcls).toEqual(updatedState.integrationAcls);
+    expect(stateModel.integrations).toEqual(updated.integrations);
   });
 
   it("[delegate-acl] upsert", async () => {
-    // empty acls
+    // empty delegate acls
     let stateModel = await glamClient.fetchState(statePda);
-    expect(stateModel.delegateAcls.length).toEqual(0);
+    expect(stateModel.delegateAcls?.length).toEqual(0);
 
-    // grant key1 wSolWrap permission
+    // grant key1 wSolWrap permission, no expiration
     const delegateAcls = [
-      { pubkey: key1.publicKey, permissions: [{ wSolWrap: {} }] },
+      {
+        pubkey: key1.publicKey,
+        permissions: [{ wSolWrap: {} }],
+        expiresAt: new BN(0),
+      },
     ];
     try {
       const txSig = await glamClient.state.upsertDelegateAcls(
@@ -171,15 +177,18 @@ describe("glam_crud", () => {
     }
     stateModel = await glamClient.fetchState(statePda);
     expect(stateModel.delegateAcls?.length).toEqual(1);
-    expect(stateModel.delegateAcls[0].pubkey).toEqual(key1.publicKey);
-    expect(stateModel.delegateAcls[0].permissions).toEqual([{ wSolWrap: {} }]);
+    expect(stateModel.delegateAcls![0].pubkey).toEqual(key1.publicKey);
+    expect(stateModel.delegateAcls![0].permissions).toEqual([{ wSolWrap: {} }]);
+    expect(stateModel.delegateAcls![0].expiresAt).toEqual(new BN(0));
 
     // grant key1 wSolWrap and wSolUnwrap permission
+    const expiresAt = new BN(Date.now() / 1000 + 60);
     try {
       const txSig = await glamClient.state.upsertDelegateAcls(statePda, [
         {
           pubkey: key1.publicKey,
           permissions: [{ wSolWrap: {} }, { wSolUnwrap: {} }],
+          expiresAt,
         },
       ]);
       console.log("Update delegate acl txSig", txSig);
@@ -189,17 +198,22 @@ describe("glam_crud", () => {
     }
     stateModel = await glamClient.fetchState(statePda);
     expect(stateModel.delegateAcls?.length).toEqual(1);
-    expect(stateModel.delegateAcls[0].pubkey).toEqual(key1.publicKey);
-    expect(stateModel.delegateAcls[0].permissions).toEqual([
+    expect(stateModel.delegateAcls![0].pubkey).toEqual(key1.publicKey);
+    expect(stateModel.delegateAcls![0].permissions).toEqual([
       { wSolWrap: {} },
       { wSolUnwrap: {} },
     ]);
+    expect(stateModel.delegateAcls![0].expiresAt).toEqual(expiresAt);
   });
 
   it("[delegate-acl] delete", async () => {
     // add key2 permissions
     const delegateAcls = [
-      { pubkey: key2.publicKey, permissions: [{ stake: {} }] },
+      {
+        pubkey: key2.publicKey,
+        permissions: [{ stake: {} }],
+        expiresAt: new BN(0),
+      },
     ];
     try {
       const txSig = await glamClient.state.upsertDelegateAcls(
@@ -213,8 +227,6 @@ describe("glam_crud", () => {
     }
     let stateModel = await glamClient.fetchState(statePda);
     expect(stateModel.delegateAcls?.length).toEqual(2);
-    expect(stateModel.delegateAcls[1].pubkey).toEqual(key2.publicKey);
-    expect(stateModel.delegateAcls[1].permissions).toEqual([{ stake: {} }]);
 
     // remove key1 and key2 permissions
     try {
@@ -232,8 +244,8 @@ describe("glam_crud", () => {
   });
 
   it("[delegate-acl] test authorization", async () => {
-    // transfer 1 SOL to treasury
-    // transfer 0.1 SOL to key1 as it needs to pay for treasury wsol ata creation
+    // transfer 1 SOL to vault
+    // transfer 0.1 SOL to key1 as it needs to pay for vault wsol ata creation
     const tranferTx = new Transaction().add(
       SystemProgram.transfer({
         fromPubkey: glamClient.getSigner(),
@@ -249,13 +261,17 @@ describe("glam_crud", () => {
     await glamClient.sendAndConfirm(tranferTx);
 
     // grant key1 wSolWrap permission
-    let updatedState = {
+    let updated = {
       delegateAcls: [
-        { pubkey: key1.publicKey, permissions: [{ wSolWrap: {} }] },
+        {
+          pubkey: key1.publicKey,
+          permissions: [{ wSolWrap: {} }],
+          expiresAt: new BN(0),
+        },
       ],
     };
     try {
-      const txSig = await glamClient.state.updateState(statePda, updatedState);
+      const txSig = await glamClient.state.updateState(statePda, updated);
       console.log("Update delegate acl txSig", txSig);
     } catch (e) {
       console.error(e);
@@ -263,19 +279,10 @@ describe("glam_crud", () => {
     }
     let StateModel = await glamClient.fetchState(statePda);
     expect(StateModel.delegateAcls?.length).toEqual(1);
-    expect(StateModel.delegateAcls[0].pubkey).toEqual(key1.publicKey);
+    expect(StateModel.delegateAcls![0].pubkey).toEqual(key1.publicKey);
 
     // key1 now has wSolWrap permission, use key1 to wrap some SOL
-    try {
-      const tx = await glamClientCustomWallet.wsol.wrap(
-        statePda,
-        new BN(30_000_000),
-      );
-      console.log("Wrap:", tx);
-    } catch (e) {
-      console.log("Error", e);
-      throw e;
-    }
+    await glamClientCustomWallet.wsol.wrap(statePda, new BN(30_000_000));
 
     // key1 doesn't have wSolUnwrap permission, unwrap should fail
     try {
@@ -287,95 +294,85 @@ describe("glam_crud", () => {
     }
   }, 15_000);
 
-  it("Update state unauthorized", async () => {
-    const updatedState = new StateModel({ name: "Updated state name" });
+  it("[drift-market-allowlists] upsert", async () => {
+    let stateModel = await glamClient.fetchState(statePda);
+    expect(stateModel.driftMarketIndexesPerp).toBeNull();
+
     try {
-      const txId = await glamClient.program.methods
-        .updateState(updatedState)
-        .accounts({
-          state: statePda,
-          signer: key1.publicKey,
-        })
-        .signers([key1])
-        .rpc();
-      expect(txId).toBeUndefined();
+      const txSig = await glamClient.state.updateState(statePda, {
+        driftMarketIndexesPerp: [0, 1],
+        driftMarketIndexesSpot: [2, 3, 4],
+        driftOrderTypes: [5, 6],
+      });
+      console.log("Update driftMarketIndexesPerp txSig", txSig);
     } catch (e) {
-      expect(e.error.errorMessage).toEqual("Signer is not authorized");
+      console.error(e);
+      throw e;
     }
-  });
+    stateModel = await glamClient.fetchState(statePda);
+    expect(stateModel.driftMarketIndexesPerp).toEqual([0, 1]);
+    expect(stateModel.driftMarketIndexesSpot).toEqual([2, 3, 4]);
+    expect(stateModel.driftOrderTypes).toEqual([5, 6]);
+  }, 15_000);
 
-  it("Update owner", async () => {
-    const defaultOwner = glamClient.getSigner();
-    const newOwner = Keypair.fromSeed(str2seed("new-owner"));
+  it("[ownership] Update state unauthorized", async () => {
+    try {
+      const txSig = await glamClientCustomWallet.state.updateState(statePda, {
+        name: "Updated state name",
+      });
+      expect(txSig).toBeUndefined();
+    } catch (e) {
+      expect((e as GlamError).message).toEqual("Signer is not authorized.");
+    }
+  }, 15_000);
 
-    const updatedState = new StateModel({
+  it("[ownership] Update owner", async () => {
+    const updated = {
       owner: {
         portfolioManagerName: "New Owner",
-        pubkey: newOwner.publicKey,
+        pubkey: key1.publicKey,
         kind: { wallet: {} },
       },
-    });
+    };
     try {
-      const txId = await glamClient.program.methods
-        .updateState(updatedState)
-        .accounts({
-          state: statePda,
-          signer: defaultOwner,
-        })
-        .rpc();
-
-      console.log("Owner updated from default to new", txId);
+      const txSig = await glamClient.state.updateState(statePda, updated);
+      console.log("Owner updated from default to new", txSig);
     } catch (e) {
       console.error(e);
       throw e;
     }
     let glamState = await glamClient.fetchStateAccount(statePda);
-    expect(glamState.owner.toString()).toEqual(newOwner.publicKey.toString());
+    expect(glamState.owner).toEqual(key1.publicKey);
 
-    const updatedState2 = new StateModel({
-      owner: {
-        portfolioManagerName: "Default Manager",
-        pubkey: defaultOwner,
-        kind: { wallet: {} },
-      },
-    });
-
-    // default manager can NOT update back
+    // previous owner CAN NOT update
     try {
-      const txId = await glamClient.program.methods
-        .updateState(updatedState2)
-        .accounts({
-          state: statePda,
-          signer: defaultOwner,
-        })
-        .rpc();
-      expect(txId).toBeUndefined();
+      const txSig = await glamClient.state.updateState(statePda, {
+        name: "Updated state name",
+      });
+      expect(txSig).toBeUndefined();
     } catch (e) {
-      expect(e.message).toContain("not authorized");
+      expect((e as GlamError).message).toEqual("Signer is not authorized.");
     }
 
     // new manager CAN update back
     try {
-      const txId = await glamClient.program.methods
-        .updateState(updatedState2)
-        .accounts({
-          state: statePda,
-          signer: newOwner.publicKey,
-        })
-        .signers([newOwner])
-        .rpc();
+      const txId = await glamClientCustomWallet.state.updateState(statePda, {
+        owner: {
+          portfolioManagerName: "Default Owner",
+          pubkey: glamClient.getSigner(),
+          kind: { wallet: {} },
+        },
+      });
       console.log("Owner updated from new to default", txId);
     } catch (e) {
       console.error(e);
       throw e;
     }
     glamState = await glamClient.fetchStateAccount(statePda);
-    expect(glamState.owner).toEqual(defaultOwner);
+    expect(glamState.owner).toEqual(glamClient.getSigner());
   });
 
   it("Close token accounts", async () => {
-    const treasury = glamClient.getVaultPda(statePda);
-
     // Create empty token accounts
     const transaction = new Transaction();
     for (const mint of [WSOL, MSOL]) {
@@ -383,15 +380,15 @@ describe("glam_crud", () => {
         createAssociatedTokenAccountIdempotentInstruction(
           glamClient.getSigner(),
           glamClient.getVaultAta(statePda, mint),
-          treasury,
+          vaultPda,
           mint,
         ),
       );
     }
     const txSig = await glamClient.sendAndConfirm(transaction);
-    console.log("Creating ata for treasury:", txSig);
+    console.log("Created wSOL and mSOL ATAs for vault:", txSig);
 
-    let tokenAccounts = await glamClient.getTokenAccountsByOwner(treasury);
+    let tokenAccounts = await glamClient.getTokenAccountsByOwner(vaultPda);
     expect(tokenAccounts.length).toEqual(2);
 
     // Close token accounts
@@ -405,7 +402,7 @@ describe("glam_crud", () => {
       console.error(e);
       throw e;
     }
-    tokenAccounts = await glamClient.getTokenAccountsByOwner(treasury);
+    tokenAccounts = await glamClient.getTokenAccountsByOwner(vaultPda);
     expect(tokenAccounts.length).toEqual(0);
   });
 
@@ -414,8 +411,8 @@ describe("glam_crud", () => {
     expect(glamState).not.toBeNull();
 
     try {
-      const txId = await glamClient.state.closeState(statePda);
-      expect(txId).toBeUndefined();
+      const txSig = await glamClient.state.closeState(statePda);
+      expect(txSig).toBeUndefined();
     } catch (e) {
       expect(e.message).toContain(
         "Glam state account can't be closed. Close share classes first",
@@ -423,16 +420,16 @@ describe("glam_crud", () => {
     }
 
     try {
-      const txId = await glamClient.shareClass.closeShareClass(statePda);
-      console.log("Close share class txId:", txId);
+      const txSig = await glamClient.shareClass.closeShareClass(statePda);
+      console.log("Close share class txId:", txSig);
     } catch (e) {
       console.error(e);
       throw e;
     }
 
     try {
-      const txId = await glamClient.state.closeState(statePda);
-      console.log("Close state account txId:", txId);
+      const txSig = await glamClient.state.closeState(statePda);
+      console.log("Close state account txId:", txSig);
     } catch (e) {
       console.error(e);
       throw e;
@@ -449,5 +446,4 @@ describe("glam_crud", () => {
     );
     expect(ret).toEqual([null, null, null]);
   });
-  */
 });

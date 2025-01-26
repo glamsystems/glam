@@ -82,8 +82,6 @@ export class StateClient {
       return [txSig, statePda];
     }
 
-    console.log("Initialize state", stateModel);
-
     const txSig = await this.base.program.methods
       .initializeState(stateModel)
       .accountsPartial({
@@ -122,12 +120,22 @@ export class StateClient {
     updated: Partial<StateModel>,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    return await this.base.program.methods
+    const tx = await this.updateStateTx(statePda, updated, txOptions);
+    return await this.base.sendAndConfirm(tx);
+  }
+
+  public async updateStateTx(
+    statePda: PublicKey,
+    updated: Partial<StateModel>,
+    txOptions: TxOptions,
+  ): Promise<VersionedTransaction> {
+    const tx = await this.base.program.methods
       .updateState(new StateModel(updated))
       .accounts({
         state: statePda,
       })
-      .rpc();
+      .transaction();
+    return await this.base.intoVersionedTransaction({ tx, ...txOptions });
   }
 
   public async closeState(
@@ -252,7 +260,11 @@ export class StateClient {
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const updated = new StateModel({
-      delegateAcls: delegates.map((pubkey) => ({ pubkey, permissions: [] })),
+      delegateAcls: delegates.map((pubkey) => ({
+        pubkey,
+        permissions: [],
+        expiresAt: new BN(0),
+      })),
     });
     return await this.updateState(statePda, updated, txOptions);
   }
@@ -262,8 +274,7 @@ export class StateClient {
     delegateAcls: DelegateAcl[],
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const updatedFund = new StateModel({ delegateAcls });
-    return await this.updateState(statePda, updatedFund, txOptions);
+    return await this.updateState(statePda, { delegateAcls }, txOptions);
   }
 
   public async setSubscribeRedeemEnabled(
@@ -324,7 +335,6 @@ export class StateClient {
     tokenAccounts: PublicKey[],
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
-    // @ts-ignore
     const tx = await this.base.program.methods
       .closeTokenAccounts()
       .accounts({

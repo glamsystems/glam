@@ -75,16 +75,16 @@ pub struct ShareClassModel {
     pub image_uri: Option<String>, // TODO: remove?
 
     // Acls
-    pub allowlist: Option<Vec<Pubkey>>, // TODO: optional
-    pub blocklist: Option<Vec<Pubkey>>, // TODO: optional
+    pub allowlist: Option<Vec<Pubkey>>,
+    pub blocklist: Option<Vec<Pubkey>>,
 
     // Policies
-    pub lock_up_period_in_seconds: Option<i32>, // TODO: optional
+    pub lock_up_period_in_seconds: Option<i32>,
     pub permanent_delegate: Option<Pubkey>,
-    pub default_account_state_frozen: Option<bool>, // TODO: optional
+    pub default_account_state_frozen: Option<bool>,
 
     // Metadata
-    pub is_raw_openfunds: Option<bool>, // TODO: optional
+    pub is_raw_openfunds: Option<bool>,
     pub raw_openfunds: Option<ShareClassOpenfundsModel>,
 }
 

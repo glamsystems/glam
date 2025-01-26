@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{
     constants::*,
     error::{AccessError, StateError},
@@ -143,55 +145,59 @@ pub fn update_state_handler<'c: 'info, 'info>(
         state.integrations = integrations;
     }
 
-    // update or add delegate acls
-    // if permissions is empty, delete the entry
+    // Update or add delegate acls
+    // If permissions is empty, delete the entry
     if let Some(delegate_acls) = state_model.delegate_acls {
-        state.delegate_acls.retain_mut(|da| {
-            if let Some(d) = delegate_acls.iter().find(|d| d.pubkey == da.pubkey) {
-                da.permissions = d.permissions.clone();
-                !d.permissions.is_empty()
-            } else {
-                true
-            }
-        });
+        let mut existing_pubkeys: HashMap<_, _> = state
+            .delegate_acls
+            .iter()
+            .map(|da| (da.pubkey, da.clone()))
+            .collect();
+
+        for da in delegate_acls {
+            existing_pubkeys.insert(da.pubkey, da.clone());
+        }
+
+        state.delegate_acls = existing_pubkeys
+            .into_values()
+            .filter(|da| !da.permissions.is_empty())
+            .collect();
     }
 
     if let Some(market_indexes_perp) = state_model.drift_market_indexes_perp {
-        let Some(EngineField { value, .. }) = state.params[0]
+        if let Some(EngineField { value, .. }) = state.params[0]
             .iter_mut()
             .find(|f| f.name == EngineFieldName::DriftMarketIndexesPerp)
-        else {
+        {
+            if let EngineFieldValue::VecU32 { val } = value {
+                *val = market_indexes_perp;
+            }
+        } else {
             state.params[0].push(EngineField {
                 name: EngineFieldName::DriftMarketIndexesPerp,
                 value: EngineFieldValue::VecU32 {
                     val: market_indexes_perp.clone(),
                 },
             });
-            return Ok(());
         };
-
-        if let EngineFieldValue::VecU32 { val } = value {
-            *val = market_indexes_perp;
-        }
     }
 
     if let Some(market_indexes_spot) = state_model.drift_market_indexes_spot {
-        let Some(EngineField { value, .. }) = state.params[0]
+        if let Some(EngineField { value, .. }) = state.params[0]
             .iter_mut()
             .find(|f| f.name == EngineFieldName::DriftMarketIndexesSpot)
-        else {
+        {
+            if let EngineFieldValue::VecU32 { val } = value {
+                *val = market_indexes_spot;
+            }
+        } else {
             state.params[0].push(EngineField {
                 name: EngineFieldName::DriftMarketIndexesSpot,
                 value: EngineFieldValue::VecU32 {
                     val: market_indexes_spot.clone(),
                 },
             });
-            return Ok(());
         };
-
-        if let EngineFieldValue::VecU32 { val } = value {
-            *val = market_indexes_spot;
-        }
     }
 
     if let Some(drift_order_types) = state_model.drift_order_types {

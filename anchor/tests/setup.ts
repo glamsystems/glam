@@ -47,7 +47,6 @@ export const stateModelForTest = {
       name: "Glam Fund SOL-mSOL",
       symbol: "GBS",
       uri: "",
-      statePubkey: new PublicKey(0),
       asset: USDC,
       imageUri: "",
       isRawOpenfunds: true,

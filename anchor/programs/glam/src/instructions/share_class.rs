@@ -69,7 +69,7 @@ pub struct AddShareClass<'info> {
 
 pub fn add_share_class_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, AddShareClass<'info>>,
-    share_class_metadata: ShareClassModel,
+    share_class_model: ShareClassModel,
 ) -> Result<()> {
     //
     // Add share class to state
@@ -86,17 +86,17 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
         EngineField {
             name: EngineFieldName::ShareClassAllowlist,
             value: EngineFieldValue::VecPubkey {
-                val: share_class_metadata.clone().allowlist.unwrap_or_default(),
+                val: share_class_model.clone().allowlist.unwrap_or_default(),
             },
         },
         EngineField {
             name: EngineFieldName::ShareClassBlocklist,
             value: EngineFieldValue::VecPubkey {
-                val: share_class_metadata.clone().blocklist.unwrap_or_default(),
+                val: share_class_model.clone().blocklist.unwrap_or_default(),
             },
         },
     ];
-    let share_class_metadata = &mut share_class_metadata.clone();
+    let share_class_metadata = &mut share_class_model.clone();
     let mut raw_openfunds = share_class_metadata
         .raw_openfunds
         .clone()
@@ -189,6 +189,7 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
     let metadata_space = 1024;
     let lamports_required = (Rent::get()?).minimum_balance(space + metadata_space);
 
+    #[cfg(not(feature = "mainnet"))]
     msg!(
         "Create Mint and metadata account size and cost: {} lamports: {}",
         space as u64,

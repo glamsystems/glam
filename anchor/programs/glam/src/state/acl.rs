@@ -39,7 +39,7 @@ pub enum Permission {
 pub struct DelegateAcl {
     pub pubkey: Pubkey,
     pub permissions: Vec<Permission>,
-    pub expires_at: i64, // Unix timestamp
+    pub expires_at: i64, // Unix timestamp in seconds, 0 means no expiration
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, PartialEq, Debug)]

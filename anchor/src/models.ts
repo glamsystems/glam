@@ -55,17 +55,17 @@ export class StateIdlModel implements StateModelType {
     this.name = data.name ?? null;
     this.uri = data.uri ?? null;
     this.enabled = data.enabled ?? null;
-    this.assets = data.assets ?? [];
-    this.externalVaultAccounts = data.externalVaultAccounts ?? [];
-    this.mints = data.mints ?? [];
+    this.assets = data.assets ?? null;
+    this.externalVaultAccounts = data.externalVaultAccounts ?? null;
+    this.mints = data.mints ?? null;
     this.company = data.company ?? null;
     this.owner = data.owner ?? null;
     this.created = data.created ?? null;
-    this.delegateAcls = data.delegateAcls ?? [];
-    this.integrations = data.integrations ?? [];
-    this.driftMarketIndexesPerp = data.driftMarketIndexesPerp ?? [];
-    this.driftMarketIndexesSpot = data.driftMarketIndexesSpot ?? [];
-    this.driftOrderTypes = data.driftOrderTypes ?? [];
+    this.delegateAcls = data.delegateAcls ?? null;
+    this.integrations = data.integrations ?? null;
+    this.driftMarketIndexesPerp = data.driftMarketIndexesPerp ?? null;
+    this.driftMarketIndexesSpot = data.driftMarketIndexesSpot ?? null;
+    this.driftOrderTypes = data.driftOrderTypes ?? null;
     this.metadata = data.metadata ?? null;
     this.rawOpenfunds = data.rawOpenfunds ?? null;
   }
@@ -108,16 +108,7 @@ export class StateModel extends StateIdlModel {
   }
 
   get productType() {
-    if (this.mints.length === 0) {
-      return "Vault";
-    }
-    if (
-      // @ts-ignore
-      this.integrationAcls.find((acl) => Object.keys(acl.name)[0] === "mint")
-    ) {
-      return "Mint";
-    }
-    return "Fund";
+    return this.accountType;
   }
 
   get shareClassMints() {
@@ -308,14 +299,14 @@ export class ShareClassIdlModel implements ShareClassModelType {
   asset: PublicKey | null;
   imageUri: string | null;
 
-  allowlist: PublicKey[];
-  blocklist: PublicKey[];
+  allowlist: PublicKey[] | null;
+  blocklist: PublicKey[] | null;
 
-  lockUpPeriodInSeconds: number;
+  lockUpPeriodInSeconds: number | null;
   permanentDelegate: PublicKey | null;
-  defaultAccountStateFrozen: boolean;
+  defaultAccountStateFrozen: boolean | null;
 
-  isRawOpenfunds: boolean;
+  isRawOpenfunds: boolean | null;
   rawOpenfunds: ShareClassOpenfundsModel | null;
 
   constructor(data: Partial<ShareClassModelType>) {
@@ -325,13 +316,13 @@ export class ShareClassIdlModel implements ShareClassModelType {
     this.statePubkey = data.statePubkey ?? null;
     this.asset = data.asset ?? null;
     this.imageUri = data.imageUri ?? null;
-    this.isRawOpenfunds = data.isRawOpenfunds ?? false;
+    this.isRawOpenfunds = data.isRawOpenfunds ?? null;
     this.rawOpenfunds = data.rawOpenfunds ?? null;
-    this.allowlist = data.allowlist ?? [];
-    this.blocklist = data.blocklist ?? [];
-    this.lockUpPeriodInSeconds = data.lockUpPeriodInSeconds ?? 0;
+    this.allowlist = data.allowlist ?? null;
+    this.blocklist = data.blocklist ?? null;
+    this.lockUpPeriodInSeconds = data.lockUpPeriodInSeconds ?? null;
     this.permanentDelegate = data.permanentDelegate ?? null;
-    this.defaultAccountStateFrozen = data.defaultAccountStateFrozen ?? false;
+    this.defaultAccountStateFrozen = data.defaultAccountStateFrozen ?? null;
   }
 }
 export class ShareClassModel extends ShareClassIdlModel {

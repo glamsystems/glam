@@ -501,8 +501,8 @@ export class BaseClient {
   getName(stateModel: Partial<StateModel>) {
     const name =
       stateModel.name ||
-      stateModel.rawOpenfunds?.legalFundNameIncludingUmbrella ||
-      (stateModel.mints && stateModel.mints[0]?.name);
+      (stateModel.mints && stateModel.mints[0]?.name) ||
+      stateModel.rawOpenfunds?.legalFundNameIncludingUmbrella;
     if (!name) {
       throw new Error("Name not be inferred from state model");
     }
