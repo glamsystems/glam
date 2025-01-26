@@ -3,7 +3,7 @@ use crate::{
     error::{AccessError, StateError},
     state::*,
 };
-use anchor_lang::{prelude::*, solana_program, system_program, Discriminator};
+use anchor_lang::{prelude::*, solana_program, system_program};
 use anchor_spl::{
     token::{close_account as close_token_account, CloseAccount as CloseTokenAccount, Token},
     token_2022::{
@@ -35,9 +35,14 @@ pub struct InitializeState<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    /// CHECK: Manually initialized metadata account according to template provided in state model
-    #[account(mut, seeds = [SEED_METADATA.as_bytes(), state.key().as_ref()], bump)]
-    pub metadata: AccountInfo<'info>,
+    #[account(
+        init,
+        seeds = [SEED_METADATA.as_bytes(), state.key().as_ref()],
+        bump,
+        payer = signer,
+        space = 8 + OpenfundsMetadataAccount::INIT_SIZE
+    )]
+    pub openfunds_metadata: Option<Box<Account<'info, OpenfundsMetadataAccount>>>,
 
     pub system_program: Program<'info, System>,
 }
@@ -62,6 +67,13 @@ pub fn initialize_state_handler<'c: 'info, 'info>(
         require!(uri.len() < MAX_SIZE_URI, StateError::InvalidUri);
         state.uri = uri;
     }
+    if let Some(created) = model.created {
+        state.created = CreatedModel {
+            key: created.key,
+            created_by: ctx.accounts.signer.key(),
+            created_at: Clock::get()?.unix_timestamp,
+        };
+    }
     if let Some(metadata) = model.metadata {
         require!(metadata.uri.len() < MAX_SIZE_URI, StateError::InvalidUri);
         state.metadata = Some(Metadata {
@@ -70,45 +82,16 @@ pub fn initialize_state_handler<'c: 'info, 'info>(
             uri: metadata.uri,
         });
 
-        if metadata.template == MetadataType::Openfunds {
-            let rent = Rent::get()?;
-            let space = 8 + OpenfundsMetadataAccount::INIT_SIZE;
-            let lamports = rent.minimum_balance(space);
-
-            let create_account_ix = solana_program::system_instruction::create_account(
-                ctx.accounts.signer.key,
-                ctx.accounts.metadata.key,
-                lamports,
-                space as u64,
-                &crate::ID,
-            );
-
-            solana_program::program::invoke_signed(
-                &create_account_ix,
-                &[
-                    ctx.accounts.signer.to_account_info(),
-                    ctx.accounts.metadata.to_account_info(),
-                    ctx.accounts.system_program.to_account_info(),
-                ],
-                &[&[
-                    SEED_METADATA.as_bytes(),
-                    state.key().as_ref(),
-                    &[ctx.bumps.metadata],
-                ]],
-            )?;
-
-            let discriminator = OpenfundsMetadataAccount::discriminator();
-            let mut metadata_data = ctx.accounts.metadata.try_borrow_mut_data()?;
-            metadata_data[..8].copy_from_slice(&discriminator);
-
-            let openfunds_metadata = OpenfundsMetadataAccount::from(state_model);
-            openfunds_metadata.try_serialize(&mut &mut metadata_data[8..])?;
+        if metadata.template == MetadataTemplate::Openfunds {
+            if let Some(openfunds_metadata) = &mut ctx.accounts.openfunds_metadata {
+                openfunds_metadata.set_inner(OpenfundsMetadataAccount::from(state_model));
+                openfunds_metadata.fund_id = state.key();
+            }
         }
     }
 
     state.vault = ctx.accounts.vault.key();
     state.owner = ctx.accounts.signer.key();
-    state.created = Clock::get()?.unix_timestamp;
     state.enabled = model.enabled.unwrap_or(true);
     state.assets = model.assets.unwrap_or_default();
     state.integrations = model.integrations.unwrap_or_default();

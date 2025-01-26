@@ -4,14 +4,10 @@ use crate::state::accounts::*;
 
 use super::super::acl::*;
 
-// Fund
-//
-// Implemented:
-// - Openfunds Fund Essential + Core
-
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
 pub struct StateModel {
     // Core
+    pub id: Option<Pubkey>,
     pub account_type: Option<AccountType>,
     pub name: Option<String>,
     pub uri: Option<String>,
@@ -60,13 +56,6 @@ pub struct FundOpenfundsModel {
     pub ucits_version: Option<String>,
 }
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
-pub struct CreatedModel {
-    pub key: [u8; 8], // seed for computing state PDA
-    pub created_at: i64,
-    pub owner: Option<Pubkey>,
-}
-
 // Share Class
 //
 // Implemented:
@@ -83,19 +72,19 @@ pub struct ShareClassModel {
     // Glam
     pub state_pubkey: Option<Pubkey>,
     pub asset: Option<Pubkey>,
-    pub image_uri: Option<String>,
+    pub image_uri: Option<String>, // TODO: remove?
 
     // Acls
-    pub allowlist: Vec<Pubkey>,
-    pub blocklist: Vec<Pubkey>,
+    pub allowlist: Option<Vec<Pubkey>>, // TODO: optional
+    pub blocklist: Option<Vec<Pubkey>>, // TODO: optional
 
     // Policies
-    pub lock_up_period_in_seconds: i32,
+    pub lock_up_period_in_seconds: Option<i32>, // TODO: optional
     pub permanent_delegate: Option<Pubkey>,
-    pub default_account_state_frozen: bool,
+    pub default_account_state_frozen: Option<bool>, // TODO: optional
 
     // Metadata
-    pub is_raw_openfunds: bool,
+    pub is_raw_openfunds: Option<bool>, // TODO: optional
     pub raw_openfunds: Option<ShareClassOpenfundsModel>,
 }
 

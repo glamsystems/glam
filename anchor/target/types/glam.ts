@@ -82,8 +82,9 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "metadata",
+          "name": "openfundsMetadata",
           "writable": true,
+          "optional": true,
           "pda": {
             "seeds": [
               {
@@ -1975,8 +1976,9 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "metadata",
+          "name": "openfundsMetadata",
           "writable": true,
+          "optional": true,
           "pda": {
             "seeds": [
               {
@@ -5723,6 +5725,19 @@ export type Glam = {
       ]
     },
     {
+      "name": "openfundsMetadataAccount",
+      "discriminator": [
+        5,
+        89,
+        20,
+        76,
+        255,
+        158,
+        209,
+        219
+      ]
+    },
+    {
       "name": "partialUnstaking",
       "discriminator": [
         172,
@@ -5791,13 +5806,53 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "invalidAssetForSwap",
-      "msg": "Asset cannot be swapped"
+      "name": "invalidAccountType",
+      "msg": "Invalid account type"
     },
     {
       "code": 6001,
-      "name": "invalidSwap",
-      "msg": "Swap failed"
+      "name": "invalidName",
+      "msg": "Name too long: max 64 chars"
+    },
+    {
+      "code": 6002,
+      "name": "invalidSymbol",
+      "msg": "Symbol too long: max 32 chars"
+    },
+    {
+      "code": 6003,
+      "name": "invalidUri",
+      "msg": "Uri too long: max 128 chars"
+    },
+    {
+      "code": 6004,
+      "name": "invalidAssetsLen",
+      "msg": "Too many assets: max 100"
+    },
+    {
+      "code": 6005,
+      "name": "disabled",
+      "msg": "State account is disabled"
+    },
+    {
+      "code": 6006,
+      "name": "noShareClass",
+      "msg": "No share class found"
+    },
+    {
+      "code": 6007,
+      "name": "shareClassesNotClosed",
+      "msg": "Glam state account can't be closed. Close share classes first"
+    },
+    {
+      "code": 6008,
+      "name": "closeNotEmptyError",
+      "msg": "Error closing state account: not empty"
+    },
+    {
+      "code": 6009,
+      "name": "withdrawDenied",
+      "msg": "Withdraw denied. Only vaults allow withdraws (funds and mints don't)"
     }
   ],
   "types": [
@@ -5814,6 +5869,127 @@ export type Glam = {
           },
           {
             "name": "fund"
+          }
+        ]
+      }
+    },
+    {
+      "name": "companyField",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "defined": {
+                "name": "companyFieldName"
+              }
+            }
+          },
+          {
+            "name": "value",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "companyFieldName",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "fundGroupName"
+          },
+          {
+            "name": "manCo"
+          },
+          {
+            "name": "domicileOfManCo"
+          },
+          {
+            "name": "bicOfCustodian"
+          },
+          {
+            "name": "collateralManagerName"
+          },
+          {
+            "name": "custodianBankName"
+          },
+          {
+            "name": "domicileOfCustodianBank"
+          },
+          {
+            "name": "fundAdministratorName"
+          },
+          {
+            "name": "fundAdvisorName"
+          },
+          {
+            "name": "fundPromoterName"
+          },
+          {
+            "name": "isSelfManagedInvestmentCompany"
+          },
+          {
+            "name": "leiOfCustodianBank"
+          },
+          {
+            "name": "leiOfManCo"
+          },
+          {
+            "name": "portfolioManagingCompanyName"
+          },
+          {
+            "name": "securitiesLendingCounterpartyName"
+          },
+          {
+            "name": "swapCounterpartyName"
+          },
+          {
+            "name": "addressofManCo"
+          },
+          {
+            "name": "auditorName"
+          },
+          {
+            "name": "cityofManCo"
+          },
+          {
+            "name": "emailAddressOfManCo"
+          },
+          {
+            "name": "fundWebsiteOfManCo"
+          },
+          {
+            "name": "isUnpriSignatory"
+          },
+          {
+            "name": "phoneCountryCodeofManCo"
+          },
+          {
+            "name": "phoneNumberofManCo"
+          },
+          {
+            "name": "subInvestmentAdvisorName"
+          },
+          {
+            "name": "zipCodeofManCo"
+          },
+          {
+            "name": "domicileOfUmbrella"
+          },
+          {
+            "name": "hasUmbrella"
+          },
+          {
+            "name": "leiOfUmbrella"
+          },
+          {
+            "name": "umbrella"
+          },
+          {
+            "name": "globalIntermediaryIdentificationNumberOfUmbrella"
           }
         ]
       }
@@ -5871,14 +6047,12 @@ export type Glam = {
             }
           },
           {
-            "name": "createdAt",
-            "type": "i64"
+            "name": "createdBy",
+            "type": "pubkey"
           },
           {
-            "name": "owner",
-            "type": {
-              "option": "pubkey"
-            }
+            "name": "createdAt",
+            "type": "i64"
           }
         ]
       }
@@ -6160,6 +6334,209 @@ export type Glam = {
                 9
               ]
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "fundField",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "defined": {
+                "name": "fundFieldName"
+              }
+            }
+          },
+          {
+            "name": "value",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "fundFieldName",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "fundDomicileAlpha2"
+          },
+          {
+            "name": "fundDomicileAlpha3"
+          },
+          {
+            "name": "legalFundNameIncludingUmbrella"
+          },
+          {
+            "name": "fiscalYearEnd"
+          },
+          {
+            "name": "fundCurrency"
+          },
+          {
+            "name": "fundLaunchDate"
+          },
+          {
+            "name": "investmentObjective"
+          },
+          {
+            "name": "isEtc"
+          },
+          {
+            "name": "isEuDirectiveRelevant"
+          },
+          {
+            "name": "isFundOfFunds"
+          },
+          {
+            "name": "isPassiveFund"
+          },
+          {
+            "name": "isReit"
+          },
+          {
+            "name": "legalForm"
+          },
+          {
+            "name": "legalFundNameOnly"
+          },
+          {
+            "name": "openEndedOrClosedEndedFundStructure"
+          },
+          {
+            "name": "typeOfEuDirective"
+          },
+          {
+            "name": "ucitsVersion"
+          },
+          {
+            "name": "currencyHedgePortfolio"
+          },
+          {
+            "name": "depositoryName"
+          },
+          {
+            "name": "fundValuationPoint"
+          },
+          {
+            "name": "fundValuationPointTimeZone"
+          },
+          {
+            "name": "fundValuationPointTimeZoneUsingTzDatabase"
+          },
+          {
+            "name": "hasCollateralManager"
+          },
+          {
+            "name": "hasEmbeddedDerivatives"
+          },
+          {
+            "name": "hasSecuritiesLending"
+          },
+          {
+            "name": "hasSwap"
+          },
+          {
+            "name": "isLeveraged"
+          },
+          {
+            "name": "isShariaCompliant"
+          },
+          {
+            "name": "isShort"
+          },
+          {
+            "name": "leIofDepositoryBank"
+          },
+          {
+            "name": "leiOfFund"
+          },
+          {
+            "name": "locationOfBearerShare"
+          },
+          {
+            "name": "locationOfShareRegister"
+          },
+          {
+            "name": "maximumLeverageInFund"
+          },
+          {
+            "name": "miFidSecuritiesClassification"
+          },
+          {
+            "name": "moneyMarketTypeOfFund"
+          },
+          {
+            "name": "trusteeName"
+          },
+          {
+            "name": "auMFund"
+          },
+          {
+            "name": "auMFundDate"
+          },
+          {
+            "name": "noSFund"
+          },
+          {
+            "name": "noSFundDate"
+          }
+        ]
+      }
+    },
+    {
+      "name": "fundManagerField",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "defined": {
+                "name": "fundManagerFieldName"
+              }
+            }
+          },
+          {
+            "name": "value",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "fundManagerFieldName",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "portfolioManagerForename"
+          },
+          {
+            "name": "portfolioManagerName"
+          },
+          {
+            "name": "portfolioManagerYearOfBirth"
+          },
+          {
+            "name": "portfolioManagerYearOfExperienceStart"
+          },
+          {
+            "name": "portfolioManagerBriefBiography"
+          },
+          {
+            "name": "portfolioManagerType"
+          },
+          {
+            "name": "portfolioManagerRoleStartingDate"
+          },
+          {
+            "name": "portfolioManagerRoleEndDate"
           }
         ]
       }
@@ -6520,7 +6897,7 @@ export type Glam = {
             "name": "template",
             "type": {
               "defined": {
-                "name": "metadataType"
+                "name": "metadataTemplate"
               }
             }
           },
@@ -6536,12 +6913,68 @@ export type Glam = {
       }
     },
     {
-      "name": "metadataType",
+      "name": "metadataTemplate",
       "type": {
         "kind": "enum",
         "variants": [
           {
             "name": "openfunds"
+          }
+        ]
+      }
+    },
+    {
+      "name": "openfundsMetadataAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "fundId",
+            "type": "pubkey"
+          },
+          {
+            "name": "company",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "companyField"
+                }
+              }
+            }
+          },
+          {
+            "name": "fund",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "fundField"
+                }
+              }
+            }
+          },
+          {
+            "name": "shareClasses",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": {
+                    "name": "shareClassField"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "name": "fundManagers",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": {
+                    "name": "fundManagerField"
+                  }
+                }
+              }
+            }
           }
         ]
       }
@@ -7009,6 +7442,262 @@ export type Glam = {
       }
     },
     {
+      "name": "shareClassField",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "defined": {
+                "name": "shareClassFieldName"
+              }
+            }
+          },
+          {
+            "name": "value",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "shareClassFieldName",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "isin"
+          },
+          {
+            "name": "shareClassCurrency"
+          },
+          {
+            "name": "appliedSubscriptionFeeInFavourOfDistributor"
+          },
+          {
+            "name": "appliedSubscriptionFeeInFavourOfDistributorReferenceDate"
+          },
+          {
+            "name": "currencyOfMinimalSubscription"
+          },
+          {
+            "name": "fullShareClassName"
+          },
+          {
+            "name": "hasPerformanceFee"
+          },
+          {
+            "name": "hasSubscriptionFeeInFavourOfDistributor"
+          },
+          {
+            "name": "investmentStatus"
+          },
+          {
+            "name": "managementFeeApplied"
+          },
+          {
+            "name": "managementFeeAppliedReferenceDate"
+          },
+          {
+            "name": "managementFeeMaximum"
+          },
+          {
+            "name": "maximumSubscriptionFeeInFavourOfDistributor"
+          },
+          {
+            "name": "minimalInitialSubscriptionCategory"
+          },
+          {
+            "name": "minimalInitialSubscriptionInAmount"
+          },
+          {
+            "name": "minimalInitialSubscriptionInShares"
+          },
+          {
+            "name": "minimalSubsequentSubscriptionCategory"
+          },
+          {
+            "name": "minimalSubsequentSubscriptionInAmount"
+          },
+          {
+            "name": "minimalSubsequentSubscriptionInShares"
+          },
+          {
+            "name": "minimumSubscriptionFeeInFavourOfDistributor"
+          },
+          {
+            "name": "shareClassDistributionPolicy"
+          },
+          {
+            "name": "shareClassExtension"
+          },
+          {
+            "name": "shareClassLaunchDate"
+          },
+          {
+            "name": "shareClassLifecycle"
+          },
+          {
+            "name": "srri"
+          },
+          {
+            "name": "launchPrice"
+          },
+          {
+            "name": "launchPriceCurrency"
+          },
+          {
+            "name": "launchPriceDate"
+          },
+          {
+            "name": "hasAppliedSubscriptionFeeInFavourOfFund"
+          },
+          {
+            "name": "appliedSubscriptionFeeInFavourOfFund"
+          },
+          {
+            "name": "appliedSubscriptionFeeInFavourOfFundReferenceDate"
+          },
+          {
+            "name": "maximumSubscriptionFeeInFavourOfFund"
+          },
+          {
+            "name": "hasAppliedRedemptionFeeInFavourOfFund"
+          },
+          {
+            "name": "appliedRedemptionFeeInFavourOfFund"
+          },
+          {
+            "name": "appliedRedemptionFeeInFavourOfFundReferenceDate"
+          },
+          {
+            "name": "maximumRedemptionFeeInFavourOfFund"
+          },
+          {
+            "name": "appliedRedemptionFeeInFavourOfDistributor"
+          },
+          {
+            "name": "appliedRedemptionFeeInFavourOfDistributorReferenceDate"
+          },
+          {
+            "name": "currencyOfMinimalOrMaximumRedemption"
+          },
+          {
+            "name": "cutOffDateOffsetForRedemption"
+          },
+          {
+            "name": "cutOffDateOffsetForSubscription"
+          },
+          {
+            "name": "cutOffTimeForRedemption"
+          },
+          {
+            "name": "cutOffTimeForSubscription"
+          },
+          {
+            "name": "hasLockUpForRedemption"
+          },
+          {
+            "name": "hasRedemptionFeeInFavourOfDistributor"
+          },
+          {
+            "name": "isValidIsin"
+          },
+          {
+            "name": "lockUpComment"
+          },
+          {
+            "name": "lockUpPeriodInDays"
+          },
+          {
+            "name": "managementFeeMinimum"
+          },
+          {
+            "name": "maximalNumberOfPossibleDecimalsAmount"
+          },
+          {
+            "name": "maximalNumberOfPossibleDecimalsNav"
+          },
+          {
+            "name": "maximalNumberOfPossibleDecimalsShares"
+          },
+          {
+            "name": "maximumInitialRedemptionInAmount"
+          },
+          {
+            "name": "maximumInitialRedemptionInShares"
+          },
+          {
+            "name": "maximumRedemptionFeeInFavourOfDistributor"
+          },
+          {
+            "name": "maximumSubsequentRedemptionInAmount"
+          },
+          {
+            "name": "maximumSubsequentRedemptionInShares"
+          },
+          {
+            "name": "minimalInitialRedemptionInAmount"
+          },
+          {
+            "name": "minimalInitialRedemptionInShares"
+          },
+          {
+            "name": "minimalRedemptionCategory"
+          },
+          {
+            "name": "minimalSubsequentRedemptionInAmount"
+          },
+          {
+            "name": "minimalSubsequentRedemptionInShares"
+          },
+          {
+            "name": "minimumRedemptionFeeInFavourOfDistributor"
+          },
+          {
+            "name": "minimumRedemptionFeeInFavourOfFund"
+          },
+          {
+            "name": "minimumSubscriptionFeeInFavourOfFund"
+          },
+          {
+            "name": "performanceFeeMinimum"
+          },
+          {
+            "name": "roundingMethodForPrices"
+          },
+          {
+            "name": "roundingMethodForRedemptionInAmount"
+          },
+          {
+            "name": "roundingMethodForRedemptionInShares"
+          },
+          {
+            "name": "roundingMethodForSubscriptionInAmount"
+          },
+          {
+            "name": "roundingMethodForSubscriptionInShares"
+          },
+          {
+            "name": "shareClassDividendType"
+          },
+          {
+            "name": "cusip"
+          },
+          {
+            "name": "valor"
+          },
+          {
+            "name": "fundId"
+          },
+          {
+            "name": "imageUri"
+          }
+        ]
+      }
+    },
+    {
       "name": "shareClassModel",
       "type": {
         "kind": "struct",
@@ -7052,18 +7741,24 @@ export type Glam = {
           {
             "name": "allowlist",
             "type": {
-              "vec": "pubkey"
+              "option": {
+                "vec": "pubkey"
+              }
             }
           },
           {
             "name": "blocklist",
             "type": {
-              "vec": "pubkey"
+              "option": {
+                "vec": "pubkey"
+              }
             }
           },
           {
             "name": "lockUpPeriodInSeconds",
-            "type": "i32"
+            "type": {
+              "option": "i32"
+            }
           },
           {
             "name": "permanentDelegate",
@@ -7073,11 +7768,15 @@ export type Glam = {
           },
           {
             "name": "defaultAccountStateFrozen",
-            "type": "bool"
+            "type": {
+              "option": "bool"
+            }
           },
           {
             "name": "isRawOpenfunds",
-            "type": "bool"
+            "type": {
+              "option": "bool"
+            }
           },
           {
             "name": "rawOpenfunds",
@@ -7295,7 +7994,11 @@ export type Glam = {
           },
           {
             "name": "created",
-            "type": "i64"
+            "type": {
+              "defined": {
+                "name": "createdModel"
+              }
+            }
           },
           {
             "name": "engine",
@@ -7371,6 +8074,12 @@ export type Glam = {
       "type": {
         "kind": "struct",
         "fields": [
+          {
+            "name": "id",
+            "type": {
+              "option": "pubkey"
+            }
+          },
           {
             "name": "accountType",
             "type": {

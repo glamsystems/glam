@@ -75,7 +75,7 @@ impl From<&ShareClassModel> for Vec<ShareClassField> {
     fn from(model: &ShareClassModel) -> Self {
         let mut res = vec![];
         // Derived fields
-        let is_raw_openfunds = model.is_raw_openfunds;
+        let is_raw_openfunds = model.is_raw_openfunds.unwrap_or(false);
         let model = model.clone();
         if !is_raw_openfunds {
             let v: Vec<(Option<String>, ShareClassFieldName)> = vec![

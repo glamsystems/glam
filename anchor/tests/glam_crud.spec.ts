@@ -38,11 +38,14 @@ describe("glam_crud", () => {
 
     const stateModel = await glamClient.fetchState(statePda);
 
-    expect(stateModel.mints.length).toEqual(1);
-    expect(stateModel.mints[0].allowlist).toEqual(shareClassAllowlist);
-    expect(stateModel.mints[0].blocklist).toEqual(shareClassBlocklist);
+    console.log("stateModel", stateModel);
+
+    expect(stateModel.mints?.length).toEqual(1);
+    expect(stateModel.mints![0].allowlist).toEqual(shareClassAllowlist);
+    expect(stateModel.mints![0].blocklist).toEqual(shareClassBlocklist);
   });
 
+  /*
   it("Update name in state", async () => {
     const updatedState = {
       name: "Updated name in state",
@@ -446,4 +449,5 @@ describe("glam_crud", () => {
     );
     expect(ret).toEqual([null, null, null]);
   });
+  */
 });

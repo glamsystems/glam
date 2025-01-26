@@ -40,7 +40,7 @@ pub fn share_class_signer_seeds(_attr: TokenStream, item: TokenStream) -> TokenS
             // We assume the fund account and the treasury bump seed are available in the context
             let state_key = ctx.accounts.state.key();
             let seeds = &[
-                "share".as_bytes(),
+                "mint".as_bytes(),
                 &[share_class_id],
                 state_key.as_ref(),
                 &[ctx.bumps.share_class_mint],
@@ -71,7 +71,7 @@ pub fn vault_signer_seeds(_attr: TokenStream, item: TokenStream) -> TokenStream 
             // We assume the fund account and the vault bump seed are available in the context
             let state_key = ctx.accounts.state.key();
             let seeds = [
-                "treasury".as_ref(),
+                "vault".as_ref(),
                 state_key.as_ref(),
                 &[ctx.bumps.vault],
             ];

@@ -51,16 +51,23 @@ pub enum AccountType {
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug, PartialEq, Copy)]
-pub enum MetadataType {
+pub enum MetadataTemplate {
     Openfunds,
-    // ... more metadata types
+    // ... more metadata templates
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
 pub struct Metadata {
-    pub template: MetadataType,
+    pub template: MetadataTemplate,
     pub pubkey: Pubkey, // metadata account pubkey
     pub uri: String,
+}
+
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
+pub struct CreatedModel {
+    pub key: [u8; 8],       // seed for computing state PDA
+    pub created_by: Pubkey, // original pubkey that created the state account
+    pub created_at: i64,
 }
 
 #[account]
@@ -69,7 +76,7 @@ pub struct StateAccount {
     pub owner: Pubkey,
     pub vault: Pubkey,
     pub enabled: bool,
-    pub created: i64,
+    pub created: CreatedModel,
     pub engine: Pubkey,
     pub mints: Vec<Pubkey>,
     pub metadata: Option<Metadata>,

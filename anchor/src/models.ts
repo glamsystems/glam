@@ -3,6 +3,7 @@ import { Glam, GlamIDLJson } from "./glamExports";
 import { PublicKey } from "@solana/web3.js";
 import { ExtensionType, getExtensionData, Mint } from "@solana/spl-token";
 import { TokenMetadata, unpack } from "@solana/spl-token-metadata";
+import { BN } from "@coral-xyz/anchor";
 
 export const GlamIntegrations =
   GlamIDLJson?.types
@@ -18,41 +19,42 @@ export const VaultIntegrations = GlamIntegrations.filter((i) => i !== "Mint");
 
 const GLAM_PROGRAM_ID_DEFAULT = new PublicKey(GlamIDLJson.address);
 
-// FIXME: Anchor is not able to handle enums with too many options
-// The culprit of so many broken types suppressed by @ts-ignore is ShareClassFieldName, which
-// has 100+ options.
-
-// @ts-ignore
-export type StateAccount = IdlAccounts<Glam>["fundAccount"];
-export type MetadataAccount = IdlAccounts<Glam>["fundMetadataAccount"];
+export type StateAccountType = IdlTypes<Glam>["accountType"];
+export type StateAccount = IdlAccounts<Glam>["stateAccount"];
+export type OpenfundsMetadataAccount =
+  IdlAccounts<Glam>["openfundsMetadataAccount"];
 
 export type StateModelType = IdlTypes<Glam>["stateModel"];
 export class StateIdlModel implements StateModelType {
   id: PublicKey | null;
+  accountType: StateAccountType | null;
   name: string | null;
   uri: string | null;
-  metadataUri: string | null;
-  isEnabled: boolean | null;
-  assets: PublicKey[];
-  externalVaultAccounts: PublicKey[];
-  mints: ShareClassModel[];
+  enabled: boolean | null;
+
+  assets: PublicKey[] | null;
+  externalVaultAccounts: PublicKey[] | null;
+
+  mints: ShareClassModel[] | null;
   company: CompanyModel | null;
   owner: ManagerModel | null;
   created: CreatedModel | null;
-  delegateAcls: DelegateAcl[];
-  integrationAcls: IntegrationAcl[];
-  driftMarketIndexesPerp: number[];
-  driftMarketIndexesSpot: number[];
-  driftOrderTypes: number[];
-  isRawOpenfunds: boolean;
+
+  delegateAcls: DelegateAcl[] | null;
+  integrations: Integration[] | null;
+  driftMarketIndexesPerp: number[] | null;
+  driftMarketIndexesSpot: number[] | null;
+  driftOrderTypes: number[] | null;
+
+  metadata: Metadata | null;
   rawOpenfunds: FundOpenfundsModel | null;
 
   constructor(data: Partial<StateModelType>) {
     this.id = data.id ?? null;
+    this.accountType = data.accountType ?? null;
     this.name = data.name ?? null;
     this.uri = data.uri ?? null;
-    this.metadataUri = data.metadataUri ?? null;
-    this.isEnabled = data.isEnabled ?? null;
+    this.enabled = data.enabled ?? null;
     this.assets = data.assets ?? [];
     this.externalVaultAccounts = data.externalVaultAccounts ?? [];
     this.mints = data.mints ?? [];
@@ -60,11 +62,11 @@ export class StateIdlModel implements StateModelType {
     this.owner = data.owner ?? null;
     this.created = data.created ?? null;
     this.delegateAcls = data.delegateAcls ?? [];
-    this.integrationAcls = data.integrationAcls ?? [];
+    this.integrations = data.integrations ?? [];
     this.driftMarketIndexesPerp = data.driftMarketIndexesPerp ?? [];
     this.driftMarketIndexesSpot = data.driftMarketIndexesSpot ?? [];
     this.driftOrderTypes = data.driftOrderTypes ?? [];
-    this.isRawOpenfunds = data.isRawOpenfunds ?? false;
+    this.metadata = data.metadata ?? null;
     this.rawOpenfunds = data.rawOpenfunds ?? null;
   }
 }
@@ -139,13 +141,13 @@ export class StateModel extends StateIdlModel {
    * Build a StateModel from onchain accounts
    *
    * @param stateAccount provides core fund data
-   * @param openfundsAccount includes fund rawOpenfunds data and share class rawOpenfunds data
+   * @param openfundsMetadataAccount includes fund rawOpenfunds data and share class rawOpenfunds data
    * @param shareClassMint provides share class data
    */
   static fromOnchainAccounts(
     statePda: PublicKey,
     stateAccount: StateAccount,
-    openfundsAccount?: MetadataAccount,
+    openfundsMetadataAccount?: OpenfundsMetadataAccount,
     shareClassMint?: Mint,
     glamProgramId: PublicKey = GLAM_PROGRAM_ID_DEFAULT,
   ) {
@@ -153,8 +155,13 @@ export class StateModel extends StateIdlModel {
       id: statePda,
       name: stateAccount.name,
       uri: stateAccount.uri,
+      accountType: stateAccount.accountType,
+      metadata: stateAccount.metadata,
+      assets: stateAccount.assets,
+      created: stateAccount.created,
+      delegateAcls: stateAccount.delegateAcls,
+      integrations: stateAccount.integrations,
       owner: new ManagerModel({ pubkey: stateAccount.owner }),
-      metadataUri: stateAccount.metadataUri,
       mints: [],
     };
 
@@ -167,13 +174,13 @@ export class StateModel extends StateIdlModel {
         // @ts-ignore
         stateModel[name] = value;
       } else {
-        console.warn(`Fund param ${name} not found in FundIdlModel`);
+        console.warn(`State param ${name} not found in StateIdlModel`);
       }
     });
 
     // Build stateModel.rawOpenfunds from openfunds account
     const fundOpenfundsFields = {};
-    openfundsAccount?.fund.forEach((param) => {
+    openfundsMetadataAccount?.fund.forEach((param) => {
       const name = Object.keys(param.name)[0];
       const value = param.value;
       // @ts-ignore
@@ -201,9 +208,9 @@ export class StateModel extends StateIdlModel {
         }
       });
 
-      if (openfundsAccount) {
+      if (openfundsMetadataAccount) {
         const shareClassOpenfundsFields = {};
-        openfundsAccount.shareClasses[i].forEach((param) => {
+        openfundsMetadataAccount.shareClasses[i].forEach((param) => {
           const name = Object.keys(param.name)[0];
           const value = param.value;
           // @ts-ignore
@@ -246,7 +253,6 @@ export class StateModel extends StateIdlModel {
       stateModel.rawOpenfunds?.legalFundNameIncludingUmbrella ||
       (stateModel.mints && stateModel.mints[0]?.name);
 
-    // @ts-ignore
     return new StateModel(stateModel, glamProgramId);
   }
 }
@@ -297,22 +303,26 @@ export class ShareClassIdlModel implements ShareClassModelType {
   symbol: string | null;
   name: string | null;
   uri: string | null;
-  fundId: PublicKey | null;
+
+  statePubkey: PublicKey | null;
   asset: PublicKey | null;
   imageUri: string | null;
-  isRawOpenfunds: boolean;
-  rawOpenfunds: ShareClassOpenfundsModel | null;
+
   allowlist: PublicKey[];
   blocklist: PublicKey[];
+
   lockUpPeriodInSeconds: number;
   permanentDelegate: PublicKey | null;
   defaultAccountStateFrozen: boolean;
+
+  isRawOpenfunds: boolean;
+  rawOpenfunds: ShareClassOpenfundsModel | null;
 
   constructor(data: Partial<ShareClassModelType>) {
     this.symbol = data.symbol ?? null;
     this.name = data.name ?? null;
     this.uri = data.uri ?? null;
-    this.fundId = data.fundId ?? null;
+    this.statePubkey = data.statePubkey ?? null;
     this.asset = data.asset ?? null;
     this.imageUri = data.imageUri ?? null;
     this.isRawOpenfunds = data.isRawOpenfunds ?? false;
@@ -433,6 +443,19 @@ export class CompanyModel implements CompanyModelType {
   }
 }
 
+export type MetadataType = IdlTypes<Glam>["metadata"];
+export class Metadata implements MetadataType {
+  template: IdlTypes<Glam>["metadataTemplate"];
+  pubkey: PublicKey;
+  uri: string;
+
+  constructor(data: Partial<MetadataType>) {
+    this.template = data.template!;
+    this.pubkey = data.pubkey ?? new PublicKey(0);
+    this.uri = data.uri ?? "";
+  }
+}
+
 export type ManagerModelType = IdlTypes<Glam>["managerModel"];
 export class ManagerModel implements ManagerModelType {
   portfolioManagerName: string | null;
@@ -449,11 +472,13 @@ export class ManagerModel implements ManagerModelType {
 export type CreatedModelType = IdlTypes<Glam>["createdModel"];
 export class CreatedModel implements CreatedModelType {
   key: number[]; // Uint8Array;
-  owner: PublicKey | null;
+  createdBy: PublicKey | null;
+  createdAt: BN | null;
 
   constructor(obj: Partial<CreatedModelType>) {
-    this.key = obj.key ?? [];
-    this.owner = obj.owner ?? null;
+    this.key = obj.key ?? [0, 0, 0, 0, 0, 0, 0, 0];
+    this.createdBy = obj.createdBy ?? new PublicKey(0);
+    this.createdAt = obj.createdAt ?? new BN(0);
   }
 }
 
@@ -462,21 +487,13 @@ export type DelegateAclType = IdlTypes<Glam>["delegateAcl"];
 export class DelegateAcl implements DelegateAclType {
   pubkey: PublicKey;
   permissions: Permission[];
+  expiresAt: BN;
 
   constructor(obj: Partial<DelegateAclType>) {
     this.pubkey = obj.pubkey!;
     this.permissions = obj.permissions ?? [];
+    this.expiresAt = obj.expiresAt ?? new BN(0);
   }
 }
 
-export type IntegrationName = IdlTypes<Glam>["integrationName"];
-export type IntegrationAclType = IdlTypes<Glam>["integrationAcl"];
-export class IntegrationAcl implements IntegrationAclType {
-  name: IntegrationName;
-  features: { all: {} }[];
-
-  constructor(obj: Partial<IntegrationAclType>) {
-    this.name = obj.name!;
-    this.features = obj.features ?? [];
-  }
-}
+export type Integration = IdlTypes<Glam>["integration"];

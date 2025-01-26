@@ -57,9 +57,8 @@ pub struct AddShareClass<'info> {
     #[account(mut, constraint = state.owner == signer.key() @ AccessError::NotAuthorized)]
     pub state: Box<Account<'info, StateAccount>>,
 
-    /// CHECK: Metadata
     #[account(mut, seeds = [SEED_METADATA.as_bytes(), state.key().as_ref()], bump)]
-    pub metadata: AccountInfo<'info>,
+    pub openfunds_metadata: Option<Box<Account<'info, OpenfundsMetadataAccount>>>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -87,13 +86,13 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
         EngineField {
             name: EngineFieldName::ShareClassAllowlist,
             value: EngineFieldValue::VecPubkey {
-                val: share_class_metadata.allowlist.clone(),
+                val: share_class_metadata.clone().allowlist.unwrap_or_default(),
             },
         },
         EngineField {
             name: EngineFieldName::ShareClassBlocklist,
             value: EngineFieldValue::VecPubkey {
-                val: share_class_metadata.blocklist.clone(),
+                val: share_class_metadata.clone().blocklist.unwrap_or_default(),
             },
         },
     ];
@@ -110,24 +109,30 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
     // Output:
     // - has_lock_up_for_redemption (openfunds)
     // - lock_up_period_in_days (openfunds)
-    let policy_has_lock_up = share_class_metadata.lock_up_period_in_seconds > 0;
-    if policy_has_lock_up {
-        share_class_params.push(EngineField {
-            name: EngineFieldName::LockUp,
-            value: EngineFieldValue::Timestamp {
-                // lock_up_period_in_seconds is i32 so it's easier to use in js,
-                // we can express it as a number instead of requiring BN.
-                // the max lock up is 24k+ days, so it should be good.
-                val: share_class_metadata.lock_up_period_in_seconds.into(),
-            },
-        });
-        raw_openfunds.lock_up_period_in_days =
-            Some((1 + share_class_metadata.lock_up_period_in_seconds / 24 * 60 * 60).to_string());
-    } else {
-        raw_openfunds.lock_up_period_in_days = None;
-        raw_openfunds.lock_up_comment = None;
+
+    let mut transfer_hook_active = false;
+    if let Some(lock_up_period_in_seconds) = share_class_metadata.lock_up_period_in_seconds {
+        let policy_has_lock_up = lock_up_period_in_seconds > 0;
+        transfer_hook_active = policy_has_lock_up;
+
+        if policy_has_lock_up {
+            share_class_params.push(EngineField {
+                name: EngineFieldName::LockUp,
+                value: EngineFieldValue::Timestamp {
+                    // lock_up_period_in_seconds is i32 so it's easier to use in js,
+                    // we can express it as a number instead of requiring BN.
+                    // the max lock up is 24k+ days, so it should be good.
+                    val: lock_up_period_in_seconds.into(),
+                },
+            });
+            raw_openfunds.lock_up_period_in_days =
+                Some((1 + lock_up_period_in_seconds / 24 * 60 * 60).to_string());
+        } else {
+            raw_openfunds.lock_up_period_in_days = None;
+            raw_openfunds.lock_up_comment = None;
+        }
+        raw_openfunds.has_lock_up_for_redemption = Some(policy_has_lock_up);
     }
-    raw_openfunds.has_lock_up_for_redemption = Some(policy_has_lock_up);
 
     share_class_metadata.raw_openfunds = Some(raw_openfunds);
     state.params.push(share_class_params);
@@ -138,11 +143,12 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
     // Add share class data metadata, currently only openfunds metadata is supported
     //
     if let Some(metadata) = state.metadata.clone() {
-        if metadata.template == MetadataType::Openfunds {
-            let mut data_slice = ctx.accounts.metadata.data.borrow_mut(); // Borrow the mutable data
-            let data: &mut [u8] = &mut *data_slice; // Dereference and convert to `&mut [u8]`
-            let mut openfunds = OpenfundsMetadataAccount::try_deserialize(&mut &data[..])?; // Pass as `&mut &[u8]`
-            openfunds.share_classes.push(share_class_fields.clone());
+        if metadata.template == MetadataTemplate::Openfunds {
+            if let Some(openfunds_metadata) = &mut ctx.accounts.openfunds_metadata {
+                openfunds_metadata
+                    .share_classes
+                    .push(share_class_fields.clone());
+            }
         }
     }
 
@@ -158,17 +164,18 @@ pub fn add_share_class_handler<'c: 'info, 'info>(
         other => other,
     };
 
-    let default_account_state_frozen = share_class_metadata.default_account_state_frozen;
+    let default_account_state_frozen = share_class_metadata
+        .default_account_state_frozen
+        .unwrap_or(false);
 
     let seeds = &[
-        "share".as_bytes(),
+        SEED_MINT.as_bytes(),
         &[share_class_idx],
         state_key.as_ref(),
         &[ctx.bumps.share_class_mint],
     ];
     let signer_seeds = &[&seeds[..]];
 
-    let transfer_hook_active = policy_has_lock_up;
     let mut extension_types = vec![
         ExtensionType::MetadataPointer,     // always present
         ExtensionType::MintCloseAuthority,  // always present
@@ -646,18 +653,18 @@ pub fn update_share_class_handler(
     share_class_model: ShareClassModel,
 ) -> Result<()> {
     let state = &mut ctx.accounts.state;
-    if !share_class_model.allowlist.is_empty() {
+    if let Some(share_class_allowlist) = share_class_model.allowlist {
         let allowlist = state.share_class_allowlist_mut(share_class_id as usize);
         if let Some(_allowlist) = allowlist {
             _allowlist.clear();
-            _allowlist.extend(share_class_model.allowlist.clone());
+            _allowlist.extend(share_class_allowlist.clone());
         }
     }
-    if !share_class_model.blocklist.is_empty() {
+    if let Some(share_class_blocklist) = share_class_model.blocklist {
         let blocklist = state.share_class_blocklist_mut(share_class_id as usize);
         if let Some(_blocklist) = blocklist {
             _blocklist.clear();
-            _blocklist.extend(share_class_model.blocklist.clone());
+            _blocklist.extend(share_class_blocklist.clone());
         }
     }
     Ok(())
@@ -730,7 +737,7 @@ pub fn close_share_class_handler(ctx: Context<CloseShareClass>, share_class_id: 
     ctx.accounts.state.mints.remove(share_class_id as usize);
 
     if let Some(metadata) = ctx.accounts.state.metadata.clone() {
-        if metadata.template == MetadataType::Openfunds {
+        if metadata.template == MetadataTemplate::Openfunds {
             let mut data_slice = ctx.accounts.metadata.data.borrow_mut(); // Borrow the mutable data
             let data: &mut [u8] = &mut *data_slice; // Dereference and convert to `&mut [u8]`
             let mut openfunds = OpenfundsMetadataAccount::try_deserialize(&mut &data[..])?;
