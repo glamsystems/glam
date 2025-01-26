@@ -1,7 +1,8 @@
 "use client";
 
 import {
-  WalletProvider
+  ConnectionProvider,
+  WalletProvider,
 } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import React, { FC, useMemo } from "react";
@@ -14,7 +15,6 @@ type Props = {
 };
 
 export const WalletAdapterProvider: FC<Props> = ({ children }) => {
-
   const wallets = useMemo(
     () => [
       /**
@@ -31,17 +31,22 @@ export const WalletAdapterProvider: FC<Props> = ({ children }) => {
        */
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [],
   );
 
-  return (
+  const endpoint = process.env.NEXT_PUBLIC_SOLANA_RPC || "";
+  if (!endpoint.includes("mainnet")) {
+    return "Error: set NEXT_PUBLIC_SOLANA_RPC in .env.local";
+  }
 
+  return (
+    <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>
           {/* Your app's components go here, nested within the context providers. */}
           {children}
         </WalletModalProvider>
       </WalletProvider>
-
+    </ConnectionProvider>
   );
 };
