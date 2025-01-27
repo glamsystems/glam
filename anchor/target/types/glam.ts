@@ -4490,7 +4490,7 @@ export type Glam = {
           }
         },
         {
-          "name": "shareClass",
+          "name": "shareClassMint",
           "writable": true
         },
         {
@@ -4508,7 +4508,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "shareClass"
+                "path": "shareClassMint"
               }
             ],
             "program": {
@@ -5806,13 +5806,53 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "invalidAssetForSwap",
-      "msg": "Asset cannot be swapped"
+      "name": "invalidAccountType",
+      "msg": "Invalid account type"
     },
     {
       "code": 6001,
-      "name": "invalidSwap",
-      "msg": "Swap failed"
+      "name": "invalidName",
+      "msg": "Name too long: max 64 chars"
+    },
+    {
+      "code": 6002,
+      "name": "invalidSymbol",
+      "msg": "Symbol too long: max 32 chars"
+    },
+    {
+      "code": 6003,
+      "name": "invalidUri",
+      "msg": "Uri too long: max 128 chars"
+    },
+    {
+      "code": 6004,
+      "name": "invalidAssetsLen",
+      "msg": "Too many assets: max 100"
+    },
+    {
+      "code": 6005,
+      "name": "disabled",
+      "msg": "State account is disabled"
+    },
+    {
+      "code": 6006,
+      "name": "noShareClass",
+      "msg": "No share class found"
+    },
+    {
+      "code": 6007,
+      "name": "shareClassesNotClosed",
+      "msg": "Glam state account can't be closed. Close share classes first"
+    },
+    {
+      "code": 6008,
+      "name": "closeNotEmptyError",
+      "msg": "Error closing state account: not empty"
+    },
+    {
+      "code": 6009,
+      "name": "withdrawDenied",
+      "msg": "Withdraw denied. Only vaults allow withdraws (funds and mints don't)"
     }
   ],
   "types": [

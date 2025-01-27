@@ -88,6 +88,9 @@ pub fn initialize_state_handler<'c: 'info, 'info>(
             if let Some(openfunds_metadata) = &mut ctx.accounts.openfunds_metadata {
                 openfunds_metadata.set_inner(OpenfundsMetadataAccount::from(state_model));
                 openfunds_metadata.fund_id = state.key();
+
+                // Update metadata pubkey
+                state.metadata.as_mut().unwrap().pubkey = openfunds_metadata.key();
             }
         }
     }

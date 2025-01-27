@@ -21,7 +21,12 @@ import {
   createAssociatedTokenAccountIdempotentInstruction,
 } from "@solana/spl-token";
 
-import { stateModelForTest, createGlamStateForTest, str2seed } from "./setup";
+import {
+  stateModelForTest,
+  createGlamStateForTest,
+  str2seed,
+  airdrop,
+} from "./setup";
 import { GlamClient, WSOL } from "../src";
 
 describe("glam_investor", () => {
@@ -57,7 +62,7 @@ describe("glam_investor", () => {
     ...stateModelForTest,
     name: "Glam Investment",
     assets: [usdc.publicKey, btc.publicKey, ethOrWsol],
-    integrationAcls: [{ name: { marinade: {} }, features: [] }],
+    integrations: [{ marinade: {} }],
     // overwrite share class acls: alice and manager are allowed to subscribe,
     // bob and eve will be blocked.
     mints: [
@@ -75,7 +80,6 @@ describe("glam_investor", () => {
 
   const connection = glamClient.provider.connection;
   const commitment = "confirmed";
-  const program = glamClient.program;
 
   const vaultUsdcAta = getAssociatedTokenAddressSync(
     usdc.publicKey,
@@ -152,11 +156,7 @@ describe("glam_investor", () => {
           // create ATAs for each user
           for (const user of userKeypairs) {
             // send 1 SOL to each user
-            const airdrop = await connection.requestAirdrop(
-              user.publicKey,
-              1_000_000_000,
-            );
-            await connection.confirmTransaction(airdrop);
+            await airdrop(connection, user.publicKey, 1_000_000_000);
 
             const userATA = await createAssociatedTokenAccount(
               connection,
@@ -209,13 +209,11 @@ describe("glam_investor", () => {
 
   it("Fund created", async () => {
     try {
-      //
-      // create fund
-      //
       const stateData = await createGlamStateForTest(glamClient, stateModel);
       const stateAccount = await glamClient.fetchStateAccount(
         stateData.statePda,
       );
+      expect(statePda).toEqual(stateData.statePda);
       expect(stateAccount.mints[0]).toEqual(sharePda);
     } catch (e) {
       console.error(e);
@@ -282,12 +280,12 @@ describe("glam_investor", () => {
         TOKEN_2022_PROGRAM_ID,
         ASSOCIATED_TOKEN_PROGRAM_ID,
       );
-      const txId = await program.methods
+      const txId = await glamClient.program.methods
         .subscribe(0, new BN(1 * 10 ** 8), true)
         .accountsPartial({
           state: statePda,
           vault: vaultPda,
-          shareClass: invalidShareClass,
+          shareClassMint: invalidShareClass,
           signerShareAta: shareAta,
           asset: btc.publicKey,
           vaultAta: vaultEthAta,
@@ -307,7 +305,6 @@ describe("glam_investor", () => {
         ])
         .rpc({ commitment });
     } catch (e) {
-      // console.error(e);
       expect(e.message).toContain("A seeds constraint was violated");
       expect(e.message).toContain("Error Code: ConstraintSeeds");
     }

@@ -115,7 +115,7 @@ describe("glam_drift", () => {
 
     // Enable drift integration
     const updated = {
-      integrationAcls: [{ name: { drift: {} }, features: [] }],
+      integrations: [{ drift: {} }],
     };
     try {
       const txSig = await glamClient.state.updateState(statePda, updated);

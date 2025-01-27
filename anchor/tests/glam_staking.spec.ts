@@ -35,10 +35,10 @@ describe("glam_staking", () => {
     statePda = stateData.statePda;
 
     const txSig = await glamClient.state.updateState(statePda, {
-      integrationAcls: [
-        { name: { nativeStaking: {} }, features: [] },
-        { name: { splStakePool: {} }, features: [] },
-        { name: { sanctumStakePool: {} }, features: [] },
+      integrations: [
+        { nativeStaking: {} },
+        { splStakePool: {} },
+        { sanctumStakePool: {} },
       ],
     });
 

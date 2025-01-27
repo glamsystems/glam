@@ -161,7 +161,7 @@ export class ShareClassClient {
    * @param shareClassId
    * @param recipient Recipient's wallet address
    * @param amount Amount of shares to mint
-   * @param forceThaw If true, force thaw token account before minting
+   * @param forceThaw If true, force unfreezing token account before minting
    * @param txOptions
    * @returns Transaction signature
    */

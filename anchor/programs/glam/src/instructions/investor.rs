@@ -8,6 +8,7 @@ use anchor_spl::token::Token;
 use anchor_spl::token_interface::{
     burn, mint_to, transfer_checked, Burn, Mint, MintTo, Token2022, TokenAccount, TransferChecked,
 };
+use glam_macros::share_class_signer_seeds;
 use glam_macros::vault_signer_seeds;
 use marinade::state::delayed_unstake_ticket::TicketAccountData;
 use pyth_solana_receiver_sdk::price_update::Price;
@@ -24,7 +25,7 @@ fn log_decimal(amount: u64, minus_decimals: i32) -> f64 {
 }
 
 #[derive(Accounts)]
-#[instruction(_share_class_id: u8)]
+#[instruction(share_class_id: u8)]
 pub struct Subscribe<'info> {
     #[account()]
     pub state: Box<Account<'info, StateAccount>>,
@@ -35,16 +36,16 @@ pub struct Subscribe<'info> {
     // the shares to mint
     #[account(
         mut,
-        seeds = [SEED_MINT.as_bytes(), &[_share_class_id], state.key().as_ref()],
+        seeds = [SEED_MINT.as_bytes(), &[share_class_id], state.key().as_ref()],
         bump,
-        mint::authority = share_class,
+        mint::authority = share_class_mint,
         mint::token_program = token_2022_program
     )]
-    pub share_class: Box<InterfaceAccount<'info, Mint>>,
+    pub share_class_mint: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(
         mut,
-        associated_token::mint = share_class,
+        associated_token::mint = share_class_mint,
         associated_token::authority = signer,
         associated_token::token_program = token_2022_program
     )]
@@ -83,9 +84,10 @@ pub struct Subscribe<'info> {
     pub token_2022_program: Program<'info, Token2022>,
 }
 
+#[share_class_signer_seeds]
 pub fn subscribe_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, Subscribe<'info>>,
-    _share_class_id: u8,
+    share_class_id: u8,
     amount: u64,
     skip_state: bool,
 ) -> Result<()> {
@@ -107,7 +109,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     }
     require!(state.mints.len() > 0, StateError::NoShareClass);
     require!(
-        state.mints[0] == ctx.accounts.share_class.key(),
+        state.mints[0] == ctx.accounts.share_class_mint.key(),
         InvestorError::InvalidShareClass
     );
 
@@ -168,7 +170,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     //
     // Compute amount of shares to mint
     //
-    let share_class = &ctx.accounts.share_class;
+    let share_class = &ctx.accounts.share_class_mint;
     let share_expo = -(share_class.decimals as i32);
     let total_shares = share_class.supply;
     let use_fixed_price = total_shares == 0;
@@ -256,23 +258,16 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     if skip_state {
         // TODO: we should read share class symbol from metadata so that we don't need to pass it as an argument
         // mint shares to signer
-        let state_key = ctx.accounts.state.key();
-        let seeds = &[
-            "share".as_bytes(),
-            &[0u8],
-            state_key.as_ref(),
-            &[ctx.bumps.share_class],
-        ];
-        let signer_seeds = &[&seeds[..]];
+
         mint_to(
             CpiContext::new_with_signer(
                 ctx.accounts.token_2022_program.to_account_info(),
                 MintTo {
-                    authority: ctx.accounts.share_class.to_account_info(),
+                    authority: ctx.accounts.share_class_mint.to_account_info(),
                     to: ctx.accounts.signer_share_ata.to_account_info(),
-                    mint: ctx.accounts.share_class.to_account_info(),
+                    mint: ctx.accounts.share_class_mint.to_account_info(),
                 },
-                signer_seeds,
+                share_class_signer_seeds,
             ),
             amount_shares,
         )?;

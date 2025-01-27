@@ -37,8 +37,12 @@ describe("glam_openfunds", () => {
       },
     ],
     // Glam
-    isEnabled: true,
+    accountType: { fund: {} },
+    enabled: true,
     assets: [USDC, WBTC, WSOL],
+    metadata: {
+      template: { openfunds: {} },
+    },
     // Openfunds (Fund)
     rawOpenfunds: {
       fundDomicileAlpha2: "XS",
@@ -71,18 +75,16 @@ describe("glam_openfunds", () => {
     mints: [
       {
         // Glam Token
-        name: "Glam Investment Fund BTC-SOL",
+        name: "Glam Investment Fund BTC-SOL (b)",
         symbol: "GBS",
         uri: "",
-        fundId: new PublicKey(0),
+        statePubkey: null,
         asset: USDC,
         imageUri: "",
         // Glam
         permanentDelegate: new PublicKey(0),
         lockUpPeriodInSeconds: 40 * 24 * 60 * 60,
         defaultAccountStateFrozen: false,
-        allowlist: [],
-        blocklist: [],
         isRawOpenfunds: true,
         // Openfunds Share Class
         rawOpenfunds: {
@@ -105,7 +107,8 @@ describe("glam_openfunds", () => {
       },
     ],
     // Glam
-    isEnabled: true,
+    accountType: { fund: {} },
+    enabled: true,
     assets: [USDC, WBTC, WSOL],
     // Openfunds (Fund)
     rawOpenfunds: {
