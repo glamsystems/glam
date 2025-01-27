@@ -60,7 +60,7 @@ export default function Create() {
         mints: [
           {
             uri: "",
-            fundId: null,
+            statePubkey: null,
             imageUri: "",
             name: values.productName,
             symbol: values.productName.substring(0, 4).toUpperCase(),
@@ -102,7 +102,7 @@ export default function Create() {
             } as Partial<ShareClassOpenfundsModel>,
           },
         ],
-        isEnabled: true,
+        enabled: true,
         rawOpenfunds: {
           fundDomicileAlpha2: "XS",
           legalFundNameIncludingUmbrella: values.productName,

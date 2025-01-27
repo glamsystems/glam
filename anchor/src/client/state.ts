@@ -23,6 +23,8 @@ import {
   ShareClassOpenfundsModel,
   CreatedModel,
   Metadata,
+  StateIdlModel,
+  StateModelType,
 } from "../models";
 import { WSOL } from "../constants";
 
@@ -43,12 +45,12 @@ export class StateClient {
     const mints = stateModel.mints;
     stateModel.mints = [];
 
-    if (mints.length > 1) {
+    if (mints && mints.length > 1) {
       throw new Error("Multiple mints not supported");
     }
 
     // No share class, only need to initialize the fund
-    if (mints.length === 0) {
+    if (mints && mints.length === 0) {
       const txSig = await this.base.program.methods
         .initializeState(stateModel)
         .accountsPartial({
@@ -60,7 +62,7 @@ export class StateClient {
       return [txSig, statePda];
     }
 
-    if (singleTx) {
+    if (mints && mints.length > 0 && singleTx) {
       const initStateIx = await this.base.program.methods
         .initializeState(stateModel)
         .accountsPartial({
@@ -92,12 +94,12 @@ export class StateClient {
       .rpc();
 
     const addShareClassTxs = await Promise.all(
-      mints.map(async (shareClass, j: number) => {
+      (mints || []).map(async (shareClass, j: number) => {
         const shareClassMint = this.base.getShareClassPda(statePda, j);
 
         // FIXME: setting rawOpenfunds to null is a workarond for
         // Access violation in stack frame 5 at address 0x200005ff8 of size 8
-        shareClass.rawOpenfunds = null;
+        // shareClass.rawOpenfunds = null;
         return await this.base.program.methods
           .addShareClass(shareClass)
           .accounts({

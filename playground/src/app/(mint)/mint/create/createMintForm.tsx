@@ -123,13 +123,12 @@ export default function MultiStepForm() {
     });
 
     const glamState = {
+      accountType: { mint: {} },
       name: basicInfoFormData.name,
-      isEnabled: true,
+      enabled: true,
       rawOpenfunds: {
         fundDomicileAlpha2: openfundsData.fund.fundDomicileAlpha2,
       } as Partial<FundOpenfundsModel>,
-      // @ts-ignore
-      integrationAcls: [{ name: { mint: {} }, features: [] }],
       company: {
         fundGroupName: openfundsData.company.fundGroupName,
       } as Partial<CompanyModel>,
@@ -140,7 +139,7 @@ export default function MultiStepForm() {
       mints: [
         {
           uri: "",
-          fundId: null,
+          statePubkey: null,
           imageUri: "",
           allowlist: [],
           blocklist: [],

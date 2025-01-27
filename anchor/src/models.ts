@@ -90,7 +90,7 @@ export class StateModel extends StateIdlModel {
       throw new Error("Fund ID not set");
     }
     const [pda, _bump] = PublicKey.findProgramAddressSync(
-      [Buffer.from("treasury"), this.id.toBuffer()],
+      [Buffer.from("vault"), this.id.toBuffer()],
       this.glamProgramId,
     );
     return pda;
@@ -101,28 +101,29 @@ export class StateModel extends StateIdlModel {
       throw new Error("Fund ID not set");
     }
     const [pda, _] = PublicKey.findProgramAddressSync(
-      [Buffer.from("openfunds"), this.id.toBuffer()],
+      [Buffer.from("metadata"), this.id.toBuffer()],
       this.glamProgramId,
     );
     return pda;
   }
 
   get productType() {
-    return this.accountType;
+    // @ts-ignore
+    return Object.keys(this.accountType)[0];
   }
 
   get shareClassMints() {
-    if (this.mints.length > 0 && !this.id) {
+    if (this.mints && this.mints.length > 0 && !this.id) {
       // If share classes are set, fund ID should be set as well
       throw new Error("Fund ID not set");
     }
-    return this.mints.map((_, i) =>
+    return (this.mints || []).map((_, i) =>
       ShareClassModel.mintAddress(this.id!, i, this.glamProgramId),
     );
   }
 
   get sparkleKey() {
-    if (this.mints.length === 0) {
+    if (!this.mints || this.mints.length === 0) {
       return this.idStr;
     }
     return this.shareClassMints[0].toBase58() || this.idStr;
@@ -182,7 +183,7 @@ export class StateModel extends StateIdlModel {
     // Build the array of ShareClassModel
     stateAccount.mints.forEach((_, i) => {
       const shareClassIdlModel = {} as any;
-      shareClassIdlModel["fundId"] = statePda;
+      shareClassIdlModel["statePubkey"] = statePda;
 
       stateAccount.params[i + 1].forEach((param) => {
         const name = Object.keys(param.name)[0];
@@ -336,7 +337,7 @@ export class ShareClassModel extends ShareClassIdlModel {
     glamProgramId: PublicKey = GLAM_PROGRAM_ID_DEFAULT,
   ): PublicKey {
     const [pda, _] = PublicKey.findProgramAddressSync(
-      [Buffer.from("share"), Uint8Array.from([idx % 256]), statePda.toBuffer()],
+      [Buffer.from("mint"), Uint8Array.from([idx % 256]), statePda.toBuffer()],
       glamProgramId,
     );
     return pda;
@@ -463,8 +464,8 @@ export class ManagerModel implements ManagerModelType {
 export type CreatedModelType = IdlTypes<Glam>["createdModel"];
 export class CreatedModel implements CreatedModelType {
   key: number[]; // Uint8Array;
-  createdBy: PublicKey | null;
-  createdAt: BN | null;
+  createdBy: PublicKey;
+  createdAt: BN;
 
   constructor(obj: Partial<CreatedModelType>) {
     this.key = obj.key ?? [0, 0, 0, 0, 0, 0, 0, 0];

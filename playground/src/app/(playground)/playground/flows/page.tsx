@@ -76,7 +76,7 @@ function InvestorDisclaimers({
   direction: string;
   method: string;
 }) {
-  const share = fund?.mints[0];
+  const share = fund?.mints ? fund.mints[0] : null;
   if (!fund || !share) return null;
 
   const lockUp = Number(share?.lockUpPeriodInSeconds || 0);
@@ -405,7 +405,7 @@ function InvestorWidget({ fundModel }: { fundModel?: StateModel }) {
     setBalance(0);
 
     if (direction === "redeem") {
-      const symbol = fundModel?.mints[0]?.symbol || "Share";
+      const symbol = (fundModel?.mints || [])[0]?.symbol || "Share";
       const mint = fundModel?.shareClassMints[0];
       setAmountInAsset(symbol);
 
@@ -424,7 +424,7 @@ function InvestorWidget({ fundModel }: { fundModel?: StateModel }) {
     setAmountInAsset(fundModel?.rawOpenfunds?.fundCurrency || "SOL");
 
     // update balance
-    const mint = fundModel?.assets[0] || WSOL;
+    const mint = (fundModel?.assets || [WSOL])[0];
     if (WSOL.equals(mint)) {
       setBalance((userWallet?.balanceLamports || 0) / LAMPORTS_PER_SOL);
     } else {
@@ -512,7 +512,7 @@ function InvestorWidget({ fundModel }: { fundModel?: StateModel }) {
           },
         );
       } else {
-        const asset = fundModel.assets[0];
+        const asset = (fundModel.assets || [])[0];
         const ata = (userWallet?.tokenAccounts || []).find((a) =>
           a.mint.equals(asset),
         )!;
@@ -718,7 +718,7 @@ export default function Flows() {
                 <CommandEmpty>No product found.</CommandEmpty>
                 <CommandGroup>
                   {allGlamStates
-                    .filter((f) => f.mints.length > 0)
+                    .filter((f) => f.mints && f.mints.length > 0)
                     .map((f) => (
                       <CommandItem
                         key={f.idStr}

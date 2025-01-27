@@ -47,14 +47,17 @@ export default function VaultPoliciesPage() {
     if (state) {
       form.setValue(
         "assets",
-        state.assets.map((a) => a.toBase58()),
+        (state.assets || []).map((a) => a.toBase58()),
       );
     }
   }, [state]);
 
   const handleReset = (event: React.MouseEvent) => {
     event.preventDefault();
-    form.setValue("assets", state?.assets.map((a) => a.toBase58()) || []);
+    form.setValue(
+      "assets",
+      (state?.assets || []).map((a) => a.toBase58()),
+    );
   };
 
   const handleUpdateAssets = async (event: React.MouseEvent) => {
@@ -62,10 +65,10 @@ export default function VaultPoliciesPage() {
     if (!state) {
       return;
     }
-    const vaultAssets = state.assets.map((a) => a.toBase58()).sort();
+    const vaultAssets = (state.assets || []).map((a) => a.toBase58()).sort();
     const formAssets = form.getValues().assets.sort();
     if (
-      state.assets.length === formAssets.length &&
+      (state.assets || []).length === formAssets.length &&
       vaultAssets.every((value, index) => value === formAssets[index])
     ) {
       toast({

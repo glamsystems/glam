@@ -107,7 +107,7 @@ export class InvestorClient {
     if (!stateModel) {
       stateModel = await this.base.fetchState(statePda);
     }
-    let remainingAccounts = stateModel.assets.flatMap((asset) => {
+    let remainingAccounts = (stateModel.assets || []).flatMap((asset) => {
       const assetMeta = this.base.getAssetMeta(asset.toBase58());
       const vaultAta = this.base.getVaultAta(
         statePda,

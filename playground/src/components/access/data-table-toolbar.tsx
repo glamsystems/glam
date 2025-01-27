@@ -1,5 +1,6 @@
 "use client";
 
+import { BN } from "@coral-xyz/anchor";
 import { Cross2Icon, PlusIcon } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
@@ -92,11 +93,12 @@ export function DataTableToolbar<TData>({
     }
 
     const delegateAcls = [
-      {
+      new DelegateAcl({
         pubkey,
         // @ts-ignore
         permissions: permissions.map((p) => ({ [p!]: {} })),
-      } as DelegateAcl,
+        expiresAt: new BN(0),
+      }),
     ];
 
     try {

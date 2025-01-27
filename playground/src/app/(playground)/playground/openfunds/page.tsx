@@ -190,7 +190,8 @@ function MetadataAccount({ fundId }: { fundId: any }) {
     // using wallet?.publicKey in queryKey will auto-refresh when wallet changes
     queryKey: ["metadata-account", fundId],
     enabled: !!fundId,
-    queryFn: () => glamClient.fetchMetadataAccount(new PublicKey(fundId)),
+    queryFn: () =>
+      glamClient.fetchOpenfundsMetadataAccount(new PublicKey(fundId)),
   });
 
   if (!metaAccount) return null;

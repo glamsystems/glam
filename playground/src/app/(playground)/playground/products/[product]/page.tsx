@@ -166,7 +166,7 @@ async function updateHoldersData(
   stateModel: StateModel,
 ): Promise<HolderData[]> {
   const holdersData = await Promise.all(
-    stateModel.mints.map(async (shareClassModel, i) => {
+    (stateModel.mints || []).map(async (shareClassModel, i) => {
       const mintAddress = stateModel.shareClassMints[i].toBase58();
       const holderData = await fetchHolderData(mintAddress);
       if (!holderData) {
@@ -617,11 +617,13 @@ export default function ProductPage() {
               <p className="text-muted-foreground opacity-75 text-xs font-light">
                 Symbol
               </p>
-              {stateModel.mints[0]?.symbol}
+              {(stateModel.mints || [])[0]?.symbol}
               <p className="text-muted-foreground opacity-25 text-xs font-light">
                 <ExplorerLink
-                  path={`/account/${stateModel?.mints[0]?.fundId?.toBase58()}`}
-                  label={stateModel?.mints[0]?.fundId?.toBase58() || ""}
+                  path={`/account/${(stateModel.mints || [])[0]?.statePubkey?.toBase58()}`}
+                  label={
+                    (stateModel.mints || [])[0]?.statePubkey?.toBase58() || ""
+                  }
                 />
               </p>
             </Card>
@@ -629,12 +631,13 @@ export default function ProductPage() {
               <p className="text-muted-foreground opacity-75 text-xs font-light">
                 Class Asset
               </p>
-              {stateModel.mints[0]?.rawOpenfunds?.shareClassCurrency}
+              {(stateModel.mints || [])[0]?.rawOpenfunds?.shareClassCurrency}
               <p className="text-muted-foreground opacity-25 text-xs font-light">
                 <ExplorerLink
-                  path={`/account/${stateModel?.mints[0]?.rawOpenfunds?.shareClassCurrency}`}
+                  path={`/account/${(stateModel.mints || [])[0]?.rawOpenfunds?.shareClassCurrency}`}
                   label={
-                    stateModel?.mints[0]?.rawOpenfunds?.shareClassCurrency || ""
+                    (stateModel.mints || [])[0]?.rawOpenfunds
+                      ?.shareClassCurrency || ""
                   }
                 />
               </p>
@@ -867,7 +870,7 @@ export default function ProductPage() {
                             </dt>
                             <dd>
                               {
-                                stateModel.mints[0]?.rawOpenfunds
+                                (stateModel.mints || [])[0]?.rawOpenfunds
                                   ?.shareClassCurrency
                               }
                             </dd>
@@ -878,7 +881,7 @@ export default function ProductPage() {
                             </dt>
                             <dd>
                               {
-                                stateModel.mints[0]?.rawOpenfunds
+                                (stateModel.mints || [])[0]?.rawOpenfunds
                                   ?.shareClassLaunchDate
                               }
                             </dd>
@@ -889,7 +892,7 @@ export default function ProductPage() {
                             </dt>
                             <dd>
                               {
-                                stateModel.mints[0]?.rawOpenfunds
+                                (stateModel.mints || [])[0]?.rawOpenfunds
                                   ?.shareClassLifecycle
                               }
                             </dd>
@@ -900,7 +903,7 @@ export default function ProductPage() {
                             </dt>
                             <dd>
                               {
-                                stateModel.mints[0]?.rawOpenfunds
+                                (stateModel.mints || [])[0]?.rawOpenfunds
                                   ?.investmentStatus
                               }
                             </dd>
@@ -931,7 +934,7 @@ export default function ProductPage() {
                             </dt>
                             <dd>
                               {
-                                stateModel.mints[0]?.rawOpenfunds
+                                (stateModel.mints || [])[0]?.rawOpenfunds
                                   ?.shareClassDistributionPolicy
                               }
                             </dd>
@@ -1016,7 +1019,8 @@ export default function ProductPage() {
                           <dl className="grid gap-2">
                             <div className="flex items-center justify-between">
                               <dt className="text-muted-foreground">
-                                Share Class 1 {stateModel?.mints[0]?.symbol}
+                                Share Class 1{" "}
+                                {(stateModel.mints || [])[0]?.symbol}
                               </dt>
                               <ExplorerLink
                                 path={`/account/${stateModel?.shareClassMints[0]}`}

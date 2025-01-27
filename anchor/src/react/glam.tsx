@@ -94,24 +94,24 @@ const glamStatesListAtom = atomWithStorage<GlamStateCache[]>(
 
 // In order to properly deser states, we need to
 // convert string -> pubkey (and maybe more in future)
-const deserializeGlamStateCache = (f: any) => {
-  if (!f) {
+const deserializeGlamStateCache = (s: any) => {
+  if (!s) {
     return undefined;
   }
-  if (typeof f.pubkey === "string") {
-    f.address = f.pubkey;
-    f.pubkey = new PublicKey(f.pubkey);
+  if (typeof s.pubkey === "string") {
+    s.address = s.pubkey;
+    s.pubkey = new PublicKey(s.pubkey);
   }
-  return f as GlamStateCache;
+  return s as GlamStateCache;
 };
 
-const toStateCache = (f: StateModel) => {
+const toStateCache = (s: StateModel) => {
   return {
-    pubkey: f.id,
-    sparkleKey: f.sparkleKey,
-    address: f.idStr,
-    name: f.name,
-    product: f.productType,
+    pubkey: s.id,
+    sparkleKey: s.sparkleKey,
+    address: s.idStr,
+    name: s.name,
+    product: s.productType,
   } as GlamStateCache;
 };
 
@@ -197,14 +197,14 @@ export function GlamProvider({
 
     // Find a list of glam states that the wallet has access to
     const glamStatesList = [] as GlamStateCache[];
-    glamStateModels.forEach((f: StateModel) => {
-      if (wallet?.publicKey?.equals(f.owner!.pubkey!)) {
-        const stateCache = toStateCache(f);
+    glamStateModels.forEach((s: StateModel) => {
+      if (wallet?.publicKey?.equals(s.owner!.pubkey!)) {
+        const stateCache = toStateCache(s);
         glamStatesList.push(stateCache);
       } else {
-        f.delegateAcls.forEach((acl: any) => {
+        (s.delegateAcls || []).forEach((acl: any) => {
           if (wallet?.publicKey?.equals(acl.pubkey)) {
-            glamStatesList.push(toStateCache(f));
+            glamStatesList.push(toStateCache(s));
           }
         });
       }
@@ -238,7 +238,7 @@ export function GlamProvider({
       );
       const glamState = await glamClient.fetchState(activeGlamState?.pubkey);
       console.log("delegate acls:", glamState.delegateAcls);
-      setDelegateAcls(glamState.delegateAcls);
+      setDelegateAcls(glamState.delegateAcls || []);
     }
   };
 

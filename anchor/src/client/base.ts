@@ -667,8 +667,8 @@ export class BaseClient {
       StateModel.fromOnchainAccounts(
         s.publicKey,
         s.account,
-        openfundsCache.get(s.account.metadata.pubkey.toBase58()),
-        mintCache.get(s.account.mints[0] ? s.account.mints[0].toBase58() : ""),
+        openfundsCache.get(s.account.metadata?.pubkey.toBase58() || ""),
+        mintCache.get(s.account.mints[0]?.toBase58() || ""),
         this.program.programId,
       ),
     );
