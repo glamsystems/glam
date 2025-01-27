@@ -109,7 +109,15 @@ export class StateModel extends StateIdlModel {
 
   get productType() {
     // @ts-ignore
-    return Object.keys(this.accountType)[0];
+    const val = Object.keys(this.accountType)[0];
+    return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+  }
+
+  get launchDate() {
+    const createdAt = this.created?.createdAt.toNumber() ?? 0;
+    return this.rawOpenfunds?.fundLaunchDate || createdAt
+      ? new Date(createdAt * 1000).toISOString().split("T")[0]
+      : "Unknown";
   }
 
   get shareClassMints() {

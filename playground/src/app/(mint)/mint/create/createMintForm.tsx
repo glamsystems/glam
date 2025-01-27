@@ -128,21 +128,16 @@ export default function MultiStepForm() {
       enabled: true,
       rawOpenfunds: {
         fundDomicileAlpha2: openfundsData.fund.fundDomicileAlpha2,
-      } as Partial<FundOpenfundsModel>,
+      },
       company: {
         fundGroupName: openfundsData.company.fundGroupName,
-      } as Partial<CompanyModel>,
+      },
       owner: {
         pubkey: glamClient.getSigner(),
         kind: { wallet: {} },
-      } as Partial<ManagerModel>,
+      },
       mints: [
         {
-          uri: "",
-          statePubkey: null,
-          imageUri: "",
-          allowlist: [],
-          blocklist: [],
           name: basicInfoFormData.name,
           symbol: basicInfoFormData.symbol,
           asset: new PublicKey(0),
@@ -152,16 +147,17 @@ export default function MultiStepForm() {
             : new PublicKey(0),
           defaultAccountStateFrozen: policyFormData.defaultAccountStateFrozen,
           isRawOpenfunds: true,
-          rawOpenfunds: {
-            isin: openfundsData.shareClass.iSIN,
-            shareClassCurrency: openfundsData.shareClass.shareClassCurrency,
-          } as Partial<ShareClassOpenfundsModel>,
+          // rawOpenfunds: {
+          //   isin: openfundsData.shareClass.iSIN,
+          //   shareClassCurrency: openfundsData.shareClass.shareClassCurrency,
+          // },
         },
       ],
-    } as Partial<StateModel>;
+    };
 
     try {
       const [txSig, statePda] = await glamClient.state.createState(
+        // @ts-ignore
         glamState,
         true,
       );

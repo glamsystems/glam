@@ -375,9 +375,7 @@ export default function Transfer() {
               {warning && (
                 <>
                   <WarningCard className="p-2" message={warning} />
-                  <ClickToCopyText
-                    text={activeGlamState?.pubkey.toBase58() || ""}
-                  />
+                  <ClickToCopyText text={vault.pubkey.toBase58() || ""} />
                 </>
               )}
 

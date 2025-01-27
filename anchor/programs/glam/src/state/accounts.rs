@@ -91,7 +91,7 @@ pub struct StateAccount {
     pub params: Vec<Vec<EngineField>>,
 }
 impl StateAccount {
-    pub const INIT_SIZE: usize = 2048; // TODO: auto extend account size if needed
+    pub const INIT_SIZE: usize = 1024; // TODO: auto extend account size if needed
 
     // return the share class lockup period in s. 0 == no lockup (default).
     pub fn share_class_lock_up(&self, share_class_id: usize) -> i64 {

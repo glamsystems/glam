@@ -105,9 +105,9 @@ program
         console.log(
           state.productType,
           "\t",
-          state.id.toBase58(),
+          state.idStr,
           "\t",
-          state.rawOpenfunds.fundLaunchDate,
+          state.launchDate,
           "\t",
           state.name,
         );
@@ -155,10 +155,14 @@ program
     const glamState = JSON.parse(data);
 
     // Convert pubkey strings to PublicKey objects
-    for (let i = 0; i < glamState?.mints?.length || 0; ++i) {
-      glamState.mints[i].asset = new PublicKey(glamState.mints[i].asset);
-    }
+    glamState.mints?.forEach((mint) => {
+      mint.asset = new PublicKey(mint.asset);
+      mint.permanentDelegate = mint.permanentDelegate
+        ? new PublicKey(mint.permanentDelegate)
+        : null;
+    });
     glamState.assets = glamState.assets.map((a) => new PublicKey(a));
+    glamState.accountType = { [glamState.accountType]: {} };
 
     try {
       const [txSig, statePda] = await glamClient.state.createState(glamState);

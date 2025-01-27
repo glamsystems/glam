@@ -202,7 +202,7 @@ export function GlamProvider({
         const stateCache = toStateCache(s);
         glamStatesList.push(stateCache);
       } else {
-        (s.delegateAcls || []).forEach((acl: any) => {
+        (s.delegateAcls || []).forEach((acl) => {
           if (wallet?.publicKey?.equals(acl.pubkey)) {
             glamStatesList.push(toStateCache(s));
           }
