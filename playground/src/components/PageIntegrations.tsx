@@ -13,7 +13,7 @@ import { toast } from "../components/ui/use-toast";
 import { parseTxError } from "../lib/error";
 import { ExplorerLink } from "../components/ExplorerLink";
 import { allIntegrations, Integration } from "./integrations/data";
-import { useGlam, IntegrationName } from "@glam/anchor/react";
+import { useGlam, Integration as IntegrationType } from "@glam/anchor/react";
 
 export default function PageIntegrations() {
   const { glamClient, allGlamStates, activeGlamState } = useGlam();
@@ -43,19 +43,16 @@ export default function PageIntegrations() {
       const updated =
         action === "disable"
           ? {
-              integrationAcls: stateModel!.integrationAcls.filter(
+              integrations: (stateModel?.integrations || []).filter(
                 // @ts-ignore
-                (acl) => Object.keys(acl.name)[0] !== integration,
+                (integ) => Object.keys(integ)[0] !== integration,
               ),
             }
           : {
-              integrationAcls: [
-                ...stateModel!.integrationAcls,
-                {
-                  // @ts-ignore
-                  name: { [integration]: {} } as IntegrationName,
-                  features: [],
-                },
+              integrations: [
+                ...(stateModel?.integrations || []),
+                // @ts-ignore
+                { [integration]: {} } as IntegrationType,
               ],
             };
       try {
@@ -90,11 +87,10 @@ export default function PageIntegrations() {
 
   useEffect(() => {
     const enabled =
-      (allGlamStates || [])
-        .find((s) => s.idStr === activeGlamState?.address)
-        ?.integrationAcls.map((acl) =>
-          Object.keys(acl.name)[0].toLowerCase(),
-        ) || [];
+      (
+        (allGlamStates || []).find((s) => s.idStr === activeGlamState?.address)
+          ?.integrations || []
+      ).map((integ) => Object.keys(integ)[0].toLowerCase()) || [];
 
     integrations.forEach((integ, index) => {
       if (enabled.includes(integ.name.toLowerCase())) {

@@ -189,7 +189,7 @@ fn is_lst<'info>(mint: &Pubkey, stake_pool_account: Option<&AccountInfo<'info>>)
 }
 
 #[access_control(
-    acl::check_integration(&ctx.accounts.state, IntegrationName::JupiterSwap)
+    acl::check_integration(&ctx.accounts.state, Integration::JupiterSwap)
 )]
 #[vault_signer_seeds]
 pub fn swap_handler<'c: 'info, 'info>(
@@ -197,12 +197,11 @@ pub fn swap_handler<'c: 'info, 'info>(
     amount: u64,
     data: Vec<u8>,
 ) -> Result<()> {
-    let state = ctx.accounts.state.clone();
-    let assets = ctx.accounts.state.assets_mut().unwrap();
+    let state = &mut ctx.accounts.state;
 
     // Check if input and output mints are in the assets allowlist
-    let input_in_assets = assets.contains(&ctx.accounts.input_mint.key());
-    let output_in_assets = assets.contains(&ctx.accounts.output_mint.key());
+    let input_in_assets = state.assets.contains(&ctx.accounts.input_mint.key());
+    let output_in_assets = state.assets.contains(&ctx.accounts.output_mint.key());
 
     let input_is_lst = is_lst(
         &ctx.accounts.input_mint.key(),
@@ -228,10 +227,10 @@ pub fn swap_handler<'c: 'info, 'info>(
     // TODO: should we add missing assets to the list after permission check?
     // This will gradually expand the assets allowlist and auto escalate JupiterSwapAllowlisted privilege over time
     if !input_in_assets {
-        assets.push(ctx.accounts.input_mint.key());
+        state.assets.push(ctx.accounts.input_mint.key());
     }
     if !output_in_assets {
-        assets.push(ctx.accounts.output_mint.key());
+        state.assets.push(ctx.accounts.output_mint.key());
     }
 
     // Parse Jupiter Swap accounts
@@ -332,7 +331,7 @@ pub struct InitLockedVoterEscrow<'info> {
     acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::StakeJup)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.state, IntegrationName::JupiterVote)
+    acl::check_integration(&ctx.accounts.state, Integration::JupiterVote)
 )]
 #[vault_signer_seeds]
 pub fn init_locked_voter_escrow_handler<'info>(ctx: Context<InitLockedVoterEscrow>) -> Result<()> {
@@ -379,7 +378,7 @@ pub struct ToogleMaxLock<'info> {
         vec![Permission::StakeJup, Permission::UnstakeJup])
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.state, IntegrationName::JupiterVote)
+    acl::check_integration(&ctx.accounts.state, Integration::JupiterVote)
 )]
 #[vault_signer_seeds]
 pub fn toggle_max_lock_handler<'info>(ctx: Context<ToogleMaxLock>, value: bool) -> Result<()> {
@@ -430,7 +429,7 @@ pub struct IncreaseLockedAmount<'info> {
     acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::StakeJup)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.state, IntegrationName::JupiterVote)
+    acl::check_integration(&ctx.accounts.state, Integration::JupiterVote)
 )]
 #[vault_signer_seeds]
 pub fn increase_locked_amount_handler<'info>(
@@ -485,7 +484,7 @@ pub struct PartialUnstaking<'info> {
     acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::UnstakeJup)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.state, IntegrationName::JupiterVote)
+    acl::check_integration(&ctx.accounts.state, Integration::JupiterVote)
 )]
 #[vault_signer_seeds]
 pub fn open_partial_unstaking_handler<'info>(
@@ -515,7 +514,7 @@ pub fn open_partial_unstaking_handler<'info>(
     acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::UnstakeJup)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.state, IntegrationName::JupiterVote)
+    acl::check_integration(&ctx.accounts.state, Integration::JupiterVote)
 )]
 #[vault_signer_seeds]
 pub fn merge_partial_unstaking_handler<'info>(ctx: Context<PartialUnstaking>) -> Result<()> {
@@ -563,7 +562,7 @@ pub struct WithdrawAllStakedJup<'info> {
     acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::UnstakeJup)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.state, IntegrationName::JupiterVote)
+    acl::check_integration(&ctx.accounts.state, Integration::JupiterVote)
 )]
 #[vault_signer_seeds]
 pub fn withdraw_all_staked_jup_handler<'info>(ctx: Context<WithdrawAllStakedJup>) -> Result<()> {
@@ -618,7 +617,7 @@ pub struct WithdrawPartialUnstaking<'info> {
     acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::UnstakeJup)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.state, IntegrationName::JupiterVote)
+    acl::check_integration(&ctx.accounts.state, Integration::JupiterVote)
 )]
 #[vault_signer_seeds]
 pub fn withdraw_partial_unstaking_handler<'info>(
@@ -668,7 +667,7 @@ pub struct NewVote<'info> {
     acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::VoteOnProposal)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.state, IntegrationName::JupiterVote)
+    acl::check_integration(&ctx.accounts.state, Integration::JupiterVote)
 )]
 #[vault_signer_seeds]
 pub fn new_vote_handler<'info>(ctx: Context<NewVote>) -> Result<()> {
@@ -723,7 +722,7 @@ pub struct CastVote<'info> {
     acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::VoteOnProposal)
 )]
 #[access_control(
-    acl::check_integration(&ctx.accounts.state, IntegrationName::JupiterVote)
+    acl::check_integration(&ctx.accounts.state, Integration::JupiterVote)
 )]
 #[vault_signer_seeds]
 pub fn cast_vote_handler<'info>(ctx: Context<CastVote>, side: u8) -> Result<()> {

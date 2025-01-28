@@ -65,8 +65,9 @@ export default function Create() {
     setIsLoading(true);
     try {
       const glamState = {
+        accountType: { vault: {} },
         name: values.productName,
-        isEnabled: true,
+        enabled: true,
         assets: values.assets.map((address) => new PublicKey(address)),
       };
 

@@ -13,10 +13,7 @@ describe("glam_marinade", () => {
     statePda = stateData.statePda;
 
     const txSig = await glamClient.state.updateState(statePda, {
-      integrationAcls: [
-        { name: { marinade: {} }, features: [] },
-        { name: { nativeStaking: {} }, features: [] },
-      ],
+      integrations: [{ marinade: {} }, { nativeStaking: {} }],
     });
     console.log("Marinade integration enabled:", txSig);
 

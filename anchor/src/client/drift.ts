@@ -552,6 +552,7 @@ export class DriftClient {
     const driftState = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
     const tx = await this.base.program.methods
+      // @ts-ignore
       .driftPlaceOrders([orderParams])
       .accountsPartial({
         state: statePda,
@@ -590,6 +591,7 @@ export class DriftClient {
     );
 
     const tx = await this.base.program.methods
+      // @ts-ignore
       .driftCancelOrders(marketType, marketIndex, direction)
       .accountsPartial({
         state: glamState,

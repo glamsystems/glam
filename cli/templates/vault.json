@@ -1,6 +1,7 @@
 {
+  "accountType": "vault",
   "name": "GLAM Vault XYZ",
-  "isEnabled": true,
+  "enabled": true,
   "assets": [
     "So11111111111111111111111111111111111111112",
     "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"

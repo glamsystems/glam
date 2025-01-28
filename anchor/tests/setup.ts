@@ -47,7 +47,6 @@ export const stateModelForTest = {
       name: "Glam Fund SOL-mSOL",
       symbol: "GBS",
       uri: "",
-      fundId: new PublicKey(0),
       asset: USDC,
       imageUri: "",
       isRawOpenfunds: true,
@@ -78,12 +77,13 @@ export const stateModelForTest = {
     },
   ],
   // Glam
-  isEnabled: true,
+  accountType: { vault: {} },
+  enabled: true,
   assets: [WSOL, MSOL],
   // Openfunds (Fund)
   rawOpenfunds: {
     fundDomicileAlpha2: "XS",
-    legalFundNameIncludingUmbrella: "Glam Fund SOL-mSOL",
+    // legalFundNameIncludingUmbrella: "Glam Fund SOL-mSOL",
     fundLaunchDate: new Date().toISOString().split("T")[0],
     investmentObjective: "demo",
     fundCurrency: "SOL",

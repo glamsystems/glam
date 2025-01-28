@@ -169,7 +169,7 @@ pub mod glam {
     /// - Permission::MintShare
     ///
     /// # Integration required
-    /// - IntegrationName::Mint
+    /// - Integration::Mint
     pub fn mint_share<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, MintShare<'info>>,
         share_class_id: u8,
@@ -189,7 +189,7 @@ pub mod glam {
     /// - Permission::ForceTransferShare
     ///
     /// # Integration required
-    /// - IntegrationName::Mint
+    /// - Integration::Mint
     pub fn force_transfer_share(
         ctx: Context<ForceTransferShare>,
         share_class_id: u8,
@@ -209,7 +209,7 @@ pub mod glam {
     /// - Permission::BurnShare
     ///
     /// # Integration required
-    /// - IntegrationName::Mint
+    /// - Integration::Mint
     pub fn burn_share(ctx: Context<BurnShare>, share_class_id: u8, amount: u64) -> Result<()> {
         share_class::burn_share_handler(ctx, share_class_id, amount)
     }
@@ -225,7 +225,7 @@ pub mod glam {
     /// - Permission::SetTokenAccountsStates
     ///
     /// # Integration required
-    /// - IntegrationName::Mint
+    /// - Integration::Mint
     pub fn set_token_accounts_states<'info>(
         ctx: Context<'_, '_, 'info, 'info, SetTokenAccountsStates<'info>>,
         share_class_id: u8,
@@ -282,7 +282,7 @@ pub mod glam {
     /// - Permission::DriftInitialize
     ///
     /// # Integration required
-    /// - IntegrationName::Drift
+    /// - Integration::Drift
     pub fn drift_initialize(ctx: Context<DriftInitialize>) -> Result<()> {
         drift::initialize_handler(ctx)
     }
@@ -298,7 +298,7 @@ pub mod glam {
     /// - Permission::DriftUpdateUser
     ///
     /// # Integration required
-    /// - IntegrationName::Drift
+    /// - Integration::Drift
     pub fn drift_update_user_custom_margin_ratio(
         ctx: Context<DriftUpdate>,
         sub_account_id: u16,
@@ -318,7 +318,7 @@ pub mod glam {
     /// - Permission::DriftUpdateUser
     ///
     /// # Integration required
-    /// - IntegrationName::Drift
+    /// - Integration::Drift
     pub fn drift_update_user_margin_trading_enabled(
         ctx: Context<DriftUpdate>,
         sub_account_id: u16,
@@ -342,7 +342,7 @@ pub mod glam {
     /// - Permission::DriftUpdateUser
     ///
     /// # Integration required
-    /// - IntegrationName::Drift
+    /// - Integration::Drift
     pub fn drift_update_user_delegate(
         ctx: Context<DriftUpdate>,
         sub_account_id: u16,
@@ -362,7 +362,7 @@ pub mod glam {
     /// - Permission::DriftDeposit
     ///
     /// # Integration required
-    /// - IntegrationName::Drift
+    /// - Integration::Drift
     pub fn drift_deposit<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, DriftDeposit<'info>>,
         market_index: u16,
@@ -382,7 +382,7 @@ pub mod glam {
     /// - Permission::DriftWithdraw
     ///
     /// # Integration required
-    /// - IntegrationName::Drift
+    /// - Integration::Drift
     pub fn drift_withdraw<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, DriftWithdraw<'info>>,
         market_index: u16,
@@ -400,7 +400,7 @@ pub mod glam {
     /// - Permission::DriftDeleteUser
     ///
     /// # Integration required
-    /// - IntegrationName::Drift
+    /// - Integration::Drift
     pub fn drift_delete_user(ctx: Context<DriftDeleteUser>) -> Result<()> {
         drift::delete_user_handler(ctx)
     }
@@ -416,7 +416,7 @@ pub mod glam {
     /// - Additional permission Permission::DriftSpotMarket or Permission::DriftPerpMarket is required depending on market type.
     ///
     /// # Integration required
-    /// - IntegrationName::Drift
+    /// - Integration::Drift
     pub fn drift_place_orders<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, DriftPlaceOrders<'info>>,
         order_params: Vec<OrderParams>,
@@ -436,7 +436,7 @@ pub mod glam {
     /// - Permission::DriftCancelOrders
     ///
     /// # Integration required
-    /// - IntegrationName::Drift
+    /// - Integration::Drift
     pub fn drift_cancel_orders<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, DriftCancelOrders<'info>>,
         market_type: Option<MarketType>,
@@ -460,7 +460,7 @@ pub mod glam {
     /// - Permission::Stake
     ///
     /// # Integration required
-    /// - IntegrationName::Marinade
+    /// - Integration::Marinade
     pub fn marinade_deposit_sol(ctx: Context<MarinadeDepositSol>, lamports: u64) -> Result<()> {
         marinade::marinade_deposit_sol_handler(ctx, lamports)
     }
@@ -475,7 +475,7 @@ pub mod glam {
     /// - Permission::Stake
     ///
     /// # Integration required
-    /// - IntegrationName::Marinade
+    /// - Integration::Marinade
     pub fn marinade_deposit_stake(
         ctx: Context<MarinadeDepositStake>,
         validator_idx: u32,
@@ -493,7 +493,7 @@ pub mod glam {
     /// - Permission::LiquidUnstake
     ///
     /// # Integration required
-    /// - IntegrationName::Marinade
+    /// - Integration::Marinade
     pub fn marinade_liquid_unstake(
         ctx: Context<MarinadeLiquidUnstake>,
         msol_amount: u64,
@@ -513,7 +513,7 @@ pub mod glam {
     /// - Permission::Unstake
     ///
     /// # Integration required
-    /// - IntegrationName::Marinade
+    /// - Integration::Marinade
     pub fn marinade_delayed_unstake(
         ctx: Context<MarinadeDelayedUnstake>,
         msol_amount: u64,
@@ -532,7 +532,7 @@ pub mod glam {
     /// - Permission::Unstake
     ///
     /// # Integration required
-    /// - IntegrationName::Marinade
+    /// - Integration::Marinade
     pub fn marinade_claim_tickets<'info>(
         ctx: Context<'_, '_, '_, 'info, MarinadeClaimTickets<'info>>,
     ) -> Result<()> {
@@ -553,7 +553,7 @@ pub mod glam {
     /// - Permission::Stake
     ///
     /// # Integration required
-    /// - IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used.
+    /// - Integration::SplStakePool or Integration::SanctumStakePool, depending on the stake pool program used.
     pub fn stake_pool_deposit_sol(ctx: Context<StakePoolDepositSol>, lamports: u64) -> Result<()> {
         stake_pool::deposit_sol_handler(ctx, lamports)
     }
@@ -567,7 +567,7 @@ pub mod glam {
     /// - Permission::Stake
     ///
     /// # Integration required
-    /// - IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used.
+    /// - Integration::SplStakePool or Integration::SanctumStakePool, depending on the stake pool program used.
     pub fn stake_pool_deposit_stake(ctx: Context<StakePoolDepositStake>) -> Result<()> {
         stake_pool::deposit_stake_handler(ctx)
     }
@@ -582,7 +582,7 @@ pub mod glam {
     /// - Permission::LiquidUnstake
     ///
     /// # Integration required
-    /// - IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used.
+    /// - Integration::SplStakePool or Integration::SanctumStakePool, depending on the stake pool program used.
     pub fn stake_pool_withdraw_sol(
         ctx: Context<StakePoolWithdrawSol>,
         pool_token_amount: u64,
@@ -602,7 +602,7 @@ pub mod glam {
     /// - Permission::Unstake
     ///
     /// # Integration required
-    /// - IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used.
+    /// - Integration::SplStakePool or Integration::SanctumStakePool, depending on the stake pool program used.
     pub fn stake_pool_withdraw_stake(
         ctx: Context<StakePoolWithdrawStake>,
         pool_token_amount: u64,
@@ -633,7 +633,7 @@ pub mod glam {
     /// - Permission::Stake
     ///
     /// # Integration required
-    /// - IntegrationName::NativeStaking
+    /// - Integration::NativeStaking
     pub fn initialize_and_delegate_stake<'info>(
         ctx: Context<'_, '_, '_, 'info, InitializeAndDelegateStake<'info>>,
         lamports: u64,
@@ -657,7 +657,7 @@ pub mod glam {
     /// - Permission::Unstake
     ///
     /// # Integration required
-    /// - IntegrationName::NativeStaking
+    /// - Integration::NativeStaking
     pub fn deactivate_stake_accounts<'info>(
         ctx: Context<'_, '_, '_, 'info, DeactivateStakeAccounts<'info>>,
     ) -> Result<()> {
@@ -673,7 +673,7 @@ pub mod glam {
     /// - Permission::Unstake
     ///
     /// # Integration required
-    /// - IntegrationName::NativeStaking
+    /// - Integration::NativeStaking
     pub fn withdraw_from_stake_accounts<'info>(
         ctx: Context<'_, '_, '_, 'info, WithdrawFromStakeAccounts<'info>>,
     ) -> Result<()> {
@@ -689,7 +689,7 @@ pub mod glam {
     /// - Permission::Stake
     ///
     /// # Integration required
-    /// - IntegrationName::NativeStaking
+    /// - Integration::NativeStaking
     pub fn merge_stake_accounts<'info>(
         ctx: Context<'_, '_, '_, 'info, MergeStakeAccounts<'info>>,
     ) -> Result<()> {
@@ -708,7 +708,7 @@ pub mod glam {
     /// - Permission::Unstake
     ///
     /// # Integration required
-    /// - IntegrationName::NativeStaking
+    /// - Integration::NativeStaking
     pub fn split_stake_account<'info>(
         ctx: Context<'_, '_, '_, 'info, SplitStakeAccount<'info>>,
         lamports: u64,
@@ -734,7 +734,7 @@ pub mod glam {
     /// - Permission::Unstake
     ///
     /// # Integration required
-    /// - IntegrationName::NativeStaking
+    /// - Integration::NativeStaking
     pub fn redelegate_stake<'info>(
         ctx: Context<'_, '_, '_, 'info, RedelegateStake<'info>>,
         new_stake_account_id: String,
@@ -761,7 +761,7 @@ pub mod glam {
     ///   - Permission::JupiterSwapLst: input and output assets are both LST.
     ///
     /// # Integration required
-    /// - IntegrationName::JupiterSwap
+    /// - Integration::JupiterSwap
     pub fn jupiter_swap<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, JupiterSwap<'info>>,
         amount: u64,
@@ -783,7 +783,7 @@ pub mod glam {
     /// - Permission::StakeJup
     ///
     /// # Integration required
-    /// - IntegrationName::JupiterVote
+    /// - Integration::JupiterVote
     pub fn init_locked_voter_escrow<'info>(ctx: Context<InitLockedVoterEscrow>) -> Result<()> {
         jupiter::init_locked_voter_escrow_handler(ctx)
     }
@@ -798,7 +798,7 @@ pub mod glam {
     /// - Permission::UnstakeJup
     ///
     /// # Integration required
-    /// - IntegrationName::JupiterVote
+    /// - Integration::JupiterVote
     pub fn toggle_max_lock<'info>(ctx: Context<ToogleMaxLock>, value: bool) -> Result<()> {
         jupiter::toggle_max_lock_handler(ctx, value)
     }
@@ -813,7 +813,7 @@ pub mod glam {
     /// - Permission::StakeJup
     ///
     /// # Integration required
-    /// - IntegrationName::JupiterVote
+    /// - Integration::JupiterVote
     pub fn increase_locked_amount<'info>(
         ctx: Context<IncreaseLockedAmount>,
         amount: u64,
@@ -832,7 +832,7 @@ pub mod glam {
     /// - Permission::UnstakeJup
     ///
     /// # Integration required
-    /// - IntegrationName::JupiterVote
+    /// - Integration::JupiterVote
     pub fn open_partial_unstaking<'info>(
         ctx: Context<PartialUnstaking>,
         amount: u64,
@@ -850,7 +850,7 @@ pub mod glam {
     /// - Permission::UnstakeJup
     ///
     /// # Integration required
-    /// - IntegrationName::JupiterVote
+    /// - Integration::JupiterVote
     pub fn merge_partial_unstaking<'info>(ctx: Context<PartialUnstaking>) -> Result<()> {
         jupiter::merge_partial_unstaking_handler(ctx)
     }
@@ -864,7 +864,7 @@ pub mod glam {
     /// - Permission::UnstakeJup
     ///
     /// # Integration required
-    /// - IntegrationName::JupiterVote
+    /// - Integration::JupiterVote
     pub fn withdraw_partial_unstaking<'info>(ctx: Context<WithdrawPartialUnstaking>) -> Result<()> {
         jupiter::withdraw_partial_unstaking_handler(ctx)
     }
@@ -878,7 +878,7 @@ pub mod glam {
     /// - Permission::UnstakeJup
     ///
     /// # Integration required
-    /// - IntegrationName::JupiterVote
+    /// - Integration::JupiterVote
     pub fn withdraw_all_staked_jup<'info>(ctx: Context<WithdrawAllStakedJup>) -> Result<()> {
         jupiter::withdraw_all_staked_jup_handler(ctx)
     }
@@ -892,7 +892,7 @@ pub mod glam {
     /// - Permission::VoteOnProposal
     ///
     /// # Integration required
-    /// - IntegrationName::JupiterVote
+    /// - Integration::JupiterVote
     pub fn new_vote<'info>(ctx: Context<NewVote>) -> Result<()> {
         jupiter::new_vote_handler(ctx)
     }
@@ -907,7 +907,7 @@ pub mod glam {
     /// - Permission::VoteOnProposal
     ///
     /// # Integration required
-    /// - IntegrationName::JupiterVote
+    /// - Integration::JupiterVote
     pub fn cast_vote<'info>(ctx: Context<CastVote>, side: u8) -> Result<()> {
         jupiter::cast_vote_handler(ctx, side)
     }

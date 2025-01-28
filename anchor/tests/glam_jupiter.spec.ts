@@ -25,15 +25,12 @@ describe("glam_jupiter", () => {
   it("Initialize fund", async () => {
     const stateData = await createGlamStateForTest(glamClient, {
       ...stateModelForTest,
-      integrationAcls: [
-        { name: { jupiterSwap: {} }, features: [] },
-        { name: { jupiterVote: {} }, features: [] },
-      ],
+      integrations: [{ jupiterSwap: {} }, { jupiterVote: {} }],
     });
     statePda = stateData.statePda;
 
     const state = await glamClient.fetchState(statePda);
-    expect(state.mints.length).toEqual(1);
+    expect(state.mints?.length).toEqual(1);
 
     await airdrop(
       glamClient.provider.connection,

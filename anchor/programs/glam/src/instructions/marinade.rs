@@ -14,7 +14,7 @@ use marinade::state::delayed_unstake_ticket::TicketAccountData;
 #[access_control(
     acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Stake)
 )]
-#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Marinade))]
+#[access_control(acl::check_integration(&ctx.accounts.state, Integration::Marinade))]
 #[vault_signer_seeds]
 pub fn marinade_deposit_sol_handler<'c: 'info, 'info>(
     ctx: Context<MarinadeDepositSol>,
@@ -45,7 +45,7 @@ pub fn marinade_deposit_sol_handler<'c: 'info, 'info>(
 #[access_control(
     acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Stake)
 )]
-#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Marinade))]
+#[access_control(acl::check_integration(&ctx.accounts.state, Integration::Marinade))]
 #[vault_signer_seeds]
 pub fn marinade_deposit_stake_handler<'c: 'info, 'info>(
     ctx: Context<MarinadeDepositStake>,
@@ -78,7 +78,7 @@ pub fn marinade_deposit_stake_handler<'c: 'info, 'info>(
 #[access_control(
     acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Unstake)
 )]
-#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Marinade))]
+#[access_control(acl::check_integration(&ctx.accounts.state, Integration::Marinade))]
 #[vault_signer_seeds]
 pub fn delayed_unstake_handler<'c: 'info, 'info>(
     ctx: Context<MarinadeDelayedUnstake>,
@@ -142,7 +142,7 @@ pub fn delayed_unstake_handler<'c: 'info, 'info>(
 #[access_control(
     acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Unstake)
 )]
-#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Marinade))]
+#[access_control(acl::check_integration(&ctx.accounts.state, Integration::Marinade))]
 #[vault_signer_seeds]
 pub fn claim_tickets_handler<'info>(
     ctx: Context<'_, '_, '_, 'info, MarinadeClaimTickets<'info>>,
@@ -180,7 +180,7 @@ pub fn claim_tickets_handler<'info>(
 #[access_control(
     acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::LiquidUnstake)
 )]
-#[access_control(acl::check_integration(&ctx.accounts.state, IntegrationName::Marinade))]
+#[access_control(acl::check_integration(&ctx.accounts.state, Integration::Marinade))]
 #[vault_signer_seeds]
 pub fn liquid_unstake_handler<'c: 'info, 'info>(
     ctx: Context<MarinadeLiquidUnstake>,

@@ -39,7 +39,7 @@ import {
 import { ClusterNetwork, GlamClientConfig } from "../clientConfig";
 import {
   StateAccount,
-  MetadataAccount,
+  OpenfundsMetadataAccount,
   StateModel,
   ShareClassModel,
 } from "../models";
@@ -263,15 +263,18 @@ export class BaseClient {
     tx: VersionedTransaction | Transaction,
     signerOverride?: Keypair,
   ): Promise<TransactionSignature> {
-    // Use dedicated connection for sending transactions if available
-    const txConnection = new Connection(
-      process.env?.NEXT_PUBLIC_TX_RPC ||
-        process.env.TX_RPC ||
-        this.provider.connection.rpcEndpoint,
-      {
-        commitment: "confirmed",
-      },
-    );
+    // Mainnet only: use dedicated connection for sending transactions if available
+    const txConnection =
+      this.cluster === ClusterNetwork.Mainnet
+        ? new Connection(
+            process.env?.NEXT_PUBLIC_TX_RPC ||
+              process.env.TX_RPC ||
+              this.provider.connection.rpcEndpoint,
+            {
+              commitment: "confirmed",
+            },
+          )
+        : this.provider.connection;
 
     // This is just a convenient method so that in tests we can send legacy
     // txs, for example transfer SOL, create ATA, etc.
@@ -372,7 +375,7 @@ export class BaseClient {
     const owner = stateModel.owner?.pubkey || this.getSigner();
     const [pda, _bump] = PublicKey.findProgramAddressSync(
       [
-        anchor.utils.bytes.utf8.encode("fund"),
+        anchor.utils.bytes.utf8.encode("state"),
         owner.toBuffer(),
         Uint8Array.from(createdKey),
       ],
@@ -383,7 +386,7 @@ export class BaseClient {
 
   getVaultPda(statePda: PublicKey): PublicKey {
     const [pda, _bump] = PublicKey.findProgramAddressSync(
-      [Buffer.from("treasury"), statePda.toBuffer()],
+      [Buffer.from("vault"), statePda.toBuffer()],
       this.program.programId,
     );
     return pda;
@@ -476,7 +479,7 @@ export class BaseClient {
 
   getOpenfundsPda(statePda: PublicKey): PublicKey {
     const [pda, _] = PublicKey.findProgramAddressSync(
-      [Buffer.from("openfunds"), statePda.toBuffer()],
+      [Buffer.from("metadata"), statePda.toBuffer()],
       this.program.programId,
     );
     return pda;
@@ -485,7 +488,7 @@ export class BaseClient {
   getShareClassPda(statePda: PublicKey, mintIdx: number = 0): PublicKey {
     const [pda, _] = PublicKey.findProgramAddressSync(
       [
-        Buffer.from("share"),
+        Buffer.from("mint"),
         Uint8Array.from([mintIdx % 256]),
         statePda.toBuffer(),
       ],
@@ -501,26 +504,23 @@ export class BaseClient {
   getName(stateModel: Partial<StateModel>) {
     const name =
       stateModel.name ||
-      stateModel.rawOpenfunds?.legalFundNameIncludingUmbrella ||
-      (stateModel.mints && stateModel.mints[0]?.name);
+      (stateModel.mints && stateModel.mints[0]?.name) ||
+      stateModel.rawOpenfunds?.legalFundNameIncludingUmbrella;
     if (!name) {
       throw new Error("Name not be inferred from state model");
     }
     return name;
   }
 
-  // @ts-ignore
   public async fetchStateAccount(statePda: PublicKey): Promise<StateAccount> {
-    // stateAccount is a type alias of fundAccount
-    return await this.program.account.fundAccount.fetch(statePda);
+    return await this.program.account.stateAccount.fetch(statePda);
   }
 
-  public async fetchMetadataAccount(
+  public async fetchOpenfundsMetadataAccount(
     state: PublicKey,
-  ): Promise<MetadataAccount> {
+  ): Promise<OpenfundsMetadataAccount> {
     const openfunds = this.getOpenfundsPda(state);
-    // metadataAccount is a type alias of fundMetadataAccount
-    return await this.program.account.fundMetadataAccount.fetch(openfunds);
+    return await this.program.account.openfundsMetadataAccount.fetch(openfunds);
   }
 
   public async fetchShareClassAccount(
@@ -616,14 +616,15 @@ export class BaseClient {
    */
   public async fetchState(statePda: PublicKey): Promise<StateModel> {
     const stateAccount = await this.fetchStateAccount(statePda);
-    const metadataAccount = await this.fetchMetadataAccount(statePda);
+    const openfundsMetadataAccount =
+      await this.fetchOpenfundsMetadataAccount(statePda);
 
     if (stateAccount.mints.length > 0) {
       const firstShareClass = await this.fetchShareClassAccount(statePda, 0);
       return StateModel.fromOnchainAccounts(
         statePda,
         stateAccount,
-        metadataAccount,
+        openfundsMetadataAccount,
         firstShareClass,
         this.program.programId,
       );
@@ -632,19 +633,19 @@ export class BaseClient {
     return StateModel.fromOnchainAccounts(
       statePda,
       stateAccount,
-      metadataAccount,
+      openfundsMetadataAccount,
       undefined,
       this.program.programId,
     );
   }
 
   public async fetchAllGlamStates(): Promise<StateModel[]> {
-    const stateAccounts = await this.program.account.fundAccount.all();
-    const openfundsAccounts =
-      await this.program.account.fundMetadataAccount.all();
+    const stateAccounts = await this.program.account.stateAccount.all();
+    const openfundsMetadataAccounts =
+      await this.program.account.openfundsMetadataAccount.all();
 
-    let openfundsCache = new Map<string, MetadataAccount>();
-    openfundsAccounts.forEach((of) => {
+    let openfundsCache = new Map<string, OpenfundsMetadataAccount>();
+    openfundsMetadataAccounts.forEach((of) => {
       openfundsCache.set(of.publicKey.toBase58(), of.account);
     });
 
@@ -665,12 +666,12 @@ export class BaseClient {
       mintCache.set(mintAddresses[j].toBase58(), mintInfo);
     });
 
-    return stateAccounts.map((f) =>
+    return stateAccounts.map((s) =>
       StateModel.fromOnchainAccounts(
-        f.publicKey,
-        f.account,
-        openfundsCache.get(f.account.metadata.toBase58()),
-        mintCache.get(f.account.mints[0] ? f.account.mints[0].toBase58() : ""),
+        s.publicKey,
+        s.account,
+        openfundsCache.get(s.account.metadata?.pubkey.toBase58() || ""),
+        mintCache.get(s.account.mints[0]?.toBase58() || ""),
         this.program.programId,
       ),
     );

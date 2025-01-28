@@ -1,6 +1,7 @@
 {
+  "accountType": "fund",
   "name": "GLAM Fund XYZ",
-  "isEnabled": true,
+  "enabled": true,
   "assets": [
     "So11111111111111111111111111111111111111112",
     "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
@@ -29,7 +30,6 @@
       "allowlist": [],
       "blocklist": [],
       "lockUpTime": 0,
-      "permanentDelegate": "11111111111111111111111111111111",
       "defaultAccountStateFrozen": false,
       "fullShareClassName": "GLAM Token XYZ",
       "isin": "",

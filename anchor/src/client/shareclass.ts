@@ -56,12 +56,10 @@ export class ShareClassClient {
     const openfunds = this.base.getOpenfundsPda(state);
     const shareClassMint = this.base.getShareClassPda(state, shareClassId);
 
-    // @ts-ignore Type instantiation is excessively deep and possibly infinite.
     return await this.base.program.methods
       .closeShareClass(shareClassId)
       .accounts({
         state,
-        metadata: openfunds,
         shareClassMint,
       })
       .instruction();
@@ -80,7 +78,6 @@ export class ShareClassClient {
       .closeShareClass(shareClassId)
       .accounts({
         state,
-        metadata: openfunds,
         shareClassMint,
       })
       .rpc();
@@ -161,7 +158,7 @@ export class ShareClassClient {
    * @param shareClassId
    * @param recipient Recipient's wallet address
    * @param amount Amount of shares to mint
-   * @param forceThaw If true, force thaw token account before minting
+   * @param forceThaw If true, force unfreezing token account before minting
    * @param txOptions
    * @returns Transaction signature
    */

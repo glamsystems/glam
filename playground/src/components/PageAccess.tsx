@@ -56,6 +56,7 @@ export default function PageAccess({
   }, [state, getLabel]);
 
   const handleSuccess = useCallback(() => {
+    console.log("Delegate access updated successfully");
     refresh();
   }, []);
 

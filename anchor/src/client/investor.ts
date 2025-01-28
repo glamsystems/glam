@@ -82,8 +82,8 @@ export class InvestorClient {
     const signer = txOptions.signer || this.base.getSigner();
 
     // share class token to receive
-    const shareClass = this.base.getShareClassPda(statePda, shareClassId);
-    const signerShareAta = this.base.getShareClassAta(signer, shareClass);
+    const shareClassMint = this.base.getShareClassPda(statePda, shareClassId);
+    const signerShareAta = this.base.getShareClassAta(signer, shareClassMint);
 
     // asset token to transfer
     const assetMeta = this.base.getAssetMeta(asset.toBase58());
@@ -107,7 +107,7 @@ export class InvestorClient {
     if (!stateModel) {
       stateModel = await this.base.fetchState(statePda);
     }
-    let remainingAccounts = stateModel.assets.flatMap((asset) => {
+    let remainingAccounts = (stateModel.assets || []).flatMap((asset) => {
       const assetMeta = this.base.getAssetMeta(asset.toBase58());
       const vaultAta = this.base.getVaultAta(
         statePda,
@@ -128,7 +128,7 @@ export class InvestorClient {
     });
 
     remainingAccounts = remainingAccounts.concat(
-      stateModel.externalVaultAccounts.map((address) => ({
+      (stateModel.externalVaultAccounts || []).map((address) => ({
         pubkey: address,
         isSigner: false,
         isWritable: false,
@@ -156,7 +156,7 @@ export class InvestorClient {
         signer,
         signerShareAta,
         signer,
-        shareClass,
+        shareClassMint,
         TOKEN_2022_PROGRAM_ID,
       ),
     ];
@@ -186,12 +186,11 @@ export class InvestorClient {
       }
     }
 
-    // @ts-ignore
     const tx = await this.base.program.methods
       .subscribe(0, amount, skipState)
       .accounts({
         state: statePda,
-        shareClass,
+        shareClassMint,
         asset,
         vaultAta,
         signerAssetAta,

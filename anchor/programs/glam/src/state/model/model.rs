@@ -1,44 +1,41 @@
 use anchor_lang::prelude::*;
 
-use super::super::acl::*;
+use crate::state::accounts::*;
 
-// Fund
-//
-// Implemented:
-// - Openfunds Fund Essential + Core
+use super::super::acl::*;
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
 pub struct StateModel {
     // Core
     pub id: Option<Pubkey>,
+    pub account_type: Option<AccountType>,
     pub name: Option<String>,
     pub uri: Option<String>,
-    pub metadata_uri: Option<String>,
-    pub is_enabled: Option<bool>,
+    pub enabled: Option<bool>,
 
     // Assets
-    pub assets: Vec<Pubkey>,
-    pub external_vault_accounts: Vec<Pubkey>,
+    pub assets: Option<Vec<Pubkey>>,
+    pub external_vault_accounts: Option<Vec<Pubkey>>,
 
     // Relationships
-    pub mints: Vec<ShareClassModel>,
+    pub mints: Option<Vec<ShareClassModel>>,
     pub company: Option<CompanyModel>,
     pub owner: Option<ManagerModel>,
     pub created: Option<CreatedModel>,
 
     // ACLs
-    pub delegate_acls: Vec<DelegateAcl>,
-    pub integration_acls: Vec<IntegrationAcl>,
-    pub drift_market_indexes_perp: Vec<u32>,
-    pub drift_market_indexes_spot: Vec<u32>,
-    pub drift_order_types: Vec<u32>,
+    pub delegate_acls: Option<Vec<DelegateAcl>>,
+    pub integrations: Option<Vec<Integration>>,
+    pub drift_market_indexes_perp: Option<Vec<u32>>,
+    pub drift_market_indexes_spot: Option<Vec<u32>>,
+    pub drift_order_types: Option<Vec<u32>>,
 
-    // Openfunds
-    pub is_raw_openfunds: bool,
+    // Metadata
+    pub metadata: Option<Metadata>,
     pub raw_openfunds: Option<FundOpenfundsModel>,
 }
 
-// Subset of the Openfunds v2 modelled by Glam
+// Subset of the Openfunds v2 modeled by Glam
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
 pub struct FundOpenfundsModel {
     pub fund_domicile_alpha_2: Option<String>,
@@ -59,12 +56,6 @@ pub struct FundOpenfundsModel {
     pub ucits_version: Option<String>,
 }
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
-pub struct CreatedModel {
-    pub key: [u8; 8], // seed for computing state PDA
-    pub owner: Option<Pubkey>,
-}
-
 // Share Class
 //
 // Implemented:
@@ -79,22 +70,22 @@ pub struct ShareClassModel {
     pub uri: Option<String>, // metadata uri
 
     // Glam
-    pub fund_id: Option<Pubkey>,
+    pub state_pubkey: Option<Pubkey>,
     pub asset: Option<Pubkey>,
-    pub image_uri: Option<String>,
-
-    // Openfund
-    pub is_raw_openfunds: bool,
-    pub raw_openfunds: Option<ShareClassOpenfundsModel>,
+    pub image_uri: Option<String>, // TODO: remove?
 
     // Acls
-    pub allowlist: Vec<Pubkey>,
-    pub blocklist: Vec<Pubkey>,
+    pub allowlist: Option<Vec<Pubkey>>,
+    pub blocklist: Option<Vec<Pubkey>>,
 
     // Policies
-    pub lock_up_period_in_seconds: i32,
+    pub lock_up_period_in_seconds: Option<i32>,
     pub permanent_delegate: Option<Pubkey>,
-    pub default_account_state_frozen: bool,
+    pub default_account_state_frozen: Option<bool>,
+
+    // Metadata
+    pub is_raw_openfunds: Option<bool>,
+    pub raw_openfunds: Option<ShareClassOpenfundsModel>,
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug, Default)]

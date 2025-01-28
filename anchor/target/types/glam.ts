@@ -82,8 +82,30 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "metadata",
-          "writable": true
+          "name": "openfundsMetadata",
+          "writable": true,
+          "optional": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "state"
+              }
+            ]
+          }
         },
         {
           "name": "signer",
@@ -124,7 +146,7 @@ export type Glam = {
         "- Permission::BurnShare",
         "",
         "# Integration required",
-        "- IntegrationName::Mint"
+        "- Integration::Mint"
       ],
       "discriminator": [
         111,
@@ -239,7 +261,7 @@ export type Glam = {
         "- Permission::VoteOnProposal",
         "",
         "# Integration required",
-        "- IntegrationName::JupiterVote"
+        "- Integration::JupiterVote"
       ],
       "discriminator": [
         20,
@@ -264,14 +286,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -354,14 +373,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -413,7 +429,28 @@ export type Glam = {
         },
         {
           "name": "metadata",
-          "writable": true
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "state"
+              }
+            ]
+          }
         },
         {
           "name": "signer",
@@ -460,7 +497,28 @@ export type Glam = {
         },
         {
           "name": "metadata",
-          "writable": true
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "state"
+              }
+            ]
+          }
         },
         {
           "name": "vault",
@@ -470,14 +528,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -533,14 +588,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -578,7 +630,7 @@ export type Glam = {
         "- Permission::Unstake",
         "",
         "# Integration required",
-        "- IntegrationName::NativeStaking"
+        "- Integration::NativeStaking"
       ],
       "discriminator": [
         58,
@@ -607,14 +659,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -650,7 +699,7 @@ export type Glam = {
         "- Permission::DriftCancelOrders",
         "",
         "# Integration required",
-        "- IntegrationName::Drift"
+        "- Integration::Drift"
       ],
       "discriminator": [
         98,
@@ -681,14 +730,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -753,7 +799,7 @@ export type Glam = {
         "- Permission::DriftDeleteUser",
         "",
         "# Integration required",
-        "- IntegrationName::Drift"
+        "- Integration::Drift"
       ],
       "discriminator": [
         179,
@@ -788,14 +834,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -835,7 +878,7 @@ export type Glam = {
         "- Permission::DriftDeposit",
         "",
         "# Integration required",
-        "- IntegrationName::Drift"
+        "- Integration::Drift"
       ],
       "discriminator": [
         252,
@@ -870,14 +913,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -933,7 +973,7 @@ export type Glam = {
         "- Permission::DriftInitialize",
         "",
         "# Integration required",
-        "- IntegrationName::Drift"
+        "- Integration::Drift"
       ],
       "discriminator": [
         21,
@@ -968,14 +1008,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -1019,7 +1056,7 @@ export type Glam = {
         "- Additional permission Permission::DriftSpotMarket or Permission::DriftPerpMarket is required depending on market type.",
         "",
         "# Integration required",
-        "- IntegrationName::Drift"
+        "- Integration::Drift"
       ],
       "discriminator": [
         117,
@@ -1050,14 +1087,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -1108,7 +1142,7 @@ export type Glam = {
         "- Permission::DriftUpdateUser",
         "",
         "# Integration required",
-        "- IntegrationName::Drift"
+        "- Integration::Drift"
       ],
       "discriminator": [
         4,
@@ -1135,14 +1169,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -1187,7 +1218,7 @@ export type Glam = {
         "- Permission::DriftUpdateUser",
         "",
         "# Integration required",
-        "- IntegrationName::Drift"
+        "- Integration::Drift"
       ],
       "discriminator": [
         36,
@@ -1214,14 +1245,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -1266,7 +1294,7 @@ export type Glam = {
         "- Permission::DriftUpdateUser",
         "",
         "# Integration required",
-        "- IntegrationName::Drift"
+        "- Integration::Drift"
       ],
       "discriminator": [
         157,
@@ -1293,14 +1321,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -1345,7 +1370,7 @@ export type Glam = {
         "- Permission::DriftWithdraw",
         "",
         "# Integration required",
-        "- IntegrationName::Drift"
+        "- Integration::Drift"
       ],
       "discriminator": [
         86,
@@ -1383,14 +1408,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -1447,7 +1469,7 @@ export type Glam = {
         "- Permission::ForceTransferShare",
         "",
         "# Integration required",
-        "- IntegrationName::Mint"
+        "- Integration::Mint"
       ],
       "discriminator": [
         71,
@@ -1622,7 +1644,7 @@ export type Glam = {
         "- Permission::StakeJup",
         "",
         "# Integration required",
-        "- IntegrationName::JupiterVote"
+        "- Integration::JupiterVote"
       ],
       "discriminator": [
         5,
@@ -1646,14 +1668,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -1712,7 +1731,7 @@ export type Glam = {
         "- Permission::StakeJup",
         "",
         "# Integration required",
-        "- IntegrationName::JupiterVote"
+        "- Integration::JupiterVote"
       ],
       "discriminator": [
         148,
@@ -1736,14 +1755,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -1792,7 +1808,7 @@ export type Glam = {
         "- Permission::Stake",
         "",
         "# Integration required",
-        "- IntegrationName::NativeStaking"
+        "- Integration::NativeStaking"
       ],
       "discriminator": [
         71,
@@ -1822,14 +1838,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -1917,10 +1930,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  102,
-                  117,
-                  110,
-                  100
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
                 ]
               },
               {
@@ -1935,32 +1949,6 @@ export type Glam = {
           }
         },
         {
-          "name": "metadata",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  111,
-                  112,
-                  101,
-                  110,
-                  102,
-                  117,
-                  110,
-                  100,
-                  115
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "state"
-              }
-            ]
-          }
-        },
-        {
           "name": "vault",
           "writable": true,
           "pda": {
@@ -1968,14 +1956,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -1989,6 +1974,32 @@ export type Glam = {
           "name": "signer",
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "openfundsMetadata",
+          "writable": true,
+          "optional": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "state"
+              }
+            ]
+          }
         },
         {
           "name": "systemProgram",
@@ -2023,7 +2034,7 @@ export type Glam = {
         "- Permission::JupiterSwapLst: input and output assets are both LST.",
         "",
         "# Integration required",
-        "- IntegrationName::JupiterSwap"
+        "- Integration::JupiterSwap"
       ],
       "discriminator": [
         116,
@@ -2048,14 +2059,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -2254,7 +2262,7 @@ export type Glam = {
         "- Permission::Unstake",
         "",
         "# Integration required",
-        "- IntegrationName::Marinade"
+        "- Integration::Marinade"
       ],
       "discriminator": [
         14,
@@ -2284,14 +2292,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -2347,7 +2352,7 @@ export type Glam = {
         "- Permission::Unstake",
         "",
         "# Integration required",
-        "- IntegrationName::Marinade"
+        "- Integration::Marinade"
       ],
       "discriminator": [
         117,
@@ -2377,14 +2382,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -2464,7 +2466,7 @@ export type Glam = {
         "- Permission::Stake",
         "",
         "# Integration required",
-        "- IntegrationName::Marinade"
+        "- Integration::Marinade"
       ],
       "discriminator": [
         64,
@@ -2493,14 +2495,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -2665,7 +2664,7 @@ export type Glam = {
         "- Permission::Stake",
         "",
         "# Integration required",
-        "- IntegrationName::Marinade"
+        "- Integration::Marinade"
       ],
       "discriminator": [
         69,
@@ -2694,14 +2693,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -2877,7 +2873,7 @@ export type Glam = {
         "- Permission::LiquidUnstake",
         "",
         "# Integration required",
-        "- IntegrationName::Marinade"
+        "- Integration::Marinade"
       ],
       "discriminator": [
         29,
@@ -2906,14 +2902,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -2983,7 +2976,7 @@ export type Glam = {
         "- Permission::UnstakeJup",
         "",
         "# Integration required",
-        "- IntegrationName::JupiterVote"
+        "- Integration::JupiterVote"
       ],
       "discriminator": [
         190,
@@ -3007,14 +3000,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -3064,7 +3054,7 @@ export type Glam = {
         "- Permission::Stake",
         "",
         "# Integration required",
-        "- IntegrationName::NativeStaking"
+        "- Integration::NativeStaking"
       ],
       "discriminator": [
         173,
@@ -3094,14 +3084,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -3152,7 +3139,7 @@ export type Glam = {
         "- Permission::MintShare",
         "",
         "# Integration required",
-        "- IntegrationName::Mint"
+        "- Integration::Mint"
       ],
       "discriminator": [
         145,
@@ -3266,7 +3253,7 @@ export type Glam = {
         "- Permission::VoteOnProposal",
         "",
         "# Integration required",
-        "- IntegrationName::JupiterVote"
+        "- Integration::JupiterVote"
       ],
       "discriminator": [
         163,
@@ -3290,14 +3277,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -3345,7 +3329,7 @@ export type Glam = {
         "- Permission::UnstakeJup",
         "",
         "# Integration required",
-        "- IntegrationName::JupiterVote"
+        "- Integration::JupiterVote"
       ],
       "discriminator": [
         201,
@@ -3369,14 +3353,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -3469,14 +3450,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -3560,7 +3538,7 @@ export type Glam = {
         "- Permission::Unstake",
         "",
         "# Integration required",
-        "- IntegrationName::NativeStaking"
+        "- Integration::NativeStaking"
       ],
       "discriminator": [
         240,
@@ -3590,14 +3568,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -3701,7 +3676,7 @@ export type Glam = {
         "- Permission::SetTokenAccountsStates",
         "",
         "# Integration required",
-        "- IntegrationName::Mint"
+        "- Integration::Mint"
       ],
       "discriminator": [
         50,
@@ -3758,7 +3733,7 @@ export type Glam = {
         "- Permission::Unstake",
         "",
         "# Integration required",
-        "- IntegrationName::NativeStaking"
+        "- Integration::NativeStaking"
       ],
       "discriminator": [
         130,
@@ -3788,14 +3763,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -3854,7 +3826,7 @@ export type Glam = {
         "- Permission::Stake",
         "",
         "# Integration required",
-        "- IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used."
+        "- Integration::SplStakePool or Integration::SanctumStakePool, depending on the stake pool program used."
       ],
       "discriminator": [
         147,
@@ -3883,14 +3855,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -4043,7 +4012,7 @@ export type Glam = {
         "- Permission::Stake",
         "",
         "# Integration required",
-        "- IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used."
+        "- Integration::SplStakePool or Integration::SanctumStakePool, depending on the stake pool program used."
       ],
       "discriminator": [
         212,
@@ -4073,14 +4042,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -4256,7 +4222,7 @@ export type Glam = {
         "- Permission::LiquidUnstake",
         "",
         "# Integration required",
-        "- IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used."
+        "- Integration::SplStakePool or Integration::SanctumStakePool, depending on the stake pool program used."
       ],
       "discriminator": [
         179,
@@ -4285,14 +4251,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -4370,7 +4333,7 @@ export type Glam = {
         "- Permission::Unstake",
         "",
         "# Integration required",
-        "- IntegrationName::SplStakePool or IntegrationName::SanctumStakePool, depending on the stake pool program used."
+        "- Integration::SplStakePool or Integration::SanctumStakePool, depending on the stake pool program used."
       ],
       "discriminator": [
         7,
@@ -4400,14 +4363,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -4515,14 +4475,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -4533,7 +4490,7 @@ export type Glam = {
           }
         },
         {
-          "name": "shareClass",
+          "name": "shareClassMint",
           "writable": true
         },
         {
@@ -4551,7 +4508,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "shareClass"
+                "path": "shareClassMint"
               }
             ],
             "program": {
@@ -4686,7 +4643,7 @@ export type Glam = {
         "- Permission::UnstakeJup",
         "",
         "# Integration required",
-        "- IntegrationName::JupiterVote"
+        "- Integration::JupiterVote"
       ],
       "discriminator": [
         163,
@@ -4710,14 +4667,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -5023,14 +4977,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -5185,7 +5136,7 @@ export type Glam = {
         "- Permission::UnstakeJup",
         "",
         "# Integration required",
-        "- IntegrationName::JupiterVote"
+        "- Integration::JupiterVote"
       ],
       "discriminator": [
         210,
@@ -5209,14 +5160,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -5270,7 +5218,7 @@ export type Glam = {
         "- Permission::Unstake",
         "",
         "# Integration required",
-        "- IntegrationName::NativeStaking"
+        "- Integration::NativeStaking"
       ],
       "discriminator": [
         93,
@@ -5300,14 +5248,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -5344,7 +5289,7 @@ export type Glam = {
         "- Permission::UnstakeJup",
         "",
         "# Integration required",
-        "- IntegrationName::JupiterVote"
+        "- Integration::JupiterVote"
       ],
       "discriminator": [
         201,
@@ -5368,14 +5313,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -5454,14 +5396,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -5611,14 +5550,11 @@ export type Glam = {
               {
                 "kind": "const",
                 "value": [
-                  116,
-                  114,
-                  101,
+                  118,
                   97,
-                  115,
                   117,
-                  114,
-                  121
+                  108,
+                  116
                 ]
               },
               {
@@ -5763,32 +5699,6 @@ export type Glam = {
       ]
     },
     {
-      "name": "fundAccount",
-      "discriminator": [
-        49,
-        104,
-        168,
-        214,
-        134,
-        180,
-        173,
-        154
-      ]
-    },
-    {
-      "name": "fundMetadataAccount",
-      "discriminator": [
-        214,
-        24,
-        35,
-        92,
-        16,
-        104,
-        166,
-        6
-      ]
-    },
-    {
       "name": "governor",
       "discriminator": [
         37,
@@ -5812,6 +5722,19 @@ export type Glam = {
         228,
         75,
         169
+      ]
+    },
+    {
+      "name": "openfundsMetadataAccount",
+      "discriminator": [
+        5,
+        89,
+        20,
+        76,
+        255,
+        158,
+        209,
+        219
       ]
     },
     {
@@ -5854,6 +5777,19 @@ export type Glam = {
       ]
     },
     {
+      "name": "stateAccount",
+      "discriminator": [
+        142,
+        247,
+        54,
+        95,
+        85,
+        133,
+        249,
+        103
+      ]
+    },
+    {
       "name": "vote",
       "discriminator": [
         96,
@@ -5870,51 +5806,73 @@ export type Glam = {
   "errors": [
     {
       "code": 6000,
-      "name": "invalidName",
-      "msg": "Name too long: max 50 chars"
+      "name": "invalidAccountType",
+      "msg": "Invalid account type"
     },
     {
       "code": 6001,
-      "name": "invalidSymbol",
-      "msg": "Symbol too long: max 50 chars"
+      "name": "invalidName",
+      "msg": "Name too long: max 64 chars"
     },
     {
       "code": 6002,
-      "name": "invalidUri",
-      "msg": "Uri too long: max 20"
+      "name": "invalidSymbol",
+      "msg": "Symbol too long: max 32 chars"
     },
     {
       "code": 6003,
+      "name": "invalidUri",
+      "msg": "Uri too long: max 128 chars"
+    },
+    {
+      "code": 6004,
       "name": "invalidAssetsLen",
       "msg": "Too many assets: max 100"
     },
     {
-      "code": 6004,
+      "code": 6005,
       "name": "disabled",
       "msg": "State account is disabled"
     },
     {
-      "code": 6005,
+      "code": 6006,
       "name": "noShareClass",
       "msg": "No share class found"
     },
     {
-      "code": 6006,
+      "code": 6007,
       "name": "shareClassesNotClosed",
       "msg": "Glam state account can't be closed. Close share classes first"
     },
     {
-      "code": 6007,
+      "code": 6008,
       "name": "closeNotEmptyError",
       "msg": "Error closing state account: not empty"
     },
     {
-      "code": 6008,
+      "code": 6009,
       "name": "withdrawDenied",
       "msg": "Withdraw denied. Only vaults allow withdraws (funds and mints don't)"
     }
   ],
   "types": [
+    {
+      "name": "accountType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "vault"
+          },
+          {
+            "name": "mint"
+          },
+          {
+            "name": "fund"
+          }
+        ]
+      }
+    },
     {
       "name": "companyField",
       "type": {
@@ -6089,10 +6047,12 @@ export type Glam = {
             }
           },
           {
-            "name": "owner",
-            "type": {
-              "option": "pubkey"
-            }
+            "name": "createdBy",
+            "type": "pubkey"
+          },
+          {
+            "name": "createdAt",
+            "type": "i64"
           }
         ]
       }
@@ -6115,6 +6075,10 @@ export type Glam = {
                 }
               }
             }
+          },
+          {
+            "name": "expiresAt",
+            "type": "i64"
           }
         ]
       }
@@ -6149,28 +6113,10 @@ export type Glam = {
         "kind": "enum",
         "variants": [
           {
-            "name": "timeCreated"
-          },
-          {
-            "name": "isEnabled"
-          },
-          {
-            "name": "assets"
-          },
-          {
-            "name": "assetsWeights"
-          },
-          {
             "name": "shareClassAllowlist"
           },
           {
             "name": "shareClassBlocklist"
-          },
-          {
-            "name": "delegateAcls"
-          },
-          {
-            "name": "integrationAcls"
           },
           {
             "name": "externalVaultAccounts"
@@ -6324,36 +6270,6 @@ export type Glam = {
                 }
               }
             ]
-          },
-          {
-            "name": "vecDelegateAcl",
-            "fields": [
-              {
-                "name": "val",
-                "type": {
-                  "vec": {
-                    "defined": {
-                      "name": "delegateAcl"
-                    }
-                  }
-                }
-              }
-            ]
-          },
-          {
-            "name": "vecIntegrationAcl",
-            "fields": [
-              {
-                "name": "val",
-                "type": {
-                  "vec": {
-                    "defined": {
-                      "name": "integrationAcl"
-                    }
-                  }
-                }
-              }
-            ]
           }
         ]
       }
@@ -6417,60 +6333,6 @@ export type Glam = {
                 "u128",
                 9
               ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "fundAccount",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "owner",
-            "type": "pubkey"
-          },
-          {
-            "name": "vault",
-            "type": "pubkey"
-          },
-          {
-            "name": "metadata",
-            "type": "pubkey"
-          },
-          {
-            "name": "engine",
-            "type": "pubkey"
-          },
-          {
-            "name": "mints",
-            "type": {
-              "vec": "pubkey"
-            }
-          },
-          {
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "name": "uri",
-            "type": "string"
-          },
-          {
-            "name": "metadataUri",
-            "type": "string"
-          },
-          {
-            "name": "params",
-            "type": {
-              "vec": {
-                "vec": {
-                  "defined": {
-                    "name": "engineField"
-                  }
-                }
-              }
             }
           }
         ]
@@ -6680,62 +6542,6 @@ export type Glam = {
       }
     },
     {
-      "name": "fundMetadataAccount",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "statePubkey",
-            "type": "pubkey"
-          },
-          {
-            "name": "company",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "companyField"
-                }
-              }
-            }
-          },
-          {
-            "name": "fund",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "fundField"
-                }
-              }
-            }
-          },
-          {
-            "name": "shareClasses",
-            "type": {
-              "vec": {
-                "vec": {
-                  "defined": {
-                    "name": "shareClassField"
-                  }
-                }
-              }
-            }
-          },
-          {
-            "name": "fundManagers",
-            "type": {
-              "vec": {
-                "vec": {
-                  "defined": {
-                    "name": "fundManagerField"
-                  }
-                }
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "fundOpenfundsModel",
       "type": {
         "kind": "struct",
@@ -6920,47 +6726,7 @@ export type Glam = {
       }
     },
     {
-      "name": "integrationAcl",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "name",
-            "type": {
-              "defined": {
-                "name": "integrationName"
-              }
-            }
-          },
-          {
-            "name": "features",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "integrationFeature"
-                }
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "integrationFeature",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "all"
-          }
-        ]
-      }
-    },
-    {
-      "name": "integrationName",
-      "docs": [
-        "* Integration ACL"
-      ],
+      "name": "integration",
       "type": {
         "kind": "enum",
         "variants": [
@@ -6981,9 +6747,6 @@ export type Glam = {
           },
           {
             "name": "jupiterSwap"
-          },
-          {
-            "name": "mint"
           },
           {
             "name": "jupiterVote"
@@ -7121,6 +6884,97 @@ export type Glam = {
           },
           {
             "name": "perp"
+          }
+        ]
+      }
+    },
+    {
+      "name": "metadata",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "template",
+            "type": {
+              "defined": {
+                "name": "metadataTemplate"
+              }
+            }
+          },
+          {
+            "name": "pubkey",
+            "type": "pubkey"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "metadataTemplate",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "openfunds"
+          }
+        ]
+      }
+    },
+    {
+      "name": "openfundsMetadataAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "fundId",
+            "type": "pubkey"
+          },
+          {
+            "name": "company",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "companyField"
+                }
+              }
+            }
+          },
+          {
+            "name": "fund",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "fundField"
+                }
+              }
+            }
+          },
+          {
+            "name": "shareClasses",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": {
+                    "name": "shareClassField"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "name": "fundManagers",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": {
+                    "name": "fundManagerField"
+                  }
+                }
+              }
+            }
           }
         ]
       }
@@ -7619,49 +7473,16 @@ export type Glam = {
             "name": "shareClassCurrency"
           },
           {
-            "name": "allInFeeApplied"
-          },
-          {
-            "name": "allInFeeDate"
-          },
-          {
-            "name": "allInFeeIncludesTransactionCosts"
-          },
-          {
-            "name": "allInFeeMaximum"
-          },
-          {
             "name": "appliedSubscriptionFeeInFavourOfDistributor"
           },
           {
             "name": "appliedSubscriptionFeeInFavourOfDistributorReferenceDate"
           },
           {
-            "name": "benchmark"
-          },
-          {
-            "name": "countryLegalRegistration"
-          },
-          {
-            "name": "countryMarketingDistribution"
-          },
-          {
-            "name": "currencyHedgeShareClass"
-          },
-          {
             "name": "currencyOfMinimalSubscription"
           },
           {
-            "name": "distributionDeclarationFrequency"
-          },
-          {
             "name": "fullShareClassName"
-          },
-          {
-            "name": "hasAllInFee"
-          },
-          {
-            "name": "hasOngoingCharges"
           },
           {
             "name": "hasPerformanceFee"
@@ -7671,15 +7492,6 @@ export type Glam = {
           },
           {
             "name": "investmentStatus"
-          },
-          {
-            "name": "isEtf"
-          },
-          {
-            "name": "isRdrCompliant"
-          },
-          {
-            "name": "isTrailerFeeClean"
           },
           {
             "name": "managementFeeApplied"
@@ -7715,27 +7527,6 @@ export type Glam = {
             "name": "minimumSubscriptionFeeInFavourOfDistributor"
           },
           {
-            "name": "ongoingCharges"
-          },
-          {
-            "name": "ongoingChargesDate"
-          },
-          {
-            "name": "performanceFeeApplied"
-          },
-          {
-            "name": "performanceFeeAppliedReferenceDate"
-          },
-          {
-            "name": "performanceFeeInProspectus"
-          },
-          {
-            "name": "performanceFeeInProspectusReferenceDate"
-          },
-          {
-            "name": "recordDateForSrri"
-          },
-          {
             "name": "shareClassDistributionPolicy"
           },
           {
@@ -7751,75 +7542,6 @@ export type Glam = {
             "name": "srri"
           },
           {
-            "name": "terExcludingPerformanceFee"
-          },
-          {
-            "name": "terExcludingPerformanceFeeDate"
-          },
-          {
-            "name": "terIncludingPerformanceFee"
-          },
-          {
-            "name": "terIncludingPerformanceFeeDate"
-          },
-          {
-            "name": "transferAgentName"
-          },
-          {
-            "name": "bicOfTransferAgent"
-          },
-          {
-            "name": "domicileOfTransferAgent"
-          },
-          {
-            "name": "formOfShare"
-          },
-          {
-            "name": "hasDurationHedge"
-          },
-          {
-            "name": "typeOfEqualization"
-          },
-          {
-            "name": "isMultiseries"
-          },
-          {
-            "name": "seriesIssuance"
-          },
-          {
-            "name": "seriesFrequency"
-          },
-          {
-            "name": "doesFundIssueSidePocket"
-          },
-          {
-            "name": "hasRedemptionGates"
-          },
-          {
-            "name": "typeOfAlternativeFundStructureVehicle"
-          },
-          {
-            "name": "bloombergCode"
-          },
-          {
-            "name": "figiCode"
-          },
-          {
-            "name": "abbreviatedShareClassName"
-          },
-          {
-            "name": "valuationFrequency"
-          },
-          {
-            "name": "navPublicationTime"
-          },
-          {
-            "name": "isShareClassEligibleForUcits"
-          },
-          {
-            "name": "investmentStatusDate"
-          },
-          {
             "name": "launchPrice"
           },
           {
@@ -7827,45 +7549,6 @@ export type Glam = {
           },
           {
             "name": "launchPriceDate"
-          },
-          {
-            "name": "efamaMainEfcCategory"
-          },
-          {
-            "name": "efamaefcClassificationType"
-          },
-          {
-            "name": "efamaActiveEfcClassification"
-          },
-          {
-            "name": "efamaefcInvestmentTheme"
-          },
-          {
-            "name": "pricingMethodology"
-          },
-          {
-            "name": "singlePricingType"
-          },
-          {
-            "name": "swingFactor"
-          },
-          {
-            "name": "standardMinimumRemainingAmount"
-          },
-          {
-            "name": "standardMinimumRemainingShares"
-          },
-          {
-            "name": "currencyOfMinimumRemainingAmount"
-          },
-          {
-            "name": "standardMinimumRemainingCategory"
-          },
-          {
-            "name": "hurdleRate"
-          },
-          {
-            "name": "highWaterMark"
           },
           {
             "name": "hasAppliedSubscriptionFeeInFavourOfFund"
@@ -7892,106 +7575,13 @@ export type Glam = {
             "name": "maximumRedemptionFeeInFavourOfFund"
           },
           {
-            "name": "equivalentTrailerFeeCleanIsin"
-          },
-          {
-            "name": "hasSeparateDistributionFee"
-          },
-          {
-            "name": "distributionFee"
-          },
-          {
-            "name": "distributionFeeMaximum"
-          },
-          {
-            "name": "iaSector"
-          },
-          {
-            "name": "absorbingFundFullShareClassName"
-          },
-          {
-            "name": "absorbingFundShareClassIsin"
-          },
-          {
-            "name": "administrationFeeMaximum"
-          },
-          {
-            "name": "annualDistributionAtFiscalYearEnd"
-          },
-          {
-            "name": "annualDistributionYieldAtFiscalYearEnd"
-          },
-          {
             "name": "appliedRedemptionFeeInFavourOfDistributor"
           },
           {
             "name": "appliedRedemptionFeeInFavourOfDistributorReferenceDate"
           },
           {
-            "name": "bankDetailsSsiForPaymentsProvision"
-          },
-          {
-            "name": "bankDetailsLevelApplication"
-          },
-          {
-            "name": "benchmarkBloombergTicker"
-          },
-          {
-            "name": "calculationDateOffsetForRedemption"
-          },
-          {
-            "name": "calculationDateOffsetForSubscription"
-          },
-          {
-            "name": "calendarOrBusinessDaysForCutOffDateOffsetForRedemption"
-          },
-          {
-            "name": "calendarOrBusinessDaysForCutOffDateOffsetForSubscription"
-          },
-          {
-            "name": "calendarOrBusinessDaysForPrePaymentDaysForSubscription"
-          },
-          {
-            "name": "calendarOrBusinessDaysForSettlementPeriodForRedemption"
-          },
-          {
-            "name": "calendarOrBusinessDaysForSettlementPeriodForSubscription"
-          },
-          {
-            "name": "calendarOrBusinessDaysForTransactions"
-          },
-          {
-            "name": "cfiCode"
-          },
-          {
-            "name": "contingentDeferredSalesChargeExitFee"
-          },
-          {
-            "name": "contingentDeferredSalesChargeUpfrontFee"
-          },
-          {
-            "name": "countryIsoCodeAlpha2"
-          },
-          {
-            "name": "countryIsoCodeAlpha3"
-          },
-          {
-            "name": "countryName"
-          },
-          {
-            "name": "currenciesOfMulticurrencyShareClass"
-          },
-          {
             "name": "currencyOfMinimalOrMaximumRedemption"
-          },
-          {
-            "name": "custodianFeeApplied"
-          },
-          {
-            "name": "custodianFeeAppliedReferenceDate"
-          },
-          {
-            "name": "custodianFeeMaximum"
           },
           {
             "name": "cutOffDateOffsetForRedemption"
@@ -8006,106 +7596,13 @@ export type Glam = {
             "name": "cutOffTimeForSubscription"
           },
           {
-            "name": "cutOffTimeForSwitchIn"
-          },
-          {
-            "name": "cutOffTimeForSwitchOut"
-          },
-          {
-            "name": "dealingDaysOfMultipleRedemptionTradeCycles"
-          },
-          {
-            "name": "dealingDaysOfMultipleSubscriptionTradeCycles"
-          },
-          {
-            "name": "disseminationRecipient"
-          },
-          {
-            "name": "distributionFeeReferenceDate"
-          },
-          {
-            "name": "doesShareClassApplyMandatoryConversion"
-          },
-          {
-            "name": "doesShareClassApplyPartialDealingDays"
-          },
-          {
-            "name": "doesShareClassApplyPartialPaymentDays"
-          },
-          {
-            "name": "dormantEndDate"
-          },
-          {
-            "name": "dormantStartDate"
-          },
-          {
-            "name": "exDividendDateCalendar"
-          },
-          {
-            "name": "exitCostDescription"
-          },
-          {
-            "name": "hasContingentDeferredSalesChargeFee"
-          },
-          {
-            "name": "hasDilutionLevyAppliedByFund"
-          },
-          {
-            "name": "hasEqualizationMethodForDistribution"
-          },
-          {
-            "name": "hasEqualizationMethodForPerformanceFee"
-          },
-          {
-            "name": "hasForcedRedemption"
-          },
-          {
-            "name": "hasForwardPricing"
-          },
-          {
-            "name": "hasHighWaterMark"
-          },
-          {
             "name": "hasLockUpForRedemption"
-          },
-          {
-            "name": "hasPreNoticeForSwitchIn"
-          },
-          {
-            "name": "hasPreNoticeForSwitchOut"
-          },
-          {
-            "name": "hasPrePaymentForSubscription"
           },
           {
             "name": "hasRedemptionFeeInFavourOfDistributor"
           },
           {
-            "name": "hasTripartiteReport"
-          },
-          {
-            "name": "investmentStatusDescription"
-          },
-          {
-            "name": "irregularRedemptionDealingDays"
-          },
-          {
-            "name": "irregularSubscriptionDealingDays"
-          },
-          {
-            "name": "isMulticurrencyShareClass"
-          },
-          {
-            "name": "isRestrictedToSeparateFeeArrangement"
-          },
-          {
-            "name": "isStructuredFinanceProduct"
-          },
-          {
             "name": "isValidIsin"
-          },
-          {
-            "name": "liquidationStartDate"
           },
           {
             "name": "lockUpComment"
@@ -8115,12 +7612,6 @@ export type Glam = {
           },
           {
             "name": "managementFeeMinimum"
-          },
-          {
-            "name": "mandatoryShareConversionDescriptionDetails"
-          },
-          {
-            "name": "marketsRelevantToFundTradingCalendar"
           },
           {
             "name": "maximalNumberOfPossibleDecimalsAmount"
@@ -8147,9 +7638,6 @@ export type Glam = {
             "name": "maximumSubsequentRedemptionInShares"
           },
           {
-            "name": "mergerRatio"
-          },
-          {
             "name": "minimalInitialRedemptionInAmount"
           },
           {
@@ -8174,52 +7662,7 @@ export type Glam = {
             "name": "minimumSubscriptionFeeInFavourOfFund"
           },
           {
-            "name": "monthlyRedemptionDealingDays"
-          },
-          {
-            "name": "monthlySubscriptionDealingDays"
-          },
-          {
-            "name": "nasdaqFundNetworkNfnIdentifier"
-          },
-          {
-            "name": "noTradingDate"
-          },
-          {
-            "name": "numberOfPossibleRedemptionsWithinPeriod"
-          },
-          {
-            "name": "numberOfPossibleSubscriptionsWithinPeriod"
-          },
-          {
-            "name": "partialDealingDaysDateAndTime"
-          },
-          {
-            "name": "partialPaymentDaysDateAndTime"
-          },
-          {
-            "name": "paymentDateCalendar"
-          },
-          {
             "name": "performanceFeeMinimum"
-          },
-          {
-            "name": "preNoticeCutOffForRedemption"
-          },
-          {
-            "name": "preNoticeCutOffForSubscription"
-          },
-          {
-            "name": "prePaymentCutOffTimeForSubscription"
-          },
-          {
-            "name": "prePaymentDaysForSubscription"
-          },
-          {
-            "name": "recordDateCalendar"
-          },
-          {
-            "name": "redemptionTradeCyclePeriod"
           },
           {
             "name": "roundingMethodForPrices"
@@ -8237,64 +7680,7 @@ export type Glam = {
             "name": "roundingMethodForSubscriptionInShares"
           },
           {
-            "name": "settlementPeriodForRedemption"
-          },
-          {
-            "name": "settlementPeriodForSubscription"
-          },
-          {
-            "name": "settlementPeriodForSwitchIn"
-          },
-          {
-            "name": "settlementPeriodForSwitchOut"
-          },
-          {
             "name": "shareClassDividendType"
-          },
-          {
-            "name": "singleRegisterAccountRestrictions"
-          },
-          {
-            "name": "subscriptionPeriodEndDate"
-          },
-          {
-            "name": "subscriptionPeriodStartDate"
-          },
-          {
-            "name": "subscriptionTradeCyclePeriod"
-          },
-          {
-            "name": "switchInNoticePeriod"
-          },
-          {
-            "name": "switchOutNoticePeriod"
-          },
-          {
-            "name": "terminationDate"
-          },
-          {
-            "name": "timeZoneForCutOff"
-          },
-          {
-            "name": "timeZoneForCutOffUsingTzDatabase"
-          },
-          {
-            "name": "valuationFrequencyDetail"
-          },
-          {
-            "name": "valuationReduction"
-          },
-          {
-            "name": "weeklyRedemptionDealingDays"
-          },
-          {
-            "name": "weeklySubscriptionDealingDays"
-          },
-          {
-            "name": "yearlyRedemptionDealingDays"
-          },
-          {
-            "name": "yearlySubscriptionDealingDays"
           },
           {
             "name": "cusip"
@@ -8335,7 +7721,7 @@ export type Glam = {
             }
           },
           {
-            "name": "fundId",
+            "name": "statePubkey",
             "type": {
               "option": "pubkey"
             }
@@ -8353,8 +7739,44 @@ export type Glam = {
             }
           },
           {
+            "name": "allowlist",
+            "type": {
+              "option": {
+                "vec": "pubkey"
+              }
+            }
+          },
+          {
+            "name": "blocklist",
+            "type": {
+              "option": {
+                "vec": "pubkey"
+              }
+            }
+          },
+          {
+            "name": "lockUpPeriodInSeconds",
+            "type": {
+              "option": "i32"
+            }
+          },
+          {
+            "name": "permanentDelegate",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "defaultAccountStateFrozen",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
             "name": "isRawOpenfunds",
-            "type": "bool"
+            "type": {
+              "option": "bool"
+            }
           },
           {
             "name": "rawOpenfunds",
@@ -8365,32 +7787,6 @@ export type Glam = {
                 }
               }
             }
-          },
-          {
-            "name": "allowlist",
-            "type": {
-              "vec": "pubkey"
-            }
-          },
-          {
-            "name": "blocklist",
-            "type": {
-              "vec": "pubkey"
-            }
-          },
-          {
-            "name": "lockUpPeriodInSeconds",
-            "type": "i32"
-          },
-          {
-            "name": "permanentDelegate",
-            "type": {
-              "option": "pubkey"
-            }
-          },
-          {
-            "name": "defaultAccountStateFrozen",
-            "type": "bool"
           }
         ]
       }
@@ -8572,6 +7968,108 @@ export type Glam = {
       }
     },
     {
+      "name": "stateAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "accountType",
+            "type": {
+              "defined": {
+                "name": "accountType"
+              }
+            }
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "enabled",
+            "type": "bool"
+          },
+          {
+            "name": "created",
+            "type": {
+              "defined": {
+                "name": "createdModel"
+              }
+            }
+          },
+          {
+            "name": "engine",
+            "type": "pubkey"
+          },
+          {
+            "name": "mints",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "metadata",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "metadata"
+                }
+              }
+            }
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "assets",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "delegateAcls",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "delegateAcl"
+                }
+              }
+            }
+          },
+          {
+            "name": "integrations",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "integration"
+                }
+              }
+            }
+          },
+          {
+            "name": "params",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": {
+                    "name": "engineField"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "stateModel",
       "type": {
         "kind": "struct",
@@ -8580,6 +8078,16 @@ export type Glam = {
             "name": "id",
             "type": {
               "option": "pubkey"
+            }
+          },
+          {
+            "name": "accountType",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "accountType"
+                }
+              }
             }
           },
           {
@@ -8595,13 +8103,7 @@ export type Glam = {
             }
           },
           {
-            "name": "metadataUri",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "isEnabled",
+            "name": "enabled",
             "type": {
               "option": "bool"
             }
@@ -8609,21 +8111,27 @@ export type Glam = {
           {
             "name": "assets",
             "type": {
-              "vec": "pubkey"
+              "option": {
+                "vec": "pubkey"
+              }
             }
           },
           {
             "name": "externalVaultAccounts",
             "type": {
-              "vec": "pubkey"
+              "option": {
+                "vec": "pubkey"
+              }
             }
           },
           {
             "name": "mints",
             "type": {
-              "vec": {
-                "defined": {
-                  "name": "shareClassModel"
+              "option": {
+                "vec": {
+                  "defined": {
+                    "name": "shareClassModel"
+                  }
                 }
               }
             }
@@ -8661,19 +8169,23 @@ export type Glam = {
           {
             "name": "delegateAcls",
             "type": {
-              "vec": {
-                "defined": {
-                  "name": "delegateAcl"
+              "option": {
+                "vec": {
+                  "defined": {
+                    "name": "delegateAcl"
+                  }
                 }
               }
             }
           },
           {
-            "name": "integrationAcls",
+            "name": "integrations",
             "type": {
-              "vec": {
-                "defined": {
-                  "name": "integrationAcl"
+              "option": {
+                "vec": {
+                  "defined": {
+                    "name": "integration"
+                  }
                 }
               }
             }
@@ -8681,24 +8193,36 @@ export type Glam = {
           {
             "name": "driftMarketIndexesPerp",
             "type": {
-              "vec": "u32"
+              "option": {
+                "vec": "u32"
+              }
             }
           },
           {
             "name": "driftMarketIndexesSpot",
             "type": {
-              "vec": "u32"
+              "option": {
+                "vec": "u32"
+              }
             }
           },
           {
             "name": "driftOrderTypes",
             "type": {
-              "vec": "u32"
+              "option": {
+                "vec": "u32"
+              }
             }
           },
           {
-            "name": "isRawOpenfunds",
-            "type": "bool"
+            "name": "metadata",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "metadata"
+                }
+              }
+            }
           },
           {
             "name": "rawOpenfunds",
@@ -8782,22 +8306,22 @@ export type Glam = {
     {
       "name": "seedMetadata",
       "type": "string",
-      "value": "\"openfunds\""
+      "value": "\"metadata\""
     },
     {
       "name": "seedMint",
       "type": "string",
-      "value": "\"share\""
+      "value": "\"mint\""
     },
     {
       "name": "seedState",
       "type": "string",
-      "value": "\"fund\""
+      "value": "\"state\""
     },
     {
       "name": "seedVault",
       "type": "string",
-      "value": "\"treasury\""
+      "value": "\"vault\""
     }
   ]
 };

@@ -21,6 +21,10 @@ import {
   ManagerModel,
   ShareClassModel,
   ShareClassOpenfundsModel,
+  CreatedModel,
+  Metadata,
+  StateIdlModel,
+  StateModelType,
 } from "../models";
 import { WSOL } from "../constants";
 
@@ -41,31 +45,30 @@ export class StateClient {
     const mints = stateModel.mints;
     stateModel.mints = [];
 
-    if (mints.length > 1) {
+    if (mints && mints.length > 1) {
       throw new Error("Multiple mints not supported");
     }
 
     // No share class, only need to initialize the fund
-    if (mints.length === 0) {
-      // @ts-ignore
+    if (mints && mints.length === 0) {
       const txSig = await this.base.program.methods
         .initializeState(stateModel)
         .accountsPartial({
           state: statePda,
           vault,
-          metadata: openfunds,
+          openfundsMetadata: openfunds,
         })
         .rpc();
       return [txSig, statePda];
     }
 
-    if (singleTx) {
+    if (mints && mints.length > 0 && singleTx) {
       const initStateIx = await this.base.program.methods
         .initializeState(stateModel)
         .accountsPartial({
           state: statePda,
           vault,
-          metadata: openfunds,
+          openfundsMetadata: openfunds,
         })
         .instruction();
 
@@ -75,36 +78,33 @@ export class StateClient {
         .accounts({
           state: statePda,
           shareClassMint,
-          metadata: openfunds,
         })
         .preInstructions([initStateIx])
         .rpc();
       return [txSig, statePda];
     }
 
-    // @ts-ignore
     const txSig = await this.base.program.methods
       .initializeState(stateModel)
       .accountsPartial({
         state: statePda,
         vault,
-        metadata: openfunds,
+        openfundsMetadata: openfunds,
       })
       .rpc();
 
     const addShareClassTxs = await Promise.all(
-      mints.map(async (shareClass, j: number) => {
+      (mints || []).map(async (shareClass, j: number) => {
         const shareClassMint = this.base.getShareClassPda(statePda, j);
 
         // FIXME: setting rawOpenfunds to null is a workarond for
         // Access violation in stack frame 5 at address 0x200005ff8 of size 8
-        shareClass.rawOpenfunds = null;
+        // shareClass.rawOpenfunds = null;
         return await this.base.program.methods
           .addShareClass(shareClass)
           .accounts({
             state: statePda,
             shareClassMint,
-            metadata: openfunds,
           })
           .preInstructions([
             // FIXME: estimate compute units
@@ -122,12 +122,22 @@ export class StateClient {
     updated: Partial<StateModel>,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    return await this.base.program.methods
+    const tx = await this.updateStateTx(statePda, updated, txOptions);
+    return await this.base.sendAndConfirm(tx);
+  }
+
+  public async updateStateTx(
+    statePda: PublicKey,
+    updated: Partial<StateModel>,
+    txOptions: TxOptions,
+  ): Promise<VersionedTransaction> {
+    const tx = await this.base.program.methods
       .updateState(new StateModel(updated))
       .accounts({
         state: statePda,
       })
-      .rpc();
+      .transaction();
+    return await this.base.intoVersionedTransaction({ tx, ...txOptions });
   }
 
   public async closeState(
@@ -140,7 +150,6 @@ export class StateClient {
       .closeState()
       .accounts({
         state: statePda,
-        metadata: openfunds,
       })
       .preInstructions(txOptions.preInstructions || [])
       .transaction();
@@ -156,35 +165,33 @@ export class StateClient {
     const owner = this.base.getSigner();
     const defaultDate = new Date().toISOString().split("T")[0];
 
-    // createdKey = hash fund name and get first 8 bytes
+    partialStateModel.name = this.base.getName(partialStateModel);
+
+    // createdKey = hash state name and get first 8 bytes
     // useful for computing state account PDA in the future
-    const createdKey = [
-      ...Buffer.from(
-        anchor.utils.sha256.hash(this.base.getName(partialStateModel)),
-      ).subarray(0, 8),
-    ];
-    partialStateModel.created = {
-      key: createdKey,
-      owner,
-    };
+    partialStateModel.created = new CreatedModel({
+      key: [
+        ...Buffer.from(
+          anchor.utils.sha256.hash(partialStateModel.name),
+        ).subarray(0, 8),
+      ],
+    });
 
     partialStateModel.rawOpenfunds = new FundOpenfundsModel(
       partialStateModel.rawOpenfunds ?? {},
     );
 
     partialStateModel.owner = new ManagerModel({
-      ...(partialStateModel.owner || {}),
+      ...partialStateModel.owner,
       pubkey: owner,
     });
 
-    partialStateModel.company = new CompanyModel(
-      partialStateModel.company || {},
-    );
+    partialStateModel.company = new CompanyModel({
+      ...partialStateModel.company,
+    });
 
     if (partialStateModel.mints?.length == 1) {
       const shareClass = partialStateModel.mints[0];
-      partialStateModel.name = partialStateModel.name || shareClass.name;
-
       partialStateModel.rawOpenfunds.fundCurrency =
         partialStateModel.rawOpenfunds?.fundCurrency ||
         shareClass.rawOpenfunds?.shareClassCurrency ||
@@ -196,7 +203,7 @@ export class StateClient {
       throw new Error("Fund with more than 1 share class is not supported");
     }
 
-    if (partialStateModel.isEnabled) {
+    if (partialStateModel.enabled) {
       partialStateModel.rawOpenfunds.fundLaunchDate =
         partialStateModel.rawOpenfunds?.fundLaunchDate || defaultDate;
     }
@@ -205,9 +212,11 @@ export class StateClient {
     const statePda = this.base.getStatePda(partialStateModel);
     partialStateModel.uri =
       partialStateModel.uri || `https://gui.glam.systems/products/${statePda}`;
-    partialStateModel.metadataUri =
-      partialStateModel.metadataUri ||
-      `https://api.glam.systems/v0/openfunds?fund=${statePda}&format=csv`;
+    partialStateModel.metadata = new Metadata({
+      ...partialStateModel.metadata,
+      uri: `https://api.glam.systems/v0/openfunds?fund=${statePda}`,
+      template: { openfunds: {} },
+    });
 
     // build openfunds models for each share classes
     (partialStateModel.mints || []).forEach(
@@ -227,14 +236,13 @@ export class StateClient {
 
         const sharePda = this.base.getShareClassPda(statePda, i);
         shareClass.uri = `https://api.glam.systems/metadata/${sharePda}`;
-        shareClass.fundId = statePda;
+        shareClass.statePubkey = statePda;
         shareClass.imageUri = `https://api.glam.systems/v0/sparkle?key=${sharePda}&format=png`;
       },
     );
 
     // convert partial share class models to full share class models
     partialStateModel.mints = (partialStateModel.mints || []).map(
-      // @ts-ignore
       (s) => new ShareClassModel(s),
     );
 
@@ -254,7 +262,11 @@ export class StateClient {
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const updated = new StateModel({
-      delegateAcls: delegates.map((pubkey) => ({ pubkey, permissions: [] })),
+      delegateAcls: delegates.map((pubkey) => ({
+        pubkey,
+        permissions: [],
+        expiresAt: new BN(0),
+      })),
     });
     return await this.updateState(statePda, updated, txOptions);
   }
@@ -264,8 +276,7 @@ export class StateClient {
     delegateAcls: DelegateAcl[],
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const updatedFund = new StateModel({ delegateAcls });
-    return await this.updateState(statePda, updatedFund, txOptions);
+    return await this.updateState(statePda, { delegateAcls }, txOptions);
   }
 
   public async setSubscribeRedeemEnabled(
@@ -326,7 +337,6 @@ export class StateClient {
     tokenAccounts: PublicKey[],
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
-    // @ts-ignore
     const tx = await this.base.program.methods
       .closeTokenAccounts()
       .accounts({

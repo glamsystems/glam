@@ -1,7 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import {
   StateModel,
-  IntegrationName,
+  Integration,
   WSOL,
   getPriorityFeeEstimate,
   GlamClient,
@@ -105,9 +105,9 @@ program
         console.log(
           state.productType,
           "\t",
-          state.id.toBase58(),
+          state.idStr,
           "\t",
-          state.rawOpenfunds.fundLaunchDate,
+          state.launchDate,
           "\t",
           state.name,
         );
@@ -155,10 +155,14 @@ program
     const glamState = JSON.parse(data);
 
     // Convert pubkey strings to PublicKey objects
-    for (let i = 0; i < glamState?.mints?.length || 0; ++i) {
-      glamState.mints[i].asset = new PublicKey(glamState.mints[i].asset);
-    }
+    glamState.mints?.forEach((mint) => {
+      mint.asset = new PublicKey(mint.asset);
+      mint.permanentDelegate = mint.permanentDelegate
+        ? new PublicKey(mint.permanentDelegate)
+        : null;
+    });
     glamState.assets = glamState.assets.map((a) => new PublicKey(a));
+    glamState.accountType = { [glamState.accountType]: {} };
 
     try {
       const [txSig, statePda] = await glamClient.state.createState(glamState);
@@ -209,7 +213,6 @@ program
         .accounts({
           state: statePda,
           shareClassMint: glamClient.getShareClassPda(statePda, 0),
-          metadata: glamClient.getOpenfundsPda(statePda),
         })
         .instruction();
       preInstructions.push(closeShareClassIx);
@@ -219,7 +222,6 @@ program
         .closeState()
         .accounts({
           state: statePda,
-          metadata: glamClient.getOpenfundsPda(statePda),
         })
         .preInstructions(preInstructions);
 
@@ -347,6 +349,7 @@ delegate
           permissions: permissions.map((p) => ({
             [p]: {},
           })),
+          expiresAt: new anchor.BN(0),
         },
       ]);
       console.log("txSig:", txSig);
@@ -399,14 +402,14 @@ integration
     }
 
     const stateModel = await glamClient.fetchState(statePda);
-    const cnt = stateModel.integrationAcls.length;
+    const cnt = stateModel.integrations.length;
     console.log(
       `${stateModel.name} (${statePda.toBase58()}) has ${cnt} integration${
         cnt > 1 ? "s" : ""
       } enabled`,
     );
-    for (let [i, acl] of stateModel.integrationAcls.entries()) {
-      console.log(`[${i}] ${Object.keys(acl.name)[0]}`);
+    for (let [i, integ] of stateModel.integrations.entries()) {
+      console.log(`[${i}] ${Object.keys(integ)[0]}`);
     }
   });
 
@@ -442,8 +445,8 @@ integration
     }
 
     const stateModel = await glamClient.fetchState(statePda);
-    const acl = stateModel.integrationAcls.find(
-      (integ) => Object.keys(integ.name)[0] === integration,
+    const acl = stateModel.integrations.find(
+      (integ) => Object.keys(integ)[0] === integration,
     );
     if (acl) {
       console.log(
@@ -453,10 +456,8 @@ integration
     }
 
     const updated = new StateModel({
-      integrationAcls: [
-        ...stateModel.integrationAcls,
-        { name: { [integration]: {} } as IntegrationName, features: [] },
-      ],
+      // @ts-ignore
+      integrations: [...stateModel.integrations, { [integration]: {} }],
     });
 
     try {
@@ -494,8 +495,8 @@ integration
 
     const stateModel = await glamClient.fetchState(statePda);
     const updated = new StateModel({
-      integrationAcls: stateModel.integrationAcls.filter(
-        (integ) => Object.keys(integ.name)[0] !== integration,
+      integrations: stateModel.integrations.filter(
+        (integ) => Object.keys(integ)[0] !== integration,
       ),
     });
 

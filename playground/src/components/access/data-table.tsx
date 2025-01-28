@@ -181,11 +181,11 @@ export function DataTable<TData extends KeyData>({
     }
 
     const delegateAcls = [
-      {
+      new DelegateAcl({
         pubkey,
         //@ts-ignore
         permissions: permissions.map((p) => ({ [p!]: {} })),
-      } as DelegateAcl,
+      }),
     ];
 
     try {

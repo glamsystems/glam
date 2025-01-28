@@ -18,15 +18,15 @@ export default function Products() {
 
   const products = useMemo(
     () =>
-      (allGlamStates || []).map((f) => ({
-        id: f.idStr,
-        sparkleKey: f.sparkleKey,
-        name: f.name || f.idStr || "",
-        symbol: f.mints[0]?.symbol || "-",
-        baseAsset: f.rawOpenfunds?.fundCurrency || "SOL",
-        inception: f.rawOpenfunds?.fundLaunchDate || "-",
+      (allGlamStates || []).map((s) => ({
+        id: s.idStr,
+        sparkleKey: s.sparkleKey,
+        name: s.name || s.idStr || "",
+        symbol: (s.mints || [])[0]?.symbol || "-",
+        baseAsset: s.rawOpenfunds?.fundCurrency || "SOL",
+        inception: s.rawOpenfunds?.fundLaunchDate || "-",
         status: "active",
-        product: f.productType,
+        product: s.productType,
       })),
     [allGlamStates],
   );
