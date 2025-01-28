@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/glam.json`.
  */
 export type Glam = {
-  "address": "GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP",
+  "address": "GLAMbTqav9N9witRjswJ8enwp9vv5G8bsSJ2kPJ4rcyc",
   "metadata": {
     "name": "glam",
     "version": "0.4.0",
