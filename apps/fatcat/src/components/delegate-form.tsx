@@ -12,7 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "@/components/ui/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ExplorerLink } from "@/components/ExplorerLink";
 import Link from "next/link";
 import { useClient } from "@/providers/clientProvider";
 
@@ -21,6 +23,20 @@ const UNSTAKE_COUNTDOWN_TIME = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseco
 interface UnstakeItem {
   amount: string;
   endTime: number;
+}
+
+import { WalletSignTransactionError } from "@solana/wallet-adapter-base";
+import { TransactionExpiredBlockheightExceededError } from "@solana/web3.js";
+function parseTxError(error: any): string {
+  if (error instanceof WalletSignTransactionError) {
+    return "Transaction was cancelled by the user";
+  }
+
+  if (error instanceof TransactionExpiredBlockheightExceededError) {
+    return "Transaction expired";
+  }
+
+  return error?.message || "Unknown error";
 }
 
 export default function DelegateForm() {
@@ -47,31 +63,40 @@ export default function DelegateForm() {
     else setUnstakeAmount("25.00");
   };
 
+  const handleTx = async (action: string, tx: Promise<any>) => {
+    setSpinner(true);
+    try {
+      const txId = await tx;
+      console.log(`${action} successful: ${txId}`);
+      toast({
+        title: `${action} successful`,
+        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+      });
+    } catch (error) {
+      console.error(parseTxError(error));
+      toast({
+        title: `${action} failed`,
+        description: parseTxError(error),
+        variant: "destructive",
+      });
+    }
+    setSpinner(false);
+  };
+
   const handleStake = async () => {
     const amount = parseFloat(stakeAmount);
     if (!(amount > 0)) return;
 
     console.log(`Staking ${amount} JUP...`);
-    try {
-      setSpinner(true);
-      await client.stakeJup(amount);
-    } catch (e) {
-      console.error(e);
-    }
-    setSpinner(false);
+    handleTx("Staking", client.stakeJup(amount));
   };
 
-  const handleUnstake = () => {
-    if (parseFloat(unstakeAmount) > 0) {
-      setUnstakeItems([
-        ...unstakeItems,
-        {
-          amount: unstakeAmount,
-          endTime: Date.now() + UNSTAKE_COUNTDOWN_TIME,
-        },
-      ]);
-      setUnstakeAmount("0.00");
-    }
+  const handleUnstake = async () => {
+    const amount = parseFloat(unstakeAmount);
+    if (!(amount > 0)) return;
+
+    console.log(`Unstaking ${amount} JUP...`);
+    handleTx("Unstaking", client.unstakeJup(amount));
   };
 
   const handleCancelUnstake = (index: number) => {

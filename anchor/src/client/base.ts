@@ -106,12 +106,12 @@ export class BaseClient {
       anchor.setProvider(this.provider);
     }
 
-    // autodetect mainnet
+    // autodetect devnet
     const defaultCluster = this.provider.connection.rpcEndpoint.includes(
-      "mainnet",
+      "devnet",
     )
-      ? ClusterNetwork.Mainnet
-      : ClusterNetwork.Devnet;
+      ? ClusterNetwork.Devnet
+      : ClusterNetwork.Mainnet;
     this.cluster = config?.cluster || defaultCluster;
 
     if (this.cluster === ClusterNetwork.Mainnet) {
@@ -139,9 +139,12 @@ export class BaseClient {
   }
 
   isPhantom(): boolean {
-    // TODO: Phantom can automatically estimates fees
+    // Phantom automatically estimates fees
     // https://docs.phantom.app/developer-powertools/solana-priority-fees#how-phantom-applies-priority-fees-to-dapp-transactions
-    return false;
+    return (
+      //@ts-ignore
+      window?.phantom?.solana?.isPhantom && window?.phantom?.solana?.isConnected
+    );
   }
 
   /**
