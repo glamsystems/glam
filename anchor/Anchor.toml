@@ -6,7 +6,7 @@ seeds = false
 skip-lint = false
 
 [programs.mainnet]
-glam = "GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP"
+glam = "GLAMbTqav9N9witRjswJ8enwp9vv5G8bsSJ2kPJ4rcyc"
 
 [programs.devnet]
 glam = "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc"

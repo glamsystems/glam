@@ -13,7 +13,7 @@ export const GLAM_PROGRAM_ID_DEV = new PublicKey(
   "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc",
 );
 export const GLAM_PROGRAM_ID_MAINNET = new PublicKey(
-  "GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP",
+  "GLAMbTqav9N9witRjswJ8enwp9vv5G8bsSJ2kPJ4rcyc",
 );
 
 export function getGlamProgramId(cluster: ClusterNetwork) {

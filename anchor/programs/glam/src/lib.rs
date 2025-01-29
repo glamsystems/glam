@@ -13,7 +13,7 @@ pub use state::model::*;
 use ::drift::{MarketType, OrderParams, PositionDirection};
 
 #[cfg(feature = "mainnet")]
-declare_id!("GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP");
+declare_id!("GLAMbTqav9N9witRjswJ8enwp9vv5G8bsSJ2kPJ4rcyc");
 
 #[cfg(not(feature = "mainnet"))]
 declare_id!("Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc");

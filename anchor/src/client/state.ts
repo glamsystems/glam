@@ -23,8 +23,6 @@ import {
   ShareClassOpenfundsModel,
   CreatedModel,
   Metadata,
-  StateIdlModel,
-  StateModelType,
 } from "../models";
 import { WSOL } from "../constants";
 
@@ -99,7 +97,7 @@ export class StateClient {
 
         // FIXME: setting rawOpenfunds to null is a workarond for
         // Access violation in stack frame 5 at address 0x200005ff8 of size 8
-        // shareClass.rawOpenfunds = null;
+        shareClass.rawOpenfunds = null;
         return await this.base.program.methods
           .addShareClass(shareClass)
           .accounts({
