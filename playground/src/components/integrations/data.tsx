@@ -1,4 +1,4 @@
-import { VaultIntegrations } from "@glam/anchor";
+import { GlamIntegrations } from "@glam/anchor";
 
 const metadata = {
   Drift: {
@@ -37,7 +37,7 @@ const metadata = {
   },
 } as { [key: string]: { description: string; labels: string[] } };
 
-export const allIntegrations = VaultIntegrations.sort().map((integ, index) => ({
+export const allIntegrations = GlamIntegrations.sort().map((integ, index) => ({
   id: index,
   name: integ,
   enabled: false,
