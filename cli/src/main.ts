@@ -1,11 +1,10 @@
 import * as anchor from "@coral-xyz/anchor";
 import {
   StateModel,
-  Integration,
   WSOL,
   getPriorityFeeEstimate,
   GlamClient,
-  VaultIntegrations,
+  GlamIntegrations,
   GlamPermissions,
 } from "@glam/anchor";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
@@ -413,7 +412,7 @@ integration
     }
   });
 
-const allowIntegrations = VaultIntegrations.map(
+const allowIntegrations = GlamIntegrations.map(
   (i) => i.slice(0, 1).toLowerCase() + i.slice(1),
 );
 const integrationValidation = (input) => {
