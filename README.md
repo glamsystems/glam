@@ -1,12 +1,9 @@
 ![GLAM Tests](https://github.com/glamsystems/glam/actions/workflows/post_commit_anchor_test.yml/badge.svg)
-<p align="center">
- <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://res.cloudinary.com/devbkdecu/image/upload/v1737324519/glam-platform-overview-dark-v3_uy6crc.png">
-    <source media="(prefers-color-scheme: light)" srcset="https://res.cloudinary.com/devbkdecu/image/upload/v1737324519/glam-platform-overview-light-v3_nhx3oh.png">
-    <img alt="GLAM *.+ The New Standard for Asset Management." src="https://raw.githubusercontent.com/glamsystems/brand_assets/main/github/github_banner_dark.svg">
-  </picture>
-</p>
 
+<p>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/glamsystems/brand_assets/main/github/github_banner_light.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/glamsystems/brand_assets/main/github/github_banner_dark.svg">
+</p>
 
 ## Onchain Asset Management on Solana
 
