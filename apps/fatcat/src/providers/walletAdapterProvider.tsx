@@ -35,7 +35,7 @@ export const WalletAdapterProvider: FC<Props> = ({ children }) => {
   );
 
   const endpoint = process.env.NEXT_PUBLIC_SOLANA_RPC || "";
-  if (!endpoint.includes("mainnet")) {
+  if (!endpoint.startsWith("http")) {
     return "Error: set NEXT_PUBLIC_SOLANA_RPC in .env.local";
   }
 

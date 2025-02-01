@@ -9,6 +9,7 @@ import { PersistentWarning } from "../components/persistent-warning";
 import { GeistSans } from "geist/font/sans";
 import { Analytics } from "@vercel/analytics/react";
 import Header from "../components/header";
+import { Toaster } from "../components/ui/toaster";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
@@ -114,6 +115,7 @@ export default function RootLayout({
               >
                 <Header />
                 {children}
+                <Toaster />
                 <PersistentWarning />
               </ThemeProviderWrapper>
             </UmiProvider>

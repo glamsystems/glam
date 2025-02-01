@@ -125,13 +125,25 @@ export class JupiterClient {
     const escrowAccountInfo =
       await this.base.provider.connection.getAccountInfo(escrow);
     const escrowCreated = escrowAccountInfo ? true : false;
-    const preInstructions = [];
+    const preInstructions = txOptions.preInstructions || [];
+    console.log("preInstructions", preInstructions);
     if (!escrowCreated) {
       console.log("Will create escrow account:", escrow.toBase58());
       preInstructions.push(
         // @ts-ignore
         await this.base.program.methods
           .initLockedVoterEscrow()
+          .accounts({
+            state: statePda,
+            locker: JUP_STAKE_LOCKER,
+            escrow,
+          })
+          .instruction(),
+      );
+      preInstructions.push(
+        // @ts-ignore
+        await this.base.program.methods
+          .toggleMaxLock(true)
           .accounts({
             state: statePda,
             locker: JUP_STAKE_LOCKER,
@@ -149,7 +161,7 @@ export class JupiterClient {
       ),
     );
 
-    return await this.base.program.methods
+    const tx = await this.base.program.methods
       .increaseLockedAmount(amount)
       .accounts({
         state: statePda,
@@ -159,7 +171,15 @@ export class JupiterClient {
         vaultJupAta,
       })
       .preInstructions(preInstructions)
-      .rpc();
+      .transaction();
+
+    const vTx = await this.base.intoVersionedTransaction({
+      tx,
+      lookupTables: [],
+      ...txOptions,
+    });
+
+    return await this.base.sendAndConfirm(vTx);
   }
 
   public async unstakeJup(statePda: PublicKey, txOptions: TxOptions = {}) {
@@ -169,14 +189,22 @@ export class JupiterClient {
       JUP_VOTE_PROGRAM,
     );
 
-    return await this.base.program.methods
+    const tx = await this.base.program.methods
       .toggleMaxLock(false)
       .accounts({
         state: statePda,
         locker: JUP_STAKE_LOCKER,
         escrow,
       })
-      .rpc();
+      .transaction();
+
+    const vTx = await this.base.intoVersionedTransaction({
+      tx,
+      lookupTables: [],
+      ...txOptions,
+    });
+
+    return await this.base.sendAndConfirm(vTx);
   }
 
   /**
