@@ -1,6 +1,6 @@
 "use client";
 
-import { AnchorProvider } from "@coral-xyz/anchor";
+import { AnchorProvider, BN } from "@coral-xyz/anchor";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import {
@@ -22,7 +22,9 @@ import { useCluster } from "./cluster-provider";
 
 declare global {
   interface Window {
-    glamClient: GlamClient;
+    glam: GlamClient;
+    PublicKey: any;
+    BN: any;
   }
 }
 
@@ -148,7 +150,9 @@ export function GlamProvider({
       }),
       cluster: cluster.network,
     });
-    window.glamClient = glamClient;
+    window.glam = glamClient;
+    window.PublicKey = PublicKey;
+    window.BN = BN;
     return glamClient;
   }, [connection, wallet, cluster]);
 

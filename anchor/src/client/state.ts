@@ -26,6 +26,12 @@ import {
 } from "../models";
 import { WSOL } from "../constants";
 
+type PublicKeyOrString = PublicKey | string;
+
+function getPublicKey(input: PublicKeyOrString) {
+  return typeof input === "string" ? new PublicKey(input) : input;
+}
+
 export class StateClient {
   public constructor(readonly base: BaseClient) {}
 
@@ -119,11 +125,18 @@ export class StateClient {
   }
 
   public async updateState(
-    statePda: PublicKey,
+    statePda: PublicKeyOrString,
     updated: Partial<StateModel>,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const tx = await this.updateStateTx(statePda, updated, txOptions);
+    console.log(
+      `await glam.state.updateState("${statePda.toString()}", ${JSON.stringify(updated)}, ${JSON.stringify(txOptions)});`,
+    );
+    const tx = await this.updateStateTx(
+      getPublicKey(statePda),
+      updated,
+      txOptions,
+    );
     return await this.base.sendAndConfirm(tx);
   }
 
