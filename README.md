@@ -29,7 +29,7 @@ GLAM is a platform for deploying institutional-grade investment products on Sola
 
 Install Solana CLI (recommended):
 ```shell
-sh -c "$(curl -sSfL https://release.anza.xyz/v2.1.5/install)"
+sh -c "$(curl -sSfL https://release.anza.xyz/v1.18.23/install)"
 ```
 
 ### Installation
