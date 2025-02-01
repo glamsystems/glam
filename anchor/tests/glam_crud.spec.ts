@@ -277,6 +277,9 @@ describe("glam_crud", () => {
       console.error(e);
       throw e;
     }
+    let stateAccount = await glamClient.fetchStateAccount(statePda);
+    console.log("StateAccount", stateAccount);
+
     let stateModel = await glamClient.fetchState(statePda);
     console.log("StateModel", stateModel);
     expect(stateModel.delegateAcls?.length).toEqual(1);
