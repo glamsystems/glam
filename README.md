@@ -9,7 +9,7 @@
 
 ## Onchain Asset Management on Solana
 
-GLAM is a platform for building and managing institutional-grade investment products on Solana. Through programmable vaults and mints, GLAM provides the infrastructure for onchain operations with robust security and controls.
+GLAM is a platform for building and managing institutional-grade investment products on Solana. Through programmable vaults and mints, GLAM provides the infrastructure for onchain operations with fine-grained acccess controls.
 
 ### Quick Links
 
