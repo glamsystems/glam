@@ -15,7 +15,7 @@ use pyth_solana_receiver_sdk::price_update::Price;
 use solana_program::stake::state::warmup_cooldown_rate;
 
 use crate::constants::{self, WSOL};
-use crate::error::{InvestorError, PolicyError, StateError};
+use crate::error::GlamError;
 use crate::instructions::policy_hook::PolicyAccount;
 use crate::state::pyth_price::PriceExt;
 use crate::{constants::*, state::*};
@@ -92,7 +92,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     skip_state: bool,
 ) -> Result<()> {
     let state = &ctx.accounts.state;
-    require!(state.enabled, StateError::Disabled);
+    require!(state.enabled, GlamError::StateAccountDisabled);
 
     let external_vault_accounts =
         state.get_pubkeys_from_engine_field(EngineFieldName::ExternalVaultAccounts);
@@ -100,17 +100,17 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     // If system program is in the external vault accounts, it means that
     // the state is disabled for subscription and redemption.
     if external_vault_accounts.contains(&system_program::ID) {
-        return err!(InvestorError::SubscribeRedeemDisable);
+        return err!(GlamError::SubscribeRedeemDisable);
     }
 
     if state.mints.len() > 1 {
         // we need to define how to split the total amount into share classes
         panic!("not implemented")
     }
-    require!(state.mints.len() > 0, StateError::NoShareClass);
+    require!(state.mints.len() > 0, GlamError::NoShareClass);
     require!(
         state.mints[0] == ctx.accounts.share_class_mint.key(),
-        InvestorError::InvalidShareClass
+        GlamError::InvalidShareClass
     );
 
     if let Some(share_class_blocklist) = state.share_class_blocklist(0) {
@@ -119,7 +119,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
                 || !share_class_blocklist
                     .iter()
                     .any(|&k| k == ctx.accounts.signer.key()),
-            InvestorError::InvalidShareClass
+            GlamError::InvalidShareClass
         );
     }
 
@@ -129,7 +129,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
                 || share_class_allowlist
                     .iter()
                     .any(|&k| k == ctx.accounts.signer.key()),
-            InvestorError::InvalidShareClass
+            GlamError::InvalidShareClass
         );
     }
 
@@ -138,7 +138,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     if lock_up > 0 {
         require!(
             ctx.accounts.signer_policy.is_some(),
-            InvestorError::InvalidPolicyAccount
+            GlamError::InvalidPolicyAccount
         );
         let signer_policy = ctx.accounts.signer_policy.as_mut().unwrap();
 
@@ -160,7 +160,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     let asset_idx = state_assets
         .iter()
         .position(|&asset| asset == ctx.accounts.asset.key());
-    require!(asset_idx.is_some(), InvestorError::InvalidAssetSubscribe);
+    require!(asset_idx.is_some(), GlamError::InvalidAssetSubscribe);
     // msg!("asset={:?} idx={:?}", asset_key, asset_idx);
 
     let asset_idx = asset_idx.unwrap();
@@ -320,7 +320,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
     skip_state: bool,
 ) -> Result<()> {
     let state = &ctx.accounts.state;
-    require!(state.enabled, StateError::Disabled);
+    require!(state.enabled, GlamError::StateAccountDisabled);
 
     let external_vault_accounts =
         state.get_pubkeys_from_engine_field(EngineFieldName::ExternalVaultAccounts);
@@ -328,17 +328,17 @@ pub fn redeem_handler<'c: 'info, 'info>(
     // If system program is in the external vault accounts, it means that
     // the state is disabled for subscription and redemption.
     if external_vault_accounts.contains(&system_program::ID) {
-        return err!(InvestorError::SubscribeRedeemDisable);
+        return err!(GlamError::SubscribeRedeemDisable);
     }
 
     if ctx.accounts.state.mints.len() > 1 {
         // we need to define how to split the total amount into share classes
         panic!("not implemented")
     }
-    require!(state.mints.len() > 0, StateError::NoShareClass);
+    require!(state.mints.len() > 0, GlamError::NoShareClass);
     require!(
         state.mints[0] == ctx.accounts.share_class.key(),
-        InvestorError::InvalidShareClass
+        GlamError::InvalidShareClass
     );
 
     // Lock-up
@@ -347,7 +347,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
     if lock_up > 0 {
         require!(
             ctx.accounts.signer_policy.is_some(),
-            InvestorError::InvalidPolicyAccount
+            GlamError::InvalidPolicyAccount
         );
         let signer_policy = &ctx.accounts.signer_policy.clone().unwrap();
 
@@ -367,7 +367,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
 
         let cur_timestamp = Clock::get()?.unix_timestamp;
         if cur_timestamp < locked_until_ts {
-            return err!(PolicyError::LockUp);
+            return err!(GlamError::LockUp);
         }
 
         // If the lock-up period has expired, we can delete the
@@ -499,7 +499,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
             );
             require!(
                 !att.vault_ata.is_none(),
-                InvestorError::InvalidTreasuryAccount
+                GlamError::InvalidVaultTokenAccount
             );
 
             let signer_asset_ata = att.signer_asset_ata.clone().unwrap();
@@ -587,20 +587,20 @@ pub fn get_aum_components<'info>(
 
     require!(
         stake_accounts.len() + marinade_tickets.len() == external_vault_accounts.len(),
-        InvestorError::InvalidRemainingAccounts
+        GlamError::InvalidRemainingAccounts
     );
 
     for account in stake_accounts.iter().chain(marinade_tickets.iter()) {
         require!(
             external_vault_accounts.contains(&account.key()),
-            InvestorError::InvalidRemainingAccounts
+            GlamError::InvalidRemainingAccounts
         );
     }
 
     let num_accounts = if action == Action::Subscribe { 2 } else { 4 };
     require!(
         accounts_for_pricing.len() == num_accounts * assets.len(),
-        InvestorError::InvalidRemainingAccounts
+        GlamError::InvalidRemainingAccounts
     );
 
     //
@@ -661,7 +661,7 @@ pub fn get_aum_components<'info>(
         );
         require!(
             pricing_account.key().to_string().as_str() == expected_pricing_account,
-            InvestorError::InvalidPricingOracle
+            GlamError::InvalidPricingOracle
         );
 
         let (asset, signer_asset_ata) = if action == Action::Redeem {
@@ -669,7 +669,7 @@ pub fn get_aum_components<'info>(
             let asset_account = &accounts[2];
             require!(
                 asset_account.key() == assets[i],
-                InvestorError::InvalidRemainingAccounts
+                GlamError::InvalidRemainingAccounts
             );
             let asset = InterfaceAccount::<Mint>::try_from(asset_account).expect("invalid asset");
 
@@ -682,11 +682,11 @@ pub fn get_aum_components<'info>(
                 ));
             require!(
                 signer_asset_ata.mint == cur_asset,
-                InvestorError::InvalidSignerAccount
+                GlamError::InvalidSignerAccount
             );
             require!(
                 signer_asset_ata.owner == signer.key(),
-                InvestorError::InvalidSignerAccount
+                GlamError::InvalidSignerAccount
             );
 
             (Some(asset), Some(signer_asset_ata))
@@ -700,11 +700,11 @@ pub fn get_aum_components<'info>(
         let mut asset_amount = if let Ok(vault_ata) = &maybe_vault_ata {
             require!(
                 vault_ata.mint == cur_asset,
-                InvestorError::InvalidTreasuryAccount
+                GlamError::InvalidVaultTokenAccount
             );
             require!(
                 vault_ata.owner == vault.key(),
-                InvestorError::InvalidTreasuryAccount
+                GlamError::InvalidVaultTokenAccount
             );
             vault_ata.amount
         } else {

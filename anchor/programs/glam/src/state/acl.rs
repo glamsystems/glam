@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
 use super::{AccountType, StateAccount};
-use crate::error::AccessError;
+use crate::error::GlamError;
 use spl_stake_pool::ID as SPL_STAKE_POOL_PROGRAM_ID;
 
 /**
@@ -71,7 +71,7 @@ pub fn check_access(state: &StateAccount, signer: &Pubkey, permission: Permissio
         }
     }
 
-    return Err(AccessError::NotAuthorized.into());
+    return Err(GlamError::NotAuthorized.into());
 }
 
 pub fn check_access_any(
@@ -101,7 +101,7 @@ pub fn check_access_any(
         }
     }
 
-    return Err(AccessError::NotAuthorized.into());
+    return Err(GlamError::NotAuthorized.into());
 }
 
 pub fn check_state_type(state: &StateAccount, accont_type: AccountType) -> Result<()> {
@@ -111,7 +111,7 @@ pub fn check_state_type(state: &StateAccount, accont_type: AccountType) -> Resul
     if state.account_type == accont_type {
         Ok(())
     } else {
-        Err(AccessError::WrongStateType.into())
+        Err(GlamError::InvalidAccountType.into())
     }
 }
 
@@ -122,7 +122,7 @@ pub fn check_integration(state: &StateAccount, integration: Integration) -> Resu
     if state.integrations.contains(&integration) {
         Ok(())
     } else {
-        Err(AccessError::IntegrationDisabled.into())
+        Err(GlamError::IntegrationDisabled.into())
     }
 }
 

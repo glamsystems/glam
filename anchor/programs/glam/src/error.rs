@@ -1,21 +1,23 @@
 use anchor_lang::prelude::*;
 
 #[error_code]
-pub enum AccessError {
+pub enum GlamError {
+    // Access control errors (42000-)
     #[msg("Signer is not authorized")]
-    NotAuthorized,
+    NotAuthorized = 42000,
 
     #[msg("Integration is disabled")]
     IntegrationDisabled,
 
-    #[msg("Wrong state account type")]
-    WrongStateType,
-}
+    #[msg("State account is disabled")]
+    StateAccountDisabled,
 
-#[error_code]
-pub enum StateError {
+    #[msg("Invalid signer ata")]
+    InvalidSignerAccount,
+
+    // State & mint errors (43000-)
     #[msg("Invalid account type")]
-    InvalidAccountType,
+    InvalidAccountType = 43000,
 
     #[msg("Name too long: max 64 chars")]
     InvalidName,
@@ -29,8 +31,8 @@ pub enum StateError {
     #[msg("Too many assets: max 100")]
     InvalidAssetsLen,
 
-    #[msg("State account is disabled")]
-    Disabled,
+    #[msg("Error closing state account: not empty")]
+    CloseNotEmptyError,
 
     #[msg("No share class found")]
     NoShareClass,
@@ -38,62 +40,60 @@ pub enum StateError {
     #[msg("Glam state account can't be closed. Close share classes first")]
     ShareClassesNotClosed,
 
-    #[msg("Error closing state account: not empty")]
-    CloseNotEmptyError,
+    #[msg("Share class not allowed to subscribe")]
+    InvalidShareClass,
 
+    #[msg("Asset not allowed to subscribe")]
+    InvalidAssetSubscribe,
+
+    #[msg("Invalid oracle for asset price")]
+    InvalidPricingOracle,
+
+    #[msg("Invalid accounts: the transaction is malformed")]
+    InvalidRemainingAccounts,
+
+    #[msg("Invalid vault ata")]
+    InvalidVaultTokenAccount,
+
+    #[msg("Share class mint supply not zero")]
+    ShareClassNotEmpty,
+
+    // Vault errors (44000-)
     #[msg("Withdraw denied. Only vaults allow withdraws (funds and mints don't)")]
-    WithdrawDenied,
-}
+    WithdrawDenied = 44000,
 
-#[error_code]
-pub enum SwapError {
     #[msg("Asset cannot be swapped")]
     InvalidAssetForSwap,
 
     #[msg("Swap failed")]
     InvalidSwap,
-}
 
-#[error_code]
-pub enum InvestorError {
-    #[msg("Share class not allowed to subscribe")]
-    InvalidShareClass,
-    #[msg("Asset not allowed to subscribe")]
-    InvalidAssetSubscribe,
-    #[msg("Invalid oracle for asset price")]
-    InvalidPricingOracle,
-    #[msg("Invalid accounts: the transaction is malformed")]
-    InvalidRemainingAccounts,
-    #[msg("Invalid treasury ata")]
-    InvalidTreasuryAccount,
-    #[msg("Invalid signer ata")]
-    InvalidSignerAccount,
-    #[msg("Invalid asset price")]
-    InvalidAssetPrice,
-    #[msg("Subscription not allowed: invalid stable coin price")]
-    InvalidStableCoinPriceForSubscribe,
-    #[msg("Fund is disabled for subscription and redemption")]
-    SubscribeRedeemDisable,
-    #[msg("Policy account is mandatory")]
-    InvalidPolicyAccount,
-    #[msg("Price is too old")]
-    PriceTooOld,
-}
-
-#[error_code]
-pub enum ShareClassError {
-    #[msg("Share class mint supply not zero")]
-    ShareClassNotEmpty,
     #[msg("Invalid token account")]
     InvalidTokenAccount,
-}
 
-#[error_code]
-pub enum PolicyError {
+    // Subscription & redemption errors (45000-)
+    #[msg("Invalid asset price")]
+    InvalidAssetPrice = 45000,
+
+    #[msg("Subscription not allowed: invalid stable coin price")]
+    InvalidStableCoinPriceForSubscribe,
+
+    #[msg("Fund is disabled for subscription and redemption")]
+    SubscribeRedeemDisable,
+
+    #[msg("Policy account is mandatory")]
+    InvalidPolicyAccount,
+
+    #[msg("Price is too old")]
+    PriceTooOld,
+
+    // Transfer hook errors (46000-)
     #[msg("Policy violation: transfers disabled")]
-    TransfersDisabled,
+    TransfersDisabled = 46000,
+
     #[msg("Policy violation: amount too big")]
     AmountTooBig,
+
     #[msg("Policy violation: lock-up period")]
     LockUp,
 }

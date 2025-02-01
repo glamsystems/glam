@@ -5799,54 +5799,154 @@
   ],
   "errors": [
     {
-      "code": 6000,
+      "code": 48000,
+      "name": "NotAuthorized",
+      "msg": "Signer is not authorized"
+    },
+    {
+      "code": 48001,
+      "name": "IntegrationDisabled",
+      "msg": "Integration is disabled"
+    },
+    {
+      "code": 48002,
+      "name": "StateAccountDisabled",
+      "msg": "State account is disabled"
+    },
+    {
+      "code": 48003,
+      "name": "InvalidSignerAccount",
+      "msg": "Invalid signer ata"
+    },
+    {
+      "code": 49000,
       "name": "InvalidAccountType",
       "msg": "Invalid account type"
     },
     {
-      "code": 6001,
+      "code": 49001,
       "name": "InvalidName",
       "msg": "Name too long: max 64 chars"
     },
     {
-      "code": 6002,
+      "code": 49002,
       "name": "InvalidSymbol",
       "msg": "Symbol too long: max 32 chars"
     },
     {
-      "code": 6003,
+      "code": 49003,
       "name": "InvalidUri",
       "msg": "Uri too long: max 128 chars"
     },
     {
-      "code": 6004,
+      "code": 49004,
       "name": "InvalidAssetsLen",
       "msg": "Too many assets: max 100"
     },
     {
-      "code": 6005,
-      "name": "Disabled",
-      "msg": "State account is disabled"
-    },
-    {
-      "code": 6006,
-      "name": "NoShareClass",
-      "msg": "No share class found"
-    },
-    {
-      "code": 6007,
-      "name": "ShareClassesNotClosed",
-      "msg": "Glam state account can't be closed. Close share classes first"
-    },
-    {
-      "code": 6008,
+      "code": 49005,
       "name": "CloseNotEmptyError",
       "msg": "Error closing state account: not empty"
     },
     {
-      "code": 6009,
+      "code": 49006,
+      "name": "NoShareClass",
+      "msg": "No share class found"
+    },
+    {
+      "code": 49007,
+      "name": "ShareClassesNotClosed",
+      "msg": "Glam state account can't be closed. Close share classes first"
+    },
+    {
+      "code": 49008,
+      "name": "InvalidShareClass",
+      "msg": "Share class not allowed to subscribe"
+    },
+    {
+      "code": 49009,
+      "name": "InvalidAssetSubscribe",
+      "msg": "Asset not allowed to subscribe"
+    },
+    {
+      "code": 49010,
+      "name": "InvalidPricingOracle",
+      "msg": "Invalid oracle for asset price"
+    },
+    {
+      "code": 49011,
+      "name": "InvalidRemainingAccounts",
+      "msg": "Invalid accounts: the transaction is malformed"
+    },
+    {
+      "code": 49012,
+      "name": "InvalidVaultTokenAccount",
+      "msg": "Invalid vault ata"
+    },
+    {
+      "code": 49013,
+      "name": "ShareClassNotEmpty",
+      "msg": "Share class mint supply not zero"
+    },
+    {
+      "code": 50000,
       "name": "WithdrawDenied",
       "msg": "Withdraw denied. Only vaults allow withdraws (funds and mints don't)"
+    },
+    {
+      "code": 50001,
+      "name": "InvalidAssetForSwap",
+      "msg": "Asset cannot be swapped"
+    },
+    {
+      "code": 50002,
+      "name": "InvalidSwap",
+      "msg": "Swap failed"
+    },
+    {
+      "code": 50003,
+      "name": "InvalidTokenAccount",
+      "msg": "Invalid token account"
+    },
+    {
+      "code": 51000,
+      "name": "InvalidAssetPrice",
+      "msg": "Invalid asset price"
+    },
+    {
+      "code": 51001,
+      "name": "InvalidStableCoinPriceForSubscribe",
+      "msg": "Subscription not allowed: invalid stable coin price"
+    },
+    {
+      "code": 51002,
+      "name": "SubscribeRedeemDisable",
+      "msg": "Fund is disabled for subscription and redemption"
+    },
+    {
+      "code": 51003,
+      "name": "InvalidPolicyAccount",
+      "msg": "Policy account is mandatory"
+    },
+    {
+      "code": 51004,
+      "name": "PriceTooOld",
+      "msg": "Price is too old"
+    },
+    {
+      "code": 52000,
+      "name": "TransfersDisabled",
+      "msg": "Policy violation: transfers disabled"
+    },
+    {
+      "code": 52001,
+      "name": "AmountTooBig",
+      "msg": "Policy violation: amount too big"
+    },
+    {
+      "code": 52002,
+      "name": "LockUp",
+      "msg": "Policy violation: lock-up period"
     }
   ],
   "types": [

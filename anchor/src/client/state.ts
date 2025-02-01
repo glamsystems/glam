@@ -70,6 +70,9 @@ export class StateClient {
         })
         .instruction();
 
+      // FIXME: setting rawOpenfunds to null is a workarond for
+      // Access violation in stack frame 5 at address 0x200005ff8 of size 8
+      mints[0].rawOpenfunds = null;
       const shareClassMint = this.base.getShareClassPda(statePda, 0);
       const txSig = await this.base.program.methods
         .addShareClass(mints[0])

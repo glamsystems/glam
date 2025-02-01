@@ -4,7 +4,7 @@ use anchor_spl::token_interface::TokenAccount;
 use drift::{MarketType, PositionDirection};
 use glam_macros::vault_signer_seeds;
 
-use crate::error::AccessError;
+use crate::error::GlamError;
 use crate::{constants::*, state::*};
 
 use drift::cpi::accounts::{
@@ -385,7 +385,7 @@ pub fn place_orders_handler<'c: 'info, 'info>(
                     if drift_market_indexes_spot.len() > 0 {
                         require!(
                             drift_market_indexes_spot.contains(&(order.market_index as u32)),
-                            AccessError::NotAuthorized
+                            GlamError::NotAuthorized
                         );
                     }
                 }
@@ -395,7 +395,7 @@ pub fn place_orders_handler<'c: 'info, 'info>(
                     if drift_market_indexes_perp.len() > 0 {
                         require!(
                             drift_market_indexes_perp.contains(&(order.market_index as u32)),
-                            AccessError::NotAuthorized
+                            GlamError::NotAuthorized
                         );
                     }
                 }
@@ -405,7 +405,7 @@ pub fn place_orders_handler<'c: 'info, 'info>(
             if drift_order_types.len() > 0 {
                 require!(
                     drift_order_types.contains(&(order.order_type as u32)),
-                    AccessError::NotAuthorized
+                    GlamError::NotAuthorized
                 );
             }
         }
