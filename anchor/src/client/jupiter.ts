@@ -189,14 +189,22 @@ export class JupiterClient {
       JUP_VOTE_PROGRAM,
     );
 
-    return await this.base.program.methods
+    const tx = await this.base.program.methods
       .toggleMaxLock(false)
       .accounts({
         state: statePda,
         locker: JUP_STAKE_LOCKER,
         escrow,
       })
-      .rpc();
+      .transaction();
+
+    const vTx = await this.base.intoVersionedTransaction({
+      tx,
+      lookupTables: [],
+      ...txOptions,
+    });
+
+    return await this.base.sendAndConfirm(vTx);
   }
 
   /**

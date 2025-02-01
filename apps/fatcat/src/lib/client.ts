@@ -9,7 +9,7 @@ import { GlamClient } from "@glamsystems/glam-sdk";
 
 const JUP = new PublicKey("JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN");
 const FATCAT_SERVICE = new PublicKey(
-  "AZpNg57C34kSTvFGVdgJuZ7sYvDTU3EGPNwNhQGqNXkD",
+  "FATCaTCr4uhXZBLQFe6FVtzpF4L8ezypGh4CuQqzRR6B",
 );
 
 export class Client extends GlamClient {
@@ -109,5 +109,13 @@ export class Client extends GlamClient {
 
   unstakeJup = async (amount: number) => {
     const { state } = this.getFatcatState();
+    const amountBN = new BN(amount * 1_000_000); // 6 decimals
+
+    if (false) {
+      // partial unstake
+    } else {
+      // full unstake
+      return await this.jupiter.unstakeJup(state);
+    }
   };
 }

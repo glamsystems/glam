@@ -58,6 +58,19 @@ export const isBrowser =
   process.env.ANCHOR_BROWSER ||
   (typeof window !== "undefined" && !window.process?.hasOwnProperty("type"));
 
+const SEED_METADATA = (
+  GlamIDLJson.constants.find((x) => x.name === "SEED_METADATA")?.value || ""
+).replace(/"/g, "");
+const SEED_MINT = (
+  GlamIDLJson.constants.find((x) => x.name === "SEED_MINT")?.value || ""
+).replace(/"/g, "");
+const SEED_STATE = (
+  GlamIDLJson.constants.find((x) => x.name === "SEED_STATE")?.value || ""
+).replace(/"/g, "");
+const SEED_VAULT = (
+  GlamIDLJson.constants.find((x) => x.name === "SEED_VAULT")?.value || ""
+).replace(/"/g, "");
+
 export type TxOptions = {
   signer?: PublicKey;
   computeUnitLimit?: number;
@@ -378,7 +391,7 @@ export class BaseClient {
     const owner = stateModel.owner?.pubkey || this.getSigner();
     const [pda, _bump] = PublicKey.findProgramAddressSync(
       [
-        anchor.utils.bytes.utf8.encode("state"),
+        anchor.utils.bytes.utf8.encode(SEED_STATE),
         owner.toBuffer(),
         Uint8Array.from(createdKey),
       ],
@@ -389,7 +402,7 @@ export class BaseClient {
 
   getVaultPda(statePda: PublicKey): PublicKey {
     const [pda, _bump] = PublicKey.findProgramAddressSync(
-      [Buffer.from("vault"), statePda.toBuffer()],
+      [Buffer.from(SEED_VAULT), statePda.toBuffer()],
       this.program.programId,
     );
     return pda;
@@ -482,7 +495,7 @@ export class BaseClient {
 
   getOpenfundsPda(statePda: PublicKey): PublicKey {
     const [pda, _] = PublicKey.findProgramAddressSync(
-      [Buffer.from("metadata"), statePda.toBuffer()],
+      [Buffer.from(SEED_METADATA), statePda.toBuffer()],
       this.program.programId,
     );
     return pda;
@@ -491,7 +504,7 @@ export class BaseClient {
   getShareClassPda(statePda: PublicKey, mintIdx: number = 0): PublicKey {
     const [pda, _] = PublicKey.findProgramAddressSync(
       [
-        Buffer.from("mint"),
+        Buffer.from(SEED_MINT),
         Uint8Array.from([mintIdx % 256]),
         statePda.toBuffer(),
       ],
