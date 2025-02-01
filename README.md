@@ -7,8 +7,6 @@
   </picture>
 </p>
 
----
-
 
 ## Onchain Asset Management on Solana
 
