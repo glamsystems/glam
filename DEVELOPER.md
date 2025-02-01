@@ -26,15 +26,15 @@ This project was generated with the [create-solana-dapp](https://github.com/sola
 ### Prerequisites
 
 - Node v20.11.0 or higher
-- Pnpm v8.15.1 or higher
+- Pnpm v9.1.2 or higher
 - Rust v1.75.0 or higher
-- Anchor CLI 0.29.0 or higher
-- Solana CLI 1.18.7
+- Anchor CLI 0.30.1
+- Solana CLI 1.18.23
 
 Recommended:
 
 ```shell
-sh -c "$(curl -sSfL https://release.solana.com/v1.18.7/install)"
+sh -c "$(curl -sSfL https://release.anza.xyz/v1.18.23/install)"
 ```
 
 ### Installation
@@ -71,10 +71,4 @@ pnpm run anchor-test
 
 ```shell
 pnpm run dev
-```
-
-### Start the api server
-
-```shell
-pnpm run api-serve
 ```

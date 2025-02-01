@@ -277,9 +277,10 @@ describe("glam_crud", () => {
       console.error(e);
       throw e;
     }
-    let StateModel = await glamClient.fetchState(statePda);
-    expect(StateModel.delegateAcls?.length).toEqual(1);
-    expect(StateModel.delegateAcls![0].pubkey).toEqual(key1.publicKey);
+    let stateModel = await glamClient.fetchState(statePda);
+    console.log("StateModel", stateModel);
+    expect(stateModel.delegateAcls?.length).toEqual(1);
+    expect(stateModel.delegateAcls![0].pubkey).toEqual(key1.publicKey);
 
     // key1 now has wSolWrap permission, use key1 to wrap some SOL
     await glamClientCustomWallet.wsol.wrap(statePda, new BN(30_000_000));
