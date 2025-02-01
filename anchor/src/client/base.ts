@@ -152,10 +152,11 @@ export class BaseClient {
   }
 
   isPhantom(): boolean {
+    if (!isBrowser) return false;
     // Phantom automatically estimates fees
     // https://docs.phantom.app/developer-powertools/solana-priority-fees#how-phantom-applies-priority-fees-to-dapp-transactions
     return (
-      //@ts-ignore
+      // @ts-ignore
       window?.phantom?.solana?.isPhantom && window?.phantom?.solana?.isConnected
     );
   }

@@ -573,7 +573,7 @@ const vote = program
       : null;
 
     if (!statePda) {
-      console.error("Error: fund not set");
+      console.error("GLAM state not set");
       process.exit(1);
     }
 
@@ -656,7 +656,7 @@ program
 
 program
   .command("balances")
-  .description("Get fund balances")
+  .description("Get balances")
   .option(
     "-a, --all",
     "Show all assets including token accounts with 0 balance",
@@ -708,7 +708,7 @@ program
 
 program
   .command("swap <from> <to> <amount>")
-  .description("Swap fund assets")
+  .description("Swap assets held in the vault")
   .option("-m, --max-accounts <num>", "Specify max accounts allowed")
   .option("-s, --slippage-bps <bps>", "Specify slippage bps")
   .option("-d, --only-direct-routes", "Direct routes only")
@@ -951,7 +951,7 @@ lst
 
 //
 // Run the CLI in development mode as follows:
-// npx nx run cli:dev -- --args="fund view <pubkey>"
+// npx nx run cli:dev -- --args="view <pubkey>"
 //
 if (process.env.NODE_ENV === "development") {
   const argv = [

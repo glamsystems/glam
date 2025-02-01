@@ -55,5 +55,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build
-        run: cd anchor ; anchor test || anchor test -- --tools-version v1.43
+      - name: Build and run tests
+        run: pnpm run anchor-test
