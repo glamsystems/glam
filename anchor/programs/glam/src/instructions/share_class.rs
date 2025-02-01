@@ -1,9 +1,5 @@
 use crate::{
-    constants::*,
-    error::{AccessError, ShareClassError, StateError},
-    policy_hook::TRANSFER_HOOK_EXTRA_ACCOUNTS,
-    state::*,
-    ID,
+    constants::*, error::GlamError, policy_hook::TRANSFER_HOOK_EXTRA_ACCOUNTS, state::*, ID,
 };
 use anchor_lang::{prelude::*, system_program};
 use anchor_spl::{
@@ -54,7 +50,7 @@ pub struct AddShareClass<'info> {
     )]
     pub extra_account_meta_list: UncheckedAccount<'info>,
 
-    #[account(mut, constraint = state.owner == signer.key() @ AccessError::NotAuthorized)]
+    #[account(mut, constraint = state.owner == signer.key() @ GlamError::NotAuthorized)]
     pub state: Box<Account<'info, StateAccount>>,
 
     #[account(mut, seeds = [SEED_METADATA.as_bytes(), state.key().as_ref()], bump)]
@@ -384,7 +380,7 @@ pub fn set_token_accounts_states_handler<'info>(
 ) -> Result<()> {
     for account in ctx.remaining_accounts.iter() {
         if !account.owner.eq(&ctx.accounts.token_2022_program.key()) {
-            return Err(ShareClassError::InvalidTokenAccount.into());
+            return Err(GlamError::InvalidTokenAccount.into());
         }
     }
 
@@ -639,7 +635,7 @@ pub struct UpdateShareClass<'info> {
     )]
     share_class_mint: InterfaceAccount<'info, Mint>,
 
-    #[account(mut, constraint = state.owner == signer.key() @ AccessError::NotAuthorized)]
+    #[account(mut, constraint = state.owner == signer.key() @ GlamError::NotAuthorized)]
     pub state: Box<Account<'info, StateAccount>>,
 
     #[account(mut)]
@@ -674,7 +670,7 @@ pub fn update_share_class_handler(
 #[derive(Accounts)]
 #[instruction(share_class_id: u8)]
 pub struct CloseShareClass<'info> {
-    #[account(mut, constraint = state.owner == signer.key() @ AccessError::NotAuthorized)]
+    #[account(mut, constraint = state.owner == signer.key() @ GlamError::NotAuthorized)]
     pub state: Account<'info, StateAccount>,
 
     #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
@@ -715,14 +711,14 @@ pub struct CloseShareClass<'info> {
 pub fn close_share_class_handler(ctx: Context<CloseShareClass>, share_class_id: u8) -> Result<()> {
     require!(
         (share_class_id as usize) < ctx.accounts.state.mints.len(),
-        StateError::NoShareClass
+        GlamError::NoShareClass
     );
 
     // Note: this is redundant because close_account should check that supply == 0
     //       but better safe than sorry
     require!(
         ctx.accounts.share_class_mint.supply == 0,
-        ShareClassError::ShareClassNotEmpty
+        GlamError::ShareClassNotEmpty
     );
 
     close_token_2022_account(CpiContext::new_with_signer(

@@ -5805,54 +5805,154 @@ export type Glam = {
   ],
   "errors": [
     {
-      "code": 6000,
+      "code": 48000,
+      "name": "notAuthorized",
+      "msg": "Signer is not authorized"
+    },
+    {
+      "code": 48001,
+      "name": "integrationDisabled",
+      "msg": "Integration is disabled"
+    },
+    {
+      "code": 48002,
+      "name": "stateAccountDisabled",
+      "msg": "State account is disabled"
+    },
+    {
+      "code": 48003,
+      "name": "invalidSignerAccount",
+      "msg": "Invalid signer ata"
+    },
+    {
+      "code": 49000,
       "name": "invalidAccountType",
       "msg": "Invalid account type"
     },
     {
-      "code": 6001,
+      "code": 49001,
       "name": "invalidName",
       "msg": "Name too long: max 64 chars"
     },
     {
-      "code": 6002,
+      "code": 49002,
       "name": "invalidSymbol",
       "msg": "Symbol too long: max 32 chars"
     },
     {
-      "code": 6003,
+      "code": 49003,
       "name": "invalidUri",
       "msg": "Uri too long: max 128 chars"
     },
     {
-      "code": 6004,
+      "code": 49004,
       "name": "invalidAssetsLen",
       "msg": "Too many assets: max 100"
     },
     {
-      "code": 6005,
-      "name": "disabled",
-      "msg": "State account is disabled"
-    },
-    {
-      "code": 6006,
-      "name": "noShareClass",
-      "msg": "No share class found"
-    },
-    {
-      "code": 6007,
-      "name": "shareClassesNotClosed",
-      "msg": "Glam state account can't be closed. Close share classes first"
-    },
-    {
-      "code": 6008,
+      "code": 49005,
       "name": "closeNotEmptyError",
       "msg": "Error closing state account: not empty"
     },
     {
-      "code": 6009,
+      "code": 49006,
+      "name": "noShareClass",
+      "msg": "No share class found"
+    },
+    {
+      "code": 49007,
+      "name": "shareClassesNotClosed",
+      "msg": "Glam state account can't be closed. Close share classes first"
+    },
+    {
+      "code": 49008,
+      "name": "invalidShareClass",
+      "msg": "Share class not allowed to subscribe"
+    },
+    {
+      "code": 49009,
+      "name": "invalidAssetSubscribe",
+      "msg": "Asset not allowed to subscribe"
+    },
+    {
+      "code": 49010,
+      "name": "invalidPricingOracle",
+      "msg": "Invalid oracle for asset price"
+    },
+    {
+      "code": 49011,
+      "name": "invalidRemainingAccounts",
+      "msg": "Invalid accounts: the transaction is malformed"
+    },
+    {
+      "code": 49012,
+      "name": "invalidVaultTokenAccount",
+      "msg": "Invalid vault ata"
+    },
+    {
+      "code": 49013,
+      "name": "shareClassNotEmpty",
+      "msg": "Share class mint supply not zero"
+    },
+    {
+      "code": 50000,
       "name": "withdrawDenied",
       "msg": "Withdraw denied. Only vaults allow withdraws (funds and mints don't)"
+    },
+    {
+      "code": 50001,
+      "name": "invalidAssetForSwap",
+      "msg": "Asset cannot be swapped"
+    },
+    {
+      "code": 50002,
+      "name": "invalidSwap",
+      "msg": "Swap failed"
+    },
+    {
+      "code": 50003,
+      "name": "invalidTokenAccount",
+      "msg": "Invalid token account"
+    },
+    {
+      "code": 51000,
+      "name": "invalidAssetPrice",
+      "msg": "Invalid asset price"
+    },
+    {
+      "code": 51001,
+      "name": "invalidStableCoinPriceForSubscribe",
+      "msg": "Subscription not allowed: invalid stable coin price"
+    },
+    {
+      "code": 51002,
+      "name": "subscribeRedeemDisable",
+      "msg": "Fund is disabled for subscription and redemption"
+    },
+    {
+      "code": 51003,
+      "name": "invalidPolicyAccount",
+      "msg": "Policy account is mandatory"
+    },
+    {
+      "code": 51004,
+      "name": "priceTooOld",
+      "msg": "Price is too old"
+    },
+    {
+      "code": 52000,
+      "name": "transfersDisabled",
+      "msg": "Policy violation: transfers disabled"
+    },
+    {
+      "code": 52001,
+      "name": "amountTooBig",
+      "msg": "Policy violation: amount too big"
+    },
+    {
+      "code": 52002,
+      "name": "lockUp",
+      "msg": "Policy violation: lock-up period"
     }
   ],
   "types": [

@@ -22,7 +22,7 @@ use jup_locked_voter::cpi::{
 use jup_locked_voter::program::LockedVoter;
 use jup_locked_voter::state::{Escrow, Locker, PartialUnstaking as PartialUnstakeAccount};
 
-use crate::error::SwapError;
+use crate::error::GlamError;
 use crate::instructions::stake_pool::StakePoolProgramInterface;
 use crate::{constants::*, state::*};
 
@@ -182,8 +182,8 @@ fn is_lst<'info>(mint: &Pubkey, stake_pool_account: Option<&AccountInfo<'info>>)
     let buf = stake_pool_account.try_borrow_data()?;
     let pool_mint_bytes = &buf[POOL_MINT_OFFSET..POOL_MINT_OFFSET + 32];
     let pool_mint =
-        Pubkey::try_from(pool_mint_bytes).map_err(|_| SwapError::InvalidAssetForSwap)?;
-    require_keys_eq!(pool_mint, *mint, SwapError::InvalidAssetForSwap);
+        Pubkey::try_from(pool_mint_bytes).map_err(|_| GlamError::InvalidAssetForSwap)?;
+    require_keys_eq!(pool_mint, *mint, GlamError::InvalidAssetForSwap);
 
     Ok(true)
 }
@@ -242,7 +242,7 @@ pub fn swap_handler<'c: 'info, 'info>(
         0xb0d169a89a7d453e => parse_shared_accounts_route(&ctx), // sharedAccountsExactOutRoute (same)
         _ => panic!("Jupiter instruction not supported"),
     };
-    require!(parse_result, SwapError::InvalidSwap);
+    require!(parse_result, GlamError::InvalidSwap);
 
     //
     // Transfer vault -> signer

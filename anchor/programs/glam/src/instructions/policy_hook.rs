@@ -1,5 +1,5 @@
 use {
-    crate::{error::PolicyError, state::*},
+    crate::{error::GlamError, state::*},
     anchor_lang::{prelude::*, system_program},
     anchor_spl::{
         token_2022::{
@@ -53,7 +53,7 @@ pub fn execute(ctx: Context<TransferHook>, amount: u64) -> Result<()> {
 
     let cur_timestamp = Clock::get()?.unix_timestamp;
     if cur_timestamp < locked_until_ts {
-        return err!(PolicyError::LockUp);
+        return err!(GlamError::LockUp);
     }
 
     Ok(())

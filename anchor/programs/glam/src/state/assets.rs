@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_lang::AccountDeserialize;
 use phf::phf_map;
 
-use crate::error::InvestorError;
+use crate::error::GlamError;
 use crate::state::pyth_price::PriceExt;
 use marinade::State as MarinadeState;
 use pyth_solana_receiver_sdk::price_update::{Price, PriceUpdateV2};
@@ -36,12 +36,12 @@ impl<'a> AssetMeta<'a> {
         ASSETS.get(name).map_or(
             // On mainnet, return error
             #[cfg(feature = "mainnet")]
-            Err(InvestorError::InvalidAssetSubscribe.into()),
+            Err(GlamError::InvalidAssetSubscribe.into()),
             // In tests, check if the asset is in ASSETS_TESTS, or return error
             #[cfg(not(feature = "mainnet"))]
             ASSETS_TESTS
                 .get(name)
-                .map_or(Err(InvestorError::InvalidAssetSubscribe.into()), |asset| {
+                .map_or(Err(GlamError::InvalidAssetSubscribe.into()), |asset| {
                     Ok(asset)
                 }),
             |asset| Ok(asset),
@@ -103,7 +103,7 @@ impl<'a> AssetMeta<'a> {
                 .publish_time
                 .saturating_add(MAXIMUM_AGE.try_into().unwrap())
                 >= Clock::get()?.unix_timestamp,
-            InvestorError::PriceTooOld
+            GlamError::PriceTooOld
         );
 
         // Scale price to expected decimals
@@ -117,7 +117,7 @@ impl<'a> AssetMeta<'a> {
             if one.abs_diff(asset_price.price) < one_percent {
                 asset_price.price = one;
             } else if action == Action::Subscribe {
-                return Err(InvestorError::InvalidStableCoinPriceForSubscribe.into());
+                return Err(GlamError::InvalidStableCoinPriceForSubscribe.into());
             }
         }
 

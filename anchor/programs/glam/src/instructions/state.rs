@@ -1,10 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{
-    constants::*,
-    error::{AccessError, StateError},
-    state::*,
-};
+use crate::{constants::*, error::GlamError, state::*};
 use anchor_lang::{prelude::*, solana_program, system_program};
 use anchor_spl::{
     token::{close_account as close_token_account, CloseAccount as CloseTokenAccount, Token},
@@ -59,14 +55,14 @@ pub fn initialize_state_handler<'c: 'info, 'info>(
     let state = &mut ctx.accounts.state;
     let model = state_model.clone();
 
-    state.account_type = model.account_type.ok_or(StateError::InvalidAccountType)?;
+    state.account_type = model.account_type.ok_or(GlamError::InvalidAccountType)?;
 
     if let Some(name) = model.name {
-        require!(name.len() <= MAX_SIZE_NAME, StateError::InvalidName);
+        require!(name.len() <= MAX_SIZE_NAME, GlamError::InvalidName);
         state.name = name;
     }
     if let Some(uri) = model.uri {
-        require!(uri.len() < MAX_SIZE_URI, StateError::InvalidUri);
+        require!(uri.len() < MAX_SIZE_URI, GlamError::InvalidUri);
         state.uri = uri;
     }
     if let Some(created) = model.created {
@@ -77,7 +73,7 @@ pub fn initialize_state_handler<'c: 'info, 'info>(
         };
     }
     if let Some(metadata) = model.metadata {
-        require!(metadata.uri.len() < MAX_SIZE_URI, StateError::InvalidUri);
+        require!(metadata.uri.len() < MAX_SIZE_URI, GlamError::InvalidUri);
         state.metadata = Some(Metadata {
             template: metadata.template,
             pubkey: metadata.pubkey,
@@ -109,7 +105,7 @@ pub fn initialize_state_handler<'c: 'info, 'info>(
 
 #[derive(Accounts)]
 pub struct UpdateState<'info> {
-    #[account(mut, constraint = state.owner == signer.key() @ AccessError::NotAuthorized)]
+    #[account(mut, constraint = state.owner == signer.key() @ GlamError::NotAuthorized)]
     pub state: Account<'info, StateAccount>,
 
     #[account(mut)]
@@ -125,12 +121,12 @@ pub fn update_state_handler<'c: 'info, 'info>(
     if let Some(name) = state_model.name {
         require!(
             name.as_bytes().len() <= MAX_SIZE_NAME,
-            StateError::InvalidName
+            GlamError::InvalidName
         );
         state.name = name;
     }
     if let Some(uri) = state_model.uri {
-        require!(uri.as_bytes().len() <= MAX_SIZE_URI, StateError::InvalidUri);
+        require!(uri.as_bytes().len() <= MAX_SIZE_URI, GlamError::InvalidUri);
         state.uri = uri;
     }
 
@@ -224,7 +220,7 @@ pub fn update_state_handler<'c: 'info, 'info>(
 
 #[derive(Accounts)]
 pub struct CloseState<'info> {
-    #[account(mut, close = signer, constraint = state.owner == signer.key() @ AccessError::NotAuthorized)]
+    #[account(mut, close = signer, constraint = state.owner == signer.key() @ GlamError::NotAuthorized)]
     pub state: Account<'info, StateAccount>,
 
     /// CHECK: Manually deserialized
@@ -244,7 +240,7 @@ pub struct CloseState<'info> {
 pub fn close_state_handler(ctx: Context<CloseState>) -> Result<()> {
     require!(
         ctx.accounts.state.mints.len() == 0,
-        StateError::ShareClassesNotClosed
+        GlamError::ShareClassesNotClosed
     );
 
     if ctx.accounts.vault.lamports() > 0 {
@@ -273,7 +269,7 @@ pub fn close_state_handler(ctx: Context<CloseState>) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct SetSubscribeRedeemEnabled<'info> {
-    #[account(mut, constraint = state.owner == signer.key() @ AccessError::NotAuthorized)]
+    #[account(mut, constraint = state.owner == signer.key() @ GlamError::NotAuthorized)]
     pub state: Box<Account<'info, StateAccount>>,
 
     #[account(mut)]
@@ -302,7 +298,7 @@ pub fn set_subscribe_redeem_enabled_handler(
 
 #[derive(Accounts)]
 pub struct Withdraw<'info> {
-    #[account(mut, constraint = state.owner == signer.key() @ AccessError::NotAuthorized)]
+    #[account(mut, constraint = state.owner == signer.key() @ GlamError::NotAuthorized)]
     pub state: Account<'info, StateAccount>,
 
     #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
@@ -339,7 +335,7 @@ pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
     //      We may want to enable transfers for funds with external assets.
     require!(
         ctx.accounts.state.mints.len() == 0,
-        StateError::WithdrawDenied
+        GlamError::WithdrawDenied
     );
 
     transfer_checked(
@@ -362,7 +358,7 @@ pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct CloseTokenAccounts<'info> {
-    #[account(mut, constraint = state.owner == signer.key() @ AccessError::NotAuthorized)]
+    #[account(mut, constraint = state.owner == signer.key() @ GlamError::NotAuthorized)]
     pub state: Account<'info, StateAccount>,
 
     #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
