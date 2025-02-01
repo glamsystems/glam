@@ -1,51 +1,86 @@
-# GLAM
-
 ![GLAM Tests](https://github.com/glamsystems/glam/actions/workflows/post_commit_anchor_test.yml/badge.svg)
+<p align="center">
+ <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://res.cloudinary.com/devbkdecu/image/upload/v1737324519/glam-platform-overview-dark-v3_uy6crc.png">
+    <source media="(prefers-color-scheme: light)" srcset="https://res.cloudinary.com/devbkdecu/image/upload/v1737324519/glam-platform-overview-light-v3_nhx3oh.png">
+    <img alt="GLAM *.+ The New Standard for Asset Management." src="https://raw.githubusercontent.com/glamsystems/brand_assets/main/github/github_banner_dark.svg">
+  </picture>
+</p>
 
-GLAM is an onchain asset management and tokenization platform designed to facilitate the launch and management of digitally native investment products.
+---
 
-## Colosseum Hackathon Demos
 
-Check out our live demo: [https://gui.glam.systems](https://gui.glam.systems)
+## Onchain Asset Management on Solana
 
-Watch our latest Colosseum Radar Submission (Oct 8, 2024):
+GLAM is a platform for building and managing institutional-grade investment products on Solana. Through programmable vaults and mints, GLAM provides the infrastructure for onchain operations with robust security and controls.
 
-[![GLAM Radar](https://cdn.loom.com/sessions/thumbnails/a145aa27db5c4b87a220c71b644173ed-32b128e4d76c7812.jpg)](https://614m.link/radar)
+### Quick Links
 
-Watch our original Colosseum Renaissance Submission (Apr 8, 2024):
+- [Developer Documentation](https://docs.glam.systems)
+- [TypeScript SDK](https://www.npmjs.com/package/@glamsystems/glam-sdk)
+- [CLI Reference](https://github.com/glamsystems/glam/tree/main/cli#readme)
+- [Web Interface](https://app.glam.systems)
 
-[![GLAM Renaissance](https://cdn.loom.com/sessions/thumbnails/15b0e87e181c425682f89f620cfd707f-1712512889851.jpg)](https://614m.link/renaissance)
+## Development Setup
 
-## Features
+### Prerequisites
 
-Fund:
+- Node v20.11.0 or higher
+- Pnpm v9.1.2 or higher
+- Rust v1.75.0 or higher
+- Anchor CLI 0.30.1
+- Solana CLI 1.18.23
 
-- [x] On chain [Openfunds](https://openfunds.org)
-- [x] Segregated treasury account
-- [x] Share classes (Token 2022)
-  - [x] On chain Openfunds Share Class (Metadata Extension)
-  - [x] Allow/deny-list for subscription
-  - [x] Lockup period for redeem and transfer
-  - [x] Permanent delegate
-- [x] Investor subscribe & redeem
-- [x] Hot wallets / fine-grain access control
-- [ ] External/offchain assets
-  - [x] Staking accounts
-  - [x] Drift positions
-  - [ ] Offchain assets
-- [ ] Fees
-- [ ] Subscription limits
+Install Solana CLI (recommended):
+```shell
+sh -c "$(curl -sSfL https://release.anza.xyz/v2.1.5/install)"
+```
 
-Integrations:
+### Installation
 
-- [x] User wallets (Phantom, Backpack)
-- [x] Pricing (Pyth, LST)
-- [x] Trading (Drift)
-- [x] Swap (Jupiter)
-- [x] Staking (SPL, Sanctum, Marinade)
-- [ ] Alternative strategy engine (Symmetry?)
-- [ ] Alternative custody (Squads?)
+```shell
+git clone https://github.com/glamsystems/glam.git
+cd glam
+pnpm install
+```
 
-## Contribute
+### Testing
 
-We love any type of contribution, bug fixes, new integrations and better docs. See [DEVELOPER.md](./DEVELOPER.md) to get started.
+Build and run the test suite:
+
+```shell
+pnpm run anchor-build
+pnpm run anchor-test
+```
+
+### Local Development
+
+Start the development server:
+
+```shell
+pnpm run dev
+```
+
+## SDK Usage Example
+
+```typescript
+import * as anchor from "@coral-xyz/anchor";
+import { GlamClient, WSOL } from "@glamsystems/glam-sdk";
+import { PublicKey } from "@solana/web3.js";
+
+const glamClient = new GlamClient();
+const statePda = new PublicKey("FMHLPaEeCbuivqsAfHrr28FpWJ9oKHTx3jzFbb3tYhq4");
+
+async function main() {
+  const vaultPda = glamClient.getVaultPda(statePda);
+  const vaultWsolBalance = await glamClient.getVaultTokenBalance(statePda, WSOL);
+  
+  // Wrap 0.1 SOL
+  const txSig = await glamClient.wsol.wrap(statePda, new anchor.BN(100_000_000));
+  
+  // Check updated balance
+  const vaultWsolBalanceAfter = await glamClient.getVaultTokenBalance(statePda, WSOL);
+}
+```
+
+For detailed API documentation and advanced usage examples, visit our [Developer Documentation](https://docs.glam.systems).
