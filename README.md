@@ -17,7 +17,7 @@ GLAM is a platform for building and managing institutional-grade investment prod
 - [Developer Documentation](https://docs.glam.systems)
 - [TypeScript SDK](https://www.npmjs.com/package/@glamsystems/glam-sdk)
 - [CLI Reference](https://github.com/glamsystems/glam/tree/main/cli#readme)
-- [Web Interface](https://app.glam.systems)
+- [Graphical User Interface](https://gui.glam.systems)
 
 ## Development Setup
 
