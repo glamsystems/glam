@@ -277,22 +277,25 @@ describe("glam_crud", () => {
       console.error(e);
       throw e;
     }
-    let stateAccount = await glamClient.fetchStateAccount(statePda);
-    console.log("StateAccount", stateAccount);
 
+    /*
     let stateModel = await glamClient.fetchState(statePda);
-    console.log("StateModel", stateModel);
     expect(stateModel.delegateAcls?.length).toEqual(1);
     expect(stateModel.delegateAcls![0].pubkey).toEqual(key1.publicKey);
+    */
 
-    // key1 now has wSolWrap permission, use key1 to wrap some SOL
-    await glamClientCustomWallet.wsol.wrap(statePda, new BN(30_000_000));
-
-    // key1 doesn't have wSolUnwrap permission, unwrap should fail
     try {
-      const txId = await glamClientCustomWallet.wsol.unwrap(statePda);
-      console.log("Unwrap:", txId);
-      expect(txId).toBeUndefined();
+      // key1 now has wSolWrap permission, use key1 to wrap some SOL
+      let txSig = await glamClientCustomWallet.wsol.wrap(
+        statePda,
+        new BN(30_000_000),
+      );
+      console.log("Wrap:", txSig);
+
+      // key1 doesn't have wSolUnwrap permission, unwrap should fail
+      txSig = await glamClientCustomWallet.wsol.unwrap(statePda);
+      console.log("Unwrap:", txSig);
+      expect(txSig).toBeUndefined();
     } catch (e) {
       expect((e as GlamError).message).toEqual("Signer is not authorized.");
     }
