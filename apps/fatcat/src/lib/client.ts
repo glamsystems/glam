@@ -30,8 +30,9 @@ export class Client extends GlamClient {
       name,
       assets: [JUP],
       enabled: true,
+      accountType: { vault: {} },
       //@ts-ignore
-      integrationAcls: [{ name: { jupiterVote: {} }, features: [] }],
+      integrations: [{ jupiterVote: {} }],
       delegateAcls: [
         {
           pubkey: FATCAT_SERVICE,
@@ -71,6 +72,14 @@ export class Client extends GlamClient {
         .instruction();
 
       preInstructions.push(initStateIx);
+
+      // preInstructions.push(
+      //   SystemProgram.transfer({
+      //     fromPubkey: this.getSigner(),
+      //     toPubkey: vault,
+      //     lamports: 10_000_000,
+      //   }),
+      // );
     }
 
     // add instrustions to create vault ATA and transfer JUP to vault
