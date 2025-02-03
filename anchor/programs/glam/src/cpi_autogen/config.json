@@ -1,0 +1,10 @@
+{
+  "kamino_lending": [
+    {
+      "ix_name": "initUserMetadata",
+      "remove_signer": ["owner"],
+      "permission": "InitKamino",
+      "integration": "KaminoLending"
+    }
+  ]
+}
