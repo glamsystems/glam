@@ -1874,12 +1874,10 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "glamState",
-          "writable": true
+          "name": "glamState"
         },
         {
           "name": "glamVault",
-          "writable": true,
           "pda": {
             "seeds": [
               {

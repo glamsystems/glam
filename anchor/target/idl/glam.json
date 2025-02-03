@@ -1868,12 +1868,10 @@
       ],
       "accounts": [
         {
-          "name": "glam_state",
-          "writable": true
+          "name": "glam_state"
         },
         {
           "name": "glam_vault",
-          "writable": true,
           "pda": {
             "seeds": [
               {
