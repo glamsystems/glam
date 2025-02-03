@@ -5,7 +5,7 @@ FROM base AS builder
 WORKDIR /mnt/workspace
 
 COPY . ./
-RUN corepack enable pnpm
+RUN npm install -g pnpm@9.15.4
 RUN pnpm install && pnpm install --filter @glamsystems/glam-sdk && pnpm run gui-build
 
 # Final stage (runtime image)
