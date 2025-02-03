@@ -80,7 +80,7 @@ export const vaultTreeDataPermissions: TreeNodeData = {
         },
         {
           id: "liquidUnstake",
-          label: "Liquid unstake (not recommended)",
+          label: "Liquid unstake",
           description: "",
         },
       ],
