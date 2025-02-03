@@ -6,12 +6,12 @@ WORKDIR /mnt/workspace
 
 COPY . ./
 RUN corepack enable pnpm
-RUN pnpm install && pnpm install --filter @glamsystems/glam-sdk && pnpm run pg-build
+RUN pnpm install && pnpm install --filter @glamsystems/glam-sdk && pnpm run gui-build
 
 # Final stage (runtime image)
 FROM node:20-slim AS runtime
 WORKDIR /app
 
-COPY --from=builder /mnt/workspace/playground /app
+COPY --from=builder /mnt/workspace/gui /app
 RUN npm install next@14.2.10
 CMD ["npx", "next", "start", "-p", "8080"]

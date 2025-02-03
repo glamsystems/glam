@@ -4,9 +4,9 @@
 OS=$(uname)
 
 # Define variables for Dockerfile path and image tags
-DOCKERFILE_PATH="./playground/Dockerfile"
+DOCKERFILE_PATH="./gui/Dockerfile"
 IMAGE_NAME="glam-pg"
-REGISTRY_URL="us-west1-docker.pkg.dev/glam-playground/default"
+REGISTRY_URL="us-west1-docker.pkg.dev/glam-gui/default"
 BUILD_ARGS=""
 
 # Check if the OS is macOS
@@ -21,6 +21,6 @@ else
     exit 1
 fi
 
- docker $BUILD_ARGS -f $DOCKERFILE_PATH -t $IMAGE_NAME . --load && \
+docker $BUILD_ARGS -f $DOCKERFILE_PATH -t $IMAGE_NAME . --load && \
     docker tag $IMAGE_NAME:latest $REGISTRY_URL/$IMAGE_NAME:latest && \
     docker push $REGISTRY_URL/$IMAGE_NAME:latest
