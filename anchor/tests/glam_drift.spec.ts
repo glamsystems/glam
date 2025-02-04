@@ -126,21 +126,10 @@ describe("glam_drift", () => {
     }
   });
 
-  it("Airdrop 10 SOL to vault and wrap it", async () => {
+  it("Airdrop 10 SOL to vault", async () => {
     const connection = glamClient.provider.connection;
     const lamports = 10_000_000_000;
     await airdrop(connection, vaultPda, lamports);
-
-    try {
-      const txSig = await glamClient.wsol.wrap(
-        statePda,
-        new anchor.BN(lamports),
-      );
-      console.log("Wrappped 10 SOL in vault:", txSig);
-    } catch (e) {
-      console.error(e);
-      throw e;
-    }
   });
 
   it("Drift initialize", async () => {

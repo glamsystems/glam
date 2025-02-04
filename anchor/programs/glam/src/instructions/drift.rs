@@ -300,7 +300,6 @@ pub fn withdraw_handler<'c: 'info, 'info>(
 
 #[derive(Accounts)]
 pub struct DriftDeleteUser<'info> {
-    #[account()]
     pub state: Account<'info, StateAccount>,
 
     #[account(mut)]
@@ -313,7 +312,7 @@ pub struct DriftDeleteUser<'info> {
     /// CHECK: checks are done inside cpi call
     pub drift_state: UncheckedAccount<'info>,
 
-    #[account(seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
     #[account(mut)]
