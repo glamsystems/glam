@@ -119,13 +119,13 @@ export class DriftClient {
   }
 
   public async updateUserDelegate(
-    statePda: PublicKey,
-    delegate: PublicKey,
+    statePda: PublicKey | String,
+    delegate: PublicKey | String,
     subAccountId: number = 0,
   ): Promise<TransactionSignature> {
     const tx = await this.updateUserDelegateTx(
-      statePda,
-      delegate,
+      new PublicKey(statePda),
+      new PublicKey(delegate),
       subAccountId,
     );
     return await this.base.sendAndConfirm(tx);
