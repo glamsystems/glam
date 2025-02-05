@@ -119,14 +119,27 @@ export class DriftClient {
   }
 
   public async updateUserDelegate(
-    statePda: PublicKey,
-    delegate: PublicKey,
+    statePda: PublicKey | String,
+    delegate: PublicKey | String,
     subAccountId: number = 0,
   ): Promise<TransactionSignature> {
     const tx = await this.updateUserDelegateTx(
-      statePda,
-      delegate,
+      new PublicKey(statePda),
+      new PublicKey(delegate),
       subAccountId,
+    );
+    return await this.base.sendAndConfirm(tx);
+  }
+
+  public async deleteUser(
+    statePda: PublicKey | String,
+    subAccountId: number = 0,
+    txOptions: TxOptions = {},
+  ): Promise<TransactionSignature> {
+    const tx = await this.deleteUserTx(
+      new PublicKey(statePda),
+      subAccountId,
+      txOptions,
     );
     return await this.base.sendAndConfirm(tx);
   }
@@ -222,9 +235,9 @@ export class DriftClient {
   }
 
   async getPositions(statePda: PublicKey, subAccountId: number = 0) {
-    const treasury = this.base.getVaultPda(statePda);
+    const vault = this.base.getVaultPda(statePda);
     const response = await fetch(
-      `https://api.glam.systems/v0/drift/user?authority=${treasury.toBase58()}&accountId=${subAccountId}`,
+      `https://api.glam.systems/v0/drift/user?authority=${vault.toBase58()}&accountId=${subAccountId}`,
     );
     const data = await response.json();
     const { spotPositions, perpPositions } = data as GlamDriftUser;
@@ -412,6 +425,32 @@ export class DriftClient {
       .accountsPartial({
         state: statePda,
         user,
+        signer,
+      })
+      .transaction();
+
+    return await this.base.intoVersionedTransaction({
+      tx,
+      ...txOptions,
+    });
+  }
+
+  public async deleteUserTx(
+    statePda: PublicKey,
+    subAccountId: number = 0,
+    txOptions: TxOptions = {},
+  ): Promise<VersionedTransaction> {
+    const signer = txOptions.signer || this.base.getSigner();
+    const [user, userStats] = this.getUser(statePda, subAccountId);
+    const driftState = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
+
+    const tx = await this.base.program.methods
+      .driftDeleteUser()
+      .accounts({
+        state: statePda,
+        user,
+        userStats,
+        driftState,
         signer,
       })
       .transaction();

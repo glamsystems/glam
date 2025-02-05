@@ -584,7 +584,7 @@ export class BaseClient {
         "Insufficient funds in vault to complete the transaction",
       );
     }
-    if (delta.gt(new anchor.BN(0)) && solBalance.gt(delta)) {
+    if (delta.gt(new anchor.BN(0)) && solBalance.gte(delta)) {
       return await this.program.methods
         .wsolWrap(delta)
         .accountsPartial({

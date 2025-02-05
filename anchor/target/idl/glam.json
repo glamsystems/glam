@@ -823,6 +823,7 @@
         },
         {
           "name": "vault",
+          "writable": true,
           "pda": {
             "seeds": [
               {
