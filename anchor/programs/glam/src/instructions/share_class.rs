@@ -702,13 +702,6 @@ pub fn close_share_class_handler(ctx: Context<CloseShareClass>, share_class_id: 
         StateError::NoShareClass
     );
 
-    // Note: this is redundant because close_account should check that supply == 0
-    //       but better safe than sorry
-    require!(
-        ctx.accounts.share_class_mint.supply == 0,
-        ShareClassError::ShareClassNotEmpty
-    );
-
     close_token_2022_account(CpiContext::new_with_signer(
         ctx.accounts.token_2022_program.to_account_info(),
         CloseToken2022Account {
