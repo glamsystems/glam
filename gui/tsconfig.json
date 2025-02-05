@@ -24,7 +24,7 @@
     ],
     "paths": {
       "@/*": [
-        "playground/src/*"
+        "gui/src/*"
       ],
       "@glam/anchor": [
         "anchor/src/index.ts"
