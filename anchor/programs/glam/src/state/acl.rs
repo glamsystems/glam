@@ -33,7 +33,8 @@ pub enum Permission {
     VoteOnProposal, // New vote and cast vote
     UnstakeJup,     // Unstake JUP
     JupiterSwapLst, // Swap LSTs
-    InitKamino,
+    KaminoInit,
+    KaminoDeposit,
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug, PartialEq)]

@@ -1861,83 +1861,6 @@ export type Glam = {
       "args": []
     },
     {
-      "name": "initUserMetadata",
-      "discriminator": [
-        117,
-        169,
-        176,
-        69,
-        197,
-        23,
-        15,
-        162
-      ],
-      "accounts": [
-        {
-          "name": "glamState"
-        },
-        {
-          "name": "glamVault",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "glamState"
-              }
-            ]
-          }
-        },
-        {
-          "name": "glamSigner",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "cpiProgram",
-          "address": "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"
-        },
-        {
-          "name": "owner"
-        },
-        {
-          "name": "feePayer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "userMetadata",
-          "writable": true
-        },
-        {
-          "name": "referrerUserMetadata"
-        },
-        {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "userLookupTable",
-          "type": "pubkey"
-        }
-      ]
-    },
-    {
       "name": "initializeAndDelegateStake",
       "docs": [
         "Initializes a stake account and delegates it to a validator.",
@@ -2381,6 +2304,463 @@ export type Glam = {
         {
           "name": "data",
           "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "kaminoLendingDepositReserveLiquidityAndObligationCollateral",
+      "discriminator": [
+        31,
+        162,
+        4,
+        146,
+        60,
+        225,
+        15,
+        0
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"
+        },
+        {
+          "name": "owner",
+          "writable": true
+        },
+        {
+          "name": "obligation",
+          "writable": true
+        },
+        {
+          "name": "lendingMarket"
+        },
+        {
+          "name": "lendingMarketAuthority"
+        },
+        {
+          "name": "reserve",
+          "writable": true
+        },
+        {
+          "name": "reserveLiquidityMint",
+          "writable": true
+        },
+        {
+          "name": "reserveLiquiditySupply",
+          "writable": true
+        },
+        {
+          "name": "reserveCollateralMint",
+          "writable": true
+        },
+        {
+          "name": "reserveDestinationDepositCollateral",
+          "writable": true
+        },
+        {
+          "name": "userSourceLiquidity",
+          "writable": true
+        },
+        {
+          "name": "placeholderUserDestinationCollateral"
+        },
+        {
+          "name": "collateralTokenProgram"
+        },
+        {
+          "name": "liquidityTokenProgram"
+        },
+        {
+          "name": "instructionSysvarAccount"
+        }
+      ],
+      "args": [
+        {
+          "name": "liquidityAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "kaminoLendingInitObligation",
+      "discriminator": [
+        219,
+        210,
+        134,
+        64,
+        155,
+        49,
+        137,
+        174
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"
+        },
+        {
+          "name": "obligationOwner"
+        },
+        {
+          "name": "feePayer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "obligation",
+          "writable": true
+        },
+        {
+          "name": "lendingMarket"
+        },
+        {
+          "name": "seed1Account"
+        },
+        {
+          "name": "seed2Account"
+        },
+        {
+          "name": "ownerUserMetadata"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "initObligationArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "kaminoLendingInitObligationFarmsForReserve",
+      "discriminator": [
+        227,
+        61,
+        130,
+        2,
+        117,
+        226,
+        78,
+        1
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "owner"
+        },
+        {
+          "name": "obligation",
+          "writable": true
+        },
+        {
+          "name": "lendingMarketAuthority",
+          "writable": true
+        },
+        {
+          "name": "reserve",
+          "writable": true
+        },
+        {
+          "name": "reserveFarmState",
+          "writable": true
+        },
+        {
+          "name": "obligationFarm",
+          "writable": true
+        },
+        {
+          "name": "lendingMarket"
+        },
+        {
+          "name": "farmsProgram"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "mode",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "kaminoLendingInitUserMetadata",
+      "discriminator": [
+        200,
+        95,
+        140,
+        132,
+        190,
+        65,
+        17,
+        161
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"
+        },
+        {
+          "name": "owner"
+        },
+        {
+          "name": "feePayer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "userMetadata",
+          "writable": true
+        },
+        {
+          "name": "referrerUserMetadata"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "userLookupTable",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "kaminoLendingRefreshObligationFarmsForReserve",
+      "discriminator": [
+        214,
+        172,
+        249,
+        57,
+        54,
+        106,
+        215,
+        101
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"
+        },
+        {
+          "name": "crank",
+          "writable": true
+        },
+        {
+          "name": "obligation"
+        },
+        {
+          "name": "lendingMarketAuthority",
+          "writable": true
+        },
+        {
+          "name": "reserve"
+        },
+        {
+          "name": "reserveFarmState",
+          "writable": true
+        },
+        {
+          "name": "obligationFarmUserState",
+          "writable": true
+        },
+        {
+          "name": "lendingMarket"
+        },
+        {
+          "name": "farmsProgram"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "mode",
+          "type": "u8"
         }
       ]
     },
@@ -6918,6 +7298,22 @@ export type Glam = {
       }
     },
     {
+      "name": "initObligationArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "tag",
+            "type": "u8"
+          },
+          {
+            "name": "id",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
       "name": "integration",
       "type": {
         "kind": "enum",
@@ -7712,7 +8108,10 @@ export type Glam = {
             "name": "jupiterSwapLst"
           },
           {
-            "name": "initKamino"
+            "name": "kaminoInit"
+          },
+          {
+            "name": "kaminoDeposit"
           }
         ]
       }

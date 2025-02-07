@@ -75,6 +75,42 @@ filename = "./fixtures/accounts/pyth/4cSM2e6rvbGQUFiJbqytoVMi5GgghSMr8LwVrT9VPSP
 address = "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"
 program = "fixtures/programs/KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD.so"
 
+[[test.genesis]]
+address = "FarmsPZpWu9i7Kky8tPN37rs2TpmMrAZrC7S7vJa91Hr"
+program = "fixtures/programs/FarmsPZpWu9i7Kky8tPN37rs2TpmMrAZrC7S7vJa91Hr.so"
+
+[[test.validator.account]] # kamino state account
+address = "H6rHXmXoCQvq8Ue81MqNh7ow5ysPa1dSozwW3PU1dDH6"
+filename = "./fixtures/accounts/kamino/H6rHXmXoCQvq8Ue81MqNh7ow5ysPa1dSozwW3PU1dDH6.json"
+
+[[test.validator.clone]] # reserve
+address = "6gTJfuPHEg6uRAijRkMqNc9kan4sVZejKMxmvx2grT1p"
+# filename = "./fixtures/accounts/kamino/6gTJfuPHEg6uRAijRkMqNc9kan4sVZejKMxmvx2grT1p.json"
+
+[[test.validator.account]] # farm state
+address = "BgMEUzcjkJxEH1PdPkZyv3NbUynwbkPiNJ7X2x7G1JmH"
+filename = "./fixtures/accounts/kamino/BgMEUzcjkJxEH1PdPkZyv3NbUynwbkPiNJ7X2x7G1JmH.json"
+
+[[test.validator.account]] # obligation farm 
+address = "C3y3gCn86PdxhpteUPTdM6XDPBxvJ6zezGbWAMy4ZwTu"
+filename = "./fixtures/accounts/kamino/C3y3gCn86PdxhpteUPTdM6XDPBxvJ6zezGbWAMy4ZwTu.json"
+
+[[test.validator.clone]] # kamino scope prices
+address = "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C"
+# filename = "./fixtures/accounts/kamino/3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C.json"
+
+[[test.validator.clone]] # reserve liquidity supply
+address = "ywaaLvG7t1vXJo8sT3UzE8yzzZtxLM7Fmev64Jbooye"
+# filename = "./fixtures/accounts/kamino/3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C.json"
+
+[[test.validator.clone]] # reserve collateral mint
+address = "DxzDt5kPdFkMy9AANiZh4zuoitobqsn1G6bdoNyjePC2"
+# filename = "./fixtures/accounts/kamino/3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C.json"
+
+[[test.validator.clone]] # reserve destination deposit collateral
+address = "8qnXfbaLbY6Y4xiCP6SZ3RK8ccjVa8DhALzDGifBPeNx"
+# filename = "./fixtures/accounts/kamino/3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C.json"
+
 #
 # Drift
 #

@@ -14,6 +14,7 @@ pub use constants::*;
 pub use state::model::*;
 
 use ::drift::{MarketType, OrderParams, PositionDirection};
+use kamino_lending::InitObligationArgs;
 
 #[cfg(feature = "mainnet")]
 declare_id!("GLAMbTqav9N9witRjswJ8enwp9vv5G8bsSJ2kPJ4rcyc");
@@ -897,11 +898,51 @@ pub mod glam {
     //////////////////////////////////////////////////////////////////////
     // Kamino
     //////////////////////////////////////////////////////////////////////
-    pub fn init_user_metadata<'info>(
+    pub fn kamino_lending_init_user_metadata<'info>(
         ctx: Context<KaminoLendingInitUserMetadata>,
         user_lookup_table: Pubkey,
     ) -> Result<()> {
         cpi_autogen::kamino_lending::kamino_lending_init_user_metadata(ctx, user_lookup_table)
+    }
+
+    pub fn kamino_lending_init_obligation<'info>(
+        ctx: Context<KaminoLendingInitObligation>,
+        args: InitObligationArgs,
+    ) -> Result<()> {
+        cpi_autogen::kamino_lending::kamino_lending_init_obligation(ctx, args)
+    }
+
+    pub fn kamino_lending_init_obligation_farms_for_reserve<'info>(
+        ctx: Context<KaminoLendingInitObligationFarmsForReserve>,
+        mode: u8,
+    ) -> Result<()> {
+        cpi_autogen::kamino_lending::kamino_lending_init_obligation_farms_for_reserve(ctx, mode)
+    }
+
+    // pub fn kamino_lending_refresh_reserve<'info>(
+    //     ctx: Context<KaminoLendingRefreshReserve>,
+    // ) -> Result<()> {
+    //     cpi_autogen::kamino_lending::kamino_lending_refresh_reserve(ctx)
+    // }
+
+    // pub fn kamino_lending_refresh_obligation<'info>(
+    //     ctx: Context<KaminoLendingRefreshObligation>,
+    // ) -> Result<()> {
+    //     cpi_autogen::kamino_lending::kamino_lending_refresh_obligation(ctx)
+    // }
+
+    pub fn kamino_lending_refresh_obligation_farms_for_reserve<'info>(
+        ctx: Context<KaminoLendingRefreshObligationFarmsForReserve>,
+        mode: u8,
+    ) -> Result<()> {
+        cpi_autogen::kamino_lending::kamino_lending_refresh_obligation_farms_for_reserve(ctx, mode)
+    }
+
+    pub fn kamino_lending_deposit_reserve_liquidity_and_obligation_collateral<'info>(
+        ctx: Context<KaminoLendingDepositReserveLiquidityAndObligationCollateral>,
+        liquidity_amount: u64,
+    ) -> Result<()> {
+        cpi_autogen::kamino_lending::kamino_lending_deposit_reserve_liquidity_and_obligation_collateral(ctx, liquidity_amount)
     }
 
     //////////////////////////////////////////////////////////////////////
