@@ -3,14 +3,11 @@ import { WalletAdapterProvider } from "../providers/walletAdapterProvider";
 import { ClientProvider } from "../providers/clientProvider";
 import type { Metadata } from "next";
 import "./globals.css";
-import { UmiProvider } from "../providers/umiProvider";
 import { cn } from "../lib/utils";
 import { PersistentWarning } from "../components/persistent-warning";
 import { GeistSans } from "geist/font/sans";
-import { Analytics } from "@vercel/analytics/react";
 import Header from "../components/header";
 import { Toaster } from "../components/ui/toaster";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: "FatCat",
@@ -103,10 +100,10 @@ export default function RootLayout({
           "min-h-screen bg-background antialiased select-none",
         )}
       >
-        <Analytics />
+        {/*<Analytics />*/}
         <WalletAdapterProvider>
           <ClientProvider>
-            <UmiProvider>
+
               <ThemeProviderWrapper
                 attribute="class"
                 defaultTheme="system"
@@ -118,10 +115,10 @@ export default function RootLayout({
                 <Toaster />
                 <PersistentWarning />
               </ThemeProviderWrapper>
-            </UmiProvider>
+
           </ClientProvider>
         </WalletAdapterProvider>
-        <SpeedInsights />
+        {/*<SpeedInsights />*/}
       </body>
     </html>
   );

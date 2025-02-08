@@ -1,16 +1,19 @@
 "use client";
 
 import { ThemeProvider as NextThemeProvider } from "next-themes";
+import { type ThemeProviderProps } from "next-themes/dist/types";
 
-export function ThemeProviderWrapper({ ...props }) {
+export function ThemeProviderWrapper({ children, ...props }: ThemeProviderProps) {
   return (
     <NextThemeProvider
       attribute="class"
       defaultTheme="system"
       enableSystem
       disableTransitionOnChange
-      storageKey="fatcats-theme" // Add this to persist theme preference
+      storageKey="fatcats-theme"
       {...props}
-    ></NextThemeProvider>
+    >
+      {children}
+    </NextThemeProvider>
   );
 }
