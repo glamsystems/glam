@@ -162,8 +162,8 @@ fn parse_shared_accounts_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
 }
 
 fn is_lst<'info>(mint: &Pubkey, stake_pool_account: Option<&AccountInfo<'info>>) -> Result<bool> {
-    // Check if the mint is MSOL
-    if mint == &MSOL {
+    // Check if the mint is WSOL or MSOL
+    if mint == &WSOL || mint == &MSOL {
         return Ok(true);
     }
 
@@ -217,9 +217,7 @@ pub fn swap_handler<'c: 'info, 'info>(
     if input_in_assets && output_in_assets {
         accepted_permissions.push(Permission::JupiterSwapAllowlisted);
     }
-    if input_is_lst && (output_is_lst || output_in_assets)
-        || output_is_lst && (input_is_lst || input_in_assets)
-    {
+    if input_is_lst && output_is_lst {
         accepted_permissions.push(Permission::JupiterSwapLst);
     }
     acl::check_access_any(&state, &ctx.accounts.signer.key, accepted_permissions)?;
