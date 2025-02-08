@@ -1,25 +1,87 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Header from "@/components/header";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { FaqDialog } from "@/components/faq-dialog";
 import { AnimatedNumber } from "@/components/animated-number";
+import { createClient } from "@/utils/supabase/client";
 
 export default function Home() {
   const { connected } = useWallet();
   const router = useRouter();
+  const [jupDelegated, setJupDelegated] = useState<number | null>(null);
 
   useEffect(() => {
     if (connected) {
       router.push("/dashboard");
     }
   }, [connected, router]);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    // Fetch initial value
+    const fetchLatestStats = async () => {
+      try {
+        // First, let's log what we're getting back
+        const result = await supabase
+          .from('fatcat_stats')
+          .select('*');  // Let's select all columns first to debug
+
+        console.log('Full query result:', result);
+
+        const { data, error } = await supabase
+          .from('fatcat_stats')
+          .select('jup_delegated, created_at')  // Let's also get created_at to verify ordering
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        console.log('Data:', data, 'Error:', error);
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          console.log('Raw jup_delegated value:', data[0].jup_delegated);
+          const jupValue = Number(data[0].jup_delegated);
+          setJupDelegated(jupValue);
+        } else {
+          console.log('No stats found');
+        }
+      } catch (err) {
+        console.error('Error fetching stats:', err);
+      }
+    };
+
+    fetchLatestStats();
+
+    // Subscribe to changes
+    const channel = supabase
+      .channel('fatcat_stats_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'fatcat_stats',
+        },
+        (payload) => {
+          if (payload.new && 'jup_delegated' in payload.new) {
+            setJupDelegated(payload.new.jup_delegated);
+          }
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   return (
     <motion.div
@@ -30,7 +92,6 @@ export default function Home() {
     >
       <main className="flex-grow flex flex-col items-center justify-start p-4 sm:p-8 md:p-8 lg:p-4 mt-24 md:mt-32">
         <div className="flex flex-col items-center justify-center space-y-8 md:space-y-4 max-w-6xl w-full">
-          {/*<h1 className="text-2xl sm:text-3xl md:text-4xl text-center opacity-90">Welcome to FatCat</h1>*/}
           <div className="relative w-full sm:w-3/4 md:w-2/3 lg:w-1/2 xl:w-2/5 2xl:w-2/3 aspect-video overflow-hidden">
             <motion.div
               className="absolute inset-0"
@@ -54,7 +115,7 @@ export default function Home() {
             <div className="w-full order-2 sm:order-1"></div>
             <div className="order-1 sm:order-2 flex flex-col w-full justify-center items-center">
               <AnimatedNumber
-                value={123456}
+                value={jupDelegated ?? 69420}
                 className="text-5xl font-mono text-primary mb-4"
               />
               <span className="text-muted-foreground text-sm font-mono">
@@ -65,7 +126,7 @@ export default function Home() {
           </div>
           <div className="flex flex-col sm:flex-row gap-4 mt-8 w-full justify-center pb-24 sm:pb-4">
             <Link
-              href="https://github.com/glamsystems/fatcat"
+              href="https://github.com/glamsystems/jupiter-vote-service"
               passHref
               target="_blank"
               rel="noopener noreferrer"
@@ -79,7 +140,6 @@ export default function Home() {
               </Button>
             </Link>
             <FaqDialog className="order-1 sm:order-2" />
-
             <Link
               href="https://glam.systems"
               passHref
