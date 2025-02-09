@@ -2143,12 +2143,19 @@ export type Glam = {
         },
         {
           "name": "inputVaultAta",
+          "docs": [
+            "input_vault_ata to input_signer_ata"
+          ],
+          "writable": true
+        },
+        {
+          "name": "inputSignerAta",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "account",
-                "path": "vault"
+                "path": "signer"
               },
               {
                 "kind": "account",
@@ -2197,6 +2204,13 @@ export type Glam = {
               ]
             }
           }
+        },
+        {
+          "name": "outputSignerAta",
+          "docs": [
+            "TODO: Do we really need output_signer_ata?"
+          ],
+          "writable": true
         },
         {
           "name": "outputVaultAta",

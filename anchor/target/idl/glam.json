@@ -2137,12 +2137,19 @@
         },
         {
           "name": "input_vault_ata",
+          "docs": [
+            "input_vault_ata to input_signer_ata"
+          ],
+          "writable": true
+        },
+        {
+          "name": "input_signer_ata",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "account",
-                "path": "vault"
+                "path": "signer"
               },
               {
                 "kind": "account",
@@ -2191,6 +2198,13 @@
               ]
             }
           }
+        },
+        {
+          "name": "output_signer_ata",
+          "docs": [
+            "TODO: Do we really need output_signer_ata?"
+          ],
+          "writable": true
         },
         {
           "name": "output_vault_ata",
