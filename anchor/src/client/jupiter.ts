@@ -350,12 +350,6 @@ export class JupiterClient {
           outputMint,
           outputTokenProgram,
         ),
-        inputSignerAta: this.base.getAta(inputMint, signer, inputTokenProgram),
-        outputSignerAta: this.base.getAta(
-          outputMint,
-          signer,
-          outputTokenProgram,
-        ),
         inputMint,
         outputMint,
         inputTokenProgram,
@@ -391,20 +385,6 @@ export class JupiterClient {
     let preInstructions = [];
 
     const ataParams = [
-      {
-        payer: signer,
-        ata: this.base.getAta(inputMint, signer, inputTokenProgram),
-        owner: signer,
-        mint: inputMint,
-        tokenProgram: inputTokenProgram,
-      },
-      {
-        payer: signer,
-        ata: this.base.getAta(outputMint, signer, outputTokenProgram),
-        owner: signer,
-        mint: outputMint,
-        tokenProgram: outputTokenProgram,
-      },
       {
         payer: signer,
         ata: this.base.getVaultAta(statePda, outputMint, outputTokenProgram),
