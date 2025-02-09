@@ -15,23 +15,20 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    container: ghcr.io/yurushao/soldev:release
-
+    runs-on: ubuntu-20.04
     steps:
-      - name: Setup default rust version
-        run: rustup default 1.78.0
-
-      - name: Check anchor version
-        run: rm /root/.cargo/bin/anchor && ln -s /root/.avm/bin/anchor-0.30.1 /root/.cargo/bin/anchor && anchor --version
+      - uses: actions/checkout@v3
+      - uses: metadaoproject/setup-anchor@v3.1
+        with:
+          anchor-version: "0.30.1"
+          solana-cli-version: "1.18.23"
+          node-version: "20.18.0"
 
       - name: Generate new keygen
         run: solana-keygen new --no-bip39-passphrase --force
 
-      - name: Set solana cluster to localnet
+      - name: Use localnet
         run: solana config set --url l
-
-      - uses: actions/checkout@v3
 
       - uses: pnpm/action-setup@v3
         name: Install pnpm
