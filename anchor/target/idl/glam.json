@@ -1,5 +1,5 @@
 {
-  "address": "GLAMbTqav9N9witRjswJ8enwp9vv5G8bsSJ2kPJ4rcyc",
+  "address": "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc",
   "metadata": {
     "name": "glam",
     "version": "0.4.0",
@@ -707,18 +707,10 @@
       ],
       "accounts": [
         {
-          "name": "state"
+          "name": "glam_state"
         },
         {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "drift_state",
-          "writable": true
-        },
-        {
-          "name": "vault",
+          "name": "glam_vault",
           "pda": {
             "seeds": [
               {
@@ -733,23 +725,26 @@
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glam_state"
               }
             ]
           }
         },
         {
-          "name": "signer",
+          "name": "glam_signer",
           "writable": true,
           "signer": true
         },
         {
-          "name": "drift_program",
+          "name": "cpi_program",
           "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "name": "state"
+        },
+        {
+          "name": "user",
+          "writable": true
         }
       ],
       "args": [
@@ -777,6 +772,82 @@
                 "name": "PositionDirection"
               }
             }
+          }
+        }
+      ]
+    },
+    {
+      "name": "drift_cancel_orders_by_ids",
+      "docs": [
+        "Cancels drift orders by order IDs.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `order_ids`: A list of order IDs.",
+        "",
+        "# Permission required",
+        "- Permission::DriftCancelOrders",
+        "",
+        "# Integration required",
+        "- Integration::Drift"
+      ],
+      "discriminator": [
+        172,
+        99,
+        108,
+        14,
+        81,
+        89,
+        228,
+        183
+      ],
+      "accounts": [
+        {
+          "name": "glam_state"
+        },
+        {
+          "name": "glam_vault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glam_state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glam_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+        },
+        {
+          "name": "state"
+        },
+        {
+          "name": "user",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "order_ids",
+          "type": {
+            "vec": "u32"
           }
         }
       ]
@@ -1104,10 +1175,6 @@
         {
           "name": "drift_program",
           "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
-        },
-        {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         }
       ],
       "args": [

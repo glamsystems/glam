@@ -2,10 +2,12 @@ import * as anchor from "@coral-xyz/anchor";
 import { DriftMarketConfigs, GlamClient } from "../src";
 import { airdrop, createGlamStateForTest } from "./setup";
 import {
+  DriftClient,
   getOrderParams,
   MarketType,
   OrderType,
   PositionDirection,
+  User,
 } from "@drift-labs/sdk";
 import { jest } from "@jest/globals";
 
@@ -47,7 +49,20 @@ global.fetch = jest.fn(() =>
 
 describe("glam_drift", () => {
   const glamClient = new GlamClient();
-  const commitment = "confirmed";
+
+  const driftClient = new DriftClient({
+    connection: glamClient.provider.connection,
+    wallet: glamClient.getWallet(),
+  });
+
+  const getOpenOrders = async () => {
+    await driftClient.subscribe();
+    const [user] = glamClient.drift.getUser(statePda);
+    const driftUser = new User({ driftClient, userAccountPublicKey: user });
+    await driftUser.subscribe();
+
+    return driftUser.getOpenOrders();
+  };
 
   let statePda, vaultPda;
   const marketConfigs: DriftMarketConfigs = {
@@ -215,6 +230,9 @@ describe("glam_drift", () => {
   });
 
   it("Drift: cancel orders", async () => {
+    const openOrdersBefore = await getOpenOrders();
+    expect(openOrdersBefore.length).toEqual(1);
+
     try {
       // SOL perp market index is 0
       const txId = await glamClient.drift.cancelOrders(
@@ -231,6 +249,59 @@ describe("glam_drift", () => {
       console.error(e);
       throw e;
     }
+
+    const openOrdersAfter = await getOpenOrders();
+    expect(openOrdersAfter.length).toEqual(0);
+  });
+
+  it("Drift: place spot order", async () => {
+    const orderParams = getOrderParams({
+      orderType: OrderType.LIMIT,
+      marketType: MarketType.SPOT,
+      direction: PositionDirection.LONG,
+      marketIndex: 1,
+      baseAssetAmount: new anchor.BN(10_0000_000),
+      price: new anchor.BN(100_000_000), // set a very low limit price
+    });
+
+    try {
+      const txEnableMarginTrading =
+        await glamClient.drift.updateUserMarginTradingEnabled(statePda, true);
+      console.log("enableMargin", txEnableMarginTrading);
+
+      const txPlaceSpotOrder = await glamClient.drift.placeOrder(
+        statePda,
+        orderParams,
+        0,
+        marketConfigs,
+      );
+      console.log("driftPlaceOrders", txPlaceSpotOrder);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  });
+
+  it("Drift: cancel orders by IDs", async () => {
+    const openOrdersBefore = await getOpenOrders();
+    expect(openOrdersBefore.length).toEqual(1);
+
+    try {
+      const txId = await glamClient.drift.cancelOrdersByIds(
+        statePda,
+        openOrdersBefore.map((o) => o.orderId),
+        0,
+        marketConfigs,
+      );
+
+      console.log("cancelOrdersByIds", txId);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+
+    const openOrdersAfter = await getOpenOrders();
+    expect(openOrdersAfter.length).toEqual(0);
   });
 
   it("Drift: constrain market", async () => {
@@ -238,7 +309,7 @@ describe("glam_drift", () => {
       const txId = await glamClient.state.updateState(statePda, {
         driftMarketIndexesPerp: [2, 3],
       });
-      console.log("driftPlaceOrders", txId);
+      console.log("updateState driftMarketIndexesPerp [2, 3]", txId);
     } catch (e) {
       console.error(e);
       throw e;

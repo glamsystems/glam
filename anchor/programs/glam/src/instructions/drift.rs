@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::Token;
 use anchor_spl::token_interface::TokenAccount;
 use drift::{MarketType, PositionDirection};
-use glam_macros::vault_signer_seeds;
+use glam_macros::{glam_vault_signer_seeds, vault_signer_seeds};
 
 use crate::error::GlamError;
 use crate::{constants::*, state::*};
@@ -360,7 +360,6 @@ pub struct DriftPlaceOrders<'info> {
     pub signer: Signer<'info>,
 
     pub drift_program: Program<'info, Drift>,
-    pub token_program: Program<'info, Token>,
 }
 
 #[access_control(acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::DriftPlaceOrders))]
@@ -430,29 +429,27 @@ pub fn place_orders_handler<'c: 'info, 'info>(
 #[derive(Accounts)]
 pub struct DriftCancelOrders<'info> {
     #[account()]
-    pub state: Account<'info, StateAccount>,
+    pub glam_state: Account<'info, StateAccount>,
+
+    #[account(seeds = [SEED_VAULT.as_bytes(), glam_state.key().as_ref()], bump)]
+    pub glam_vault: SystemAccount<'info>,
 
     #[account(mut)]
-    /// CHECK: checks are done inside cpi call
+    pub glam_signer: Signer<'info>,
+
+    pub cpi_program: Program<'info, Drift>,
+
+    /// CHECK: should be validated by target program
+    pub state: UncheckedAccount<'info>,
+
+    /// CHECK: should be validated by target program
+    #[account(mut)]
     pub user: UncheckedAccount<'info>,
-
-    #[account(mut)]
-    /// CHECK: checks are done inside cpi call
-    pub drift_state: UncheckedAccount<'info>,
-
-    #[account(seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
-    pub vault: SystemAccount<'info>,
-
-    #[account(mut)]
-    pub signer: Signer<'info>,
-
-    pub drift_program: Program<'info, Drift>,
-    pub token_program: Program<'info, Token>,
 }
 
-#[access_control(acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::DriftCancelOrders))]
-#[access_control(acl::check_integration(&ctx.accounts.state, Integration::Drift))]
-#[vault_signer_seeds]
+#[access_control(acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.glam_signer.key, Permission::DriftCancelOrders))]
+#[access_control(acl::check_integration(&ctx.accounts.glam_state, Integration::Drift))]
+#[glam_vault_signer_seeds]
 pub fn cancel_orders_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, DriftCancelOrders<'info>>,
     market_type: Option<MarketType>,
@@ -461,19 +458,39 @@ pub fn cancel_orders_handler<'c: 'info, 'info>(
 ) -> Result<()> {
     cancel_orders(
         CpiContext::new_with_signer(
-            ctx.accounts.drift_program.to_account_info(),
+            ctx.accounts.cpi_program.to_account_info(),
             CancelOrders {
                 user: ctx.accounts.user.to_account_info(),
-                state: ctx.accounts.drift_state.to_account_info(),
-                authority: ctx.accounts.vault.to_account_info(),
+                state: ctx.accounts.state.to_account_info(),
+                authority: ctx.accounts.glam_vault.to_account_info(),
             },
-            vault_signer_seeds,
+            glam_vault_signer_seeds,
         )
         .with_remaining_accounts(ctx.remaining_accounts.to_vec()),
         market_type,
         market_index,
         direction,
-    )?;
+    )
+}
 
-    Ok(())
+#[access_control(acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.glam_signer.key, Permission::DriftCancelOrders))]
+#[access_control(acl::check_integration(&ctx.accounts.glam_state, Integration::Drift))]
+#[glam_vault_signer_seeds]
+pub fn drift_cancel_orders_by_ids<'c: 'info, 'info>(
+    ctx: Context<'_, '_, 'c, 'info, DriftCancelOrders<'info>>,
+    order_ids: Vec<u32>,
+) -> Result<()> {
+    drift::cpi::cancel_orders_by_ids(
+        CpiContext::new_with_signer(
+            ctx.accounts.cpi_program.to_account_info(),
+            drift::cpi::accounts::CancelOrdersByIds {
+                state: ctx.accounts.state.to_account_info(),
+                user: ctx.accounts.user.to_account_info(),
+                authority: ctx.accounts.glam_vault.to_account_info(),
+            },
+            glam_vault_signer_seeds,
+        )
+        .with_remaining_accounts(ctx.remaining_accounts.to_vec()),
+        order_ids,
+    )
 }

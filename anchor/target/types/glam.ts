@@ -713,18 +713,10 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "state"
+          "name": "glamState"
         },
         {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "driftState",
-          "writable": true
-        },
-        {
-          "name": "vault",
+          "name": "glamVault",
           "pda": {
             "seeds": [
               {
@@ -739,23 +731,26 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
         },
         {
-          "name": "signer",
+          "name": "glamSigner",
           "writable": true,
           "signer": true
         },
         {
-          "name": "driftProgram",
+          "name": "cpiProgram",
           "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
         },
         {
-          "name": "tokenProgram",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "name": "state"
+        },
+        {
+          "name": "user",
+          "writable": true
         }
       ],
       "args": [
@@ -783,6 +778,82 @@ export type Glam = {
                 "name": "positionDirection"
               }
             }
+          }
+        }
+      ]
+    },
+    {
+      "name": "driftCancelOrdersByIds",
+      "docs": [
+        "Cancels drift orders by order IDs.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `order_ids`: A list of order IDs.",
+        "",
+        "# Permission required",
+        "- Permission::DriftCancelOrders",
+        "",
+        "# Integration required",
+        "- Integration::Drift"
+      ],
+      "discriminator": [
+        172,
+        99,
+        108,
+        14,
+        81,
+        89,
+        228,
+        183
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+        },
+        {
+          "name": "state"
+        },
+        {
+          "name": "user",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "orderIds",
+          "type": {
+            "vec": "u32"
           }
         }
       ]
@@ -1110,10 +1181,6 @@ export type Glam = {
         {
           "name": "driftProgram",
           "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
-        },
-        {
-          "name": "tokenProgram",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         }
       ],
       "args": [
