@@ -278,6 +278,7 @@ export class JupiterClient {
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
+    const vault = this.base.getVaultPda(statePda);
 
     let swapInstruction: InstructionFromJupiter;
     let addressLookupTableAddresses: string[];
@@ -300,7 +301,7 @@ export class JupiterClient {
         quoteResponse = await this.getQuoteResponse(quoteParams);
       }
 
-      const ins = await this.getSwapInstructions(quoteResponse, signer);
+      const ins = await this.getSwapInstructions(quoteResponse, vault);
       swapInstruction = ins.swapInstruction;
       addressLookupTableAddresses = ins.addressLookupTableAddresses;
     } else {
@@ -350,12 +351,6 @@ export class JupiterClient {
           outputMint,
           outputTokenProgram,
         ),
-        inputSignerAta: this.base.getAta(inputMint, signer, inputTokenProgram),
-        outputSignerAta: this.base.getAta(
-          outputMint,
-          signer,
-          outputTokenProgram,
-        ),
         inputMint,
         outputMint,
         inputTokenProgram,
@@ -391,20 +386,6 @@ export class JupiterClient {
     let preInstructions = [];
 
     const ataParams = [
-      {
-        payer: signer,
-        ata: this.base.getAta(inputMint, signer, inputTokenProgram),
-        owner: signer,
-        mint: inputMint,
-        tokenProgram: inputTokenProgram,
-      },
-      {
-        payer: signer,
-        ata: this.base.getAta(outputMint, signer, outputTokenProgram),
-        owner: signer,
-        mint: outputMint,
-        tokenProgram: outputTokenProgram,
-      },
       {
         payer: signer,
         ata: this.base.getVaultAta(statePda, outputMint, outputTokenProgram),
