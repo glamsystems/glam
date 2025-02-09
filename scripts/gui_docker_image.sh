@@ -6,7 +6,7 @@ OS=$(uname)
 # Define variables for Dockerfile path and image tags
 DOCKERFILE_PATH="./gui/Dockerfile"
 IMAGE_NAME="glam-pg"
-REGISTRY_URL="us-west1-docker.pkg.dev/glam-gui/default"
+REGISTRY_URL="us-west1-docker.pkg.dev/glam-playground/default"
 BUILD_ARGS=""
 
 # Check if the OS is macOS

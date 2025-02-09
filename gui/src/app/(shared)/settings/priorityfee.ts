@@ -16,26 +16,31 @@ export const getPriorityFeeMicroLamports = async (tx: VersionedTransaction) => {
     if (option === "custom") {
       const { customFee, customFeeUnit } = parsedValues;
       console.log(`customFee ${customFee}: customFeeUnit ${customFeeUnit}`);
-      return customFeeUnit === "SOL" ? customFee * LAMPORTS_PER_SOL : customFee;
+      return customFeeUnit === "SOL"
+        ? customFee * LAMPORTS_PER_SOL * 1_000_000 // micro lamports
+        : customFee;
     }
 
     if (["multiple", "dynamic"].includes(option)) {
       const { multiplier, maxCapFee, maxCapFeeUnit } = parsedValues;
-      const parsedMultiplier = option === "multiple" ? parseInt(multiplier) : 1;
+      const parsedMultiplier =
+        option === "multiple" ? parseFloat(multiplier) : 1.0;
       const estimate = await getPriorityFeeEstimate(
         process.env.NEXT_PUBLIC_HELIUS_API_KEY!,
-        tx
+        tx,
       );
 
       const totalEstimate = estimate * parsedMultiplier;
       const maxAllowed =
-        maxCapFeeUnit === "SOL" ? maxCapFee * LAMPORTS_PER_SOL : maxCapFee;
+        maxCapFeeUnit === "SOL"
+          ? maxCapFee * LAMPORTS_PER_SOL * 1_000_000 // micro lamports
+          : maxCapFee;
 
       console.log(
-        `totalEstimate ${totalEstimate}: estimate: ${estimate}, parsedMultiplier ${parsedMultiplier}`
+        `totalEstimate ${totalEstimate}: estimate: ${estimate}, parsedMultiplier ${parsedMultiplier}`,
       );
       console.log(
-        `maxAllowed ${maxAllowed}: maxCapFee ${maxCapFee}, maxCapFeeUnit ${maxCapFeeUnit}`
+        `maxAllowed ${maxAllowed}: maxCapFee ${maxCapFee}, maxCapFeeUnit ${maxCapFeeUnit}`,
       );
 
       return totalEstimate > maxAllowed ? maxAllowed : totalEstimate;
@@ -44,6 +49,6 @@ export const getPriorityFeeMicroLamports = async (tx: VersionedTransaction) => {
 
   return await getPriorityFeeEstimate(
     process.env.NEXT_PUBLIC_HELIUS_API_KEY!,
-    tx
+    tx,
   );
 };

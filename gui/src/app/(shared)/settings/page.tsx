@@ -59,7 +59,7 @@ const rpcFormSchema = z.object({
 const priorityFeeOptions = ["dynamic", "multiple", "custom"] as const;
 type PriorityFeeType = (typeof priorityFeeOptions)[number];
 
-const feeUnitOptions = ["SOL", "LMPS"] as const;
+const feeUnitOptions = ["SOL", "miLamp"] as const;
 type FeeUnit = (typeof feeUnitOptions)[number];
 
 const priorityFeeFormSchema = z.object({
@@ -160,13 +160,13 @@ const truncateUrl = (url: string) => {
 
 const PRIORITY_FEE_FORM_DEFAULT_VALUES = {
   option: "dynamic" as PriorityFeeType,
-  multiplier: "1",
-  maxCapFee: 0.004,
-  maxCapFeeUnit: "SOL" as FeeUnit,
-  customFee: 0.001,
-  customFeeUnit: "SOL" as FeeUnit,
-  estimatedFee: 0.00001,
-  estimatedFeeUnit: "SOL" as FeeUnit,
+  multiplier: "1.2",
+  maxCapFee: 10_000_000,
+  maxCapFeeUnit: "miLamp" as FeeUnit,
+  customFee: 10_000,
+  customFeeUnit: "miLamp" as FeeUnit,
+  estimatedFee: 10_000,
+  estimatedFeeUnit: "miLamp" as FeeUnit,
 };
 
 const SettingsPage: React.FC = () => {
@@ -554,8 +554,9 @@ const SettingsPage: React.FC = () => {
                           <FormLabel>Multiplier</FormLabel>
                           <Input
                             id="multiplier"
+                            type="number"
                             onChange={(e) => {
-                              const val = parseInt(e.target.value, 10) || "";
+                              const val = parseFloat(e.target.value) || "1.0";
                               field.onChange(val.toString());
                               priorityFeeForm.setValue(
                                 "multiplier",

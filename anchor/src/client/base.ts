@@ -153,6 +153,10 @@ export class BaseClient {
 
   isPhantom(): boolean {
     if (!isBrowser) return false;
+
+    //TODO: remove when we can bypass from settings
+    return false;
+
     // Phantom automatically estimates fees
     // https://docs.phantom.app/developer-powertools/solana-priority-fees#how-phantom-applies-priority-fees-to-dapp-transactions
     return (
@@ -209,6 +213,10 @@ export class BaseClient {
       );
     }
 
+    const recentBlockhash = (
+      latestBlockhash ? latestBlockhash : await this.blockhashWithCache.get()
+    ).blockhash;
+
     if (!this.isPhantom()) {
       // Set compute unit limit or autodetect by simulating the tx
       if (!computeUnitLimit) {
@@ -229,44 +237,38 @@ export class BaseClient {
       }
       if (computeUnitLimit) {
         // ComputeBudgetProgram.setComputeUnitLimit costs 150 CUs
-        // Add 20%/50% more CUs to account for logs (mainnet logs are less verbose)
+        // Add 20% more CUs to account for variable execution
         computeUnitLimit += 150;
-        this.isMainnet()
-          ? (computeUnitLimit *= 1.2)
-          : (computeUnitLimit *= 1.5);
+        computeUnitLimit *= 1.2;
         instructions.unshift(
           ComputeBudgetProgram.setComputeUnitLimit({ units: computeUnitLimit }),
         );
       }
+
+      let priorityFee = DEFAULT_PRIORITY_FEE;
+      if (getPriorityFeeMicroLamports) {
+        try {
+          const fee = await getPriorityFeeMicroLamports(
+            new VersionedTransaction(
+              new TransactionMessage({
+                payerKey: signer,
+                recentBlockhash,
+                instructions,
+              }).compileToV0Message(lookupTables),
+            ),
+          );
+          priorityFee = Math.ceil(fee);
+        } catch (e) {}
+      }
+      console.log(`Priority fee: ${priorityFee} microLamports`);
+      // Add the unit price instruction and return the final versioned transaction
+      instructions.unshift(
+        ComputeBudgetProgram.setComputeUnitPrice({
+          microLamports: priorityFee,
+        }),
+      );
     }
 
-    const recentBlockhash = (
-      latestBlockhash ? latestBlockhash : await this.blockhashWithCache.get()
-    ).blockhash;
-
-    let priorityFee = DEFAULT_PRIORITY_FEE;
-    if (getPriorityFeeMicroLamports) {
-      try {
-        const fee = await getPriorityFeeMicroLamports(
-          new VersionedTransaction(
-            new TransactionMessage({
-              payerKey: signer,
-              recentBlockhash,
-              instructions,
-            }).compileToV0Message(lookupTables),
-          ),
-        );
-        priorityFee = Math.ceil(fee);
-      } catch (e) {}
-    }
-    console.log(`Priority fee: ${priorityFee} microLamports`);
-
-    // Add the unit price instruction and return the final versioned transaction
-    instructions.unshift(
-      ComputeBudgetProgram.setComputeUnitPrice({
-        microLamports: priorityFee,
-      }),
-    );
     return new VersionedTransaction(
       new TransactionMessage({
         payerKey: signer,
