@@ -24,6 +24,12 @@ jobs:
           solana-cli-version: "1.18.23"
           node-version: "20.18.0"
 
+      - name: Generate new keygen
+        run: solana-keygen new --no-bip39-passphrase --force
+
+      - name: Use localnet
+        run: solana config set --url l
+
       - uses: pnpm/action-setup@v3
         name: Install pnpm
         with:
