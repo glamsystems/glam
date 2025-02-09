@@ -37,10 +37,10 @@ export class Client extends GlamClient {
         {
           pubkey: FATCAT_SERVICE,
           permissions: [{ voteOnProposal: {} }],
+          expiresAt: new BN(0),
         },
       ],
     });
-    stateModel.metadataUri = null;
 
     // default pda
     const state = this.getStatePda(stateModel);
