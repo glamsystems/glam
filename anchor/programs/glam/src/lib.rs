@@ -446,6 +446,24 @@ pub mod glam {
         drift::cancel_orders_handler(ctx, market_type, market_index, direction)
     }
 
+    /// Cancels drift orders by order IDs.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `order_ids`: A list of order IDs.
+    ///
+    /// # Permission required
+    /// - Permission::DriftCancelOrders
+    ///
+    /// # Integration required
+    /// - Integration::Drift
+    pub fn drift_cancel_orders_by_ids<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, DriftCancelOrders<'info>>,
+        order_ids: Vec<u32>,
+    ) -> Result<()> {
+        drift::drift_cancel_orders_by_ids(ctx, order_ids)
+    }
+
     //////////////////////////////////////////////////////////////////////
     /// Marinade
     //////////////////////////////////////////////////////////////////////

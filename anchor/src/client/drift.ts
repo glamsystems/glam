@@ -220,6 +220,23 @@ export class DriftClient {
     return await this.base.sendAndConfirm(tx);
   }
 
+  public async cancelOrdersByIds(
+    statePda: PublicKey,
+    orderIds: number[],
+    subAccountId: number = 0,
+    marketConfigs: DriftMarketConfigs,
+    txOptions: TxOptions = {},
+  ): Promise<TransactionSignature> {
+    const tx = await this.cancelOrdersByIdsTx(
+      statePda,
+      orderIds,
+      subAccountId,
+      marketConfigs,
+      txOptions,
+    );
+    return await this.base.sendAndConfirm(tx);
+  }
+
   /*
    * Utils
    */
@@ -278,9 +295,9 @@ export class DriftClient {
   async composeRemainingAccounts(
     glamState: PublicKey,
     subAccountId: number,
-    marketType: MarketType,
-    marketIndex: number,
     marketConfigs: DriftMarketConfigs,
+    marketType?: MarketType,
+    marketIndex?: number,
   ): Promise<AccountMeta[]> {
     const { spotPositions, perpPositions } = await this.getPositions(
       glamState,
@@ -291,12 +308,12 @@ export class DriftClient {
 
     switch (marketType) {
       case MarketType.SPOT:
-        if (!spotMarketIndexes.includes(marketIndex)) {
+        if (marketIndex && !spotMarketIndexes.includes(marketIndex)) {
           spotMarketIndexes.push(marketIndex);
         }
         break;
       case MarketType.PERP:
-        if (!perpMarketIndexes.includes(marketIndex)) {
+        if (marketIndex && !perpMarketIndexes.includes(marketIndex)) {
           perpMarketIndexes.push(marketIndex);
         }
         break;
@@ -530,9 +547,9 @@ export class DriftClient {
     const remainingAccounts = await this.composeRemainingAccounts(
       statePda,
       subAccountId,
+      marketConfigs,
       MarketType.SPOT,
       marketIndex,
-      marketConfigs,
     );
 
     const { tokenProgram } = await this.base.fetchMintWithOwner(mint);
@@ -581,9 +598,9 @@ export class DriftClient {
     const remainingAccounts = await this.composeRemainingAccounts(
       statePda,
       subAccountId,
+      marketConfigs,
       marketType,
       marketIndex,
-      marketConfigs,
     );
 
     const signer = txOptions.signer || this.base.getSigner();
@@ -617,26 +634,60 @@ export class DriftClient {
     marketConfigs: DriftMarketConfigs,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const signer = txOptions.signer || this.base.getSigner();
+    const glamSigner = txOptions.signer || this.base.getSigner();
     const [user] = this.getUser(glamState, subAccountId);
     const driftState = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
     const remainingAccounts = await this.composeRemainingAccounts(
       glamState,
       subAccountId,
+      marketConfigs,
       marketType,
       marketIndex,
-      marketConfigs,
     );
 
     const tx = await this.base.program.methods
       // @ts-ignore
       .driftCancelOrders(marketType, marketIndex, direction)
-      .accountsPartial({
-        state: glamState,
+      .accounts({
+        glamState,
+        glamSigner,
         user,
-        driftState,
-        signer,
+        state: driftState,
+      })
+      .remainingAccounts(remainingAccounts)
+      .transaction();
+
+    return await this.base.intoVersionedTransaction({
+      tx,
+      ...txOptions,
+    });
+  }
+
+  public async cancelOrdersByIdsTx(
+    glamState: PublicKey,
+    orderIds: number[],
+    subAccountId: number = 0,
+    marketConfigs: DriftMarketConfigs,
+    txOptions: TxOptions = {},
+  ): Promise<VersionedTransaction> {
+    const glamSigner = txOptions.signer || this.base.getSigner();
+    const [user] = this.getUser(glamState, subAccountId);
+    const driftState = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
+
+    const remainingAccounts = await this.composeRemainingAccounts(
+      glamState,
+      subAccountId,
+      marketConfigs,
+    );
+
+    const tx = await this.base.program.methods
+      .driftCancelOrdersByIds(orderIds)
+      .accounts({
+        glamState,
+        glamSigner,
+        user,
+        state: driftState,
       })
       .remainingAccounts(remainingAccounts)
       .transaction();
