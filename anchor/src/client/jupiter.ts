@@ -278,6 +278,7 @@ export class JupiterClient {
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
+    const vault = this.base.getVaultPda(statePda);
 
     let swapInstruction: InstructionFromJupiter;
     let addressLookupTableAddresses: string[];
@@ -300,7 +301,7 @@ export class JupiterClient {
         quoteResponse = await this.getQuoteResponse(quoteParams);
       }
 
-      const ins = await this.getSwapInstructions(quoteResponse, signer);
+      const ins = await this.getSwapInstructions(quoteResponse, vault);
       swapInstruction = ins.swapInstruction;
       addressLookupTableAddresses = ins.addressLookupTableAddresses;
     } else {
