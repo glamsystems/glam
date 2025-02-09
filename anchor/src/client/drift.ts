@@ -308,12 +308,12 @@ export class DriftClient {
 
     switch (marketType) {
       case MarketType.SPOT:
-        if (!spotMarketIndexes.includes(marketIndex)) {
+        if (marketIndex && !spotMarketIndexes.includes(marketIndex)) {
           spotMarketIndexes.push(marketIndex);
         }
         break;
       case MarketType.PERP:
-        if (!perpMarketIndexes.includes(marketIndex)) {
+        if (marketIndex && !perpMarketIndexes.includes(marketIndex)) {
           perpMarketIndexes.push(marketIndex);
         }
         break;
