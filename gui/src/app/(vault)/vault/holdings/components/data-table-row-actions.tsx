@@ -29,7 +29,10 @@ import { ExplorerLink } from "@/components/ExplorerLink";
 import { parseTxError } from "@/lib/error";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getPriorityFeeMicroLamports } from "@/app/(shared)/settings/priorityfee";
+import {
+  getPriorityFeeMicroLamports,
+  getMaxCapFeeLamports,
+} from "@/app/(shared)/settings/priorityfee";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -91,7 +94,7 @@ export function DataTableRowActions<TData>({
         activeGlamState.pubkey,
         new PublicKey(mint),
         amount,
-        { getPriorityFeeMicroLamports },
+        { getPriorityFeeMicroLamports, maxFeeLamports: getMaxCapFeeLamports() },
       );
       toast({
         title: `Unstake success`,
