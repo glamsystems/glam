@@ -96,7 +96,10 @@ import {
   PerpMarketConfig,
   SpotMarketConfig,
 } from "@glam/anchor/react";
-import { getPriorityFeeMicroLamports } from "@/app/(shared)/settings/priorityfee";
+import {
+  getPriorityFeeMicroLamports,
+  getFeeMaxCapLamports,
+} from "@/app/(shared)/settings/priorityfee";
 import { SlippageInput } from "@/components/SlippageInput";
 import { PriorityFeeInput } from "@/components/PriorityFeeInput";
 import { ExactOutWarning } from "./warning";
@@ -554,7 +557,7 @@ export default function Trade() {
       quoteResponseForSwap = quoteResponse;
     }
 
-    const getPriorityFee = async (tx: VersionedTransaction) => {
+    const getPriorityFeeOverride = () => {
       const { priorityFeeOverride, priorityFeeOverrideUnit } = values;
       if (priorityFeeOverride) {
         return (
@@ -562,7 +565,7 @@ export default function Trade() {
           (priorityFeeOverrideUnit === "LMPS" ? 1 : LAMPORTS_PER_SOL)
         );
       }
-      return getPriorityFeeMicroLamports(tx);
+      return 0;
     };
 
     setIsSubmitTxPending(true);
@@ -572,7 +575,11 @@ export default function Trade() {
         undefined,
         quoteResponseForSwap,
         undefined,
-        { getPriorityFeeMicroLamports: getPriorityFee },
+        {
+          getPriorityFeeMicroLamports,
+          maxFeeLamports: getPriorityFeeOverride() || getFeeMaxCapLamports(),
+          useMaxFee: getPriorityFeeOverride() > 0,
+        },
       );
       toast({
         title: `Swapped ${fromAsset} to ${toAsset}`,
@@ -656,7 +663,7 @@ export default function Trade() {
     });
     console.log("Drift spot orderParams", orderParams);
 
-    const getPriorityFee = async (tx: VersionedTransaction) => {
+    const getPriorityFee = () => {
       const { priorityFeeOverride, priorityFeeOverrideUnit } = values;
       if (priorityFeeOverride) {
         return (
@@ -664,7 +671,7 @@ export default function Trade() {
           (priorityFeeOverrideUnit === "LMPS" ? 1 : LAMPORTS_PER_SOL)
         );
       }
-      return getPriorityFeeMicroLamports(tx);
+      return 0;
     };
 
     setIsSubmitTxPending(true);
@@ -674,7 +681,11 @@ export default function Trade() {
         orderParams,
         0,
         driftMarketConfigs,
-        { getPriorityFeeMicroLamports: getPriorityFee },
+        {
+          getPriorityFeeMicroLamports,
+          maxFeeLamports: getPriorityFee() || getFeeMaxCapLamports(),
+          useMaxFee: getPriorityFee() > 0,
+        },
       );
       toast({
         title: "Spot order submitted",
@@ -713,7 +724,7 @@ export default function Trade() {
     });
     console.log("Drift perps orderParams", orderParams);
 
-    const getPriorityFee = async (tx: VersionedTransaction) => {
+    const getPriorityFee = () => {
       const { priorityFeeOverride, priorityFeeOverrideUnit } = values;
       if (priorityFeeOverride) {
         return (
@@ -721,7 +732,7 @@ export default function Trade() {
           (priorityFeeOverrideUnit === "LMPS" ? 1 : LAMPORTS_PER_SOL)
         );
       }
-      return getPriorityFeeMicroLamports(tx);
+      return 0;
     };
     setIsSubmitTxPending(true);
     try {
@@ -730,7 +741,11 @@ export default function Trade() {
         orderParams,
         0,
         driftMarketConfigs,
-        { getPriorityFeeMicroLamports: getPriorityFee },
+        {
+          getPriorityFeeMicroLamports,
+          maxFeeLamports: getPriorityFee() || getFeeMaxCapLamports(),
+          useMaxFee: getPriorityFee() > 0,
+        },
       );
       toast({
         title: "Perps order submitted",
@@ -949,7 +964,7 @@ export default function Trade() {
         PositionDirection.LONG,
         0,
         driftMarketConfigs,
-        { getPriorityFeeMicroLamports },
+        { getPriorityFeeMicroLamports, maxFeeLamports: getFeeMaxCapLamports() },
       );
       toast({
         title: "Orders canceled",

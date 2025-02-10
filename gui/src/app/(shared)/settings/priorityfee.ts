@@ -1,50 +1,64 @@
 import { getPriorityFeeEstimate } from "@glam/anchor/react";
 import { LAMPORTS_PER_SOL, VersionedTransaction } from "@solana/web3.js";
 
-export const getPriorityFeeMicroLamports = async (tx: VersionedTransaction) => {
+const parseFeeSettings = () => {
   const storedValues = localStorage.getItem("priorityFee");
 
+  let parsedValues = {};
   if (storedValues) {
-    let parsedValues;
     try {
       parsedValues = JSON.parse(storedValues);
-    } catch (e) {
-      parsedValues = {};
-    }
+    } catch (e) {}
+  }
+  return parsedValues as any;
+};
 
-    const { option } = parsedValues;
-    if (option === "custom") {
-      const { customFee, customFeeUnit } = parsedValues;
-      console.log(`customFee ${customFee}: customFeeUnit ${customFeeUnit}`);
-      return customFeeUnit === "SOL"
-        ? customFee * LAMPORTS_PER_SOL * 1_000_000 // micro lamports
-        : customFee;
-    }
+export const getFeeMaxCapLamports = () => {
+  const parsedValues = parseFeeSettings();
+  const { maxCapFee, maxCapFeeUnit } = parsedValues;
+  if (maxCapFeeUnit === "SOL") {
+    return parseFloat(maxCapFee) * LAMPORTS_PER_SOL;
+  }
+  return parseFloat(maxCapFee);
+};
 
-    if (["multiple", "dynamic"].includes(option)) {
-      const { multiplier, maxCapFee, maxCapFeeUnit } = parsedValues;
-      const parsedMultiplier =
-        option === "multiple" ? parseFloat(multiplier) : 1.0;
-      const estimate = await getPriorityFeeEstimate(
-        process.env.NEXT_PUBLIC_HELIUS_API_KEY!,
-        tx,
-      );
+export const getPriorityFeeMicroLamports = async (tx: VersionedTransaction) => {
+  const parsedValues = parseFeeSettings();
+  const { option } = parsedValues;
+  if (option === "custom") {
+    const { customFee } = parsedValues;
+    console.log(`customFee ${customFee} microLamports`);
+    // return customFeeUnit === "SOL"
+    // ? customFee * LAMPORTS_PER_SOL * 1_000_000 // micro lamports
+    return parseFloat(customFee);
+  }
 
-      const totalEstimate = estimate * parsedMultiplier;
-      const maxAllowed =
-        maxCapFeeUnit === "SOL"
-          ? maxCapFee * LAMPORTS_PER_SOL * 1_000_000 // micro lamports
-          : maxCapFee;
+  if (["multiple", "dynamic"].includes(option)) {
+    const { multiplier, maxCapFee, maxCapFeeUnit } = parsedValues;
+    const parsedMultiplier =
+      option === "multiple" ? parseFloat(multiplier) : 1.0;
+    const estimate = await getPriorityFeeEstimate(
+      process.env.NEXT_PUBLIC_HELIUS_API_KEY!,
+      tx,
+    );
 
-      console.log(
-        `totalEstimate ${totalEstimate}: estimate: ${estimate}, parsedMultiplier ${parsedMultiplier}`,
-      );
-      console.log(
-        `maxAllowed ${maxAllowed}: maxCapFee ${maxCapFee}, maxCapFeeUnit ${maxCapFeeUnit}`,
-      );
+    return estimate * parsedMultiplier;
 
-      return totalEstimate > maxAllowed ? maxAllowed : totalEstimate;
-    }
+    // const totalEstimate = estimate * parsedMultiplier;
+    // const maxAllowed =
+    //   maxCapFeeUnit === "SOL"
+    //     ? maxCapFee * LAMPORTS_PER_SOL * 1_000_000 // micro lamports
+    //     : maxCapFee;
+
+    // console.log(
+    //   `totalEstimate ${totalEstimate}: estimate: ${estimate}, parsedMultiplier ${parsedMultiplier}`,
+    // );
+    // console.log(
+    //   `maxAllowed ${maxAllowed}: maxCapFee ${maxCapFee}, maxCapFeeUnit ${maxCapFeeUnit}`,
+    // );
+
+    // return totalEstimate > maxAllowed ? maxAllowed : totalEstimate;
+    // }
   }
 
   return await getPriorityFeeEstimate(

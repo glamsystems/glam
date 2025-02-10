@@ -28,7 +28,10 @@ import { useGlam, WSOL } from "@glam/anchor/react";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { parseTxError } from "@/lib/error";
 import { ExplorerLink } from "@/components/ExplorerLink";
-import { getPriorityFeeMicroLamports } from "@/app/(shared)/settings/priorityfee";
+import {
+  getPriorityFeeMicroLamports,
+  getFeeMaxCapLamports,
+} from "@/app/(shared)/settings/priorityfee";
 import { WarningCard } from "@/components/WarningCard";
 import { PublicKey } from "@solana/web3.js";
 import { ClickToCopyText } from "@/components/ClickToCopyText";
@@ -168,6 +171,10 @@ export default function Transfer() {
         activeGlamState.pubkey,
         new PublicKey(asset?.address || 0),
         amount * 10 ** (asset?.decimals || 9),
+        {
+          getPriorityFeeMicroLamports,
+          maxFeeLamports: getFeeMaxCapLamports(),
+        },
       );
       toast({
         title: `Withdraw ${amount} ${asset?.symbol} from vault`,
@@ -248,7 +255,10 @@ export default function Transfer() {
               marketIndex,
               0,
               driftMarketConfigs,
-              { getPriorityFeeMicroLamports },
+              {
+                getPriorityFeeMicroLamports,
+                maxFeeLamports: getFeeMaxCapLamports(),
+              },
             )
           : await glamClient.drift.withdraw(
               activeGlamState.pubkey,
@@ -256,7 +266,10 @@ export default function Transfer() {
               marketIndex,
               0,
               driftMarketConfigs,
-              { getPriorityFeeMicroLamports },
+              {
+                getPriorityFeeMicroLamports,
+                maxFeeLamports: getFeeMaxCapLamports(),
+              },
             );
       toast({
         title: `Transfered ${amount} ${amountAsset} from ${origin} to ${destination}`,

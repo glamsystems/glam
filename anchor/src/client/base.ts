@@ -75,6 +75,8 @@ export type TxOptions = {
   signer?: PublicKey;
   computeUnitLimit?: number;
   getPriorityFeeMicroLamports?: (tx: VersionedTransaction) => Promise<number>;
+  maxFeeLamports?: number;
+  useMaxFee?: boolean;
   jitoTipLamports?: number;
   preInstructions?: TransactionInstruction[];
 };
@@ -186,6 +188,8 @@ export class BaseClient {
     signer,
     computeUnitLimit,
     getPriorityFeeMicroLamports,
+    maxFeeLamports,
+    useMaxFee,
     jitoTipLamports,
     latestBlockhash,
   }: {
@@ -194,6 +198,8 @@ export class BaseClient {
     signer?: PublicKey;
     computeUnitLimit?: number;
     getPriorityFeeMicroLamports?: (tx: VersionedTransaction) => Promise<number>;
+    maxFeeLamports?: number;
+    useMaxFee?: boolean;
     jitoTipLamports?: number;
     latestBlockhash?: BlockhashWithExpiryBlockHeight;
   }): Promise<VersionedTransaction> {
@@ -246,9 +252,13 @@ export class BaseClient {
       }
 
       let priorityFee = DEFAULT_PRIORITY_FEE;
-      if (getPriorityFeeMicroLamports) {
+      if (useMaxFee && maxFeeLamports && computeUnitLimit) {
+        priorityFee = Math.ceil(
+          (maxFeeLamports * 1_000_000) / computeUnitLimit,
+        );
+      } else if (getPriorityFeeMicroLamports) {
         try {
-          const fee = await getPriorityFeeMicroLamports(
+          const microLamports = await getPriorityFeeMicroLamports(
             new VersionedTransaction(
               new TransactionMessage({
                 payerKey: signer,
@@ -257,11 +267,24 @@ export class BaseClient {
               }).compileToV0Message(lookupTables),
             ),
           );
-          priorityFee = Math.ceil(fee);
+          if (
+            maxFeeLamports &&
+            computeUnitLimit &&
+            microLamports * computeUnitLimit > maxFeeLamports * 1_000_000
+          ) {
+            priorityFee = Math.ceil(
+              (maxFeeLamports * 1_000_000) / computeUnitLimit,
+            );
+            console.log(
+              `Estimated priority fee (${microLamports} microLamports per CU, ${computeUnitLimit} CUs, total ${(microLamports * computeUnitLimit) / 1_000_000} lamports) is higher than max fee (${maxFeeLamports} lamports). Overriding priority fee to ${priorityFee} microLamports.`,
+            );
+          } else {
+            priorityFee = Math.ceil(microLamports);
+          }
         } catch (e) {}
       }
       console.log(`Priority fee: ${priorityFee} microLamports`);
-      // Add the unit price instruction and return the final versioned transaction
+
       instructions.unshift(
         ComputeBudgetProgram.setComputeUnitPrice({
           microLamports: priorityFee,
