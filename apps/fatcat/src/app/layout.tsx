@@ -103,19 +103,17 @@ export default function RootLayout({
         {/*<Analytics />*/}
         <WalletAdapterProvider>
           <ClientProvider>
-
-              <ThemeProviderWrapper
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
-              >
-                <Header />
-                {children}
-                <Toaster />
-                <PersistentWarning />
-              </ThemeProviderWrapper>
-
+            <ThemeProviderWrapper
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <Header />
+              {children as any}
+              <Toaster />
+              <PersistentWarning />
+            </ThemeProviderWrapper>
           </ClientProvider>
         </WalletAdapterProvider>
         {/*<SpeedInsights />*/}

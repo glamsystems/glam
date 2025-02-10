@@ -31,16 +31,15 @@ export class Client extends GlamClient {
       assets: [JUP],
       enabled: true,
       accountType: { vault: {} },
-      //@ts-ignore
       integrations: [{ jupiterVote: {} }],
       delegateAcls: [
         {
           pubkey: FATCAT_SERVICE,
           permissions: [{ voteOnProposal: {} }],
+          expiresAt: new BN(0),
         },
       ],
     });
-    stateModel.metadataUri = null;
 
     // default pda
     const state = this.getStatePda(stateModel);
@@ -57,7 +56,6 @@ export class Client extends GlamClient {
     // try to fetch the state account
     // if it doesn't exist, add pre instruction to create it
     try {
-      //@ts-ignore
       await this.fetchStateAccount(state);
     } catch (error) {
       // state does not exist - create it

@@ -1,5 +1,5 @@
 {
-  "name": "metaplex-umi-next-js-template",
+  "name": "fatcat",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -33,6 +33,7 @@
     "@solana/wallet-adapter-react-ui": "^0.9.35",
     "@solana/wallet-adapter-wallets": "^0.19.32",
     "@solana/web3.js": "^1.98",
+    "@supabase/ssr": "^0.5.2",
     "@types/react": "npm:types-react@rc",
     "@types/react-dom": "npm:types-react-dom@rc",
     "@vercel/analytics": "^1.4.1",
@@ -46,8 +47,8 @@
     "next": "15.0.3",
     "next-themes": "^0.4.3",
     "npm": "^10.8.2",
-    "react": "19.0.0-rc.1",
-    "react-dom": "19.0.0-rc.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
     "react-hook-form": "^7.53.2",
     "sonner": "^1.7.0",
     "tailwind-merge": "^2.5.4",
@@ -57,7 +58,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.9.1",
-    "@types/react": "18.3.12",
+    "@types/react": "18.3.1",
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
     "postcss": "^8",
