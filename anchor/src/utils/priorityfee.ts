@@ -46,5 +46,5 @@ export const getPriorityFeeEstimate = async (
   );
   const data = await response.json();
   console.log("getPriorityFeeEstimate with options", options, data.result);
-  return data.result.priorityFeeEstimate;
+  return data.result.priorityFeeEstimate as number;
 };

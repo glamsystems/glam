@@ -45,7 +45,7 @@ export class StakingClient {
     statePda: PublicKey,
     asset: PublicKey,
     amount: number | BN,
-    txOptions: TxOptions = {} as TxOptions,
+    txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const assetStr = asset.toBase58();
 

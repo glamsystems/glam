@@ -42,13 +42,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { PriorityFeeInput } from "@/components/PriorityFeeInput";
+import { FormInput } from "@/components/FormInput";
 import { useQuery } from "@tanstack/react-query";
 import {
   getPriorityFeeEstimate,
   GLAM_PROGRAM_ID_MAINNET,
   useCluster,
 } from "@glam/anchor/react";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 const rpcFormSchema = z.object({
   customLabel: z.string().min(1, "Label is required"),
@@ -59,18 +59,16 @@ const rpcFormSchema = z.object({
 const priorityFeeOptions = ["dynamic", "multiple", "custom"] as const;
 type PriorityFeeType = (typeof priorityFeeOptions)[number];
 
-const feeUnitOptions = ["SOL", "LMPS"] as const;
-type FeeUnit = (typeof feeUnitOptions)[number];
+const maxCapFeeUnitOptions = ["SOL", "LMPS"] as const;
+type MaxCapFeeUnit = (typeof maxCapFeeUnitOptions)[number];
 
 const priorityFeeFormSchema = z.object({
   option: z.enum(priorityFeeOptions),
   multiplier: z.string().optional(),
   maxCapFee: z.number().optional(),
-  maxCapFeeUnit: z.enum(feeUnitOptions),
+  maxCapFeeUnit: z.enum(maxCapFeeUnitOptions),
   customFee: z.number().optional(),
-  customFeeUnit: z.enum(feeUnitOptions),
   estimatedFee: z.number().optional(),
-  estimatedFeeUnit: z.enum(feeUnitOptions),
 });
 
 const PERSISTED_FIELDS = {
@@ -81,8 +79,6 @@ const PERSISTED_FIELDS = {
     "maxCapFee",
     "maxCapFeeUnit",
     "customFee",
-    "customFeeUnit",
-    "estimatedFeeUnit",
   ],
 };
 type FormKey = keyof typeof PERSISTED_FIELDS;
@@ -132,7 +128,6 @@ function usePersistedForm<T extends z.ZodTypeAny>(
 }
 
 type RpcFormValues = z.infer<typeof rpcFormSchema>;
-type PriorityFeeFormValues = z.infer<typeof priorityFeeFormSchema>;
 
 type Endpoint = {
   value: string;
@@ -160,13 +155,11 @@ const truncateUrl = (url: string) => {
 
 const PRIORITY_FEE_FORM_DEFAULT_VALUES = {
   option: "dynamic" as PriorityFeeType,
-  multiplier: "1",
-  maxCapFee: 0.004,
-  maxCapFeeUnit: "SOL" as FeeUnit,
-  customFee: 0.001,
-  customFeeUnit: "SOL" as FeeUnit,
-  estimatedFee: 0.00001,
-  estimatedFeeUnit: "SOL" as FeeUnit,
+  multiplier: "1.2",
+  maxCapFee: 0.001,
+  maxCapFeeUnit: "SOL" as MaxCapFeeUnit,
+  customFee: 10_000,
+  estimatedFee: 10_000,
 };
 
 const SettingsPage: React.FC = () => {
@@ -207,12 +200,7 @@ const SettingsPage: React.FC = () => {
   useEffect(() => {
     if (priorityFeeEstimate) {
       console.log("priorityFeeEstimate:", priorityFeeEstimate, "microLamports");
-      const { estimatedFeeUnit } = priorityFeeForm.getValues();
-      const val =
-        estimatedFeeUnit === "SOL"
-          ? priorityFeeEstimate / LAMPORTS_PER_SOL
-          : Math.ceil(priorityFeeEstimate);
-      priorityFeeForm.setValue("estimatedFee", val);
+      priorityFeeForm.setValue("estimatedFee", priorityFeeEstimate);
     }
   }, [priorityFeeEstimate]);
 
@@ -322,7 +310,7 @@ const SettingsPage: React.FC = () => {
 
   return (
     <PageContentWrapper>
-      <div className="w-4/6 self-center space-y-8">
+      <div className="w-full xl:w-2/3 self-center space-y-8">
         {/* RPC endpoint settings */}
         <Form {...rpcForm}>
           <form onSubmit={rpcForm.handleSubmit(onSubmit)} className="space-y-6">
@@ -466,10 +454,7 @@ const SettingsPage: React.FC = () => {
         <Form {...priorityFeeForm}>
           <form
             className="space-y-4"
-            onSubmit={(event) => {
-              console.log("submitting form");
-              event.preventDefault(); // Prevent form submission on Enter key
-            }}
+            onSubmit={(event) => event.preventDefault()}
           >
             <div className="space-y-4">
               <div className="space-y-2">
@@ -529,86 +514,78 @@ const SettingsPage: React.FC = () => {
                 )}
               />
 
-              {feeOption !== "custom" ? (
-                <div
-                  className={cn(
-                    feeOption === "multiple" ? "grid-cols-3" : "grid-cols-2",
-                    "grid gap-4",
-                  )}
-                >
-                  <div className="space-y-2">
-                    <PriorityFeeInput
+              <div
+                className={cn(
+                  feeOption === "multiple" ? "grid-cols-3" : "grid-cols-2",
+                  "grid gap-4",
+                )}
+              >
+                <div className="space-y-2">
+                  {feeOption !== "custom" ? (
+                    <FormInput
                       name="estimatedFee"
-                      label="Est. Fee"
+                      label="Est. Fee (Micro Lamports per CU)"
+                      type="number"
                       disableInput={true}
-                      symbol={priorityFeeForm.watch("estimatedFeeUnit")}
+                      unit="miLMPS"
                     />
-                  </div>
-
-                  {feeOption === "multiple" ? (
-                    <FormField
-                      control={priorityFeeForm.control}
-                      name="multiplier"
-                      render={({ field }) => (
-                        <FormItem className="space-y-2">
-                          <FormLabel>Multiplier</FormLabel>
-                          <Input
-                            id="multiplier"
-                            onChange={(e) => {
-                              const val = parseInt(e.target.value, 10) || "";
-                              field.onChange(val.toString());
-                              priorityFeeForm.setValue(
-                                "multiplier",
-                                val.toString(),
-                              );
-                            }}
-                            value={field.value}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                e.preventDefault();
-                              }
-                            }}
-                          />
-                        </FormItem>
-                      )}
+                  ) : (
+                    <FormInput
+                      name="customFee"
+                      label="Custom Fee (Micro Lamports per CU)"
+                      type="number"
+                      unit="miLMPS"
                     />
-                  ) : null}
+                  )}
+                </div>
 
+                {feeOption === "multiple" ? (
                   <FormField
                     control={priorityFeeForm.control}
-                    name="maxCapFee"
+                    name="multiplier"
                     render={({ field }) => (
                       <FormItem className="space-y-2">
-                        <FormControl>
-                          <PriorityFeeInput
-                            name="maxCapFee"
-                            label="Max Cap Fee"
-                            symbol={priorityFeeForm.watch("maxCapFeeUnit")}
-                          />
-                        </FormControl>
-                        <FormMessage />
+                        <FormLabel>Multiplier</FormLabel>
+                        <Input
+                          id="multiplier"
+                          type="number"
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || "1";
+                            field.onChange(val.toString());
+                            priorityFeeForm.setValue(
+                              "multiplier",
+                              val.toString(),
+                            );
+                          }}
+                          value={field.value}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                            }
+                          }}
+                        />
                       </FormItem>
                     )}
                   />
-                </div>
-              ) : (
+                ) : null}
+
                 <FormField
                   control={priorityFeeForm.control}
-                  name="customFee"
+                  name="maxCapFee"
                   render={({ field }) => (
                     <FormItem className="space-y-2">
                       <FormControl>
                         <PriorityFeeInput
-                          name="customFee"
-                          label="Custom Fee"
-                          symbol={priorityFeeForm.watch("customFeeUnit")}
+                          name="maxCapFee"
+                          label="Max Cap Fee"
+                          symbol={priorityFeeForm.watch("maxCapFeeUnit")}
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              )}
+              </div>
             </div>
           </form>
         </Form>
