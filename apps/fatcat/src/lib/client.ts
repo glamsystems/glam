@@ -31,7 +31,6 @@ export class Client extends GlamClient {
       assets: [JUP],
       enabled: true,
       accountType: { vault: {} },
-      //@ts-ignore
       integrations: [{ jupiterVote: {} }],
       delegateAcls: [
         {
@@ -57,7 +56,6 @@ export class Client extends GlamClient {
     // try to fetch the state account
     // if it doesn't exist, add pre instruction to create it
     try {
-      //@ts-ignore
       await this.fetchStateAccount(state);
     } catch (error) {
       // state does not exist - create it
