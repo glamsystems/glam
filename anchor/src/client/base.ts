@@ -156,7 +156,7 @@ export class BaseClient {
   isPhantom(): boolean {
     if (!isBrowser) return false;
 
-    //TODO: remove when we can bypass from settings
+    // TODO: remove when we can bypass from settings
     return false;
 
     // Phantom automatically estimates fees
@@ -180,6 +180,60 @@ export class BaseClient {
         : ASSETS_MAINNET.get(assetMint) || ASSETS_TESTS.get(assetMint)) ||
       new AssetMeta()
     );
+  }
+
+  private async getComputeBudgetIxs(
+    vTx: VersionedTransaction,
+    computeUnitLimit: number,
+    getPriorityFeeMicroLamports?: (tx: VersionedTransaction) => Promise<number>,
+    maxFeeLamports?: number,
+    useMaxFee?: boolean,
+  ): Promise<Array<TransactionInstruction>> {
+    if (this.isPhantom()) {
+      return [] as Array<TransactionInstruction>;
+    }
+
+    // ComputeBudgetProgram.setComputeUnitLimit costs 150 CUs
+    // Add 20% more CUs to account for variable execution
+    computeUnitLimit += 150;
+    computeUnitLimit *= 1.2;
+
+    let priorityFeeMicroLamports = DEFAULT_PRIORITY_FEE;
+    if (useMaxFee && maxFeeLamports) {
+      priorityFeeMicroLamports = Math.ceil(
+        (maxFeeLamports * 1_000_000) / computeUnitLimit,
+      );
+    } else if (getPriorityFeeMicroLamports) {
+      try {
+        const feeEstimate = await getPriorityFeeMicroLamports(vTx);
+        if (
+          maxFeeLamports &&
+          feeEstimate * computeUnitLimit > maxFeeLamports * 1_000_000
+        ) {
+          priorityFeeMicroLamports = Math.ceil(
+            (maxFeeLamports * 1_000_000) / computeUnitLimit,
+          );
+          console.log(
+            `Estimated priority fee: (${feeEstimate} microLamports per CU, ${computeUnitLimit} CUs, total ${(feeEstimate * computeUnitLimit) / 1_000_000} lamports)`,
+          );
+          console.log(
+            `Estimated total fee is than max fee (${maxFeeLamports} lamports). Overriding priority fee to ${priorityFeeMicroLamports} microLamports.`,
+          );
+        } else {
+          priorityFeeMicroLamports = Math.ceil(feeEstimate);
+        }
+      } catch (e) {}
+    }
+    console.log(
+      `Final priority fee to use: ${priorityFeeMicroLamports} microLamports`,
+    );
+
+    return [
+      ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: priorityFeeMicroLamports,
+      }),
+      ComputeBudgetProgram.setComputeUnitLimit({ units: computeUnitLimit }),
+    ];
   }
 
   async intoVersionedTransaction({
@@ -223,73 +277,36 @@ export class BaseClient {
       latestBlockhash ? latestBlockhash : await this.blockhashWithCache.get()
     ).blockhash;
 
-    if (!this.isPhantom()) {
-      // Set compute unit limit or autodetect by simulating the tx
-      if (!computeUnitLimit) {
-        try {
-          computeUnitLimit = await getSimulationComputeUnits(
-            this.provider.connection,
-            instructions,
-            signer,
-            lookupTables,
-          );
-        } catch (e) {
-          // TODO: add a flag to control if we should throw error on failed simulation
-          // ignore
-          // when we run tests with failure cases, this RPC call fails with
-          // an incorrect error message so we should ignore it
-          // in the regular case, if this errors the tx will have the default CUs
-        }
-      }
-      if (computeUnitLimit) {
-        // ComputeBudgetProgram.setComputeUnitLimit costs 150 CUs
-        // Add 20% more CUs to account for variable execution
-        computeUnitLimit += 150;
-        computeUnitLimit *= 1.2;
-        instructions.unshift(
-          ComputeBudgetProgram.setComputeUnitLimit({ units: computeUnitLimit }),
-        );
-      }
-
-      let priorityFee = DEFAULT_PRIORITY_FEE;
-      if (useMaxFee && maxFeeLamports && computeUnitLimit) {
-        priorityFee = Math.ceil(
-          (maxFeeLamports * 1_000_000) / computeUnitLimit,
-        );
-      } else if (getPriorityFeeMicroLamports) {
-        try {
-          const microLamports = await getPriorityFeeMicroLamports(
-            new VersionedTransaction(
-              new TransactionMessage({
-                payerKey: signer,
-                recentBlockhash,
-                instructions,
-              }).compileToV0Message(lookupTables),
-            ),
-          );
-          if (
-            maxFeeLamports &&
-            computeUnitLimit &&
-            microLamports * computeUnitLimit > maxFeeLamports * 1_000_000
-          ) {
-            priorityFee = Math.ceil(
-              (maxFeeLamports * 1_000_000) / computeUnitLimit,
-            );
-            console.log(
-              `Estimated priority fee (${microLamports} microLamports per CU, ${computeUnitLimit} CUs, total ${(microLamports * computeUnitLimit) / 1_000_000} lamports) is higher than max fee (${maxFeeLamports} lamports). Overriding priority fee to ${priorityFee} microLamports.`,
-            );
-          } else {
-            priorityFee = Math.ceil(microLamports);
-          }
-        } catch (e) {}
-      }
-      console.log(`Priority fee: ${priorityFee} microLamports`);
-
-      instructions.unshift(
-        ComputeBudgetProgram.setComputeUnitPrice({
-          microLamports: priorityFee,
-        }),
+    try {
+      computeUnitLimit = await getSimulationComputeUnits(
+        this.provider.connection,
+        instructions,
+        signer,
+        lookupTables,
       );
+    } catch (e) {
+      // TODO: add a flag to control if we should throw error on failed simulation
+      // when we run tests with failure cases, this RPC call fails with
+      // an incorrect error message so we should ignore it
+      // in the regular case, if this errors the tx will have the default CUs
+    }
+
+    if (computeUnitLimit) {
+      const vTx = new VersionedTransaction(
+        new TransactionMessage({
+          payerKey: signer,
+          recentBlockhash,
+          instructions,
+        }).compileToV0Message(lookupTables),
+      );
+      const cuIxs = await this.getComputeBudgetIxs(
+        vTx,
+        computeUnitLimit,
+        getPriorityFeeMicroLamports,
+        maxFeeLamports,
+        useMaxFee,
+      );
+      instructions.unshift(...cuIxs);
     }
 
     return new VersionedTransaction(

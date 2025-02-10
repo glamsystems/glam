@@ -30,7 +30,7 @@ import { parseTxError } from "@/lib/error";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import {
   getPriorityFeeMicroLamports,
-  getFeeMaxCapLamports,
+  getMaxCapFeeLamports,
 } from "@/app/(shared)/settings/priorityfee";
 import { WarningCard } from "@/components/WarningCard";
 import { PublicKey } from "@solana/web3.js";
@@ -173,7 +173,7 @@ export default function Transfer() {
         amount * 10 ** (asset?.decimals || 9),
         {
           getPriorityFeeMicroLamports,
-          maxFeeLamports: getFeeMaxCapLamports(),
+          maxFeeLamports: getMaxCapFeeLamports(),
         },
       );
       toast({
@@ -257,7 +257,7 @@ export default function Transfer() {
               driftMarketConfigs,
               {
                 getPriorityFeeMicroLamports,
-                maxFeeLamports: getFeeMaxCapLamports(),
+                maxFeeLamports: getMaxCapFeeLamports(),
               },
             )
           : await glamClient.drift.withdraw(
@@ -268,7 +268,7 @@ export default function Transfer() {
               driftMarketConfigs,
               {
                 getPriorityFeeMicroLamports,
-                maxFeeLamports: getFeeMaxCapLamports(),
+                maxFeeLamports: getMaxCapFeeLamports(),
               },
             );
       toast({

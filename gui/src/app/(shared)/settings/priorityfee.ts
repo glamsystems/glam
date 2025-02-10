@@ -13,7 +13,7 @@ const parseFeeSettings = () => {
   return parsedValues as any;
 };
 
-export const getFeeMaxCapLamports = () => {
+export const getMaxCapFeeLamports = () => {
   const parsedValues = parseFeeSettings();
   const { maxCapFee, maxCapFeeUnit } = parsedValues;
   if (maxCapFeeUnit === "SOL") {
@@ -43,22 +43,6 @@ export const getPriorityFeeMicroLamports = async (tx: VersionedTransaction) => {
     );
 
     return estimate * parsedMultiplier;
-
-    // const totalEstimate = estimate * parsedMultiplier;
-    // const maxAllowed =
-    //   maxCapFeeUnit === "SOL"
-    //     ? maxCapFee * LAMPORTS_PER_SOL * 1_000_000 // micro lamports
-    //     : maxCapFee;
-
-    // console.log(
-    //   `totalEstimate ${totalEstimate}: estimate: ${estimate}, parsedMultiplier ${parsedMultiplier}`,
-    // );
-    // console.log(
-    //   `maxAllowed ${maxAllowed}: maxCapFee ${maxCapFee}, maxCapFeeUnit ${maxCapFeeUnit}`,
-    // );
-
-    // return totalEstimate > maxAllowed ? maxAllowed : totalEstimate;
-    // }
   }
 
   return await getPriorityFeeEstimate(

@@ -37,18 +37,12 @@ export class BlockhashWithCache {
 
     if (data) {
       const { blockhash, expiresAt } = data;
-      // console.log(`blockhash expires at`, expiresAt);
       if (expiresAt > Date.now()) {
-        // console.log("blockhash cache hit");
         return blockhash;
       }
     }
 
     const latestBlockhash = await this.provider.connection.getLatestBlockhash();
-    // console.log(
-    //   "blockhash cache miss, fetched latestBlockhash:",
-    //   latestBlockhash
-    // );
     await this.set({
       blockhash: latestBlockhash,
       expiresAt: Date.now() + this.ttl,

@@ -98,7 +98,7 @@ import {
 } from "@glam/anchor/react";
 import {
   getPriorityFeeMicroLamports,
-  getFeeMaxCapLamports,
+  getMaxCapFeeLamports,
 } from "@/app/(shared)/settings/priorityfee";
 import { SlippageInput } from "@/components/SlippageInput";
 import { PriorityFeeInput } from "@/components/PriorityFeeInput";
@@ -577,7 +577,7 @@ export default function Trade() {
         undefined,
         {
           getPriorityFeeMicroLamports,
-          maxFeeLamports: getPriorityFeeOverride() || getFeeMaxCapLamports(),
+          maxFeeLamports: getPriorityFeeOverride() || getMaxCapFeeLamports(),
           useMaxFee: getPriorityFeeOverride() > 0,
         },
       );
@@ -683,7 +683,7 @@ export default function Trade() {
         driftMarketConfigs,
         {
           getPriorityFeeMicroLamports,
-          maxFeeLamports: getPriorityFee() || getFeeMaxCapLamports(),
+          maxFeeLamports: getPriorityFee() || getMaxCapFeeLamports(),
           useMaxFee: getPriorityFee() > 0,
         },
       );
@@ -743,7 +743,7 @@ export default function Trade() {
         driftMarketConfigs,
         {
           getPriorityFeeMicroLamports,
-          maxFeeLamports: getPriorityFee() || getFeeMaxCapLamports(),
+          maxFeeLamports: getPriorityFee() || getMaxCapFeeLamports(),
           useMaxFee: getPriorityFee() > 0,
         },
       );
@@ -964,7 +964,7 @@ export default function Trade() {
         PositionDirection.LONG,
         0,
         driftMarketConfigs,
-        { getPriorityFeeMicroLamports, maxFeeLamports: getFeeMaxCapLamports() },
+        { getPriorityFeeMicroLamports, maxFeeLamports: getMaxCapFeeLamports() },
       );
       toast({
         title: "Orders canceled",
