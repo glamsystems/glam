@@ -4,6 +4,7 @@ import { PublicKey } from "@solana/web3.js";
 import { ExtensionType, getExtensionData, Mint } from "@solana/spl-token";
 import { TokenMetadata, unpack } from "@solana/spl-token-metadata";
 import { BN } from "@coral-xyz/anchor";
+import { SEED_METADATA, SEED_MINT, SEED_VAULT } from "./constants";
 
 export const GlamIntegrations =
   GlamIDLJson?.types
@@ -33,7 +34,7 @@ export class StateIdlModel implements StateModelType {
   assets: PublicKey[] | null;
   externalVaultAccounts: PublicKey[] | null;
 
-  mints: ShareClassModel[] | null;
+  mints: MintModel[] | null;
   company: CompanyModel | null;
   owner: ManagerModel | null;
   created: CreatedModel | null;
@@ -85,10 +86,10 @@ export class StateModel extends StateIdlModel {
 
   get vaultPda() {
     if (!this.id) {
-      throw new Error("Fund ID not set");
+      throw new Error("Glam state ID not set");
     }
     const [pda, _bump] = PublicKey.findProgramAddressSync(
-      [Buffer.from("vault"), this.id.toBuffer()],
+      [Buffer.from(SEED_VAULT), this.id.toBuffer()],
       this.glamProgramId,
     );
     return pda;
@@ -96,10 +97,10 @@ export class StateModel extends StateIdlModel {
 
   get openfundsPda() {
     if (!this.id) {
-      throw new Error("Fund ID not set");
+      throw new Error("Glam state ID not set");
     }
     const [pda, _] = PublicKey.findProgramAddressSync(
-      [Buffer.from("metadata"), this.id.toBuffer()],
+      [Buffer.from(SEED_METADATA), this.id.toBuffer()],
       this.glamProgramId,
     );
     return pda;
@@ -118,13 +119,13 @@ export class StateModel extends StateIdlModel {
       : "Unknown";
   }
 
-  get shareClassMints() {
+  get mintAddresses() {
     if (this.mints && this.mints.length > 0 && !this.id) {
-      // If share classes are set, fund ID should be set as well
-      throw new Error("Fund ID not set");
+      // If share classes are set, state ID should also be set
+      throw new Error("Glam state ID not set");
     }
     return (this.mints || []).map((_, i) =>
-      ShareClassModel.mintAddress(this.id!, i, this.glamProgramId),
+      MintModel.mintAddress(this.id!, i, this.glamProgramId),
     );
   }
 
@@ -132,7 +133,7 @@ export class StateModel extends StateIdlModel {
     if (!this.mints || this.mints.length === 0) {
       return this.idStr;
     }
-    return this.shareClassMints[0].toBase58() || this.idStr;
+    return this.mintAddresses[0].toBase58() || this.idStr;
   }
 
   /**
@@ -140,13 +141,13 @@ export class StateModel extends StateIdlModel {
    *
    * @param stateAccount provides core fund data
    * @param openfundsMetadataAccount includes fund rawOpenfunds data and share class rawOpenfunds data
-   * @param shareClassMint provides share class data
+   * @param glamMint
    */
   static fromOnchainAccounts(
     statePda: PublicKey,
     stateAccount: StateAccount,
     openfundsMetadataAccount?: OpenfundsMetadataAccount,
-    shareClassMint?: Mint,
+    glamMint?: Mint,
     glamProgramId: PublicKey = GLAM_PROGRAM_ID_DEFAULT,
   ) {
     let stateModel: Partial<StateIdlModel> = {
@@ -188,62 +189,58 @@ export class StateModel extends StateIdlModel {
 
     // Build the array of ShareClassModel
     stateAccount.mints.forEach((_, i) => {
-      const shareClassIdlModel = {} as any;
-      shareClassIdlModel["statePubkey"] = statePda;
+      const mintIdlModel = {} as any;
+      mintIdlModel["statePubkey"] = statePda;
 
       stateAccount.params[i + 1].forEach((param) => {
         const name = Object.keys(param.name)[0];
         // @ts-ignore
         const value = Object.values(param.value)[0].val;
-        if (name === "shareClassAllowlist") {
-          shareClassIdlModel["allowlist"] = value as PublicKey[];
-        } else if (name === "shareClassBlocklist") {
-          shareClassIdlModel["blocklist"] = value as PublicKey[];
-        } else if (name == "lockUp") {
-          shareClassIdlModel["lockUpPeriodInSeconds"] = Number(value);
+        if (name == "lockUp") {
+          mintIdlModel["lockUpPeriodInSeconds"] = Number(value);
         } else {
-          shareClassIdlModel[name] = value;
+          mintIdlModel[name] = value;
         }
       });
 
       if (openfundsMetadataAccount) {
-        const shareClassOpenfundsFields = {};
+        const mintOpenfundsFields = {};
         openfundsMetadataAccount.shareClasses[i].forEach((param) => {
           const name = Object.keys(param.name)[0];
           const value = param.value;
           // @ts-ignore
-          shareClassOpenfundsFields[name] = value;
+          mintOpenfundsFields[name] = value;
         });
-        shareClassIdlModel["rawOpenfunds"] = new ShareClassOpenfundsModel(
-          shareClassOpenfundsFields,
+        mintIdlModel["rawOpenfunds"] = new MintClassOpenfundsModel(
+          mintOpenfundsFields,
         );
       }
 
-      if (shareClassMint) {
+      if (glamMint) {
         const extMetadata = getExtensionData(
           ExtensionType.TokenMetadata,
-          shareClassMint.tlvData,
+          glamMint.tlvData,
         );
         const tokenMetadata = extMetadata
           ? unpack(extMetadata)
           : ({} as TokenMetadata);
-        shareClassIdlModel["symbol"] = tokenMetadata?.symbol;
-        shareClassIdlModel["name"] = tokenMetadata?.name;
-        shareClassIdlModel["uri"] = tokenMetadata?.uri;
+        mintIdlModel["symbol"] = tokenMetadata?.symbol;
+        mintIdlModel["name"] = tokenMetadata?.name;
+        mintIdlModel["uri"] = tokenMetadata?.uri;
 
         const extPermDelegate = getExtensionData(
           ExtensionType.PermanentDelegate,
-          shareClassMint.tlvData,
+          glamMint.tlvData,
         );
         if (extPermDelegate) {
           const permanentDelegate = new PublicKey(extPermDelegate);
-          shareClassIdlModel["permanentDelegate"] = permanentDelegate;
+          mintIdlModel["permanentDelegate"] = permanentDelegate;
         }
       }
 
       // stateModel.shareClasses should never be null
       // non-null assertion is safe and is needed to suppress type error
-      stateModel.mints!.push(new ShareClassModel(shareClassIdlModel));
+      stateModel.mints!.push(new MintModel(mintIdlModel));
     });
 
     stateModel.name =
@@ -296,8 +293,8 @@ export class FundOpenfundsModel implements FundOpenfundsModelType {
   }
 }
 
-export type ShareClassModelType = IdlTypes<Glam>["shareClassModel"];
-export class ShareClassIdlModel implements ShareClassModelType {
+export type MintModelType = IdlTypes<Glam>["mintModel"];
+export class MintIdlModel implements MintModelType {
   symbol: string | null;
   name: string | null;
   uri: string | null;
@@ -314,9 +311,9 @@ export class ShareClassIdlModel implements ShareClassModelType {
   defaultAccountStateFrozen: boolean | null;
 
   isRawOpenfunds: boolean | null;
-  rawOpenfunds: ShareClassOpenfundsModel | null;
+  rawOpenfunds: MintClassOpenfundsModel | null;
 
-  constructor(data: Partial<ShareClassModelType>) {
+  constructor(data: Partial<MintModelType>) {
     this.symbol = data.symbol ?? null;
     this.name = data.name ?? null;
     this.uri = data.uri ?? null;
@@ -332,8 +329,8 @@ export class ShareClassIdlModel implements ShareClassModelType {
     this.defaultAccountStateFrozen = data.defaultAccountStateFrozen ?? null;
   }
 }
-export class ShareClassModel extends ShareClassIdlModel {
-  constructor(data: Partial<ShareClassIdlModel>) {
+export class MintModel extends MintIdlModel {
+  constructor(data: Partial<MintIdlModel>) {
     super(data);
   }
 
@@ -343,16 +340,19 @@ export class ShareClassModel extends ShareClassIdlModel {
     glamProgramId: PublicKey = GLAM_PROGRAM_ID_DEFAULT,
   ): PublicKey {
     const [pda, _] = PublicKey.findProgramAddressSync(
-      [Buffer.from("mint"), Uint8Array.from([idx % 256]), statePda.toBuffer()],
+      [
+        Buffer.from(SEED_MINT),
+        Uint8Array.from([idx % 256]),
+        statePda.toBuffer(),
+      ],
       glamProgramId,
     );
     return pda;
   }
 }
 
-export type ShareClassOpenfundsModelType =
-  IdlTypes<Glam>["shareClassOpenfundsModel"];
-export class ShareClassOpenfundsModel implements ShareClassOpenfundsModelType {
+export type MintOpenfundsModelType = IdlTypes<Glam>["mintOpenfundsModel"];
+export class MintClassOpenfundsModel implements MintOpenfundsModelType {
   isin: string | null;
   shareClassCurrency: string | null;
   currencyOfMinimalSubscription: string | null;
@@ -382,7 +382,7 @@ export class ShareClassOpenfundsModel implements ShareClassOpenfundsModelType {
   cusip: string | null;
   valor: string | null;
 
-  constructor(obj: Partial<ShareClassOpenfundsModelType>) {
+  constructor(obj: Partial<MintOpenfundsModelType>) {
     this.isin = obj.isin ?? null;
     this.shareClassCurrency = obj.shareClassCurrency ?? null;
     this.currencyOfMinimalSubscription =

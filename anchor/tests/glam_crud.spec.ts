@@ -12,7 +12,7 @@ import {
   GlamClient,
   GlamError,
   MSOL,
-  ShareClassModel,
+  MintModel,
   USDC,
   WSOL,
 } from "../src";
@@ -27,12 +27,12 @@ describe("glam_crud", () => {
   let statePda: PublicKey, vaultPda: PublicKey;
 
   it("Initialize glam state", async () => {
-    const shareClassAllowlist = [key1.publicKey];
-    const shareClassBlocklist = [key2.publicKey];
+    const mintAllowlist = [key1.publicKey];
+    const mintBlocklist = [key2.publicKey];
 
     const stateForTest = { ...stateModelForTest };
-    stateForTest.mints![0].allowlist = shareClassAllowlist;
-    stateForTest.mints![0].blocklist = shareClassBlocklist;
+    stateForTest.mints![0].allowlist = mintAllowlist;
+    stateForTest.mints![0].blocklist = mintBlocklist;
 
     const res = await createGlamStateForTest(glamClient, stateForTest);
     statePda = res.statePda;
@@ -41,8 +41,8 @@ describe("glam_crud", () => {
     const stateModel = await glamClient.fetchState(statePda);
 
     expect(stateModel.mints?.length).toEqual(1);
-    expect(stateModel.mints![0].allowlist).toEqual(shareClassAllowlist);
-    expect(stateModel.mints![0].blocklist).toEqual(shareClassBlocklist);
+    expect(stateModel.mints![0].allowlist).toEqual(mintAllowlist);
+    expect(stateModel.mints![0].blocklist).toEqual(mintBlocklist);
   });
 
   it("Update name in state", async () => {
@@ -58,17 +58,17 @@ describe("glam_crud", () => {
     expect(state.name).toEqual(name);
   });
 
-  it("Update share class allowlist", async () => {
-    const shareClassModel = new ShareClassModel({
+  it("Update mint allowlist", async () => {
+    const mintModel = new MintModel({
       allowlist: [key1.publicKey, key2.publicKey],
       blocklist: [],
     });
     try {
       const txSig = await glamClient.program.methods
-        .updateShareClass(0, shareClassModel)
+        .updateMint(0, mintModel)
         .accounts({
-          state: statePda,
-          shareClassMint: glamClient.getShareClassPda(statePda, 0),
+          glamState: statePda,
+          glamMint: glamClient.getMintPda(statePda, 0),
         })
         .rpc();
       console.log("Update share class txSig", txSig);
@@ -77,8 +77,8 @@ describe("glam_crud", () => {
       throw e;
     }
     const stateModel = await glamClient.fetchState(statePda);
-    expect(stateModel.mints![0].allowlist).toEqual(shareClassModel.allowlist);
-    expect(stateModel.mints![0].blocklist).toEqual(shareClassModel.blocklist);
+    expect(stateModel.mints![0].allowlist).toEqual(mintModel.allowlist);
+    expect(stateModel.mints![0].blocklist).toEqual(mintModel.blocklist);
   });
 
   it("Update assets allowlist", async () => {
@@ -278,11 +278,9 @@ describe("glam_crud", () => {
       throw e;
     }
 
-    /*
-    let stateModel = await glamClient.fetchState(statePda);
-    expect(stateModel.delegateAcls?.length).toEqual(1);
-    expect(stateModel.delegateAcls![0].pubkey).toEqual(key1.publicKey);
-    */
+    // let stateModel = await glamClient.fetchState(statePda);
+    // expect(stateModel.delegateAcls?.length).toEqual(1);
+    // expect(stateModel.delegateAcls![0].pubkey).toEqual(key1.publicKey);
 
     try {
       // key1 now has wSolWrap permission, use key1 to wrap some SOL
@@ -427,7 +425,7 @@ describe("glam_crud", () => {
     }
 
     try {
-      const txSig = await glamClient.shareClass.closeShareClass(statePda);
+      const txSig = await glamClient.mint.closeMint(statePda);
       console.log("Close share class txId:", txSig);
     } catch (e) {
       console.error(e);

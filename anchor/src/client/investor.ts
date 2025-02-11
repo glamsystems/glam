@@ -29,7 +29,7 @@ export class InvestorClient {
     asset: PublicKey,
     amount: BN,
     stateModel?: StateModel,
-    shareClassId: number = 0,
+    mintId: number = 0,
     skipState: boolean = true,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
@@ -38,7 +38,7 @@ export class InvestorClient {
       asset,
       amount,
       stateModel,
-      shareClassId,
+      mintId,
       skipState,
       txOptions,
     );
@@ -50,7 +50,7 @@ export class InvestorClient {
     amount: BN,
     inKind: boolean = false,
     stateModel?: StateModel,
-    shareClassId: number = 0,
+    mintId: number = 0,
     skipState: boolean = true,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
@@ -59,7 +59,7 @@ export class InvestorClient {
       amount,
       inKind,
       stateModel,
-      shareClassId,
+      mintId,
       skipState,
       txOptions,
     );
@@ -75,28 +75,23 @@ export class InvestorClient {
     asset: PublicKey,
     amount: BN,
     stateModel?: StateModel,
-    shareClassId: number = 0,
+    mintId: number = 0,
     skipState: boolean = true,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
 
-    // share class token to receive
-    const shareClassMint = this.base.getShareClassPda(statePda, shareClassId);
-    const signerShareAta = this.base.getShareClassAta(signer, shareClassMint);
+    // glam mint token to receive
+    const mintPda = this.base.getMintPda(statePda, mintId);
+    const signerShareAta = this.base.getMintAta(signer, mintPda);
 
     // asset token to transfer
     const assetMeta = this.base.getAssetMeta(asset.toBase58());
     const vault = this.base.getVaultPda(statePda);
-    const vaultAta = this.base.getVaultAta(
-      statePda,
-      asset,
-      assetMeta?.programId,
-    );
-    const signerAssetAta = getAssociatedTokenAddressSync(
+    const vaultAta = this.base.getAta(asset, vault, assetMeta?.programId);
+    const signerAssetAta = this.base.getAta(
       asset,
       signer,
-      true,
       assetMeta?.programId,
     );
 
@@ -156,7 +151,7 @@ export class InvestorClient {
         signer,
         signerShareAta,
         signer,
-        shareClassMint,
+        mintPda,
         TOKEN_2022_PROGRAM_ID,
       ),
     ];
@@ -189,8 +184,8 @@ export class InvestorClient {
     const tx = await this.base.program.methods
       .subscribe(0, amount, skipState)
       .accounts({
-        state: statePda,
-        shareClassMint,
+        glamState: statePda,
+        glamMint: mintPda,
         asset,
         vaultAta,
         signerAssetAta,
@@ -210,15 +205,15 @@ export class InvestorClient {
     amount: BN,
     inKind: boolean = false,
     stateModel?: StateModel,
-    shareClassId: number = 0,
+    mintId: number = 0,
     skipState: boolean = true,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
 
     // share class token to receive
-    const shareClass = this.base.getShareClassPda(statePda, shareClassId);
-    const signerShareAta = this.base.getShareClassAta(signer, shareClass);
+    const glamMint = this.base.getMintPda(statePda, mintId);
+    const signerShareAta = this.base.getMintAta(signer, glamMint);
 
     // remaining accounts = assets + signer atas + treasury atas + pricing to compute AUM
     if (!stateModel) {
@@ -290,8 +285,8 @@ export class InvestorClient {
     const tx = await this.base.program.methods
       .redeem(amount, inKind, skipState)
       .accounts({
-        state: statePda,
-        shareClass,
+        glamState: statePda,
+        glamMint,
         signerShareAta,
         //TODO: only add if the fund has lock-up? (just for efficiency)
         // signerAccountPolicy: null,

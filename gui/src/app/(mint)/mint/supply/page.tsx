@@ -40,7 +40,7 @@ export default function SupplyPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const tokenAccounts = await glamClient.shareClass.getHolders(
+      const tokenAccounts = await glamClient.mint.getHolders(
         activeGlamState!.pubkey,
         0,
       );
@@ -99,14 +99,14 @@ export default function SupplyPage() {
     try {
       const txSig =
         submitter === "mint"
-          ? await glamClient.shareClass.mintShare(
+          ? await glamClient.mint.mintShare(
               activeGlamState.pubkey,
               0,
               pubkey,
               new BN(amount * 10 ** 9),
               true, // force thawing token account if it's frozen
             )
-          : await glamClient.shareClass.burnShare(
+          : await glamClient.mint.burnShare(
               activeGlamState.pubkey,
               0,
               new BN(amount * 10 ** 9),

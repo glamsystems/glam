@@ -21,7 +21,7 @@ import {
   MSOL,
   WSOL,
   StateModel,
-  ShareClassOpenfundsModel,
+  MintClassOpenfundsModel,
   ManagerModel,
   FundOpenfundsModel,
 } from "@glam/anchor/react";
@@ -99,7 +99,7 @@ export default function Create() {
               launchPrice: "1",
               launchPriceCurrency: "SOL",
               launchPriceDate: new Date().toISOString().split("T")[0],
-            } as Partial<ShareClassOpenfundsModel>,
+            } as Partial<MintClassOpenfundsModel>,
           },
         ],
         enabled: true,

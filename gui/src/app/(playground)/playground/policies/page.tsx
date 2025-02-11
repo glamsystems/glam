@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../../../../components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShareClassesList } from "@/app/(playground)/playground/shareclasses/components/shareClasses-list";
 import { shareClasses } from "@/app/(playground)/playground/shareclasses/data";
 import PageContentWrapper from "@/components/PageContentWrapper";

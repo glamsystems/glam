@@ -115,7 +115,7 @@ export const createGlamStateForTest = async (
   return {
     statePda,
     vaultPda: glamClient.getVaultPda(statePda),
-    mintPda: glamClient.getShareClassPda(statePda, 0),
+    mintPda: glamClient.getMintPda(statePda, 0),
   };
 };
 

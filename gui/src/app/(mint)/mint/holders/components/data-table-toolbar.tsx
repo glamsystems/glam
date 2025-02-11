@@ -47,11 +47,8 @@ export function DataTableToolbar<TData>({
     }
     // Set ata if public key is valid
     try {
-      const shareClassMint = glamClient.getShareClassPda(
-        activeGlamState.pubkey,
-        0,
-      );
-      const ata = glamClient.getShareClassAta(
+      const shareClassMint = glamClient.getMintPda(activeGlamState.pubkey, 0);
+      const ata = glamClient.getMintAta(
         new PublicKey(publicKey),
         shareClassMint,
       );
@@ -84,14 +81,14 @@ export function DataTableToolbar<TData>({
     }
 
     try {
-      const txSig = await glamClient.shareClass.createTokenAccount(
+      const txSig = await glamClient.mint.createTokenAccount(
         activeGlamState.pubkey,
         pubkey,
         0,
         false,
       );
       toast({
-        title: "New share class holder added",
+        title: "New token holder added",
         description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
       });
     } catch (e) {

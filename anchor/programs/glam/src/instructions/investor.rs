@@ -8,8 +8,8 @@ use anchor_spl::token::Token;
 use anchor_spl::token_interface::{
     burn, mint_to, transfer_checked, Burn, Mint, MintTo, Token2022, TokenAccount, TransferChecked,
 };
-use glam_macros::share_class_signer_seeds;
-use glam_macros::vault_signer_seeds;
+use glam_macros::glam_vault_signer_seeds;
+use glam_macros::mint_signer_seeds;
 use marinade::state::delayed_unstake_ticket::TicketAccountData;
 use pyth_solana_receiver_sdk::price_update::Price;
 use solana_program::stake::state::warmup_cooldown_rate;
@@ -25,27 +25,27 @@ fn log_decimal(amount: u64, minus_decimals: i32) -> f64 {
 }
 
 #[derive(Accounts)]
-#[instruction(share_class_id: u8)]
+#[instruction(mint_id: u8)]
 pub struct Subscribe<'info> {
     #[account()]
-    pub state: Box<Account<'info, StateAccount>>,
+    pub glam_state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
-    pub vault: SystemAccount<'info>,
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), glam_state.key().as_ref()], bump)]
+    pub glam_vault: SystemAccount<'info>,
 
     // the shares to mint
     #[account(
         mut,
-        seeds = [SEED_MINT.as_bytes(), &[share_class_id], state.key().as_ref()],
+        seeds = [SEED_MINT.as_bytes(), &[mint_id], glam_state.key().as_ref()],
         bump,
-        mint::authority = share_class_mint,
+        mint::authority = glam_mint,
         mint::token_program = token_2022_program
     )]
-    pub share_class_mint: Box<InterfaceAccount<'info, Mint>>,
+    pub glam_mint: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(
         mut,
-        associated_token::mint = share_class_mint,
+        associated_token::mint = glam_mint,
         associated_token::authority = signer,
         associated_token::token_program = token_2022_program
     )]
@@ -84,14 +84,14 @@ pub struct Subscribe<'info> {
     pub token_2022_program: Program<'info, Token2022>,
 }
 
-#[share_class_signer_seeds]
+#[mint_signer_seeds]
 pub fn subscribe_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, Subscribe<'info>>,
-    share_class_id: u8,
+    mint_id: u8,
     amount: u64,
     skip_state: bool,
 ) -> Result<()> {
-    let state = &ctx.accounts.state;
+    let state = &ctx.accounts.glam_state;
     require!(state.enabled, GlamError::StateAccountDisabled);
 
     let external_vault_accounts =
@@ -109,32 +109,26 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     }
     require!(state.mints.len() > 0, GlamError::NoShareClass);
     require!(
-        state.mints[0] == ctx.accounts.share_class_mint.key(),
+        state.mints[0] == ctx.accounts.glam_mint.key(),
         GlamError::InvalidShareClass
     );
 
-    if let Some(share_class_blocklist) = state.share_class_blocklist(0) {
+    if let Some(blocklist) = state.mint_blocklist(0) {
         require!(
-            share_class_blocklist.len() == 0
-                || !share_class_blocklist
-                    .iter()
-                    .any(|&k| k == ctx.accounts.signer.key()),
+            blocklist.len() == 0 || !blocklist.iter().any(|&k| k == ctx.accounts.signer.key()),
             GlamError::InvalidShareClass
         );
     }
 
-    if let Some(share_class_allowlist) = state.share_class_allowlist(0) {
+    if let Some(allowlist) = state.mint_allowlist(0) {
         require!(
-            share_class_allowlist.len() == 0
-                || share_class_allowlist
-                    .iter()
-                    .any(|&k| k == ctx.accounts.signer.key()),
+            allowlist.len() == 0 || allowlist.iter().any(|&k| k == ctx.accounts.signer.key()),
             GlamError::InvalidShareClass
         );
     }
 
     // Lock-up
-    let lock_up = state.share_class_lock_up(0);
+    let lock_up = state.mint_lock_up(0);
     if lock_up > 0 {
         require!(
             ctx.accounts.signer_policy.is_some(),
@@ -170,7 +164,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     //
     // Compute amount of shares to mint
     //
-    let share_class = &ctx.accounts.share_class_mint;
+    let share_class = &ctx.accounts.glam_mint;
     let share_expo = -(share_class.decimals as i32);
     let total_shares = share_class.supply;
     let use_fixed_price = total_shares == 0;
@@ -179,7 +173,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         Action::Subscribe,
         &state_assets,
         ctx.remaining_accounts,
-        &ctx.accounts.vault,
+        &ctx.accounts.glam_vault,
         &external_vault_accounts,
         &ctx.accounts.signer,
         &ctx.accounts.token_program,
@@ -263,11 +257,11 @@ pub fn subscribe_handler<'c: 'info, 'info>(
             CpiContext::new_with_signer(
                 ctx.accounts.token_2022_program.to_account_info(),
                 MintTo {
-                    authority: ctx.accounts.share_class_mint.to_account_info(),
+                    authority: ctx.accounts.glam_mint.to_account_info(),
                     to: ctx.accounts.signer_share_ata.to_account_info(),
-                    mint: ctx.accounts.share_class_mint.to_account_info(),
+                    mint: ctx.accounts.glam_mint.to_account_info(),
                 },
-                share_class_signer_seeds,
+                mint_signer_seeds,
             ),
             amount_shares,
         )?;
@@ -281,20 +275,19 @@ pub fn subscribe_handler<'c: 'info, 'info>(
 
 #[derive(Accounts)]
 pub struct Redeem<'info> {
-    pub state: Account<'info, StateAccount>,
+    pub glam_state: Account<'info, StateAccount>,
 
-    // the shares to burn
-    #[account(mut, mint::authority = share_class, mint::token_program = token_2022_program)]
-    pub share_class: Box<InterfaceAccount<'info, Mint>>, // mint
-    #[account(mut)]
-    pub signer_share_ata: Box<InterfaceAccount<'info, TokenAccount>>, // user account
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), glam_state.key().as_ref()], bump)]
+    pub glam_vault: SystemAccount<'info>,
 
-    // signers
+    #[account(mut, mint::authority = glam_mint, mint::token_program = token_2022_program)]
+    pub glam_mint: Box<InterfaceAccount<'info, Mint>>, // mint
+
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
-    pub vault: SystemAccount<'info>,
+    #[account(mut)]
+    pub signer_share_ata: Box<InterfaceAccount<'info, TokenAccount>>, // user account
 
     #[account(
         mut,
@@ -312,14 +305,14 @@ pub struct Redeem<'info> {
     pub token_2022_program: Program<'info, Token2022>,
 }
 
-#[vault_signer_seeds]
+#[glam_vault_signer_seeds]
 pub fn redeem_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, Redeem<'info>>,
     amount: u64,
     in_kind: bool,
     skip_state: bool,
 ) -> Result<()> {
-    let state = &ctx.accounts.state;
+    let state = &ctx.accounts.glam_state;
     require!(state.enabled, GlamError::StateAccountDisabled);
 
     let external_vault_accounts =
@@ -331,19 +324,19 @@ pub fn redeem_handler<'c: 'info, 'info>(
         return err!(GlamError::SubscribeRedeemDisable);
     }
 
-    if ctx.accounts.state.mints.len() > 1 {
+    if ctx.accounts.glam_state.mints.len() > 1 {
         // we need to define how to split the total amount into share classes
         panic!("not implemented")
     }
     require!(state.mints.len() > 0, GlamError::NoShareClass);
     require!(
-        state.mints[0] == ctx.accounts.share_class.key(),
+        state.mints[0] == ctx.accounts.glam_mint.key(),
         GlamError::InvalidShareClass
     );
 
     // Lock-up
     let mut close_signer_policy = false;
-    let lock_up = state.share_class_lock_up(0);
+    let lock_up = state.mint_lock_up(0);
     if lock_up > 0 {
         require!(
             ctx.accounts.signer_policy.is_some(),
@@ -379,17 +372,17 @@ pub fn redeem_handler<'c: 'info, 'info>(
         }
     }
 
-    let share_class = &ctx.accounts.share_class;
-    let share_expo = -(share_class.decimals as i32);
-    let total_shares = share_class.supply;
-    let should_transfer_everything = amount == total_shares;
+    let mint = &ctx.accounts.glam_mint;
+    let mint_expo = -(mint.decimals as i32);
+    let total_supply = mint.supply;
+    let should_transfer_everything = amount == total_supply;
 
     msg!(
-        "Redeem: amount={:.2} total_shares={:.2} ({}e{})",
-        log_decimal(amount, share_expo),
-        log_decimal(total_shares, share_expo),
-        total_shares,
-        share_expo,
+        "Redeem: amount={:.2} total_supply={:.2} ({}e{})",
+        log_decimal(amount, mint_expo),
+        log_decimal(total_supply, mint_expo),
+        total_supply,
+        mint_expo,
     );
 
     let assets = &state.assets;
@@ -398,7 +391,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
         Action::Redeem,
         &assets,
         ctx.remaining_accounts,
-        &ctx.accounts.vault,
+        &ctx.accounts.glam_vault,
         &external_vault_accounts,
         &ctx.accounts.signer,
         &ctx.accounts.token_program,
@@ -411,7 +404,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
         CpiContext::new(
             ctx.accounts.token_2022_program.to_account_info(),
             Burn {
-                mint: ctx.accounts.share_class.to_account_info(),
+                mint: ctx.accounts.glam_mint.to_account_info(),
                 from: ctx.accounts.signer_share_ata.to_account_info(),
                 authority: ctx.accounts.signer.to_account_info(),
             },
@@ -445,7 +438,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
                 }
             } else if in_kind {
                 //TODO do not compute pricing
-                ((att.asset_amount as u128 * amount as u128) / total_shares as u128) as u64
+                ((att.asset_amount as u128 * amount as u128) / total_supply as u128) as u64
             } else {
                 if i > 0 {
                     break;
@@ -454,20 +447,20 @@ pub fn redeem_handler<'c: 'info, 'info>(
                 let mut total_value = Price {
                     price: 0,
                     conf: 0,
-                    exponent: share_expo,
+                    exponent: mint_expo,
                     publish_time: 0,
                 };
                 for att in &aum_components {
                     total_value = total_value
-                        .add(&att.asset_value.scale_to_exponent(share_expo).unwrap())
+                        .add(&att.asset_value.scale_to_exponent(mint_expo).unwrap())
                         .unwrap();
                 }
 
                 let value_to_redeem = Price {
-                    price: ((total_value.price as u128 * amount as u128) / total_shares as u128)
+                    price: ((total_value.price as u128 * amount as u128) / total_supply as u128)
                         as i64,
                     conf: 0,
-                    exponent: share_expo,
+                    exponent: mint_expo,
                     publish_time: 0,
                 };
                 let value = value_to_redeem
@@ -511,9 +504,9 @@ pub fn redeem_handler<'c: 'info, 'info>(
                         from: vault_ata.to_account_info(),
                         mint: asset_info,
                         to: signer_asset_ata.to_account_info(),
-                        authority: ctx.accounts.vault.to_account_info(),
+                        authority: ctx.accounts.glam_vault.to_account_info(),
                     },
-                    vault_signer_seeds,
+                    glam_vault_signer_seeds,
                 ),
                 amount_asset,
                 asset.decimals,
@@ -521,16 +514,16 @@ pub fn redeem_handler<'c: 'info, 'info>(
         }
 
         if should_transfer_everything {
-            let lamports = ctx.accounts.vault.lamports();
+            let lamports = ctx.accounts.glam_vault.lamports();
             if lamports > 0 {
                 system_program::transfer(
                     CpiContext::new_with_signer(
                         ctx.accounts.system_program.to_account_info(),
                         system_program::Transfer {
-                            from: ctx.accounts.vault.to_account_info(),
+                            from: ctx.accounts.glam_vault.to_account_info(),
                             to: ctx.accounts.signer.to_account_info(),
                         },
-                        vault_signer_seeds,
+                        glam_vault_signer_seeds,
                     ),
                     lamports,
                 )?;

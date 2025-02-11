@@ -7,7 +7,7 @@ import { MarinadeClient } from "./client/marinade";
 import { WSolClient } from "./client/wsol";
 import { StakingClient } from "./client/staking";
 import { StateClient } from "./client/state";
-import { ShareClassClient } from "./client/shareclass";
+import { MintClient } from "./client/mint";
 
 export { JUPITER_API_DEFAULT } from "./client/base";
 
@@ -24,7 +24,7 @@ export class GlamClient extends BaseClient {
   private _wsol?: WSolClient;
   private _staking?: StakingClient;
   private _state?: StateClient;
-  private _shareClass?: ShareClassClient;
+  private _mint?: MintClient;
 
   public constructor(config?: GlamClientConfig) {
     super(config);
@@ -32,7 +32,6 @@ export class GlamClient extends BaseClient {
 
   get drift(): DriftClient {
     if (!this._drift) {
-      // @ts-ignore Type instantiation is excessively deep and possibly infinite.
       this._drift = new DriftClient(this);
     }
     return this._drift;
@@ -80,10 +79,10 @@ export class GlamClient extends BaseClient {
     return this._state;
   }
 
-  get shareClass(): ShareClassClient {
-    if (!this._shareClass) {
-      this._shareClass = new ShareClassClient(this);
+  get mint(): MintClient {
+    if (!this._mint) {
+      this._mint = new MintClient(this);
     }
-    return this._shareClass;
+    return this._mint;
   }
 }

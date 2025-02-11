@@ -96,7 +96,7 @@ function InvestorDisclaimers({
       <div className="grid gap-3 text-sm">
         <div className="font-semibold">Redemption Details</div>
         <ul className="grid gap-3">
-          {fund?.shareClassMints[0] ? (
+          {fund?.mintAddresses[0] ? (
             <li className="border-b pb-3 flex items-center justify-between">
               <span className="text-muted-foreground flex items-center">
                 Share Class Address
@@ -104,8 +104,8 @@ function InvestorDisclaimers({
               <span>
                 <p className="font-semibold">
                   <ExplorerLink
-                    path={`/account/${fund?.shareClassMints[0]}`}
-                    label={fund?.shareClassMints[0].toBase58()}
+                    path={`/account/${fund?.mintAddresses[0]}`}
+                    label={fund?.mintAddresses[0].toBase58()}
                   />
                 </p>
               </span>
@@ -232,7 +232,7 @@ function InvestorDisclaimers({
         <div className="font-semibold">Subscription Details</div>
         <ul className="grid gap-3">
           {/* Share Class Link */}
-          {!!fund?.shareClassMints?.length ? (
+          {!!fund?.mintAddresses?.length ? (
             <li className="border-b pb-3 flex items-center justify-between">
               <span className="text-muted-foreground flex items-center">
                 Share Class Address
@@ -240,8 +240,8 @@ function InvestorDisclaimers({
               <span>
                 <p className="font-semibold">
                   <ExplorerLink
-                    path={`/account/${fund?.shareClassMints[0]}`}
-                    label={fund?.shareClassMints[0].toBase58()}
+                    path={`/account/${fund?.mintAddresses[0]}`}
+                    label={fund?.mintAddresses[0].toBase58()}
                   />
                 </p>
               </span>
@@ -406,7 +406,7 @@ function InvestorWidget({ fundModel }: { fundModel?: StateModel }) {
 
     if (direction === "redeem") {
       const symbol = (fundModel?.mints || [])[0]?.symbol || "Share";
-      const mint = fundModel?.shareClassMints[0];
+      const mint = fundModel?.mintAddresses[0];
       setAmountInAsset(symbol);
 
       if (mint) {
@@ -494,7 +494,7 @@ function InvestorWidget({ fundModel }: { fundModel?: StateModel }) {
     let txId;
     try {
       if (direction === "redeem") {
-        const shareClassMint = fundModel?.shareClassMints[0];
+        const shareClassMint = fundModel?.mintAddresses[0];
         const ata = (userWallet?.tokenAccounts || []).find((a) =>
           a.mint.equals(shareClassMint),
         )!;

@@ -61,7 +61,7 @@ describe("glam_policy_hook", () => {
   } as any;
 
   const statePda = glamClient.getStatePda(stateModel);
-  const sharePda = glamClient.getShareClassPda(statePda, 0);
+  const sharePda = glamClient.getMintPda(statePda, 0);
 
   const connection = glamClient.provider.connection;
   const commitment = "confirmed";

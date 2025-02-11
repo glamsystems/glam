@@ -7,8 +7,8 @@ use super::openfunds::*;
 
 #[derive(AnchorDeserialize, AnchorSerialize, PartialEq, Clone, Debug, Copy)]
 pub enum EngineFieldName {
-    ShareClassAllowlist,   // share class
-    ShareClassBlocklist,   // share class
+    Allowlist,
+    Blocklist,
     ExternalVaultAccounts, // external accounts with vault assets
     LockUp,                // share class
     DriftMarketIndexesPerp,
@@ -94,9 +94,9 @@ impl StateAccount {
     pub const INIT_SIZE: usize = 1024; // TODO: auto extend account size if needed
 
     // return the share class lockup period in s. 0 == no lockup (default).
-    pub fn share_class_lock_up(&self, share_class_id: usize) -> i64 {
+    pub fn mint_lock_up(&self, mint_id: usize) -> i64 {
         self.params
-            .get(share_class_id + 1)
+            .get(mint_id + 1)
             .and_then(|params| {
                 params
                     .iter()
@@ -109,11 +109,11 @@ impl StateAccount {
             .unwrap_or(0)
     }
 
-    pub fn share_class_allowlist(&self, share_class_id: usize) -> Option<&Vec<Pubkey>> {
-        self.params.get(share_class_id + 1).and_then(|params| {
+    pub fn mint_allowlist(&self, mint_id: usize) -> Option<&Vec<Pubkey>> {
+        self.params.get(mint_id + 1).and_then(|params| {
             params
                 .iter()
-                .find(|EngineField { name, .. }| *name == EngineFieldName::ShareClassAllowlist)
+                .find(|EngineField { name, .. }| *name == EngineFieldName::Allowlist)
                 .and_then(|EngineField { value, .. }| match value {
                     EngineFieldValue::VecPubkey { val } => Some(val),
                     _ => None,
@@ -121,11 +121,11 @@ impl StateAccount {
         })
     }
 
-    pub fn share_class_allowlist_mut(&mut self, share_class_id: usize) -> Option<&mut Vec<Pubkey>> {
-        self.params.get_mut(share_class_id + 1).and_then(|params| {
+    pub fn mint_allowlist_mut(&mut self, mint_id: usize) -> Option<&mut Vec<Pubkey>> {
+        self.params.get_mut(mint_id + 1).and_then(|params| {
             params
                 .iter_mut()
-                .find(|EngineField { name, .. }| *name == EngineFieldName::ShareClassAllowlist)
+                .find(|EngineField { name, .. }| *name == EngineFieldName::Allowlist)
                 .and_then(|EngineField { value, .. }| match value {
                     EngineFieldValue::VecPubkey { val } => Some(val),
                     _ => None,
@@ -133,11 +133,11 @@ impl StateAccount {
         })
     }
 
-    pub fn share_class_blocklist(&self, share_class_id: usize) -> Option<&Vec<Pubkey>> {
-        self.params.get(share_class_id + 1).and_then(|params| {
+    pub fn mint_blocklist(&self, mint_id: usize) -> Option<&Vec<Pubkey>> {
+        self.params.get(mint_id + 1).and_then(|params| {
             params
                 .iter()
-                .find(|EngineField { name, .. }| *name == EngineFieldName::ShareClassBlocklist)
+                .find(|EngineField { name, .. }| *name == EngineFieldName::Blocklist)
                 .and_then(|EngineField { value, .. }| match value {
                     EngineFieldValue::VecPubkey { val } => Some(val),
                     _ => None,
@@ -145,11 +145,11 @@ impl StateAccount {
         })
     }
 
-    pub fn share_class_blocklist_mut(&mut self, share_class_id: usize) -> Option<&mut Vec<Pubkey>> {
-        self.params.get_mut(share_class_id + 1).and_then(|params| {
+    pub fn mint_blocklist_mut(&mut self, mint_id: usize) -> Option<&mut Vec<Pubkey>> {
+        self.params.get_mut(mint_id + 1).and_then(|params| {
             params
                 .iter_mut()
-                .find(|EngineField { name, .. }| *name == EngineFieldName::ShareClassBlocklist)
+                .find(|EngineField { name, .. }| *name == EngineFieldName::Blocklist)
                 .and_then(|EngineField { value, .. }| match value {
                     EngineFieldValue::VecPubkey { val } => Some(val),
                     _ => None,

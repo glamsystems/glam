@@ -18,7 +18,7 @@ export default function HoldersPage() {
       if (!glamClient || !activeGlamState?.pubkey) {
         return;
       }
-      const tokenAccounts = await glamClient.shareClass.getHolders(
+      const tokenAccounts = await glamClient.mint.getHolders(
         activeGlamState.pubkey,
         0,
       );

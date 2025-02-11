@@ -19,8 +19,8 @@ import {
   StateModel,
   FundOpenfundsModel,
   ManagerModel,
-  ShareClassModel,
-  ShareClassOpenfundsModel,
+  MintModel,
+  MintClassOpenfundsModel,
   CreatedModel,
   Metadata,
 } from "../models";
@@ -79,12 +79,12 @@ export class StateClient {
       // FIXME: setting rawOpenfunds to null is a workarond for
       // Access violation in stack frame 5 at address 0x200005ff8 of size 8
       mints[0].rawOpenfunds = null;
-      const shareClassMint = this.base.getShareClassPda(statePda, 0);
+      const mintPda = this.base.getMintPda(statePda, 0);
       const txSig = await this.base.program.methods
-        .addShareClass(mints[0])
+        .addMint(mints[0])
         .accounts({
-          state: statePda,
-          shareClassMint,
+          glamState: statePda,
+          newMint: mintPda,
         })
         .preInstructions([initStateIx])
         .rpc();
@@ -101,17 +101,17 @@ export class StateClient {
       .rpc();
 
     const addShareClassTxs = await Promise.all(
-      (mints || []).map(async (shareClass, j: number) => {
-        const shareClassMint = this.base.getShareClassPda(statePda, j);
+      (mints || []).map(async (mint, j: number) => {
+        const mintPda = this.base.getMintPda(statePda, j);
 
         // FIXME: setting rawOpenfunds to null is a workarond for
         // Access violation in stack frame 5 at address 0x200005ff8 of size 8
-        shareClass.rawOpenfunds = null;
+        mint.rawOpenfunds = null;
         return await this.base.program.methods
-          .addShareClass(shareClass)
+          .addMint(mint)
           .accounts({
-            state: statePda,
-            shareClassMint,
+            glamState: statePda,
+            newMint: mintPda,
           })
           .preInstructions([
             // FIXME: estimate compute units
@@ -205,10 +205,10 @@ export class StateClient {
     });
 
     if (partialStateModel.mints?.length == 1) {
-      const shareClass = partialStateModel.mints[0];
+      const mint = partialStateModel.mints[0];
       partialStateModel.rawOpenfunds.fundCurrency =
         partialStateModel.rawOpenfunds?.fundCurrency ||
-        shareClass.rawOpenfunds?.shareClassCurrency ||
+        mint.rawOpenfunds?.shareClassCurrency ||
         null;
     } else if (
       partialStateModel.mints?.length &&
@@ -233,31 +233,27 @@ export class StateClient {
     });
 
     // build openfunds models for each share classes
-    (partialStateModel.mints || []).forEach(
-      (shareClass: ShareClassModel, i: number) => {
-        if (shareClass.rawOpenfunds) {
-          if (shareClass.rawOpenfunds.shareClassLifecycle === "active") {
-            shareClass.rawOpenfunds.shareClassLaunchDate =
-              shareClass.rawOpenfunds.shareClassLaunchDate || defaultDate;
-          }
-          shareClass.rawOpenfunds = new ShareClassOpenfundsModel(
-            shareClass.rawOpenfunds,
-          );
-          shareClass.isRawOpenfunds = true;
-        } else {
-          shareClass.isRawOpenfunds = false;
+    (partialStateModel.mints || []).forEach((mint: MintModel, i: number) => {
+      if (mint.rawOpenfunds) {
+        if (mint.rawOpenfunds.shareClassLifecycle === "active") {
+          mint.rawOpenfunds.shareClassLaunchDate =
+            mint.rawOpenfunds.shareClassLaunchDate || defaultDate;
         }
+        mint.rawOpenfunds = new MintClassOpenfundsModel(mint.rawOpenfunds);
+        mint.isRawOpenfunds = true;
+      } else {
+        mint.isRawOpenfunds = false;
+      }
 
-        const sharePda = this.base.getShareClassPda(statePda, i);
-        shareClass.uri = `https://api.glam.systems/metadata/${sharePda}`;
-        shareClass.statePubkey = statePda;
-        shareClass.imageUri = `https://api.glam.systems/v0/sparkle?key=${sharePda}&format=png`;
-      },
-    );
+      const sharePda = this.base.getMintPda(statePda, i);
+      mint.uri = `https://api.glam.systems/metadata/${sharePda}`;
+      mint.statePubkey = statePda;
+      mint.imageUri = `https://api.glam.systems/v0/sparkle?key=${sharePda}&format=png`;
+    });
 
     // convert partial share class models to full share class models
     partialStateModel.mints = (partialStateModel.mints || []).map(
-      (s) => new ShareClassModel(s),
+      (s) => new MintModel(s),
     );
 
     return new StateModel(partialStateModel, this.base.program.programId);

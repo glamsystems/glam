@@ -333,7 +333,6 @@ export class JupiterClient {
       inputTokenProgram,
       outputTokenProgram,
     );
-    // @ts-ignore
     const tx = await this.base.program.methods
       .jupiterSwap(amount, swapIx.data)
       .accountsPartial({

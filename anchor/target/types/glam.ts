@@ -14,32 +14,41 @@ export type Glam = {
   },
   "instructions": [
     {
-      "name": "addShareClass",
+      "name": "addMint",
       "docs": [
         "Share class",
-        "Adds a new share class to a fund.",
+        "Adds a new mint.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `share_class_metadata`: An instance of `ShareClassModel` containing the metadata for the new share class.",
+        "- `mint_model`: An instance of `MintModel` containing the metadata for the new mint.",
         "",
         "# Permission required",
         "- Owner only, delegates not allowed"
       ],
       "discriminator": [
-        34,
-        49,
-        47,
-        6,
-        204,
+        171,
+        222,
+        111,
+        37,
+        60,
         166,
-        51,
-        204
+        208,
+        108
       ],
       "accounts": [
         {
-          "name": "shareClassMint",
+          "name": "glamState",
           "writable": true
+        },
+        {
+          "name": "newMint",
+          "writable": true
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "extraAccountMetaList",
@@ -72,14 +81,10 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "shareClassMint"
+                "path": "newMint"
               }
             ]
           }
-        },
-        {
-          "name": "state",
-          "writable": true
         },
         {
           "name": "openfundsMetadata",
@@ -102,15 +107,10 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
         },
         {
           "name": "systemProgram",
@@ -123,10 +123,10 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "shareClassMetadata",
+          "name": "mintModel",
           "type": {
             "defined": {
-              "name": "shareClassModel"
+              "name": "mintModel"
             }
           }
         }
@@ -135,12 +135,12 @@ export type Glam = {
     {
       "name": "burnShare",
       "docs": [
-        "Burns a specified amount of shares for the given share class.",
+        "Burns a specified amount of tokens for the given mint.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `share_class_id`: The id of the share class to burn shares for.",
-        "- `amount`: The amount of shares to burn.",
+        "- `mint_id`: The id of the mint to burn tokens for.",
+        "- `amount`: The amount of tokens to burn.",
         "",
         "# Permission required",
         "- Permission::BurnShare",
@@ -160,6 +160,13 @@ export type Glam = {
       ],
       "accounts": [
         {
+          "name": "glamState"
+        },
+        {
+          "name": "glamMint",
+          "writable": true
+        },
+        {
           "name": "fromAta",
           "writable": true,
           "pda": {
@@ -174,7 +181,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "shareClassMint"
+                "path": "glamMint"
               }
             ],
             "program": {
@@ -220,14 +227,6 @@ export type Glam = {
           "name": "from"
         },
         {
-          "name": "shareClassMint",
-          "writable": true
-        },
-        {
-          "name": "state",
-          "writable": true
-        },
-        {
           "name": "signer",
           "writable": true,
           "signer": true
@@ -239,7 +238,7 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "shareClassId",
+          "name": "mintId",
           "type": "u8"
         },
         {
@@ -339,30 +338,30 @@ export type Glam = {
       ]
     },
     {
-      "name": "closeShareClass",
+      "name": "closeMint",
       "docs": [
-        "Closes a share class and releases its resources.",
+        "Closes a mint and releases its resources.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `share_class_id`: The id of the share class to be closed.",
+        "- `mint_id`: The id of the mint to be closed.",
         "",
         "# Permission required",
         "- Owner only, delegates not allowed"
       ],
       "discriminator": [
-        35,
-        248,
-        168,
-        150,
-        244,
+        149,
         251,
-        61,
-        91
+        157,
+        212,
+        65,
+        181,
+        235,
+        129
       ],
       "accounts": [
         {
-          "name": "state",
+          "name": "glamState",
           "writable": true
         },
         {
@@ -382,13 +381,13 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
         },
         {
-          "name": "shareClassMint",
+          "name": "glamMint",
           "writable": true
         },
         {
@@ -422,7 +421,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "shareClassMint"
+                "path": "glamMint"
               }
             ]
           }
@@ -447,7 +446,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
@@ -464,7 +463,7 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "shareClassId",
+          "name": "mintId",
           "type": "u8"
         }
       ]
@@ -1526,12 +1525,12 @@ export type Glam = {
     {
       "name": "forceTransferShare",
       "docs": [
-        "Forcefully transfers a specified amount of shares from one account to another.",
+        "Forcefully transfers a specified amount of tokens from one account to another.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `share_class_id`: The id of the share class to transfer shares for.",
-        "- `amount`: The amount of shares to transfer.",
+        "- `mint_id`: The id of the mint to transfer tokens for.",
+        "- `amount`: The amount of tokens to transfer.",
         "",
         "# Permission required",
         "- Permission::ForceTransferShare",
@@ -1551,6 +1550,14 @@ export type Glam = {
       ],
       "accounts": [
         {
+          "name": "glamState",
+          "writable": true
+        },
+        {
+          "name": "glamMint",
+          "writable": true
+        },
+        {
           "name": "fromAta",
           "writable": true,
           "pda": {
@@ -1565,7 +1572,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "shareClassMint"
+                "path": "glamMint"
               }
             ],
             "program": {
@@ -1622,7 +1629,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "shareClassMint"
+                "path": "glamMint"
               }
             ],
             "program": {
@@ -1671,14 +1678,6 @@ export type Glam = {
           "name": "to"
         },
         {
-          "name": "shareClassMint",
-          "writable": true
-        },
-        {
-          "name": "state",
-          "writable": true
-        },
-        {
           "name": "signer",
           "writable": true,
           "signer": true
@@ -1690,7 +1689,7 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "shareClassId",
+          "name": "mintId",
           "type": "u8"
         },
         {
@@ -3200,7 +3199,7 @@ export type Glam = {
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `share_class_id`: The id of the share class to mint shares for.",
+        "- `mint_id`: The id of the mint to mint tokens for.",
         "- `amount`: The amount of shares to mint.",
         "",
         "# Permission required",
@@ -3221,6 +3220,19 @@ export type Glam = {
       ],
       "accounts": [
         {
+          "name": "glamState",
+          "writable": true
+        },
+        {
+          "name": "glamMint",
+          "writable": true
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
           "name": "mintTo",
           "writable": true,
           "pda": {
@@ -3235,7 +3247,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "shareClassMint"
+                "path": "glamMint"
               }
             ],
             "program": {
@@ -3281,26 +3293,13 @@ export type Glam = {
           "name": "recipient"
         },
         {
-          "name": "shareClassMint",
-          "writable": true
-        },
-        {
-          "name": "state",
-          "writable": true
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
           "name": "token2022Program",
           "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
         }
       ],
       "args": [
         {
-          "name": "shareClassId",
+          "name": "mintId",
           "type": "u8"
         },
         {
@@ -3495,23 +3494,10 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "state"
+          "name": "glamState"
         },
         {
-          "name": "shareClass",
-          "writable": true
-        },
-        {
-          "name": "signerShareAta",
-          "writable": true
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3527,10 +3513,23 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
+        },
+        {
+          "name": "glamMint",
+          "writable": true
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "signerShareAta",
+          "writable": true
         },
         {
           "name": "signerPolicy",
@@ -3733,11 +3732,11 @@ export type Glam = {
     {
       "name": "setTokenAccountsStates",
       "docs": [
-        "Sets the frozen state of the token accounts for the specified share class.",
+        "Sets the frozen state of the token accounts for the specified mint.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `share_class_id`: The id of the share class to set the frozen state for.",
+        "- `mint_id`: The id of the mint to set the frozen state for.",
         "- `frozen`: The new frozen state.",
         "",
         "# Permission required",
@@ -3758,11 +3757,10 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "shareClassMint",
-          "writable": true
+          "name": "glamState"
         },
         {
-          "name": "state",
+          "name": "glamMint",
           "writable": true
         },
         {
@@ -3777,7 +3775,7 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "shareClassId",
+          "name": "mintId",
           "type": "u8"
         },
         {
@@ -4533,10 +4531,10 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "state"
+          "name": "glamState"
         },
         {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -4552,13 +4550,13 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
         },
         {
-          "name": "shareClassMint",
+          "name": "glamMint",
           "writable": true
         },
         {
@@ -4576,7 +4574,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "shareClassMint"
+                "path": "glamMint"
               }
             ],
             "program": {
@@ -4685,7 +4683,7 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "shareClassId",
+          "name": "mintId",
           "type": "u8"
         },
         {
@@ -4910,35 +4908,35 @@ export type Glam = {
       ]
     },
     {
-      "name": "updateShareClass",
+      "name": "updateMint",
       "docs": [
-        "Updates an existing share class with new metadata.",
+        "Updates an existing mint with new metadata.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `share_class_id`: The id of the share class to be updated.",
-        "- `share_class_metadata`: An instance of `ShareClassModel` containing the updated metadata for the new share class.",
+        "- `mint_id`: The id of the share class to be updated.",
+        "- `mint_model`: An instance of `MintModel` containing the updated metadata for the new mint.",
         "",
         "# Permission required",
         "- Owner only, delegates not allowed"
       ],
       "discriminator": [
-        196,
-        227,
-        109,
-        174,
-        25,
-        115,
-        15,
-        26
+        212,
+        203,
+        57,
+        78,
+        75,
+        245,
+        222,
+        5
       ],
       "accounts": [
         {
-          "name": "shareClassMint",
+          "name": "glamState",
           "writable": true
         },
         {
-          "name": "state",
+          "name": "glamMint",
           "writable": true
         },
         {
@@ -4953,14 +4951,14 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "shareClassId",
+          "name": "mintId",
           "type": "u8"
         },
         {
-          "name": "shareClassMetadata",
+          "name": "mintModel",
           "type": {
             "defined": {
-              "name": "shareClassModel"
+              "name": "mintModel"
             }
           }
         }
@@ -6281,10 +6279,10 @@ export type Glam = {
         "kind": "enum",
         "variants": [
           {
-            "name": "shareClassAllowlist"
+            "name": "allowlist"
           },
           {
-            "name": "shareClassBlocklist"
+            "name": "blocklist"
           },
           {
             "name": "externalVaultAccounts"
@@ -7092,6 +7090,276 @@ export type Glam = {
       }
     },
     {
+      "name": "mintModel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "symbol",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "uri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "statePubkey",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "asset",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "imageUri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "allowlist",
+            "type": {
+              "option": {
+                "vec": "pubkey"
+              }
+            }
+          },
+          {
+            "name": "blocklist",
+            "type": {
+              "option": {
+                "vec": "pubkey"
+              }
+            }
+          },
+          {
+            "name": "lockUpPeriodInSeconds",
+            "type": {
+              "option": "i32"
+            }
+          },
+          {
+            "name": "permanentDelegate",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "defaultAccountStateFrozen",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "isRawOpenfunds",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "rawOpenfunds",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "mintOpenfundsModel"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "mintOpenfundsModel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "isin",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "shareClassCurrency",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "currencyOfMinimalSubscription",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "fullShareClassName",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "investmentStatus",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "minimalInitialSubscriptionCategory",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "minimalInitialSubscriptionInAmount",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "minimalInitialSubscriptionInShares",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "shareClassDistributionPolicy",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "shareClassExtension",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "shareClassLaunchDate",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "shareClassLifecycle",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "launchPrice",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "launchPriceCurrency",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "launchPriceDate",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "currencyOfMinimalOrMaximumRedemption",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "hasLockUpForRedemption",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "isValidIsin",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "lockUpComment",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "lockUpPeriodInDays",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "maximumInitialRedemptionInAmount",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "maximumInitialRedemptionInShares",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "minimalInitialRedemptionInAmount",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "minimalInitialRedemptionInShares",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "minimalRedemptionCategory",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "shareClassDividendType",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "cusip",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "valor",
+            "type": {
+              "option": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "openfundsMetadataAccount",
       "type": {
         "kind": "struct",
@@ -7866,276 +8134,6 @@ export type Glam = {
       }
     },
     {
-      "name": "shareClassModel",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "symbol",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "name",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "uri",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "statePubkey",
-            "type": {
-              "option": "pubkey"
-            }
-          },
-          {
-            "name": "asset",
-            "type": {
-              "option": "pubkey"
-            }
-          },
-          {
-            "name": "imageUri",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "allowlist",
-            "type": {
-              "option": {
-                "vec": "pubkey"
-              }
-            }
-          },
-          {
-            "name": "blocklist",
-            "type": {
-              "option": {
-                "vec": "pubkey"
-              }
-            }
-          },
-          {
-            "name": "lockUpPeriodInSeconds",
-            "type": {
-              "option": "i32"
-            }
-          },
-          {
-            "name": "permanentDelegate",
-            "type": {
-              "option": "pubkey"
-            }
-          },
-          {
-            "name": "defaultAccountStateFrozen",
-            "type": {
-              "option": "bool"
-            }
-          },
-          {
-            "name": "isRawOpenfunds",
-            "type": {
-              "option": "bool"
-            }
-          },
-          {
-            "name": "rawOpenfunds",
-            "type": {
-              "option": {
-                "defined": {
-                  "name": "shareClassOpenfundsModel"
-                }
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "shareClassOpenfundsModel",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "isin",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "shareClassCurrency",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "currencyOfMinimalSubscription",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "fullShareClassName",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "investmentStatus",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "minimalInitialSubscriptionCategory",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "minimalInitialSubscriptionInAmount",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "minimalInitialSubscriptionInShares",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "shareClassDistributionPolicy",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "shareClassExtension",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "shareClassLaunchDate",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "shareClassLifecycle",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "launchPrice",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "launchPriceCurrency",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "launchPriceDate",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "currencyOfMinimalOrMaximumRedemption",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "hasLockUpForRedemption",
-            "type": {
-              "option": "bool"
-            }
-          },
-          {
-            "name": "isValidIsin",
-            "type": {
-              "option": "bool"
-            }
-          },
-          {
-            "name": "lockUpComment",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "lockUpPeriodInDays",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "maximumInitialRedemptionInAmount",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "maximumInitialRedemptionInShares",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "minimalInitialRedemptionInAmount",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "minimalInitialRedemptionInShares",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "minimalRedemptionCategory",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "shareClassDividendType",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "cusip",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "valor",
-            "type": {
-              "option": "string"
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "stateAccount",
       "type": {
         "kind": "struct",
@@ -8298,7 +8296,7 @@ export type Glam = {
               "option": {
                 "vec": {
                   "defined": {
-                    "name": "shareClassModel"
+                    "name": "mintModel"
                   }
                 }
               }
