@@ -2412,8 +2412,6 @@ export type Glam = {
         "# Parameters",
         "- `ctx`: The context for the transaction.",
         "- `msol_amount`: Amount of mSOL to unstake.",
-        "- `ticket_id`: Ticket ID.",
-        "- `bump`: Bump seed.",
         "",
         "# Permission required",
         "- Permission::Unstake",
@@ -2465,30 +2463,7 @@ export type Glam = {
         },
         {
           "name": "ticket",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  116,
-                  105,
-                  99,
-                  107,
-                  101,
-                  116
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "ticketId"
-              },
-              {
-                "kind": "account",
-                "path": "state"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "msolMint",
@@ -2528,10 +2503,6 @@ export type Glam = {
         }
       ],
       "args": [
-        {
-          "name": "ticketId",
-          "type": "u64"
-        },
         {
           "name": "msolAmount",
           "type": "u64"
@@ -8502,11 +8473,6 @@ export type Glam = {
       "name": "seedState",
       "type": "string",
       "value": "\"state\""
-    },
-    {
-      "name": "seedTicket",
-      "type": "string",
-      "value": "\"ticket\""
     },
     {
       "name": "seedVault",
