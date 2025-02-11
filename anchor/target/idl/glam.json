@@ -1,5 +1,5 @@
 {
-  "address": "GLAMbTqav9N9witRjswJ8enwp9vv5G8bsSJ2kPJ4rcyc",
+  "address": "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc",
   "metadata": {
     "name": "glam",
     "version": "0.4.0",
@@ -32,7 +32,7 @@
       ],
       "accounts": [
         {
-          "name": "share_class_mint",
+          "name": "new_mint",
           "writable": true
         },
         {
@@ -66,7 +66,7 @@
               },
               {
                 "kind": "account",
-                "path": "share_class_mint"
+                "path": "new_mint"
               }
             ]
           }
@@ -120,7 +120,7 @@
           "name": "share_class_metadata",
           "type": {
             "defined": {
-              "name": "ShareClassModel"
+              "name": "MintModel"
             }
           }
         }
@@ -154,6 +154,13 @@
       ],
       "accounts": [
         {
+          "name": "glam_state"
+        },
+        {
+          "name": "glam_mint",
+          "writable": true
+        },
+        {
           "name": "from_ata",
           "writable": true,
           "pda": {
@@ -168,7 +175,7 @@
               },
               {
                 "kind": "account",
-                "path": "share_class_mint"
+                "path": "glam_mint"
               }
             ],
             "program": {
@@ -212,14 +219,6 @@
         },
         {
           "name": "from"
-        },
-        {
-          "name": "share_class_mint",
-          "writable": true
-        },
-        {
-          "name": "state",
-          "writable": true
         },
         {
           "name": "signer",
@@ -356,7 +355,7 @@
       ],
       "accounts": [
         {
-          "name": "state",
+          "name": "glam_state",
           "writable": true
         },
         {
@@ -376,13 +375,13 @@
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glam_state"
               }
             ]
           }
         },
         {
-          "name": "share_class_mint",
+          "name": "glam_mint",
           "writable": true
         },
         {
@@ -416,7 +415,7 @@
               },
               {
                 "kind": "account",
-                "path": "share_class_mint"
+                "path": "glam_mint"
               }
             ]
           }
@@ -441,7 +440,7 @@
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glam_state"
               }
             ]
           }
@@ -1545,6 +1544,14 @@
       ],
       "accounts": [
         {
+          "name": "glam_state",
+          "writable": true
+        },
+        {
+          "name": "glam_mint",
+          "writable": true
+        },
+        {
           "name": "from_ata",
           "writable": true,
           "pda": {
@@ -1559,7 +1566,7 @@
               },
               {
                 "kind": "account",
-                "path": "share_class_mint"
+                "path": "glam_mint"
               }
             ],
             "program": {
@@ -1616,7 +1623,7 @@
               },
               {
                 "kind": "account",
-                "path": "share_class_mint"
+                "path": "glam_mint"
               }
             ],
             "program": {
@@ -1663,14 +1670,6 @@
         },
         {
           "name": "to"
-        },
-        {
-          "name": "share_class_mint",
-          "writable": true
-        },
-        {
-          "name": "state",
-          "writable": true
         },
         {
           "name": "signer",
@@ -3215,6 +3214,19 @@
       ],
       "accounts": [
         {
+          "name": "glam_state",
+          "writable": true
+        },
+        {
+          "name": "glam_mint",
+          "writable": true
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
           "name": "mint_to",
           "writable": true,
           "pda": {
@@ -3229,7 +3241,7 @@
               },
               {
                 "kind": "account",
-                "path": "share_class_mint"
+                "path": "glam_mint"
               }
             ],
             "program": {
@@ -3273,19 +3285,6 @@
         },
         {
           "name": "recipient"
-        },
-        {
-          "name": "share_class_mint",
-          "writable": true
-        },
-        {
-          "name": "state",
-          "writable": true
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
         },
         {
           "name": "token_2022_program",
@@ -3752,11 +3751,10 @@
       ],
       "accounts": [
         {
-          "name": "share_class_mint",
-          "writable": true
+          "name": "glam_state"
         },
         {
-          "name": "state",
+          "name": "glam_mint",
           "writable": true
         },
         {
@@ -4527,10 +4525,10 @@
       ],
       "accounts": [
         {
-          "name": "state"
+          "name": "glam_state"
         },
         {
-          "name": "vault",
+          "name": "glam_vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -4546,13 +4544,13 @@
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glam_state"
               }
             ]
           }
         },
         {
-          "name": "share_class_mint",
+          "name": "glam_mint",
           "writable": true
         },
         {
@@ -4570,7 +4568,7 @@
               },
               {
                 "kind": "account",
-                "path": "share_class_mint"
+                "path": "glam_mint"
               }
             ],
             "program": {
@@ -4954,7 +4952,7 @@
           "name": "share_class_metadata",
           "type": {
             "defined": {
-              "name": "ShareClassModel"
+              "name": "MintModel"
             }
           }
         }
@@ -7086,6 +7084,276 @@
       }
     },
     {
+      "name": "MintModel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "symbol",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "uri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "state_pubkey",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "asset",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "image_uri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "allowlist",
+            "type": {
+              "option": {
+                "vec": "pubkey"
+              }
+            }
+          },
+          {
+            "name": "blocklist",
+            "type": {
+              "option": {
+                "vec": "pubkey"
+              }
+            }
+          },
+          {
+            "name": "lock_up_period_in_seconds",
+            "type": {
+              "option": "i32"
+            }
+          },
+          {
+            "name": "permanent_delegate",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "default_account_state_frozen",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "is_raw_openfunds",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "raw_openfunds",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "MintOpenfundsModel"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "MintOpenfundsModel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "isin",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "share_class_currency",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "currency_of_minimal_subscription",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "full_share_class_name",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "investment_status",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "minimal_initial_subscription_category",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "minimal_initial_subscription_in_amount",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "minimal_initial_subscription_in_shares",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "share_class_distribution_policy",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "share_class_extension",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "share_class_launch_date",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "share_class_lifecycle",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "launch_price",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "launch_price_currency",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "launch_price_date",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "currency_of_minimal_or_maximum_redemption",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "has_lock_up_for_redemption",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "is_valid_isin",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "lock_up_comment",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "lock_up_period_in_days",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "maximum_initial_redemption_in_amount",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "maximum_initial_redemption_in_shares",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "minimal_initial_redemption_in_amount",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "minimal_initial_redemption_in_shares",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "minimal_redemption_category",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "share_class_dividend_type",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "cusip",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "valor",
+            "type": {
+              "option": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "OpenfundsMetadataAccount",
       "type": {
         "kind": "struct",
@@ -7860,276 +8128,6 @@
       }
     },
     {
-      "name": "ShareClassModel",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "symbol",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "name",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "uri",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "state_pubkey",
-            "type": {
-              "option": "pubkey"
-            }
-          },
-          {
-            "name": "asset",
-            "type": {
-              "option": "pubkey"
-            }
-          },
-          {
-            "name": "image_uri",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "allowlist",
-            "type": {
-              "option": {
-                "vec": "pubkey"
-              }
-            }
-          },
-          {
-            "name": "blocklist",
-            "type": {
-              "option": {
-                "vec": "pubkey"
-              }
-            }
-          },
-          {
-            "name": "lock_up_period_in_seconds",
-            "type": {
-              "option": "i32"
-            }
-          },
-          {
-            "name": "permanent_delegate",
-            "type": {
-              "option": "pubkey"
-            }
-          },
-          {
-            "name": "default_account_state_frozen",
-            "type": {
-              "option": "bool"
-            }
-          },
-          {
-            "name": "is_raw_openfunds",
-            "type": {
-              "option": "bool"
-            }
-          },
-          {
-            "name": "raw_openfunds",
-            "type": {
-              "option": {
-                "defined": {
-                  "name": "ShareClassOpenfundsModel"
-                }
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "ShareClassOpenfundsModel",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "isin",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "share_class_currency",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "currency_of_minimal_subscription",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "full_share_class_name",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "investment_status",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "minimal_initial_subscription_category",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "minimal_initial_subscription_in_amount",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "minimal_initial_subscription_in_shares",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "share_class_distribution_policy",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "share_class_extension",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "share_class_launch_date",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "share_class_lifecycle",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "launch_price",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "launch_price_currency",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "launch_price_date",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "currency_of_minimal_or_maximum_redemption",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "has_lock_up_for_redemption",
-            "type": {
-              "option": "bool"
-            }
-          },
-          {
-            "name": "is_valid_isin",
-            "type": {
-              "option": "bool"
-            }
-          },
-          {
-            "name": "lock_up_comment",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "lock_up_period_in_days",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "maximum_initial_redemption_in_amount",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "maximum_initial_redemption_in_shares",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "minimal_initial_redemption_in_amount",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "minimal_initial_redemption_in_shares",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "minimal_redemption_category",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "share_class_dividend_type",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "cusip",
-            "type": {
-              "option": "string"
-            }
-          },
-          {
-            "name": "valor",
-            "type": {
-              "option": "string"
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "StateAccount",
       "type": {
         "kind": "struct",
@@ -8292,7 +8290,7 @@
               "option": {
                 "vec": {
                   "defined": {
-                    "name": "ShareClassModel"
+                    "name": "MintModel"
                   }
                 }
               }

@@ -413,15 +413,10 @@ export class BaseClient {
 
   getAta(
     mint: PublicKey,
-    owner?: PublicKey,
+    owner: PublicKey,
     tokenProgram = TOKEN_PROGRAM_ID,
   ): PublicKey {
-    return getAssociatedTokenAddressSync(
-      mint,
-      owner || this.getSigner(),
-      true,
-      tokenProgram,
-    );
+    return getAssociatedTokenAddressSync(mint, owner, true, tokenProgram);
   }
 
   getStatePda(stateModel: Partial<StateModel>): PublicKey {
@@ -544,7 +539,7 @@ export class BaseClient {
     return pda;
   }
 
-  getShareClassPda(statePda: PublicKey, mintIdx: number = 0): PublicKey {
+  getMintPda(statePda: PublicKey, mintIdx: number = 0): PublicKey {
     const [pda, _] = PublicKey.findProgramAddressSync(
       [
         Buffer.from(SEED_MINT),
@@ -556,8 +551,8 @@ export class BaseClient {
     return pda;
   }
 
-  getShareClassAta(user: PublicKey, shareClassPDA: PublicKey): PublicKey {
-    return this.getAta(shareClassPDA, user, TOKEN_2022_PROGRAM_ID);
+  getMintAta(user: PublicKey, mintPda: PublicKey): PublicKey {
+    return this.getAta(mintPda, user, TOKEN_2022_PROGRAM_ID);
   }
 
   getName(stateModel: Partial<StateModel>) {
@@ -582,15 +577,14 @@ export class BaseClient {
     return await this.program.account.openfundsMetadataAccount.fetch(openfunds);
   }
 
-  public async fetchShareClassAccount(
+  public async fetchMintAccount(
     state: PublicKey,
     mintIdx: number,
   ): Promise<Mint> {
-    const shareClassMint = this.getShareClassPda(state, mintIdx);
     const connection = this.provider.connection;
     return await getMint(
       connection,
-      shareClassMint,
+      this.getMintPda(state, mintIdx),
       connection.commitment,
       TOKEN_2022_PROGRAM_ID,
     );
@@ -679,12 +673,12 @@ export class BaseClient {
       await this.fetchOpenfundsMetadataAccount(statePda);
 
     if (stateAccount.mints.length > 0) {
-      const firstShareClass = await this.fetchShareClassAccount(statePda, 0);
+      const firstMint = await this.fetchMintAccount(statePda, 0);
       return StateModel.fromOnchainAccounts(
         statePda,
         stateAccount,
         openfundsMetadataAccount,
-        firstShareClass,
+        firstMint,
         this.program.programId,
       );
     }

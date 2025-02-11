@@ -3,7 +3,7 @@ use quote::quote;
 use syn::{parse_macro_input, FnArg, ItemFn, Pat, PatIdent};
 
 #[proc_macro_attribute]
-pub fn share_class_signer_seeds(_attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn mint_signer_seeds(_attr: TokenStream, item: TokenStream) -> TokenStream {
     // Parse the input as a function
     let input = parse_macro_input!(item as ItemFn);
     let func_attrs = &input.attrs;
@@ -11,41 +11,41 @@ pub fn share_class_signer_seeds(_attr: TokenStream, item: TokenStream) -> TokenS
     let func_sig = &input.sig;
     let func_block = &input.block;
 
-    // Check for `share_class_id` argument
-    let mut has_share_class_id = false;
+    // Check for `mint_id` argument
+    let mut has_mint_id = false;
     for arg in &input.sig.inputs {
         if let FnArg::Typed(pat_type) = arg {
             if let Pat::Ident(PatIdent { ident, .. }) = &*pat_type.pat {
-                if ident == "share_class_id" {
-                    has_share_class_id = true;
+                if ident == "mint_id" {
+                    has_mint_id = true;
                     break;
                 }
             }
         }
     }
 
-    if !has_share_class_id {
+    if !has_mint_id {
         return syn::Error::new_spanned(
             input.sig.ident,
-            "The function must have a 'share_class_id' parameter.",
+            "The function must have a 'mint_id' parameter.",
         )
         .to_compile_error()
         .into();
     }
 
-    // Generate the modified function with `share_class_signer_seeds` added at the start of the body
+    // Generate the modified function with `mint_signer_seeds` added at the start of the body
     let expanded = quote! {
         #(#func_attrs)*
         #func_vis #func_sig {
-            // We assume the fund account and the treasury bump seed are available in the context
-            let state_key = ctx.accounts.state.key();
+            // We assume the fund account and the state bump seed are available in the context
+            let state_key = ctx.accounts.glam_state.key();
             let seeds = &[
                 "mint".as_bytes(),
-                &[share_class_id],
+                &[mint_id],
                 state_key.as_ref(),
-                &[ctx.bumps.share_class_mint],
+                &[ctx.bumps.glam_mint],
             ];
-            let share_class_signer_seeds = &[&seeds[..]];
+            let mint_signer_seeds = &[&seeds[..]];
 
             // Original function body follows
             #func_block

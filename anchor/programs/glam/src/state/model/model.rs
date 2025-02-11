@@ -18,7 +18,7 @@ pub struct StateModel {
     pub external_vault_accounts: Option<Vec<Pubkey>>,
 
     // Relationships
-    pub mints: Option<Vec<ShareClassModel>>,
+    pub mints: Option<Vec<MintModel>>,
     pub company: Option<CompanyModel>,
     pub owner: Option<ManagerModel>,
     pub created: Option<CreatedModel>,
@@ -56,14 +56,14 @@ pub struct FundOpenfundsModel {
     pub ucits_version: Option<String>,
 }
 
-// Share Class
+// Mint
 //
 // Implemented:
 // - Openfunds Share Class Essential
 // - Subset of Core, Additional, Full (e.g. Fees)
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]
-pub struct ShareClassModel {
+pub struct MintModel {
     // Token
     pub symbol: Option<String>,
     pub name: Option<String>,
@@ -85,11 +85,11 @@ pub struct ShareClassModel {
 
     // Metadata
     pub is_raw_openfunds: Option<bool>,
-    pub raw_openfunds: Option<ShareClassOpenfundsModel>,
+    pub raw_openfunds: Option<MintOpenfundsModel>,
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug, Default)]
-pub struct ShareClassOpenfundsModel {
+pub struct MintOpenfundsModel {
     // Essential
     pub isin: Option<String>,
     pub share_class_currency: Option<String>,

@@ -33,7 +33,7 @@ export class StateIdlModel implements StateModelType {
   assets: PublicKey[] | null;
   externalVaultAccounts: PublicKey[] | null;
 
-  mints: ShareClassModel[] | null;
+  mints: MintModel[] | null;
   company: CompanyModel | null;
   owner: ManagerModel | null;
   created: CreatedModel | null;
@@ -124,7 +124,7 @@ export class StateModel extends StateIdlModel {
       throw new Error("Fund ID not set");
     }
     return (this.mints || []).map((_, i) =>
-      ShareClassModel.mintAddress(this.id!, i, this.glamProgramId),
+      MintModel.mintAddress(this.id!, i, this.glamProgramId),
     );
   }
 
@@ -214,7 +214,7 @@ export class StateModel extends StateIdlModel {
           // @ts-ignore
           shareClassOpenfundsFields[name] = value;
         });
-        shareClassIdlModel["rawOpenfunds"] = new ShareClassOpenfundsModel(
+        shareClassIdlModel["rawOpenfunds"] = new MintClassOpenfundsModel(
           shareClassOpenfundsFields,
         );
       }
@@ -243,7 +243,7 @@ export class StateModel extends StateIdlModel {
 
       // stateModel.shareClasses should never be null
       // non-null assertion is safe and is needed to suppress type error
-      stateModel.mints!.push(new ShareClassModel(shareClassIdlModel));
+      stateModel.mints!.push(new MintModel(shareClassIdlModel));
     });
 
     stateModel.name =
@@ -296,8 +296,8 @@ export class FundOpenfundsModel implements FundOpenfundsModelType {
   }
 }
 
-export type ShareClassModelType = IdlTypes<Glam>["shareClassModel"];
-export class ShareClassIdlModel implements ShareClassModelType {
+export type MintModelType = IdlTypes<Glam>["mintModel"];
+export class MintIdlModel implements MintModelType {
   symbol: string | null;
   name: string | null;
   uri: string | null;
@@ -314,9 +314,9 @@ export class ShareClassIdlModel implements ShareClassModelType {
   defaultAccountStateFrozen: boolean | null;
 
   isRawOpenfunds: boolean | null;
-  rawOpenfunds: ShareClassOpenfundsModel | null;
+  rawOpenfunds: MintClassOpenfundsModel | null;
 
-  constructor(data: Partial<ShareClassModelType>) {
+  constructor(data: Partial<MintModelType>) {
     this.symbol = data.symbol ?? null;
     this.name = data.name ?? null;
     this.uri = data.uri ?? null;
@@ -332,8 +332,8 @@ export class ShareClassIdlModel implements ShareClassModelType {
     this.defaultAccountStateFrozen = data.defaultAccountStateFrozen ?? null;
   }
 }
-export class ShareClassModel extends ShareClassIdlModel {
-  constructor(data: Partial<ShareClassIdlModel>) {
+export class MintModel extends MintIdlModel {
+  constructor(data: Partial<MintIdlModel>) {
     super(data);
   }
 
@@ -350,9 +350,8 @@ export class ShareClassModel extends ShareClassIdlModel {
   }
 }
 
-export type ShareClassOpenfundsModelType =
-  IdlTypes<Glam>["shareClassOpenfundsModel"];
-export class ShareClassOpenfundsModel implements ShareClassOpenfundsModelType {
+export type MintOpenfundsModelType = IdlTypes<Glam>["mintOpenfundsModel"];
+export class MintClassOpenfundsModel implements MintOpenfundsModelType {
   isin: string | null;
   shareClassCurrency: string | null;
   currencyOfMinimalSubscription: string | null;
@@ -382,7 +381,7 @@ export class ShareClassOpenfundsModel implements ShareClassOpenfundsModelType {
   cusip: string | null;
   valor: string | null;
 
-  constructor(obj: Partial<ShareClassOpenfundsModelType>) {
+  constructor(obj: Partial<MintOpenfundsModelType>) {
     this.isin = obj.isin ?? null;
     this.shareClassCurrency = obj.shareClassCurrency ?? null;
     this.currencyOfMinimalSubscription =

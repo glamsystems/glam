@@ -71,8 +71,8 @@ impl From<StateModel> for Vec<FundField> {
 
 // Share Class
 
-impl From<&ShareClassModel> for Vec<ShareClassField> {
-    fn from(model: &ShareClassModel) -> Self {
+impl From<&MintModel> for Vec<ShareClassField> {
+    fn from(model: &MintModel) -> Self {
         let mut res = vec![];
         // Derived fields
         let is_raw_openfunds = model.is_raw_openfunds.unwrap_or(false);

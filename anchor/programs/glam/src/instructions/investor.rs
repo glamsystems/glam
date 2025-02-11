@@ -8,7 +8,7 @@ use anchor_spl::token::Token;
 use anchor_spl::token_interface::{
     burn, mint_to, transfer_checked, Burn, Mint, MintTo, Token2022, TokenAccount, TransferChecked,
 };
-use glam_macros::share_class_signer_seeds;
+use glam_macros::mint_signer_seeds;
 use glam_macros::vault_signer_seeds;
 use marinade::state::delayed_unstake_ticket::TicketAccountData;
 use pyth_solana_receiver_sdk::price_update::Price;
@@ -25,27 +25,27 @@ fn log_decimal(amount: u64, minus_decimals: i32) -> f64 {
 }
 
 #[derive(Accounts)]
-#[instruction(share_class_id: u8)]
+#[instruction(mint_id: u8)]
 pub struct Subscribe<'info> {
     #[account()]
-    pub state: Box<Account<'info, StateAccount>>,
+    pub glam_state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
-    pub vault: SystemAccount<'info>,
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), glam_state.key().as_ref()], bump)]
+    pub glam_vault: SystemAccount<'info>,
 
     // the shares to mint
     #[account(
         mut,
-        seeds = [SEED_MINT.as_bytes(), &[share_class_id], state.key().as_ref()],
+        seeds = [SEED_MINT.as_bytes(), &[mint_id], glam_state.key().as_ref()],
         bump,
-        mint::authority = share_class_mint,
+        mint::authority = glam_mint,
         mint::token_program = token_2022_program
     )]
-    pub share_class_mint: Box<InterfaceAccount<'info, Mint>>,
+    pub glam_mint: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(
         mut,
-        associated_token::mint = share_class_mint,
+        associated_token::mint = glam_mint,
         associated_token::authority = signer,
         associated_token::token_program = token_2022_program
     )]
@@ -84,14 +84,14 @@ pub struct Subscribe<'info> {
     pub token_2022_program: Program<'info, Token2022>,
 }
 
-#[share_class_signer_seeds]
+#[mint_signer_seeds]
 pub fn subscribe_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, Subscribe<'info>>,
-    share_class_id: u8,
+    mint_id: u8,
     amount: u64,
     skip_state: bool,
 ) -> Result<()> {
-    let state = &ctx.accounts.state;
+    let state = &ctx.accounts.glam_state;
     require!(state.enabled, GlamError::StateAccountDisabled);
 
     let external_vault_accounts =
@@ -109,7 +109,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     }
     require!(state.mints.len() > 0, GlamError::NoShareClass);
     require!(
-        state.mints[0] == ctx.accounts.share_class_mint.key(),
+        state.mints[0] == ctx.accounts.glam_mint.key(),
         GlamError::InvalidShareClass
     );
 
@@ -170,7 +170,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
     //
     // Compute amount of shares to mint
     //
-    let share_class = &ctx.accounts.share_class_mint;
+    let share_class = &ctx.accounts.glam_mint;
     let share_expo = -(share_class.decimals as i32);
     let total_shares = share_class.supply;
     let use_fixed_price = total_shares == 0;
@@ -179,7 +179,7 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         Action::Subscribe,
         &state_assets,
         ctx.remaining_accounts,
-        &ctx.accounts.vault,
+        &ctx.accounts.glam_vault,
         &external_vault_accounts,
         &ctx.accounts.signer,
         &ctx.accounts.token_program,
@@ -263,11 +263,11 @@ pub fn subscribe_handler<'c: 'info, 'info>(
             CpiContext::new_with_signer(
                 ctx.accounts.token_2022_program.to_account_info(),
                 MintTo {
-                    authority: ctx.accounts.share_class_mint.to_account_info(),
+                    authority: ctx.accounts.glam_mint.to_account_info(),
                     to: ctx.accounts.signer_share_ata.to_account_info(),
-                    mint: ctx.accounts.share_class_mint.to_account_info(),
+                    mint: ctx.accounts.glam_mint.to_account_info(),
                 },
-                share_class_signer_seeds,
+                mint_signer_seeds,
             ),
             amount_shares,
         )?;

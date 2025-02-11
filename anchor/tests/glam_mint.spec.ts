@@ -42,7 +42,7 @@ describe("glam_mint", () => {
 
   it("Mint share class fail due to default state frozen", async () => {
     try {
-      const txSig = await glamClient.shareClass.mintShare(
+      const txSig = await glamClient.mint.mintShare(
         statePda,
         0,
         key1.publicKey,
@@ -58,7 +58,7 @@ describe("glam_mint", () => {
     const amount = new BN(1_000_000_000);
     const recipient = key1.publicKey;
     try {
-      const txSig = await glamClient.shareClass.mintShare(
+      const txSig = await glamClient.mint.mintShare(
         statePda,
         0,
         recipient,
@@ -71,8 +71,8 @@ describe("glam_mint", () => {
       throw e;
     }
 
-    const shareClassMint = glamClient.getShareClassPda(statePda);
-    const mintTo = glamClient.getShareClassAta(recipient, shareClassMint);
+    const glamMint = glamClient.getMintPda(statePda);
+    const mintTo = glamClient.getMintAta(recipient, glamMint);
     const tokenAccount = await getAccount(
       glamClient.provider.connection,
       mintTo,
@@ -83,8 +83,8 @@ describe("glam_mint", () => {
   });
 
   it("Freeze token account", async () => {
-    const shareClassMint = glamClient.getShareClassPda(statePda, 0);
-    const ata = glamClient.getShareClassAta(key1.publicKey, shareClassMint);
+    const glamMint = glamClient.getMintPda(statePda, 0);
+    const ata = glamClient.getMintAta(key1.publicKey, glamMint);
 
     // Before: token account is not frozen
     let accountInfo = await glamClient.provider.connection.getAccountInfo(ata);
@@ -93,7 +93,7 @@ describe("glam_mint", () => {
 
     // Freeeze token account
     try {
-      const txSig = await glamClient.shareClass.setTokenAccountsStates(
+      const txSig = await glamClient.mint.setTokenAccountsStates(
         statePda,
         0,
         [ata],
@@ -112,15 +112,15 @@ describe("glam_mint", () => {
   });
 
   it("Force transfer 0.5 share", async () => {
-    const shareClassMint = glamClient.getShareClassPda(statePda, 0);
+    const glamMint = glamClient.getMintPda(statePda, 0);
     const from = key1.publicKey;
     const to = key2.publicKey;
-    const fromAta = glamClient.getShareClassAta(from, shareClassMint);
-    const toAta = glamClient.getShareClassAta(to, shareClassMint);
+    const fromAta = glamClient.getMintAta(from, glamMint);
+    const toAta = glamClient.getMintAta(to, glamMint);
 
     const amount = new BN(500_000_000);
     try {
-      const txSig = await glamClient.shareClass.forceTransferShare(
+      const txSig = await glamClient.mint.forceTransferShare(
         statePda,
         0,
         amount,
@@ -155,16 +155,11 @@ describe("glam_mint", () => {
     const from = key1.publicKey;
 
     const amount = new BN(500_000_000);
-    const txSig = await glamClient.shareClass.burnShare(
-      statePda,
-      0,
-      amount,
-      from,
-    );
+    const txSig = await glamClient.mint.burnShare(statePda, 0, amount, from);
     console.log("burnShare txSig", txSig);
 
-    const shareClassMint = glamClient.getShareClassPda(statePda, 0);
-    const fromAta = glamClient.getShareClassAta(from, shareClassMint);
+    const glamMint = glamClient.getMintPda(statePda, 0);
+    const fromAta = glamClient.getMintAta(from, glamMint);
     const tokenAccount = await getAccount(
       glamClient.provider.connection,
       fromAta,

@@ -47,11 +47,8 @@ export function DataTableToolbar<TData>({
     }
     // Set ata if public key is valid
     try {
-      const shareClassMint = glamClient.getShareClassPda(
-        activeGlamState.pubkey,
-        0,
-      );
-      const ata = glamClient.getShareClassAta(
+      const shareClassMint = glamClient.getMintPda(activeGlamState.pubkey, 0);
+      const ata = glamClient.getMintAta(
         new PublicKey(publicKey),
         shareClassMint,
       );

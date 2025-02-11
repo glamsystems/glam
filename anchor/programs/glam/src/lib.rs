@@ -123,10 +123,10 @@ pub mod glam {
     /// # Permission required
     /// - Owner only, delegates not allowed
     pub fn add_share_class<'c: 'info, 'info>(
-        ctx: Context<'_, '_, 'c, 'info, AddShareClass<'info>>,
-        share_class_metadata: ShareClassModel,
+        ctx: Context<'_, '_, 'c, 'info, NewMint<'info>>,
+        share_class_metadata: MintModel,
     ) -> Result<()> {
-        share_class::add_share_class_handler(ctx, share_class_metadata)
+        mint::add_mint_handler(ctx, share_class_metadata)
     }
 
     /// Updates an existing share class with new metadata.
@@ -141,9 +141,9 @@ pub mod glam {
     pub fn update_share_class(
         ctx: Context<UpdateShareClass>,
         share_class_id: u8,
-        share_class_metadata: ShareClassModel,
+        share_class_metadata: MintModel,
     ) -> Result<()> {
-        share_class::update_share_class_handler(ctx, share_class_id, share_class_metadata)
+        mint::update_share_class_handler(ctx, share_class_id, share_class_metadata)
     }
 
     /// Closes a share class and releases its resources.
@@ -155,7 +155,7 @@ pub mod glam {
     /// # Permission required
     /// - Owner only, delegates not allowed
     pub fn close_share_class(ctx: Context<CloseShareClass>, share_class_id: u8) -> Result<()> {
-        share_class::close_share_class_handler(ctx, share_class_id)
+        mint::close_share_class_handler(ctx, share_class_id)
     }
 
     /// Mints a specified amount of shares for the given share class.
@@ -175,7 +175,7 @@ pub mod glam {
         share_class_id: u8,
         amount: u64,
     ) -> Result<()> {
-        share_class::mint_share_handler(ctx, share_class_id, amount)
+        mint::mint_share_handler(ctx, share_class_id, amount)
     }
 
     /// Forcefully transfers a specified amount of shares from one account to another.
@@ -195,7 +195,7 @@ pub mod glam {
         share_class_id: u8,
         amount: u64,
     ) -> Result<()> {
-        share_class::force_transfer_share_handler(ctx, share_class_id, amount)
+        mint::force_transfer_share_handler(ctx, share_class_id, amount)
     }
 
     /// Burns a specified amount of shares for the given share class.
@@ -211,7 +211,7 @@ pub mod glam {
     /// # Integration required
     /// - Integration::Mint
     pub fn burn_share(ctx: Context<BurnShare>, share_class_id: u8, amount: u64) -> Result<()> {
-        share_class::burn_share_handler(ctx, share_class_id, amount)
+        mint::burn_share_handler(ctx, share_class_id, amount)
     }
 
     /// Sets the frozen state of the token accounts for the specified share class.
@@ -231,7 +231,7 @@ pub mod glam {
         share_class_id: u8,
         frozen: bool,
     ) -> Result<()> {
-        share_class::set_token_accounts_states_handler(ctx, share_class_id, frozen)
+        mint::set_token_accounts_states_handler(ctx, share_class_id, frozen)
     }
 
     //////////////////////////////////////////////////////////////////////
