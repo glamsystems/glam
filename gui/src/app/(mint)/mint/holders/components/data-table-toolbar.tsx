@@ -81,14 +81,14 @@ export function DataTableToolbar<TData>({
     }
 
     try {
-      const txSig = await glamClient.shareClass.createTokenAccount(
+      const txSig = await glamClient.mint.createTokenAccount(
         activeGlamState.pubkey,
         pubkey,
         0,
         false,
       );
       toast({
-        title: "New share class holder added",
+        title: "New token holder added",
         description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
       });
     } catch (e) {

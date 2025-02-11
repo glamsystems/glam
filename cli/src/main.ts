@@ -208,7 +208,7 @@ program
     const stateAccount = await glamClient.fetchStateAccount(statePda);
     if (stateAccount.mints.length > 0) {
       const closeShareClassIx = await glamClient.program.methods
-        .closeShareClass(0)
+        .closeMint(0)
         .accounts({
           glamState: statePda,
           glamMint: glamClient.getMintPda(statePda, 0),

@@ -73,7 +73,7 @@ export function DataTable<TData extends HoldersData>({
 
     const pubkey = new PublicKey(ata);
     try {
-      const txSig = await glamClient.shareClass.setTokenAccountsStates(
+      const txSig = await glamClient.mint.setTokenAccountsStates(
         activeGlamState.pubkey,
         0,
         [pubkey],

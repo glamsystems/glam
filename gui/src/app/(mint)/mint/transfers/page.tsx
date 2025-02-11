@@ -35,7 +35,7 @@ export default function TransferPage() {
   >([]);
   useEffect(() => {
     const fetchData = async () => {
-      const tokenAccounts = await glamClient.shareClass.getHolders(
+      const tokenAccounts = await glamClient.mint.getHolders(
         activeGlamState!.pubkey,
         0,
       );
@@ -104,7 +104,7 @@ export default function TransferPage() {
 
     setIsTxPending(true);
     try {
-      const txId = await glamClient.shareClass.forceTransferShare(
+      const txId = await glamClient.mint.forceTransferShare(
         activeGlamState.pubkey,
         0,
         new BN(amount * 10 ** 9),

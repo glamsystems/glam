@@ -69,7 +69,7 @@ export function DataTableRowActions({
         }
 
         preInstructions.push(
-          await glamClient.shareClass.closeShareClassIx(fundPda, 0),
+          await glamClient.mint.closeShareClassIx(fundPda, 0),
         );
       }
 
