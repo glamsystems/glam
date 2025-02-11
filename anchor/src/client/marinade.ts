@@ -7,13 +7,9 @@ import {
   StakeProgram,
   SYSVAR_CLOCK_PUBKEY,
   SYSVAR_RENT_PUBKEY,
-  Transaction,
   SystemProgram,
 } from "@solana/web3.js";
-import {
-  getAssociatedTokenAddressSync,
-  TOKEN_PROGRAM_ID,
-} from "@solana/spl-token";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Marinade } from "@marinade.finance/marinade-ts-sdk";
 
 import { BaseClient, TxOptions } from "./base";

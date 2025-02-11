@@ -280,7 +280,6 @@ pub struct MarinadeDepositStake<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(ticket_id: u64)]
 pub struct MarinadeDelayedUnstake<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
