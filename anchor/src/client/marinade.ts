@@ -7,15 +7,15 @@ import {
   StakeProgram,
   SYSVAR_CLOCK_PUBKEY,
   SYSVAR_RENT_PUBKEY,
+  SystemProgram,
 } from "@solana/web3.js";
-import {
-  getAssociatedTokenAddressSync,
-  TOKEN_PROGRAM_ID,
-} from "@solana/spl-token";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Marinade } from "@marinade.finance/marinade-ts-sdk";
 
 import { BaseClient, TxOptions } from "./base";
-import { MARINADE_PROGRAM_ID, MSOL, SEED_TICKET } from "../constants";
+import { MARINADE_PROGRAM_ID, MSOL } from "../constants";
+
+const TICKET_SIZE = 88;
 
 export class MarinadeClient {
   public constructor(readonly base: BaseClient) {}
@@ -68,21 +68,6 @@ export class MarinadeClient {
   /*
    * Utils
    */
-
-  newTicket(state: PublicKey) {
-    const ticketId = Date.now();
-    const [ticketPda, bump] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from(SEED_TICKET),
-        Buffer.from(new BN(ticketId).toArray("be", 8)),
-        state.toBuffer(),
-      ],
-      this.base.program.programId,
-    );
-
-    return { ticketPda, bump, ticketId };
-  }
-
   async getExistingTickets(state: PublicKey): Promise<PublicKey[]> {
     const accounts =
       await this.base.provider.connection.getParsedProgramAccounts(
@@ -124,7 +109,7 @@ export class MarinadeClient {
         {
           filters: [
             {
-              dataSize: 88,
+              dataSize: TICKET_SIZE,
             },
             {
               memcmp: {
@@ -150,7 +135,7 @@ export class MarinadeClient {
     });
   }
 
-  getMarinadeState(): any {
+  getMarinadeState() {
     // The addresses are the same in mainnet and devnet:
     // https://docs.marinade.finance/developers/contract-addresses
     // TODO: use marinade.getMarinadeState(); ?
@@ -225,13 +210,8 @@ export class MarinadeClient {
     const signer = txOptions.signer || this.base.getSigner();
     const vault = this.base.getVaultPda(statePda);
     const marinadeState = this.getMarinadeState();
-    const vaultMsolAta = getAssociatedTokenAddressSync(
-      marinadeState.msolMintAddress,
-      vault,
-      true,
-    );
+    const vaultMsolAta = this.base.getAta(marinadeState.msolMintAddress, vault);
 
-    // @ts-ignore
     const tx = await this.base.program.methods
       .marinadeDepositSol(amount)
       .accountsPartial({
@@ -316,27 +296,46 @@ export class MarinadeClient {
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const { ticketPda, ticketId } = this.newTicket(state);
     const vault = this.base.getVaultPda(state);
     const marinadeState = this.getMarinadeState();
-    const treasuryMsolAta = this.base.getVaultAta(
+    const vaultMsolAta = this.base.getVaultAta(
       state,
       marinadeState.msolMintAddress,
     );
 
+    const ticketSeed = Date.now().toString();
+    const ticket = await PublicKey.createWithSeed(
+      signer,
+      ticketSeed,
+      MARINADE_PROGRAM_ID,
+    );
+    const lamports =
+      await this.base.provider.connection.getMinimumBalanceForRentExemption(
+        TICKET_SIZE,
+      );
+    const createTicketIx = SystemProgram.createAccountWithSeed({
+      fromPubkey: signer,
+      newAccountPubkey: ticket,
+      basePubkey: signer,
+      seed: ticketSeed,
+      lamports,
+      space: TICKET_SIZE,
+      programId: MARINADE_PROGRAM_ID,
+    });
     const tx = await this.base.program.methods
-      .marinadeDelayedUnstake(new BN(ticketId), amount)
+      .marinadeDelayedUnstake(amount)
       .accountsPartial({
         state,
         vault,
         signer,
-        ticket: ticketPda,
+        ticket,
         msolMint: marinadeState.msolMintAddress,
-        burnMsolFrom: treasuryMsolAta,
+        burnMsolFrom: vaultMsolAta,
         marinadeState: marinadeState.marinadeStateAddress,
         reservePda: marinadeState.reserveAddress,
         marinadeProgram: MARINADE_PROGRAM_ID,
       })
+      .preInstructions([createTicketIx])
       .transaction();
 
     return await this.base.intoVersionedTransaction({
@@ -383,11 +382,7 @@ export class MarinadeClient {
     const signer = txOptions.signer || this.base.getSigner();
     const vault = this.base.getVaultPda(statePda);
     const marinadeState = this.getMarinadeState();
-    const treasuryMsolAta = getAssociatedTokenAddressSync(
-      marinadeState.msolMintAddress,
-      vault,
-      true,
-    );
+    const vaultMsolAta = this.base.getAta(marinadeState.msolMintAddress, vault);
 
     const tx = await this.base.program.methods
       .marinadeLiquidUnstake(amount)
@@ -399,7 +394,7 @@ export class MarinadeClient {
         msolMint: marinadeState.msolMintAddress,
         liqPoolSolLegPda: marinadeState.solLeg,
         liqPoolMsolLeg: marinadeState.msolLeg,
-        getMsolFrom: treasuryMsolAta,
+        getMsolFrom: vaultMsolAta,
         getMsolFromAuthority: vault,
         treasuryMsolAccount: marinadeState.treasuryMsolAccount,
         marinadeProgram: MARINADE_PROGRAM_ID,

@@ -1,5 +1,5 @@
-use crate::{constants::*, gen_ticket_signer_seeds, state::*};
-use anchor_lang::{prelude::*, system_program};
+use crate::{constants::*, state::*};
+use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
     stake::{Stake, StakeAccount},
@@ -9,7 +9,6 @@ use glam_macros::vault_signer_seeds;
 use marinade::cpi::accounts::{Claim, Deposit, DepositStakeAccount, LiquidUnstake, OrderUnstake};
 use marinade::cpi::{claim, deposit, deposit_stake_account, liquid_unstake, order_unstake};
 use marinade::program::MarinadeFinance;
-use marinade::state::delayed_unstake_ticket::TicketAccountData;
 
 #[access_control(
     acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Stake)
@@ -82,30 +81,8 @@ pub fn marinade_deposit_stake_handler<'c: 'info, 'info>(
 #[vault_signer_seeds]
 pub fn delayed_unstake_handler<'c: 'info, 'info>(
     ctx: Context<MarinadeDelayedUnstake>,
-    ticket_id: u64,
     msol_amount: u64,
 ) -> Result<()> {
-    let state_key = ctx.accounts.state.key();
-    let ticket_signer_seeds = gen_ticket_signer_seeds!(state_key, ticket_id, ctx.bumps.ticket);
-
-    let space = std::mem::size_of::<TicketAccountData>() as u64 + 8;
-    let rent = Rent::get()?;
-    let lamports = rent.minimum_balance(space as usize);
-
-    system_program::create_account(
-        CpiContext::new_with_signer(
-            ctx.accounts.system_program.to_account_info(),
-            system_program::CreateAccount {
-                from: ctx.accounts.signer.to_account_info(),
-                to: ctx.accounts.ticket.to_account_info().clone(),
-            },
-            &[ticket_signer_seeds],
-        ),
-        lamports,
-        space,
-        &ctx.accounts.marinade_program.key(),
-    )?;
-
     // Order unstake
     let cpi_program = ctx.accounts.marinade_program.to_account_info();
     let cpi_accounts = OrderUnstake {
@@ -303,7 +280,6 @@ pub struct MarinadeDepositStake<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(ticket_id: u64)]
 pub struct MarinadeDelayedUnstake<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -315,7 +291,7 @@ pub struct MarinadeDelayedUnstake<'info> {
     pub vault: SystemAccount<'info>,
 
     /// CHECK: skip
-    #[account(mut, seeds = [SEED_TICKET.as_bytes(), &ticket_id.to_be_bytes(), state.key().as_ref()], bump)]
+    #[account(mut)]
     pub ticket: AccountInfo<'info>,
 
     /// CHECK: skip

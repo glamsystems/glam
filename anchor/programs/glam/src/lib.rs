@@ -521,8 +521,6 @@ pub mod glam {
     /// # Parameters
     /// - `ctx`: The context for the transaction.
     /// - `msol_amount`: Amount of mSOL to unstake.
-    /// - `ticket_id`: Ticket ID.
-    /// - `bump`: Bump seed.
     ///
     /// # Permission required
     /// - Permission::Unstake
@@ -531,10 +529,9 @@ pub mod glam {
     /// - Integration::Marinade
     pub fn marinade_delayed_unstake(
         ctx: Context<MarinadeDelayedUnstake>,
-        ticket_id: u64,
         msol_amount: u64,
     ) -> Result<()> {
-        marinade::delayed_unstake_handler(ctx, ticket_id, msol_amount)
+        marinade::delayed_unstake_handler(ctx, msol_amount)
     }
 
     /// Claims tickets that were unstaked in the previous epoch to get SOL.

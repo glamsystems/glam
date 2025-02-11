@@ -74,8 +74,8 @@ describe("glam_marinade", () => {
     expect(tickets.length).toBe(5);
 
     const stateModel = await glamClient.fetchState(statePda);
-    expect(stateModel.externalVaultAccounts.length).toBe(tickets.length);
-    expect(stateModel.externalVaultAccounts.sort()).toEqual(tickets.sort());
+    expect(stateModel.externalVaultAccounts?.length).toBe(tickets.length);
+    expect(stateModel.externalVaultAccounts?.sort()).toEqual(tickets.sort());
   });
 
   it("Claim tickets", async () => {
@@ -96,8 +96,8 @@ describe("glam_marinade", () => {
     expect(tickets.length).toBe(0);
 
     const stateModel = await glamClient.fetchState(statePda);
-    expect(stateModel.externalVaultAccounts.length).toBe(tickets.length);
-    expect(stateModel.externalVaultAccounts.sort()).toEqual(tickets.sort());
+    expect(stateModel.externalVaultAccounts?.length).toBe(tickets.length);
+    expect(stateModel.externalVaultAccounts?.sort()).toEqual(tickets.sort());
   });
 
   // FIXME: For some reason, depositStake test must be run after the claimTickets test
