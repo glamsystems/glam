@@ -5,16 +5,12 @@ import {
   str2seed,
   swapInstructionsForTest,
   stateModelForTest,
+  sleep,
 } from "./setup";
-import {
-  StateModel,
-  GlamClient,
-  JUP_STAKE_LOCKER,
-  JUP_VOTE_PROGRAM,
-} from "../src";
+import { GlamClient, JUP_STAKE_LOCKER, JUP_VOTE_PROGRAM } from "../src";
 import { Keypair } from "@solana/web3.js";
 import { getAccount } from "@solana/spl-token";
-import { BN } from "@coral-xyz/anchor";
+import { BN, Wallet } from "@coral-xyz/anchor";
 import { MSOL, WSOL } from "../src";
 import { PublicKey } from "@solana/web3.js";
 
@@ -22,7 +18,12 @@ describe("glam_jupiter", () => {
   const glamClient = new GlamClient();
   let statePda;
 
-  it("Initialize fund", async () => {
+  const delegate = Keypair.fromSeed(str2seed("delegate"));
+  const delegateGlamClient = new GlamClient({
+    wallet: new Wallet(delegate),
+  });
+
+  it("Initialize glam state", async () => {
     const stateData = await createGlamStateForTest(glamClient, {
       ...stateModelForTest,
       integrations: [{ jupiterSwap: {} }, { jupiterVote: {} }],
@@ -37,14 +38,20 @@ describe("glam_jupiter", () => {
       glamClient.getVaultPda(statePda),
       1_000_000_000,
     );
+
+    await airdrop(
+      glamClient.provider.connection,
+      delegate.publicKey,
+      100_000_000,
+    );
   });
 
   it("Swap end to end", async () => {
     const vault = glamClient.getVaultPda(statePda);
 
     const signer = glamClient.getSigner();
-    const inputSignerAta = glamClient.getAta(WSOL);
-    const outputSignerAta = glamClient.getAta(MSOL);
+    const inputSignerAta = glamClient.getAta(WSOL, signer);
+    const outputSignerAta = glamClient.getAta(MSOL, signer);
 
     const quoteResponse = quoteResponseForTest;
     const swapInstructions = swapInstructionsForTest(
@@ -58,10 +65,10 @@ describe("glam_jupiter", () => {
       await glamClient.provider.connection.getBalance(vault);
     expect(vaultBalanceBefore).toEqual(1_000_000_000);
     const noAccountsBefore = [
-      glamClient.getAta(WSOL),
-      glamClient.getAta(MSOL),
-      glamClient.getVaultAta(statePda, WSOL),
-      glamClient.getVaultAta(statePda, MSOL),
+      glamClient.getAta(WSOL, signer),
+      glamClient.getAta(MSOL, signer),
+      glamClient.getAta(WSOL, vault),
+      glamClient.getAta(MSOL, vault),
     ];
     noAccountsBefore.forEach(async (account) => {
       try {
@@ -89,9 +96,9 @@ describe("glam_jupiter", () => {
 
     // Post-checks: the following accounts should exist and have 0 balance
     const accountsAfter = [
-      glamClient.getAta(WSOL),
-      glamClient.getAta(MSOL),
-      glamClient.getVaultAta(statePda, WSOL),
+      glamClient.getAta(WSOL, signer),
+      glamClient.getAta(MSOL, signer),
+      glamClient.getAta(WSOL, vault),
     ];
     accountsAfter.forEach(async (account) => {
       try {
@@ -120,21 +127,13 @@ describe("glam_jupiter", () => {
   }, 15_000);
 
   it("Swap access control #1", async () => {
-    // set up a test signer and airdrop 0.1 SOL
-    const testSigner = Keypair.fromSeed(str2seed("test_signer"));
-    const airdrop = await glamClient.provider.connection.requestAirdrop(
-      testSigner.publicKey,
-      100_000_000,
-    );
-    await glamClient.provider.connection.confirmTransaction(airdrop);
-
-    // grant delegate permissions
-    // testSigner is only allowed to swap allowlisted assets
+    // grant delegate permissions: only allowed to swap allowlisted assets
     try {
       const txId = await glamClient.state.upsertDelegateAcls(statePda, [
         {
-          pubkey: testSigner.publicKey,
+          pubkey: delegate.publicKey,
           permissions: [{ jupiterSwapAllowlisted: {} }, { wSolWrap: {} }],
+          expiresAt: new BN(0),
         },
       ]);
       console.log("Update delegate acl txId", txId);
@@ -143,17 +142,14 @@ describe("glam_jupiter", () => {
       throw e;
     }
     let stateModel = await glamClient.fetchState(statePda);
-    expect(stateModel.delegateAcls.length).toEqual(1);
+    expect(stateModel.delegateAcls?.length).toEqual(1);
 
     // The test fund has 2 assets, WSOL and MSOL. Update to WSOL only.
-    let updatedFund = new StateModel({ assets: [WSOL] });
     try {
-      await glamClient.program.methods
-        .updateState(updatedFund)
-        .accounts({
-          state: statePda,
-        })
-        .rpc();
+      const txSig = await glamClient.state.updateState(statePda, {
+        assets: [WSOL],
+      });
+      console.log("Update assets (WSOL) txSig", txSig);
     } catch (e) {
       console.error(e);
       throw e;
@@ -161,25 +157,27 @@ describe("glam_jupiter", () => {
     stateModel = await glamClient.fetchState(statePda);
     expect(stateModel.assets).toEqual([WSOL]);
 
-    const quoteParams = {
-      inputMint: WSOL.toBase58(),
-      outputMint: MSOL.toBase58(),
-      amount: 50_000_000,
-      swapMode: "ExactIn",
-      onlyDirectRoutes: true,
-      maxAccounts: 8,
-    };
+    //
+    // Execute swaps by delegate
+    //
+    const inputSignerAta = glamClient.getAta(WSOL, delegate.publicKey);
+    const outputSignerAta = glamClient.getAta(MSOL, delegate.publicKey);
+    const quoteResponse = quoteResponseForTest;
+    const swapInstructions = swapInstructionsForTest(
+      delegate.publicKey,
+      inputSignerAta,
+      outputSignerAta,
+    );
+
     // 1st attempt, should fail because MSOL is not in assets allowlist,
-    // and testSigner doesn't have swapAny or swapLst permission
+    // and delegate doesn't have swapAny or swapLst permission
     try {
-      const delegateSwapTx = await glamClient.jupiter.swapTx(
+      const txSig = await delegateGlamClient.jupiter.swap(
         statePda,
-        quoteParams,
         undefined,
-        undefined,
-        { signer: testSigner.publicKey },
+        quoteResponse,
+        swapInstructions,
       );
-      const txSig = await glamClient.sendAndConfirm(delegateSwapTx, testSigner);
       expect(txSig).toBeUndefined();
     } catch (e) {
       console.log(e);
@@ -189,12 +187,13 @@ describe("glam_jupiter", () => {
       expect(expectedError).toBeTruthy();
     }
 
-    // allow testSigner to swap LST
+    // allow delegate to swap LST
     try {
       const txSig = await glamClient.state.upsertDelegateAcls(statePda, [
         {
-          pubkey: testSigner.publicKey,
+          pubkey: delegate.publicKey,
           permissions: [{ jupiterSwapLst: {} }, { wSolWrap: {} }],
+          expiresAt: new BN(0),
         },
       ]);
       console.log("Grant delegate jupiterSwapAny permission:", txSig);
@@ -203,17 +202,17 @@ describe("glam_jupiter", () => {
       throw e;
     }
 
-    // 2nd attempt, should pass since testSigner is now allowed to swap LST
+    await sleep(3_000);
+
+    // 2nd attempt, should pass since delegate is now allowed to swap LST
     // and asset list should be updated accordingly to include MSOL
     try {
-      const delegateSwapTx = await glamClient.jupiter.swapTx(
+      const txSig = await delegateGlamClient.jupiter.swap(
         statePda,
-        quoteParams,
         undefined,
-        undefined,
-        { signer: testSigner.publicKey },
+        quoteResponse,
+        swapInstructions,
       );
-      const txSig = await glamClient.sendAndConfirm(delegateSwapTx, testSigner);
       console.log("2nd attempt swap:", txSig);
     } catch (e) {
       console.error(e);
@@ -225,8 +224,8 @@ describe("glam_jupiter", () => {
 
   it("Swap back end to end", async () => {
     const signer = glamClient.getSigner();
-    const inputSignerAta = glamClient.getAta(MSOL);
-    const outputSignerAta = glamClient.getAta(WSOL);
+    const inputSignerAta = glamClient.getAta(MSOL, signer);
+    const outputSignerAta = glamClient.getAta(WSOL, signer);
 
     const swapInstructions = {
       tokenLedgerInstruction: null,
@@ -421,7 +420,7 @@ describe("glam_jupiter", () => {
       throw e;
     }
 
-    // treasury: more mSOL
+    // vault: more mSOL
     const vaultMsol = await getAccount(
       glamClient.provider.connection,
       glamClient.getVaultAta(statePda, MSOL),
@@ -432,9 +431,6 @@ describe("glam_jupiter", () => {
   it("Swap by providing quote params", async () => {
     const amount = 50_000_000;
     try {
-      const txIdWrap = await glamClient.wsol.wrap(statePda, new BN(amount));
-      console.log("wrap before swap txId", txIdWrap);
-
       const txIdSwap = await glamClient.jupiter.swap(statePda, {
         inputMint: WSOL.toBase58(),
         outputMint: MSOL.toBase58(),
@@ -455,56 +451,30 @@ describe("glam_jupiter", () => {
   }, 15_000);
 
   it("Swap by providing swap instructions", async () => {
-    const amount = 50_000_000;
-
-    const quoteParams: any = {
-      inputMint: WSOL.toBase58(),
-      outputMint: MSOL.toBase58(),
-      amount,
-      autoSlippage: true,
-      autoSlippageCollisionUsdValue: 1000,
-      swapMode: "ExactIn",
-      onlyDirectRoutes: false,
-      asLegacyTransaction: false,
-      maxAccounts: 15,
-    };
-    // NOTE: we're making real API request to jupiter in this test.
-    // Test could fail if jupiter api is down or too busy.
-    const quoteResponse = await (
-      await fetch(
-        `${glamClient.jupiterApi}/quote?${new URLSearchParams(
-          Object.entries(quoteParams),
-        )}`,
-      )
-    ).json();
-    const swapInstructions = await glamClient.jupiter.getSwapInstructions(
-      quoteResponse,
-      glamClient.getSigner(),
-    );
+    const swapInstructions =
+      await delegateGlamClient.jupiter.getSwapInstructions(
+        quoteResponseForTest,
+        delegate.publicKey,
+      );
 
     try {
-      const txIdWrap = await glamClient.wsol.wrap(statePda, new BN(amount));
-      console.log("wrap before swap txId", txIdWrap);
-
-      const txIdSwap = await glamClient.jupiter.swap(
+      const txIdSwap = await delegateGlamClient.jupiter.swap(
         statePda,
-        quoteParams,
-        quoteResponse,
+        undefined,
+        quoteResponseForTest,
         swapInstructions,
       );
-      expect(txIdSwap).toBeUndefined();
+      console.log("swap by swap instructions txId", txIdSwap);
     } catch (e) {
-      console.error(e.programLogs);
-      expect(e.programLogs).toContain(
-        "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]",
-      );
+      console.error(e);
+      throw e;
     }
   }, 15_000);
 
   it("Create JUP escrow", async () => {
-    const treasury = glamClient.getVaultPda(statePda);
+    const vault = glamClient.getVaultPda(statePda);
     const [escrow] = PublicKey.findProgramAddressSync(
-      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), treasury.toBuffer()],
+      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), vault.toBuffer()],
       JUP_VOTE_PROGRAM,
     );
     try {
