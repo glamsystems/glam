@@ -27,7 +27,14 @@ import {
   unpackMint,
   Mint,
 } from "@solana/spl-token";
-import { WSOL, USDC } from "../constants";
+import {
+  WSOL,
+  USDC,
+  SEED_STATE,
+  SEED_VAULT,
+  SEED_METADATA,
+  SEED_MINT,
+} from "../constants";
 
 import {
   Glam,
@@ -52,19 +59,6 @@ const DEFAULT_PRIORITY_FEE = 10_000; // microLamports
 export const isBrowser =
   process.env.ANCHOR_BROWSER ||
   (typeof window !== "undefined" && !window.process?.hasOwnProperty("type"));
-
-const SEED_METADATA = (
-  GlamIDLJson.constants.find((x) => x.name === "SEED_METADATA")?.value || ""
-).replace(/"/g, "");
-const SEED_MINT = (
-  GlamIDLJson.constants.find((x) => x.name === "SEED_MINT")?.value || ""
-).replace(/"/g, "");
-const SEED_STATE = (
-  GlamIDLJson.constants.find((x) => x.name === "SEED_STATE")?.value || ""
-).replace(/"/g, "");
-const SEED_VAULT = (
-  GlamIDLJson.constants.find((x) => x.name === "SEED_VAULT")?.value || ""
-).replace(/"/g, "");
 
 export type TxOptions = {
   signer?: PublicKey;

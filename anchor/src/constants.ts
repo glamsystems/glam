@@ -1,4 +1,18 @@
 import { PublicKey } from "@solana/web3.js";
+import { GlamIDLJson } from "./glamExports";
+
+export const SEED_METADATA = (
+  GlamIDLJson.constants.find((x) => x.name === "SEED_METADATA")?.value || ""
+).replace(/"/g, "");
+export const SEED_MINT = (
+  GlamIDLJson.constants.find((x) => x.name === "SEED_MINT")?.value || ""
+).replace(/"/g, "");
+export const SEED_STATE = (
+  GlamIDLJson.constants.find((x) => x.name === "SEED_STATE")?.value || ""
+).replace(/"/g, "");
+export const SEED_VAULT = (
+  GlamIDLJson.constants.find((x) => x.name === "SEED_VAULT")?.value || ""
+).replace(/"/g, "");
 
 /**
  * Token mints. If no devnet version is defined, assume mainnet and devnet addresses are the same.

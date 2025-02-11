@@ -167,7 +167,7 @@ async function updateHoldersData(
 ): Promise<HolderData[]> {
   const holdersData = await Promise.all(
     (stateModel.mints || []).map(async (shareClassModel, i) => {
-      const mintAddress = stateModel.shareClassMints[i].toBase58();
+      const mintAddress = stateModel.mintAddresses[i].toBase58();
       const holderData = await fetchHolderData(mintAddress);
       if (!holderData) {
         console.error(`Failed to fetch holder data for mint: ${mintAddress}`);
@@ -543,7 +543,7 @@ export default function ProductPage() {
               ref={sparkleContainerRef}
             >
               <Sparkle
-                address={stateModel.shareClassMints[0].toBase58()}
+                address={stateModel.mintAddresses[0].toBase58()}
                 size={105}
                 onColorGenerated={handleColorGenerated}
               />
@@ -1011,7 +1011,7 @@ export default function ProductPage() {
                         </ul>
                       </div>
                       <Separator className="my-4" />
-                      {stateModel.shareClassMints.length > 0 && (
+                      {stateModel.mintAddresses.length > 0 && (
                         <div className="grid gap-2">
                           <div className="font-medium">
                             Share Class Accounts
@@ -1023,8 +1023,8 @@ export default function ProductPage() {
                                 {(stateModel.mints || [])[0]?.symbol}
                               </dt>
                               <ExplorerLink
-                                path={`/account/${stateModel?.shareClassMints[0]}`}
-                                label={stateModel?.shareClassMints[0].toBase58()}
+                                path={`/account/${stateModel?.mintAddresses[0]}`}
+                                label={stateModel?.mintAddresses[0].toBase58()}
                               />
                             </div>
                           </dl>

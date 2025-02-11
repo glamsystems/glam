@@ -52,7 +52,7 @@ export function DataTableRowActions({
 
       // If the product is a Mint or Fund, close share class first
       if (product.product === "Mint" || product.product === "Fund") {
-        const mintAddress = stateModel.shareClassMints[0];
+        const mintAddress = stateModel.mintAddresses[0];
         const mint = await getMint(
           glamClient.provider.connection,
           mintAddress,

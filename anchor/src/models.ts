@@ -4,6 +4,7 @@ import { PublicKey } from "@solana/web3.js";
 import { ExtensionType, getExtensionData, Mint } from "@solana/spl-token";
 import { TokenMetadata, unpack } from "@solana/spl-token-metadata";
 import { BN } from "@coral-xyz/anchor";
+import { SEED_METADATA, SEED_MINT, SEED_VAULT } from "./constants";
 
 export const GlamIntegrations =
   GlamIDLJson?.types
@@ -85,10 +86,10 @@ export class StateModel extends StateIdlModel {
 
   get vaultPda() {
     if (!this.id) {
-      throw new Error("Fund ID not set");
+      throw new Error("Glam state ID not set");
     }
     const [pda, _bump] = PublicKey.findProgramAddressSync(
-      [Buffer.from("vault"), this.id.toBuffer()],
+      [Buffer.from(SEED_VAULT), this.id.toBuffer()],
       this.glamProgramId,
     );
     return pda;
@@ -96,10 +97,10 @@ export class StateModel extends StateIdlModel {
 
   get openfundsPda() {
     if (!this.id) {
-      throw new Error("Fund ID not set");
+      throw new Error("Glam state ID not set");
     }
     const [pda, _] = PublicKey.findProgramAddressSync(
-      [Buffer.from("metadata"), this.id.toBuffer()],
+      [Buffer.from(SEED_METADATA), this.id.toBuffer()],
       this.glamProgramId,
     );
     return pda;
@@ -118,10 +119,10 @@ export class StateModel extends StateIdlModel {
       : "Unknown";
   }
 
-  get shareClassMints() {
+  get mintAddresses() {
     if (this.mints && this.mints.length > 0 && !this.id) {
-      // If share classes are set, fund ID should be set as well
-      throw new Error("Fund ID not set");
+      // If share classes are set, state ID should also be set
+      throw new Error("Glam state ID not set");
     }
     return (this.mints || []).map((_, i) =>
       MintModel.mintAddress(this.id!, i, this.glamProgramId),
@@ -132,7 +133,7 @@ export class StateModel extends StateIdlModel {
     if (!this.mints || this.mints.length === 0) {
       return this.idStr;
     }
-    return this.shareClassMints[0].toBase58() || this.idStr;
+    return this.mintAddresses[0].toBase58() || this.idStr;
   }
 
   /**
@@ -339,7 +340,11 @@ export class MintModel extends MintIdlModel {
     glamProgramId: PublicKey = GLAM_PROGRAM_ID_DEFAULT,
   ): PublicKey {
     const [pda, _] = PublicKey.findProgramAddressSync(
-      [Buffer.from("mint"), Uint8Array.from([idx % 256]), statePda.toBuffer()],
+      [
+        Buffer.from(SEED_MINT),
+        Uint8Array.from([idx % 256]),
+        statePda.toBuffer(),
+      ],
       glamProgramId,
     );
     return pda;
