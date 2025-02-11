@@ -65,10 +65,10 @@ describe("glam_crud", () => {
     });
     try {
       const txSig = await glamClient.program.methods
-        .updateShareClass(0, mintModel)
+        .updateMint(0, mintModel)
         .accounts({
-          state: statePda,
-          shareClassMint: glamClient.getMintPda(statePda, 0),
+          glamState: statePda,
+          glamMint: glamClient.getMintPda(statePda, 0),
         })
         .rpc();
       console.log("Update share class txSig", txSig);
@@ -425,7 +425,7 @@ describe("glam_crud", () => {
     }
 
     try {
-      const txSig = await glamClient.mint.closeShareClass(statePda);
+      const txSig = await glamClient.mint.closeMint(statePda);
       console.log("Close share class txId:", txSig);
     } catch (e) {
       console.error(e);

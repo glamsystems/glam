@@ -113,28 +113,22 @@ pub fn subscribe_handler<'c: 'info, 'info>(
         GlamError::InvalidShareClass
     );
 
-    if let Some(share_class_blocklist) = state.mint_blocklist(0) {
+    if let Some(blocklist) = state.mint_blocklist(0) {
         require!(
-            share_class_blocklist.len() == 0
-                || !share_class_blocklist
-                    .iter()
-                    .any(|&k| k == ctx.accounts.signer.key()),
+            blocklist.len() == 0 || !blocklist.iter().any(|&k| k == ctx.accounts.signer.key()),
             GlamError::InvalidShareClass
         );
     }
 
-    if let Some(share_class_allowlist) = state.mint_allowlist(0) {
+    if let Some(allowlist) = state.mint_allowlist(0) {
         require!(
-            share_class_allowlist.len() == 0
-                || share_class_allowlist
-                    .iter()
-                    .any(|&k| k == ctx.accounts.signer.key()),
+            allowlist.len() == 0 || allowlist.iter().any(|&k| k == ctx.accounts.signer.key()),
             GlamError::InvalidShareClass
         );
     }
 
     // Lock-up
-    let lock_up = state.share_class_lock_up(0);
+    let lock_up = state.mint_lock_up(0);
     if lock_up > 0 {
         require!(
             ctx.accounts.signer_policy.is_some(),
@@ -342,7 +336,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
 
     // Lock-up
     let mut close_signer_policy = false;
-    let lock_up = state.share_class_lock_up(0);
+    let lock_up = state.mint_lock_up(0);
     if lock_up > 0 {
         require!(
             ctx.accounts.signer_policy.is_some(),
@@ -378,17 +372,17 @@ pub fn redeem_handler<'c: 'info, 'info>(
         }
     }
 
-    let share_class = &ctx.accounts.glam_mint;
-    let share_expo = -(share_class.decimals as i32);
-    let total_shares = share_class.supply;
-    let should_transfer_everything = amount == total_shares;
+    let mint = &ctx.accounts.glam_mint;
+    let mint_expo = -(mint.decimals as i32);
+    let total_supply = mint.supply;
+    let should_transfer_everything = amount == total_supply;
 
     msg!(
-        "Redeem: amount={:.2} total_shares={:.2} ({}e{})",
-        log_decimal(amount, share_expo),
-        log_decimal(total_shares, share_expo),
-        total_shares,
-        share_expo,
+        "Redeem: amount={:.2} total_supply={:.2} ({}e{})",
+        log_decimal(amount, mint_expo),
+        log_decimal(total_supply, mint_expo),
+        total_supply,
+        mint_expo,
     );
 
     let assets = &state.assets;
@@ -444,7 +438,7 @@ pub fn redeem_handler<'c: 'info, 'info>(
                 }
             } else if in_kind {
                 //TODO do not compute pricing
-                ((att.asset_amount as u128 * amount as u128) / total_shares as u128) as u64
+                ((att.asset_amount as u128 * amount as u128) / total_supply as u128) as u64
             } else {
                 if i > 0 {
                     break;
@@ -453,20 +447,20 @@ pub fn redeem_handler<'c: 'info, 'info>(
                 let mut total_value = Price {
                     price: 0,
                     conf: 0,
-                    exponent: share_expo,
+                    exponent: mint_expo,
                     publish_time: 0,
                 };
                 for att in &aum_components {
                     total_value = total_value
-                        .add(&att.asset_value.scale_to_exponent(share_expo).unwrap())
+                        .add(&att.asset_value.scale_to_exponent(mint_expo).unwrap())
                         .unwrap();
                 }
 
                 let value_to_redeem = Price {
-                    price: ((total_value.price as u128 * amount as u128) / total_shares as u128)
+                    price: ((total_value.price as u128 * amount as u128) / total_supply as u128)
                         as i64,
                     conf: 0,
-                    exponent: share_expo,
+                    exponent: mint_expo,
                     publish_time: 0,
                 };
                 let value = value_to_redeem

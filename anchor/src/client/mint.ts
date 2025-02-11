@@ -57,7 +57,7 @@ export class MintClient {
     const mintPda = this.base.getMintPda(state, mintId);
 
     return await this.base.program.methods
-      .closeShareClass(mintId)
+      .closeMint(mintId)
       .accounts({
         glamState: state,
         glamMint: mintPda,
@@ -65,7 +65,7 @@ export class MintClient {
       .instruction();
   }
 
-  public async closeShareClass(
+  public async closeMint(
     state: PublicKey,
     mintId: number = 0,
     txOptions: TxOptions = {},
@@ -74,7 +74,7 @@ export class MintClient {
     const mintPda = this.base.getMintPda(state, mintId);
 
     return await this.base.program.methods
-      .closeShareClass(mintId)
+      .closeMint(mintId)
       .accounts({
         glamState: state,
         glamMint: mintPda,

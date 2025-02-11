@@ -94,7 +94,7 @@ impl StateAccount {
     pub const INIT_SIZE: usize = 1024; // TODO: auto extend account size if needed
 
     // return the share class lockup period in s. 0 == no lockup (default).
-    pub fn share_class_lock_up(&self, mint_id: usize) -> i64 {
+    pub fn mint_lock_up(&self, mint_id: usize) -> i64 {
         self.params
             .get(mint_id + 1)
             .and_then(|params| {

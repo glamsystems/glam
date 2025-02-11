@@ -81,7 +81,7 @@ export class StateClient {
       mints[0].rawOpenfunds = null;
       const mintPda = this.base.getMintPda(statePda, 0);
       const txSig = await this.base.program.methods
-        .addShareClass(mints[0])
+        .addMint(mints[0])
         .accounts({
           glamState: statePda,
           newMint: mintPda,
@@ -108,7 +108,7 @@ export class StateClient {
         // Access violation in stack frame 5 at address 0x200005ff8 of size 8
         mint.rawOpenfunds = null;
         return await this.base.program.methods
-          .addShareClass(mint)
+          .addMint(mint)
           .accounts({
             glamState: statePda,
             newMint: mintPda,

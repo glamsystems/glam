@@ -115,55 +115,51 @@ pub mod glam {
     /// Share class
     //////////////////////////////////////////////////////////////////////
 
-    /// Adds a new share class to a fund.
+    /// Adds a new mint.
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
-    /// - `share_class_metadata`: An instance of `ShareClassModel` containing the metadata for the new share class.
+    /// - `mint_model`: An instance of `MintModel` containing the metadata for the new mint.
     ///
     /// # Permission required
     /// - Owner only, delegates not allowed
-    pub fn add_share_class<'c: 'info, 'info>(
+    pub fn add_mint<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, NewMint<'info>>,
-        share_class_metadata: MintModel,
+        mint_model: MintModel,
     ) -> Result<()> {
-        mint::add_mint_handler(ctx, share_class_metadata)
+        mint::add_mint_handler(ctx, mint_model)
     }
 
-    /// Updates an existing share class with new metadata.
+    /// Updates an existing mint with new metadata.
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
-    /// - `share_class_id`: The id of the share class to be updated.
-    /// - `share_class_metadata`: An instance of `ShareClassModel` containing the updated metadata for the new share class.
+    /// - `mint_id`: The id of the share class to be updated.
+    /// - `mint_model`: An instance of `MintModel` containing the updated metadata for the new mint.
     ///
     /// # Permission required
     /// - Owner only, delegates not allowed
-    pub fn update_share_class(
-        ctx: Context<UpdateMint>,
-        share_class_id: u8,
-        share_class_metadata: MintModel,
-    ) -> Result<()> {
-        mint::update_mint_handler(ctx, share_class_id, share_class_metadata)
+    pub fn update_mint(ctx: Context<UpdateMint>, mint_id: u8, mint_model: MintModel) -> Result<()> {
+        mint::update_mint_handler(ctx, mint_id, mint_model)
     }
 
-    /// Closes a share class and releases its resources.
+    /// Closes a mint and releases its resources.
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
-    /// - `share_class_id`: The id of the share class to be closed.
+    /// - `mint_id`: The id of the mint to be closed.
     ///
     /// # Permission required
     /// - Owner only, delegates not allowed
-    pub fn close_share_class(ctx: Context<CloseMint>, share_class_id: u8) -> Result<()> {
-        mint::close_mint_handler(ctx, share_class_id)
+    pub fn close_mint(ctx: Context<CloseMint>, mint_id: u8) -> Result<()> {
+        mint::close_mint_handler(ctx, mint_id)
     }
 
     /// Mints a specified amount of shares for the given share class.
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
-    /// - `share_class_id`: The id of the share class to mint shares for.
+    /// - `mint_id`: The id of the mint to mint tokens for.
     /// - `amount`: The amount of shares to mint.
     ///
     /// # Permission required
@@ -173,18 +169,18 @@ pub mod glam {
     /// - Integration::Mint
     pub fn mint_share<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, MintShare<'info>>,
-        share_class_id: u8,
+        mint_id: u8,
         amount: u64,
     ) -> Result<()> {
-        mint::mint_share_handler(ctx, share_class_id, amount)
+        mint::mint_share_handler(ctx, mint_id, amount)
     }
 
-    /// Forcefully transfers a specified amount of shares from one account to another.
+    /// Forcefully transfers a specified amount of tokens from one account to another.
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
-    /// - `share_class_id`: The id of the share class to transfer shares for.
-    /// - `amount`: The amount of shares to transfer.
+    /// - `mint_id`: The id of the mint to transfer tokens for.
+    /// - `amount`: The amount of tokens to transfer.
     ///
     /// # Permission required
     /// - Permission::ForceTransferShare
@@ -193,33 +189,33 @@ pub mod glam {
     /// - Integration::Mint
     pub fn force_transfer_share(
         ctx: Context<ForceTransferShare>,
-        share_class_id: u8,
+        mint_id: u8,
         amount: u64,
     ) -> Result<()> {
-        mint::force_transfer_share_handler(ctx, share_class_id, amount)
+        mint::force_transfer_share_handler(ctx, mint_id, amount)
     }
 
-    /// Burns a specified amount of shares for the given share class.
+    /// Burns a specified amount of tokens for the given mint.
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
-    /// - `share_class_id`: The id of the share class to burn shares for.
-    /// - `amount`: The amount of shares to burn.
+    /// - `mint_id`: The id of the mint to burn tokens for.
+    /// - `amount`: The amount of tokens to burn.
     ///
     /// # Permission required
     /// - Permission::BurnShare
     ///
     /// # Integration required
     /// - Integration::Mint
-    pub fn burn_share(ctx: Context<BurnShare>, share_class_id: u8, amount: u64) -> Result<()> {
-        mint::burn_share_handler(ctx, share_class_id, amount)
+    pub fn burn_share(ctx: Context<BurnShare>, mint_id: u8, amount: u64) -> Result<()> {
+        mint::burn_share_handler(ctx, mint_id, amount)
     }
 
-    /// Sets the frozen state of the token accounts for the specified share class.
+    /// Sets the frozen state of the token accounts for the specified mint.
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
-    /// - `share_class_id`: The id of the share class to set the frozen state for.
+    /// - `mint_id`: The id of the mint to set the frozen state for.
     /// - `frozen`: The new frozen state.
     ///
     /// # Permission required
@@ -229,10 +225,10 @@ pub mod glam {
     /// - Integration::Mint
     pub fn set_token_accounts_states<'info>(
         ctx: Context<'_, '_, 'info, 'info, SetTokenAccountsStates<'info>>,
-        share_class_id: u8,
+        mint_id: u8,
         frozen: bool,
     ) -> Result<()> {
-        mint::set_token_accounts_states_handler(ctx, share_class_id, frozen)
+        mint::set_token_accounts_states_handler(ctx, mint_id, frozen)
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -247,11 +243,11 @@ pub mod glam {
     /// - `skip_state`: Should always be true (state check to be implemented).
     pub fn subscribe<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, Subscribe<'info>>,
-        share_class_id: u8,
+        mint_id: u8,
         amount: u64,
         skip_state: bool,
     ) -> Result<()> {
-        investor::subscribe_handler(ctx, share_class_id, amount, skip_state)
+        investor::subscribe_handler(ctx, mint_id, amount, skip_state)
     }
 
     /// Redeems a specified amount of shares.

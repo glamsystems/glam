@@ -8,27 +8,27 @@
   },
   "instructions": [
     {
-      "name": "add_share_class",
+      "name": "add_mint",
       "docs": [
         "Share class",
-        "Adds a new share class to a fund.",
+        "Adds a new mint.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `share_class_metadata`: An instance of `ShareClassModel` containing the metadata for the new share class.",
+        "- `mint_model`: An instance of `MintModel` containing the metadata for the new mint.",
         "",
         "# Permission required",
         "- Owner only, delegates not allowed"
       ],
       "discriminator": [
-        34,
-        49,
-        47,
-        6,
-        204,
+        171,
+        222,
+        111,
+        37,
+        60,
         166,
-        51,
-        204
+        208,
+        108
       ],
       "accounts": [
         {
@@ -117,7 +117,7 @@
       ],
       "args": [
         {
-          "name": "share_class_metadata",
+          "name": "mint_model",
           "type": {
             "defined": {
               "name": "MintModel"
@@ -129,12 +129,12 @@
     {
       "name": "burn_share",
       "docs": [
-        "Burns a specified amount of shares for the given share class.",
+        "Burns a specified amount of tokens for the given mint.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `share_class_id`: The id of the share class to burn shares for.",
-        "- `amount`: The amount of shares to burn.",
+        "- `mint_id`: The id of the mint to burn tokens for.",
+        "- `amount`: The amount of tokens to burn.",
         "",
         "# Permission required",
         "- Permission::BurnShare",
@@ -232,7 +232,7 @@
       ],
       "args": [
         {
-          "name": "share_class_id",
+          "name": "mint_id",
           "type": "u8"
         },
         {
@@ -332,26 +332,26 @@
       ]
     },
     {
-      "name": "close_share_class",
+      "name": "close_mint",
       "docs": [
-        "Closes a share class and releases its resources.",
+        "Closes a mint and releases its resources.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `share_class_id`: The id of the share class to be closed.",
+        "- `mint_id`: The id of the mint to be closed.",
         "",
         "# Permission required",
         "- Owner only, delegates not allowed"
       ],
       "discriminator": [
-        35,
-        248,
-        168,
-        150,
-        244,
+        149,
         251,
-        61,
-        91
+        157,
+        212,
+        65,
+        181,
+        235,
+        129
       ],
       "accounts": [
         {
@@ -457,7 +457,7 @@
       ],
       "args": [
         {
-          "name": "share_class_id",
+          "name": "mint_id",
           "type": "u8"
         }
       ]
@@ -1519,12 +1519,12 @@
     {
       "name": "force_transfer_share",
       "docs": [
-        "Forcefully transfers a specified amount of shares from one account to another.",
+        "Forcefully transfers a specified amount of tokens from one account to another.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `share_class_id`: The id of the share class to transfer shares for.",
-        "- `amount`: The amount of shares to transfer.",
+        "- `mint_id`: The id of the mint to transfer tokens for.",
+        "- `amount`: The amount of tokens to transfer.",
         "",
         "# Permission required",
         "- Permission::ForceTransferShare",
@@ -1683,7 +1683,7 @@
       ],
       "args": [
         {
-          "name": "share_class_id",
+          "name": "mint_id",
           "type": "u8"
         },
         {
@@ -3193,7 +3193,7 @@
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `share_class_id`: The id of the share class to mint shares for.",
+        "- `mint_id`: The id of the mint to mint tokens for.",
         "- `amount`: The amount of shares to mint.",
         "",
         "# Permission required",
@@ -3293,7 +3293,7 @@
       ],
       "args": [
         {
-          "name": "share_class_id",
+          "name": "mint_id",
           "type": "u8"
         },
         {
@@ -3726,11 +3726,11 @@
     {
       "name": "set_token_accounts_states",
       "docs": [
-        "Sets the frozen state of the token accounts for the specified share class.",
+        "Sets the frozen state of the token accounts for the specified mint.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `share_class_id`: The id of the share class to set the frozen state for.",
+        "- `mint_id`: The id of the mint to set the frozen state for.",
         "- `frozen`: The new frozen state.",
         "",
         "# Permission required",
@@ -3769,7 +3769,7 @@
       ],
       "args": [
         {
-          "name": "share_class_id",
+          "name": "mint_id",
           "type": "u8"
         },
         {
@@ -4677,7 +4677,7 @@
       ],
       "args": [
         {
-          "name": "share_class_id",
+          "name": "mint_id",
           "type": "u8"
         },
         {
@@ -4902,27 +4902,27 @@
       ]
     },
     {
-      "name": "update_share_class",
+      "name": "update_mint",
       "docs": [
-        "Updates an existing share class with new metadata.",
+        "Updates an existing mint with new metadata.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `share_class_id`: The id of the share class to be updated.",
-        "- `share_class_metadata`: An instance of `ShareClassModel` containing the updated metadata for the new share class.",
+        "- `mint_id`: The id of the share class to be updated.",
+        "- `mint_model`: An instance of `MintModel` containing the updated metadata for the new mint.",
         "",
         "# Permission required",
         "- Owner only, delegates not allowed"
       ],
       "discriminator": [
-        196,
-        227,
-        109,
-        174,
-        25,
-        115,
-        15,
-        26
+        212,
+        203,
+        57,
+        78,
+        75,
+        245,
+        222,
+        5
       ],
       "accounts": [
         {
@@ -4945,11 +4945,11 @@
       ],
       "args": [
         {
-          "name": "share_class_id",
+          "name": "mint_id",
           "type": "u8"
         },
         {
-          "name": "share_class_metadata",
+          "name": "mint_model",
           "type": {
             "defined": {
               "name": "MintModel"

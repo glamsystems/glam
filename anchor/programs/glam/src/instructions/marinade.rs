@@ -88,13 +88,12 @@ pub fn delayed_unstake_handler<'c: 'info, 'info>(
 ) -> Result<()> {
     // Create ticket account
     let state_key = ctx.accounts.state.key();
-    let seeds = &[
+    let signer_seeds = &[
         b"ticket".as_ref(),
         ticket_id.as_bytes(),
         state_key.as_ref(),
         &[ticket_bump],
     ];
-    let signer_seeds = &[&seeds[..]];
     let space = std::mem::size_of::<TicketAccountData>() as u64 + 8;
     let rent = Rent::get()?;
     let lamports = rent.minimum_balance(space as usize);
@@ -103,10 +102,10 @@ pub fn delayed_unstake_handler<'c: 'info, 'info>(
         CpiContext::new_with_signer(
             ctx.accounts.system_program.to_account_info(),
             system_program::CreateAccount {
-                from: ctx.accounts.signer.to_account_info(), // treasury PDA
+                from: ctx.accounts.signer.to_account_info(),
                 to: ctx.accounts.ticket.to_account_info().clone(),
             },
-            signer_seeds,
+            &[signer_seeds],
         ),
         lamports,
         space,
