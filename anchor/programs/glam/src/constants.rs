@@ -9,6 +9,8 @@ pub const SEED_VAULT: &str = "vault";
 pub const SEED_METADATA: &str = "metadata";
 #[constant]
 pub const SEED_MINT: &str = "mint";
+#[constant]
+pub const SEED_TICKET: &str = "ticket";
 
 pub const DEFAULT_DRIFT_USER_NAME: [u8; 32] = [
     b'G', b'L', b'A', b'M', b' ', b'*', b'.', b'+', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

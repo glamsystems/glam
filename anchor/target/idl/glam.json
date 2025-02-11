@@ -2459,7 +2459,30 @@
         },
         {
           "name": "ticket",
-          "writable": true
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  105,
+                  99,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "ticket_id"
+              },
+              {
+                "kind": "account",
+                "path": "state"
+              }
+            ]
+          }
         },
         {
           "name": "msol_mint",
@@ -2500,16 +2523,12 @@
       ],
       "args": [
         {
-          "name": "msol_amount",
+          "name": "ticket_id",
           "type": "u64"
         },
         {
-          "name": "ticket_id",
-          "type": "string"
-        },
-        {
-          "name": "bump",
-          "type": "u8"
+          "name": "msol_amount",
+          "type": "u64"
         }
       ]
     },
@@ -8477,6 +8496,11 @@
       "name": "SEED_STATE",
       "type": "string",
       "value": "\"state\""
+    },
+    {
+      "name": "SEED_TICKET",
+      "type": "string",
+      "value": "\"ticket\""
     },
     {
       "name": "SEED_VAULT",

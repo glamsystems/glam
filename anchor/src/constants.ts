@@ -13,6 +13,9 @@ export const SEED_STATE = (
 export const SEED_VAULT = (
   GlamIDLJson.constants.find((x) => x.name === "SEED_VAULT")?.value || ""
 ).replace(/"/g, "");
+export const SEED_TICKET = (
+  GlamIDLJson.constants.find((x) => x.name === "SEED_TICKET")?.value || ""
+).replace(/"/g, "");
 
 /**
  * Token mints. If no devnet version is defined, assume mainnet and devnet addresses are the same.

@@ -15,7 +15,7 @@ import {
 import { Marinade } from "@marinade.finance/marinade-ts-sdk";
 
 import { BaseClient, TxOptions } from "./base";
-import { MARINADE_PROGRAM_ID, MSOL } from "../constants";
+import { MARINADE_PROGRAM_ID, MSOL, SEED_TICKET } from "../constants";
 
 export class MarinadeClient {
   public constructor(readonly base: BaseClient) {}
@@ -51,8 +51,9 @@ export class MarinadeClient {
   public async delayedUnstake(
     statePda: PublicKey,
     amount: BN,
+    txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const tx = await this.delayedUnstakeTx(statePda, amount, {});
+    const tx = await this.delayedUnstakeTx(statePda, amount, txOptions);
     return await this.base.sendAndConfirm(tx);
   }
 
@@ -68,14 +69,18 @@ export class MarinadeClient {
    * Utils
    */
 
-  getMarinadeTicketPda(
-    state: PublicKey,
-    ticketId: string,
-  ): [PublicKey, number] {
-    return PublicKey.findProgramAddressSync(
-      [Buffer.from("ticket"), Buffer.from(ticketId), state.toBuffer()],
+  newTicket(state: PublicKey) {
+    const ticketId = Date.now();
+    const [ticketPda, bump] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from(SEED_TICKET),
+        Buffer.from(new BN(ticketId).toArray("be", 8)),
+        state.toBuffer(),
+      ],
       this.base.program.programId,
     );
+
+    return { ticketPda, bump, ticketId };
   }
 
   async getExistingTickets(state: PublicKey): Promise<PublicKey[]> {
@@ -311,8 +316,7 @@ export class MarinadeClient {
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
-    const ticketId = Date.now().toString();
-    const [ticket, bump] = this.getMarinadeTicketPda(state, ticketId);
+    const { ticketPda, ticketId } = this.newTicket(state);
     const vault = this.base.getVaultPda(state);
     const marinadeState = this.getMarinadeState();
     const treasuryMsolAta = this.base.getVaultAta(
@@ -320,15 +324,13 @@ export class MarinadeClient {
       marinadeState.msolMintAddress,
     );
 
-    console.log(`Ticket ${ticketId}`, ticket.toBase58());
-
     const tx = await this.base.program.methods
-      .marinadeDelayedUnstake(amount, ticketId, bump)
+      .marinadeDelayedUnstake(new BN(ticketId), amount)
       .accountsPartial({
         state,
         vault,
         signer,
-        ticket,
+        ticket: ticketPda,
         msolMint: marinadeState.msolMintAddress,
         burnMsolFrom: treasuryMsolAta,
         marinadeState: marinadeState.marinadeStateAddress,
