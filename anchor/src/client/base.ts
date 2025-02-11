@@ -37,12 +37,7 @@ import {
   getGlamProgramId,
 } from "../glamExports";
 import { ClusterNetwork, GlamClientConfig } from "../clientConfig";
-import {
-  StateAccount,
-  OpenfundsMetadataAccount,
-  StateModel,
-  ShareClassModel,
-} from "../models";
+import { StateAccount, OpenfundsMetadataAccount, StateModel } from "../models";
 import { AssetMeta, ASSETS_MAINNET, ASSETS_TESTS } from "./assets";
 import { GlamError } from "../error";
 import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
@@ -121,13 +116,7 @@ export class BaseClient {
       anchor.setProvider(this.provider);
     }
 
-    // autodetect devnet
-    const defaultCluster = this.provider.connection.rpcEndpoint.includes(
-      "devnet",
-    )
-      ? ClusterNetwork.Devnet
-      : ClusterNetwork.Mainnet;
-    this.cluster = config?.cluster || defaultCluster;
+    this.cluster = config?.cluster || this.detectedCluster;
 
     if (this.cluster === ClusterNetwork.Mainnet) {
       this.program = new Program(GlamIDL, this.provider) as GlamProgram;
@@ -147,6 +136,17 @@ export class BaseClient {
       this.provider,
       !!isBrowser,
     );
+  }
+
+  get detectedCluster(): ClusterNetwork {
+    const rpcUrl = this.provider.connection.rpcEndpoint;
+    if (rpcUrl.includes("devnet")) {
+      return ClusterNetwork.Devnet;
+    }
+    if (rpcUrl.includes("localhost") || rpcUrl.includes("127.0.0.1")) {
+      return ClusterNetwork.Custom;
+    }
+    return ClusterNetwork.Mainnet;
   }
 
   isMainnet(): boolean {
