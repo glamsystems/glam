@@ -61,7 +61,6 @@ export class Client extends GlamClient {
       // state does not exist - create it
       console.log(`+ Creating vault ${name}`);
 
-      //@ts-ignore
       const initStateIx = await this.program.methods
         .initializeState(stateModel)
         .accountsPartial({

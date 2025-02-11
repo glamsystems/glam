@@ -333,16 +333,18 @@ pub struct InitLockedVoterEscrow<'info> {
 #[access_control(
     acl::check_integration(&ctx.accounts.state, Integration::JupiterVote)
 )]
+#[vault_signer_seeds]
 pub fn init_locked_voter_escrow_handler<'info>(ctx: Context<InitLockedVoterEscrow>) -> Result<()> {
-    new_escrow(CpiContext::new(
+    new_escrow(CpiContext::new_with_signer(
         ctx.accounts.locked_voter_program.to_account_info(),
         NewEscrow {
             locker: ctx.accounts.locker.to_account_info(),
             escrow: ctx.accounts.escrow.to_account_info(),
             escrow_owner: ctx.accounts.vault.to_account_info(),
-            payer: ctx.accounts.signer.to_account_info(),
+            payer: ctx.accounts.vault.to_account_info(),
             system_program: ctx.accounts.system_program.to_account_info(),
         },
+        vault_signer_seeds,
     ))?;
 
     Ok(())
@@ -441,16 +443,14 @@ pub fn increase_locked_amount_handler<'info>(
                 locker: ctx.accounts.locker.to_account_info(),
                 escrow: ctx.accounts.escrow.to_account_info(),
                 escrow_tokens: ctx.accounts.escrow_jup_ata.to_account_info(),
-                payer: ctx.accounts.signer.to_account_info(),
+                payer: ctx.accounts.vault.to_account_info(),
                 source_tokens: ctx.accounts.vault_jup_ata.to_account_info(),
                 token_program: ctx.accounts.token_program.to_account_info(),
             },
             vault_signer_seeds,
         ),
         amount,
-    )?;
-
-    Ok(())
+    )
 }
 
 #[derive(Accounts)]
@@ -572,13 +572,11 @@ pub fn withdraw_all_staked_jup_handler<'info>(ctx: Context<WithdrawAllStakedJup>
             escrow_owner: ctx.accounts.vault.to_account_info(),
             escrow_tokens: ctx.accounts.escrow_jup_ata.to_account_info(),
             destination_tokens: ctx.accounts.vault_jup_ata.to_account_info(),
-            payer: ctx.accounts.signer.to_account_info(),
+            payer: ctx.accounts.vault.to_account_info(),
             token_program: ctx.accounts.token_program.to_account_info(),
         },
         vault_signer_seeds,
-    ))?;
-
-    Ok(())
+    ))
 }
 
 #[derive(Accounts)]
@@ -630,13 +628,11 @@ pub fn withdraw_partial_unstaking_handler<'info>(
             partial_unstake: ctx.accounts.partial_unstake.to_account_info(),
             escrow_tokens: ctx.accounts.escrow_jup_ata.to_account_info(),
             destination_tokens: ctx.accounts.vault_jup_ata.to_account_info(),
-            payer: ctx.accounts.signer.to_account_info(),
+            payer: ctx.accounts.vault.to_account_info(),
             token_program: ctx.accounts.token_program.to_account_info(),
         },
         vault_signer_seeds,
-    ))?;
-
-    Ok(())
+    ))
 }
 
 #[derive(Accounts)]
@@ -667,21 +663,21 @@ pub struct NewVote<'info> {
 #[access_control(
     acl::check_integration(&ctx.accounts.state, Integration::JupiterVote)
 )]
+#[vault_signer_seeds]
 pub fn new_vote_handler<'info>(ctx: Context<NewVote>) -> Result<()> {
     jup_new_vote(
-        CpiContext::new(
+        CpiContext::new_with_signer(
             ctx.accounts.governance_program.to_account_info(),
             JupNewVote {
                 proposal: ctx.accounts.proposal.to_account_info(),
                 vote: ctx.accounts.vote.to_account_info(),
-                payer: ctx.accounts.signer.to_account_info(),
+                payer: ctx.accounts.vault.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
             },
+            vault_signer_seeds,
         ),
         ctx.accounts.vault.key(), // voter
-    )?;
-
-    Ok(())
+    )
 }
 
 #[derive(Accounts)]
