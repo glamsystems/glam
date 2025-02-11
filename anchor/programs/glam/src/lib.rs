@@ -531,11 +531,10 @@ pub mod glam {
     /// - Integration::Marinade
     pub fn marinade_delayed_unstake(
         ctx: Context<MarinadeDelayedUnstake>,
+        ticket_id: u64,
         msol_amount: u64,
-        ticket_id: String,
-        bump: u8,
     ) -> Result<()> {
-        marinade::delayed_unstake_handler(ctx, msol_amount, ticket_id, bump)
+        marinade::delayed_unstake_handler(ctx, ticket_id, msol_amount)
     }
 
     /// Claims tickets that were unstaked in the previous epoch to get SOL.

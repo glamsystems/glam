@@ -1,4 +1,4 @@
-use crate::{constants::*, state::*};
+use crate::{constants::*, gen_ticket_signer_seeds, state::*};
 use anchor_lang::{prelude::*, system_program};
 use anchor_spl::{
     associated_token::AssociatedToken,
@@ -82,18 +82,12 @@ pub fn marinade_deposit_stake_handler<'c: 'info, 'info>(
 #[vault_signer_seeds]
 pub fn delayed_unstake_handler<'c: 'info, 'info>(
     ctx: Context<MarinadeDelayedUnstake>,
+    ticket_id: u64,
     msol_amount: u64,
-    ticket_id: String,
-    ticket_bump: u8,
 ) -> Result<()> {
-    // Create ticket account
     let state_key = ctx.accounts.state.key();
-    let signer_seeds = &[
-        b"ticket".as_ref(),
-        ticket_id.as_bytes(),
-        state_key.as_ref(),
-        &[ticket_bump],
-    ];
+    let ticket_signer_seeds = gen_ticket_signer_seeds!(state_key, ticket_id, ctx.bumps.ticket);
+
     let space = std::mem::size_of::<TicketAccountData>() as u64 + 8;
     let rent = Rent::get()?;
     let lamports = rent.minimum_balance(space as usize);
@@ -105,7 +99,7 @@ pub fn delayed_unstake_handler<'c: 'info, 'info>(
                 from: ctx.accounts.signer.to_account_info(),
                 to: ctx.accounts.ticket.to_account_info().clone(),
             },
-            &[signer_seeds],
+            &[ticket_signer_seeds],
         ),
         lamports,
         space,
@@ -309,7 +303,7 @@ pub struct MarinadeDepositStake<'info> {
 }
 
 #[derive(Accounts)]
-// #[instruction(ticket_id: String)]
+#[instruction(ticket_id: u64)]
 pub struct MarinadeDelayedUnstake<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -321,10 +315,7 @@ pub struct MarinadeDelayedUnstake<'info> {
     pub vault: SystemAccount<'info>,
 
     /// CHECK: skip
-    // #[account(mut, seeds = [b"ticket".as_ref(), ticket_id.as_bytes(), state.key().as_ref()], bump)]
-    // The line above wll cause "Error: memory allocation failed, out of memory"
-    // TODO: Use i64 type for ticket_id
-    #[account(mut)]
+    #[account(mut, seeds = [SEED_TICKET.as_bytes(), &ticket_id.to_be_bytes(), state.key().as_ref()], bump)]
     pub ticket: AccountInfo<'info>,
 
     /// CHECK: skip

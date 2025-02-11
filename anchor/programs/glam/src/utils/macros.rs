@@ -11,3 +11,17 @@ macro_rules! gen_mint_signer_seeds {
         ]
     };
 }
+
+#[macro_export]
+macro_rules! gen_ticket_signer_seeds {
+    (
+    $key: expr, $idx: expr, $bump: expr
+) => {
+        &[
+            crate::constants::SEED_TICKET.as_bytes(),
+            &$idx.to_be_bytes(),
+            $key.as_ref(),
+            &[$bump],
+        ]
+    };
+}

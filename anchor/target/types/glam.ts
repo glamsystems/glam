@@ -2465,7 +2465,30 @@ export type Glam = {
         },
         {
           "name": "ticket",
-          "writable": true
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  105,
+                  99,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "ticketId"
+              },
+              {
+                "kind": "account",
+                "path": "state"
+              }
+            ]
+          }
         },
         {
           "name": "msolMint",
@@ -2506,16 +2529,12 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "msolAmount",
+          "name": "ticketId",
           "type": "u64"
         },
         {
-          "name": "ticketId",
-          "type": "string"
-        },
-        {
-          "name": "bump",
-          "type": "u8"
+          "name": "msolAmount",
+          "type": "u64"
         }
       ]
     },
@@ -8483,6 +8502,11 @@ export type Glam = {
       "name": "seedState",
       "type": "string",
       "value": "\"state\""
+    },
+    {
+      "name": "seedTicket",
+      "type": "string",
+      "value": "\"ticket\""
     },
     {
       "name": "seedVault",
