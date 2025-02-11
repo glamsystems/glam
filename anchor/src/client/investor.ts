@@ -50,7 +50,7 @@ export class InvestorClient {
     amount: BN,
     inKind: boolean = false,
     stateModel?: StateModel,
-    shareClassId: number = 0,
+    mintId: number = 0,
     skipState: boolean = true,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
@@ -59,7 +59,7 @@ export class InvestorClient {
       amount,
       inKind,
       stateModel,
-      shareClassId,
+      mintId,
       skipState,
       txOptions,
     );
@@ -205,15 +205,15 @@ export class InvestorClient {
     amount: BN,
     inKind: boolean = false,
     stateModel?: StateModel,
-    shareClassId: number = 0,
+    mintId: number = 0,
     skipState: boolean = true,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
 
     // share class token to receive
-    const shareClass = this.base.getMintPda(statePda, shareClassId);
-    const signerShareAta = this.base.getMintAta(signer, shareClass);
+    const glamMint = this.base.getMintPda(statePda, mintId);
+    const signerShareAta = this.base.getMintAta(signer, glamMint);
 
     // remaining accounts = assets + signer atas + treasury atas + pricing to compute AUM
     if (!stateModel) {
@@ -285,8 +285,8 @@ export class InvestorClient {
     const tx = await this.base.program.methods
       .redeem(amount, inKind, skipState)
       .accounts({
-        state: statePda,
-        shareClass,
+        glamState: statePda,
+        glamMint,
         signerShareAta,
         //TODO: only add if the fund has lock-up? (just for efficiency)
         // signerAccountPolicy: null,

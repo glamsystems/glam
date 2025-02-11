@@ -11,12 +11,12 @@ import {
 export class MintClient {
   public constructor(readonly base: BaseClient) {}
 
-  public async getHolders(state: PublicKey, shareClassId: number = 0) {
-    const shareClassMint = this.base.getMintPda(state, shareClassId);
+  public async getHolders(state: PublicKey, mintId: number = 0) {
+    const mintPda = this.base.getMintPda(state, mintId);
     const connection = this.base.provider.connection;
     const mint = await getMint(
       connection,
-      shareClassMint,
+      mintPda,
       connection.commitment,
       TOKEN_2022_PROGRAM_ID,
     );
@@ -28,7 +28,7 @@ export class MintClient {
       {
         filters: [
           { dataSize },
-          { memcmp: { offset: 0, bytes: shareClassMint.toBase58() } },
+          { memcmp: { offset: 0, bytes: mintPda.toBase58() } },
         ],
       },
     );
@@ -52,12 +52,12 @@ export class MintClient {
     });
   }
 
-  public async closeShareClassIx(state: PublicKey, shareClassId: number = 0) {
+  public async closeShareClassIx(state: PublicKey, mintId: number = 0) {
     const openfunds = this.base.getOpenfundsPda(state);
-    const mintPda = this.base.getMintPda(state, shareClassId);
+    const mintPda = this.base.getMintPda(state, mintId);
 
     return await this.base.program.methods
-      .closeShareClass(shareClassId)
+      .closeShareClass(mintId)
       .accounts({
         glamState: state,
         glamMint: mintPda,
@@ -67,14 +67,14 @@ export class MintClient {
 
   public async closeShareClass(
     state: PublicKey,
-    shareClassId: number = 0,
+    mintId: number = 0,
     txOptions: TxOptions = {},
   ) {
     const openfunds = this.base.getOpenfundsPda(state);
-    const mintPda = this.base.getMintPda(state, shareClassId);
+    const mintPda = this.base.getMintPda(state, mintId);
 
     return await this.base.program.methods
-      .closeShareClass(shareClassId)
+      .closeShareClass(mintId)
       .accounts({
         glamState: state,
         glamMint: mintPda,
@@ -87,54 +87,51 @@ export class MintClient {
    *
    * @param state
    * @param owner
-   * @param shareClassId
+   * @param mintId
    * @param txOptions
    * @returns
    */
   public async createTokenAccount(
     state: PublicKey,
     owner: PublicKey,
-    shareClassId: number = 0,
+    mintId: number = 0,
     setFrozen: boolean = true,
     txOptions: TxOptions = {},
   ) {
-    const shareClassMint = this.base.getMintPda(state, shareClassId);
-    const ata = this.base.getMintAta(owner, shareClassMint);
+    const mintPda = this.base.getMintPda(state, mintId);
+    const ata = this.base.getMintAta(owner, mintPda);
     const ixCreateAta = createAssociatedTokenAccountIdempotentInstruction(
       this.base.getSigner(),
       ata,
       owner,
-      shareClassMint,
+      mintPda,
       TOKEN_2022_PROGRAM_ID,
     );
-    return await this.setTokenAccountsStates(
-      state,
-      shareClassId,
-      [ata],
-      setFrozen,
-      { preInstructions: [ixCreateAta], ...txOptions },
-    );
+    return await this.setTokenAccountsStates(state, mintId, [ata], setFrozen, {
+      preInstructions: [ixCreateAta],
+      ...txOptions,
+    });
   }
 
   /**
    * Freeze or thaw token accounts of a share class
    *
    * @param state
-   * @param shareClassId
+   * @param mintId
    * @param frozen
    * @param txOptions
    * @returns
    */
   public async setTokenAccountsStates(
     state: PublicKey,
-    shareClassId: number,
+    mintId: number,
     tokenAccounts: PublicKey[],
     frozen: boolean,
     txOptions: TxOptions = {},
   ) {
-    const mintPda = this.base.getMintPda(state, shareClassId);
+    const mintPda = this.base.getMintPda(state, mintId);
     return await this.base.program.methods
-      .setTokenAccountsStates(shareClassId, frozen)
+      .setTokenAccountsStates(mintId, frozen)
       .accounts({
         glamState: state,
         glamMint: mintPda,
@@ -154,7 +151,7 @@ export class MintClient {
    * Mint share to recipient
    *
    * @param state
-   * @param shareClassId
+   * @param mintId
    * @param recipient Recipient's wallet address
    * @param amount Amount of shares to mint
    * @param forceThaw If true, force unfreezing token account before minting
@@ -163,13 +160,13 @@ export class MintClient {
    */
   public async mintShare(
     state: PublicKey,
-    shareClassId: number,
+    mintId: number,
     recipient: PublicKey,
     amount: anchor.BN,
     forceThaw: boolean = false,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const mintPda = this.base.getMintPda(state, shareClassId);
+    const mintPda = this.base.getMintPda(state, mintId);
     const mintTo = this.base.getMintAta(recipient, mintPda);
 
     const preInstructions = [];
@@ -185,7 +182,7 @@ export class MintClient {
     if (forceThaw) {
       preInstructions.push(
         await this.base.program.methods
-          .setTokenAccountsStates(shareClassId, false)
+          .setTokenAccountsStates(mintId, false)
           .accounts({
             glamState: state,
             glamMint: mintPda,
@@ -210,20 +207,20 @@ export class MintClient {
 
   public async burnShare(
     state: PublicKey,
-    shareClassId: number,
+    mintId: number,
     amount: anchor.BN,
     from: PublicKey,
     forceThaw: boolean = false,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const mintPda = this.base.getMintPda(state, shareClassId);
+    const mintPda = this.base.getMintPda(state, mintId);
     const ata = this.base.getMintAta(from, mintPda);
 
     const preInstructions = [];
     if (forceThaw) {
       preInstructions.push(
         await this.base.program.methods
-          .setTokenAccountsStates(shareClassId, false)
+          .setTokenAccountsStates(mintId, false)
           .accounts({
             glamState: state,
             glamMint: mintPda,
@@ -236,7 +233,7 @@ export class MintClient {
     }
 
     return await this.base.program.methods
-      .burnShare(shareClassId, amount)
+      .burnShare(mintId, amount)
       .accounts({
         glamState: state,
         glamMint: mintPda,
@@ -248,14 +245,14 @@ export class MintClient {
 
   public async forceTransferShare(
     state: PublicKey,
-    shareClassId: number,
+    mintId: number,
     amount: anchor.BN,
     from: PublicKey,
     to: PublicKey,
     forceThaw: boolean = false,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const mintPda = this.base.getMintPda(state, shareClassId);
+    const mintPda = this.base.getMintPda(state, mintId);
     const fromAta = this.base.getMintAta(from, mintPda);
     const toAta = this.base.getMintAta(to, mintPda);
 
@@ -272,7 +269,7 @@ export class MintClient {
     if (forceThaw) {
       preInstructions.push(
         await this.base.program.methods
-          .setTokenAccountsStates(shareClassId, false)
+          .setTokenAccountsStates(mintId, false)
           .accounts({
             glamState: state,
             glamMint: mintPda,
@@ -287,7 +284,7 @@ export class MintClient {
     }
 
     return await this.base.program.methods
-      .forceTransferShare(shareClassId, amount)
+      .forceTransferShare(mintId, amount)
       .accounts({
         glamState: state,
         glamMint: mintPda,

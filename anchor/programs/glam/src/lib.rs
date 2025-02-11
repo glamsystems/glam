@@ -3,6 +3,7 @@ pub mod error;
 pub mod instructions;
 pub mod security_txt;
 pub mod state;
+pub mod utils;
 
 use crate::instructions::{state as glam_state, *};
 use anchor_lang::prelude::*;
@@ -139,11 +140,11 @@ pub mod glam {
     /// # Permission required
     /// - Owner only, delegates not allowed
     pub fn update_share_class(
-        ctx: Context<UpdateShareClass>,
+        ctx: Context<UpdateMint>,
         share_class_id: u8,
         share_class_metadata: MintModel,
     ) -> Result<()> {
-        mint::update_share_class_handler(ctx, share_class_id, share_class_metadata)
+        mint::update_mint_handler(ctx, share_class_id, share_class_metadata)
     }
 
     /// Closes a share class and releases its resources.
@@ -154,8 +155,8 @@ pub mod glam {
     ///
     /// # Permission required
     /// - Owner only, delegates not allowed
-    pub fn close_share_class(ctx: Context<CloseShareClass>, share_class_id: u8) -> Result<()> {
-        mint::close_share_class_handler(ctx, share_class_id)
+    pub fn close_share_class(ctx: Context<CloseMint>, share_class_id: u8) -> Result<()> {
+        mint::close_mint_handler(ctx, share_class_id)
     }
 
     /// Mints a specified amount of shares for the given share class.

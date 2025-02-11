@@ -40,7 +40,7 @@ pub fn mint_signer_seeds(_attr: TokenStream, item: TokenStream) -> TokenStream {
             // We assume the fund account and the state bump seed are available in the context
             let state_key = ctx.accounts.glam_state.key();
             let seeds = &[
-                "mint".as_bytes(),
+                crate::constants::SEED_MINT.as_bytes(),
                 &[mint_id],
                 state_key.as_ref(),
                 &[ctx.bumps.glam_mint],
@@ -71,7 +71,7 @@ pub fn vault_signer_seeds(_attr: TokenStream, item: TokenStream) -> TokenStream 
             // We assume the fund account and the vault bump seed are available in the context
             let state_key = ctx.accounts.state.key();
             let seeds = [
-                "vault".as_ref(),
+                crate::constants::SEED_VAULT.as_ref(),
                 state_key.as_ref(),
                 &[ctx.bumps.vault],
             ];
@@ -101,7 +101,7 @@ pub fn glam_vault_signer_seeds(_attr: TokenStream, item: TokenStream) -> TokenSt
             // We assume the fund account and the vault bump seed are available in the context
             let state_key = ctx.accounts.glam_state.key();
             let seeds = [
-                "vault".as_ref(),
+                crate::constants::SEED_VAULT.as_ref(),
                 state_key.as_ref(),
                 &[ctx.bumps.glam_vault],
             ];

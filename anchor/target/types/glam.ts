@@ -38,8 +38,17 @@ export type Glam = {
       ],
       "accounts": [
         {
+          "name": "glamState",
+          "writable": true
+        },
+        {
           "name": "newMint",
           "writable": true
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "extraAccountMetaList",
@@ -78,10 +87,6 @@ export type Glam = {
           }
         },
         {
-          "name": "state",
-          "writable": true
-        },
-        {
           "name": "openfundsMetadata",
           "writable": true,
           "optional": true,
@@ -102,15 +107,10 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
         },
         {
           "name": "systemProgram",
@@ -3494,23 +3494,10 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "state"
+          "name": "glamState"
         },
         {
-          "name": "shareClass",
-          "writable": true
-        },
-        {
-          "name": "signerShareAta",
-          "writable": true
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3526,10 +3513,23 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
+        },
+        {
+          "name": "glamMint",
+          "writable": true
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "signerShareAta",
+          "writable": true
         },
         {
           "name": "signerPolicy",
@@ -4932,11 +4932,11 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "shareClassMint",
+          "name": "glamState",
           "writable": true
         },
         {
-          "name": "state",
+          "name": "glamMint",
           "writable": true
         },
         {
@@ -6279,10 +6279,10 @@ export type Glam = {
         "kind": "enum",
         "variants": [
           {
-            "name": "shareClassAllowlist"
+            "name": "allowlist"
           },
           {
-            "name": "shareClassBlocklist"
+            "name": "blocklist"
           },
           {
             "name": "externalVaultAccounts"

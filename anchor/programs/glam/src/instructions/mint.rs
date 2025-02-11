@@ -1,5 +1,6 @@
 use crate::{
-    constants::*, error::GlamError, policy_hook::TRANSFER_HOOK_EXTRA_ACCOUNTS, state::*, ID,
+    constants::*, error::GlamError, gen_mint_signer_seeds,
+    policy_hook::TRANSFER_HOOK_EXTRA_ACCOUNTS, state::*, ID,
 };
 use anchor_lang::{prelude::*, system_program};
 use anchor_spl::{
@@ -28,17 +29,23 @@ use {
 
 #[derive(Accounts)]
 pub struct NewMint<'info> {
+    #[account(mut, constraint = glam_state.owner == signer.key() @ GlamError::NotAuthorized)]
+    pub glam_state: Box<Account<'info, StateAccount>>,
+
     /// CHECK: Token2022 Mint, we manually create it with dynamic extensions
     #[account(
       mut,
       seeds = [
         SEED_MINT.as_ref(),
-        &[state.mints.len() as u8],
-        state.key().as_ref()
+        &[glam_state.mints.len() as u8],
+        glam_state.key().as_ref()
       ],
       bump
     )]
     pub new_mint: AccountInfo<'info>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
 
     /// CHECK: Token2022 Transfer Hook, we manually create it
     #[account(
@@ -50,14 +57,8 @@ pub struct NewMint<'info> {
     )]
     pub extra_account_meta_list: UncheckedAccount<'info>,
 
-    #[account(mut, constraint = state.owner == signer.key() @ GlamError::NotAuthorized)]
-    pub state: Box<Account<'info, StateAccount>>,
-
-    #[account(mut, seeds = [SEED_METADATA.as_bytes(), state.key().as_ref()], bump)]
+    #[account(mut, seeds = [SEED_METADATA.as_bytes(), glam_state.key().as_ref()], bump)]
     pub openfunds_metadata: Option<Box<Account<'info, OpenfundsMetadataAccount>>>,
-
-    #[account(mut)]
-    pub signer: Signer<'info>,
 
     pub system_program: Program<'info, System>,
     pub token_2022_program: Program<'info, Token2022>,
@@ -65,38 +66,35 @@ pub struct NewMint<'info> {
 
 pub fn add_mint_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, NewMint<'info>>,
-    share_class_model: MintModel,
+    mint_model: MintModel,
 ) -> Result<()> {
     //
-    // Add share class to state
+    // Add mint to state
     //
-    let state = &mut ctx.accounts.state;
+    let state = &mut ctx.accounts.glam_state;
     let state_key = state.key();
     let mint_idx = state.mints.len() as u8;
     state.mints.push(ctx.accounts.new_mint.key());
 
     //
-    // Compute and add share class params
+    // Compute and add mint params
     //
-    let mut share_class_params = vec![
+    let mut mint_params = vec![
         EngineField {
-            name: EngineFieldName::ShareClassAllowlist,
+            name: EngineFieldName::Allowlist,
             value: EngineFieldValue::VecPubkey {
-                val: share_class_model.clone().allowlist.unwrap_or_default(),
+                val: mint_model.clone().allowlist.unwrap_or_default(),
             },
         },
         EngineField {
-            name: EngineFieldName::ShareClassBlocklist,
+            name: EngineFieldName::Blocklist,
             value: EngineFieldValue::VecPubkey {
-                val: share_class_model.clone().blocklist.unwrap_or_default(),
+                val: mint_model.clone().blocklist.unwrap_or_default(),
             },
         },
     ];
-    let share_class_metadata = &mut share_class_model.clone();
-    let mut raw_openfunds = share_class_metadata
-        .raw_openfunds
-        .clone()
-        .unwrap_or_default();
+    let mint_model = &mut mint_model.clone();
+    let mut raw_openfunds = mint_model.raw_openfunds.clone().unwrap_or_default();
 
     // Policy: Lock-up
     // Input:
@@ -107,12 +105,12 @@ pub fn add_mint_handler<'c: 'info, 'info>(
     // - lock_up_period_in_days (openfunds)
 
     let mut transfer_hook_active = false;
-    if let Some(lock_up_period_in_seconds) = share_class_metadata.lock_up_period_in_seconds {
+    if let Some(lock_up_period_in_seconds) = mint_model.lock_up_period_in_seconds {
         let policy_has_lock_up = lock_up_period_in_seconds > 0;
         transfer_hook_active = policy_has_lock_up;
 
         if policy_has_lock_up {
-            share_class_params.push(EngineField {
+            mint_params.push(EngineField {
                 name: EngineFieldName::LockUp,
                 value: EngineFieldValue::Timestamp {
                     // lock_up_period_in_seconds is i32 so it's easier to use in js,
@@ -130,13 +128,13 @@ pub fn add_mint_handler<'c: 'info, 'info>(
         raw_openfunds.has_lock_up_for_redemption = Some(policy_has_lock_up);
     }
 
-    share_class_metadata.raw_openfunds = Some(raw_openfunds);
-    state.params.push(share_class_params);
+    mint_model.raw_openfunds = Some(raw_openfunds);
+    state.params.push(mint_params);
 
-    let share_class_fields = Vec::<ShareClassField>::from(&share_class_metadata.clone());
+    let share_class_fields = Vec::<ShareClassField>::from(&mint_model.clone());
 
     //
-    // Add share class data metadata, currently only openfunds metadata is supported
+    // Add mint metadata, currently only openfunds metadata is supported
     //
     if let Some(metadata) = state.metadata.clone() {
         if metadata.template == MetadataTemplate::Openfunds {
@@ -149,28 +147,18 @@ pub fn add_mint_handler<'c: 'info, 'info>(
     }
 
     //
-    // Initialize share class mint, extensions and metadata
+    // Initialize mint, extensions and metadata
     //
-    let share_mint = &ctx.accounts.new_mint.to_account_info();
-    let share_mint_key = &share_mint.key();
-    let share_metadata = share_mint;
-    let share_self_authority = share_mint;
-    let share_permanent_delegate = match share_class_metadata.permanent_delegate {
-        Some(system_program::ID) => Some(share_mint.key()),
+    let mint_account_info = &ctx.accounts.new_mint.to_account_info();
+    let mint_key = &mint_account_info.key();
+    let token_ext_metadata = mint_account_info;
+    let mint_self_authority = mint_account_info;
+    let mint_permanent_delegate = match mint_model.permanent_delegate {
+        Some(system_program::ID) => Some(mint_account_info.key()),
         other => other,
     };
 
-    let default_account_state_frozen = share_class_metadata
-        .default_account_state_frozen
-        .unwrap_or(false);
-
-    let seeds = &[
-        SEED_MINT.as_bytes(),
-        &[mint_idx],
-        state_key.as_ref(),
-        &[ctx.bumps.new_mint],
-    ];
-    let signer_seeds = &[&seeds[..]];
+    let default_account_state_frozen = mint_model.default_account_state_frozen.unwrap_or(false);
 
     let mut extension_types = vec![
         ExtensionType::MetadataPointer,     // always present
@@ -178,7 +166,7 @@ pub fn add_mint_handler<'c: 'info, 'info>(
         ExtensionType::DefaultAccountState, // always present, default AccountState::Initialized
         ExtensionType::TransferHook,        // always present, default transfer_hook_program_id=None
     ];
-    if share_permanent_delegate.is_some() {
+    if mint_permanent_delegate.is_some() {
         extension_types.push(ExtensionType::PermanentDelegate);
     }
     let space = ExtensionType::try_calculate_account_len::<StateMint>(&extension_types).unwrap();
@@ -192,15 +180,17 @@ pub fn add_mint_handler<'c: 'info, 'info>(
         lamports_required
     );
 
+    let signer_seeds = gen_mint_signer_seeds!(state_key, mint_idx, ctx.bumps.new_mint);
+
     // Create mint account
     system_program::create_account(
         CpiContext::new_with_signer(
             ctx.accounts.token_2022_program.to_account_info(),
             system_program::CreateAccount {
                 from: ctx.accounts.signer.to_account_info(),
-                to: share_mint.clone(),
+                to: mint_account_info.clone(),
             },
-            signer_seeds,
+            &[signer_seeds],
         ),
         lamports_required,
         space as u64,
@@ -213,24 +203,24 @@ pub fn add_mint_handler<'c: 'info, 'info>(
         // always present
         spl_token_2022::extension::metadata_pointer::instruction::initialize(
             &Token2022::id(),
-            share_mint_key,
-            Some(share_self_authority.key()),
-            Some(share_metadata.key()),
+            mint_key,
+            Some(mint_self_authority.key()),
+            Some(token_ext_metadata.key()),
         )?,
     );
     init_ixs.push(
         // always present
         spl_token_2022::instruction::initialize_mint_close_authority(
             &Token2022::id(),
-            share_mint_key,
-            Some(&share_self_authority.key()),
+            mint_key,
+            Some(&mint_self_authority.key()),
         )?,
     );
     init_ixs.push(
         // always present
         spl_token_2022::extension::default_account_state::instruction::initialize_default_account_state(
             &Token2022::id(),
-            share_mint_key,
+            mint_key,
             if default_account_state_frozen { &spl_token_2022::state::AccountState::Frozen } else { &spl_token_2022::state::AccountState::Initialized },
         )?,
     );
@@ -238,22 +228,25 @@ pub fn add_mint_handler<'c: 'info, 'info>(
         // always present, transfer_hook_program_id optional
         spl_token_2022::extension::transfer_hook::instruction::initialize(
             &Token2022::id(),
-            share_mint_key,
-            Some(share_self_authority.key()),
+            mint_key,
+            Some(mint_self_authority.key()),
             if transfer_hook_active { Some(ID) } else { None },
         )?,
     );
-    if let Some(delegate) = share_permanent_delegate {
+    if let Some(delegate) = mint_permanent_delegate {
         // default not present, optional
         init_ixs.push(spl_token_2022::instruction::initialize_permanent_delegate(
             &Token2022::id(),
-            share_mint_key,
+            mint_key,
             &delegate,
         )?);
     }
 
     for ix in init_ixs {
-        solana_program::program::invoke(&ix, &[share_mint.clone(), share_self_authority.clone()])?;
+        solana_program::program::invoke(
+            &ix,
+            &[mint_account_info.clone(), mint_self_authority.clone()],
+        )?;
     }
 
     // Invoke mint2
@@ -261,12 +254,12 @@ pub fn add_mint_handler<'c: 'info, 'info>(
         CpiContext::new(
             ctx.accounts.token_2022_program.to_account_info(),
             token_2022::InitializeMint2 {
-                mint: share_mint.clone(),
+                mint: mint_account_info.clone(),
             },
         ),
         9,
-        &share_self_authority.key(),
-        Some(&share_self_authority.key()),
+        &mint_self_authority.key(),
+        Some(&mint_self_authority.key()),
     )
     .unwrap();
 
@@ -302,13 +295,13 @@ pub fn add_mint_handler<'c: 'info, 'info>(
     ExtraAccountMetaList::init::<ExecuteInstruction>(&mut data, &account_metas)?;
 
     // Init the metadata account
-    let share_class_metadata = share_class_metadata.clone();
+    let share_class_metadata = mint_model.clone();
     let init_token_metadata_ix = spl_token_metadata_interface::instruction::initialize(
         &spl_token_2022::id(),
-        &share_metadata.key(),
-        &share_self_authority.key(),
-        &share_mint.key(),
-        &share_self_authority.key(),
+        &token_ext_metadata.key(),
+        &mint_self_authority.key(),
+        &mint_account_info.key(),
+        &mint_self_authority.key(),
         share_class_metadata.name.unwrap(),
         share_class_metadata.symbol.unwrap(),
         share_class_metadata.uri.unwrap(),
@@ -316,12 +309,12 @@ pub fn add_mint_handler<'c: 'info, 'info>(
     solana_program::program::invoke_signed(
         &init_token_metadata_ix,
         &[
-            share_metadata.clone(),
-            share_self_authority.clone(),
-            share_mint.clone(),
-            share_self_authority.clone(),
+            token_ext_metadata.clone(),
+            mint_self_authority.clone(),
+            mint_account_info.clone(),
+            mint_self_authority.clone(),
         ],
-        signer_seeds,
+        &[signer_seeds],
     )?;
 
     //
@@ -330,25 +323,25 @@ pub fn add_mint_handler<'c: 'info, 'info>(
     solana_program::program::invoke_signed(
         &spl_token_metadata_interface::instruction::update_field(
             &spl_token_2022::id(),
-            &share_metadata.key(),
-            &share_self_authority.key(),
+            &token_ext_metadata.key(),
+            &mint_self_authority.key(),
             spl_token_metadata_interface::state::Field::Key("FundId".to_string()),
             state_key.to_string(),
         ),
-        &[share_mint.clone(), share_self_authority.clone()],
-        signer_seeds,
+        &[mint_account_info.clone(), mint_self_authority.clone()],
+        &[signer_seeds],
     )?;
     let _ = share_class_fields.iter().take(10).try_for_each(|field| {
         solana_program::program::invoke_signed(
             &spl_token_metadata_interface::instruction::update_field(
                 &spl_token_2022::id(),
-                &share_metadata.key(),
-                &share_self_authority.key(),
+                &token_ext_metadata.key(),
+                &mint_self_authority.key(),
                 spl_token_metadata_interface::state::Field::Key(field.name.to_string()),
                 field.clone().value,
             ),
-            &[share_mint.clone(), share_self_authority.clone()],
-            signer_seeds,
+            &[mint_account_info.clone(), mint_self_authority.clone()],
+            &[signer_seeds],
         )
     });
 
@@ -622,18 +615,18 @@ pub fn mint_share_handler<'info>(
 
 #[derive(Accounts)]
 #[instruction(mint_id: u8)]
-pub struct UpdateShareClass<'info> {
+pub struct UpdateMint<'info> {
+    #[account(mut, constraint = glam_state.owner == signer.key() @ GlamError::NotAuthorized)]
+    pub glam_state: Box<Account<'info, StateAccount>>,
+
     #[account(
         mut,
-        seeds = [SEED_MINT.as_ref(), &[mint_id], state.key().as_ref()],
+        seeds = [SEED_MINT.as_ref(), &[mint_id], glam_state.key().as_ref()],
         bump,
-        mint::authority = share_class_mint,
+        mint::authority = glam_mint,
         mint::token_program = token_2022_program
     )]
-    share_class_mint: InterfaceAccount<'info, Mint>,
-
-    #[account(mut, constraint = state.owner == signer.key() @ GlamError::NotAuthorized)]
-    pub state: Box<Account<'info, StateAccount>>,
+    glam_mint: InterfaceAccount<'info, Mint>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -641,24 +634,24 @@ pub struct UpdateShareClass<'info> {
     pub token_2022_program: Program<'info, Token2022>,
 }
 
-pub fn update_share_class_handler(
-    ctx: Context<UpdateShareClass>,
+pub fn update_mint_handler(
+    ctx: Context<UpdateMint>,
     mint_id: u8,
-    share_class_model: MintModel,
+    mint_model: MintModel,
 ) -> Result<()> {
-    let state = &mut ctx.accounts.state;
-    if let Some(share_class_allowlist) = share_class_model.allowlist {
-        let allowlist = state.share_class_allowlist_mut(mint_id as usize);
+    let state = &mut ctx.accounts.glam_state;
+    if let Some(mint_allowlist) = mint_model.allowlist {
+        let allowlist = state.mint_allowlist_mut(mint_id as usize);
         if let Some(_allowlist) = allowlist {
             _allowlist.clear();
-            _allowlist.extend(share_class_allowlist.clone());
+            _allowlist.extend(mint_allowlist.clone());
         }
     }
-    if let Some(share_class_blocklist) = share_class_model.blocklist {
-        let blocklist = state.share_class_blocklist_mut(mint_id as usize);
+    if let Some(mint_blocklist) = mint_model.blocklist {
+        let blocklist = state.mint_blocklist_mut(mint_id as usize);
         if let Some(_blocklist) = blocklist {
             _blocklist.clear();
-            _blocklist.extend(share_class_blocklist.clone());
+            _blocklist.extend(mint_blocklist.clone());
         }
     }
     Ok(())
@@ -666,7 +659,7 @@ pub fn update_share_class_handler(
 
 #[derive(Accounts)]
 #[instruction(mint_id: u8)]
-pub struct CloseShareClass<'info> {
+pub struct CloseMint<'info> {
     #[account(mut, constraint = glam_state.owner == signer.key() @ GlamError::NotAuthorized)]
     pub glam_state: Account<'info, StateAccount>,
 
@@ -705,7 +698,7 @@ pub struct CloseShareClass<'info> {
 }
 
 #[mint_signer_seeds]
-pub fn close_share_class_handler(ctx: Context<CloseShareClass>, mint_id: u8) -> Result<()> {
+pub fn close_mint_handler(ctx: Context<CloseMint>, mint_id: u8) -> Result<()> {
     require!(
         (mint_id as usize) < ctx.accounts.glam_state.mints.len(),
         GlamError::NoShareClass
@@ -744,6 +737,6 @@ pub fn close_share_class_handler(ctx: Context<CloseShareClass>, mint_id: u8) -> 
         ctx.accounts.vault.to_account_info(),
     )?;
 
-    msg!("Share class closed: {}", ctx.accounts.glam_mint.key());
+    msg!("Mint closed: {}", ctx.accounts.glam_mint.key());
     Ok(())
 }

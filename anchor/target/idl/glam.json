@@ -32,8 +32,17 @@
       ],
       "accounts": [
         {
+          "name": "glam_state",
+          "writable": true
+        },
+        {
           "name": "new_mint",
           "writable": true
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "extra_account_meta_list",
@@ -72,10 +81,6 @@
           }
         },
         {
-          "name": "state",
-          "writable": true
-        },
-        {
           "name": "openfunds_metadata",
           "writable": true,
           "optional": true,
@@ -96,15 +101,10 @@
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glam_state"
               }
             ]
           }
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
         },
         {
           "name": "system_program",
@@ -3488,23 +3488,10 @@
       ],
       "accounts": [
         {
-          "name": "state"
+          "name": "glam_state"
         },
         {
-          "name": "share_class",
-          "writable": true
-        },
-        {
-          "name": "signer_share_ata",
-          "writable": true
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "vault",
+          "name": "glam_vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3520,10 +3507,23 @@
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glam_state"
               }
             ]
           }
+        },
+        {
+          "name": "glam_mint",
+          "writable": true
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "signer_share_ata",
+          "writable": true
         },
         {
           "name": "signer_policy",
@@ -4926,11 +4926,11 @@
       ],
       "accounts": [
         {
-          "name": "share_class_mint",
+          "name": "glam_state",
           "writable": true
         },
         {
-          "name": "state",
+          "name": "glam_mint",
           "writable": true
         },
         {
@@ -6273,10 +6273,10 @@
         "kind": "enum",
         "variants": [
           {
-            "name": "ShareClassAllowlist"
+            "name": "Allowlist"
           },
           {
-            "name": "ShareClassBlocklist"
+            "name": "Blocklist"
           },
           {
             "name": "ExternalVaultAccounts"
