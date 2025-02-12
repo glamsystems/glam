@@ -130,7 +130,6 @@ export class JupiterClient {
     if (!escrowCreated) {
       console.log("Will create escrow account:", escrow.toBase58());
       preInstructions.push(
-        // @ts-ignore
         await this.base.program.methods
           .initLockedVoterEscrow()
           .accounts({
@@ -141,7 +140,6 @@ export class JupiterClient {
           .instruction(),
       );
       preInstructions.push(
-        // @ts-ignore
         await this.base.program.methods
           .toggleMaxLock(true)
           .accounts({

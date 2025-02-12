@@ -70,13 +70,13 @@ export class Client extends GlamClient {
 
       preInstructions.push(initStateIx);
 
-      // preInstructions.push(
-      //   SystemProgram.transfer({
-      //     fromPubkey: this.getSigner(),
-      //     toPubkey: vault,
-      //     lamports: 10_000_000,
-      //   }),
-      // );
+      preInstructions.push(
+        SystemProgram.transfer({
+          fromPubkey: this.getSigner(),
+          toPubkey: vault,
+          lamports: 10_000_000,
+        }),
+      );
     }
 
     // add instrustions to create vault ATA and transfer JUP to vault
