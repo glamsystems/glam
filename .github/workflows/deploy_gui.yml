@@ -36,7 +36,7 @@ jobs:
       - name: Prepare .env file
         env:
           HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
-          GUI_ENABLED_ROUTES: ${{ env.GUI_ENABLED_ROUTES }}
+          GUI_ENABLED_ROUTES: ${{ vars.GUI_ENABLED_ROUTES }}
           DOT_ENV_FILE: gui/.env.production.local
         run: |
           echo "NEXT_PUBLIC_SOLANA_RPC=https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}" > $DOT_ENV_FILE
