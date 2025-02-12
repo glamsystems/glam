@@ -291,7 +291,13 @@ export default function Holdings() {
         setShowZeroBalances={setShowZeroBalances}
         onOpenSheet={openSheet}
       />
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+      <Sheet
+        open={isSheetOpen}
+        onOpenChange={(change) => {
+          setIsSheetOpen(change);
+          setIsEditingName(false);
+        }}
+      >
         <SheetTrigger asChild></SheetTrigger>
         <SheetContent
           side="right"
