@@ -46,8 +46,8 @@ import { FormInput } from "@/components/FormInput";
 import { useQuery } from "@tanstack/react-query";
 import {
   getPriorityFeeEstimate,
-  GLAM_PROGRAM_ID_MAINNET,
   useCluster,
+  getGlamProgramId,
 } from "@glam/anchor/react";
 
 const rpcFormSchema = z.object({
@@ -193,7 +193,7 @@ const SettingsPage: React.FC = () => {
       getPriorityFeeEstimate(
         process.env.NEXT_PUBLIC_HELIUS_API_KEY!,
         undefined,
-        [GLAM_PROGRAM_ID_MAINNET.toBase58()],
+        [getGlamProgramId(cluster.network).toBase58()],
         "High",
       ),
   });

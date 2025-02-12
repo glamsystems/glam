@@ -1,5 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
-import { AnchorProvider, Program, Wallet } from "@coral-xyz/anchor";
+import { AnchorProvider, Wallet } from "@coral-xyz/anchor";
 import {
   AddressLookupTableAccount,
   BlockhashWithExpiryBlockHeight,
@@ -36,13 +36,7 @@ import {
   SEED_MINT,
 } from "../constants";
 
-import {
-  Glam,
-  GlamIDL,
-  GlamIDLJson,
-  GlamProgram,
-  getGlamProgramId,
-} from "../glamExports";
+import { GlamProgram, getGlamProgram } from "../glamExports";
 import { ClusterNetwork, GlamClientConfig } from "../clientConfig";
 import { StateAccount, OpenfundsMetadataAccount, StateModel } from "../models";
 import { AssetMeta, ASSETS_MAINNET, ASSETS_TESTS } from "./assets";
@@ -68,6 +62,7 @@ export type TxOptions = {
   useMaxFee?: boolean;
   jitoTipLamports?: number;
   preInstructions?: TransactionInstruction[];
+  lookupTables?: AddressLookupTableAccount[];
 };
 
 export type TokenAccount = {
@@ -111,19 +106,7 @@ export class BaseClient {
     }
 
     this.cluster = config?.cluster || this.detectedCluster;
-
-    if (this.cluster === ClusterNetwork.Mainnet) {
-      this.program = new Program(GlamIDL, this.provider) as GlamProgram;
-    } else {
-      const GlamIDLDevnet = { ...GlamIDLJson };
-      GlamIDLDevnet.address = getGlamProgramId(
-        ClusterNetwork.Devnet,
-      ).toBase58();
-      this.program = new Program(
-        GlamIDLDevnet as Glam,
-        this.provider,
-      ) as GlamProgram;
-    }
+    this.program = getGlamProgram(this.cluster, this.provider);
 
     this.jupiterApi = config?.jupiterApi || JUPITER_API_DEFAULT;
     this.blockhashWithCache = new BlockhashWithCache(
@@ -242,7 +225,7 @@ export class BaseClient {
     latestBlockhash,
   }: {
     tx: Transaction;
-    lookupTables?: Array<AddressLookupTableAccount> | [];
+    lookupTables?: AddressLookupTableAccount[];
     signer?: PublicKey;
     computeUnitLimit?: number;
     getPriorityFeeMicroLamports?: (tx: VersionedTransaction) => Promise<number>;
@@ -251,7 +234,6 @@ export class BaseClient {
     jitoTipLamports?: number;
     latestBlockhash?: BlockhashWithExpiryBlockHeight;
   }): Promise<VersionedTransaction> {
-    lookupTables = lookupTables || [];
     signer = signer || this.getSigner();
 
     const instructions = tx.instructions;
@@ -422,11 +404,7 @@ export class BaseClient {
 
     const owner = stateModel.owner?.pubkey || this.getSigner();
     const [pda, _bump] = PublicKey.findProgramAddressSync(
-      [
-        anchor.utils.bytes.utf8.encode(SEED_STATE),
-        owner.toBuffer(),
-        Uint8Array.from(createdKey),
-      ],
+      [Buffer.from(SEED_STATE), owner.toBuffer(), Uint8Array.from(createdKey)],
       this.program.programId,
     );
     return pda;

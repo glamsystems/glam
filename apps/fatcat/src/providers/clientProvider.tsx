@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useMemo } from "react";
-import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
 import { Client } from "@/lib/client";
 
 interface ClientProviderContext {
@@ -16,7 +16,7 @@ export function ClientProvider({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const { connection } = useConnection();
-  const wallet = useWallet();
+  const wallet = useAnchorWallet();
 
   const client = useMemo(() => {
     const client = new Client(connection, wallet);

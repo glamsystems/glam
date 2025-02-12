@@ -173,7 +173,6 @@ export class JupiterClient {
 
     const vTx = await this.base.intoVersionedTransaction({
       tx,
-      lookupTables: [],
       ...txOptions,
     });
 

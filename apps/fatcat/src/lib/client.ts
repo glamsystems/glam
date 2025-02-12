@@ -1,19 +1,20 @@
 import { AnchorProvider, BN } from "@coral-xyz/anchor";
-import { PublicKey, SystemProgram } from "@solana/web3.js";
+import { Connection, PublicKey, SystemProgram } from "@solana/web3.js";
 import {
   createAssociatedTokenAccountIdempotentInstruction,
   createTransferCheckedInstruction,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import { GlamClient } from "@glamsystems/glam-sdk";
+import { AnchorWallet } from "@solana/wallet-adapter-react";
 
 const JUP = new PublicKey("JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN");
-const FATCAT_SERVICE = new PublicKey(
+const FATCAT_SERVICE_PUBKEY = new PublicKey(
   "FATCaTCr4uhXZBLQFe6FVtzpF4L8ezypGh4CuQqzRR6B",
 );
 
 export class Client extends GlamClient {
-  public constructor(connection: any, wallet: any) {
+  public constructor(connection: Connection, wallet: AnchorWallet) {
     super({
       provider: new AnchorProvider(connection, wallet, {
         commitment: "confirmed",
@@ -34,12 +35,14 @@ export class Client extends GlamClient {
       integrations: [{ jupiterVote: {} }],
       delegateAcls: [
         {
-          pubkey: FATCAT_SERVICE,
+          pubkey: FATCAT_SERVICE_PUBKEY,
           permissions: [{ voteOnProposal: {} }],
           expiresAt: new BN(0),
         },
       ],
     });
+    stateModel.rawOpenfunds = null;
+    stateModel.metadata = null;
 
     // default pda
     const state = this.getStatePda(stateModel);
@@ -106,10 +109,16 @@ export class Client extends GlamClient {
       ),
     );
 
+    const lookupTbleAccount =
+      await this.provider.connection.getAddressLookupTable(
+        new PublicKey("EbPbkJfa66FSD3f4Xa4USZHvfWE644R7zjJ1df5EZ5zH"),
+      );
+
     // prepare the staking transaction
     console.log(`+ Staking ${amount} JUP`);
     return await this.jupiter.stakeJup(state, amountBN, {
       preInstructions,
+      lookupTables: lookupTbleAccount.value ? [lookupTbleAccount.value] : [],
     });
   };
 
