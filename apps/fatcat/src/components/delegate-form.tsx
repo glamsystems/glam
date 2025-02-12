@@ -154,9 +154,7 @@ export default function DelegateForm() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => {
-                          handleMaxClick("stake");
-                        }}
+                        onClick={() => handleMaxClick("stake")}
                       >
                         MAX
                       </Button>
