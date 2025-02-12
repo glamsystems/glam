@@ -1,4 +1,4 @@
-name: glam-cli Docker image
+name: glam-cli docker image
 
 on:
   push:
