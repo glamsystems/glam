@@ -36,7 +36,7 @@ jobs:
       - name: Build and push Docker image
         run: |
           IMAGE_URI=${REGION}-docker.pkg.dev/${PROJECT_ID}/default/${SERVICE_NAME}:${GITHUB_SHA}
-          docker build -t $IMAGE_URI .
+          docker build -f ./gui/Dockerfile -t $IMAGE_URI .
           docker push $IMAGE_URI
 
           echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
