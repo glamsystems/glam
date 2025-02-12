@@ -3,7 +3,7 @@
 import { DataTable } from "./components/data-table";
 import { columns } from "./components/columns";
 import React, { useEffect, useMemo, useState } from "react";
-import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { useGlam, WSOL } from "@glam/anchor/react";
@@ -32,7 +32,13 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { AlertTriangle, InfoIcon } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import { PencilIcon } from "lucide-react";
 
 const SKELETON_ROW_COUNT = 5;
 
@@ -45,12 +51,13 @@ export default function Holdings() {
     jupTokenList,
     prices,
     glamClient,
+    setActiveGlamState,
     refresh,
   } = useGlam();
 
   const [showZeroBalances, setShowZeroBalances] = useState(true);
   const [isLoadingData, setIsLoading] = useState(true);
-  const [isTxPending, setIsTxPending] = useState(false);
+  const [txStatus, setTxStatus] = useState({ rename: false, close: false });
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const openSheet = () => setIsSheetOpen(true);
@@ -184,6 +191,9 @@ export default function Holdings() {
 
   const vaultAddress = vault?.pubkey ? vault.pubkey.toBase58() : "";
 
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [newName, setNewName] = useState("");
+
   const closeVault = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
@@ -217,7 +227,7 @@ export default function Holdings() {
       await glamClient.state.closeTokenAccountsIx(statePda, tokenAccounts),
     );
 
-    setIsTxPending(true);
+    setTxStatus((prev) => ({ ...prev, close: true }));
     try {
       const txSig = await glamClient.state.closeState(statePda, {
         preInstructions,
@@ -239,7 +249,31 @@ export default function Holdings() {
       });
     }
 
-    setIsTxPending(false);
+    setTxStatus((prev) => ({ ...prev, close: false }));
+  };
+
+  const renameVault = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (!glamClient || !activeGlamState?.pubkey) return;
+
+    setTxStatus((prev) => ({ ...prev, rename: true }));
+    try {
+      const txSig = await glamClient.state.updateState(activeGlamState.pubkey, {
+        name: newName,
+      });
+      toast({
+        title: "Name updated",
+        description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
+      });
+      setIsEditingName(false);
+      setActiveGlamState({ ...activeGlamState, name: newName });
+    } catch (e) {
+      toast({
+        title: "Error updating vault name",
+        description: parseTxError(e),
+        variant: "destructive",
+      });
+    }
+    setTxStatus((prev) => ({ ...prev, rename: false }));
   };
 
   return (
@@ -257,7 +291,13 @@ export default function Holdings() {
         setShowZeroBalances={setShowZeroBalances}
         onOpenSheet={openSheet}
       />
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+      <Sheet
+        open={isSheetOpen}
+        onOpenChange={(change) => {
+          setIsSheetOpen(change);
+          setIsEditingName(false);
+        }}
+      >
         <SheetTrigger asChild></SheetTrigger>
         <SheetContent
           side="right"
@@ -274,16 +314,19 @@ export default function Holdings() {
             <div className="flex flex-col items-center justify-start">
               <QRCodeSVG value={`solana:vaultAddress`} level="M" size={200} />
               <div className="flex flex-row items-center justify-center mt-2">
-              <p className="text-sm text-muted-foreground text-center">
-                This is your Vault address.
-              </p>
+                <p className="text-sm text-muted-foreground text-center">
+                  This is your Vault address.
+                </p>
                 <Popover>
                   <PopoverTrigger>
                     <InfoIcon className="ml-2 w-4 h-4 text-muted-foreground" />
                   </PopoverTrigger>
                   <PopoverContent>
-                    <p className="text-sm text-muted-foreground">Deposit funds by scanning the QR code or copying the address.</p>
-                    </PopoverContent>
+                    <p className="text-sm text-muted-foreground">
+                      Deposit funds by scanning the QR code or copying the
+                      address.
+                    </p>
+                  </PopoverContent>
                 </Popover>
               </div>
             </div>
@@ -291,16 +334,55 @@ export default function Holdings() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">Name</p>
-                <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2">
-                  <span className="flex-1 text-sm font-medium">
-                    {activeGlamState?.name || "Unnamed Vault"}
-                  </span>
-                </div>
+                {isEditingName ? (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      placeholder="Enter vault name"
+                      className="flex-1 py-0 h-10"
+                    />
+                    <Button
+                      loading={txStatus.rename}
+                      disabled={txStatus.rename}
+                      variant="outline"
+                      size="sm"
+                      onClick={renameVault}
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      disabled={txStatus.rename}
+                      size="sm"
+                      onClick={() => setIsEditingName(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2 h-10">
+                    <div
+                      className="w-full justify-between flex flex-row items-center space-x-2 text-sm text-muted-foreground cursor-pointer"
+                      onClick={(e: React.MouseEvent) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setNewName(activeGlamState?.name || "");
+                        setIsEditingName(true);
+                      }}
+                    >
+                      <span className="flex-1 text-sm font-medium">
+                        {activeGlamState?.name || "Unnamed Vault"}
+                      </span>
+                      <PencilIcon className="h-4 w-4" />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">Vault</p>
-                <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2">
+                <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2 h-10">
                   <ClickToCopyText text={vaultAddress} />
                 </div>
               </div>
@@ -355,10 +437,10 @@ export default function Holdings() {
                   <Button
                     onClick={closeVault}
                     variant="destructive"
-                    disabled={isTxPending}
+                    disabled={txStatus.close}
                     className="w-full"
                   >
-                    {isTxPending ? "Closing..." : "Close Vault"}
+                    {txStatus.close ? "Closing..." : "Close Vault"}
                   </Button>
                 </div>
               </AccordionContent>
