@@ -1,4 +1,4 @@
-name: Deploy to Cloud Run
+name: Deploy gui app
 
 on:
   workflow_dispatch:
@@ -32,6 +32,17 @@ jobs:
 
       - name: Configure Docker to use gcloud as a credential helper
         run: gcloud auth configure-docker $REGION-docker.pkg.dev
+
+      - name: Prepare .env file
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+          GUI_ENABLED_ROUTES: ${{ env.GUI_ENABLED_ROUTES }}
+          DOT_ENV_FILE: gui/.env.production.local
+        run: |
+          echo "NEXT_PUBLIC_SOLANA_RPC=https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}" > $DOT_ENV_FILE
+          echo "NEXT_PUBLIC_TX_RPC=https://staked.helius-rpc.com/?api-key=${HELIUS_API_KEY}" >> $DOT_ENV_FILE 
+          echo "NEXT_PUBLIC_HELIUS_API_KEY=${HELIUS_API_KEY}" >> $DOT_ENV_FILE
+          echo "NEXT_PUBLIC_ENABLED_ROUTES=${GUI_ENABLED_ROUTES}" >> $DOT_ENV_FILE
 
       - name: Build and push Docker image
         run: |
