@@ -298,18 +298,20 @@ export class BaseClient {
     tx: VersionedTransaction | Transaction,
     signerOverride?: Keypair,
   ): Promise<TransactionSignature> {
+    const connection = this.provider.connection;
+
     // Mainnet only: use dedicated connection for sending transactions if available
     const txConnection =
       this.cluster === ClusterNetwork.Mainnet
         ? new Connection(
             process.env?.NEXT_PUBLIC_TX_RPC ||
               process.env.TX_RPC ||
-              this.provider.connection.rpcEndpoint,
+              connection.rpcEndpoint,
             {
               commitment: "confirmed",
             },
           )
-        : this.provider.connection;
+        : connection;
 
     // This is just a convenient method so that in tests we can send legacy
     // txs, for example transfer SOL, create ATA, etc.
@@ -319,7 +321,6 @@ export class BaseClient {
       ]);
     }
 
-    const connection = this.provider.connection;
     let serializedTx: Uint8Array;
 
     if (signerOverride) {

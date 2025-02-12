@@ -15,82 +15,82 @@ export const metadata: Metadata = {
   openGraph: {
     title: "FatCat",
     description: "Jupiter Governance Vote Automation.",
-    images: ['/opengraph/opengraph-image-2.png'],
+    images: ["/opengraph/opengraph-image-2.png"],
   },
   icons: {
-    icon: '/favicon/favicon.ico',
+    icon: "/favicon/favicon.ico",
     apple: [
-      { url: '/favicon/apple-icon-57x57.png', sizes: '57x57' },
-      { url: '/favicon/apple-icon-60x60.png', sizes: '60x60' },
-      { url: '/favicon/apple-icon-72x72.png', sizes: '72x72' },
-      { url: '/favicon/apple-icon-76x76.png', sizes: '76x76' },
-      { url: '/favicon/apple-icon-114x114.png', sizes: '114x114' },
-      { url: '/favicon/apple-icon-120x120.png', sizes: '120x120' },
-      { url: '/favicon/apple-icon-144x144.png', sizes: '144x144' },
-      { url: '/favicon/apple-icon-152x152.png', sizes: '152x152' },
-      { url: '/favicon/apple-icon-180x180.png', sizes: '180x180' },
+      { url: "/favicon/apple-icon-57x57.png", sizes: "57x57" },
+      { url: "/favicon/apple-icon-60x60.png", sizes: "60x60" },
+      { url: "/favicon/apple-icon-72x72.png", sizes: "72x72" },
+      { url: "/favicon/apple-icon-76x76.png", sizes: "76x76" },
+      { url: "/favicon/apple-icon-114x114.png", sizes: "114x114" },
+      { url: "/favicon/apple-icon-120x120.png", sizes: "120x120" },
+      { url: "/favicon/apple-icon-144x144.png", sizes: "144x144" },
+      { url: "/favicon/apple-icon-152x152.png", sizes: "152x152" },
+      { url: "/favicon/apple-icon-180x180.png", sizes: "180x180" },
     ],
     other: [
       {
-        rel: 'icon',
-        type: 'image/png',
-        sizes: '192x192',
-        url: '/favicon/android-icon-192x192.png',
+        rel: "icon",
+        type: "image/png",
+        sizes: "192x192",
+        url: "/favicon/android-icon-192x192.png",
       },
       {
-        rel: 'icon',
-        type: 'image/png',
-        sizes: '32x32',
-        url: '/favicon/favicon-32x32.png',
+        rel: "icon",
+        type: "image/png",
+        sizes: "32x32",
+        url: "/favicon/favicon-32x32.png",
       },
       {
-        rel: 'icon',
-        type: 'image/png',
-        sizes: '96x96',
-        url: '/favicon/favicon-96x96.png',
+        rel: "icon",
+        type: "image/png",
+        sizes: "96x96",
+        url: "/favicon/favicon-96x96.png",
       },
       {
-        rel: 'icon',
-        type: 'image/png',
-        sizes: '16x16',
-        url: '/favicon/favicon-16x16.png',
+        rel: "icon",
+        type: "image/png",
+        sizes: "16x16",
+        url: "/favicon/favicon-16x16.png",
       },
     ],
   },
-  manifest: '/manifest.json',
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
-                                     children,
-                                   }: Readonly<{
+  children,
+}: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-    <body
-      className={cn(
-        GeistSans.className,
-        "min-h-screen bg-background antialiased select-none",
-      )}
-    >
-    {/*<Analytics />*/}
-    <WalletAdapterProvider>
-      <ClientProvider>
+      <body
+        className={cn(
+          GeistSans.className,
+          "min-h-screen bg-background antialiased select-none",
+        )}
+      >
+        {/*<Analytics />*/}
         <ThemeProviderWrapper
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <Header />
-          {children as any}
-          <Toaster />
+          <WalletAdapterProvider>
+            <ClientProvider>
+              <Header />
+              {children as any}
+            </ClientProvider>
+            <Toaster />
+          </WalletAdapterProvider>
           <PersistentWarning />
         </ThemeProviderWrapper>
-      </ClientProvider>
-    </WalletAdapterProvider>
-    {/*<SpeedInsights />*/}
-    </body>
+        {/*<SpeedInsights />*/}
+      </body>
     </html>
   );
 }

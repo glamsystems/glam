@@ -1,5 +1,4 @@
 import { WalletSignTransactionError } from "@solana/wallet-adapter-base";
-import { GlamError } from "@glam/anchor/react";
 import { TransactionExpiredBlockheightExceededError } from "@solana/web3.js";
 /**
  * Parse the error message from a transaction
