@@ -1,4 +1,4 @@
-name: Build dapp
+name: Build gui
 
 on:
   pull_request:

@@ -1,12 +1,12 @@
-name: Deploy gui app
+name: Deploy fatcat app
 
 on:
   workflow_dispatch:
 
 env:
-  PROJECT_ID: glam-playground
-  PROJECT_NUMBER: 481483471832
-  SERVICE_NAME: glam-pg
+  PROJECT_ID: glam-services
+  PROJECT_NUMBER: 178430770772
+  SERVICE_NAME: glam-fatcat
   REGION: us-west1
 
 jobs:
@@ -37,17 +37,18 @@ jobs:
       - name: Prepare .env file
         env:
           HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
-          GUI_ENABLED_ROUTES: ${{ vars.GUI_ENABLED_ROUTES }}
-          DOT_ENV_FILE: gui/.env.production.local
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          DOT_ENV_FILE: gui/.env.local
         run: |
           echo "NEXT_PUBLIC_SOLANA_RPC=https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}" > $DOT_ENV_FILE
           echo "NEXT_PUBLIC_TX_RPC=https://staked.helius-rpc.com/?api-key=${HELIUS_API_KEY}" >> $DOT_ENV_FILE 
-          echo "NEXT_PUBLIC_HELIUS_API_KEY=${HELIUS_API_KEY}" >> $DOT_ENV_FILE
-          echo "NEXT_PUBLIC_ENABLED_ROUTES=${GUI_ENABLED_ROUTES}" >> $DOT_ENV_FILE
+          echo "NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}" >> $DOT_ENV_FILE
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}" >> $DOT_ENV_FILE
 
       - name: Build and push Docker image
         env:
-          DOCKERFILE: gui/Dockerfile
+          DOCKERFILE: apps/fatcat/Dockerfile
         run: |
           IMAGE_URI=${REGION}-docker.pkg.dev/${PROJECT_ID}/default/${SERVICE_NAME}:${GITHUB_SHA}
           docker build -f $DOCKERFILE -t $IMAGE_URI .
