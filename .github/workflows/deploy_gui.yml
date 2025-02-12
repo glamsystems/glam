@@ -31,16 +31,19 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Configure Docker to use gcloud as a credential helper
-        run: gcloud auth configure-docker
+        run: gcloud auth configure-docker $REGION-docker.pkg.dev
 
-      # - name: Build and push Docker image
-      #   run: |
-      #     docker build -t gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA .
-      #     docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
+      - name: Build and push Docker image
+        run: |
+          IMAGE_URI=${REGION}-docker.pkg.dev/${PROJECT_ID}/default/${SERVICE_NAME}:${GITHUB_SHA}
+          docker build -t $IMAGE_URI .
+          docker push $IMAGE_URI
+
+          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
 
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy $SERVICE_NAME \
-            --image $REGION-docker.pkg.dev/$PROJECT_ID/default/${SERVICE_NAME}:latest \
+            --image $IMAGE_URI \
             --region $REGION \
             --allow-unauthenticated
