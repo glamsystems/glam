@@ -12,112 +12,85 @@ import { Toaster } from "../components/ui/toaster";
 export const metadata: Metadata = {
   title: "FatCat",
   description: "Jupiter Governance Vote Automation.",
+  openGraph: {
+    title: "FatCat",
+    description: "Jupiter Governance Vote Automation.",
+    images: ['/opengraph/opengraph-image-2.png'],
+  },
+  icons: {
+    icon: '/favicon/favicon.ico',
+    apple: [
+      { url: '/favicon/apple-icon-57x57.png', sizes: '57x57' },
+      { url: '/favicon/apple-icon-60x60.png', sizes: '60x60' },
+      { url: '/favicon/apple-icon-72x72.png', sizes: '72x72' },
+      { url: '/favicon/apple-icon-76x76.png', sizes: '76x76' },
+      { url: '/favicon/apple-icon-114x114.png', sizes: '114x114' },
+      { url: '/favicon/apple-icon-120x120.png', sizes: '120x120' },
+      { url: '/favicon/apple-icon-144x144.png', sizes: '144x144' },
+      { url: '/favicon/apple-icon-152x152.png', sizes: '152x152' },
+      { url: '/favicon/apple-icon-180x180.png', sizes: '180x180' },
+    ],
+    other: [
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '192x192',
+        url: '/favicon/android-icon-192x192.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '32x32',
+        url: '/favicon/favicon-32x32.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '96x96',
+        url: '/favicon/favicon-96x96.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '16x16',
+        url: '/favicon/favicon-16x16.png',
+      },
+    ],
+  },
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
-  children,
-}: Readonly<{
+                                     children,
+                                   }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="icon" href="/favicon.ico" />
-        <link
-          rel="apple-touch-icon"
-          sizes="57x57"
-          href="/apple-icon-57x57.png"
-        />
-        <link
-          rel="apple-touch-icon"
-          sizes="60x60"
-          href="/apple-icon-60x60.png"
-        />
-        <link
-          rel="apple-touch-icon"
-          sizes="72x72"
-          href="/apple-icon-72x72.png"
-        />
-        <link
-          rel="apple-touch-icon"
-          sizes="76x76"
-          href="/apple-icon-76x76.png"
-        />
-        <link
-          rel="apple-touch-icon"
-          sizes="114x114"
-          href="/apple-icon-114x114.png"
-        />
-        <link
-          rel="apple-touch-icon"
-          sizes="120x120"
-          href="/apple-icon-120x120.png"
-        />
-        <link
-          rel="apple-touch-icon"
-          sizes="144x144"
-          href="/apple-icon-144x144.png"
-        />
-        <link
-          rel="apple-touch-icon"
-          sizes="152x152"
-          href="/apple-icon-152x152.png"
-        />
-        <link
-          rel="apple-touch-icon"
-          sizes="180x180"
-          href="/apple-icon-180x180.png"
-        />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="192x192"
-          href="/android-icon-192x192.png"
-        />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="32x32"
-          href="/favicon-32x32.png"
-        />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="96x96"
-          href="/favicon-96x96.png"
-        />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="16x16"
-          href="/favicon-16x16.png"
-        />
-        <link rel="manifest" href="/manifest.json" />
-      </head>
-      <body
-        className={cn(
-          GeistSans.className,
-          "min-h-screen bg-background antialiased select-none",
-        )}
-      >
-        {/*<Analytics />*/}
-        <WalletAdapterProvider>
-          <ClientProvider>
-            <ThemeProviderWrapper
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <Header />
-              {children as any}
-              <Toaster />
-              <PersistentWarning />
-            </ThemeProviderWrapper>
-          </ClientProvider>
-        </WalletAdapterProvider>
-        {/*<SpeedInsights />*/}
-      </body>
+    <body
+      className={cn(
+        GeistSans.className,
+        "min-h-screen bg-background antialiased select-none",
+      )}
+    >
+    {/*<Analytics />*/}
+    <WalletAdapterProvider>
+      <ClientProvider>
+        <ThemeProviderWrapper
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Header />
+          {children as any}
+          <Toaster />
+          <PersistentWarning />
+        </ThemeProviderWrapper>
+      </ClientProvider>
+    </WalletAdapterProvider>
+    {/*<SpeedInsights />*/}
+    </body>
     </html>
   );
 }
