@@ -23,7 +23,7 @@ import {
   ManagerModel,
   MintClassOpenfundsModel,
   useGlam,
-} from "@glam/anchor/react";
+} from "@glamsystems/glam-sdk/react";
 import { PublicKey } from "@solana/web3.js";
 import { toast } from "@/components/ui/use-toast";
 import { ExplorerLink } from "@/components/ExplorerLink";

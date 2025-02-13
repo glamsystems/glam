@@ -26,7 +26,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { columns } from "./components/columns";
 import { DataTable } from "./components/data-table";
 
-import { useGlam } from "@glam/anchor/react";
+import { useGlam } from "@glamsystems/glam-sdk/react";
 
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";

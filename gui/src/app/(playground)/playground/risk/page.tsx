@@ -10,7 +10,7 @@ import {
 import { IntegrationsList } from "./components/integrations-list";
 import { integrations } from "./data";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { useGlam } from "@glam/anchor/react";
+import { useGlam } from "@glamsystems/glam-sdk/react";
 import DynamicForm from "@/components/DynamicForm";
 import schema from "../../../../data/glamRiskSchema.json";
 import { useForm } from "react-hook-form";

@@ -24,7 +24,7 @@ import {
   MintClassOpenfundsModel,
   ManagerModel,
   FundOpenfundsModel,
-} from "@glam/anchor/react";
+} from "@glamsystems/glam-sdk/react";
 import { ProductNameGen } from "@/utils/ProductNameGen";
 import { UpdateIcon } from "@radix-ui/react-icons";
 import PageContentWrapper from "@/components/PageContentWrapper";

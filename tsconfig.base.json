@@ -16,7 +16,7 @@
     "baseUrl": ".",
     "jsx": "react-jsx",
     "paths": {
-      "@glam/anchor": ["anchor/src/index.ts"]
+      "@glamsystems/glam-sdk": ["anchor/src/index.ts"]
     },
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true

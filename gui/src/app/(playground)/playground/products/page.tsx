@@ -4,7 +4,7 @@ import { DataTable } from "../products/components/data-table";
 import { columns } from "../products/components/columns";
 import React, { useMemo } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { useGlam } from "@glam/anchor/react";
+import { useGlam } from "@glamsystems/glam-sdk/react";
 
 export default function Products() {
   const { allGlamStates } = useGlam();

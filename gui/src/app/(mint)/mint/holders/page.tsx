@@ -7,7 +7,7 @@ import {
   columns,
   HoldersData,
 } from "@/app/(mint)/mint/holders/components/columns";
-import { useGlam } from "@glam/anchor/react";
+import { useGlam } from "@glamsystems/glam-sdk/react";
 
 export default function HoldersPage() {
   const { glamClient, activeGlamState } = useGlam();

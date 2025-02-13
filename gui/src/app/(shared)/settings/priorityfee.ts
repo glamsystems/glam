@@ -1,4 +1,4 @@
-import { getPriorityFeeEstimate } from "@glam/anchor/react";
+import { getPriorityFeeEstimate } from "@glamsystems/glam-sdk/react";
 import { LAMPORTS_PER_SOL, VersionedTransaction } from "@solana/web3.js";
 
 const parseFeeSettings = () => {

@@ -41,7 +41,7 @@ import { toast } from "@/components/ui/use-toast";
 import { Asset, AssetInput } from "@/components/AssetInput";
 import React, { useEffect, useMemo, useState } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { useGlam } from "@glam/anchor/react";
+import { useGlam } from "@glamsystems/glam-sdk/react";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { LAMPORTS_PER_SOL, VersionedTransaction } from "@solana/web3.js";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -95,7 +95,7 @@ import {
   QuoteResponse,
   PerpMarketConfig,
   SpotMarketConfig,
-} from "@glam/anchor/react";
+} from "@glamsystems/glam-sdk/react";
 import {
   getPriorityFeeMicroLamports,
   getMaxCapFeeLamports,

@@ -6,7 +6,7 @@ import {
   GlamClient,
   GlamIntegrations,
   GlamPermissions,
-} from "@glam/anchor";
+} from "@glamsystems/glam-sdk";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { Command } from "commander";
 

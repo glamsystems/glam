@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import React from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/components/ui/use-toast";
-import { useCluster } from "@glam/anchor/react";
+import { useCluster } from "@glamsystems/glam-sdk/react";
 
 export default function Cluster() {
   const { cluster, clusters, setCluster } = useCluster();

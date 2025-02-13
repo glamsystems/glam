@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import DynamicForm from "@/components/DynamicForm";
 import schema from "@/data/glamFormSchema.json";
-import { useGlam } from "@glam/anchor/react";
+import { useGlam } from "@glamsystems/glam-sdk/react";
 import { Button } from "@/components/ui/button";
 
 // TODO: Refactoring needed to avoid dupe code

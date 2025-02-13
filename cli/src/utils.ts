@@ -1,9 +1,6 @@
 import { AnchorError } from "@coral-xyz/anchor";
-import { PriorityLevel } from "@glam/anchor";
-import {
-  PublicKey,
-  TransactionExpiredBlockheightExceededError,
-} from "@solana/web3.js";
+import { PriorityLevel } from "@glamsystems/glam-sdk";
+import { TransactionExpiredBlockheightExceededError } from "@solana/web3.js";
 import fs from "fs";
 import os from "os";
 import path from "path";

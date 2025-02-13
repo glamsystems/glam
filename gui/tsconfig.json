@@ -26,10 +26,10 @@
       "@/*": [
         "gui/src/*"
       ],
-      "@glam/anchor": [
+      "@glamsystems/glam-sdk": [
         "anchor/src/index.ts"
       ],
-      "@glam/anchor/react": [
+      "@glamsystems/glam-sdk/react": [
         "anchor/src/react/index.tsx"
       ],
     }

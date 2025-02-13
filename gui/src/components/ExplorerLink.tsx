@@ -1,6 +1,6 @@
 "use client";
 
-import { useCluster } from "@glam/anchor/react";
+import { useCluster } from "@glamsystems/glam-sdk/react";
 
 export function ellipsify(str = "", len = 4) {
   if (str.length > 30) {

@@ -26,7 +26,7 @@ import { AssetInput } from "@/components/AssetInput";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import React, { useState, useEffect } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { StateModel, useGlam, WSOL } from "@glam/anchor/react";
+import { StateModel, useGlam, WSOL } from "@glamsystems/glam-sdk/react";
 import { BN } from "@coral-xyz/anchor";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";

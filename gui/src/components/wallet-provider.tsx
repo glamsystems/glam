@@ -11,7 +11,7 @@ import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 // To use default styles:
 // import "@solana/wallet-adapter-react-ui/styles.css";
 import "./wallet-styles.css";
-import { ClusterNetwork, useCluster } from "@glam/anchor/react";
+import { ClusterNetwork, useCluster } from "@glamsystems/glam-sdk/react";
 
 function toWalletAdapterNetwork(
   cluster?: ClusterNetwork,

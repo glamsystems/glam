@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { PublicKey } from "@solana/web3.js";
 import { ticketOrStakeSchema } from "../data/schema";
-import { useGlam } from "@glam/anchor/react";
+import { useGlam } from "@glamsystems/glam-sdk/react";
 import { toast } from "@/components/ui/use-toast";
 import { ExplorerLink } from "@/components/ExplorerLink";
 

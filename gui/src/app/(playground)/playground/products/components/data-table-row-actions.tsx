@@ -13,7 +13,7 @@ import {
 import { ExternalLink, XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Product } from "../data/productSchema";
-import { useGlam } from "@glam/anchor/react";
+import { useGlam } from "@glamsystems/glam-sdk/react";
 import { PublicKey } from "@solana/web3.js";
 import { toast } from "@/components/ui/use-toast";
 import { parseTxError } from "@/lib/error";

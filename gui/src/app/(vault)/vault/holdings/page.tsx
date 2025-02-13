@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { PublicKey } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { useGlam, WSOL } from "@glam/anchor/react";
+import { useGlam, WSOL } from "@glamsystems/glam-sdk/react";
 import { Holding } from "./data/holdingSchema";
 import {
   Sheet,
