@@ -15,7 +15,7 @@ export const getSimulationComputeUnits = async (
   connection: Connection,
   instructions: Array<TransactionInstruction>,
   payer: PublicKey,
-  lookupTables: Array<AddressLookupTableAccount> | [],
+  lookupTables?: Array<AddressLookupTableAccount>,
 ): Promise<number | undefined> => {
   const testInstructions = [
     // Set an arbitrarily high number in simulation

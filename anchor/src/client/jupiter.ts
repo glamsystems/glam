@@ -126,7 +126,6 @@ export class JupiterClient {
       await this.base.provider.connection.getAccountInfo(escrow);
     const escrowCreated = escrowAccountInfo ? true : false;
     const preInstructions = txOptions.preInstructions || [];
-    console.log("preInstructions", preInstructions);
     if (!escrowCreated) {
       console.log("Will create escrow account:", escrow.toBase58());
       preInstructions.push(
@@ -173,7 +172,6 @@ export class JupiterClient {
 
     const vTx = await this.base.intoVersionedTransaction({
       tx,
-      lookupTables: [],
       ...txOptions,
     });
 

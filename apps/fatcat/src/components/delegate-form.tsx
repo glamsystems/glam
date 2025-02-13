@@ -16,7 +16,8 @@ import { toast } from "@/components/ui/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import Link from "next/link";
-import { useClient } from "@/providers/clientProvider";
+import { useGlamClient } from "@/providers/clientProvider";
+import { parseTxError } from "@/lib/error";
 
 const UNSTAKE_COUNTDOWN_TIME = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
 
@@ -25,22 +26,8 @@ interface UnstakeItem {
   endTime: number;
 }
 
-import { WalletSignTransactionError } from "@solana/wallet-adapter-base";
-import { TransactionExpiredBlockheightExceededError } from "@solana/web3.js";
-function parseTxError(error: any): string {
-  if (error instanceof WalletSignTransactionError) {
-    return "Transaction was cancelled by the user";
-  }
-
-  if (error instanceof TransactionExpiredBlockheightExceededError) {
-    return "Transaction expired";
-  }
-
-  return error?.message || "Unknown error";
-}
-
 export default function DelegateForm() {
-  const { client } = useClient();
+  const { glamClient: client } = useGlamClient();
 
   const [stakeAmount, setStakeAmount] = useState<string>("0");
   const [unstakeAmount, setUnstakeAmount] = useState<string>("0");
@@ -73,7 +60,6 @@ export default function DelegateForm() {
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
       });
     } catch (error) {
-      console.error(parseTxError(error));
       toast({
         title: `${action} failed`,
         description: parseTxError(error),
@@ -88,7 +74,7 @@ export default function DelegateForm() {
     if (!(amount > 0)) return;
 
     console.log(`Staking ${amount} JUP...`);
-    handleTx("Staking", client.stakeJup(amount));
+    await handleTx("Staking", client.stakeJup(amount));
   };
 
   const handleUnstake = async () => {
@@ -96,7 +82,7 @@ export default function DelegateForm() {
     if (!(amount > 0)) return;
 
     console.log(`Unstaking ${amount} JUP...`);
-    handleTx("Unstaking", client.unstakeJup(amount));
+    await handleTx("Unstaking", client.unstakeJup(amount));
   };
 
   const handleCancelUnstake = (index: number) => {
@@ -186,7 +172,7 @@ export default function DelegateForm() {
                     onClick={handleStake}
                     disabled={!(parseFloat(stakeAmount) > 0) || spinner}
                   >
-                    Stake{spinner ? "..." : ""}
+                    Stake {spinner ? "..." : ""}
                   </Button>
                 </div>
               </TabsContent>

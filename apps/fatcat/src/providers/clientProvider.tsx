@@ -1,11 +1,11 @@
 "use client";
 
 import { createContext, useContext, useMemo } from "react";
-import { useWallet, useConnection } from "@solana/wallet-adapter-react";
-import { Client } from "@/lib/client";
+import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
+import { FatcatGlamClient } from "@/lib/client";
 
 interface ClientProviderContext {
-  client: Client;
+  glamClient: FatcatGlamClient;
 }
 
 const ClientContext = createContext<ClientProviderContext>(
@@ -16,20 +16,18 @@ export function ClientProvider({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const { connection } = useConnection();
-  const wallet = useWallet();
+  const wallet = useAnchorWallet();
 
-  const client = useMemo(() => {
-    const client = new Client(connection, wallet);
+  const glamClient = useMemo(() => {
+    const client = new FatcatGlamClient(connection, wallet!);
     return client;
   }, [connection, wallet]);
 
-  const value: ClientProviderContext = {
-    client,
-  };
+  const value: ClientProviderContext = { glamClient };
 
   return (
     <ClientContext.Provider value={value}>{children}</ClientContext.Provider>
   );
 }
 
-export const useClient = () => useContext(ClientContext);
+export const useGlamClient = () => useContext(ClientContext);
