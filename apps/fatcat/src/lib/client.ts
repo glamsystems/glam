@@ -164,7 +164,7 @@ export class FatcatGlamClient extends GlamClient {
     // Return cached values if valid
     if (this.isCacheValid()) {
       return {
-        jupBalance: this.cachedBalances.jupBalance || "0.00",
+        jupBalance: this.cachedBalances.jupBalance || "N/A",
         votingPower: this.cachedBalances.votingPower || "N/A",
       };
     }
@@ -205,7 +205,7 @@ export class FatcatGlamClient extends GlamClient {
         }
 
         // Process voting power
-        let votingPower = "N/A";
+        let votingPower = "0.00";
         if (accounts[1]) {
           const escrowBalance = await this.provider.connection.getTokenAccountBalance(escrowAta);
           votingPower = Number(escrowBalance.value.uiAmount || 0).toFixed(2);
@@ -222,7 +222,7 @@ export class FatcatGlamClient extends GlamClient {
       } catch (error) {
         console.error("Error fetching balances:", error);
         return {
-          jupBalance: "0.00",
+          jupBalance: "N/A",
           votingPower: "N/A",
         };
       } finally {
