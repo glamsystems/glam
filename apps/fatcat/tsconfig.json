@@ -25,12 +25,10 @@
       "@/*": ["./src/*"],
       "@/components/*": ["./src/components/*"],
       "@/lib/*": ["./src/lib/*"],
-      "@/styles/*": ["./src/styles/*"],
-      "@/assets/*": ["./src/assets/*"],
       "@/providers/*": ["./src/providers/*"],
       "@glamsystems/glam-sdk": ["../../anchor/src/index.ts"]
     },
-    "target": "ES2017"
+    "target": "es2020"
   },
   "include": [
     "next-env.d.ts",

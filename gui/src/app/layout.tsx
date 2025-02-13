@@ -5,8 +5,8 @@ import "./globals.css";
 import { ReactQueryProvider } from "./react-query-provider";
 import React from "react";
 import MobileOverlay from "@/components/MobileOverlay";
-import dynamic from "next/dynamic";
 import { ClusterProvider, GlamProvider } from "@glamsystems/glam-sdk/react";
+import AppWalletProvider from "@/components/wallet-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,11 +14,6 @@ export const metadata: Metadata = {
   title: "GLAM *.+",
   description: "The New Standard for Asset Management.",
 };
-
-const AppWalletProvider = dynamic(
-  () => import("@/components/wallet-provider"),
-  { ssr: false },
-);
 
 export default function RootLayout({
   children,
