@@ -2,47 +2,17 @@
 
 set -e
 
-PROGRAM_KEYPAIR=${PROGRAM_KEYPAIR:-/path/to/program-keypair.json}
-PROGRAM_ID=${PROGRAM_ID:-GLAMbTqav9N9witRjswJ8enwp9vv5G8bsSJ2kPJ4rcyc}
-SOLANA=
+PROGRAM_KEYPAIR=/path/to/program-keypair.json
+SOLANA=/path/to/solana
 PRIORITY_FEE=10000
 MAX_ATTEMPTS=1000
+PROGRAM_ID=GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP
 
 build() {
-    anchor build -- --features mainnet
+    anchor build -- --features mainnet --tools-version v1.43
 }
 
-deploy_idl() {
-    rpc=$($SOLANA config get | grep "RPC URL:" | awk -F': ' '{print $2}')
-    cmd=$(cat <<EOF
-anchor idl upgrade $PROGRAM_ID \
---filepath anchor/target/idl/glam.json \
---provider.cluster $rpc \
-EOF
-)
-
-    default_choice="N"
-    echo "🔴️ You're about to deploy the IDL to mainnet! Double check the command below:"
-    echo
-    echo $cmd
-    echo
-    read -p "Continue (Y/N)? [$default_choice] " choice
-    choice="${choice:-$default_choice}"
-
-    case "$choice" in
-        y | Y) 
-            $cmd
-            ;;
-        n | N) 
-            echo "Aborted"
-            ;;
-        *) 
-            echo "Invalid input: $choice"
-            ;;
-    esac
-}
-
-deploy_program() {
+deploy() {
     cmd=$(cat <<EOF
 $SOLANA program deploy anchor/target/deploy/glam.so \
 --program-id $PROGRAM_KEYPAIR \
@@ -104,6 +74,5 @@ echo "==== Program size ===="
 echo "glam.so: $size_kb ($size_bytes bytes)"
 echo "======================"
 
-deploy_program
+deploy
 
-deploy_idl

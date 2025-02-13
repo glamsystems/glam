@@ -15,6 +15,17 @@ export type Glam = {
   "instructions": [
     {
       "name": "addMint",
+      "docs": [
+        "mint",
+        "Adds a new mint.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `mint_model`: An instance of `MintModel` containing the metadata for the new mint.",
+        "",
+        "# Permission required",
+        "- Owner only, delegates not allowed"
+      ],
       "discriminator": [
         171,
         222,
@@ -123,6 +134,20 @@ export type Glam = {
     },
     {
       "name": "burnTokens",
+      "docs": [
+        "Burns a specified amount of tokens for the given mint.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `mint_id`: The id of the mint to burn tokens for.",
+        "- `amount`: The amount of tokens to burn.",
+        "",
+        "# Permission required",
+        "- Permission::BurnTokens",
+        "",
+        "# Integration required",
+        "- Integration::Mint"
+      ],
       "discriminator": [
         76,
         15,
@@ -224,6 +249,19 @@ export type Glam = {
     },
     {
       "name": "castVote",
+      "docs": [
+        "Casts a vote.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `side`: The side to vote for.",
+        "",
+        "# Permission required",
+        "- Permission::VoteOnProposal",
+        "",
+        "# Integration required",
+        "- Integration::JupiterVote"
+      ],
       "discriminator": [
         20,
         212,
@@ -301,6 +339,16 @@ export type Glam = {
     },
     {
       "name": "closeMint",
+      "docs": [
+        "Closes a mint and releases its resources.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `mint_id`: The id of the mint to be closed.",
+        "",
+        "# Permission required",
+        "- Owner only, delegates not allowed"
+      ],
       "discriminator": [
         149,
         251,
@@ -422,6 +470,15 @@ export type Glam = {
     },
     {
       "name": "closeState",
+      "docs": [
+        "Closes a state account and releases its resources.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Owner only, delegates not allowed"
+      ],
       "discriminator": [
         25,
         1,
@@ -498,6 +555,15 @@ export type Glam = {
     },
     {
       "name": "closeTokenAccounts",
+      "docs": [
+        "Closes token accounts owned by the vault.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Owner only, delegates not allowed"
+      ],
       "discriminator": [
         199,
         170,
@@ -553,6 +619,18 @@ export type Glam = {
     },
     {
       "name": "deactivateStakeAccounts",
+      "docs": [
+        "Deactivates stake accounts.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- Integration::NativeStaking"
+      ],
       "discriminator": [
         58,
         18,
@@ -607,6 +685,21 @@ export type Glam = {
     },
     {
       "name": "driftCancelOrders",
+      "docs": [
+        "Cancels drift orders.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `market_type`:",
+        "- `market_index`:",
+        "- `direction`:",
+        "",
+        "# Permission required",
+        "- Permission::DriftCancelOrders",
+        "",
+        "# Integration required",
+        "- Integration::Drift"
+      ],
       "discriminator": [
         98,
         107,
@@ -690,6 +783,19 @@ export type Glam = {
     },
     {
       "name": "driftCancelOrdersByIds",
+      "docs": [
+        "Cancels drift orders by order IDs.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `order_ids`: A list of order IDs.",
+        "",
+        "# Permission required",
+        "- Permission::DriftCancelOrders",
+        "",
+        "# Integration required",
+        "- Integration::Drift"
+      ],
       "discriminator": [
         172,
         99,
@@ -753,6 +859,18 @@ export type Glam = {
     },
     {
       "name": "driftDeleteUser",
+      "docs": [
+        "Deletes a drift user (sub account).",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::DriftDeleteUser",
+        "",
+        "# Integration required",
+        "- Integration::Drift"
+      ],
       "discriminator": [
         179,
         118,
@@ -819,6 +937,20 @@ export type Glam = {
     },
     {
       "name": "driftDeposit",
+      "docs": [
+        "Deposits to drift.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `market_index`: Index of the drift spot market.",
+        "- `amount`: Amount of asset to deposit.",
+        "",
+        "# Permission required",
+        "- Permission::DriftDeposit",
+        "",
+        "# Integration required",
+        "- Integration::Drift"
+      ],
       "discriminator": [
         252,
         63,
@@ -901,6 +1033,19 @@ export type Glam = {
     },
     {
       "name": "driftInitialize",
+      "docs": [
+        "drift",
+        "Initializes a drift account owned by vault and creates a subaccount.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::DriftInitialize",
+        "",
+        "# Integration required",
+        "- Integration::Drift"
+      ],
       "discriminator": [
         21,
         21,
@@ -970,6 +1115,20 @@ export type Glam = {
     },
     {
       "name": "driftPlaceOrders",
+      "docs": [
+        "Places orders on drift.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `order_params`: A list of orders.",
+        "",
+        "# Permissions required",
+        "- Permission::DriftPlaceOrders",
+        "- Additional permission Permission::DriftSpotMarket or Permission::DriftPerpMarket is required depending on market type.",
+        "",
+        "# Integration required",
+        "- Integration::Drift"
+      ],
       "discriminator": [
         117,
         18,
@@ -1038,6 +1197,20 @@ export type Glam = {
     },
     {
       "name": "driftUpdateUserCustomMarginRatio",
+      "docs": [
+        "Updates custom margin ratio.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `sub_account_id`: Sub account.",
+        "- `margin_ratio`: Margin ratio.",
+        "",
+        "# Permission required",
+        "- Permission::DriftUpdateUser",
+        "",
+        "# Integration required",
+        "- Integration::Drift"
+      ],
       "discriminator": [
         4,
         47,
@@ -1100,6 +1273,20 @@ export type Glam = {
     },
     {
       "name": "driftUpdateUserDelegate",
+      "docs": [
+        "Sets a delegate on the specified sub account.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `sub_account_id`: Sub account.",
+        "- `delegate`: Delegate's wallet address.",
+        "",
+        "# Permission required",
+        "- Permission::DriftUpdateUser",
+        "",
+        "# Integration required",
+        "- Integration::Drift"
+      ],
       "discriminator": [
         36,
         181,
@@ -1162,6 +1349,20 @@ export type Glam = {
     },
     {
       "name": "driftUpdateUserMarginTradingEnabled",
+      "docs": [
+        "Enables/Disables margin trading.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `sub_account_id`: Sub account.",
+        "- `margin_trading_enabled`: Whether to enable or disable margin trading.",
+        "",
+        "# Permission required",
+        "- Permission::DriftUpdateUser",
+        "",
+        "# Integration required",
+        "- Integration::Drift"
+      ],
       "discriminator": [
         157,
         175,
@@ -1224,6 +1425,20 @@ export type Glam = {
     },
     {
       "name": "driftWithdraw",
+      "docs": [
+        "Withdraws from drift.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `market_index`: Index of the drift spot market.",
+        "- `amount`: Amount to withdraw.",
+        "",
+        "# Permission required",
+        "- Permission::DriftWithdraw",
+        "",
+        "# Integration required",
+        "- Integration::Drift"
+      ],
       "discriminator": [
         86,
         59,
@@ -1309,6 +1524,20 @@ export type Glam = {
     },
     {
       "name": "forceTransferTokens",
+      "docs": [
+        "Forcefully transfers a specified amount of tokens from one account to another.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `mint_id`: The id of the mint to transfer tokens for.",
+        "- `amount`: The amount of tokens to transfer.",
+        "",
+        "# Permission required",
+        "- Permission::ForceTransferTokens",
+        "",
+        "# Integration required",
+        "- Integration::Mint"
+      ],
       "discriminator": [
         185,
         34,
@@ -1471,6 +1700,19 @@ export type Glam = {
     },
     {
       "name": "increaseLockedAmount",
+      "docs": [
+        "Increases the locked amount (aka stakes JUP).",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `amount`: The amount of JUP to stake.",
+        "",
+        "# Permission required",
+        "- Permission::StakeJup",
+        "",
+        "# Integration required",
+        "- Integration::JupiterVote"
+      ],
       "discriminator": [
         5,
         168,
@@ -1546,6 +1788,18 @@ export type Glam = {
     },
     {
       "name": "initLockedVoterEscrow",
+      "docs": [
+        "Initializes a locked voter escrow.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::StakeJup",
+        "",
+        "# Integration required",
+        "- Integration::JupiterVote"
+      ],
       "discriminator": [
         148,
         74,
@@ -1608,6 +1862,21 @@ export type Glam = {
     },
     {
       "name": "initializeAndDelegateStake",
+      "docs": [
+        "Initializes a stake account and delegates it to a validator.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `lamports`: The amount of SOL to initialize the stake account with.",
+        "- `stake_account_id`: The ID of the stake account to initialize.",
+        "- `stake_account_bump`: The bump seed for the stake account.",
+        "",
+        "# Permission required",
+        "- Permission::Stake",
+        "",
+        "# Integration required",
+        "- Integration::NativeStaking"
+      ],
       "discriminator": [
         71,
         101,
@@ -1698,6 +1967,17 @@ export type Glam = {
     },
     {
       "name": "initializeState",
+      "docs": [
+        "State",
+        "Initializes a state account from the provided StateModel instance.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `fund`: An instance of `StateModel` containing the details of the state to be initialized.",
+        "",
+        "# Permission required",
+        "- Owner only, delegates not allowed"
+      ],
       "discriminator": [
         190,
         171,
@@ -1806,6 +2086,23 @@ export type Glam = {
     },
     {
       "name": "jupiterSwap",
+      "docs": [
+        "Swaps assets using Jupiter.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `amount`: The amount of asset to swap.",
+        "- `data`: The data for the swap.",
+        "",
+        "# Permission required",
+        "- Any of",
+        "- Permission::JupiterSwapAny: no restrictions.",
+        "- Permission::JupiterSwapAllowlisted: input and output are in the assets allowlist.",
+        "- Permission::JupiterSwapLst: input and output assets are both LST.",
+        "",
+        "# Integration required",
+        "- Integration::JupiterSwap"
+      ],
       "discriminator": [
         116,
         207,
@@ -1845,6 +2142,9 @@ export type Glam = {
         },
         {
           "name": "inputVaultAta",
+          "docs": [
+            "input_vault_ata to input_signer_ata"
+          ],
           "writable": true
         },
         {
@@ -1906,6 +2206,9 @@ export type Glam = {
         },
         {
           "name": "outputSignerAta",
+          "docs": [
+            "TODO: Do we really need output_signer_ata?"
+          ],
           "writable": true
         },
         {
@@ -2016,6 +2319,18 @@ export type Glam = {
     },
     {
       "name": "marinadeClaimTickets",
+      "docs": [
+        "Claims tickets that were unstaked in the previous epoch to get SOL.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- Integration::Marinade"
+      ],
       "discriminator": [
         14,
         146,
@@ -2091,6 +2406,19 @@ export type Glam = {
     },
     {
       "name": "marinadeDelayedUnstake",
+      "docs": [
+        "Unstakes mSOL to get a ticket that can be claimed at the next epoch.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `msol_amount`: Amount of mSOL to unstake.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- Integration::Marinade"
+      ],
       "discriminator": [
         117,
         66,
@@ -2183,6 +2511,20 @@ export type Glam = {
     },
     {
       "name": "marinadeDepositSol",
+      "docs": [
+        "marinade",
+        "Deposits SOL to get mSOL.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `lamports`: The amount of SOL to deposit.",
+        "",
+        "# Permission required",
+        "- Permission::Stake",
+        "",
+        "# Integration required",
+        "- Integration::Marinade"
+      ],
       "discriminator": [
         64,
         140,
@@ -2368,6 +2710,19 @@ export type Glam = {
     },
     {
       "name": "marinadeDepositStake",
+      "docs": [
+        "Deposits a stake account to get mSOL.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `validator_idx`: Validator index.",
+        "",
+        "# Permission required",
+        "- Permission::Stake",
+        "",
+        "# Integration required",
+        "- Integration::Marinade"
+      ],
       "discriminator": [
         69,
         207,
@@ -2564,6 +2919,19 @@ export type Glam = {
     },
     {
       "name": "marinadeLiquidUnstake",
+      "docs": [
+        "Unstakes mSOL to get SOL immediately.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `msol_amount`: Amount of mSOL to unstake.",
+        "",
+        "# Permission required",
+        "- Permission::LiquidUnstake",
+        "",
+        "# Integration required",
+        "- Integration::Marinade"
+      ],
       "discriminator": [
         29,
         146,
@@ -2655,6 +3023,18 @@ export type Glam = {
     },
     {
       "name": "mergePartialUnstaking",
+      "docs": [
+        "Merges partial unstaking.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::UnstakeJup",
+        "",
+        "# Integration required",
+        "- Integration::JupiterVote"
+      ],
       "discriminator": [
         190,
         154,
@@ -2721,6 +3101,18 @@ export type Glam = {
     },
     {
       "name": "mergeStakeAccounts",
+      "docs": [
+        "Merges two stake accounts.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::Stake",
+        "",
+        "# Integration required",
+        "- Integration::NativeStaking"
+      ],
       "discriminator": [
         173,
         206,
@@ -2792,6 +3184,20 @@ export type Glam = {
     },
     {
       "name": "mintTokens",
+      "docs": [
+        "Mints a specified amount of tokens for the given mint.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `mint_id`: The id of the mint to mint tokens for.",
+        "- `amount`: The amount of tokens to mint.",
+        "",
+        "# Permission required",
+        "- Permission::MintTokens",
+        "",
+        "# Integration required",
+        "- Integration::Mint"
+      ],
       "discriminator": [
         59,
         132,
@@ -2894,6 +3300,18 @@ export type Glam = {
     },
     {
       "name": "newVote",
+      "docs": [
+        "Creates a new vote.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::VoteOnProposal",
+        "",
+        "# Integration required",
+        "- Integration::JupiterVote"
+      ],
       "discriminator": [
         163,
         108,
@@ -2956,6 +3374,20 @@ export type Glam = {
     },
     {
       "name": "openPartialUnstaking",
+      "docs": [
+        "Partially unstakes JUP.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `amount`: The amount of JUP to partially unstake.",
+        "- `memo`: The memo for the partial unstaking.",
+        "",
+        "# Permission required",
+        "- Permission::UnstakeJup",
+        "",
+        "# Integration required",
+        "- Integration::JupiterVote"
+      ],
       "discriminator": [
         201,
         137,
@@ -3031,6 +3463,15 @@ export type Glam = {
     },
     {
       "name": "redeem",
+      "docs": [
+        "Redeems a specified amount of shares.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `amount`: The amount of shares to redeem.",
+        "- `in_kind`: Whether to redeem in kind.",
+        "- `skip_state`: Should always be true (state check to be implemented)."
+      ],
       "discriminator": [
         184,
         12,
@@ -3142,6 +3583,20 @@ export type Glam = {
     },
     {
       "name": "redelegateStake",
+      "docs": [
+        "Redelegates an existing stake account to a new validator (a new stake account will be created).",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `new_stake_account_id`: The ID of the new stake account.",
+        "- `new_stake_account_bump`: The bump seed for the new stake account.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- Integration::NativeStaking"
+      ],
       "discriminator": [
         240,
         90,
@@ -3224,6 +3679,18 @@ export type Glam = {
     },
     {
       "name": "setSubscribeRedeemEnabled",
+      "docs": [
+        "Enables or disables the subscribe and redeem functionality.",
+        "",
+        "This allows the owner to pause/unpause subscription and redemption of a fund.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `enabled`: A boolean indicating whether to enable or disable the subscribe and redeem functionality.",
+        "",
+        "# Permission required",
+        "- Owner only, delegates not allowed"
+      ],
       "discriminator": [
         189,
         56,
@@ -3254,6 +3721,20 @@ export type Glam = {
     },
     {
       "name": "setTokenAccountsStates",
+      "docs": [
+        "Sets the frozen state of the token accounts for the specified mint.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `mint_id`: The id of the mint to set the frozen state for.",
+        "- `frozen`: The new frozen state.",
+        "",
+        "# Permission required",
+        "- Permission::SetTokenAccountState",
+        "",
+        "# Integration required",
+        "- Integration::Mint"
+      ],
       "discriminator": [
         50,
         133,
@@ -3295,6 +3776,21 @@ export type Glam = {
     },
     {
       "name": "splitStakeAccount",
+      "docs": [
+        "Splits from an existing stake account to get a new stake account.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `lamports`: The amount of SOL to split.",
+        "- `new_stake_account_id`: The ID of the new stake account.",
+        "- `new_stake_account_bump`: The bump seed for the new stake account.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- Integration::NativeStaking"
+      ],
       "discriminator": [
         130,
         42,
@@ -3375,6 +3871,19 @@ export type Glam = {
     },
     {
       "name": "stakePoolDepositSol",
+      "docs": [
+        "Deposits SOL to a stake pool to get pool token.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `lamports`: The amount of SOL to deposit.",
+        "",
+        "# Permission required",
+        "- Permission::Stake",
+        "",
+        "# Integration required",
+        "- Integration::SplStakePool or Integration::SanctumStakePool, depending on the stake pool program used."
+      ],
       "discriminator": [
         147,
         187,
@@ -3549,6 +4058,18 @@ export type Glam = {
     },
     {
       "name": "stakePoolDepositStake",
+      "docs": [
+        "Deposits a stake account to a stake pool to get pool token.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::Stake",
+        "",
+        "# Integration required",
+        "- Integration::SplStakePool or Integration::SanctumStakePool, depending on the stake pool program used."
+      ],
       "discriminator": [
         212,
         158,
@@ -3746,6 +4267,19 @@ export type Glam = {
     },
     {
       "name": "stakePoolWithdrawSol",
+      "docs": [
+        "Unstakes from pool token to get SOL immediately.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `pool_token_amount`: Amount of pool token to unstake.",
+        "",
+        "# Permission required",
+        "- Permission::LiquidUnstake",
+        "",
+        "# Integration required",
+        "- Integration::SplStakePool or Integration::SanctumStakePool, depending on the stake pool program used."
+      ],
       "discriminator": [
         179,
         100,
@@ -3842,6 +4376,21 @@ export type Glam = {
     },
     {
       "name": "stakePoolWithdrawStake",
+      "docs": [
+        "Unstakes from pool token into a stake account.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `pool_token_amount`: Amount of pool token to unstake.",
+        "- `stake_account_id`: Stake account ID.",
+        "- `stake_account_bump`: Stake account bump seed.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- Integration::SplStakePool or Integration::SanctumStakePool, depending on the stake pool program used."
+      ],
       "discriminator": [
         7,
         70,
@@ -3951,6 +4500,15 @@ export type Glam = {
     },
     {
       "name": "subscribe",
+      "docs": [
+        "Investor",
+        "Subscribes to a specified amount of shares.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `amount`: The amount of shares to subscribe.",
+        "- `skip_state`: Should always be true (state check to be implemented)."
+      ],
       "discriminator": [
         254,
         28,
@@ -4130,6 +4688,19 @@ export type Glam = {
     },
     {
       "name": "toggleMaxLock",
+      "docs": [
+        "Toggles max lock.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `value`: The value to toggle.",
+        "",
+        "# Permission required",
+        "- Permission::UnstakeJup",
+        "",
+        "# Integration required",
+        "- Integration::JupiterVote"
+      ],
       "discriminator": [
         163,
         157,
@@ -4328,6 +4899,17 @@ export type Glam = {
     },
     {
       "name": "updateMint",
+      "docs": [
+        "Updates an existing mint with new metadata.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `mint_id`: The id of the mint to be updated.",
+        "- `mint_model`: An instance of `MintModel` containing the updated metadata for the new mint.",
+        "",
+        "# Permission required",
+        "- Owner only, delegates not allowed"
+      ],
       "discriminator": [
         212,
         203,
@@ -4374,6 +4956,16 @@ export type Glam = {
     },
     {
       "name": "updateState",
+      "docs": [
+        "Updates an existing state account with new parameters.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `fund`: An instance of `StateModel` containing the updated details of the state.",
+        "",
+        "# Permission required",
+        "- Owner only, delegates not allowed"
+      ],
       "discriminator": [
         135,
         112,
@@ -4408,6 +5000,16 @@ export type Glam = {
     },
     {
       "name": "withdraw",
+      "docs": [
+        "Withdraw asset from vault into owner's wallet.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `amount`: The amount to withdraw.",
+        "",
+        "# Permission required",
+        "- Owner only, delegates not allowed"
+      ],
       "discriminator": [
         183,
         18,
@@ -4580,6 +5182,18 @@ export type Glam = {
     },
     {
       "name": "withdrawAllStakedJup",
+      "docs": [
+        "Withdraws all unstaked JUP.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::UnstakeJup",
+        "",
+        "# Integration required",
+        "- Integration::JupiterVote"
+      ],
       "discriminator": [
         210,
         124,
@@ -4650,6 +5264,18 @@ export type Glam = {
     },
     {
       "name": "withdrawFromStakeAccounts",
+      "docs": [
+        "Withdraws SOL from stake accounts.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- Integration::NativeStaking"
+      ],
       "discriminator": [
         93,
         209,
@@ -4709,6 +5335,18 @@ export type Glam = {
     },
     {
       "name": "withdrawPartialUnstaking",
+      "docs": [
+        "Withdraws JUP from partial unstaking.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::UnstakeJup",
+        "",
+        "# Integration required",
+        "- Integration::JupiterVote"
+      ],
       "discriminator": [
         201,
         202,
@@ -4783,6 +5421,15 @@ export type Glam = {
     },
     {
       "name": "wsolUnwrap",
+      "docs": [
+        "Unwraps all wSOL to get SOL.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "",
+        "# Permission required",
+        "- Permission::WSolUnwrap"
+      ],
       "discriminator": [
         123,
         189,
@@ -4927,6 +5574,16 @@ export type Glam = {
     },
     {
       "name": "wsolWrap",
+      "docs": [
+        "Wraps SOL to get wSOL.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `lamports`: The amount of SOL to wrap.",
+        "",
+        "# Permission required",
+        "- Permission::WSolWrap"
+      ],
       "discriminator": [
         26,
         2,
@@ -5775,6 +6432,9 @@ export type Glam = {
     },
     {
       "name": "escrow",
+      "docs": [
+        "Account: Escrow"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -6167,6 +6827,9 @@ export type Glam = {
     },
     {
       "name": "governor",
+      "docs": [
+        "Account: Governor"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -6249,6 +6912,9 @@ export type Glam = {
     },
     {
       "name": "locker",
+      "docs": [
+        "Account: Locker"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -6892,6 +7558,9 @@ export type Glam = {
     },
     {
       "name": "partialUnstaking",
+      "docs": [
+        "Account: PartialUnstaking"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -6925,6 +7594,9 @@ export type Glam = {
     },
     {
       "name": "permission",
+      "docs": [
+        "* Delegate ACL"
+      ],
       "type": {
         "kind": "enum",
         "variants": [
@@ -7051,6 +7723,9 @@ export type Glam = {
     },
     {
       "name": "proposal",
+      "docs": [
+        "Account: Proposal"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -7720,6 +8395,9 @@ export type Glam = {
     },
     {
       "name": "vote",
+      "docs": [
+        "Account: Vote"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
