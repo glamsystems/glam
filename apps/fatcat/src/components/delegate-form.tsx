@@ -18,8 +18,10 @@ import { ExplorerLink } from "@/components/ExplorerLink";
 import Link from "next/link";
 import { useGlamClient } from "@/providers/clientProvider";
 import { parseTxError } from "@/lib/error";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 const UNSTAKE_COUNTDOWN_TIME = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
+const JUP_TOKEN_ADDRESS = "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN";
 
 interface UnstakeItem {
   amount: string;
@@ -27,6 +29,7 @@ interface UnstakeItem {
 }
 
 export default function DelegateForm() {
+  const { publicKey } = useWallet();
   const { glamClient: client } = useGlamClient();
 
   const [stakeAmount, setStakeAmount] = useState<string>("0");
@@ -34,20 +37,35 @@ export default function DelegateForm() {
   const [unstakeItems, setUnstakeItems] = useState<UnstakeItem[]>([]);
   const [spinner, setSpinner] = useState<boolean>(false);
   const [now, setNow] = useState(Date.now());
+  const [walletBalance, setWalletBalance] = useState<string>("0");
 
   useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
+    const fetchBalance = async () => {
+      if (publicKey && client) {
+        const balance = await client.getJupBalance();
+        setWalletBalance(balance);
+      }
+    };
+
+    fetchBalance();
+  }, [publicKey, client]);
 
   const handleMaxClick = (type: "stake" | "unstake") => {
-    if (type === "stake") setStakeAmount("100.00");
-    else setUnstakeAmount("50.00");
+    if (type === "stake") {
+      const maxAmount = parseFloat(walletBalance);
+      setStakeAmount(maxAmount.toFixed(2));
+    } else {
+      setUnstakeAmount("50.00"); // Keep original unstake logic
+    }
   };
 
   const handleHalfClick = (type: "stake" | "unstake") => {
-    if (type === "stake") setStakeAmount("50.00");
-    else setUnstakeAmount("25.00");
+    if (type === "stake") {
+      const halfAmount = parseFloat(walletBalance) / 2;
+      setStakeAmount(halfAmount.toFixed(2));
+    } else {
+      setUnstakeAmount("25.00"); // Keep original unstake logic
+    }
   };
 
   const handleTx = async (action: string, tx: Promise<any>) => {
@@ -143,27 +161,33 @@ export default function DelegateForm() {
                 <div className="space-y-4 h-full flex flex-col justify-between">
                   <div className="space-y-2">
                     <Label htmlFor="stake-amount">JUP</Label>
-                    <div className="flex justify-end space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleHalfClick("stake")}
-                      >
-                        HALF
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleMaxClick("stake")}
-                      >
-                        MAX
-                      </Button>
+                    <div className="flex justify-between space-x-2">
+                      <div className="h-8 leading-8 text-sm text-muted-foreground">
+                        {walletBalance}
+                      </div>
+                      <div className="h-8 space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleHalfClick("stake")}
+                        >
+                          HALF
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleMaxClick("stake")}
+                        >
+                          MAX
+                        </Button>
+                      </div>
                     </div>
                     <Input
                       id="stake-amount"
                       type="text"
                       value={stakeAmount}
                       onChange={(e) => setStakeAmount(e.target.value)}
+                      onFocus={(e) => setStakeAmount("")}
                       className="text-right text-xl sm:text-2xl"
                     />
                   </div>
@@ -201,6 +225,7 @@ export default function DelegateForm() {
                       type="text"
                       value={unstakeAmount}
                       onChange={(e) => setUnstakeAmount(e.target.value)}
+                      onFocus={(e) => setUnstakeAmount("")}
                       className="text-right text-xl sm:text-2xl"
                     />
                   </div>

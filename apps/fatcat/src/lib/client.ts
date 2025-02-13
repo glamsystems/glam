@@ -130,4 +130,24 @@ export class FatcatGlamClient extends GlamClient {
     // always use full unstake for now
     return await this.jupiter.unstakeJup(state);
   };
+
+  async getJupBalance() {
+    const signer = this.getSigner();
+    const ata = this.getAta(JUP, signer);
+
+    try {
+      // First check if the token account exists
+      const account = await this.provider.connection.getAccountInfo(ata);
+
+      if (!account) {
+        return "0.00";
+      }
+
+      const tokenAccount = await this.provider.connection.getTokenAccountBalance(ata);
+      return Number(tokenAccount.value.uiAmount || 0).toFixed(2);
+    } catch (error) {
+      console.error("Failed to fetch JUP balance:", error);
+      return "0.00";
+    }
+  }
 }
