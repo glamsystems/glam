@@ -16,6 +16,34 @@ const LOOKUP_TABLE_PUBKEY = new PublicKey(
 );
 const JUP_STAKE_LOCKER = new PublicKey("CVMdMd79no569tjc5Sq7kzz8isbfCcFyBS5TLGsrZ5dN");
 
+const MAX_STAKE_DURATION_SECONDS = 2592000;
+
+interface EscrowData {
+  amount: BN;
+  escrowStartedAt: BN;
+  escrowEndsAt: BN;
+  isMaxLock: boolean;
+}
+
+function parseTokenAccountBalance(data: Buffer): BN {
+  const dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  const amount = new BN(dataView.getBigUint64(64, true).toString(), 10);
+
+  return amount;
+}
+
+function parseEscrowAccount(data: Buffer): EscrowData {
+  const dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
+
+  // Read 8-byte (64-bit) integers using DataView
+  const amount = new BN(dataView.getBigUint64(105, true).toString(), 10);
+  const escrowStartedAt = new BN(dataView.getBigUint64(113, true).toString(), 10);
+  const escrowEndsAt = new BN(dataView.getBigUint64(121, true).toString(), 10);
+  const isMaxLock = !!data[161];
+
+  return { amount, escrowStartedAt, escrowEndsAt, isMaxLock };
+}
+
 export class FatcatGlamClient extends GlamClient {
   private cachedBalances: {
     jupBalance?: string;
@@ -32,6 +60,21 @@ export class FatcatGlamClient extends GlamClient {
         commitment: "confirmed",
       }),
     });
+  }
+
+  public calculateVotingPower(amount: BN, escrowEndsAt: BN): string {
+    const now = Math.floor(Date.now() / 1000);
+    const endTime = escrowEndsAt.toNumber();
+
+    if (now >= endTime) {
+      return "0.00";
+    }
+
+    const timeRemaining = endTime - now;
+    const multiplier = Math.min(timeRemaining / MAX_STAKE_DURATION_SECONDS, 1);
+    const power = amount.muln(multiplier).div(new BN(1_000_000));
+
+    return power.toString();
   }
 
   getFatcatState = () => {
@@ -200,15 +243,18 @@ export class FatcatGlamClient extends GlamClient {
         // Process wallet balance
         let jupBalance = "0.00";
         if (accounts[0]) {
-          const signerBalance = await this.provider.connection.getTokenAccountBalance(signerAta);
-          jupBalance = Number(signerBalance.value.uiAmount || 0).toFixed(2);
+          // const signerBalance = await this.provider.connection.getTokenAccountBalance(signerAta);
+          // jupBalance = Number(signerBalance.value.uiAmount || 0).toFixed(2);
+          const signerInfo = accounts[0];
+          const tokenAccountBalance = parseTokenAccountBalance(signerInfo.data);
+          jupBalance = tokenAccountBalance.div(new BN(1_000_000)).toNumber().toFixed(2);
         }
 
-        // Process voting power
         let votingPower = "0.00";
         if (accounts[1]) {
-          const escrowBalance = await this.provider.connection.getTokenAccountBalance(escrowAta);
-          votingPower = Number(escrowBalance.value.uiAmount || 0).toFixed(2);
+          const escrowInfo = accounts[1];
+          const escrowData = parseEscrowAccount(escrowInfo.data);
+          votingPower = this.calculateVotingPower(escrowData.amount, escrowData.escrowEndsAt);
         }
 
         // Update cache
