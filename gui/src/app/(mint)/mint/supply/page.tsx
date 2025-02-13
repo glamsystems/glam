@@ -99,14 +99,14 @@ export default function SupplyPage() {
     try {
       const txSig =
         submitter === "mint"
-          ? await glamClient.mint.mintShare(
+          ? await glamClient.mint.mint(
               activeGlamState.pubkey,
               0,
               pubkey,
               new BN(amount * 10 ** 9),
               true, // force thawing token account if it's frozen
             )
-          : await glamClient.mint.burnShare(
+          : await glamClient.mint.burn(
               activeGlamState.pubkey,
               0,
               new BN(amount * 10 ** 9),

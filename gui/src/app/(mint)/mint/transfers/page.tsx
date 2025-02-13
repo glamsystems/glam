@@ -104,7 +104,7 @@ export default function TransferPage() {
 
     setIsTxPending(true);
     try {
-      const txId = await glamClient.mint.forceTransferShare(
+      const txId = await glamClient.mint.forceTransfer(
         activeGlamState.pubkey,
         0,
         new BN(amount * 10 ** 9),
