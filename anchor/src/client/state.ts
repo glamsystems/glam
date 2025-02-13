@@ -100,7 +100,7 @@ export class StateClient {
       })
       .rpc();
 
-    const addShareClassTxs = await Promise.all(
+    const addMintTxs = await Promise.all(
       (mints || []).map(async (mint, j: number) => {
         const mintPda = this.base.getMintPda(statePda, j);
 
@@ -120,7 +120,7 @@ export class StateClient {
           .rpc();
       }),
     );
-    console.log("addShareClassTxs", addShareClassTxs);
+    console.log("addMintTxs", addMintTxs);
     return [txSig, statePda];
   }
 

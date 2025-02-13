@@ -362,7 +362,7 @@ pub struct SetTokenAccountsStates<'info> {
     pub token_2022_program: Program<'info, Token2022>,
 }
 
-#[access_control(acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.signer.key, Permission::SetTokenAccountsStates))]
+#[access_control(acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.signer.key, Permission::SetTokenAccountState))]
 #[access_control(acl::check_state_type(&ctx.accounts.glam_state, AccountType::Mint))]
 #[mint_signer_seeds]
 pub fn set_token_accounts_states_handler<'info>(
@@ -423,7 +423,7 @@ pub fn set_token_accounts_states_handler<'info>(
 
 #[derive(Accounts)]
 #[instruction(mint_id: u8)]
-pub struct ForceTransferShare<'info> {
+pub struct ForceTransferTokens<'info> {
     #[account(mut)]
     pub glam_state: Box<Account<'info, StateAccount>>,
     #[account(
@@ -462,11 +462,11 @@ pub struct ForceTransferShare<'info> {
     pub token_2022_program: Program<'info, Token2022>,
 }
 
-#[access_control(acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.signer.key, Permission::ForceTransferShare))]
+#[access_control(acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.signer.key, Permission::ForceTransferTokens))]
 #[access_control(acl::check_state_type(&ctx.accounts.glam_state, AccountType::Mint))]
 #[mint_signer_seeds]
-pub fn force_transfer_share_handler(
-    ctx: Context<ForceTransferShare>,
+pub fn force_transfer_tokens_handler(
+    ctx: Context<ForceTransferTokens>,
     mint_id: u8,
     amount: u64,
 ) -> Result<()> {
@@ -501,7 +501,7 @@ pub fn force_transfer_share_handler(
 
 #[derive(Accounts)]
 #[instruction(mint_id: u8)]
-pub struct BurnShare<'info> {
+pub struct BurnTokens<'info> {
     pub glam_state: Box<Account<'info, StateAccount>>,
 
     #[account(
@@ -530,10 +530,10 @@ pub struct BurnShare<'info> {
     pub token_2022_program: Program<'info, Token2022>,
 }
 
-#[access_control(acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.signer.key, Permission::BurnShare))]
+#[access_control(acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.signer.key, Permission::BurnTokens))]
 #[access_control(acl::check_state_type(&ctx.accounts.glam_state, AccountType::Mint))]
 #[mint_signer_seeds]
-pub fn burn_share_handler(ctx: Context<BurnShare>, mint_id: u8, amount: u64) -> Result<()> {
+pub fn burn_tokens_handler(ctx: Context<BurnTokens>, mint_id: u8, amount: u64) -> Result<()> {
     #[cfg(not(feature = "mainnet"))]
     msg!(
         "Burn {} shares from {} (ata {})",
@@ -559,7 +559,7 @@ pub fn burn_share_handler(ctx: Context<BurnShare>, mint_id: u8, amount: u64) -> 
 
 #[derive(Accounts)]
 #[instruction(mint_id: u8)]
-pub struct MintShare<'info> {
+pub struct MintTokens<'info> {
     #[account(mut)]
     pub glam_state: Box<Account<'info, StateAccount>>,
 
@@ -589,11 +589,11 @@ pub struct MintShare<'info> {
     pub token_2022_program: Program<'info, Token2022>,
 }
 
-#[access_control(acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.signer.key, Permission::MintShare))]
+#[access_control(acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.signer.key, Permission::MintTokens))]
 #[access_control(acl::check_state_type(&ctx.accounts.glam_state, AccountType::Mint))]
 #[mint_signer_seeds]
-pub fn mint_share_handler<'info>(
-    ctx: Context<'_, '_, '_, 'info, MintShare<'info>>,
+pub fn mint_tokens_handler<'info>(
+    ctx: Context<'_, '_, '_, 'info, MintTokens<'info>>,
     mint_id: u8,
     amount: u64,
 ) -> Result<()> {

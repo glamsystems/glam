@@ -42,7 +42,7 @@ describe("glam_mint", () => {
 
   it("Mint share class fail due to default state frozen", async () => {
     try {
-      const txSig = await glamClient.mint.mintShare(
+      const txSig = await glamClient.mint.mint(
         statePda,
         0,
         key1.publicKey,
@@ -58,14 +58,14 @@ describe("glam_mint", () => {
     const amount = new BN(1_000_000_000);
     const recipient = key1.publicKey;
     try {
-      const txSig = await glamClient.mint.mintShare(
+      const txSig = await glamClient.mint.mint(
         statePda,
         0,
         recipient,
         amount,
         true,
       );
-      console.log("mintShare txSig", txSig);
+      console.log("mint txSig", txSig);
     } catch (e) {
       console.error(e);
       throw e;
@@ -120,7 +120,7 @@ describe("glam_mint", () => {
 
     const amount = new BN(500_000_000);
     try {
-      const txSig = await glamClient.mint.forceTransferShare(
+      const txSig = await glamClient.mint.forceTransfer(
         statePda,
         0,
         amount,
@@ -128,7 +128,7 @@ describe("glam_mint", () => {
         to,
         true,
       );
-      console.log("forceTransferShare txSig", txSig);
+      console.log("forceTransfer txSig", txSig);
     } catch (e) {
       console.error(e);
       throw e;
@@ -155,8 +155,8 @@ describe("glam_mint", () => {
     const from = key1.publicKey;
 
     const amount = new BN(500_000_000);
-    const txSig = await glamClient.mint.burnShare(statePda, 0, amount, from);
-    console.log("burnShare txSig", txSig);
+    const txSig = await glamClient.mint.burn(statePda, 0, amount, from);
+    console.log("burn txSig", txSig);
 
     const glamMint = glamClient.getMintPda(statePda, 0);
     const fromAta = glamClient.getMintAta(from, glamMint);

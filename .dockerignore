@@ -5,10 +5,8 @@ anchor
 !anchor/src
 !anchor/target/idl
 !anchor/target/types
-playground/src/app/(playground)/playground/api
 dist
+docs
 node_modules
-playground/.next
 scripts
-!scripts/cleandeps_playground.sh
 .git

@@ -68,9 +68,7 @@ export function DataTableRowActions({
           return;
         }
 
-        preInstructions.push(
-          await glamClient.mint.closeShareClassIx(fundPda, 0),
-        );
+        preInstructions.push(await glamClient.mint.closeMintIx(fundPda, 0));
       }
 
       const txSig = await glamClient.state.closeState(fundPda, {

@@ -52,7 +52,7 @@ export class MintClient {
     });
   }
 
-  public async closeShareClassIx(state: PublicKey, mintId: number = 0) {
+  public async closeMintIx(state: PublicKey, mintId: number = 0) {
     const openfunds = this.base.getOpenfundsPda(state);
     const mintPda = this.base.getMintPda(state, mintId);
 
@@ -158,7 +158,7 @@ export class MintClient {
    * @param txOptions
    * @returns Transaction signature
    */
-  public async mintShare(
+  public async mint(
     state: PublicKey,
     mintId: number,
     recipient: PublicKey,
@@ -195,7 +195,7 @@ export class MintClient {
     }
 
     return await this.base.program.methods
-      .mintShare(0, amount)
+      .mintTokens(0, amount)
       .accounts({
         recipient,
         glamState: state,
@@ -205,7 +205,7 @@ export class MintClient {
       .rpc();
   }
 
-  public async burnShare(
+  public async burn(
     state: PublicKey,
     mintId: number,
     amount: anchor.BN,
@@ -233,7 +233,7 @@ export class MintClient {
     }
 
     return await this.base.program.methods
-      .burnShare(mintId, amount)
+      .burnTokens(mintId, amount)
       .accounts({
         glamState: state,
         glamMint: mintPda,
@@ -243,7 +243,7 @@ export class MintClient {
       .rpc();
   }
 
-  public async forceTransferShare(
+  public async forceTransfer(
     state: PublicKey,
     mintId: number,
     amount: anchor.BN,
@@ -284,7 +284,7 @@ export class MintClient {
     }
 
     return await this.base.program.methods
-      .forceTransferShare(mintId, amount)
+      .forceTransferTokens(mintId, amount)
       .accounts({
         glamState: state,
         glamMint: mintPda,

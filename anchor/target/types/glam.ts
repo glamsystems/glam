@@ -16,7 +16,7 @@ export type Glam = {
     {
       "name": "addMint",
       "docs": [
-        "Share class",
+        "mint",
         "Adds a new mint.",
         "",
         "# Parameters",
@@ -133,7 +133,7 @@ export type Glam = {
       ]
     },
     {
-      "name": "burnShare",
+      "name": "burnTokens",
       "docs": [
         "Burns a specified amount of tokens for the given mint.",
         "",
@@ -143,20 +143,20 @@ export type Glam = {
         "- `amount`: The amount of tokens to burn.",
         "",
         "# Permission required",
-        "- Permission::BurnShare",
+        "- Permission::BurnTokens",
         "",
         "# Integration required",
         "- Integration::Mint"
       ],
       "discriminator": [
-        111,
-        41,
-        160,
-        233,
-        46,
-        233,
-        79,
-        62
+        76,
+        15,
+        51,
+        254,
+        229,
+        215,
+        121,
+        66
       ],
       "accounts": [
         {
@@ -1523,7 +1523,7 @@ export type Glam = {
       ]
     },
     {
-      "name": "forceTransferShare",
+      "name": "forceTransferTokens",
       "docs": [
         "Forcefully transfers a specified amount of tokens from one account to another.",
         "",
@@ -1533,20 +1533,20 @@ export type Glam = {
         "- `amount`: The amount of tokens to transfer.",
         "",
         "# Permission required",
-        "- Permission::ForceTransferShare",
+        "- Permission::ForceTransferTokens",
         "",
         "# Integration required",
         "- Integration::Mint"
       ],
       "discriminator": [
-        71,
-        90,
-        36,
-        42,
-        220,
-        208,
-        46,
-        19
+        185,
+        34,
+        78,
+        211,
+        192,
+        13,
+        160,
+        37
       ],
       "accounts": [
         {
@@ -3183,30 +3183,30 @@ export type Glam = {
       "args": []
     },
     {
-      "name": "mintShare",
+      "name": "mintTokens",
       "docs": [
-        "Mints a specified amount of shares for the given share class.",
+        "Mints a specified amount of tokens for the given mint.",
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
         "- `mint_id`: The id of the mint to mint tokens for.",
-        "- `amount`: The amount of shares to mint.",
+        "- `amount`: The amount of tokens to mint.",
         "",
         "# Permission required",
-        "- Permission::MintShare",
+        "- Permission::MintTokens",
         "",
         "# Integration required",
         "- Integration::Mint"
       ],
       "discriminator": [
-        145,
-        1,
+        59,
+        132,
+        24,
+        246,
         122,
-        214,
-        134,
-        106,
-        116,
-        109
+        39,
+        8,
+        243
       ],
       "accounts": [
         {
@@ -3730,7 +3730,7 @@ export type Glam = {
         "- `frozen`: The new frozen state.",
         "",
         "# Permission required",
-        "- Permission::SetTokenAccountsStates",
+        "- Permission::SetTokenAccountState",
         "",
         "# Integration required",
         "- Integration::Mint"
@@ -4904,7 +4904,7 @@ export type Glam = {
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `mint_id`: The id of the share class to be updated.",
+        "- `mint_id`: The id of the mint to be updated.",
         "- `mint_model`: An instance of `MintModel` containing the updated metadata for the new mint.",
         "",
         "# Permission required",
@@ -7649,16 +7649,16 @@ export type Glam = {
             "name": "wSolUnwrap"
           },
           {
-            "name": "mintShare"
+            "name": "mintTokens"
           },
           {
-            "name": "burnShare"
+            "name": "burnTokens"
           },
           {
-            "name": "forceTransferShare"
+            "name": "forceTransferTokens"
           },
           {
-            "name": "setTokenAccountsStates"
+            "name": "setTokenAccountState"
           },
           {
             "name": "stakeJup"
