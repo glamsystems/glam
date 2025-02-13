@@ -1,5 +1,5 @@
 {
-  "$id": "http://glam.systems/playground/schemas/glamTagForm.json",
+  "$id": "http://glam.systems/gui/schemas/glamFormSchemaByTag.json",
   "type": "object",
   "essential": {
     "type": "object",
@@ -553,10 +553,7 @@
         "x-level": "fund",
         "x-component": "select",
         "readOnly": false,
-        "enum": [
-          "openEndedFund",
-          "closedEndedFund"
-        ],
+        "enum": ["openEndedFund", "closedEndedFund"],
         "x-enumSource": "utils/openfundsConstants.tsx",
         "x-enumValues": "fundStructures",
         "x-enumValuesLabel": "label",
@@ -695,11 +692,7 @@
         "x-level": "shareClass",
         "x-component": "select",
         "readOnly": false,
-        "enum": [
-          "accumulating",
-          "accumulatingAndDistributing",
-          "distributing"
-        ],
+        "enum": ["accumulating", "accumulatingAndDistributing", "distributing"],
         "x-enumSource": "utils/openfundsConstants.tsx",
         "x-enumValues": "distributionPolicy",
         "x-enumValuesLabel": "label",
@@ -729,11 +722,7 @@
         "x-level": "shareClass",
         "x-component": "select",
         "readOnly": false,
-        "enum": [
-          "shares",
-          "amount",
-          "sharesAndAmount"
-        ],
+        "enum": ["shares", "amount", "sharesAndAmount"],
         "x-enumSource": "utils/openfundsConstants.tsx",
         "x-enumValues": "minimalInitialCategory",
         "x-enumValuesLabel": "label",
@@ -786,15 +775,7 @@
         "x-level": "shareClass",
         "x-component": "select",
         "readOnly": false,
-        "enum": [
-          "1",
-          "2",
-          "3",
-          "4",
-          "5",
-          "6",
-          "7"
-        ],
+        "enum": ["1", "2", "3", "4", "5", "6", "7"],
         "x-hidden": false,
         "x-enforced": false,
         "minValue": 1,
@@ -874,11 +855,7 @@
         "x-level": "shareClass",
         "x-component": "select",
         "readOnly": false,
-        "enum": [
-          "shares",
-          "amount",
-          "sharesAndAmount"
-        ],
+        "enum": ["shares", "amount", "sharesAndAmount"],
         "x-enumSource": "utils/openfundsConstants.tsx",
         "x-enumValues": "minimalInitialCategory",
         "x-enumValuesLabel": "label",
@@ -955,11 +932,7 @@
         "x-level": "shareClass",
         "x-component": "select",
         "readOnly": false,
-        "enum": [
-          "shares",
-          "cash",
-          "both"
-        ],
+        "enum": ["shares", "cash", "both"],
         "x-enumSource": "utils/openfundsConstants.tsx",
         "x-enumValues": "dividendType",
         "x-enumValuesLabel": "label",

@@ -150,9 +150,11 @@ export function GlamProvider({
       }),
       cluster: cluster.network,
     });
-    window.glam = glamClient;
-    window.PublicKey = PublicKey;
-    window.BN = BN;
+    if (typeof window !== "undefined") {
+      window.glam = glamClient;
+      window.PublicKey = PublicKey;
+      window.BN = BN;
+    }
     return glamClient;
   }, [connection, wallet, cluster]);
 

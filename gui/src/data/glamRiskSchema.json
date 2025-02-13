@@ -1,5 +1,5 @@
 {
-  "$id": "http://glam.systems/playground/schemas/glamFormSchema.json",
+  "$id": "http://glam.systems/gui/schemas/glamRiskSchema.json",
   "type": "object",
   "drift": {
     "type": "object",

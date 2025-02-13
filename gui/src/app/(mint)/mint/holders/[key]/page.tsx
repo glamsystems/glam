@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react"
+import * as React from "react";
 
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
@@ -25,8 +25,5 @@ export default function KeyPage() {
     return <div>Error loading key</div>;
   }
 
-  return (
-      <div className="w-full">
-        {key.toString()}
-      </div>)
+  return <div className="w-full">{publicKey.toBase58()}</div>;
 }
