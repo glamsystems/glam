@@ -564,6 +564,29 @@ jup
     }
   });
 
+jup
+  .command("withdraw")
+  .description("Withdraw all unstaked JUP")
+  .action(async () => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
+    if (!statePda) {
+      console.error("GLAM state not found in config file");
+      process.exit(1);
+    }
+
+    try {
+      const txSig = await glamClient.jupiter.withdrawJup(statePda);
+      console.log("txSig", txSig);
+      console.log("Withdrawn all JUP");
+    } catch (e) {
+      console.error(parseTxError(e));
+      throw e;
+    }
+  });
+
 const vote = program
   .command("vote <proposal> <side>")
   .description("Vote on a proposal")

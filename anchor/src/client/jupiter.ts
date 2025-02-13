@@ -203,6 +203,35 @@ export class JupiterClient {
     return await this.base.sendAndConfirm(vTx);
   }
 
+  public async withdrawJup(statePda: PublicKey, txOptions: TxOptions = {}) {
+    const vault = this.base.getVaultPda(statePda);
+    const [escrow] = PublicKey.findProgramAddressSync(
+      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), vault.toBuffer()],
+      JUP_VOTE_PROGRAM,
+    );
+    const escrowJupAta = getAssociatedTokenAddressSync(JUP, escrow, true);
+    const vaultJupAta = getAssociatedTokenAddressSync(JUP, vault, true);
+
+    return await this.base.program.methods
+      .withdrawAllStakedJup()
+      .accounts({
+        state: statePda,
+        locker: JUP_STAKE_LOCKER,
+        escrow,
+        escrowJupAta,
+        vaultJupAta,
+      })
+      .preInstructions([
+        createAssociatedTokenAccountIdempotentInstruction(
+          this.base.getSigner(),
+          vaultJupAta,
+          vault,
+          JUP,
+        ),
+      ])
+      .rpc();
+  }
+
   /**
    * Vote on a proposal. The vote account will be created if it doesn't exist.
    *
