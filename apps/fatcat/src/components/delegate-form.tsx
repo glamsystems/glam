@@ -18,8 +18,15 @@ import { ExplorerLink } from "@/components/ExplorerLink";
 import Link from "next/link";
 import { useGlamClient } from "@/providers/clientProvider";
 import { parseTxError } from "@/lib/error";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { Skeleton } from "@/components/skeleton";
+import { DynamicVotingPower } from "@/components/dynamic-voting-power";
+import { BN } from "@coral-xyz/anchor";
+import { JUP_STAKE_LOCKER } from "@glamsystems/glam-sdk";
+import { PublicKey } from "@solana/web3.js";
 
 const UNSTAKE_COUNTDOWN_TIME = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
+const JUP_TOKEN_ADDRESS = "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN";
 
 interface UnstakeItem {
   amount: string;
@@ -27,6 +34,7 @@ interface UnstakeItem {
 }
 
 export default function DelegateForm() {
+  const { publicKey } = useWallet();
   const { glamClient: client } = useGlamClient();
 
   const [stakeAmount, setStakeAmount] = useState<string>("0");
@@ -34,20 +42,98 @@ export default function DelegateForm() {
   const [unstakeItems, setUnstakeItems] = useState<UnstakeItem[]>([]);
   const [spinner, setSpinner] = useState<boolean>(false);
   const [now, setNow] = useState(Date.now());
+  const [walletBalance, setWalletBalance] = useState<string>("0");
+  const [votingPower, setVotingPower] = useState<string>("0");
+  const [isLoadingBalance, setIsLoadingBalance] = useState(true);
+  const [isLoadingVotingPower, setIsLoadingVotingPower] = useState(true);
+  const [escrowData, setEscrowData] = useState<{
+    amount: string;
+    escrowEndsAt: string;
+  } | null>(null);
 
   useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
+    let mounted = true;
+
+    const fetchData = async () => {
+      if (!publicKey || !client) {
+        return;
+      }
+
+      try {
+        const { state } = client.getFatcatState();
+        const [escrow] = PublicKey.findProgramAddressSync(
+          [
+            Buffer.from("Escrow"),
+            JUP_STAKE_LOCKER.toBuffer(),
+            client.getVaultPda(state).toBuffer()
+          ],
+          new PublicKey("voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj")
+        );
+
+        const escrowInfo = await client.provider.connection.getAccountInfo(escrow);
+
+        // Get escrow data
+        if (escrowInfo) {
+          // Calculate offsets:
+          // 8 (discriminator) + 32 (locker) + 32 (owner) + 1 (bump) + 32 (tokens) = 105
+          // amount is at offset 105
+          // escrowEndsAt is at offset 105 + 8 + 8 = 121
+          const amount = new BN(escrowInfo.data.slice(105, 113), 'le').toString();
+          const escrowEndsAt = new BN(escrowInfo.data.slice(121, 129), 'le').toString();
+
+          setEscrowData({
+            amount,
+            escrowEndsAt
+          });
+        } else {
+          setEscrowData(null);
+        }
+
+        // Fetch balances in parallel
+        const [power, balance] = await Promise.all([
+          client.getVotingPower(),
+          client.getJupBalance()
+        ]);
+
+        if (mounted) {
+          setVotingPower(power);
+          setWalletBalance(balance);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        if (mounted) {
+          setIsLoadingVotingPower(false);
+          setIsLoadingBalance(false);
+        }
+      }
+    };
+
+    setIsLoadingVotingPower(true);
+    setIsLoadingBalance(true);
+    fetchData();
+
+    return () => {
+      mounted = false;
+    };
+  }, [publicKey, client]);
 
   const handleMaxClick = (type: "stake" | "unstake") => {
-    if (type === "stake") setStakeAmount("100.00");
-    else setUnstakeAmount("50.00");
+    if (type === "stake") {
+      const maxAmount = parseFloat(walletBalance);
+      setStakeAmount(maxAmount.toFixed(2));
+    } else {
+      setUnstakeAmount("50.00"); // Keep original unstake logic
+    }
   };
 
   const handleHalfClick = (type: "stake" | "unstake") => {
-    if (type === "stake") setStakeAmount("50.00");
-    else setUnstakeAmount("25.00");
+    if (type === "stake") {
+      const halfAmount = parseFloat(walletBalance) / 2;
+      setStakeAmount(halfAmount.toFixed(2));
+    } else {
+      setUnstakeAmount("25.00"); // Keep original unstake logic
+    }
   };
 
   const handleTx = async (action: string, tx: Promise<any>) => {
@@ -59,6 +145,16 @@ export default function DelegateForm() {
         title: `${action} successful`,
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
       });
+
+      // Refresh data after successful transaction
+      if (client) {
+        const [power, balance] = await Promise.all([
+          client.getVotingPower(),
+          client.getJupBalance()
+        ]);
+        setVotingPower(power);
+        setWalletBalance(balance);
+      }
     } catch (error) {
       toast({
         title: `${action} failed`,
@@ -128,7 +224,17 @@ export default function DelegateForm() {
           </CardDescription>
           <CardDescription>
             <span className="text-xl font-medium">Voting power: </span>
-            <span className="text-xl font-medium">0</span>
+            {isLoadingVotingPower ? (
+              <Skeleton className="h-7 w-16 inline-block align-middle" />
+            ) : escrowData ? (
+              <DynamicVotingPower
+                baseAmount={new BN(escrowData.amount)}
+                escrowEndsAt={new BN(escrowData.escrowEndsAt)}
+                className="text-xl font-medium"
+              />
+            ) : (
+              <span className="text-xl font-medium">0</span>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -143,73 +249,103 @@ export default function DelegateForm() {
                 <div className="space-y-4 h-full flex flex-col justify-between">
                   <div className="space-y-2">
                     <Label htmlFor="stake-amount">JUP</Label>
-                    <div className="flex justify-end space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleHalfClick("stake")}
-                      >
-                        HALF
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleMaxClick("stake")}
-                      >
-                        MAX
-                      </Button>
+                    <div className="flex justify-between space-x-2">
+                      <div className="h-8 leading-8 text-sm text-muted-foreground">
+                        {isLoadingBalance ? (
+                          <Skeleton className="h-6 w-16 inline-block" />
+                        ) : (
+                          walletBalance
+                        )}
+                      </div>
+                      <div className="h-8 space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleHalfClick("stake")}
+                          disabled={isLoadingBalance}
+                        >
+                          HALF
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleMaxClick("stake")}
+                          disabled={isLoadingBalance}
+                        >
+                          MAX
+                        </Button>
+                      </div>
                     </div>
                     <Input
                       id="stake-amount"
                       type="text"
                       value={stakeAmount}
                       onChange={(e) => setStakeAmount(e.target.value)}
+                      onFocus={(e) => setStakeAmount("")}
                       className="text-right text-xl sm:text-2xl"
+                      disabled={isLoadingBalance}
                     />
                   </div>
                   <Button
                     className="w-full py-2 sm:py-3 text-foreground dark:text-background"
                     onClick={handleStake}
-                    disabled={!(parseFloat(stakeAmount) > 0) || spinner}
+                    disabled={!(parseFloat(stakeAmount) > 0) || spinner || isLoadingBalance}
                   >
                     Stake {spinner ? "..." : ""}
                   </Button>
                 </div>
               </TabsContent>
+
+              {/* TODO: Previous version with manual amount input - keep for future reference*/}
+              {/*<TabsContent value="unstake" className="h-full">*/}
+              {/*  <div className="space-y-4 h-full flex flex-col justify-between">*/}
+              {/*    <div className="space-y-2">*/}
+              {/*      <Label htmlFor="unstake-amount">Staked JUP</Label>*/}
+              {/*      <div className="flex justify-end space-x-2">*/}
+              {/*        <Button*/}
+              {/*          variant="outline"*/}
+              {/*          size="sm"*/}
+              {/*          onClick={() => handleHalfClick("unstake")}*/}
+              {/*        >*/}
+              {/*          HALF*/}
+              {/*        </Button>*/}
+              {/*        <Button*/}
+              {/*          variant="outline"*/}
+              {/*          size="sm"*/}
+              {/*          onClick={() => handleMaxClick("unstake")}*/}
+              {/*        >*/}
+              {/*          MAX*/}
+              {/*        </Button>*/}
+              {/*      </div>*/}
+              {/*      <Input*/}
+              {/*        id="unstake-amount"*/}
+              {/*        type="text"*/}
+              {/*        value={unstakeAmount}*/}
+              {/*        onChange={(e) => setUnstakeAmount(e.target.value)}*/}
+              {/*        onFocus={(e) => setUnstakeAmount("")}*/}
+              {/*        className="text-right text-xl sm:text-2xl"*/}
+              {/*      />*/}
+              {/*    </div>*/}
+              {/*    <Button*/}
+              {/*      className="w-full py-2 sm:py-3 text-foreground dark:text-background"*/}
+              {/*      onClick={handleUnstake}*/}
+              {/*      disabled={!(parseFloat(unstakeAmount) > 0) || spinner}*/}
+              {/*    >*/}
+              {/*      Unstake{spinner ? "..." : ""}*/}
+              {/*    </Button>*/}
+              {/*  </div>*/}
+              {/*</TabsContent>*/}
               <TabsContent value="unstake" className="h-full">
                 <div className="space-y-4 h-full flex flex-col justify-between">
                   <div className="space-y-2">
-                    <Label htmlFor="unstake-amount">Staked JUP</Label>
-                    <div className="flex justify-end space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleHalfClick("unstake")}
-                      >
-                        HALF
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleMaxClick("unstake")}
-                      >
-                        MAX
-                      </Button>
-                    </div>
-                    <Input
-                      id="unstake-amount"
-                      type="text"
-                      value={unstakeAmount}
-                      onChange={(e) => setUnstakeAmount(e.target.value)}
-                      className="text-right text-xl sm:text-2xl"
-                    />
+                    <Label>Click below to unstake all your JUP tokens</Label>
                   </div>
                   <Button
                     className="w-full py-2 sm:py-3 text-foreground dark:text-background"
                     onClick={handleUnstake}
-                    disabled={!(parseFloat(unstakeAmount) > 0) || spinner}
+                    disabled={spinner || Boolean(escrowData?.escrowEndsAt !== "0")}
                   >
-                    Unstake{spinner ? "..." : ""}
+                    Unstake All{spinner ? "..." : ""}
                   </Button>
                 </div>
               </TabsContent>
