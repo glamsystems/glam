@@ -156,6 +156,9 @@ importers:
       ajv-formats:
         specifier: ^3.0.1
         version: 3.0.1(ajv@8.17.1)
+      axios:
+        specifier: ^1.7.9
+        version: 1.7.9
       bs58:
         specifier: ^5.0.0
         version: 5.0.0
@@ -5302,11 +5305,8 @@ packages:
     resolution: {integrity: sha512-QbUdXJVTpvUTHU7871ppZkdOLBeGUKBQWHkHrvN2V9IQWGMt61zf3B45BtzjxEJzYuj0JBjBZP/hmYS/R9pmAw==}
     engines: {node: '>=4'}
 
-  axios@1.7.2:
-    resolution: {integrity: sha512-2A8QhOMrbomlDuiLeK9XibIBzuHeRcqqNOHp0Cyp5EoJ1IFDh+XZH3A6BkXtv0K4gFGCI0Y4BM7B1wOEi0Rmgw==}
-
-  axios@1.7.7:
-    resolution: {integrity: sha512-S4kL7XrjgBmvdGut0sN3yJxqYzrDOnivkBiN0OFs6hLiUam3UPvswUo0kqGyhqUZGEOytHyumEdXsAkgCOUf3Q==}
+  axios@1.7.9:
+    resolution: {integrity: sha512-LhLcE7Hbiryz8oMDdDptSrWowmB4Bl6RCt6sIJKpRB4XtVf0iEgewX3au/pJqm+Py1kCASkb/FFKjxQaLtxJvw==}
 
   axobject-query@3.1.1:
     resolution: {integrity: sha512-goKlv8DZrK9hUh975fnHzhNIO4jUnFCfv/dszV5VwUGDFjI6vQ2VwoyjYjYNEbBE8AH87TduWP5uyDR1D+Iteg==}
@@ -15801,7 +15801,7 @@ snapshots:
       hermes-profile-transformer: 0.0.6
       node-stream-zip: 1.15.0
       ora: 5.4.1
-      semver: 7.6.2
+      semver: 7.7.1
       strip-ansi: 5.2.0
       wcwidth: 1.0.1
       yaml: 2.5.1
@@ -15872,7 +15872,7 @@ snapshots:
       node-fetch: 2.7.0
       open: 6.4.0
       ora: 5.4.1
-      semver: 7.6.2
+      semver: 7.7.1
       shell-quote: 1.8.1
       sudo-prompt: 9.2.1
     transitivePeerDependencies:
@@ -15900,7 +15900,7 @@ snapshots:
       fs-extra: 8.1.0
       graceful-fs: 4.2.11
       prompts: 2.4.2
-      semver: 7.6.2
+      semver: 7.7.1
     transitivePeerDependencies:
       - bufferutil
       - encoding
@@ -17299,7 +17299,7 @@ snapshots:
   '@switchboard-xyz/common@2.5.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)':
     dependencies:
       '@solana/web3.js': 1.98.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      axios: 1.7.7
+      axios: 1.7.9
       big.js: 6.2.2
       bn.js: 5.2.1
       bs58: 5.0.0
@@ -17322,7 +17322,7 @@ snapshots:
       '@solana/web3.js': 1.98.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@solworks/soltoolkit-sdk': 0.0.23(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)
       '@switchboard-xyz/common': 2.5.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      axios: 1.7.7
+      axios: 1.7.9
       big.js: 6.2.2
       bs58: 5.0.0
       js-yaml: 4.1.0
@@ -18798,15 +18798,7 @@ snapshots:
 
   axe-core@4.9.1: {}
 
-  axios@1.7.2:
-    dependencies:
-      follow-redirects: 1.15.6
-      form-data: 4.0.0
-      proxy-from-env: 1.1.0
-    transitivePeerDependencies:
-      - debug
-
-  axios@1.7.7:
+  axios@1.7.9:
     dependencies:
       follow-redirects: 1.15.6
       form-data: 4.0.0
@@ -22839,7 +22831,7 @@ snapshots:
       '@yarnpkg/lockfile': 1.1.0
       '@yarnpkg/parsers': 3.0.0-rc.46
       '@zkochan/js-yaml': 0.0.6
-      axios: 1.7.2
+      axios: 1.7.9
       chalk: 4.1.2
       cli-cursor: 3.1.0
       cli-spinners: 2.6.1
@@ -22891,7 +22883,7 @@ snapshots:
       '@yarnpkg/lockfile': 1.1.0
       '@yarnpkg/parsers': 3.0.0-rc.46
       '@zkochan/js-yaml': 0.0.7
-      axios: 1.7.2
+      axios: 1.7.9
       chalk: 4.1.2
       cli-cursor: 3.1.0
       cli-spinners: 2.6.1
@@ -22943,7 +22935,7 @@ snapshots:
       '@yarnpkg/lockfile': 1.1.0
       '@yarnpkg/parsers': 3.0.0-rc.46
       '@zkochan/js-yaml': 0.0.7
-      axios: 1.7.2
+      axios: 1.7.9
       chalk: 4.1.2
       cli-cursor: 3.1.0
       cli-spinners: 2.6.1
@@ -24546,8 +24538,7 @@ snapshots:
 
   semver@7.6.2: {}
 
-  semver@7.7.1:
-    optional: true
+  semver@7.7.1: {}
 
   send@0.18.0:
     dependencies:

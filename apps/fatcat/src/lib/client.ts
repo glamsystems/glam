@@ -14,8 +14,18 @@ const FATCAT_SERVICE_PUBKEY = new PublicKey(
 const LOOKUP_TABLE_PUBKEY = new PublicKey(
   "EbPbkJfa66FSD3f4Xa4USZHvfWE644R7zjJ1df5EZ5zH",
 );
+const JUP_STAKE_LOCKER = new PublicKey("CVMdMd79no569tjc5Sq7kzz8isbfCcFyBS5TLGsrZ5dN");
 
 export class FatcatGlamClient extends GlamClient {
+  private cachedBalances: {
+    jupBalance?: string;
+    votingPower?: string;
+    lastFetch?: number;
+  } = {};
+
+  private readonly CACHE_DURATION = 30000; // 30 seconds
+  private pendingBalanceFetch: Promise<{ jupBalance: string; votingPower: string }> | null = null;
+
   public constructor(connection: Connection, wallet: AnchorWallet) {
     super({
       provider: new AnchorProvider(connection, wallet, {
@@ -116,10 +126,16 @@ export class FatcatGlamClient extends GlamClient {
 
     // prepare the staking transaction
     console.log(`+ Staking ${amount} JUP`);
-    return await this.jupiter.stakeJup(state, amountBN, {
+    const tx = await this.jupiter.stakeJup(state, amountBN, {
       preInstructions,
       lookupTables,
     });
+
+    // Clear cache
+    this.cachedBalances = {};
+    this.pendingBalanceFetch = null;
+
+    return tx;
   }
 
   unstakeJup = async (amount: number) => {
@@ -128,26 +144,102 @@ export class FatcatGlamClient extends GlamClient {
 
     // TODO: partial unstake
     // always use full unstake for now
-    return await this.jupiter.unstakeJup(state);
+    const tx = await this.jupiter.unstakeJup(state);
+
+    // Clear cache
+    this.cachedBalances = {};
+    this.pendingBalanceFetch = null;
+
+    return tx;
   };
 
-  async getJupBalance() {
-    const signer = this.getSigner();
-    const ata = this.getAta(JUP, signer);
+  private isCacheValid(): boolean {
+    return (
+      this.cachedBalances.lastFetch !== undefined &&
+      Date.now() - this.cachedBalances.lastFetch < this.CACHE_DURATION
+    );
+  }
 
-    try {
-      // First check if the token account exists
-      const account = await this.provider.connection.getAccountInfo(ata);
-
-      if (!account) {
-        return "0.00";
-      }
-
-      const tokenAccount = await this.provider.connection.getTokenAccountBalance(ata);
-      return Number(tokenAccount.value.uiAmount || 0).toFixed(2);
-    } catch (error) {
-      console.error("Failed to fetch JUP balance:", error);
-      return "0.00";
+  async fetchBalances() {
+    // Return cached values if valid
+    if (this.isCacheValid()) {
+      return {
+        jupBalance: this.cachedBalances.jupBalance || "0.00",
+        votingPower: this.cachedBalances.votingPower || "N/A",
+      };
     }
+
+    // If there's already a pending fetch, return its result
+    if (this.pendingBalanceFetch) {
+      return this.pendingBalanceFetch;
+    }
+
+    // Create new fetch promise
+    this.pendingBalanceFetch = (async () => {
+      try {
+        const { state } = this.getFatcatState();
+        const vault = this.getVaultPda(state);
+        const signer = this.getSigner();
+
+        const signerAta = this.getAta(JUP, signer);
+        const [escrow] = PublicKey.findProgramAddressSync(
+          [
+            Buffer.from("Escrow"),
+            JUP_STAKE_LOCKER.toBuffer(),
+            vault.toBuffer()
+          ],
+          new PublicKey("voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj")
+        );
+        const escrowAta = this.getAta(JUP, escrow);
+
+        // Fetch all accounts in a single RPC call
+        const accounts = await this.provider.connection.getMultipleAccountsInfo(
+          [signerAta, escrowAta]
+        );
+
+        // Process wallet balance
+        let jupBalance = "0.00";
+        if (accounts[0]) {
+          const signerBalance = await this.provider.connection.getTokenAccountBalance(signerAta);
+          jupBalance = Number(signerBalance.value.uiAmount || 0).toFixed(2);
+        }
+
+        // Process voting power
+        let votingPower = "N/A";
+        if (accounts[1]) {
+          const escrowBalance = await this.provider.connection.getTokenAccountBalance(escrowAta);
+          votingPower = Number(escrowBalance.value.uiAmount || 0).toFixed(2);
+        }
+
+        // Update cache
+        this.cachedBalances = {
+          jupBalance,
+          votingPower,
+          lastFetch: Date.now(),
+        };
+
+        return { jupBalance, votingPower };
+      } catch (error) {
+        console.error("Error fetching balances:", error);
+        return {
+          jupBalance: "0.00",
+          votingPower: "N/A",
+        };
+      } finally {
+        this.pendingBalanceFetch = null;
+      }
+    })();
+
+    return this.pendingBalanceFetch;
+  }
+
+  async getJupBalance() {
+    const { jupBalance } = await this.fetchBalances();
+    return jupBalance;
+  }
+
+  async getVotingPower() {
+    const { votingPower } = await this.fetchBalances();
+    return votingPower;
   }
 }

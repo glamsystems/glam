@@ -19,6 +19,7 @@ import Link from "next/link";
 import { useGlamClient } from "@/providers/clientProvider";
 import { parseTxError } from "@/lib/error";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { Skeleton } from "@/components/skeleton";
 
 const UNSTAKE_COUNTDOWN_TIME = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
 const JUP_TOKEN_ADDRESS = "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN";
@@ -38,16 +39,46 @@ export default function DelegateForm() {
   const [spinner, setSpinner] = useState<boolean>(false);
   const [now, setNow] = useState(Date.now());
   const [walletBalance, setWalletBalance] = useState<string>("0");
+  const [votingPower, setVotingPower] = useState<string>("0");
+  const [isLoadingBalance, setIsLoadingBalance] = useState(true);
+  const [isLoadingVotingPower, setIsLoadingVotingPower] = useState(true);
 
   useEffect(() => {
-    const fetchBalance = async () => {
-      if (publicKey && client) {
-        const balance = await client.getJupBalance();
-        setWalletBalance(balance);
+    let mounted = true;
+
+    const fetchData = async () => {
+      if (!publicKey || !client) {
+        return;
+      }
+
+      try {
+        // Fetch both in parallel
+        const [power, balance] = await Promise.all([
+          client.getVotingPower(),
+          client.getJupBalance()
+        ]);
+
+        if (mounted) {
+          setVotingPower(power);
+          setWalletBalance(balance);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        if (mounted) {
+          setIsLoadingVotingPower(false);
+          setIsLoadingBalance(false);
+        }
       }
     };
 
-    fetchBalance();
+    setIsLoadingVotingPower(true);
+    setIsLoadingBalance(true);
+    fetchData();
+
+    return () => {
+      mounted = false;
+    };
   }, [publicKey, client]);
 
   const handleMaxClick = (type: "stake" | "unstake") => {
@@ -77,6 +108,16 @@ export default function DelegateForm() {
         title: `${action} successful`,
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
       });
+
+      // Refresh data after successful transaction
+      if (client) {
+        const [power, balance] = await Promise.all([
+          client.getVotingPower(),
+          client.getJupBalance()
+        ]);
+        setVotingPower(power);
+        setWalletBalance(balance);
+      }
     } catch (error) {
       toast({
         title: `${action} failed`,
@@ -146,7 +187,11 @@ export default function DelegateForm() {
           </CardDescription>
           <CardDescription>
             <span className="text-xl font-medium">Voting power: </span>
-            <span className="text-xl font-medium">0</span>
+            {isLoadingVotingPower ? (
+              <Skeleton className="h-7 w-16 inline-block align-middle" />
+            ) : (
+              <span className="text-xl font-medium">{votingPower}</span>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -163,13 +208,18 @@ export default function DelegateForm() {
                     <Label htmlFor="stake-amount">JUP</Label>
                     <div className="flex justify-between space-x-2">
                       <div className="h-8 leading-8 text-sm text-muted-foreground">
-                        {walletBalance}
+                        {isLoadingBalance ? (
+                          <Skeleton className="h-6 w-16 inline-block" />
+                        ) : (
+                          walletBalance
+                        )}
                       </div>
                       <div className="h-8 space-x-2">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleHalfClick("stake")}
+                          disabled={isLoadingBalance}
                         >
                           HALF
                         </Button>
@@ -177,6 +227,7 @@ export default function DelegateForm() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleMaxClick("stake")}
+                          disabled={isLoadingBalance}
                         >
                           MAX
                         </Button>
@@ -189,12 +240,13 @@ export default function DelegateForm() {
                       onChange={(e) => setStakeAmount(e.target.value)}
                       onFocus={(e) => setStakeAmount("")}
                       className="text-right text-xl sm:text-2xl"
+                      disabled={isLoadingBalance}
                     />
                   </div>
                   <Button
                     className="w-full py-2 sm:py-3 text-foreground dark:text-background"
                     onClick={handleStake}
-                    disabled={!(parseFloat(stakeAmount) > 0) || spinner}
+                    disabled={!(parseFloat(stakeAmount) > 0) || spinner || isLoadingBalance}
                   >
                     Stake {spinner ? "..." : ""}
                   </Button>
