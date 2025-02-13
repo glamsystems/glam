@@ -156,9 +156,6 @@ importers:
       ajv-formats:
         specifier: ^3.0.1
         version: 3.0.1(ajv@8.17.1)
-      axios:
-        specifier: ^1.7.9
-        version: 1.7.9
       bs58:
         specifier: ^5.0.0
         version: 5.0.0
