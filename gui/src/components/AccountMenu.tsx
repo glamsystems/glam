@@ -75,7 +75,28 @@ export default function ProductSwitcher({ className }: ProductSwitcherProps) {
 
   const isCollapsed = state === "collapsed";
 
+  // To address the hydration failure, we only render the WalletMultiButton
+  // after the component has mounted on the client side.
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   if (!userWallet.pubkey) {
+    if (!mounted) {
+      // Return a placeholder with same dimensions during SSR
+      return (
+        <span className="max-h-[32px] relative">
+          <div
+            style={{
+              height: 32,
+              width: isCollapsed ? "32px" : "228px",
+            }}
+          />
+        </span>
+      );
+    }
+
     return (
       <span className="max-h-[32px] focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0 relative">
         <WalletMultiButton
