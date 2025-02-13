@@ -25,10 +25,10 @@ pub enum Permission {
     JupiterSwapAny,
     WSolWrap,
     WSolUnwrap,
-    MintShare,
-    BurnShare,
-    ForceTransferShare,
-    SetTokenAccountsStates,
+    MintTokens,
+    BurnTokens,
+    ForceTransferTokens,
+    SetTokenAccountState,
     StakeJup,       // Initialize locked voter escrow and stake JUP
     VoteOnProposal, // New vote and cast vote
     UnstakeJup,     // Unstake JUP

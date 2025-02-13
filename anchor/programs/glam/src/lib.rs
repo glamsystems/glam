@@ -112,7 +112,7 @@ pub mod glam {
     }
 
     //////////////////////////////////////////////////////////////////////
-    /// Share class
+    /// Mint
     //////////////////////////////////////////////////////////////////////
 
     /// Adds a new mint.
@@ -134,7 +134,7 @@ pub mod glam {
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
-    /// - `mint_id`: The id of the share class to be updated.
+    /// - `mint_id`: The id of the mint to be updated.
     /// - `mint_model`: An instance of `MintModel` containing the updated metadata for the new mint.
     ///
     /// # Permission required
@@ -155,24 +155,24 @@ pub mod glam {
         mint::close_mint_handler(ctx, mint_id)
     }
 
-    /// Mints a specified amount of shares for the given share class.
+    /// Mints a specified amount of tokens for the given mint.
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
     /// - `mint_id`: The id of the mint to mint tokens for.
-    /// - `amount`: The amount of shares to mint.
+    /// - `amount`: The amount of tokens to mint.
     ///
     /// # Permission required
-    /// - Permission::MintShare
+    /// - Permission::MintTokens
     ///
     /// # Integration required
     /// - Integration::Mint
-    pub fn mint_share<'c: 'info, 'info>(
-        ctx: Context<'_, '_, 'c, 'info, MintShare<'info>>,
+    pub fn mint_tokens<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, MintTokens<'info>>,
         mint_id: u8,
         amount: u64,
     ) -> Result<()> {
-        mint::mint_share_handler(ctx, mint_id, amount)
+        mint::mint_tokens_handler(ctx, mint_id, amount)
     }
 
     /// Forcefully transfers a specified amount of tokens from one account to another.
@@ -183,16 +183,16 @@ pub mod glam {
     /// - `amount`: The amount of tokens to transfer.
     ///
     /// # Permission required
-    /// - Permission::ForceTransferShare
+    /// - Permission::ForceTransferTokens
     ///
     /// # Integration required
     /// - Integration::Mint
-    pub fn force_transfer_share(
-        ctx: Context<ForceTransferShare>,
+    pub fn force_transfer_tokens(
+        ctx: Context<ForceTransferTokens>,
         mint_id: u8,
         amount: u64,
     ) -> Result<()> {
-        mint::force_transfer_share_handler(ctx, mint_id, amount)
+        mint::force_transfer_tokens_handler(ctx, mint_id, amount)
     }
 
     /// Burns a specified amount of tokens for the given mint.
@@ -203,12 +203,12 @@ pub mod glam {
     /// - `amount`: The amount of tokens to burn.
     ///
     /// # Permission required
-    /// - Permission::BurnShare
+    /// - Permission::BurnTokens
     ///
     /// # Integration required
     /// - Integration::Mint
-    pub fn burn_share(ctx: Context<BurnShare>, mint_id: u8, amount: u64) -> Result<()> {
-        mint::burn_share_handler(ctx, mint_id, amount)
+    pub fn burn_tokens(ctx: Context<BurnTokens>, mint_id: u8, amount: u64) -> Result<()> {
+        mint::burn_tokens_handler(ctx, mint_id, amount)
     }
 
     /// Sets the frozen state of the token accounts for the specified mint.
@@ -219,7 +219,7 @@ pub mod glam {
     /// - `frozen`: The new frozen state.
     ///
     /// # Permission required
-    /// - Permission::SetTokenAccountsStates
+    /// - Permission::SetTokenAccountState
     ///
     /// # Integration required
     /// - Integration::Mint

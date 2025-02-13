@@ -195,7 +195,7 @@ export class MintClient {
     }
 
     return await this.base.program.methods
-      .mintShare(0, amount)
+      .mintTokens(0, amount)
       .accounts({
         recipient,
         glamState: state,
@@ -233,7 +233,7 @@ export class MintClient {
     }
 
     return await this.base.program.methods
-      .burnShare(mintId, amount)
+      .burnTokens(mintId, amount)
       .accounts({
         glamState: state,
         glamMint: mintPda,
@@ -284,7 +284,7 @@ export class MintClient {
     }
 
     return await this.base.program.methods
-      .forceTransferShare(mintId, amount)
+      .forceTransferTokens(mintId, amount)
       .accounts({
         glamState: state,
         glamMint: mintPda,
