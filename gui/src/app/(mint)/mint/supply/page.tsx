@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/FormInput";
 import { PublicKey } from "@solana/web3.js";
 import { toast } from "@/components/ui/use-toast";
-import { useGlam } from "@glam/anchor/react";
+import { useGlam } from "@glamsystems/glam-sdk/react";
 
 import { BN } from "@coral-xyz/anchor";
 import { parseTxError } from "@/lib/error";

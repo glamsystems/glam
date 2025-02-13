@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { MultiSelect } from "@/components/ui/multiple-select";
 import TruncateAddress from "@/utils/TruncateAddress";
-import { JupTokenListItem, useGlam } from "@glam/anchor/react";
+import { JupTokenListItem, useGlam } from "@glamsystems/glam-sdk/react";
 
 interface TokenData {
   value: string; // same as mint address

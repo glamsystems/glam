@@ -1,6 +1,6 @@
 "use client";
 
-import { useGlam } from "@glam/anchor/react";
+import { useGlam } from "@glamsystems/glam-sdk/react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { redirect } from "next/navigation";
 

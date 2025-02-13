@@ -1,4 +1,4 @@
-import { GlamIntegrations } from "@glam/anchor";
+import { GlamIntegrations } from "@glamsystems/glam-sdk";
 
 const metadata = {
   Drift: {

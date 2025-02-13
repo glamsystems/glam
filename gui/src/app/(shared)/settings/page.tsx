@@ -48,7 +48,7 @@ import {
   getPriorityFeeEstimate,
   useCluster,
   getGlamProgramId,
-} from "@glam/anchor/react";
+} from "@glamsystems/glam-sdk/react";
 
 const rpcFormSchema = z.object({
   customLabel: z.string().min(1, "Label is required"),

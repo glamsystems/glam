@@ -13,7 +13,7 @@ import { toast } from "../components/ui/use-toast";
 import { parseTxError } from "../lib/error";
 import { ExplorerLink } from "../components/ExplorerLink";
 import { allIntegrations, Integration } from "./integrations/data";
-import { useGlam, Integration as IntegrationType } from "@glam/anchor/react";
+import { useGlam, Integration as IntegrationType } from "@glamsystems/glam-sdk/react";
 
 export default function PageIntegrations() {
   const { glamClient, allGlamStates, activeGlamState } = useGlam();

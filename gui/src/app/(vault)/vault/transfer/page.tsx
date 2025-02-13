@@ -24,7 +24,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/use-toast";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { useGlam, WSOL } from "@glam/anchor/react";
+import { useGlam, WSOL } from "@glamsystems/glam-sdk/react";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { parseTxError } from "@/lib/error";
 import { ExplorerLink } from "@/components/ExplorerLink";

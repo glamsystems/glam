@@ -26,7 +26,7 @@ import {
 import Sparkle from "@/utils/Sparkle";
 import TruncateAddress from "@/utils/TruncateAddress";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { useGlam } from "@glam/anchor/react";
+import { useGlam } from "@glamsystems/glam-sdk/react";
 import Link from "next/link";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useTheme } from "next-themes";

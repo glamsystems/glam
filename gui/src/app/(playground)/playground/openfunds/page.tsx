@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import React, { useState, useEffect } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { GlamClient, useGlam, WSOL } from "@glam/anchor/react";
+import { GlamClient, useGlam, WSOL } from "@glamsystems/glam-sdk/react";
 import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import {
   Tooltip,

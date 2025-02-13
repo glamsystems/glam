@@ -48,7 +48,7 @@ import {
   mintTreeDataPermissions,
 } from "./data/permissions";
 import { toast } from "../ui/use-toast";
-import { DelegateAcl, useGlam } from "@glam/anchor/react";
+import { DelegateAcl, useGlam } from "@glamsystems/glam-sdk/react";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { parseTxError } from "@/lib/error";
 import { PublicKey } from "@solana/web3.js";

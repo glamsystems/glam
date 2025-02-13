@@ -4,7 +4,7 @@ import { DataTable } from "./access/data-table";
 import { columns } from "./access/columns";
 import React, { useCallback, useMemo } from "react";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { useGlam } from "@glam/anchor/react";
+import { useGlam } from "@glamsystems/glam-sdk/react";
 import { usePubkeyLabels } from "@/hooks/usePubkeyLabels";
 import {
   mintTreeDataPermissions,

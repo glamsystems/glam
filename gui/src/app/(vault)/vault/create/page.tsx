@@ -16,7 +16,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/use-toast";
-import { useGlam } from "@glam/anchor/react";
+import { useGlam } from "@glamsystems/glam-sdk/react";
 import { ProductNameGen } from "@/utils/ProductNameGen";
 import { UpdateIcon } from "@radix-ui/react-icons";
 import PageContentWrapper from "@/components/PageContentWrapper";

@@ -11,6 +11,7 @@
     "gui-build": "nx run gui:build",
     "gui-start": "nx run gui:start",
     "fatcat-dev": "nx run fatcat:dev",
+    "fatcat-build": "nx run fatcat:build",
     "cli-build": "nx run cli:build"
   },
   "private": true,

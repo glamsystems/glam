@@ -6,10 +6,10 @@ PROGRAM_KEYPAIR=/path/to/program-keypair.json
 SOLANA=/path/to/solana
 PRIORITY_FEE=10000
 MAX_ATTEMPTS=1000
-PROGRAM_ID=GLAMpLuXu78TA4ao3DPZvT1zQ7woxoQ8ahdYbhnqY9mP
+PROGRAM_ID=GLAMbTqav9N9witRjswJ8enwp9vv5G8bsSJ2kPJ4rcyc
 
 build() {
-    anchor build -- --features mainnet --tools-version v1.43
+    anchor build -- --features mainnet
 }
 
 deploy() {
