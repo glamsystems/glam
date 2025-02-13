@@ -32,7 +32,7 @@ pub mod glam {
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
-    /// - `fund`: An instance of `StateModel` containing the details of the state to be initialized.
+    /// - `state`: An instance of `StateModel` containing the details of the state to be initialized.
     ///
     /// # Permission required
     /// - Owner only, delegates not allowed
@@ -47,7 +47,7 @@ pub mod glam {
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
-    /// - `fund`: An instance of `StateModel` containing the updated details of the state.
+    /// - `state`: An instance of `StateModel` containing the updated details of the state.
     ///
     /// # Permission required
     /// - Owner only, delegates not allowed
@@ -425,9 +425,9 @@ pub mod glam {
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
-    /// - `market_type`:
-    /// - `market_index`:
-    /// - `direction`:
+    /// - `market_type`: The type of market (spot or perp) to cancel orders for.
+    /// - `market_index`: The index of the market to cancel orders for.
+    /// - `direction`: The direction of orders to cancel (long or short).
     ///
     /// # Permission required
     /// - Permission::DriftCancelOrders
@@ -606,8 +606,8 @@ pub mod glam {
     /// # Parameters
     /// - `ctx`: The context for the transaction.
     /// - `pool_token_amount`: Amount of pool token to unstake.
-    /// - `stake_account_id`: Stake account ID.
-    /// - `stake_account_bump`: Stake account bump seed.
+    /// - `stake_account_id`: Unique identifier for the stake account.
+    /// - `stake_account_bump`: PDA bump seed for the stake account.
     ///
     /// # Permission required
     /// - Permission::Unstake
@@ -762,8 +762,8 @@ pub mod glam {
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
-    /// - `amount`: The amount of asset to swap.
-    /// - `data`: The data for the swap.
+    /// - `amount`: The amount of input asset to swap.
+    /// - `data`: The serialized Jupiter route data containing swap instructions and parameters.
     ///
     /// # Permission required
     /// - Any of
@@ -890,8 +890,8 @@ pub mod glam {
     ///
     /// # Integration required
     /// - Integration::JupiterVote
-    pub fn withdraw_all_staked_jup<'info>(ctx: Context<WithdrawAllStakedJup>) -> Result<()> {
-        jupiter::withdraw_all_staked_jup_handler(ctx)
+    pub fn withdraw_all_unstaked_jup<'info>(ctx: Context<WithdrawAllUnstakedJup>) -> Result<()> {
+        jupiter::withdraw_all_handler(ctx)
     }
 
     /// Creates a new vote.
