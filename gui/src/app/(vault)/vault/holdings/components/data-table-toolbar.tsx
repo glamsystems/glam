@@ -74,8 +74,8 @@ export function DataTableToolbar<TData>({
       </div>
 
       <Popover>
-        <PopoverTrigger>
-          <Button variant="outline" size="icon" className={"mr-2 h-8 flex"}>
+        <PopoverTrigger asChild>
+          <Button variant="outline" size="icon" className="mr-2 h-8 flex">
             <MixerHorizontalIcon className="h-4 w-4" />
           </Button>
         </PopoverTrigger>
