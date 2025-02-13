@@ -62,7 +62,6 @@
     "@wallet-standard/react-core": "^0.1.4",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
-    "axios": "^1.7.9",
     "bs58": "^5.0.0",
     "buffer": "^6.0.3",
     "class-variance-authority": "^0.7.0",
