@@ -62,3 +62,13 @@ jobs:
             --image $IMAGE_URI \
             --region $REGION \
             --allow-unauthenticated
+
+      - name: Send Slack Notification
+        if: success()
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{
+            "text": "✅ *Deployment Successful!* 🚀\n
+            *Service:* `${{ env.SERVICE_NAME }}`\n
+            *Commit:* `${{ github.sha }}`\n
+            *Deployed by:* `${{ github.actor }}`"
+          }' ${{ secrets.SLACK_WEBHOOK_URL_DEPLOY }}
