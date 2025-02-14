@@ -14,7 +14,9 @@ const FATCAT_SERVICE_PUBKEY = new PublicKey(
 const LOOKUP_TABLE_PUBKEY = new PublicKey(
   "EbPbkJfa66FSD3f4Xa4USZHvfWE644R7zjJ1df5EZ5zH",
 );
-const JUP_STAKE_LOCKER = new PublicKey("CVMdMd79no569tjc5Sq7kzz8isbfCcFyBS5TLGsrZ5dN");
+const JUP_STAKE_LOCKER = new PublicKey(
+  "CVMdMd79no569tjc5Sq7kzz8isbfCcFyBS5TLGsrZ5dN",
+);
 
 const MAX_STAKE_DURATION_SECONDS = 2592000;
 
@@ -37,7 +39,10 @@ function parseEscrowAccount(data: Buffer): EscrowData {
 
   // Read 8-byte (64-bit) integers using DataView
   const amount = new BN(dataView.getBigUint64(105, true).toString(), 10);
-  const escrowStartedAt = new BN(dataView.getBigUint64(113, true).toString(), 10);
+  const escrowStartedAt = new BN(
+    dataView.getBigUint64(113, true).toString(),
+    10,
+  );
   const escrowEndsAt = new BN(dataView.getBigUint64(121, true).toString(), 10);
   const isMaxLock = !!data[161];
 
@@ -52,7 +57,10 @@ export class FatcatGlamClient extends GlamClient {
   } = {};
 
   private readonly CACHE_DURATION = 30000; // 30 seconds
-  private pendingBalanceFetch: Promise<{ jupBalance: string; votingPower: string }> | null = null;
+  private pendingBalanceFetch: Promise<{
+    jupBalance: string;
+    votingPower: string;
+  }> | null = null;
 
   public constructor(connection: Connection, wallet: AnchorWallet) {
     super({
@@ -169,7 +177,7 @@ export class FatcatGlamClient extends GlamClient {
 
     // prepare the staking transaction
     console.log(`+ Staking ${amount} JUP`);
-    const tx = await this.jupiter.stakeJup(state, amountBN, {
+    const tx = await this.jupiterVote.stakeJup(state, amountBN, {
       preInstructions,
       lookupTables,
     });
@@ -187,7 +195,7 @@ export class FatcatGlamClient extends GlamClient {
 
     // TODO: partial unstake
     // always use full unstake for now
-    const tx = await this.jupiter.unstakeJup(state);
+    const tx = await this.jupiterVote.unstakeJup(state);
 
     // Clear cache
     this.cachedBalances = {};
@@ -229,15 +237,15 @@ export class FatcatGlamClient extends GlamClient {
           [
             Buffer.from("Escrow"),
             JUP_STAKE_LOCKER.toBuffer(),
-            vault.toBuffer()
+            vault.toBuffer(),
           ],
-          new PublicKey("voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj")
+          new PublicKey("voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"),
         );
         const escrowAta = this.getAta(JUP, escrow);
 
         // Fetch all accounts in a single RPC call
         const accounts = await this.provider.connection.getMultipleAccountsInfo(
-          [signerAta, escrowAta]
+          [signerAta, escrowAta],
         );
 
         // Process wallet balance
@@ -247,14 +255,20 @@ export class FatcatGlamClient extends GlamClient {
           // jupBalance = Number(signerBalance.value.uiAmount || 0).toFixed(2);
           const signerInfo = accounts[0];
           const tokenAccountBalance = parseTokenAccountBalance(signerInfo.data);
-          jupBalance = tokenAccountBalance.div(new BN(1_000_000)).toNumber().toFixed(2);
+          jupBalance = tokenAccountBalance
+            .div(new BN(1_000_000))
+            .toNumber()
+            .toFixed(2);
         }
 
         let votingPower = "0.00";
         if (accounts[1]) {
           const escrowInfo = accounts[1];
           const escrowData = parseEscrowAccount(escrowInfo.data);
-          votingPower = this.calculateVotingPower(escrowData.amount, escrowData.escrowEndsAt);
+          votingPower = this.calculateVotingPower(
+            escrowData.amount,
+            escrowData.escrowEndsAt,
+          );
         }
 
         // Update cache
