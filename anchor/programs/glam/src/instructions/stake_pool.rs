@@ -1,5 +1,5 @@
 use crate::{constants::*, state::*};
-use anchor_lang::{prelude::*, system_program};
+use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
     stake::{Stake, StakeAccount},
@@ -369,34 +369,7 @@ pub struct StakePoolWithdrawStake<'info> {
 pub fn withdraw_stake_handler<'c: 'info, 'info>(
     ctx: Context<StakePoolWithdrawStake>,
     pool_token_amount: u64,
-    stake_account_bump: u8,
-    stake_account_id: String,
 ) -> Result<()> {
-    let state_key = ctx.accounts.state.key();
-    let stake_account_seeds = &[
-        b"stake_account".as_ref(),
-        stake_account_id.as_bytes(),
-        state_key.as_ref(),
-        &[stake_account_bump],
-    ];
-
-    let signer_seeds = &[&stake_account_seeds[..], (*vault_signer_seeds)[0]];
-
-    // Create stake account and leave it uninitialized
-    system_program::create_account(
-        CpiContext::new_with_signer(
-            ctx.accounts.system_program.to_account_info(),
-            system_program::CreateAccount {
-                from: ctx.accounts.vault.to_account_info(),
-                to: ctx.accounts.vault_stake_account.to_account_info().clone(),
-            },
-            signer_seeds,
-        ),
-        Rent::get()?.minimum_balance(200),
-        std::mem::size_of::<StakeAccount>() as u64, // no +8
-        &ctx.accounts.stake_program.key(),
-    )?;
-
     let ix = withdraw_stake(
         ctx.accounts.stake_pool_program.key,
         ctx.accounts.stake_pool.key,
@@ -434,8 +407,8 @@ pub fn withdraw_stake_handler<'c: 'info, 'info>(
     )?;
 
     // Add stake account to the fund params
-    let fund = &mut ctx.accounts.state;
-    fund.add_to_engine_field(
+    let state = &mut ctx.accounts.state;
+    state.add_to_engine_field(
         EngineFieldName::ExternalVaultAccounts,
         ctx.accounts.vault_stake_account.key(),
     );

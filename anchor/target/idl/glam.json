@@ -1862,8 +1862,6 @@
         "# Parameters",
         "- `ctx`: The context for the transaction.",
         "- `lamports`: The amount of SOL to initialize the stake account with.",
-        "- `stake_account_id`: The ID of the stake account to initialize.",
-        "- `stake_account_bump`: The bump seed for the stake account.",
         "",
         "# Permission required",
         "- Permission::Stake",
@@ -1948,14 +1946,6 @@
         {
           "name": "lamports",
           "type": "u64"
-        },
-        {
-          "name": "stake_account_id",
-          "type": "string"
-        },
-        {
-          "name": "stake_account_bump",
-          "type": "u8"
         }
       ]
     },
@@ -3582,8 +3572,6 @@
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `new_stake_account_id`: The ID of the new stake account.",
-        "- `new_stake_account_bump`: The bump seed for the new stake account.",
         "",
         "# Permission required",
         "- Permission::Unstake",
@@ -3660,16 +3648,7 @@
           "address": "11111111111111111111111111111111"
         }
       ],
-      "args": [
-        {
-          "name": "new_stake_account_id",
-          "type": "string"
-        },
-        {
-          "name": "new_stake_account_bump",
-          "type": "u8"
-        }
-      ]
+      "args": []
     },
     {
       "name": "set_subscribe_redeem_enabled",
@@ -3776,8 +3755,6 @@
         "# Parameters",
         "- `ctx`: The context for the transaction.",
         "- `lamports`: The amount of SOL to split.",
-        "- `new_stake_account_id`: The ID of the new stake account.",
-        "- `new_stake_account_bump`: The bump seed for the new stake account.",
         "",
         "# Permission required",
         "- Permission::Unstake",
@@ -3852,14 +3829,6 @@
         {
           "name": "lamports",
           "type": "u64"
-        },
-        {
-          "name": "new_stake_account_id",
-          "type": "string"
-        },
-        {
-          "name": "new_stake_account_bump",
-          "type": "u8"
         }
       ]
     },
@@ -4376,8 +4345,6 @@
         "# Parameters",
         "- `ctx`: The context for the transaction.",
         "- `pool_token_amount`: Amount of pool token to unstake.",
-        "- `stake_account_id`: Unique identifier for the stake account.",
-        "- `stake_account_bump`: PDA bump seed for the stake account.",
         "",
         "# Permission required",
         "- Permission::Unstake",
@@ -4481,14 +4448,6 @@
         {
           "name": "pool_token_amount",
           "type": "u64"
-        },
-        {
-          "name": "stake_account_id",
-          "type": "string"
-        },
-        {
-          "name": "stake_account_bump",
-          "type": "u8"
         }
       ]
     },
