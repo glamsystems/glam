@@ -72,24 +72,24 @@ filename = "./fixtures/accounts/pyth/4cSM2e6rvbGQUFiJbqytoVMi5GgghSMr8LwVrT9VPSP
 # Kamino
 #
 [[test.genesis]]
-address = "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"
-program = "fixtures/programs/KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD.so"
+address = "SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh"
+program = "fixtures/programs/klend_staging.so"
 
 [[test.genesis]]
 address = "FarmsPZpWu9i7Kky8tPN37rs2TpmMrAZrC7S7vJa91Hr"
 program = "fixtures/programs/FarmsPZpWu9i7Kky8tPN37rs2TpmMrAZrC7S7vJa91Hr.so"
 
-[[test.validator.account]] # kamino state account
-address = "H6rHXmXoCQvq8Ue81MqNh7ow5ysPa1dSozwW3PU1dDH6"
-filename = "./fixtures/accounts/kamino/H6rHXmXoCQvq8Ue81MqNh7ow5ysPa1dSozwW3PU1dDH6.json"
+[[test.validator.clone]] # market
+# address = "H6rHXmXoCQvq8Ue81MqNh7ow5ysPa1dSozwW3PU1dDH6" # prod
+address = "6WVSwDQXrBZeQVnu6hpnsRZhodaJTZBUaC334SiiBKdb" # staging
 
-[[test.validator.clone]] # reserve
-address = "6gTJfuPHEg6uRAijRkMqNc9kan4sVZejKMxmvx2grT1p"
-# filename = "./fixtures/accounts/kamino/6gTJfuPHEg6uRAijRkMqNc9kan4sVZejKMxmvx2grT1p.json"
+[[test.validator.clone]] # sol reserve
+# address = "6gTJfuPHEg6uRAijRkMqNc9kan4sVZejKMxmvx2grT1p" # prod
+address = "EaAuYkMrA9rmnU9eVvHi63yqZzKzmnVj3PWFnmW9RD4W" # staging
 
-[[test.validator.account]] # farm state
-address = "BgMEUzcjkJxEH1PdPkZyv3NbUynwbkPiNJ7X2x7G1JmH"
-filename = "./fixtures/accounts/kamino/BgMEUzcjkJxEH1PdPkZyv3NbUynwbkPiNJ7X2x7G1JmH.json"
+[[test.validator.clone]] # farm state
+# address = "BgMEUzcjkJxEH1PdPkZyv3NbUynwbkPiNJ7X2x7G1JmH" # prod
+address = "CtGYmztwXGrDtUrRCEydrwkwpJ7ptAY5BkfzThkVPPK9" # staging
 
 [[test.validator.account]] # obligation farm 
 address = "C3y3gCn86PdxhpteUPTdM6XDPBxvJ6zezGbWAMy4ZwTu"
@@ -100,16 +100,16 @@ address = "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C"
 # filename = "./fixtures/accounts/kamino/3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C.json"
 
 [[test.validator.clone]] # reserve liquidity supply
-address = "ywaaLvG7t1vXJo8sT3UzE8yzzZtxLM7Fmev64Jbooye"
-# filename = "./fixtures/accounts/kamino/3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C.json"
+# address = "ywaaLvG7t1vXJo8sT3UzE8yzzZtxLM7Fmev64Jbooye" # prod
+address = "GaTJgVfgUTTYyZYTQB36rXTQEbv1i1LUvfGSBDAr2An1" # staging
 
 [[test.validator.clone]] # reserve collateral mint
-address = "DxzDt5kPdFkMy9AANiZh4zuoitobqsn1G6bdoNyjePC2"
-# filename = "./fixtures/accounts/kamino/3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C.json"
+# address = "DxzDt5kPdFkMy9AANiZh4zuoitobqsn1G6bdoNyjePC2" # prod
+address = "966sqybMQJfwYgiEDQqiFsSK5o9tFPyBptZ3GFXbF7vR" # staging
 
 [[test.validator.clone]] # reserve destination deposit collateral
-address = "8qnXfbaLbY6Y4xiCP6SZ3RK8ccjVa8DhALzDGifBPeNx"
-# filename = "./fixtures/accounts/kamino/3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C.json"
+# address = "8qnXfbaLbY6Y4xiCP6SZ3RK8ccjVa8DhALzDGifBPeNx" # prod
+address = "DZpgVJq3WpwRpPXNwzvLwVMerJodqCiitxAeU5QgkJe3" # staging
 
 #
 # Drift

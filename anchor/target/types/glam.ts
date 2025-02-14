@@ -2351,7 +2351,7 @@ export type Glam = {
         },
         {
           "name": "cpiProgram",
-          "address": "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"
+          "address": "SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh"
         },
         {
           "name": "owner",
@@ -2455,7 +2455,7 @@ export type Glam = {
         },
         {
           "name": "cpiProgram",
-          "address": "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"
+          "address": "SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh"
         },
         {
           "name": "obligationOwner"
@@ -2545,7 +2545,7 @@ export type Glam = {
         },
         {
           "name": "cpiProgram",
-          "address": "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"
+          "address": "SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh"
         },
         {
           "name": "payer",
@@ -2641,7 +2641,7 @@ export type Glam = {
         },
         {
           "name": "cpiProgram",
-          "address": "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"
+          "address": "SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh"
         },
         {
           "name": "owner"
@@ -2718,7 +2718,7 @@ export type Glam = {
         },
         {
           "name": "cpiProgram",
-          "address": "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"
+          "address": "SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh"
         },
         {
           "name": "crank",

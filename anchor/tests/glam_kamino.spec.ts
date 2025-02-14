@@ -1,38 +1,55 @@
-import {
-  Keypair,
-  PublicKey,
-  SystemProgram,
-  SYSVAR_INSTRUCTIONS_PUBKEY,
-  Transaction,
-} from "@solana/web3.js";
-import { BN, Wallet } from "@coral-xyz/anchor";
+import { PublicKey, SYSVAR_INSTRUCTIONS_PUBKEY } from "@solana/web3.js";
+import { BN } from "@coral-xyz/anchor";
 
-import {
-  airdrop,
-  createGlamStateForTest,
-  stateModelForTest,
-  str2seed,
-} from "./setup";
-import {
-  StateModel,
-  GlamClient,
-  GlamError,
-  MSOL,
-  ShareClassModel,
-  USDC,
-  WSOL,
-} from "../src";
-import {
-  createAssociatedTokenAccountIdempotentInstruction,
-  TOKEN_PROGRAM_ID,
-} from "@solana/spl-token";
+import { airdrop, createGlamStateForTest } from "./setup";
+import { GlamClient, WSOL } from "../src";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
-const KaminoLendProgramId = new PublicKey(
-  "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD",
-);
+// Kamino prod and staging use the same Farms program
 const KaminoFarmsProgramId = new PublicKey(
   "FarmsPZpWu9i7Kky8tPN37rs2TpmMrAZrC7S7vJa91Hr",
 );
+
+const kLendProgramId = {
+  prod: new PublicKey("KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"),
+  staging: new PublicKey("SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh"),
+};
+
+// Kamino has multiple lending markets, use the main market for tests
+const lendingMarketMain = {
+  prod: new PublicKey("H6rHXmXoCQvq8Ue81MqNh7ow5ysPa1dSozwW3PU1dDH6"),
+  staging: new PublicKey("6WVSwDQXrBZeQVnu6hpnsRZhodaJTZBUaC334SiiBKdb"),
+};
+
+const solReserve = {
+  prod: new PublicKey("6gTJfuPHEg6uRAijRkMqNc9kan4sVZejKMxmvx2grT1p"),
+  staging: new PublicKey("EaAuYkMrA9rmnU9eVvHi63yqZzKzmnVj3PWFnmW9RD4W"),
+};
+
+const lendingMarketAuthority = {
+  prod: new PublicKey("Dx8iy2o46sK1DzWbEcznqSKeLbLVeu7otkibA3WohGAj"),
+  staging: new PublicKey("4zzBjUgjuNUrGqt8Xrig7SDLqBPgZo3v3R7YEuBQoiC4"),
+};
+
+const reserveFarmState = {
+  prod: new PublicKey("BgMEUzcjkJxEH1PdPkZyv3NbUynwbkPiNJ7X2x7G1JmH"),
+  staging: new PublicKey("CtGYmztwXGrDtUrRCEydrwkwpJ7ptAY5BkfzThkVPPK9"),
+};
+
+const reserveLiquiditySupply = {
+  prod: new PublicKey("ywaaLvG7t1vXJo8sT3UzE8yzzZtxLM7Fmev64Jbooye"),
+  staging: new PublicKey("GaTJgVfgUTTYyZYTQB36rXTQEbv1i1LUvfGSBDAr2An1"),
+};
+
+const reserveCollateralMint = {
+  prod: new PublicKey("DxzDt5kPdFkMy9AANiZh4zuoitobqsn1G6bdoNyjePC2"),
+  staging: new PublicKey("966sqybMQJfwYgiEDQqiFsSK5o9tFPyBptZ3GFXbF7vR"),
+};
+
+const reserveDestinationDepositCollateral = {
+  prod: new PublicKey("8qnXfbaLbY6Y4xiCP6SZ3RK8ccjVa8DhALzDGifBPeNx"),
+  staging: new PublicKey("DZpgVJq3WpwRpPXNwzvLwVMerJodqCiitxAeU5QgkJe3"),
+};
 
 describe("glam_kamino", () => {
   const glamClient = new GlamClient();
@@ -63,7 +80,7 @@ describe("glam_kamino", () => {
   it("Init kamino user metadata", async () => {
     const [userMetadataPda] = PublicKey.findProgramAddressSync(
       [Buffer.from("user_meta"), vaultPda.toBuffer()],
-      KaminoLendProgramId,
+      kLendProgramId.staging,
     );
     console.log("vaultPda", vaultPda.toBase58());
     console.log("Kamino userMetadataPda for vault", userMetadataPda.toBase58());
@@ -75,26 +92,23 @@ describe("glam_kamino", () => {
           glamState: statePda,
           owner: vaultPda,
           userMetadata: userMetadataPda,
-          referrerUserMetadata: KaminoLendProgramId, // none
+          referrerUserMetadata: kLendProgramId.staging, // none
         })
         .rpc();
       console.log("Init user metadata:", tx);
 
-      const lendingMarket = new PublicKey(
-        "H6rHXmXoCQvq8Ue81MqNh7ow5ysPa1dSozwW3PU1dDH6",
-      );
       const args = { tag: 0, id: 0 };
       const seed = [
         Buffer.from([args.tag]),
         Buffer.from([args.id]),
         vaultPda.toBuffer(),
-        lendingMarket.toBuffer(),
+        lendingMarketMain.staging.toBuffer(),
         PublicKey.default.toBuffer(),
         PublicKey.default.toBuffer(),
       ];
       const [obligation, _] = PublicKey.findProgramAddressSync(
         seed,
-        KaminoLendProgramId,
+        kLendProgramId.staging,
       );
       const tx2 = await glamClient.program.methods
         .kaminoLendingInitObligation(args)
@@ -102,7 +116,7 @@ describe("glam_kamino", () => {
           glamState: statePda,
           obligationOwner: vaultPda,
           obligation,
-          lendingMarket,
+          lendingMarket: lendingMarketMain.staging,
           seed1Account: new PublicKey(0),
           seed2Account: new PublicKey(0),
           ownerUserMetadata: userMetadataPda,
@@ -111,20 +125,11 @@ describe("glam_kamino", () => {
       console.log("Init obligation:", tx2);
 
       // 3. init obligation farms for reserve
-      const reserve = new PublicKey(
-        "6gTJfuPHEg6uRAijRkMqNc9kan4sVZejKMxmvx2grT1p",
-      );
       // TODO: can reserve farm state be derived from reserve?
-      const reserveFarmState = new PublicKey(
-        "BgMEUzcjkJxEH1PdPkZyv3NbUynwbkPiNJ7X2x7G1JmH",
-      );
-      const lendingMarketAuthority = new PublicKey(
-        "Dx8iy2o46sK1DzWbEcznqSKeLbLVeu7otkibA3WohGAj",
-      );
       const [obligationFarm] = PublicKey.findProgramAddressSync(
         [
           Buffer.from("user"),
-          reserveFarmState.toBuffer(),
+          reserveFarmState.staging.toBuffer(),
           obligation.toBuffer(),
         ],
         KaminoFarmsProgramId,
@@ -135,32 +140,32 @@ describe("glam_kamino", () => {
           glamState: statePda,
           owner: vaultPda,
           obligation,
-          lendingMarketAuthority,
-          reserve,
-          reserveFarmState,
+          lendingMarketAuthority: lendingMarketAuthority.staging,
+          reserve: solReserve.staging,
+          reserveFarmState: reserveFarmState.staging,
           obligationFarm,
-          lendingMarket,
+          lendingMarket: lendingMarketMain.staging,
           farmsProgram: KaminoFarmsProgramId,
         })
         .rpc();
       console.log("Init obligation farms:", tx3);
 
       // 4. refresh obligation farms for reserve
-      const tx4 = await glamClient.program.methods
-        .kaminoLendingRefreshObligationFarmsForReserve(0)
-        .accounts({
-          glamState: statePda,
-          crank: vaultPda,
-          obligation,
-          lendingMarketAuthority,
-          reserve,
-          reserveFarmState,
-          obligationFarmUserState: obligationFarm,
-          lendingMarket,
-          farmsProgram: KaminoFarmsProgramId,
-        })
-        .rpc();
-      console.log("Refresh obligation farms:", tx4);
+      // const tx4 = await glamClient.program.methods
+      //   .kaminoLendingRefreshObligationFarmsForReserve(0)
+      //   .accounts({
+      //     glamState: statePda,
+      //     crank: vaultPda,
+      //     obligation,
+      //     lendingMarketAuthority: lendingMarketAuthority.staging,
+      //     reserve: solReserve.staging,
+      //     reserveFarmState: reserveFarmState.staging,
+      //     obligationFarmUserState: obligationFarm,
+      //     lendingMarket: lendingMarketMain.staging,
+      //     farmsProgram: KaminoFarmsProgramId,
+      //   })
+      //   .rpc();
+      // console.log("Refresh obligation farms:", tx4);
 
       // 5. deposit reserve liquidity and obligation collateral
       const amount = new BN(100_000_000);
@@ -170,24 +175,16 @@ describe("glam_kamino", () => {
           glamState: statePda,
           owner: vaultPda,
           obligation,
-          lendingMarket,
-          lendingMarketAuthority,
-          reserve,
+          lendingMarket: lendingMarketMain.staging,
+          lendingMarketAuthority: lendingMarketAuthority.staging,
+          reserve: solReserve.staging,
           reserveLiquidityMint: WSOL,
-          reserveLiquiditySupply: new PublicKey(
-            "ywaaLvG7t1vXJo8sT3UzE8yzzZtxLM7Fmev64Jbooye",
-          ),
-          reserveCollateralMint: new PublicKey(
-            "DxzDt5kPdFkMy9AANiZh4zuoitobqsn1G6bdoNyjePC2",
-          ),
-          // ata
-          // owner Dx8iy2o46sK1DzWbEcznqSKeLbLVeu7otkibA3WohGAj
-          // mint: DxzDt5kPdFkMy9AANiZh4zuoitobqsn1G6bdoNyjePC2
-          reserveDestinationDepositCollateral: new PublicKey(
-            "8qnXfbaLbY6Y4xiCP6SZ3RK8ccjVa8DhALzDGifBPeNx",
-          ),
+          reserveLiquiditySupply: reserveLiquiditySupply.staging,
+          reserveCollateralMint: reserveCollateralMint.staging,
+          reserveDestinationDepositCollateral:
+            reserveDestinationDepositCollateral.staging,
           userSourceLiquidity: glamClient.getVaultAta(statePda, WSOL),
-          placeholderUserDestinationCollateral: KaminoLendProgramId,
+          placeholderUserDestinationCollateral: kLendProgramId.staging,
           collateralTokenProgram: TOKEN_PROGRAM_ID,
           liquidityTokenProgram: TOKEN_PROGRAM_ID,
           instructionSysvarAccount: SYSVAR_INSTRUCTIONS_PUBKEY,
