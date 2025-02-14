@@ -8,6 +8,8 @@ import {
   SYSVAR_STAKE_HISTORY_PUBKEY,
   STAKE_CONFIG_ID,
   ParsedAccountData,
+  SystemProgram,
+  TransactionInstruction,
 } from "@solana/web3.js";
 import { MSOL } from "../constants";
 import { BaseClient, TxOptions } from "./base";
@@ -31,6 +33,8 @@ type StakeAccountInfo = {
   state: string;
   voter?: PublicKey; // if undefined, the stake account is not delegated
 };
+
+const STAKE_ACCOUNT_SIZE = 200;
 
 export class StakingClient {
   public constructor(
@@ -149,20 +153,13 @@ export class StakingClient {
     existingStake: PublicKey,
     lamports: BN,
   ): Promise<{ newStake: PublicKey; txSig: TransactionSignature }> {
-    const newStakeAccountId = Date.now().toString();
-    const [newStake, bump] = this.getStakeAccountPda(
-      statePda,
-      newStakeAccountId,
-    );
-    const tx = await this.splitStakeAccountTx(
+    const { tx, newStake } = await this.splitStakeAccountTx(
       statePda,
       existingStake,
       lamports,
-      newStake,
-      newStakeAccountId,
-      bump,
     );
-    return { newStake, txSig: await this.base.sendAndConfirm(tx) };
+    const txSig = await this.base.sendAndConfirm(tx);
+    return { newStake, txSig };
   }
 
   public async redelegateStake(
@@ -170,20 +167,13 @@ export class StakingClient {
     existingStake: PublicKey,
     vote: PublicKey,
   ): Promise<{ newStake: PublicKey; txSig: TransactionSignature }> {
-    const newStakeAccountId = Date.now().toString();
-    const [newStake, bump] = this.getStakeAccountPda(
-      statePda,
-      newStakeAccountId,
-    );
-    const tx = await this.redelegateStakeTx(
+    const { newStake, tx } = await this.redelegateStakeTx(
       statePda,
       existingStake,
       vote,
-      newStake,
-      newStakeAccountId,
-      bump,
     );
-    return { newStake, txSig: await this.base.sendAndConfirm(tx) };
+    const txSig = await this.base.sendAndConfirm(tx);
+    return { newStake, txSig };
   }
 
   /*
@@ -217,7 +207,6 @@ export class StakingClient {
   }
 
   async getStakeAccounts(withdrawAuthority: PublicKey): Promise<PublicKey[]> {
-    const STAKE_ACCOUNT_SIZE = 200;
     const accounts =
       await this.base.provider.connection.getParsedProgramAccounts(
         StakeProgram.programId,
@@ -244,7 +233,6 @@ export class StakingClient {
   async getStakeAccountsWithStates(
     withdrawAuthority: PublicKey,
   ): Promise<StakeAccountInfo[]> {
-    const STAKE_ACCOUNT_SIZE = 200;
     const accounts =
       await this.base.provider.connection.getParsedProgramAccounts(
         StakeProgram.programId,
@@ -356,6 +344,32 @@ export class StakingClient {
     };
   }
 
+  async createStakeAccount(
+    signer: PublicKey,
+  ): Promise<[PublicKey, TransactionInstruction]> {
+    const seed = Date.now().toString();
+    const stakeAccount = await PublicKey.createWithSeed(
+      signer,
+      seed,
+      StakeProgram.programId,
+    );
+    const lamports =
+      await this.base.provider.connection.getMinimumBalanceForRentExemption(
+        STAKE_ACCOUNT_SIZE,
+      );
+    const createStakeAccountIx = SystemProgram.createAccountWithSeed({
+      fromPubkey: signer,
+      newAccountPubkey: stakeAccount,
+      basePubkey: signer,
+      seed,
+      lamports,
+      space: STAKE_ACCOUNT_SIZE,
+      programId: StakeProgram.programId,
+    });
+
+    return [stakeAccount, createStakeAccountIx];
+  }
+
   /*
    * API methods
    */
@@ -379,7 +393,6 @@ export class StakingClient {
 
     console.log(`stakePool ${stakePool}, programId: ${stakePoolProgram}`);
 
-    // @ts-ignore
     const tx = await this.base.program.methods
       .stakePoolDepositSol(amount)
       .accountsPartial({
@@ -500,11 +513,8 @@ export class StakingClient {
         ? reserveStake
         : validatorStakeCandidates[0].address;
 
-    const stakeAccountId = Date.now().toString();
-    const [stakeAccountPda, bump] = this.getStakeAccountPda(
-      statePda,
-      stakeAccountId,
-    );
+    const [stakeAccount, createStakeAccountIx] =
+      await this.createStakeAccount(signer);
 
     const postInstructions = deactivate
       ? [
@@ -519,7 +529,7 @@ export class StakingClient {
             })
             .remainingAccounts([
               {
-                pubkey: stakeAccountPda,
+                pubkey: stakeAccount,
                 isSigner: false,
                 isWritable: true,
               },
@@ -529,12 +539,12 @@ export class StakingClient {
       : [];
 
     const tx = await this.base.program.methods
-      .stakePoolWithdrawStake(amount, stakeAccountId, bump)
+      .stakePoolWithdrawStake(amount)
       .accountsPartial({
         signer,
         state: statePda,
         vault,
-        vaultStakeAccount: stakeAccountPda,
+        vaultStakeAccount: stakeAccount,
         stakePoolProgram,
         stakePool,
         poolMint,
@@ -547,8 +557,10 @@ export class StakingClient {
         stakeProgram: StakeProgram.programId,
         tokenProgram,
       })
+      .preInstructions([createStakeAccountIx])
       .postInstructions(postInstructions)
       .transaction();
+
     return await this.base.intoVersionedTransaction({
       tx,
       ...txOptions,
@@ -563,23 +575,22 @@ export class StakingClient {
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
     const vault = this.base.getVaultPda(statePda);
-    const stakeAccountId = Date.now().toString();
-    const [stakeAccountPda, bump] = this.getStakeAccountPda(
-      statePda,
-      stakeAccountId,
-    );
+    const [stakeAccount, createStakeAccountIx] =
+      await this.createStakeAccount(signer);
+
     const tx = await this.base.program.methods
-      .initializeAndDelegateStake(amount, stakeAccountId, bump)
+      .initializeAndDelegateStake(amount)
       .accountsPartial({
         signer,
         state: statePda,
         vault,
-        vaultStakeAccount: stakeAccountPda,
+        vaultStakeAccount: stakeAccount,
         vote,
         stakeConfig: STAKE_CONFIG_ID,
         stakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
         stakeProgram: StakeProgram.programId,
       })
+      .preInstructions([createStakeAccountIx])
       .transaction();
 
     return await this.base.intoVersionedTransaction({
@@ -679,16 +690,15 @@ export class StakingClient {
     state: PublicKey,
     existingStake: PublicKey,
     lamports: BN,
-    newStake: PublicKey,
-    newStakeAccountId: string,
-    newStakeAccountBump: number,
     txOptions: TxOptions = {},
-  ): Promise<VersionedTransaction> {
+  ) {
     const signer = txOptions.signer || this.base.getSigner();
     const vault = this.base.getVaultPda(state);
+    const [newStake, createStakeAccountIx] =
+      await this.createStakeAccount(signer);
 
     const tx = await this.base.program.methods
-      .splitStakeAccount(lamports, newStakeAccountId, newStakeAccountBump)
+      .splitStakeAccount(lamports)
       .accountsPartial({
         signer,
         state,
@@ -697,27 +707,29 @@ export class StakingClient {
         newStake,
         stakeProgram: StakeProgram.programId,
       })
+      .preInstructions([createStakeAccountIx])
       .transaction();
-    return await this.base.intoVersionedTransaction({
+    const vTx = await this.base.intoVersionedTransaction({
       tx,
       ...txOptions,
     });
+
+    return { tx: vTx, newStake };
   }
 
   public async redelegateStakeTx(
     statePda: PublicKey,
     existingStake: PublicKey,
     vote: PublicKey,
-    newStake: PublicKey,
-    newStakeAccountId: string,
-    newStakeAccountBump: number,
     txOptions: TxOptions = {},
-  ): Promise<VersionedTransaction> {
+  ) {
     const signer = txOptions.signer || this.base.getSigner();
     const vault = this.base.getVaultPda(statePda);
+    const [newStake, createStakeAccountIx] =
+      await this.createStakeAccount(signer);
 
     const tx = await this.base.program.methods
-      .redelegateStake(newStakeAccountId, newStakeAccountBump)
+      .redelegateStake()
       .accountsPartial({
         signer,
         state: statePda,
@@ -728,10 +740,13 @@ export class StakingClient {
         stakeProgram: StakeProgram.programId,
         stakeConfig: STAKE_CONFIG_ID,
       })
+      .preInstructions([createStakeAccountIx])
       .transaction();
-    return await this.base.intoVersionedTransaction({
+    const vTx = await this.base.intoVersionedTransaction({
       tx,
       ...txOptions,
     });
+
+    return { tx: vTx, newStake };
   }
 }

@@ -606,8 +606,6 @@ pub mod glam {
     /// # Parameters
     /// - `ctx`: The context for the transaction.
     /// - `pool_token_amount`: Amount of pool token to unstake.
-    /// - `stake_account_id`: Unique identifier for the stake account.
-    /// - `stake_account_bump`: PDA bump seed for the stake account.
     ///
     /// # Permission required
     /// - Permission::Unstake
@@ -617,15 +615,8 @@ pub mod glam {
     pub fn stake_pool_withdraw_stake(
         ctx: Context<StakePoolWithdrawStake>,
         pool_token_amount: u64,
-        stake_account_id: String,
-        stake_account_bump: u8,
     ) -> Result<()> {
-        stake_pool::withdraw_stake_handler(
-            ctx,
-            pool_token_amount,
-            stake_account_bump,
-            stake_account_id,
-        )
+        stake_pool::withdraw_stake_handler(ctx, pool_token_amount)
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -637,8 +628,6 @@ pub mod glam {
     /// # Parameters
     /// - `ctx`: The context for the transaction.
     /// - `lamports`: The amount of SOL to initialize the stake account with.
-    /// - `stake_account_id`: The ID of the stake account to initialize.
-    /// - `stake_account_bump`: The bump seed for the stake account.
     ///
     /// # Permission required
     /// - Permission::Stake
@@ -648,15 +637,8 @@ pub mod glam {
     pub fn initialize_and_delegate_stake<'info>(
         ctx: Context<'_, '_, '_, 'info, InitializeAndDelegateStake<'info>>,
         lamports: u64,
-        stake_account_id: String,
-        stake_account_bump: u8,
     ) -> Result<()> {
-        stake::initialize_and_delegate_stake_handler(
-            ctx,
-            lamports,
-            stake_account_id,
-            stake_account_bump,
-        )
+        stake::initialize_and_delegate_stake_handler(ctx, lamports)
     }
 
     /// Deactivates stake accounts.
@@ -712,8 +694,6 @@ pub mod glam {
     /// # Parameters
     /// - `ctx`: The context for the transaction.
     /// - `lamports`: The amount of SOL to split.
-    /// - `new_stake_account_id`: The ID of the new stake account.
-    /// - `new_stake_account_bump`: The bump seed for the new stake account.
     ///
     /// # Permission required
     /// - Permission::Unstake
@@ -723,23 +703,14 @@ pub mod glam {
     pub fn split_stake_account<'info>(
         ctx: Context<'_, '_, '_, 'info, SplitStakeAccount<'info>>,
         lamports: u64,
-        new_stake_account_id: String,
-        new_stake_account_bump: u8,
     ) -> Result<()> {
-        stake::split_stake_account_handler(
-            ctx,
-            lamports,
-            new_stake_account_id,
-            new_stake_account_bump,
-        )
+        stake::split_stake_account_handler(ctx, lamports)
     }
 
     /// Redelegates an existing stake account to a new validator (a new stake account will be created).
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
-    /// - `new_stake_account_id`: The ID of the new stake account.
-    /// - `new_stake_account_bump`: The bump seed for the new stake account.
     ///
     /// # Permission required
     /// - Permission::Unstake
@@ -748,10 +719,8 @@ pub mod glam {
     /// - Integration::NativeStaking
     pub fn redelegate_stake<'info>(
         ctx: Context<'_, '_, '_, 'info, RedelegateStake<'info>>,
-        new_stake_account_id: String,
-        new_stake_account_bump: u8,
     ) -> Result<()> {
-        stake::redelegate_stake_handler(ctx, new_stake_account_id, new_stake_account_bump)
+        stake::redelegate_stake_handler(ctx)
     }
 
     //////////////////////////////////////////////////////////////////////

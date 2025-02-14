@@ -1868,8 +1868,6 @@ export type Glam = {
         "# Parameters",
         "- `ctx`: The context for the transaction.",
         "- `lamports`: The amount of SOL to initialize the stake account with.",
-        "- `stake_account_id`: The ID of the stake account to initialize.",
-        "- `stake_account_bump`: The bump seed for the stake account.",
         "",
         "# Permission required",
         "- Permission::Stake",
@@ -1954,14 +1952,6 @@ export type Glam = {
         {
           "name": "lamports",
           "type": "u64"
-        },
-        {
-          "name": "stakeAccountId",
-          "type": "string"
-        },
-        {
-          "name": "stakeAccountBump",
-          "type": "u8"
         }
       ]
     },
@@ -3588,8 +3578,6 @@ export type Glam = {
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `new_stake_account_id`: The ID of the new stake account.",
-        "- `new_stake_account_bump`: The bump seed for the new stake account.",
         "",
         "# Permission required",
         "- Permission::Unstake",
@@ -3666,16 +3654,7 @@ export type Glam = {
           "address": "11111111111111111111111111111111"
         }
       ],
-      "args": [
-        {
-          "name": "newStakeAccountId",
-          "type": "string"
-        },
-        {
-          "name": "newStakeAccountBump",
-          "type": "u8"
-        }
-      ]
+      "args": []
     },
     {
       "name": "setSubscribeRedeemEnabled",
@@ -3782,8 +3761,6 @@ export type Glam = {
         "# Parameters",
         "- `ctx`: The context for the transaction.",
         "- `lamports`: The amount of SOL to split.",
-        "- `new_stake_account_id`: The ID of the new stake account.",
-        "- `new_stake_account_bump`: The bump seed for the new stake account.",
         "",
         "# Permission required",
         "- Permission::Unstake",
@@ -3858,14 +3835,6 @@ export type Glam = {
         {
           "name": "lamports",
           "type": "u64"
-        },
-        {
-          "name": "newStakeAccountId",
-          "type": "string"
-        },
-        {
-          "name": "newStakeAccountBump",
-          "type": "u8"
         }
       ]
     },
@@ -4382,8 +4351,6 @@ export type Glam = {
         "# Parameters",
         "- `ctx`: The context for the transaction.",
         "- `pool_token_amount`: Amount of pool token to unstake.",
-        "- `stake_account_id`: Unique identifier for the stake account.",
-        "- `stake_account_bump`: PDA bump seed for the stake account.",
         "",
         "# Permission required",
         "- Permission::Unstake",
@@ -4487,14 +4454,6 @@ export type Glam = {
         {
           "name": "poolTokenAmount",
           "type": "u64"
-        },
-        {
-          "name": "stakeAccountId",
-          "type": "string"
-        },
-        {
-          "name": "stakeAccountBump",
-          "type": "u8"
         }
       ]
     },

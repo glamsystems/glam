@@ -44,31 +44,18 @@ pub struct InitializeAndDelegateStake<'info> {
 pub fn initialize_and_delegate_stake_handler<'c: 'info, 'info>(
     ctx: Context<InitializeAndDelegateStake>,
     lamports: u64,
-    stake_account_id: String,
-    stake_account_bump: u8,
 ) -> Result<()> {
-    let state_key = ctx.accounts.state.key();
-    let stake_account_seeds = &[
-        b"stake_account".as_ref(),
-        stake_account_id.as_bytes(),
-        state_key.as_ref(),
-        &[stake_account_bump],
-    ];
-    let signer_seeds = &[&stake_account_seeds[..], (*vault_signer_seeds)[0]];
-
-    // Create the stake account
-    system_program::create_account(
+    // Fund the stake account with lamports from the vault
+    system_program::transfer(
         CpiContext::new_with_signer(
             ctx.accounts.system_program.to_account_info(),
-            system_program::CreateAccount {
+            system_program::Transfer {
                 from: ctx.accounts.vault.to_account_info(),
-                to: ctx.accounts.vault_stake_account.to_account_info().clone(),
+                to: ctx.accounts.vault_stake_account.to_account_info(),
             },
-            signer_seeds,
+            vault_signer_seeds,
         ),
         lamports,
-        std::mem::size_of::<StakeAccount>() as u64, // no +8
-        &ctx.accounts.stake_program.key(),
     )?;
 
     // Initialize the stake account
@@ -84,13 +71,12 @@ pub fn initialize_and_delegate_stake_handler<'c: 'info, 'info>(
             custodian: Pubkey::default(),
         },
     );
-    solana_program::program::invoke_signed(
+    solana_program::program::invoke(
         &init_stake_ix,
         &[
             ctx.accounts.vault_stake_account.clone(),
             ctx.accounts.rent.to_account_info(),
         ],
-        signer_seeds,
     )?;
 
     // Delegate the stake account
@@ -302,17 +288,7 @@ pub struct SplitStakeAccount<'info> {
 pub fn split_stake_account_handler<'c: 'info, 'info>(
     ctx: Context<SplitStakeAccount>,
     lamports: u64,
-    new_stake_account_id: String,
-    new_stake_account_bump: u8,
 ) -> Result<()> {
-    let state_key = ctx.accounts.state.key();
-    let stake_account_seeds = &[
-        b"stake_account".as_ref(),
-        new_stake_account_id.as_bytes(),
-        state_key.as_ref(),
-        &[new_stake_account_bump],
-    ];
-
     let instructions = solana_program::stake::instruction::split(
         &ctx.accounts.existing_stake.key(),
         &ctx.accounts.vault.key(),
@@ -320,26 +296,10 @@ pub fn split_stake_account_handler<'c: 'info, 'info>(
         ctx.accounts.new_stake.key,
     );
 
-    // allocate
-    solana_program::program::invoke_signed(
-        &instructions[0],
-        &[
-            ctx.accounts.new_stake.to_account_info(),
-            ctx.accounts.system_program.to_account_info(),
-        ],
-        &[&stake_account_seeds[..]],
-    )?;
-
-    // assign
-    solana_program::program::invoke_signed(
-        &instructions[1],
-        &[
-            ctx.accounts.new_stake.to_account_info(),
-            ctx.accounts.system_program.to_account_info(),
-        ],
-        &[&stake_account_seeds[..]],
-    )?;
-
+    // Client side should handle the creation of an empty new stake
+    // account (e.g., as a pre-instruction of this instruction).
+    // We ignore instructions #0 and #1 - only need to call call stake_program's
+    // split instruction at index #2
     solana_program::program::invoke_signed(
         &instructions[2],
         &[
@@ -398,48 +358,18 @@ pub struct RedelegateStake<'info> {
     acl::check_integration(&ctx.accounts.state, Integration::NativeStaking)
 )]
 #[vault_signer_seeds]
-pub fn redelegate_stake_handler<'c: 'info, 'info>(
-    ctx: Context<RedelegateStake>,
-    new_stake_account_id: String,
-    new_stake_account_bump: u8,
-) -> Result<()> {
-    let state_key = ctx.accounts.state.key();
-
-    let stake_account_seeds = &[
-        b"stake_account".as_ref(),
-        new_stake_account_id.as_bytes(),
-        state_key.as_ref(),
-        &[new_stake_account_bump],
-    ];
-
-    // 3 instructions: allocate, assign, redelegate
+pub fn redelegate_stake_handler<'c: 'info, 'info>(ctx: Context<RedelegateStake>) -> Result<()> {
     let instructions = solana_program::stake::instruction::redelegate(
         &ctx.accounts.existing_stake.key(),
         ctx.accounts.vault.key,
         ctx.accounts.vote.key,
         ctx.accounts.new_stake.key,
     );
-    // allocate
-    solana_program::program::invoke_signed(
-        &instructions[0],
-        &[
-            ctx.accounts.new_stake.to_account_info(),
-            ctx.accounts.system_program.to_account_info(),
-        ],
-        &[&stake_account_seeds[..]],
-    )?;
 
-    // assign
-    solana_program::program::invoke_signed(
-        &instructions[1],
-        &[
-            ctx.accounts.new_stake.to_account_info(),
-            ctx.accounts.system_program.to_account_info(),
-        ],
-        &[&stake_account_seeds[..]],
-    )?;
-
-    // redelegate
+    // Client side should handle the creation of an empty new stake
+    // account (e.g., as a pre-instruction of this instruction).
+    // We ignore instructions #0 and #1 - only need to call call stake_program's
+    // redelegate instruction at index #2
     solana_program::program::invoke_signed(
         &instructions[2],
         &[
