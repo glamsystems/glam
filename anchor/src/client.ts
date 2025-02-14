@@ -2,7 +2,8 @@ import { GlamClientConfig } from "./clientConfig";
 import { BaseClient } from "./client/base";
 import { DriftClient } from "./client/drift";
 import { InvestorClient } from "./client/investor";
-import { JupiterClient } from "./client/jupiter";
+import { JupiterSwapClient } from "./client/jupiter";
+import { JupiterVoteClient } from "./client/jupiter";
 import { MarinadeClient } from "./client/marinade";
 import { WSolClient } from "./client/wsol";
 import { StakingClient } from "./client/staking";
@@ -19,7 +20,8 @@ export { JUPITER_API_DEFAULT } from "./client/base";
 export class GlamClient extends BaseClient {
   private _drift?: DriftClient;
   private _investor?: InvestorClient;
-  private _jupiter?: JupiterClient;
+  private _jupiterSwap?: JupiterSwapClient;
+  private _jupiterVote?: JupiterVoteClient;
   private _marinade?: MarinadeClient;
   private _wsol?: WSolClient;
   private _staking?: StakingClient;
@@ -44,11 +46,18 @@ export class GlamClient extends BaseClient {
     return this._investor;
   }
 
-  get jupiter(): JupiterClient {
-    if (!this._jupiter) {
-      this._jupiter = new JupiterClient(this);
+  get jupiterSwap(): JupiterSwapClient {
+    if (!this._jupiterSwap) {
+      this._jupiterSwap = new JupiterSwapClient(this);
     }
-    return this._jupiter;
+    return this._jupiterSwap;
+  }
+
+  get jupiterVote(): JupiterVoteClient {
+    if (!this._jupiterVote) {
+      this._jupiterVote = new JupiterVoteClient(this);
+    }
+    return this._jupiterVote;
   }
 
   get marinade(): MarinadeClient {

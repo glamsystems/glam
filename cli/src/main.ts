@@ -529,7 +529,7 @@ jup
     }
 
     try {
-      const txSig = await glamClient.jupiter.stakeJup(
+      const txSig = await glamClient.jupiterVote.stakeJup(
         statePda,
         new anchor.BN(amount * 10 ** 6), // decimals 6
       );
@@ -555,9 +555,32 @@ jup
     }
 
     try {
-      const txSig = await glamClient.jupiter.unstakeJup(statePda);
+      const txSig = await glamClient.jupiterVote.unstakeJup(statePda);
       console.log("txSig", txSig);
       console.log("Unstaked all JUP tokens");
+    } catch (e) {
+      console.error(parseTxError(e));
+      throw e;
+    }
+  });
+
+jup
+  .command("withdraw")
+  .description("Withdraw all unstaked JUP")
+  .action(async () => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
+    if (!statePda) {
+      console.error("GLAM state not found in config file");
+      process.exit(1);
+    }
+
+    try {
+      const txSig = await glamClient.jupiterVote.withdrawJup(statePda);
+      console.log("txSig", txSig);
+      console.log("Withdrawn all JUP");
     } catch (e) {
       console.error(parseTxError(e));
       throw e;
@@ -591,7 +614,7 @@ const vote = program
     }
 
     try {
-      const txId = await glamClient.jupiter.voteOnProposal(
+      const txId = await glamClient.jupiterVote.voteOnProposal(
         statePda,
         proposal,
         governor,
@@ -756,7 +779,7 @@ program
     }
     console.log("Quote params:", quoteParams);
     try {
-      const txSig = await glamClient.jupiter.swap(
+      const txSig = await glamClient.jupiterSwap.swap(
         statePda,
         quoteParams,
         undefined,

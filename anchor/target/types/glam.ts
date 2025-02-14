@@ -690,9 +690,9 @@ export type Glam = {
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `market_type`:",
-        "- `market_index`:",
-        "- `direction`:",
+        "- `market_type`: The type of market (spot or perp) to cancel orders for.",
+        "- `market_index`: The index of the market to cancel orders for.",
+        "- `direction`: The direction of orders to cancel (long or short).",
         "",
         "# Permission required",
         "- Permission::DriftCancelOrders",
@@ -1973,7 +1973,7 @@ export type Glam = {
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `fund`: An instance of `StateModel` containing the details of the state to be initialized.",
+        "- `state`: An instance of `StateModel` containing the details of the state to be initialized.",
         "",
         "# Permission required",
         "- Owner only, delegates not allowed"
@@ -2091,8 +2091,8 @@ export type Glam = {
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `amount`: The amount of asset to swap.",
-        "- `data`: The data for the swap.",
+        "- `amount`: The amount of input asset to swap.",
+        "- `data`: The serialized Jupiter route data containing swap instructions and parameters.",
         "",
         "# Permission required",
         "- Any of",
@@ -4382,8 +4382,8 @@ export type Glam = {
         "# Parameters",
         "- `ctx`: The context for the transaction.",
         "- `pool_token_amount`: Amount of pool token to unstake.",
-        "- `stake_account_id`: Stake account ID.",
-        "- `stake_account_bump`: Stake account bump seed.",
+        "- `stake_account_id`: Unique identifier for the stake account.",
+        "- `stake_account_bump`: PDA bump seed for the stake account.",
         "",
         "# Permission required",
         "- Permission::Unstake",
@@ -4961,7 +4961,7 @@ export type Glam = {
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `fund`: An instance of `StateModel` containing the updated details of the state.",
+        "- `state`: An instance of `StateModel` containing the updated details of the state.",
         "",
         "# Permission required",
         "- Owner only, delegates not allowed"
@@ -5181,7 +5181,7 @@ export type Glam = {
       ]
     },
     {
-      "name": "withdrawAllStakedJup",
+      "name": "withdrawAllUnstakedJup",
       "docs": [
         "Withdraws all unstaked JUP.",
         "",
@@ -5195,14 +5195,14 @@ export type Glam = {
         "- Integration::JupiterVote"
       ],
       "discriminator": [
-        210,
-        124,
-        52,
-        114,
-        25,
-        254,
-        170,
-        52
+        7,
+        192,
+        129,
+        123,
+        174,
+        255,
+        252,
+        219
       ],
       "accounts": [
         {

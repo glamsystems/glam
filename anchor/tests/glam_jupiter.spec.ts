@@ -82,7 +82,7 @@ describe("glam_jupiter", () => {
     // Swap
     const amount = 50_000_000;
     try {
-      const txId = await glamClient.jupiter.swap(
+      const txId = await glamClient.jupiterSwap.swap(
         statePda,
         undefined,
         quoteResponse,
@@ -172,7 +172,7 @@ describe("glam_jupiter", () => {
     // 1st attempt, should fail because MSOL is not in assets allowlist,
     // and delegate doesn't have swapAny or swapLst permission
     try {
-      const txSig = await delegateGlamClient.jupiter.swap(
+      const txSig = await delegateGlamClient.jupiterSwap.swap(
         statePda,
         undefined,
         quoteResponse,
@@ -207,7 +207,7 @@ describe("glam_jupiter", () => {
     // 2nd attempt, should pass since delegate is now allowed to swap LST
     // and asset list should be updated accordingly to include MSOL
     try {
-      const txSig = await delegateGlamClient.jupiter.swap(
+      const txSig = await delegateGlamClient.jupiterSwap.swap(
         statePda,
         undefined,
         quoteResponse,
@@ -401,7 +401,7 @@ describe("glam_jupiter", () => {
     // Swap
     const amount = 41_000_000;
     try {
-      const txId = await glamClient.jupiter.swap(
+      const txId = await glamClient.jupiterSwap.swap(
         statePda,
         {
           inputMint: MSOL.toBase58(),
@@ -431,7 +431,7 @@ describe("glam_jupiter", () => {
   it("Swap by providing quote params", async () => {
     const amount = 50_000_000;
     try {
-      const txIdSwap = await glamClient.jupiter.swap(statePda, {
+      const txIdSwap = await glamClient.jupiterSwap.swap(statePda, {
         inputMint: WSOL.toBase58(),
         outputMint: MSOL.toBase58(),
         amount,
@@ -452,13 +452,13 @@ describe("glam_jupiter", () => {
 
   it("Swap by providing swap instructions", async () => {
     const swapInstructions =
-      await delegateGlamClient.jupiter.getSwapInstructions(
+      await delegateGlamClient.jupiterSwap.getSwapInstructions(
         quoteResponseForTest,
         delegate.publicKey,
       );
 
     try {
-      const txIdSwap = await delegateGlamClient.jupiter.swap(
+      const txIdSwap = await delegateGlamClient.jupiterSwap.swap(
         statePda,
         undefined,
         quoteResponseForTest,

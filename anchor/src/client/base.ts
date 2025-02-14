@@ -89,10 +89,7 @@ export class BaseClient {
     } else {
       const defaultProvider = anchor.AnchorProvider.env();
       const url = defaultProvider.connection.rpcEndpoint;
-      const connection = new Connection(url, {
-        commitment: "confirmed",
-        confirmTransactionInitialTimeout: 45000, // default timeout is 30s, we extend it to 45s
-      });
+      const connection = new Connection(url, { commitment: "confirmed" });
       this.provider = new anchor.AnchorProvider(
         connection,
         config?.wallet || defaultProvider.wallet,
@@ -374,6 +371,32 @@ export class BaseClient {
     }
 
     return "Unknown error";
+  }
+
+  async getAdressLookupTableAccounts(
+    keys?: string[],
+  ): Promise<AddressLookupTableAccount[]> {
+    if (!keys) {
+      throw new Error("addressLookupTableAddresses is undefined");
+    }
+
+    const addressLookupTableAccountInfos =
+      await this.provider.connection.getMultipleAccountsInfo(
+        keys.map((key) => new PublicKey(key)),
+      );
+
+    return addressLookupTableAccountInfos.reduce((acc, accountInfo, index) => {
+      const addressLookupTableAddress = keys[index];
+      if (accountInfo) {
+        const addressLookupTableAccount = new AddressLookupTableAccount({
+          key: new PublicKey(addressLookupTableAddress),
+          state: AddressLookupTableAccount.deserialize(accountInfo.data),
+        });
+        acc.push(addressLookupTableAccount);
+      }
+
+      return acc;
+    }, new Array<AddressLookupTableAccount>());
   }
 
   getWallet(): Wallet {

@@ -530,7 +530,7 @@ pub fn merge_partial_unstaking_handler<'info>(ctx: Context<PartialUnstaking>) ->
 }
 
 #[derive(Accounts)]
-pub struct WithdrawAllStakedJup<'info> {
+pub struct WithdrawAllUnstakedJup<'info> {
     #[account()]
     pub state: Box<Account<'info, StateAccount>>,
 
@@ -563,7 +563,7 @@ pub struct WithdrawAllStakedJup<'info> {
     acl::check_integration(&ctx.accounts.state, Integration::JupiterVote)
 )]
 #[vault_signer_seeds]
-pub fn withdraw_all_staked_jup_handler<'info>(ctx: Context<WithdrawAllStakedJup>) -> Result<()> {
+pub fn withdraw_all_handler<'info>(ctx: Context<WithdrawAllUnstakedJup>) -> Result<()> {
     withdraw(CpiContext::new_with_signer(
         ctx.accounts.locked_voter_program.to_account_info(),
         Withdraw {
