@@ -373,6 +373,32 @@ export class BaseClient {
     return "Unknown error";
   }
 
+  async getAdressLookupTableAccounts(
+    keys?: string[],
+  ): Promise<AddressLookupTableAccount[]> {
+    if (!keys) {
+      throw new Error("addressLookupTableAddresses is undefined");
+    }
+
+    const addressLookupTableAccountInfos =
+      await this.provider.connection.getMultipleAccountsInfo(
+        keys.map((key) => new PublicKey(key)),
+      );
+
+    return addressLookupTableAccountInfos.reduce((acc, accountInfo, index) => {
+      const addressLookupTableAddress = keys[index];
+      if (accountInfo) {
+        const addressLookupTableAccount = new AddressLookupTableAccount({
+          key: new PublicKey(addressLookupTableAddress),
+          state: AddressLookupTableAccount.deserialize(accountInfo.data),
+        });
+        acc.push(addressLookupTableAccount);
+      }
+
+      return acc;
+    }, new Array<AddressLookupTableAccount>());
+  }
+
   getWallet(): Wallet {
     return (this.provider as AnchorProvider).wallet as Wallet;
   }

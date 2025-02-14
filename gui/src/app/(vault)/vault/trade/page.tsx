@@ -502,7 +502,7 @@ export default function Trade() {
   }> => {
     try {
       const quoteResponse =
-        await glamClient.jupiter.getQuoteResponse(quoteParams);
+        await glamClient.jupiterSwap.getQuoteResponse(quoteParams);
       return {
         quoteResponse,
         uiAmountFrom: Number(quoteResponse.inAmount) / 10 ** inputDecimals,
@@ -570,7 +570,7 @@ export default function Trade() {
 
     setIsSubmitTxPending(true);
     try {
-      const txId = await glamClient.jupiter.swap(
+      const txId = await glamClient.jupiterSwap.swap(
         activeGlamState!.pubkey,
         undefined,
         quoteResponseForSwap,
