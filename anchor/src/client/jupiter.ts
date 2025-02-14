@@ -10,7 +10,6 @@ import {
   TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
   createAssociatedTokenAccountIdempotentInstruction,
-  getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
 
 import { BaseClient, TxOptions } from "./base";
@@ -358,12 +357,9 @@ export class JupiterVoteClient {
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const vault = this.base.getVaultPda(statePda);
-    const [escrow] = PublicKey.findProgramAddressSync(
-      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), vault.toBuffer()],
-      JUP_VOTE_PROGRAM,
-    );
-    const escrowJupAta = getAssociatedTokenAddressSync(JUP, escrow, true);
-    const vaultJupAta = getAssociatedTokenAddressSync(JUP, vault, true);
+    const escrow = this.getEscrowPda(vault);
+    const escrowJupAta = this.base.getAta(JUP, escrow);
+    const vaultJupAta = this.base.getAta(JUP, vault);
 
     const escrowAccountInfo =
       await this.base.provider.connection.getAccountInfo(escrow);
@@ -421,12 +417,17 @@ export class JupiterVoteClient {
     return await this.base.sendAndConfirm(vTx);
   }
 
+  /**
+   * Unstake all staked JUP.
+   *
+   * @param statePda
+   * @param txOptions
+   * @returns
+   */
+  // TODO: support partial unstake
   public async unstakeJup(statePda: PublicKey, txOptions: TxOptions = {}) {
     const vault = this.base.getVaultPda(statePda);
-    const [escrow] = PublicKey.findProgramAddressSync(
-      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), vault.toBuffer()],
-      JUP_VOTE_PROGRAM,
-    );
+    const escrow = this.getEscrowPda(vault);
 
     const tx = await this.base.program.methods
       .toggleMaxLock(false)
@@ -439,7 +440,6 @@ export class JupiterVoteClient {
 
     const vTx = await this.base.intoVersionedTransaction({
       tx,
-      lookupTables: [],
       ...txOptions,
     });
 
@@ -448,15 +448,12 @@ export class JupiterVoteClient {
 
   public async withdrawJup(statePda: PublicKey, txOptions: TxOptions = {}) {
     const vault = this.base.getVaultPda(statePda);
-    const [escrow] = PublicKey.findProgramAddressSync(
-      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), vault.toBuffer()],
-      JUP_VOTE_PROGRAM,
-    );
-    const escrowJupAta = getAssociatedTokenAddressSync(JUP, escrow, true);
-    const vaultJupAta = getAssociatedTokenAddressSync(JUP, vault, true);
+    const escrow = this.getEscrowPda(vault);
+    const escrowJupAta = this.base.getAta(JUP, escrow);
+    const vaultJupAta = this.base.getAta(JUP, vault);
 
-    return await this.base.program.methods
-      .withdrawAllStakedJup()
+    const tx = await this.base.program.methods
+      .withdrawAllUnstakedJup()
       .accounts({
         state: statePda,
         locker: JUP_STAKE_LOCKER,
@@ -472,7 +469,14 @@ export class JupiterVoteClient {
           JUP,
         ),
       ])
-      .rpc();
+      .transaction();
+
+    const vTx = await this.base.intoVersionedTransaction({
+      tx,
+      ...txOptions,
+    });
+
+    return await this.base.sendAndConfirm(vTx);
   }
 
   /**
@@ -504,7 +508,6 @@ export class JupiterVoteClient {
     const preInstructions = [];
     if (!voteCreated) {
       console.log("Will create vote account:", vote.toBase58());
-      // @ts-ignore
       preInstructions.push(
         await this.base.program.methods
           .newVote()
@@ -517,11 +520,8 @@ export class JupiterVoteClient {
       );
     }
 
-    const [escrow] = PublicKey.findProgramAddressSync(
-      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), vault.toBuffer()],
-      JUP_VOTE_PROGRAM,
-    );
-    return await this.base.program.methods
+    const escrow = this.getEscrowPda(vault);
+    const tx = await this.base.program.methods
       .castVote(side)
       .accounts({
         state: statePda,
@@ -531,14 +531,21 @@ export class JupiterVoteClient {
         locker: JUP_STAKE_LOCKER,
         governor,
       })
-      .rpc();
+      .transaction();
+    const vTx = await this.base.intoVersionedTransaction({
+      tx,
+      ...txOptions,
+    });
+    return await this.base.sendAndConfirm(vTx);
   }
-
-  /*
-   * API methods
-   */
-
   /*
    * Utils
    */
+  getEscrowPda(owner: PublicKey): PublicKey {
+    const [escrow] = PublicKey.findProgramAddressSync(
+      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), owner.toBuffer()],
+      JUP_VOTE_PROGRAM,
+    );
+    return escrow;
+  }
 }
