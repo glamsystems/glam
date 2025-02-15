@@ -919,25 +919,6 @@ pub mod glam {
         cpi_autogen::kamino_lending::kamino_lending_init_obligation_farms_for_reserve(ctx, mode)
     }
 
-    // pub fn kamino_lending_refresh_reserve<'info>(
-    //     ctx: Context<KaminoLendingRefreshReserve>,
-    // ) -> Result<()> {
-    //     cpi_autogen::kamino_lending::kamino_lending_refresh_reserve(ctx)
-    // }
-
-    // pub fn kamino_lending_refresh_obligation<'info>(
-    //     ctx: Context<KaminoLendingRefreshObligation>,
-    // ) -> Result<()> {
-    //     cpi_autogen::kamino_lending::kamino_lending_refresh_obligation(ctx)
-    // }
-
-    pub fn kamino_lending_refresh_obligation_farms_for_reserve<'info>(
-        ctx: Context<KaminoLendingRefreshObligationFarmsForReserve>,
-        mode: u8,
-    ) -> Result<()> {
-        cpi_autogen::kamino_lending::kamino_lending_refresh_obligation_farms_for_reserve(ctx, mode)
-    }
-
     pub fn kamino_lending_deposit_reserve_liquidity_and_obligation_collateral<'info>(
         ctx: Context<KaminoLendingDepositReserveLiquidityAndObligationCollateral>,
         liquidity_amount: u64,

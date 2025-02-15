@@ -2344,8 +2344,7 @@
           "signer": true
         },
         {
-          "name": "cpi_program",
-          "address": "SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh"
+          "name": "cpi_program"
         },
         {
           "name": "owner",
@@ -2448,8 +2447,7 @@
           "signer": true
         },
         {
-          "name": "cpi_program",
-          "address": "SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh"
+          "name": "cpi_program"
         },
         {
           "name": "obligation_owner"
@@ -2538,8 +2536,7 @@
           "signer": true
         },
         {
-          "name": "cpi_program",
-          "address": "SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh"
+          "name": "cpi_program"
         },
         {
           "name": "payer",
@@ -2634,8 +2631,7 @@
           "signer": true
         },
         {
-          "name": "cpi_program",
-          "address": "SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh"
+          "name": "cpi_program"
         },
         {
           "name": "owner"
@@ -2665,96 +2661,6 @@
         {
           "name": "user_lookup_table",
           "type": "pubkey"
-        }
-      ]
-    },
-    {
-      "name": "kamino_lending_refresh_obligation_farms_for_reserve",
-      "discriminator": [
-        214,
-        172,
-        249,
-        57,
-        54,
-        106,
-        215,
-        101
-      ],
-      "accounts": [
-        {
-          "name": "glam_state"
-        },
-        {
-          "name": "glam_vault",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "glam_state"
-              }
-            ]
-          }
-        },
-        {
-          "name": "glam_signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "cpi_program",
-          "address": "SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh"
-        },
-        {
-          "name": "crank",
-          "writable": true
-        },
-        {
-          "name": "obligation"
-        },
-        {
-          "name": "lending_market_authority",
-          "writable": true
-        },
-        {
-          "name": "reserve"
-        },
-        {
-          "name": "reserve_farm_state",
-          "writable": true
-        },
-        {
-          "name": "obligation_farm_user_state",
-          "writable": true
-        },
-        {
-          "name": "lending_market"
-        },
-        {
-          "name": "farms_program"
-        },
-        {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "mode",
-          "type": "u8"
         }
       ]
     },

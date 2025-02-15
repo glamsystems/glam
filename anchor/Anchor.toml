@@ -24,9 +24,9 @@ cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-#test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_crud"
+test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_crud"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_mint"
-test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_kamino"
+#test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_kamino"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_investor"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_drift"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_marinade"
@@ -91,10 +91,6 @@ address = "EaAuYkMrA9rmnU9eVvHi63yqZzKzmnVj3PWFnmW9RD4W" # staging
 # address = "BgMEUzcjkJxEH1PdPkZyv3NbUynwbkPiNJ7X2x7G1JmH" # prod
 address = "CtGYmztwXGrDtUrRCEydrwkwpJ7ptAY5BkfzThkVPPK9" # staging
 
-[[test.validator.account]] # obligation farm 
-address = "C3y3gCn86PdxhpteUPTdM6XDPBxvJ6zezGbWAMy4ZwTu"
-filename = "./fixtures/accounts/kamino/C3y3gCn86PdxhpteUPTdM6XDPBxvJ6zezGbWAMy4ZwTu.json"
-
 [[test.validator.clone]] # kamino scope prices
 address = "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C"
 # filename = "./fixtures/accounts/kamino/3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C.json"
@@ -110,6 +106,9 @@ address = "966sqybMQJfwYgiEDQqiFsSK5o9tFPyBptZ3GFXbF7vR" # staging
 [[test.validator.clone]] # reserve destination deposit collateral
 # address = "8qnXfbaLbY6Y4xiCP6SZ3RK8ccjVa8DhALzDGifBPeNx" # prod
 address = "DZpgVJq3WpwRpPXNwzvLwVMerJodqCiitxAeU5QgkJe3" # staging
+
+[[test.validator.clone]] # scope prices
+address = "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C"
 
 #
 # Drift

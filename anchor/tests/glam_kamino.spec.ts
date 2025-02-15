@@ -1,5 +1,14 @@
-import { PublicKey, SYSVAR_INSTRUCTIONS_PUBKEY } from "@solana/web3.js";
+import {
+  AccountMeta,
+  PublicKey,
+  SystemProgram,
+  SYSVAR_INSTRUCTIONS_PUBKEY,
+  SYSVAR_RENT_PUBKEY,
+  Transaction,
+  TransactionInstruction,
+} from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
+import * as borsh from "@coral-xyz/borsh";
 
 import { airdrop, createGlamStateForTest } from "./setup";
 import { GlamClient, WSOL } from "../src";
@@ -51,6 +60,138 @@ const reserveDestinationDepositCollateral = {
   staging: new PublicKey("DZpgVJq3WpwRpPXNwzvLwVMerJodqCiitxAeU5QgkJe3"),
 };
 
+const scopePrices = new PublicKey(
+  "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+);
+
+interface RefreshObligationAccounts {
+  lendingMarket: PublicKey;
+  obligation: PublicKey;
+}
+
+interface RefreshReserveAccounts {
+  reserve: PublicKey;
+  lendingMarket: PublicKey;
+  pythOracle: PublicKey;
+  switchboardPriceOracle: PublicKey;
+  switchboardTwapOracle: PublicKey;
+  scopePrices: PublicKey;
+}
+
+interface RefreshObligationFarmsForReserveArgs {
+  mode: number;
+}
+
+interface RefreshObligationFarmsForReserveAccounts {
+  crank: PublicKey;
+  baseAccounts: {
+    obligation: PublicKey;
+    lendingMarketAuthority: PublicKey;
+    reserve: PublicKey;
+    reserveFarmState: PublicKey;
+    obligationFarmUserState: PublicKey;
+    lendingMarket: PublicKey;
+  };
+  farmsProgram: PublicKey;
+  rent: PublicKey;
+  systemProgram: PublicKey;
+}
+
+function refreshObligation(
+  accounts: RefreshObligationAccounts,
+  programId: PublicKey,
+) {
+  const keys: Array<AccountMeta> = [
+    { pubkey: accounts.lendingMarket, isSigner: false, isWritable: false },
+    { pubkey: accounts.obligation, isSigner: false, isWritable: true },
+  ];
+  const identifier = Buffer.from([33, 132, 147, 228, 151, 192, 72, 89]);
+  const data = identifier;
+  const ix = new TransactionInstruction({ keys, programId, data });
+  return ix;
+}
+
+function refreshReserve(
+  accounts: RefreshReserveAccounts,
+  programId: PublicKey,
+) {
+  const keys: Array<AccountMeta> = [
+    { pubkey: accounts.reserve, isSigner: false, isWritable: true },
+    { pubkey: accounts.lendingMarket, isSigner: false, isWritable: false },
+    { pubkey: accounts.pythOracle, isSigner: false, isWritable: false },
+    {
+      pubkey: accounts.switchboardPriceOracle,
+      isSigner: false,
+      isWritable: false,
+    },
+    {
+      pubkey: accounts.switchboardTwapOracle,
+      isSigner: false,
+      isWritable: false,
+    },
+    { pubkey: accounts.scopePrices, isSigner: false, isWritable: false },
+  ];
+  const identifier = Buffer.from([2, 218, 138, 235, 79, 201, 25, 102]);
+  const data = identifier;
+  const ix = new TransactionInstruction({ keys, programId, data });
+  return ix;
+}
+
+function refreshObligationFarmsForReserve(
+  args: RefreshObligationFarmsForReserveArgs,
+  accounts: RefreshObligationFarmsForReserveAccounts,
+  programId: PublicKey,
+) {
+  const keys: Array<AccountMeta> = [
+    { pubkey: accounts.crank, isSigner: true, isWritable: false },
+    {
+      pubkey: accounts.baseAccounts.obligation,
+      isSigner: false,
+      isWritable: false,
+    },
+    {
+      pubkey: accounts.baseAccounts.lendingMarketAuthority,
+      isSigner: false,
+      isWritable: true,
+    },
+    {
+      pubkey: accounts.baseAccounts.reserve,
+      isSigner: false,
+      isWritable: false,
+    },
+    {
+      pubkey: accounts.baseAccounts.reserveFarmState,
+      isSigner: false,
+      isWritable: true,
+    },
+    {
+      pubkey: accounts.baseAccounts.obligationFarmUserState,
+      isSigner: false,
+      isWritable: true,
+    },
+    {
+      pubkey: accounts.baseAccounts.lendingMarket,
+      isSigner: false,
+      isWritable: false,
+    },
+    { pubkey: accounts.farmsProgram, isSigner: false, isWritable: false },
+    { pubkey: accounts.rent, isSigner: false, isWritable: false },
+    { pubkey: accounts.systemProgram, isSigner: false, isWritable: false },
+  ];
+  const identifier = Buffer.from([140, 144, 253, 21, 10, 74, 248, 3]);
+  const buffer = Buffer.alloc(1000);
+  const layout = borsh.struct([borsh.u8("mode")]);
+  const len = layout.encode(
+    {
+      mode: args.mode,
+    },
+    buffer,
+  );
+  const data = Buffer.concat([identifier, buffer]).slice(0, 8 + len);
+  const ix = new TransactionInstruction({ keys, programId, data });
+  return ix;
+}
+
 describe("glam_kamino", () => {
   const glamClient = new GlamClient();
   let statePda: PublicKey;
@@ -86,16 +227,17 @@ describe("glam_kamino", () => {
     console.log("Kamino userMetadataPda for vault", userMetadataPda.toBase58());
 
     try {
-      const tx = await glamClient.program.methods
+      const txInitUser = await glamClient.program.methods
         .kaminoLendingInitUserMetadata(new PublicKey(0))
         .accounts({
           glamState: statePda,
           owner: vaultPda,
+          cpiProgram: kLendProgramId.staging,
           userMetadata: userMetadataPda,
           referrerUserMetadata: kLendProgramId.staging, // none
         })
         .rpc();
-      console.log("Init user metadata:", tx);
+      console.log("Init user metadata:", txInitUser);
 
       const args = { tag: 0, id: 0 };
       const seed = [
@@ -110,10 +252,11 @@ describe("glam_kamino", () => {
         seed,
         kLendProgramId.staging,
       );
-      const tx2 = await glamClient.program.methods
+      const txInitObligation = await glamClient.program.methods
         .kaminoLendingInitObligation(args)
         .accounts({
           glamState: statePda,
+          cpiProgram: kLendProgramId.staging,
           obligationOwner: vaultPda,
           obligation,
           lendingMarket: lendingMarketMain.staging,
@@ -122,10 +265,8 @@ describe("glam_kamino", () => {
           ownerUserMetadata: userMetadataPda,
         })
         .rpc();
-      console.log("Init obligation:", tx2);
+      console.log("Init obligation:", txInitObligation);
 
-      // 3. init obligation farms for reserve
-      // TODO: can reserve farm state be derived from reserve?
       const [obligationFarm] = PublicKey.findProgramAddressSync(
         [
           Buffer.from("user"),
@@ -134,10 +275,11 @@ describe("glam_kamino", () => {
         ],
         KaminoFarmsProgramId,
       );
-      const tx3 = await glamClient.program.methods
+      const txInitObligationFarm = await glamClient.program.methods
         .kaminoLendingInitObligationFarmsForReserve(0)
         .accounts({
           glamState: statePda,
+          cpiProgram: kLendProgramId.staging,
           owner: vaultPda,
           obligation,
           lendingMarketAuthority: lendingMarketAuthority.staging,
@@ -148,28 +290,57 @@ describe("glam_kamino", () => {
           farmsProgram: KaminoFarmsProgramId,
         })
         .rpc();
-      console.log("Init obligation farms:", tx3);
+      console.log("Init obligation farms:", txInitObligationFarm);
 
-      // 4. refresh obligation farms for reserve
-      // const tx4 = await glamClient.program.methods
-      //   .kaminoLendingRefreshObligationFarmsForReserve(0)
-      //   .accounts({
-      //     glamState: statePda,
-      //     crank: vaultPda,
-      //     obligation,
-      //     lendingMarketAuthority: lendingMarketAuthority.staging,
-      //     reserve: solReserve.staging,
-      //     reserveFarmState: reserveFarmState.staging,
-      //     obligationFarmUserState: obligationFarm,
-      //     lendingMarket: lendingMarketMain.staging,
-      //     farmsProgram: KaminoFarmsProgramId,
-      //   })
-      //   .rpc();
-      // console.log("Refresh obligation farms:", tx4);
+      const refreshIxs = [
+        // Cannot make refreshReserve work in tests, always got MathOverflow errors.
+        // refreshReserve(
+        //   {
+        //     reserve: solReserve.staging,
+        //     lendingMarket: lendingMarketMain.staging,
+        //     pythOracle: kLendProgramId.staging,
+        //     switchboardPriceOracle: kLendProgramId.staging,
+        //     switchboardTwapOracle: kLendProgramId.staging,
+        //     scopePrices,
+        //   },
+        //   kLendProgramId.staging,
+        // ),
+        refreshObligation(
+          {
+            lendingMarket: lendingMarketMain.staging,
+            obligation,
+          },
+          kLendProgramId.staging,
+        ),
+        refreshObligationFarmsForReserve(
+          { mode: 0 },
+          {
+            crank: glamClient.getSigner(),
+            baseAccounts: {
+              obligation,
+              lendingMarketAuthority: lendingMarketAuthority.staging,
+              reserve: solReserve.staging,
+              reserveFarmState: reserveFarmState.staging,
+              obligationFarmUserState: obligationFarm,
+              lendingMarket: lendingMarketMain.staging,
+            },
+            farmsProgram: KaminoFarmsProgramId,
+            rent: SYSVAR_RENT_PUBKEY,
+            systemProgram: SystemProgram.programId,
+          },
+          kLendProgramId.staging,
+        ),
+      ];
 
-      // 5. deposit reserve liquidity and obligation collateral
+      const tx = new Transaction();
+      tx.add(...refreshIxs);
+      const vTx = await glamClient.intoVersionedTransaction({ tx });
+      const txRefresh = await glamClient.sendAndConfirm(vTx);
+      console.log("Refresh tx:", txRefresh);
+
+      /*
       const amount = new BN(100_000_000);
-      const tx5 = await glamClient.program.methods
+      const tx = await glamClient.program.methods
         .kaminoLendingDepositReserveLiquidityAndObligationCollateral(amount)
         .accounts({
           glamState: statePda,
@@ -189,8 +360,10 @@ describe("glam_kamino", () => {
           liquidityTokenProgram: TOKEN_PROGRAM_ID,
           instructionSysvarAccount: SYSVAR_INSTRUCTIONS_PUBKEY,
         })
+        .preInstructions(refreshIxs)
         .rpc();
-      console.log("Deposit reserve liquidity and obligation collateral:", tx5);
+      console.log("Deposit reserve liquidity and obligation collateral:", tx);
+      */
     } catch (error) {
       console.log("Error", error);
       throw error;

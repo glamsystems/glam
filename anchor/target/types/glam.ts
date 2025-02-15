@@ -2350,8 +2350,7 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "cpiProgram",
-          "address": "SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh"
+          "name": "cpiProgram"
         },
         {
           "name": "owner",
@@ -2454,8 +2453,7 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "cpiProgram",
-          "address": "SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh"
+          "name": "cpiProgram"
         },
         {
           "name": "obligationOwner"
@@ -2544,8 +2542,7 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "cpiProgram",
-          "address": "SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh"
+          "name": "cpiProgram"
         },
         {
           "name": "payer",
@@ -2640,8 +2637,7 @@ export type Glam = {
           "signer": true
         },
         {
-          "name": "cpiProgram",
-          "address": "SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh"
+          "name": "cpiProgram"
         },
         {
           "name": "owner"
@@ -2671,96 +2667,6 @@ export type Glam = {
         {
           "name": "userLookupTable",
           "type": "pubkey"
-        }
-      ]
-    },
-    {
-      "name": "kaminoLendingRefreshObligationFarmsForReserve",
-      "discriminator": [
-        214,
-        172,
-        249,
-        57,
-        54,
-        106,
-        215,
-        101
-      ],
-      "accounts": [
-        {
-          "name": "glamState"
-        },
-        {
-          "name": "glamVault",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "glamState"
-              }
-            ]
-          }
-        },
-        {
-          "name": "glamSigner",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "cpiProgram",
-          "address": "SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh"
-        },
-        {
-          "name": "crank",
-          "writable": true
-        },
-        {
-          "name": "obligation"
-        },
-        {
-          "name": "lendingMarketAuthority",
-          "writable": true
-        },
-        {
-          "name": "reserve"
-        },
-        {
-          "name": "reserveFarmState",
-          "writable": true
-        },
-        {
-          "name": "obligationFarmUserState",
-          "writable": true
-        },
-        {
-          "name": "lendingMarket"
-        },
-        {
-          "name": "farmsProgram"
-        },
-        {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "mode",
-          "type": "u8"
         }
       ]
     },
