@@ -26,6 +26,7 @@ wallet = "~/.config/solana/id.json"
 [scripts]
 test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_crud"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_mint"
+#test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_kamino"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_investor"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_drift"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_marinade"
@@ -66,6 +67,47 @@ filename = "./fixtures/accounts/pyth/42amVS4KgzR9rA28tkVYqVXjq9Qa8dcZQMbH5EYFX6X
 [[test.validator.account]] # Sponsored pyth feed BTC/USD
 address = "4cSM2e6rvbGQUFiJbqytoVMi5GgghSMr8LwVrT9VPSPo"
 filename = "./fixtures/accounts/pyth/4cSM2e6rvbGQUFiJbqytoVMi5GgghSMr8LwVrT9VPSPo.json"
+
+#
+# Kamino
+#
+[[test.genesis]]
+address = "SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh"
+program = "fixtures/programs/klend_staging.so"
+
+[[test.genesis]]
+address = "FarmsPZpWu9i7Kky8tPN37rs2TpmMrAZrC7S7vJa91Hr"
+program = "fixtures/programs/FarmsPZpWu9i7Kky8tPN37rs2TpmMrAZrC7S7vJa91Hr.so"
+
+[[test.validator.clone]] # market
+# address = "H6rHXmXoCQvq8Ue81MqNh7ow5ysPa1dSozwW3PU1dDH6" # prod
+address = "6WVSwDQXrBZeQVnu6hpnsRZhodaJTZBUaC334SiiBKdb" # staging
+
+[[test.validator.clone]] # sol reserve
+# address = "6gTJfuPHEg6uRAijRkMqNc9kan4sVZejKMxmvx2grT1p" # prod
+address = "EaAuYkMrA9rmnU9eVvHi63yqZzKzmnVj3PWFnmW9RD4W" # staging
+
+[[test.validator.clone]] # farm state
+# address = "BgMEUzcjkJxEH1PdPkZyv3NbUynwbkPiNJ7X2x7G1JmH" # prod
+address = "CtGYmztwXGrDtUrRCEydrwkwpJ7ptAY5BkfzThkVPPK9" # staging
+
+[[test.validator.clone]] # kamino scope prices
+address = "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C"
+
+[[test.validator.clone]] # reserve liquidity supply
+# address = "ywaaLvG7t1vXJo8sT3UzE8yzzZtxLM7Fmev64Jbooye" # prod
+address = "GaTJgVfgUTTYyZYTQB36rXTQEbv1i1LUvfGSBDAr2An1" # staging
+
+[[test.validator.clone]] # reserve collateral mint
+# address = "DxzDt5kPdFkMy9AANiZh4zuoitobqsn1G6bdoNyjePC2" # prod
+address = "966sqybMQJfwYgiEDQqiFsSK5o9tFPyBptZ3GFXbF7vR" # staging
+
+[[test.validator.clone]] # reserve destination deposit collateral
+# address = "8qnXfbaLbY6Y4xiCP6SZ3RK8ccjVa8DhALzDGifBPeNx" # prod
+address = "DZpgVJq3WpwRpPXNwzvLwVMerJodqCiitxAeU5QgkJe3" # staging
+
+[[test.validator.clone]] # scope prices
+address = "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C"
 
 #
 # Drift

@@ -1,17 +1,20 @@
 pub mod constants;
+pub mod cpi_autogen;
 pub mod error;
 pub mod instructions;
 pub mod security_txt;
 pub mod state;
 pub mod utils;
 
-use crate::instructions::{state as glam_state, *};
 use anchor_lang::prelude::*;
+use cpi_autogen::kamino_lending::*;
+use instructions::{state as glam_state, *};
 
 pub use constants::*;
 pub use state::model::*;
 
 use ::drift::{MarketType, OrderParams, PositionDirection};
+use kamino_lending::InitObligationArgs;
 
 #[cfg(feature = "mainnet")]
 declare_id!("GLAMbTqav9N9witRjswJ8enwp9vv5G8bsSJ2kPJ4rcyc");
@@ -890,6 +893,37 @@ pub mod glam {
     /// - Integration::JupiterVote
     pub fn cast_vote<'info>(ctx: Context<CastVote>, side: u8) -> Result<()> {
         jupiter::cast_vote_handler(ctx, side)
+    }
+
+    //////////////////////////////////////////////////////////////////////
+    // Kamino
+    //////////////////////////////////////////////////////////////////////
+    pub fn kamino_lending_init_user_metadata<'info>(
+        ctx: Context<KaminoLendingInitUserMetadata>,
+        user_lookup_table: Pubkey,
+    ) -> Result<()> {
+        cpi_autogen::kamino_lending::kamino_lending_init_user_metadata(ctx, user_lookup_table)
+    }
+
+    pub fn kamino_lending_init_obligation<'info>(
+        ctx: Context<KaminoLendingInitObligation>,
+        args: InitObligationArgs,
+    ) -> Result<()> {
+        cpi_autogen::kamino_lending::kamino_lending_init_obligation(ctx, args)
+    }
+
+    pub fn kamino_lending_init_obligation_farms_for_reserve<'info>(
+        ctx: Context<KaminoLendingInitObligationFarmsForReserve>,
+        mode: u8,
+    ) -> Result<()> {
+        cpi_autogen::kamino_lending::kamino_lending_init_obligation_farms_for_reserve(ctx, mode)
+    }
+
+    pub fn kamino_lending_deposit_reserve_liquidity_and_obligation_collateral<'info>(
+        ctx: Context<KaminoLendingDepositReserveLiquidityAndObligationCollateral>,
+        liquidity_amount: u64,
+    ) -> Result<()> {
+        cpi_autogen::kamino_lending::kamino_lending_deposit_reserve_liquidity_and_obligation_collateral(ctx, liquidity_amount)
     }
 
     //////////////////////////////////////////////////////////////////////

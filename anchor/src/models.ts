@@ -18,8 +18,11 @@ export const GlamPermissions =
 
 const GLAM_PROGRAM_ID_DEFAULT = new PublicKey(GlamIDLJson.address);
 
-export type StateAccountType = IdlTypes<Glam>["accountType"];
+export type StateAccountType = { vault: {} } | { mint: {} } | { fund: {} };
+
+// @ts-ignore cli-build failed due to "Type instantiation is excessively deep and possibly infinite."
 export type StateAccount = IdlAccounts<Glam>["stateAccount"];
+
 export type OpenfundsMetadataAccount =
   IdlAccounts<Glam>["openfundsMetadataAccount"];
 

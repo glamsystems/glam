@@ -36,5 +36,6 @@ jup_governance = { path = "./deps/jup_governance" }
 marinade = { package = "marinade-finance", git = "https://github.com/glamsystems/liquid-staking-program", branch = "anchor-0.30.1", features = [
     "cpi",
 ] }
+kamino_lending = { path = "./deps/kamino_lending" }
 
 glam_macros = { path = "./libs/macros" }

@@ -1153,6 +1153,7 @@ dependencies = [
  "glam_macros",
  "jup_governance",
  "jup_locked_voter",
+ "kamino_lending",
  "marinade-finance",
  "phf",
  "pyth-solana-receiver-sdk",
@@ -1349,6 +1350,13 @@ name = "jup_locked_voter"
 version = "0.1.0"
 dependencies = [
  "anchor-gen",
+ "anchor-lang",
+]
+
+[[package]]
+name = "kamino_lending"
+version = "0.1.0"
+dependencies = [
  "anchor-lang",
 ]
 

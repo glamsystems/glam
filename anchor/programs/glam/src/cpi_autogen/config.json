@@ -1,0 +1,44 @@
+{
+  "kamino_lending": [
+    {
+      "ix_name": "initUserMetadata",
+      "permission": "InitKamino",
+      "integration": "KaminoLending",
+      "remove_signer": ["owner"],
+      "vault_aliases": ["owner"],
+      "signed_by_vault": true,
+      "mutable_vault": false,
+      "mutable_state": false
+    },
+    {
+      "ix_name": "initObligation",
+      "permission": "InitKamino",
+      "integration": "KaminoLending",
+      "remove_signer": ["obligationOwner"],
+      "vault_aliases": ["obligationOwner"],
+      "signed_by_vault": true,
+      "mutable_vault": false,
+      "mutable_state": false
+    },
+    {
+      "ix_name": "initObligationFarmsForReserve",
+      "permission": "InitKamino",
+      "integration": "KaminoLending",
+      "remove_signer": ["owner"],
+      "vault_aliases": ["owner"],
+      "signed_by_vault": true,
+      "mutable_vault": false,
+      "mutable_state": false
+    },
+    {
+      "ix_name": "depositReserveLiquidityAndObligationCollateral",
+      "permission": "KaminoDeposit",
+      "integration": "KaminoLending",
+      "remove_signer": ["owner"],
+      "vault_aliases": ["owner"],
+      "signed_by_vault": true,
+      "mutable_vault": false,
+      "mutable_state": false
+    }
+  ]
+}
