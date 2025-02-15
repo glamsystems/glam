@@ -40,6 +40,14 @@ impl anchor_lang::Id for Jupiter {
         pubkey!("JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4")
     }
 }
+impl Jupiter {
+    fn event_authority() -> Pubkey {
+        pubkey!("D8cy77BBepLMngZx6ZukaTff5hCt1HrWyKk3Hnd9oitf")
+    }
+    fn platform_fee_account() -> Pubkey {
+        pubkey!("JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4")
+    }
+}
 
 #[derive(Accounts)]
 pub struct JupiterSwap<'info> {
@@ -103,9 +111,8 @@ fn parse_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
     res &= ctx.remaining_accounts[3].key() == ctx.accounts.output_signer_ata.key();
     res &= ctx.remaining_accounts[4].key() == Jupiter::id(); // null key - overwritten later
     res &= ctx.remaining_accounts[5].key() == ctx.accounts.output_mint.key();
-    res &= ctx.remaining_accounts[6].key() == Jupiter::id(); // null key
-
-    // res &= ctx.remaining_accounts[7].key() - eventAuthority ignored
+    res &= ctx.remaining_accounts[6].key() == Jupiter::platform_fee_account();
+    res &= ctx.remaining_accounts[7].key() == Jupiter::event_authority();
     res &= ctx.remaining_accounts[8].key() == Jupiter::id();
 
     (res, 4)
@@ -127,8 +134,7 @@ fn parse_exact_out_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
     res &= ctx.remaining_accounts[8].key() == ctx.accounts.input_token_program.key()
         || ctx.remaining_accounts[8].key() == ctx.accounts.output_token_program.key()
         || ctx.remaining_accounts[8].key() == Jupiter::id(); // token program or null key
-
-    // res &= ctx.remaining_accounts[9].key() - eventAuthority ignored
+    res &= ctx.remaining_accounts[9].key() == Jupiter::event_authority();
     res &= ctx.remaining_accounts[10].key() == Jupiter::id();
 
     (res, 4)
@@ -154,8 +160,7 @@ fn parse_shared_accounts_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
     res &= ctx.remaining_accounts[10].key() == ctx.accounts.input_token_program.key()
         || ctx.remaining_accounts[10].key() == ctx.accounts.output_token_program.key()
         || ctx.remaining_accounts[10].key() == Jupiter::id(); // token program or null key
-
-    // res &= ctx.remaining_accounts[11].key() - eventAuthority ignored
+    res &= ctx.remaining_accounts[11].key() == Jupiter::event_authority();
     res &= ctx.remaining_accounts[12].key() == Jupiter::id();
 
     (res, 6)
