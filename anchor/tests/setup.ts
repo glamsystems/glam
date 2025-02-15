@@ -150,9 +150,9 @@ export const quoteResponseForTest = {
 };
 
 export const swapInstructionsForTest = (
-  manager: PublicKey,
-  inputSignerAta: PublicKey,
-  outputSignerAta: PublicKey,
+  vault: PublicKey,
+  inputVaultAta: PublicKey,
+  outputVaultAta: PublicKey,
 ) => ({
   tokenLedgerInstruction: null,
   computeBudgetInstructions: [
@@ -272,17 +272,17 @@ export const swapInstructionsForTest = (
         isWritable: false,
       },
       {
-        pubkey: manager.toBase58(),
+        pubkey: vault.toBase58(),
         isSigner: true,
         isWritable: false,
       },
       {
-        pubkey: inputSignerAta.toBase58(),
+        pubkey: inputVaultAta.toBase58(),
         isSigner: false,
         isWritable: false,
       },
       {
-        pubkey: outputSignerAta.toBase58(),
+        pubkey: outputVaultAta.toBase58(),
         isSigner: false,
         isWritable: false,
       },
@@ -332,17 +332,17 @@ export const swapInstructionsForTest = (
         isWritable: false,
       },
       {
-        pubkey: manager.toBase58(),
+        pubkey: vault.toBase58(),
         isSigner: false,
         isWritable: false,
       },
       {
-        pubkey: inputSignerAta.toBase58(),
+        pubkey: inputVaultAta.toBase58(),
         isSigner: false,
         isWritable: true,
       },
       {
-        pubkey: outputSignerAta.toBase58(),
+        pubkey: outputVaultAta.toBase58(),
         isSigner: false,
         isWritable: true,
       },

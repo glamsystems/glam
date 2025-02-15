@@ -48,28 +48,21 @@ describe("glam_jupiter", () => {
 
   it("Swap end to end", async () => {
     const vault = glamClient.getVaultPda(statePda);
-
-    const signer = glamClient.getSigner();
-    const inputSignerAta = glamClient.getAta(WSOL, signer);
-    const outputSignerAta = glamClient.getAta(MSOL, signer);
+    const inputVaultAta = glamClient.getVaultAta(statePda, WSOL);
+    const outputVaultAta = glamClient.getVaultAta(statePda, MSOL);
 
     const quoteResponse = quoteResponseForTest;
     const swapInstructions = swapInstructionsForTest(
-      signer,
-      inputSignerAta,
-      outputSignerAta,
+      vault,
+      inputVaultAta,
+      outputVaultAta,
     );
 
     // Pre-checks: the following accounts should not exist
     const vaultBalanceBefore =
       await glamClient.provider.connection.getBalance(vault);
     expect(vaultBalanceBefore).toEqual(1_000_000_000);
-    const noAccountsBefore = [
-      glamClient.getAta(WSOL, signer),
-      glamClient.getAta(MSOL, signer),
-      glamClient.getAta(WSOL, vault),
-      glamClient.getAta(MSOL, vault),
-    ];
+    const noAccountsBefore = [inputVaultAta, outputVaultAta];
     noAccountsBefore.forEach(async (account) => {
       try {
         await getAccount(glamClient.provider.connection, account, "confirmed");
@@ -95,11 +88,7 @@ describe("glam_jupiter", () => {
     }
 
     // Post-checks: the following accounts should exist and have 0 balance
-    const accountsAfter = [
-      glamClient.getAta(WSOL, signer),
-      glamClient.getAta(MSOL, signer),
-      glamClient.getAta(WSOL, vault),
-    ];
+    const accountsAfter = [glamClient.getAta(WSOL, vault)];
     accountsAfter.forEach(async (account) => {
       try {
         const acc = await getAccount(
@@ -160,13 +149,14 @@ describe("glam_jupiter", () => {
     //
     // Execute swaps by delegate
     //
-    const inputSignerAta = glamClient.getAta(WSOL, delegate.publicKey);
-    const outputSignerAta = glamClient.getAta(MSOL, delegate.publicKey);
+    const vault = glamClient.getVaultPda(statePda);
+    const inputVaultAta = glamClient.getVaultAta(statePda, WSOL);
+    const outputVaultAta = glamClient.getVaultAta(statePda, MSOL);
     const quoteResponse = quoteResponseForTest;
     const swapInstructions = swapInstructionsForTest(
-      delegate.publicKey,
-      inputSignerAta,
-      outputSignerAta,
+      vault,
+      inputVaultAta,
+      outputVaultAta,
     );
 
     // 1st attempt, should fail because MSOL is not in assets allowlist,
@@ -223,9 +213,9 @@ describe("glam_jupiter", () => {
   }, 30_000);
 
   it("Swap back end to end", async () => {
-    const signer = glamClient.getSigner();
-    const inputSignerAta = glamClient.getAta(MSOL, signer);
-    const outputSignerAta = glamClient.getAta(WSOL, signer);
+    const vault = glamClient.getVaultPda(statePda);
+    const inputVaultAta = glamClient.getVaultAta(statePda, MSOL);
+    const outputVaultAta = glamClient.getVaultAta(statePda, WSOL);
 
     const swapInstructions = {
       tokenLedgerInstruction: null,
@@ -283,17 +273,17 @@ describe("glam_jupiter", () => {
             isWritable: false,
           },
           {
-            pubkey: signer.toBase58(),
+            pubkey: vault.toBase58(),
             isSigner: true,
             isWritable: false,
           },
           {
-            pubkey: inputSignerAta.toBase58(),
+            pubkey: inputVaultAta.toBase58(),
             isSigner: false,
             isWritable: false,
           },
           {
-            pubkey: outputSignerAta.toBase58(),
+            pubkey: outputVaultAta.toBase58(),
             isSigner: false,
             isWritable: false,
           },
@@ -343,17 +333,17 @@ describe("glam_jupiter", () => {
             isWritable: false,
           },
           {
-            pubkey: signer.toBase58(),
+            pubkey: vault.toBase58(),
             isSigner: false,
             isWritable: false,
           },
           {
-            pubkey: inputSignerAta.toBase58(),
+            pubkey: inputVaultAta.toBase58(),
             isSigner: false,
             isWritable: true,
           },
           {
-            pubkey: outputSignerAta.toBase58(),
+            pubkey: outputVaultAta.toBase58(),
             isSigner: false,
             isWritable: true,
           },
@@ -454,7 +444,7 @@ describe("glam_jupiter", () => {
     const swapInstructions =
       await delegateGlamClient.jupiterSwap.getSwapInstructions(
         quoteResponseForTest,
-        delegate.publicKey,
+        glamClient.getVaultPda(statePda),
       );
 
     try {
