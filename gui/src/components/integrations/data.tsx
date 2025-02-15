@@ -35,6 +35,11 @@ const metadata = {
       "Participate in Jupiter DAO governance by voting on proposals.",
     labels: ["Governance"],
   },
+  KaminoLending: {
+    description:
+      "Lend and borrow SOL and other assets with Kamino, a decentralized lending protocol.",
+    labels: ["Lending"],
+  },
 } as { [key: string]: { description: string; labels: string[] } };
 
 export const allIntegrations = GlamIntegrations.sort().map((integ, index) => ({

@@ -46,9 +46,9 @@ export function IntegrationsList({
               </div>
             </div>
             <div className="line-clamp-2 text-xs text-muted-foreground">
-              {item.description ? item.description.substring(0, 300) : ""}
+              {item.description.substring(0, 300)}
             </div>
-            {item.labels && item.labels.length ? (
+            {item.labels.length ? (
               <div className="flex items-center gap-2 mt-auto">
                 {item.labels.map((label: string) => (
                   <Badge
