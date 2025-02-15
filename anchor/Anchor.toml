@@ -93,7 +93,6 @@ address = "CtGYmztwXGrDtUrRCEydrwkwpJ7ptAY5BkfzThkVPPK9" # staging
 
 [[test.validator.clone]] # kamino scope prices
 address = "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C"
-# filename = "./fixtures/accounts/kamino/3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C.json"
 
 [[test.validator.clone]] # reserve liquidity supply
 # address = "ywaaLvG7t1vXJo8sT3UzE8yzzZtxLM7Fmev64Jbooye" # prod
