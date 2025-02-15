@@ -31,16 +31,6 @@
       "mutable_state": false
     },
     {
-      "ix_name": "refreshObligationFarmsForReserve",
-      "permission": "InitKamino",
-      "integration": "KaminoLending",
-      "remove_signer": ["crank"],
-      "vault_aliases": ["crank"],
-      "signed_by_vault": true,
-      "mutable_vault": false,
-      "mutable_state": false
-    },
-    {
       "ix_name": "depositReserveLiquidityAndObligationCollateral",
       "permission": "KaminoDeposit",
       "integration": "KaminoLending",
