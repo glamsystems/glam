@@ -110,7 +110,7 @@ pub fn drift_cancel_orders_by_ids<'c: 'info, 'info>(
     acl::check_access(
         &ctx.accounts.glam_state,
         &ctx.accounts.glam_signer.key,
-        Permission::DriftPlaceOrders
+        Permission::DriftModifyOrders
     )
 )]
 #[access_control(acl::check_integration(&ctx.accounts.glam_state, Integration::Drift))]

@@ -19,7 +19,7 @@
     },
     {
       "ix_name": "modifyOrder",
-      "permission": "DriftPlaceOrders",
+      "permission": "DriftModifyOrders",
       "integration": "Drift",
       "vault_aliases": ["authority"],
       "signed_by_vault": true
