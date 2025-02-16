@@ -35,6 +35,7 @@ pub enum Permission {
     JupiterSwapLst, // Swap LSTs
     KaminoInit,
     KaminoDeposit,
+    DriftModifyOrders,
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug, PartialEq)]

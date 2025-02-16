@@ -1,5 +1,5 @@
 {
-  "address": "GLAMbTqav9N9witRjswJ8enwp9vv5G8bsSJ2kPJ4rcyc",
+  "address": "Gco1pcjxCMYjKJjSNJ7mKV7qezeUTE7arXJgy7PAPNRc",
   "metadata": {
     "name": "glam",
     "version": "0.4.1",
@@ -744,6 +744,9 @@
         {
           "name": "user",
           "writable": true
+        },
+        {
+          "name": "authority"
         }
       ],
       "args": [
@@ -840,6 +843,9 @@
         {
           "name": "user",
           "writable": true
+        },
+        {
+          "name": "authority"
         }
       ],
       "args": [
@@ -1106,6 +1112,94 @@
         }
       ],
       "args": []
+    },
+    {
+      "name": "drift_modify_order",
+      "docs": [
+        "Modifies an existing drift order.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `order_id`: The ID of the order to modify.",
+        "- `modify_order_params`: The parameters to modify the order with.",
+        "",
+        "# Permission required",
+        "- Permission::DriftModifyOrder",
+        "",
+        "# Integration required",
+        "- Integration::Drift"
+      ],
+      "discriminator": [
+        235,
+        245,
+        222,
+        58,
+        245,
+        128,
+        19,
+        202
+      ],
+      "accounts": [
+        {
+          "name": "glam_state"
+        },
+        {
+          "name": "glam_vault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glam_state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glam_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+        },
+        {
+          "name": "state"
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "authority"
+        }
+      ],
+      "args": [
+        {
+          "name": "order_id",
+          "type": {
+            "option": "u32"
+          }
+        },
+        {
+          "name": "modify_order_params",
+          "type": {
+            "defined": {
+              "name": "ModifyOrderParams"
+            }
+          }
+        }
+      ]
     },
     {
       "name": "drift_place_orders",
@@ -7685,6 +7779,110 @@
       }
     },
     {
+      "name": "ModifyOrderParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "direction",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "PositionDirection"
+                }
+              }
+            }
+          },
+          {
+            "name": "base_asset_amount",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "price",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "reduce_only",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "post_only",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "PostOnlyParam"
+                }
+              }
+            }
+          },
+          {
+            "name": "immediate_or_cancel",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "max_ts",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "trigger_price",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "trigger_condition",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "OrderTriggerCondition"
+                }
+              }
+            }
+          },
+          {
+            "name": "oracle_price_offset",
+            "type": {
+              "option": "i32"
+            }
+          },
+          {
+            "name": "auction_duration",
+            "type": {
+              "option": "u8"
+            }
+          },
+          {
+            "name": "auction_start_price",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "auction_end_price",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "policy",
+            "type": {
+              "option": "u8"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "OpenfundsMetadataAccount",
       "type": {
         "kind": "struct",
@@ -8012,6 +8210,9 @@
           },
           {
             "name": "KaminoDeposit"
+          },
+          {
+            "name": "DriftModifyOrders"
           }
         ]
       }

@@ -7,13 +7,13 @@ pub mod state;
 pub mod utils;
 
 use anchor_lang::prelude::*;
-use cpi_autogen::kamino_lending::*;
+use cpi_autogen::{drift::*, kamino_lending::*};
 use instructions::{state as glam_state, *};
 
 pub use constants::*;
 pub use state::model::*;
 
-use ::drift::{MarketType, OrderParams, PositionDirection};
+use ::drift::{MarketType, ModifyOrderParams, OrderParams, PositionDirection};
 use kamino_lending::InitObligationArgs;
 
 #[cfg(feature = "mainnet")]
@@ -424,6 +424,26 @@ pub mod glam {
         drift::place_orders_handler(ctx, order_params)
     }
 
+    /// Modifies an existing drift order.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `order_id`: The ID of the order to modify.
+    /// - `modify_order_params`: The parameters to modify the order with.
+    ///
+    /// # Permission required
+    /// - Permission::DriftModifyOrder
+    ///
+    /// # Integration required
+    /// - Integration::Drift
+    pub fn drift_modify_order<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, DriftModifyOrder<'info>>,
+        order_id: Option<u32>,
+        modify_order_params: ModifyOrderParams,
+    ) -> Result<()> {
+        cpi_autogen::drift::drift_modify_order(ctx, order_id, modify_order_params)
+    }
+
     /// Cancels drift orders.
     ///
     /// # Parameters
@@ -443,7 +463,7 @@ pub mod glam {
         market_index: Option<u16>,
         direction: Option<PositionDirection>,
     ) -> Result<()> {
-        drift::cancel_orders_handler(ctx, market_type, market_index, direction)
+        cpi_autogen::drift::drift_cancel_orders(ctx, market_type, market_index, direction)
     }
 
     /// Cancels drift orders by order IDs.
@@ -461,7 +481,7 @@ pub mod glam {
         ctx: Context<'_, '_, 'c, 'info, DriftCancelOrders<'info>>,
         order_ids: Vec<u32>,
     ) -> Result<()> {
-        drift::drift_cancel_orders_by_ids(ctx, order_ids)
+        cpi_autogen::drift::drift_cancel_orders_by_ids(ctx, order_ids)
     }
 
     //////////////////////////////////////////////////////////////////////

@@ -15,6 +15,7 @@ import {
   decodeUser,
   SpotPosition,
   PerpPosition,
+  ModifyOrderParams,
 } from "@drift-labs/sdk";
 
 import { BaseClient, TxOptions } from "./base";
@@ -199,6 +200,23 @@ export class DriftClient {
     return await this.base.sendAndConfirm(tx);
   }
 
+  public async modifyOrder(
+    statePda: PublicKey,
+    modifyOrderParams: ModifyOrderParams,
+    subAccountId: number = 0,
+    marketConfigs: DriftMarketConfigs,
+    txOptions: TxOptions = {},
+  ): Promise<TransactionSignature> {
+    const tx = await this.modifyOrderTx(
+      statePda,
+      modifyOrderParams,
+      subAccountId,
+      marketConfigs,
+      txOptions,
+    );
+    return await this.base.sendAndConfirm(tx);
+  }
+
   public async cancelOrders(
     statePda: PublicKey,
     marketType: MarketType,
@@ -306,21 +324,20 @@ export class DriftClient {
     const spotMarketIndexes = spotPositions.map((p) => p.marketIndex);
     const perpMarketIndexes = perpPositions.map((p) => p.marketIndex);
 
-    switch (marketType) {
-      case MarketType.SPOT:
-        if (marketIndex && !spotMarketIndexes.includes(marketIndex)) {
-          spotMarketIndexes.push(marketIndex);
-        }
-        break;
-      case MarketType.PERP:
-        if (marketIndex && !perpMarketIndexes.includes(marketIndex)) {
-          perpMarketIndexes.push(marketIndex);
-        }
-        break;
+    // Note that marketIndex is could be 0, need to explicitly check undefined
+    if (
+      marketType === MarketType.SPOT &&
+      marketIndex !== undefined &&
+      !spotMarketIndexes.includes(marketIndex)
+    ) {
+      spotMarketIndexes.push(marketIndex);
+    } else if (
+      marketType === MarketType.PERP &&
+      marketIndex !== undefined &&
+      !perpMarketIndexes.includes(marketIndex)
+    ) {
+      perpMarketIndexes.push(marketIndex);
     }
-
-    console.log("spotMarketIndexes:", spotMarketIndexes);
-    console.log("perpMarketIndexes:", perpMarketIndexes);
 
     const oracles = spotMarketIndexes
       .map((i) => marketConfigs.spot[i].oracle)
@@ -329,6 +346,8 @@ export class DriftClient {
       .map((i) => marketConfigs.spot[i].marketPDA)
       .concat(perpMarketIndexes.map((i) => marketConfigs.perp[i].marketPDA));
 
+    console.log("composeRemainingAccounts for:", marketType, marketIndex);
+    console.log("markets:", markets);
     console.log("oracles:", oracles);
 
     return oracles
@@ -359,7 +378,6 @@ export class DriftClient {
     const [user, userStats] = this.getUser(statePda);
     const driftState = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
-    // @ts-ignore Type instantiation is excessively deep and possibly infinite.
     const tx = await this.base.program.methods
       .driftInitialize()
       .accounts({
@@ -625,6 +643,45 @@ export class DriftClient {
     });
   }
 
+  public async modifyOrderTx(
+    statePda: PublicKey,
+    modifyOrderParams: ModifyOrderParams,
+    subAccountId: number = 0,
+    marketConfigs: DriftMarketConfigs,
+    txOptions: TxOptions = {},
+  ): Promise<VersionedTransaction> {
+    // const { marketIndex, marketType } = orderParams;
+    // const remainingAccounts = await this.composeRemainingAccounts(
+    //   statePda,
+    //   subAccountId,
+    //   marketConfigs,
+    //   marketType,
+    //   marketIndex,
+    // );
+
+    const signer = txOptions.signer || this.base.getSigner();
+    const [user] = this.getUser(statePda, subAccountId);
+    const driftState = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
+
+    const tx = await this.base.program.methods
+      // @ts-ignore
+      .driftModifyOrder(1, modifyOrderParams)
+      .accountsPartial({
+        glamState: statePda,
+        glamSigner: signer,
+        user,
+        state: driftState,
+        authority: this.base.getVaultPda(statePda),
+      })
+      // .remainingAccounts(remainingAccounts)
+      .transaction();
+
+    return await this.base.intoVersionedTransaction({
+      tx,
+      ...txOptions,
+    });
+  }
+
   public async cancelOrdersTx(
     glamState: PublicKey,
     marketType: MarketType,
@@ -635,6 +692,7 @@ export class DriftClient {
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const glamSigner = txOptions.signer || this.base.getSigner();
+    const glamVault = this.base.getVaultPda(glamState);
     const [user] = this.getUser(glamState, subAccountId);
     const driftState = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
@@ -654,6 +712,7 @@ export class DriftClient {
         glamSigner,
         user,
         state: driftState,
+        authority: glamVault,
       })
       .remainingAccounts(remainingAccounts)
       .transaction();
@@ -672,6 +731,7 @@ export class DriftClient {
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const glamSigner = txOptions.signer || this.base.getSigner();
+    const glamVault = this.base.getVaultPda(glamState);
     const [user] = this.getUser(glamState, subAccountId);
     const driftState = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
@@ -688,6 +748,7 @@ export class DriftClient {
         glamSigner,
         user,
         state: driftState,
+        authority: glamVault,
       })
       .remainingAccounts(remainingAccounts)
       .transaction();

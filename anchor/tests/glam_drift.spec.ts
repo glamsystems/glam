@@ -5,6 +5,7 @@ import {
   DriftClient,
   getOrderParams,
   MarketType,
+  ModifyOrderParams,
   OrderType,
   PositionDirection,
   User,
@@ -276,6 +277,23 @@ describe("glam_drift", () => {
         marketConfigs,
       );
       console.log("driftPlaceOrders", txPlaceSpotOrder);
+
+      // set all values in orderParams to null
+      const modifyOrderParams = { ...orderParams } as ModifyOrderParams;
+      Object.keys(orderParams).forEach(
+        (key) => (modifyOrderParams[key] = null),
+      );
+      modifyOrderParams.price = new anchor.BN(110_000_000);
+      // @ts-ignore
+      modifyOrderParams.policy = null;
+
+      const txModifyOrder = await glamClient.drift.modifyOrder(
+        statePda,
+        modifyOrderParams,
+        0,
+        marketConfigs,
+      );
+      console.log("modifyOrder", txModifyOrder);
     } catch (e) {
       console.error(e);
       throw e;
