@@ -45,7 +45,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install && cd apps/fatcat && pnpm install
+        run: pnpm install && pnpm install --filter @glamsystems/glam-sdk && cd apps/fatcat && pnpm install
 
       - name: Build
         run: pnpm run fatcat-build

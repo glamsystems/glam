@@ -6,7 +6,8 @@ WORKDIR /mnt/workspace
 
 COPY . ./
 RUN npm install -g pnpm@9.15.4
-RUN pnpm install && pnpm install --filter @glamsystems/glam-sdk && pnpm run gui-build
+RUN pnpm install && pnpm install --filter @glamsystems/glam-sdk 
+RUN pnpm run gui-build
 
 # Final stage (runtime image)
 FROM node:20-slim AS runtime
