@@ -750,6 +750,9 @@ export type Glam = {
         {
           "name": "user",
           "writable": true
+        },
+        {
+          "name": "authority"
         }
       ],
       "args": [
@@ -846,6 +849,9 @@ export type Glam = {
         {
           "name": "user",
           "writable": true
+        },
+        {
+          "name": "authority"
         }
       ],
       "args": [
@@ -1112,6 +1118,94 @@ export type Glam = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "driftModifyOrder",
+      "docs": [
+        "Modifies an existing drift order.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `order_id`: The ID of the order to modify.",
+        "- `modify_order_params`: The parameters to modify the order with.",
+        "",
+        "# Permission required",
+        "- Permission::DriftModifyOrder",
+        "",
+        "# Integration required",
+        "- Integration::Drift"
+      ],
+      "discriminator": [
+        235,
+        245,
+        222,
+        58,
+        245,
+        128,
+        19,
+        202
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+        },
+        {
+          "name": "state"
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "authority"
+        }
+      ],
+      "args": [
+        {
+          "name": "orderId",
+          "type": {
+            "option": "u32"
+          }
+        },
+        {
+          "name": "modifyOrderParams",
+          "type": {
+            "defined": {
+              "name": "modifyOrderParams"
+            }
+          }
+        }
+      ]
     },
     {
       "name": "driftPlaceOrders",
@@ -7673,6 +7767,110 @@ export type Glam = {
       }
     },
     {
+      "name": "modifyOrderParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "direction",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "positionDirection"
+                }
+              }
+            }
+          },
+          {
+            "name": "baseAssetAmount",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "price",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "reduceOnly",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "postOnly",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "postOnlyParam"
+                }
+              }
+            }
+          },
+          {
+            "name": "immediateOrCancel",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "maxTs",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "triggerPrice",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "triggerCondition",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "orderTriggerCondition"
+                }
+              }
+            }
+          },
+          {
+            "name": "oraclePriceOffset",
+            "type": {
+              "option": "i32"
+            }
+          },
+          {
+            "name": "auctionDuration",
+            "type": {
+              "option": "u8"
+            }
+          },
+          {
+            "name": "auctionStartPrice",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "auctionEndPrice",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "policy",
+            "type": {
+              "option": "u8"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "openfundsMetadataAccount",
       "type": {
         "kind": "struct",
@@ -8000,6 +8198,9 @@ export type Glam = {
           },
           {
             "name": "kaminoDeposit"
+          },
+          {
+            "name": "driftModifyOrders"
           }
         ]
       }

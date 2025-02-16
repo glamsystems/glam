@@ -1,4 +1,30 @@
 {
+  "drift": [
+    {
+      "ix_name": "cancelOrders",
+      "permission": "DriftCancelOrders",
+      "integration": "Drift",
+      "vault_aliases": ["authority"],
+      "with_remaining_accounts": true,
+      "signed_by_vault": true
+    },
+    {
+      "ix_name": "cancelOrdersByIds",
+      "permission": "DriftCancelOrders",
+      "integration": "Drift",
+      "vault_aliases": ["authority"],
+      "accounts_type_alias": "cancelOrders",
+      "with_remaining_accounts": true,
+      "signed_by_vault": true
+    },
+    {
+      "ix_name": "modifyOrder",
+      "permission": "DriftModifyOrders",
+      "integration": "Drift",
+      "vault_aliases": ["authority"],
+      "signed_by_vault": true
+    }
+  ],
   "kamino_lending": [
     {
       "ix_name": "initUserMetadata",
