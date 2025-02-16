@@ -263,9 +263,9 @@ const DEFAULT_SWAP_FORM_VALUES: SwapSchema = {
   exactMode: "ExactIn",
   maxAccounts: 20,
   from: 0,
-  fromAsset: "USDC",
+  fromAsset: "SOL",
   to: 0,
-  toAsset: "SOL",
+  toAsset: "USDC",
   directRouteOnly: false,
   useWSOL: false,
   versionedTransactions: true,
@@ -322,8 +322,10 @@ export default function Trade() {
   } = useGlam();
 
   const [activeTab, setActiveTab] = useState("swap");
-  const [fromAsset, setFromAsset] = useState("USDC");
-  const [toAsset, setToAsset] = useState("SOL");
+  const [fromAsset, setFromAsset] = useState(
+    DEFAULT_SWAP_FORM_VALUES.fromAsset,
+  );
+  const [toAsset, setToAsset] = useState(DEFAULT_SWAP_FORM_VALUES.toAsset);
   const [dexesList, setDexesList] = useState(
     [] as { id: string; label: string }[],
   );
@@ -770,8 +772,8 @@ export default function Trade() {
           ...DEFAULT_SWAP_FORM_VALUES,
           dexes: [],
         });
-        setFromAsset("USDC");
-        setToAsset("SOL");
+        setFromAsset(DEFAULT_SWAP_FORM_VALUES.fromAsset);
+        setToAsset(DEFAULT_SWAP_FORM_VALUES.toAsset);
         break;
       case "spot":
         spotForm.reset(DEFAULT_SPOT_FORM_VALUES);

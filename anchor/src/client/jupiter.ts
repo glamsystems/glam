@@ -111,6 +111,7 @@ export class JupiterSwapClient {
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
+    const vault = this.base.getVaultPda(statePda);
 
     let swapInstruction: InstructionFromJupiter;
     let addressLookupTableAddresses: string[];
@@ -133,7 +134,7 @@ export class JupiterSwapClient {
         quoteResponse = await this.getQuoteResponse(quoteParams);
       }
 
-      const ins = await this.getSwapInstructions(quoteResponse, signer);
+      const ins = await this.getSwapInstructions(quoteResponse, vault);
       swapInstruction = ins.swapInstruction;
       addressLookupTableAddresses = ins.addressLookupTableAddresses;
     } else {
@@ -147,7 +148,7 @@ export class JupiterSwapClient {
     );
 
     const swapIx: { data: any; keys: AccountMeta[] } =
-      this.toTransactionInstruction(swapInstruction);
+      this.toTransactionInstruction(swapInstruction, vault.toBase58());
 
     const inputTokenProgram = await this.getTokenProgram(inputMint);
     const outputTokenProgram = await this.getTokenProgram(outputMint);
@@ -166,12 +167,13 @@ export class JupiterSwapClient {
       inputTokenProgram,
       outputTokenProgram,
     );
+    //@ts-ignore
     const tx = await this.base.program.methods
       .jupiterSwap(amount, swapIx.data)
       .accountsPartial({
         state: statePda,
         signer,
-        vault: this.base.getVaultPda(statePda),
+        vault,
         inputVaultAta: this.base.getVaultAta(
           statePda,
           inputMint,
@@ -180,12 +182,6 @@ export class JupiterSwapClient {
         outputVaultAta: this.base.getVaultAta(
           statePda,
           outputMint,
-          outputTokenProgram,
-        ),
-        inputSignerAta: this.base.getAta(inputMint, signer, inputTokenProgram),
-        outputSignerAta: this.base.getAta(
-          outputMint,
-          signer,
           outputTokenProgram,
         ),
         inputMint,
@@ -223,20 +219,6 @@ export class JupiterSwapClient {
     let preInstructions = [];
 
     const ataParams = [
-      {
-        payer: signer,
-        ata: this.base.getAta(inputMint, signer, inputTokenProgram),
-        owner: signer,
-        mint: inputMint,
-        tokenProgram: inputTokenProgram,
-      },
-      {
-        payer: signer,
-        ata: this.base.getAta(outputMint, signer, outputTokenProgram),
-        owner: signer,
-        mint: outputMint,
-        tokenProgram: outputTokenProgram,
-      },
       {
         payer: signer,
         ata: this.base.getVaultAta(statePda, outputMint, outputTokenProgram),
@@ -289,7 +271,10 @@ export class JupiterSwapClient {
     return mintInfo.owner;
   };
 
-  toTransactionInstruction = (ixPayload: InstructionFromJupiter) => {
+  toTransactionInstruction = (
+    ixPayload: InstructionFromJupiter,
+    vaultStr: string,
+  ) => {
     if (ixPayload === null) {
       throw new Error("ixPayload is null");
     }
@@ -298,7 +283,7 @@ export class JupiterSwapClient {
       programId: new PublicKey(ixPayload.programId),
       keys: ixPayload.accounts.map((key: any) => ({
         pubkey: new PublicKey(key.pubkey),
-        isSigner: key.isSigner,
+        isSigner: key.isSigner && key.pubkey != vaultStr,
         isWritable: key.isWritable,
       })),
       data: Buffer.from(ixPayload.data, "base64"),

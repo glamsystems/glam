@@ -1,9 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::Token;
-use anchor_spl::token_interface::{
-    transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
-};
+use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 use glam_macros::vault_signer_seeds;
 
 use solana_program::{instruction::Instruction, program::invoke_signed};
@@ -40,6 +38,14 @@ impl anchor_lang::Id for Jupiter {
         pubkey!("JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4")
     }
 }
+impl Jupiter {
+    fn event_authority() -> Pubkey {
+        pubkey!("D8cy77BBepLMngZx6ZukaTff5hCt1HrWyKk3Hnd9oitf")
+    }
+    fn platform_fee_account() -> Pubkey {
+        pubkey!("JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4")
+    }
+}
 
 #[derive(Accounts)]
 pub struct JupiterSwap<'info> {
@@ -48,22 +54,14 @@ pub struct JupiterSwap<'info> {
     #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
     pub vault: SystemAccount<'info>,
 
-    /// CHECK: no need to deser because we transfer_checked from
-    ///        input_vault_ata to input_signer_ata
-    #[account(mut)]
-    pub input_vault_ata: UncheckedAccount<'info>,
     #[account(
         mut,
         associated_token::mint = input_mint,
-        associated_token::authority = signer,
+        associated_token::authority = vault,
         associated_token::token_program = input_token_program
     )]
-    pub input_signer_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub input_vault_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
-    /// TODO: Do we really need output_signer_ata?
-    /// CHECK: no need deser, trust Jupiter
-    #[account(mut)]
-    pub output_signer_ata: UncheckedAccount<'info>,
     #[account(
         mut,
         associated_token::mint = output_mint,
@@ -84,7 +82,6 @@ pub struct JupiterSwap<'info> {
     pub output_stake_pool: Option<AccountInfo<'info>>,
 
     // programs
-    pub system_program: Program<'info, System>,
     pub jupiter_program: Program<'info, Jupiter>,
     pub associated_token_program: Program<'info, AssociatedToken>,
 
@@ -92,49 +89,47 @@ pub struct JupiterSwap<'info> {
     pub output_token_program: Interface<'info, TokenInterface>,
 }
 
-fn parse_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
+fn parse_route(ctx: &Context<JupiterSwap>) -> bool {
     let mut res = true;
     res &= ctx.remaining_accounts.len() > 9;
 
     res &= ctx.remaining_accounts[0].key() == ctx.accounts.output_token_program.key()
         || ctx.remaining_accounts[0].key() == ctx.accounts.input_token_program.key();
-    res &= ctx.remaining_accounts[1].key() == ctx.accounts.signer.key();
-    res &= ctx.remaining_accounts[2].key() == ctx.accounts.input_signer_ata.key();
-    res &= ctx.remaining_accounts[3].key() == ctx.accounts.output_signer_ata.key();
-    res &= ctx.remaining_accounts[4].key() == Jupiter::id(); // null key - overwritten later
+    res &= ctx.remaining_accounts[1].key() == ctx.accounts.vault.key();
+    res &= ctx.remaining_accounts[2].key() == ctx.accounts.input_vault_ata.key();
+    res &= ctx.remaining_accounts[3].key() == ctx.accounts.output_vault_ata.key();
+    res &= ctx.remaining_accounts[4].key() == Jupiter::id(); // null key
     res &= ctx.remaining_accounts[5].key() == ctx.accounts.output_mint.key();
-    res &= ctx.remaining_accounts[6].key() == Jupiter::id(); // null key
-
-    // res &= ctx.remaining_accounts[7].key() - eventAuthority ignored
+    res &= ctx.remaining_accounts[6].key() == Jupiter::platform_fee_account();
+    res &= ctx.remaining_accounts[7].key() == Jupiter::event_authority();
     res &= ctx.remaining_accounts[8].key() == Jupiter::id();
 
-    (res, 4)
+    res
 }
 
-fn parse_exact_out_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
+fn parse_exact_out_route(ctx: &Context<JupiterSwap>) -> bool {
     let mut res = true;
     res &= ctx.remaining_accounts.len() > 11;
 
     res &= ctx.remaining_accounts[0].key() == ctx.accounts.output_token_program.key()
         || ctx.remaining_accounts[0].key() == ctx.accounts.input_token_program.key();
-    res &= ctx.remaining_accounts[1].key() == ctx.accounts.signer.key();
-    res &= ctx.remaining_accounts[2].key() == ctx.accounts.input_signer_ata.key();
-    res &= ctx.remaining_accounts[3].key() == ctx.accounts.output_signer_ata.key();
-    res &= ctx.remaining_accounts[4].key() == Jupiter::id(); // null key - overwritten later
+    res &= ctx.remaining_accounts[1].key() == ctx.accounts.vault.key();
+    res &= ctx.remaining_accounts[2].key() == ctx.accounts.input_vault_ata.key();
+    res &= ctx.remaining_accounts[3].key() == ctx.accounts.output_vault_ata.key();
+    res &= ctx.remaining_accounts[4].key() == Jupiter::id(); // null key
     res &= ctx.remaining_accounts[5].key() == ctx.accounts.input_mint.key();
     res &= ctx.remaining_accounts[6].key() == ctx.accounts.output_mint.key();
     res &= ctx.remaining_accounts[7].key() == Jupiter::id(); // null key
     res &= ctx.remaining_accounts[8].key() == ctx.accounts.input_token_program.key()
         || ctx.remaining_accounts[8].key() == ctx.accounts.output_token_program.key()
         || ctx.remaining_accounts[8].key() == Jupiter::id(); // token program or null key
-
-    // res &= ctx.remaining_accounts[9].key() - eventAuthority ignored
+    res &= ctx.remaining_accounts[9].key() == Jupiter::event_authority();
     res &= ctx.remaining_accounts[10].key() == Jupiter::id();
 
-    (res, 4)
+    res
 }
 
-fn parse_shared_accounts_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
+fn parse_shared_accounts_route(ctx: &Context<JupiterSwap>) -> bool {
     let mut res = true;
     res &= ctx.remaining_accounts.len() > 13;
 
@@ -142,28 +137,27 @@ fn parse_shared_accounts_route(ctx: &Context<JupiterSwap>) -> (bool, usize) {
         || ctx.remaining_accounts[0].key() == ctx.accounts.input_token_program.key();
     // res &= ctx.remaining_accounts[1].key() - programAuthority ignored
 
-    res &= ctx.remaining_accounts[2].key() == ctx.accounts.signer.key();
-    res &= ctx.remaining_accounts[3].key() == ctx.accounts.input_signer_ata.key();
+    res &= ctx.remaining_accounts[2].key() == ctx.accounts.vault.key();
+    res &= ctx.remaining_accounts[3].key() == ctx.accounts.input_vault_ata.key();
     // res &= ctx.remaining_accounts[4].key() - programSourceTokenAccount ignored
     // res &= ctx.remaining_accounts[5].key() - programDestinationTokenAccount ignored
 
-    res &= ctx.remaining_accounts[6].key() == ctx.accounts.output_signer_ata.key();
+    res &= ctx.remaining_accounts[6].key() == ctx.accounts.output_vault_ata.key();
     res &= ctx.remaining_accounts[7].key() == ctx.accounts.input_mint.key();
     res &= ctx.remaining_accounts[8].key() == ctx.accounts.output_mint.key();
     res &= ctx.remaining_accounts[9].key() == Jupiter::id(); // null key
     res &= ctx.remaining_accounts[10].key() == ctx.accounts.input_token_program.key()
         || ctx.remaining_accounts[10].key() == ctx.accounts.output_token_program.key()
         || ctx.remaining_accounts[10].key() == Jupiter::id(); // token program or null key
-
-    // res &= ctx.remaining_accounts[11].key() - eventAuthority ignored
+    res &= ctx.remaining_accounts[11].key() == Jupiter::event_authority();
     res &= ctx.remaining_accounts[12].key() == Jupiter::id();
 
-    (res, 6)
+    res
 }
 
 fn is_lst<'info>(mint: &Pubkey, stake_pool_account: Option<&AccountInfo<'info>>) -> Result<bool> {
-    // Check if the mint is MSOL
-    if mint == &MSOL {
+    // Check if the mint is WSOL or MSOL
+    if mint == &WSOL || mint == &MSOL {
         return Ok(true);
     }
 
@@ -194,7 +188,7 @@ fn is_lst<'info>(mint: &Pubkey, stake_pool_account: Option<&AccountInfo<'info>>)
 #[vault_signer_seeds]
 pub fn swap_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, JupiterSwap<'info>>,
-    amount: u64,
+    _amount: u64,
     data: Vec<u8>,
 ) -> Result<()> {
     let state = &mut ctx.accounts.state;
@@ -217,9 +211,7 @@ pub fn swap_handler<'c: 'info, 'info>(
     if input_in_assets && output_in_assets {
         accepted_permissions.push(Permission::JupiterSwapAllowlisted);
     }
-    if input_is_lst && (output_is_lst || output_in_assets)
-        || output_is_lst && (input_is_lst || input_in_assets)
-    {
+    if input_is_lst && output_is_lst {
         accepted_permissions.push(Permission::JupiterSwapLst);
     }
     acl::check_access_any(&state, &ctx.accounts.signer.key, accepted_permissions)?;
@@ -235,7 +227,7 @@ pub fn swap_handler<'c: 'info, 'info>(
 
     // Parse Jupiter Swap accounts
     let ix_disc = u64::from_be_bytes(data[..8].try_into().unwrap());
-    let (parse_result, dst_ata_idx) = match ix_disc {
+    let parse_result = match ix_disc {
         0xe517cb977ae3ad2a => parse_route(&ctx),           // route
         0xd033ef977b2bed5c => parse_exact_out_route(&ctx), // exactOutRoute
         0xc1209b3341d69c81 => parse_shared_accounts_route(&ctx), // sharedAccountsRoute
@@ -245,62 +237,31 @@ pub fn swap_handler<'c: 'info, 'info>(
     require!(parse_result, GlamError::InvalidSwap);
 
     //
-    // Transfer vault -> signer
-    //
-    transfer_checked(
-        CpiContext::new_with_signer(
-            ctx.accounts.input_token_program.to_account_info(),
-            TransferChecked {
-                from: ctx.accounts.input_vault_ata.to_account_info(),
-                mint: ctx.accounts.input_mint.to_account_info(),
-                to: ctx.accounts.input_signer_ata.to_account_info(),
-                authority: ctx.accounts.vault.to_account_info(),
-            },
-            vault_signer_seeds,
-        ),
-        amount,
-        ctx.accounts.input_mint.decimals,
-    )?;
-
-    //
     // Jupiter swap
     //
 
     // Map remaining_accounts -> AccountMeta
-    let mut accounts: Vec<AccountMeta> = ctx
+    let vault_key = ctx.accounts.vault.key();
+    let accounts: Vec<AccountMeta> = ctx
         .remaining_accounts
         .iter()
         .map(|acc| AccountMeta {
             pubkey: *acc.key,
-            is_signer: acc.is_signer,
+            is_signer: acc.is_signer || *acc.key == vault_key,
             is_writable: acc.is_writable,
         })
         .collect();
 
-    // Override destinationTokenAccount
-    accounts[dst_ata_idx] = AccountMeta {
-        pubkey: ctx.accounts.output_vault_ata.key(),
-        is_signer: false,
-        is_writable: true,
-    };
-
-    // Include output_vault_ata in accounts_infos (add it to remaining_accounts)
-    let accounts_infos = &[
-        ctx.remaining_accounts,
-        &[ctx.accounts.output_vault_ata.to_account_info()],
-    ]
-    .concat();
-
     // Swap
-    let _ = invoke_signed(
+    invoke_signed(
         &Instruction {
             program_id: Jupiter::id(),
             accounts,
             data,
         },
-        accounts_infos,
-        &[],
-    );
+        ctx.remaining_accounts,
+        vault_signer_seeds,
+    )?;
 
     Ok(())
 }
