@@ -14,6 +14,7 @@ pub enum EngineFieldName {
     DriftMarketIndexesPerp,
     DriftMarketIndexesSpot,
     DriftOrderTypes,
+    MaxSwapSlippageBps,
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug)]

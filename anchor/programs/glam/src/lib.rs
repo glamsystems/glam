@@ -773,6 +773,13 @@ pub mod glam {
         jupiter::swap_handler(ctx, amount, data)
     }
 
+    pub fn jupiter_set_max_swap_slippage(
+        ctx: Context<JupiterSetMaxSwapSlippage>,
+        slippage: u64,
+    ) -> Result<()> {
+        jupiter::set_max_swap_slippage_handler(ctx, slippage)
+    }
+
     //////////////////////////////////////////////////////////////////////
     // Jupiter vote
     //////////////////////////////////////////////////////////////////////
