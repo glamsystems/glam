@@ -2170,6 +2170,16 @@ export type Glam = {
     },
     {
       "name": "jupiterSetMaxSwapSlippage",
+      "docs": [
+        "Sets the max swap slippage.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `slippage`: The maximum allowed slippage in basis points.",
+        "",
+        "# Permission required",
+        "- Owner only, delegates not allowed"
+      ],
       "discriminator": [
         110,
         79,

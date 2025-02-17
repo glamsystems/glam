@@ -99,6 +99,19 @@ export class JupiterSwapClient {
     return await this.base.sendAndConfirm(tx);
   }
 
+  public async setMaxSwapSlippage(
+    statePda: PublicKey,
+    slippageBps: number,
+    txOptions: TxOptions = {},
+  ): Promise<TransactionSignature> {
+    const tx = await this.setMaxSwapSlippageTx(
+      statePda,
+      slippageBps,
+      txOptions,
+    );
+    return await this.base.sendAndConfirm(tx);
+  }
+
   /*
    * API methods
    */
@@ -199,6 +212,25 @@ export class JupiterSwapClient {
     return this.base.intoVersionedTransaction({
       tx,
       lookupTables,
+      ...txOptions,
+    });
+  }
+
+  public async setMaxSwapSlippageTx(
+    statePda: PublicKey,
+    slippageBps: number,
+    txOptions: TxOptions = {},
+  ): Promise<VersionedTransaction> {
+    const signer = txOptions.signer || this.base.getSigner();
+    const tx = await this.base.program.methods
+      .jupiterSetMaxSwapSlippage(new BN(slippageBps))
+      .accounts({
+        state: statePda,
+        signer,
+      })
+      .transaction();
+    return this.base.intoVersionedTransaction({
+      tx,
       ...txOptions,
     });
   }

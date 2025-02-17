@@ -418,6 +418,32 @@ describe("glam_jupiter", () => {
     expect(vaultMsol.amount.toString()).toEqual("42591005");
   });
 
+  it("Set max slippage and swap by providing quote params", async () => {
+    const amount = 50_000_000;
+    try {
+      const txSetMaxSlippage = await glamClient.jupiterSwap.setMaxSwapSlippage(
+        statePda,
+        100,
+      );
+      console.log("Set max slippage txSig", txSetMaxSlippage);
+
+      const txIdSwap = await glamClient.jupiterSwap.swap(statePda, {
+        inputMint: WSOL.toBase58(),
+        outputMint: MSOL.toBase58(),
+        amount,
+        slippageBps: 150,
+        swapMode: "ExactIn",
+        onlyDirectRoutes: true,
+        asLegacyTransaction: false,
+        maxAccounts: 18,
+      });
+      expect(txIdSwap).toBeUndefined();
+    } catch (e) {
+      // should fail due to slippage exceeding max allowed
+      expect(e.message).toEqual("Swap failed.");
+    }
+  }, 15_000);
+
   it("Swap by providing quote params", async () => {
     const amount = 50_000_000;
     try {
@@ -425,8 +451,7 @@ describe("glam_jupiter", () => {
         inputMint: WSOL.toBase58(),
         outputMint: MSOL.toBase58(),
         amount,
-        autoSlippage: true,
-        autoSlippageCollisionUsdValue: 1000,
+        slippageBps: 10,
         swapMode: "ExactIn",
         onlyDirectRoutes: true,
         asLegacyTransaction: false,

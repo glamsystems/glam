@@ -773,6 +773,14 @@ pub mod glam {
         jupiter::swap_handler(ctx, amount, data)
     }
 
+    /// Sets the max swap slippage.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the transaction.
+    /// - `slippage`: The maximum allowed slippage in basis points.
+    ///
+    /// # Permission required
+    /// - Owner only, delegates not allowed
     pub fn jupiter_set_max_swap_slippage(
         ctx: Context<JupiterSetMaxSwapSlippage>,
         slippage: u64,
