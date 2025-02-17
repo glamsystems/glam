@@ -2169,6 +2169,46 @@ export type Glam = {
       ]
     },
     {
+      "name": "jupiterSetMaxSwapSlippage",
+      "docs": [
+        "Sets the max swap slippage.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `slippage`: The maximum allowed slippage in basis points.",
+        "",
+        "# Permission required",
+        "- Owner only, delegates not allowed"
+      ],
+      "discriminator": [
+        110,
+        79,
+        13,
+        71,
+        208,
+        111,
+        56,
+        66
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "writable": true
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "slippage",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "jupiterSwap",
       "docs": [
         "Swaps assets using Jupiter.",
@@ -6686,6 +6726,9 @@ export type Glam = {
           },
           {
             "name": "driftOrderTypes"
+          },
+          {
+            "name": "maxSwapSlippageBps"
           }
         ]
       }

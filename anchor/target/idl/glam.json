@@ -2163,6 +2163,46 @@
       ]
     },
     {
+      "name": "jupiter_set_max_swap_slippage",
+      "docs": [
+        "Sets the max swap slippage.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the transaction.",
+        "- `slippage`: The maximum allowed slippage in basis points.",
+        "",
+        "# Permission required",
+        "- Owner only, delegates not allowed"
+      ],
+      "discriminator": [
+        110,
+        79,
+        13,
+        71,
+        208,
+        111,
+        56,
+        66
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "writable": true
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "slippage",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "jupiter_swap",
       "docs": [
         "Swaps assets using Jupiter.",
@@ -6680,6 +6720,9 @@
           },
           {
             "name": "DriftOrderTypes"
+          },
+          {
+            "name": "MaxSwapSlippageBps"
           }
         ]
       }

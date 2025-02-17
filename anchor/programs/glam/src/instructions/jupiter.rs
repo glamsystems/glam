@@ -30,6 +30,50 @@ use jup_governance::state::{Governor, Proposal, Vote};
 
 use anchor_lang::Ids;
 
+trait StateAccountExt {
+    fn max_swap_slippage(&self) -> Option<u64>;
+    fn set_max_swap_slippage(&mut self, slippage: u64);
+}
+
+impl StateAccountExt for StateAccount {
+    fn max_swap_slippage(&self) -> Option<u64> {
+        self.params.get(0).and_then(|params| {
+            params
+                .iter()
+                .find(|field| matches!(field.name, EngineFieldName::MaxSwapSlippageBps))
+                .and_then(|field| match &field.value {
+                    EngineFieldValue::U64 { val } => Some(*val),
+                    _ => None,
+                })
+        })
+    }
+
+    fn set_max_swap_slippage(&mut self, slippage: u64) {
+        if let Some(params) = self.params.get_mut(0) {
+            match params
+                .iter_mut()
+                .find(|f| f.name == EngineFieldName::MaxSwapSlippageBps)
+            {
+                Some(field) => {
+                    field.value = EngineFieldValue::U64 { val: slippage };
+                }
+                None => {
+                    params.push(EngineField {
+                        name: EngineFieldName::MaxSwapSlippageBps,
+                        value: EngineFieldValue::U64 { val: slippage },
+                    });
+                }
+            }
+        } else {
+            // Initialize params[0] if it doesn't exist
+            self.params.push(vec![EngineField {
+                name: EngineFieldName::MaxSwapSlippageBps,
+                value: EngineFieldValue::U64 { val: slippage },
+            }]);
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct Jupiter;
 
@@ -45,6 +89,29 @@ impl Jupiter {
     fn platform_fee_account() -> Pubkey {
         pubkey!("JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4")
     }
+    fn parse_slippage_bps(data: Vec<u8>) -> u64 {
+        // last byte is fee bps, 2 bytes before it is the slippage in bps
+        let slippage_bytes = &data[data.len() - 3..data.len() - 1];
+        u16::from_le_bytes([slippage_bytes[0], slippage_bytes[1]]) as u64
+    }
+}
+
+#[derive(Accounts)]
+pub struct JupiterSetMaxSwapSlippage<'info> {
+    #[account(mut, constraint = state.owner == signer.key() @ GlamError::NotAuthorized)]
+    pub state: Account<'info, StateAccount>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
+}
+
+pub fn set_max_swap_slippage_handler(
+    ctx: Context<JupiterSetMaxSwapSlippage>,
+    slippage: u64,
+) -> Result<()> {
+    let state = &mut ctx.accounts.state;
+    state.set_max_swap_slippage(slippage);
+    Ok(())
 }
 
 #[derive(Accounts)]
@@ -192,6 +259,17 @@ pub fn swap_handler<'c: 'info, 'info>(
     data: Vec<u8>,
 ) -> Result<()> {
     let state = &mut ctx.accounts.state;
+
+    // Check slippage limit
+    if let Some(max_slippage) = state.max_swap_slippage() {
+        let slippage = Jupiter::parse_slippage_bps(data.clone());
+        msg!(
+            "Slippage: {}, max slippage allowed: {}",
+            slippage,
+            max_slippage
+        );
+        require!(slippage <= max_slippage, GlamError::InvalidSwap);
+    }
 
     // Check if input and output mints are in the assets allowlist
     let input_in_assets = state.assets.contains(&ctx.accounts.input_mint.key());
