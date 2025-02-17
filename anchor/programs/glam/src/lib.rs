@@ -919,15 +919,20 @@ pub mod glam {
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
-    /// - `side`: The side to vote for.
+    /// - `new_side`: The side to vote for.
+    /// - `current_side`: The current side of the vote.
     ///
     /// # Permission required
     /// - Permission::VoteOnProposal
     ///
     /// # Integration required
     /// - Integration::JupiterVote
-    pub fn cast_vote<'info>(ctx: Context<CastVote>, side: u8) -> Result<()> {
-        jupiter::cast_vote_handler(ctx, side)
+    pub fn cast_vote<'info>(
+        ctx: Context<CastVote>,
+        new_side: u8,
+        current_side: Option<u8>,
+    ) -> Result<()> {
+        jupiter::cast_vote_handler(ctx, new_side, current_side)
     }
 
     //////////////////////////////////////////////////////////////////////

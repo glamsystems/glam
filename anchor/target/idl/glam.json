@@ -248,7 +248,8 @@
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `side`: The side to vote for.",
+        "- `new_side`: The side to vote for.",
+        "- `current_side`: The current side of the vote.",
         "",
         "# Permission required",
         "- Permission::VoteOnProposal",
@@ -326,8 +327,14 @@
       ],
       "args": [
         {
-          "name": "side",
+          "name": "new_side",
           "type": "u8"
+        },
+        {
+          "name": "current_side",
+          "type": {
+            "option": "u8"
+          }
         }
       ]
     },
@@ -6401,6 +6408,11 @@
       "code": 50003,
       "name": "InvalidTokenAccount",
       "msg": "Invalid token account"
+    },
+    {
+      "code": 50004,
+      "name": "InvalidVoteSide",
+      "msg": "Invalid vote side"
     },
     {
       "code": 51000,

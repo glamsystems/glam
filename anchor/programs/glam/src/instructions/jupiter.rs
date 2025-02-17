@@ -756,7 +756,20 @@ pub struct CastVote<'info> {
     acl::check_integration(&ctx.accounts.state, Integration::JupiterVote)
 )]
 #[vault_signer_seeds]
-pub fn cast_vote_handler<'info>(ctx: Context<CastVote>, side: u8) -> Result<()> {
+pub fn cast_vote_handler<'info>(
+    ctx: Context<CastVote>,
+    new_side: u8,
+    current_side: Option<u8>,
+) -> Result<()> {
+    if let Some(expected) = current_side {
+        // Client side should check vote and get current_side
+        // If actual side is different, it means the vote has changed and this side change is invalid
+        require!(
+            expected == ctx.accounts.vote.side,
+            GlamError::InvalidVoteSide
+        );
+    }
+
     jup_cast_vote(
         CpiContext::new_with_signer(
             ctx.accounts.locked_voter_program.to_account_info(),
@@ -771,7 +784,7 @@ pub fn cast_vote_handler<'info>(ctx: Context<CastVote>, side: u8) -> Result<()> 
             },
             vault_signer_seeds,
         ),
-        side,
+        new_side,
     )?;
     Ok(())
 }

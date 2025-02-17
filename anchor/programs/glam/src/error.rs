@@ -71,6 +71,9 @@ pub enum GlamError {
     #[msg("Invalid token account")]
     InvalidTokenAccount,
 
+    #[msg("Invalid vote side")]
+    InvalidVoteSide,
+
     // Subscription & redemption errors (45000-)
     #[msg("Invalid asset price")]
     InvalidAssetPrice = 45000,

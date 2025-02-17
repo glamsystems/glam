@@ -254,7 +254,8 @@ export type Glam = {
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `side`: The side to vote for.",
+        "- `new_side`: The side to vote for.",
+        "- `current_side`: The current side of the vote.",
         "",
         "# Permission required",
         "- Permission::VoteOnProposal",
@@ -332,8 +333,14 @@ export type Glam = {
       ],
       "args": [
         {
-          "name": "side",
+          "name": "newSide",
           "type": "u8"
+        },
+        {
+          "name": "currentSide",
+          "type": {
+            "option": "u8"
+          }
         }
       ]
     },
@@ -6407,6 +6414,11 @@ export type Glam = {
       "code": 50003,
       "name": "invalidTokenAccount",
       "msg": "Invalid token account"
+    },
+    {
+      "code": 50004,
+      "name": "invalidVoteSide",
+      "msg": "Invalid vote side"
     },
     {
       "code": 51000,
