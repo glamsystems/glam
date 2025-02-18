@@ -1,6 +1,78 @@
 {
   "drift": [
     {
+      "ix_name": "initializeUserStats",
+      "permission": "DriftInitialize",
+      "integration": "Drift",
+      "vault_aliases": ["authority"],
+      "signed_by_vault": true
+    },
+    {
+      "ix_name": "initializeUser",
+      "permission": "DriftInitialize",
+      "integration": "Drift",
+      "vault_aliases": ["authority"],
+      "signed_by_vault": true
+    },
+    {
+      "ix_name": "deleteUser",
+      "permission": "DriftDeleteUser",
+      "integration": "Drift",
+      "vault_aliases": ["authority"],
+      "signed_by_vault": true,
+      "mutable_vault": true
+    },
+    {
+      "ix_name": "updateUserDelegate",
+      "permission": "DriftUpdateUser",
+      "integration": "Drift",
+      "vault_aliases": ["authority"],
+      "signed_by_vault": true
+    },
+    {
+      "ix_name": "updateUserCustomMarginRatio",
+      "permission": "DriftUpdateUser",
+      "integration": "Drift",
+      "vault_aliases": ["authority"],
+      "accounts_type_alias": "updateUserDelegate",
+      "signed_by_vault": true
+    },
+    {
+      "ix_name": "updateUserMarginTradingEnabled",
+      "permission": "DriftUpdateUser",
+      "integration": "Drift",
+      "vault_aliases": ["authority"],
+      "accounts_type_alias": "updateUserDelegate",
+      "signed_by_vault": true
+    },
+    {
+      "ix_name": "deposit",
+      "permission": "DriftDeposit",
+      "integration": "Drift",
+      "vault_aliases": ["authority"],
+      "with_remaining_accounts": true,
+      "signed_by_vault": true,
+      "mutable_vault": true
+    },
+    {
+      "ix_name": "withdraw",
+      "permission": "DriftWithdraw",
+      "integration": "Drift",
+      "vault_aliases": ["authority"],
+      "with_remaining_accounts": true,
+      "signed_by_vault": true,
+      "mutable_vault": true
+    },
+    {
+      "ix_name": "placeOrders",
+      "permission": "DriftPlaceOrders",
+      "integration": "Drift",
+      "vault_aliases": ["authority"],
+      "with_remaining_accounts": true,
+      "signed_by_vault": true,
+      "mutable_vault": true
+    },
+    {
       "ix_name": "cancelOrders",
       "permission": "DriftCancelOrders",
       "integration": "Drift",
@@ -28,7 +100,7 @@
   "kamino_lending": [
     {
       "ix_name": "initUserMetadata",
-      "permission": "InitKamino",
+      "permission": "KaminoInit",
       "integration": "KaminoLending",
       "remove_signer": ["owner"],
       "vault_aliases": ["owner"],
@@ -38,7 +110,7 @@
     },
     {
       "ix_name": "initObligation",
-      "permission": "InitKamino",
+      "permission": "KaminoInit",
       "integration": "KaminoLending",
       "remove_signer": ["obligationOwner"],
       "vault_aliases": ["obligationOwner"],
@@ -48,7 +120,7 @@
     },
     {
       "ix_name": "initObligationFarmsForReserve",
-      "permission": "InitKamino",
+      "permission": "KaminoInit",
       "integration": "KaminoLending",
       "remove_signer": ["owner"],
       "vault_aliases": ["owner"],

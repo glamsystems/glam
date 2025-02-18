@@ -890,22 +890,10 @@
       ],
       "accounts": [
         {
-          "name": "state"
+          "name": "glam_state"
         },
         {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "user_stats",
-          "writable": true
-        },
-        {
-          "name": "drift_state",
-          "writable": true
-        },
-        {
-          "name": "vault",
+          "name": "glam_vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -921,23 +909,35 @@
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glam_state"
               }
             ]
           }
         },
         {
-          "name": "signer",
+          "name": "glam_signer",
           "writable": true,
           "signer": true
         },
         {
-          "name": "drift_program",
+          "name": "cpi_program",
           "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
         },
         {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "user_stats",
+          "writable": true
+        },
+        {
+          "name": "state",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "writable": true
         }
       ],
       "args": []
@@ -970,22 +970,11 @@
       ],
       "accounts": [
         {
-          "name": "state"
+          "name": "glam_state"
         },
         {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "user_stats",
-          "writable": true
-        },
-        {
-          "name": "drift_state",
-          "writable": true
-        },
-        {
-          "name": "vault",
+          "name": "glam_vault",
+          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -1000,31 +989,44 @@
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glam_state"
               }
             ]
           }
         },
         {
-          "name": "drift_ata",
-          "writable": true
-        },
-        {
-          "name": "vault_ata",
-          "writable": true
-        },
-        {
-          "name": "signer",
+          "name": "glam_signer",
           "writable": true,
           "signer": true
         },
         {
-          "name": "drift_program",
+          "name": "cpi_program",
           "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "name": "state"
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "user_stats",
+          "writable": true
+        },
+        {
+          "name": "authority"
+        },
+        {
+          "name": "spot_market_vault",
+          "writable": true
+        },
+        {
+          "name": "user_token_account",
+          "writable": true
+        },
+        {
+          "name": "token_program"
         }
       ],
       "args": [
@@ -1035,11 +1037,106 @@
         {
           "name": "amount",
           "type": "u64"
+        },
+        {
+          "name": "reduce_only",
+          "type": "bool"
         }
       ]
     },
     {
-      "name": "drift_initialize",
+      "name": "drift_initialize_user",
+      "discriminator": [
+        107,
+        244,
+        158,
+        15,
+        225,
+        239,
+        98,
+        245
+      ],
+      "accounts": [
+        {
+          "name": "glam_state"
+        },
+        {
+          "name": "glam_vault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glam_state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glam_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "user_stats",
+          "writable": true
+        },
+        {
+          "name": "state",
+          "writable": true
+        },
+        {
+          "name": "authority"
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "sub_account_id",
+          "type": "u16"
+        },
+        {
+          "name": "name",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "drift_initialize_user_stats",
       "docs": [
         "Drift",
         "Initializes a drift account owned by vault and creates a subaccount.",
@@ -1054,33 +1151,21 @@
         "- Integration::Drift"
       ],
       "discriminator": [
-        21,
-        21,
-        69,
-        55,
-        41,
-        129,
-        44,
-        198
+        133,
+        185,
+        103,
+        162,
+        90,
+        161,
+        78,
+        143
       ],
       "accounts": [
         {
-          "name": "state"
+          "name": "glam_state"
         },
         {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "user_stats",
-          "writable": true
-        },
-        {
-          "name": "drift_state",
-          "writable": true
-        },
-        {
-          "name": "vault",
+          "name": "glam_vault",
           "pda": {
             "seeds": [
               {
@@ -1095,19 +1180,35 @@
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glam_state"
               }
             ]
           }
         },
         {
-          "name": "signer",
+          "name": "glam_signer",
           "writable": true,
           "signer": true
         },
         {
-          "name": "drift_program",
+          "name": "cpi_program",
           "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+        },
+        {
+          "name": "user_stats",
+          "writable": true
+        },
+        {
+          "name": "state",
+          "writable": true
+        },
+        {
+          "name": "authority"
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "rent",
@@ -1215,7 +1316,7 @@
         "",
         "# Parameters",
         "- `ctx`: The context for the transaction.",
-        "- `order_params`: A list of orders.",
+        "- `params`: A list of orders.",
         "",
         "# Permissions required",
         "- Permission::DriftPlaceOrders",
@@ -1236,18 +1337,11 @@
       ],
       "accounts": [
         {
-          "name": "state"
+          "name": "glam_state"
         },
         {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "drift_state",
-          "writable": true
-        },
-        {
-          "name": "vault",
+          "name": "glam_vault",
+          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -1262,24 +1356,34 @@
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glam_state"
               }
             ]
           }
         },
         {
-          "name": "signer",
+          "name": "glam_signer",
           "writable": true,
           "signer": true
         },
         {
-          "name": "drift_program",
+          "name": "cpi_program",
           "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+        },
+        {
+          "name": "state"
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "authority"
         }
       ],
       "args": [
         {
-          "name": "order_params",
+          "name": "params",
           "type": {
             "vec": {
               "defined": {
@@ -1318,14 +1422,10 @@
       ],
       "accounts": [
         {
-          "name": "state"
+          "name": "glam_state"
         },
         {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "vault",
+          "name": "glam_vault",
           "pda": {
             "seeds": [
               {
@@ -1340,19 +1440,26 @@
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glam_state"
               }
             ]
           }
         },
         {
-          "name": "signer",
+          "name": "glam_signer",
           "writable": true,
           "signer": true
         },
         {
-          "name": "drift_program",
+          "name": "cpi_program",
           "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "authority"
         }
       ],
       "args": [
@@ -1394,14 +1501,10 @@
       ],
       "accounts": [
         {
-          "name": "state"
+          "name": "glam_state"
         },
         {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "vault",
+          "name": "glam_vault",
           "pda": {
             "seeds": [
               {
@@ -1416,19 +1519,26 @@
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glam_state"
               }
             ]
           }
         },
         {
-          "name": "signer",
+          "name": "glam_signer",
           "writable": true,
           "signer": true
         },
         {
-          "name": "drift_program",
+          "name": "cpi_program",
           "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "authority"
         }
       ],
       "args": [
@@ -1470,14 +1580,10 @@
       ],
       "accounts": [
         {
-          "name": "state"
+          "name": "glam_state"
         },
         {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "vault",
+          "name": "glam_vault",
           "pda": {
             "seeds": [
               {
@@ -1492,19 +1598,26 @@
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glam_state"
               }
             ]
           }
         },
         {
-          "name": "signer",
+          "name": "glam_signer",
           "writable": true,
           "signer": true
         },
         {
-          "name": "drift_program",
+          "name": "cpi_program",
           "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "authority"
         }
       ],
       "args": [
@@ -1546,25 +1659,11 @@
       ],
       "accounts": [
         {
-          "name": "state"
+          "name": "glam_state"
         },
         {
-          "name": "user",
-          "writable": true
-        },
-        {
-          "name": "user_stats",
-          "writable": true
-        },
-        {
-          "name": "drift_state",
-          "writable": true
-        },
-        {
-          "name": "drift_signer"
-        },
-        {
-          "name": "vault",
+          "name": "glam_vault",
+          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -1579,31 +1678,47 @@
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glam_state"
               }
             ]
           }
         },
         {
-          "name": "vault_ata",
-          "writable": true
-        },
-        {
-          "name": "drift_ata",
-          "writable": true
-        },
-        {
-          "name": "signer",
+          "name": "glam_signer",
           "writable": true,
           "signer": true
         },
         {
-          "name": "drift_program",
+          "name": "cpi_program",
           "address": "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "name": "state"
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "user_stats",
+          "writable": true
+        },
+        {
+          "name": "authority"
+        },
+        {
+          "name": "spot_market_vault",
+          "writable": true
+        },
+        {
+          "name": "drift_signer"
+        },
+        {
+          "name": "user_token_account",
+          "writable": true
+        },
+        {
+          "name": "token_program"
         }
       ],
       "args": [
@@ -1614,6 +1729,10 @@
         {
           "name": "amount",
           "type": "u64"
+        },
+        {
+          "name": "reduce_only",
+          "type": "bool"
         }
       ]
     },
@@ -7913,8 +8032,26 @@
           {
             "name": "policy",
             "type": {
-              "option": "u8"
+              "option": {
+                "defined": {
+                  "name": "ModifyOrderPolicy"
+                }
+              }
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ModifyOrderPolicy",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "TryModify"
+          },
+          {
+            "name": "MustModify"
           }
         ]
       }

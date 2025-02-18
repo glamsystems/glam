@@ -283,8 +283,16 @@ pub mod glam {
     ///
     /// # Integration required
     /// - Integration::Drift
-    pub fn drift_initialize(ctx: Context<DriftInitialize>) -> Result<()> {
-        drift::initialize_handler(ctx)
+    pub fn drift_initialize_user_stats(ctx: Context<DriftInitializeUserStats>) -> Result<()> {
+        cpi_autogen::drift::drift_initialize_user_stats(ctx)
+    }
+
+    pub fn drift_initialize_user(
+        ctx: Context<DriftInitializeUser>,
+        sub_account_id: u16,
+        name: [u8; 32],
+    ) -> Result<()> {
+        cpi_autogen::drift::drift_initialize_user(ctx, sub_account_id, name)
     }
 
     /// Updates custom margin ratio.
@@ -300,11 +308,11 @@ pub mod glam {
     /// # Integration required
     /// - Integration::Drift
     pub fn drift_update_user_custom_margin_ratio(
-        ctx: Context<DriftUpdate>,
+        ctx: Context<DriftUpdateUserDelegate>,
         sub_account_id: u16,
         margin_ratio: u32,
     ) -> Result<()> {
-        drift::update_user_custom_margin_ratio_handler(ctx, sub_account_id, margin_ratio)
+        cpi_autogen::drift::drift_update_user_custom_margin_ratio(ctx, sub_account_id, margin_ratio)
     }
 
     /// Enables/Disables margin trading.
@@ -320,11 +328,11 @@ pub mod glam {
     /// # Integration required
     /// - Integration::Drift
     pub fn drift_update_user_margin_trading_enabled(
-        ctx: Context<DriftUpdate>,
+        ctx: Context<DriftUpdateUserDelegate>,
         sub_account_id: u16,
         margin_trading_enabled: bool,
     ) -> Result<()> {
-        drift::update_user_margin_trading_enabled_handler(
+        cpi_autogen::drift::drift_update_user_margin_trading_enabled(
             ctx,
             sub_account_id,
             margin_trading_enabled,
@@ -344,11 +352,11 @@ pub mod glam {
     /// # Integration required
     /// - Integration::Drift
     pub fn drift_update_user_delegate(
-        ctx: Context<DriftUpdate>,
+        ctx: Context<DriftUpdateUserDelegate>,
         sub_account_id: u16,
         delegate: Pubkey,
     ) -> Result<()> {
-        drift::update_user_delegate_handler(ctx, sub_account_id, delegate)
+        cpi_autogen::drift::drift_update_user_delegate(ctx, sub_account_id, delegate)
     }
 
     /// Deposits to drift.
@@ -367,8 +375,9 @@ pub mod glam {
         ctx: Context<'_, '_, 'c, 'info, DriftDeposit<'info>>,
         market_index: u16,
         amount: u64,
+        reduce_only: bool,
     ) -> Result<()> {
-        drift::deposit_handler(ctx, market_index, amount)
+        cpi_autogen::drift::drift_deposit(ctx, market_index, amount, reduce_only)
     }
 
     /// Withdraws from drift.
@@ -387,8 +396,9 @@ pub mod glam {
         ctx: Context<'_, '_, 'c, 'info, DriftWithdraw<'info>>,
         market_index: u16,
         amount: u64,
+        reduce_only: bool,
     ) -> Result<()> {
-        drift::withdraw_handler(ctx, market_index, amount)
+        cpi_autogen::drift::drift_withdraw(ctx, market_index, amount, reduce_only)
     }
 
     /// Deletes a drift user (sub account).
@@ -402,14 +412,14 @@ pub mod glam {
     /// # Integration required
     /// - Integration::Drift
     pub fn drift_delete_user(ctx: Context<DriftDeleteUser>) -> Result<()> {
-        drift::delete_user_handler(ctx)
+        cpi_autogen::drift::drift_delete_user(ctx)
     }
 
     /// Places orders on drift.
     ///
     /// # Parameters
     /// - `ctx`: The context for the transaction.
-    /// - `order_params`: A list of orders.
+    /// - `params`: A list of orders.
     ///
     /// # Permissions required
     /// - Permission::DriftPlaceOrders
@@ -419,9 +429,9 @@ pub mod glam {
     /// - Integration::Drift
     pub fn drift_place_orders<'c: 'info, 'info>(
         ctx: Context<'_, '_, 'c, 'info, DriftPlaceOrders<'info>>,
-        order_params: Vec<OrderParams>,
+        params: Vec<OrderParams>,
     ) -> Result<()> {
-        drift::place_orders_handler(ctx, order_params)
+        drift::drift_place_orders(ctx, params)
     }
 
     /// Modifies an existing drift order.
