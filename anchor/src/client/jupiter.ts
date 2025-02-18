@@ -539,7 +539,7 @@ export class JupiterVoteClient {
 
     const escrow = this.getEscrowPda(vault);
     const tx = await this.base.program.methods
-      .castVote(side)
+      .castVote(side, null)
       .accounts({
         state: statePda,
         escrow,
