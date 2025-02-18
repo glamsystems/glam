@@ -6,8 +6,8 @@ WORKDIR /mnt/workspace
 
 COPY . ./
 RUN npm install -g pnpm@9.15.4
-RUN pnpm install && cd apps/fatcat && pnpm install
-RUN cd apps/fatcat && pnpm run build
+RUN pnpm install && pnpm install --filter @glamsystems/glam-sdk 
+RUN cd apps/fatcat && pnpm install && pnpm run build
 
 # Final stage (runtime image)
 FROM node:20-slim AS runtime

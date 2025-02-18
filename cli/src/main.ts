@@ -793,6 +793,68 @@ program
     }
   });
 
+const klend = program.command("klend").description("Kamino Lending");
+klend
+  .command("init")
+  .description("Initialize Kamino Lending account")
+  .action(async () => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
+    if (!statePda) {
+      console.error("GLAM state not found in config file");
+    }
+
+    try {
+      const txSig = await glamClient.kaminoLending.initialize(statePda);
+      console.log(`Initialized Kamino Lending:`, txSig);
+    } catch (e) {
+      console.error(parseTxError(e));
+      throw e;
+    }
+  });
+
+klend
+  .command("deposit <amount>")
+  .description("Deposit to Kamino Lending vault")
+  .option("-y, --yes", "Skip confirmation prompt")
+  .action(async (amount, options) => {
+    const statePda = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+
+    if (!statePda) {
+      console.error("GLAM state not found in config file");
+    }
+
+    if (!options?.yes) {
+      const confirmation = await inquirer.prompt([
+        {
+          type: "confirm",
+          name: "proceed",
+          message: `Confirm deposit of ${amount} SOL?`,
+          default: false,
+        },
+      ]);
+      if (!confirmation.proceed) {
+        console.log("Operation cancelled by the user.");
+        process.exit(0);
+      }
+    }
+
+    try {
+      const txSig = await glamClient.kaminoLending.deposit(
+        statePda,
+        parseFloat(amount) * LAMPORTS_PER_SOL,
+      );
+      console.log(`Deposit ${amount} SOL to Kamino from vault:`, txSig);
+    } catch (e) {
+      console.error(parseTxError(e));
+      throw e;
+    }
+  });
+
 const lst = program.command("lst").description("Liquid staking");
 lst
   .command("stake <stakepool> <amount>")

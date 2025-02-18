@@ -9,6 +9,7 @@ import { WSolClient } from "./client/wsol";
 import { StakingClient } from "./client/staking";
 import { StateClient } from "./client/state";
 import { MintClient } from "./client/mint";
+import { KaminoLendingClient } from "./client/kamino";
 
 export { JUPITER_API_DEFAULT } from "./client/base";
 
@@ -27,6 +28,7 @@ export class GlamClient extends BaseClient {
   private _staking?: StakingClient;
   private _state?: StateClient;
   private _mint?: MintClient;
+  private _kaminoLending?: KaminoLendingClient;
 
   public constructor(config?: GlamClientConfig) {
     super(config);
@@ -93,5 +95,12 @@ export class GlamClient extends BaseClient {
       this._mint = new MintClient(this);
     }
     return this._mint;
+  }
+
+  get kaminoLending(): KaminoLendingClient {
+    if (!this._kaminoLending) {
+      this._kaminoLending = new KaminoLendingClient(this);
+    }
+    return this._kaminoLending;
   }
 }

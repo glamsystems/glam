@@ -63,6 +63,8 @@ jobs:
             --region $REGION \
             --allow-unauthenticated
 
+          gcloud run services update-traffic $SERVICE_NAME --region $REGION --to-latest
+
       - name: Send Slack Notification
         if: success()
         run: |
