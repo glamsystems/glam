@@ -178,9 +178,14 @@ export class FatcatGlamClient extends GlamClient {
     return tx;
   };
 
-  unstakeJup = async (amount: number) => {
+  withdraw = async () => {
     const { state } = this.getFatcatState();
-    const amountBN = new BN(amount * 1_000_000); // 6 decimals
+    const tx = await this.jupiterVote.withdrawJup(state);
+    return tx;
+  };
+
+  unstakeJup = async () => {
+    const { state } = this.getFatcatState();
 
     // TODO: partial unstake
     // always use full unstake for now
@@ -246,11 +251,6 @@ export class FatcatGlamClient extends GlamClient {
         if (escrowAtaAccountInfo) {
           const { amount, escrowEndsAt } = this.parseEscrowAccount(
             escrowAtaAccountInfo.data,
-          );
-          console.log(
-            "amount, escrowEndsAt",
-            amount.toString(),
-            escrowEndsAt.toString(),
           );
           votingPower = this.calculateVotingPower(amount, escrowEndsAt);
         }
