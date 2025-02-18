@@ -496,6 +496,27 @@ export class JupiterVoteClient {
     return await this.base.sendAndConfirm(vTx);
   }
 
+  public async cancelUnstake(statePda: PublicKey, txOptions: TxOptions = {}) {
+    const vault = this.base.getVaultPda(statePda);
+    const escrow = this.getEscrowPda(vault);
+
+    const tx = await this.base.program.methods
+      .toggleMaxLock(true)
+      .accounts({
+        state: statePda,
+        locker: JUP_STAKE_LOCKER,
+        escrow,
+      })
+      .transaction();
+
+    const vTx = await this.base.intoVersionedTransaction({
+      tx,
+      ...txOptions,
+    });
+
+    return await this.base.sendAndConfirm(vTx);
+  }
+
   /**
    * Vote on a proposal. The vote account will be created if it doesn't exist.
    *

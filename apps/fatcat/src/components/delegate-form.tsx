@@ -22,14 +22,10 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { Skeleton } from "@/components/skeleton";
 import { DynamicVotingPower } from "@/components/dynamic-voting-power";
 import { BN } from "@coral-xyz/anchor";
-import { JUP_STAKE_LOCKER } from "@glamsystems/glam-sdk";
-import { PublicKey } from "@solana/web3.js";
-
-const UNSTAKE_COUNTDOWN_TIME = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
-const JUP_TOKEN_ADDRESS = "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN";
+import { EscrowData } from "@/lib/client";
 
 interface UnstakeItem {
-  amount: string;
+  amount: number;
   endTime: number;
 }
 
@@ -41,15 +37,25 @@ export default function DelegateForm() {
   const [unstakeAmount, setUnstakeAmount] = useState<string>("0");
   const [unstakeItems, setUnstakeItems] = useState<UnstakeItem[]>([]);
   const [spinner, setSpinner] = useState<boolean>(false);
-  const [now, setNow] = useState(Date.now());
+  const [nowSec, setNowSec] = useState(Date.now() / 1000);
   const [walletBalance, setWalletBalance] = useState<string>("0");
-  const [votingPower, setVotingPower] = useState<string>("0");
   const [isLoadingBalance, setIsLoadingBalance] = useState(true);
   const [isLoadingVotingPower, setIsLoadingVotingPower] = useState(true);
-  const [escrowData, setEscrowData] = useState<{
-    amount: string;
-    escrowEndsAt: string;
-  } | null>(null);
+  const [escrowData, setEscrowData] = useState<EscrowData | null>(null);
+
+  useEffect(() => {
+    const { amount, escrowStartedAt, escrowEndsAt } = escrowData || {};
+    if (amount && escrowStartedAt) {
+      if (nowSec > escrowStartedAt.toNumber()) {
+        setUnstakeItems([
+          {
+            amount: parseFloat(amount.toString()) / 1_000_000,
+            endTime: escrowEndsAt?.toNumber() || 0,
+          },
+        ]);
+      }
+    }
+  }, [escrowData]);
 
   useEffect(() => {
     let mounted = true;
@@ -60,44 +66,16 @@ export default function DelegateForm() {
       }
 
       try {
-        const { state } = client.getFatcatState();
-        const [escrow] = PublicKey.findProgramAddressSync(
-          [
-            Buffer.from("Escrow"),
-            JUP_STAKE_LOCKER.toBuffer(),
-            client.getVaultPda(state).toBuffer()
-          ],
-          new PublicKey("voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj")
-        );
+        const { vault } = client.getFatcatState();
+        const escrow = client.jupiterVote.getEscrowPda(vault);
+        const escrowData = await client.getEscrowData(escrow);
+        setEscrowData(escrowData ? escrowData : null);
 
-        const escrowInfo = await client.provider.connection.getAccountInfo(escrow);
-
-        // Get escrow data
-        if (escrowInfo) {
-          // Calculate offsets:
-          // 8 (discriminator) + 32 (locker) + 32 (owner) + 1 (bump) + 32 (tokens) = 105
-          // amount is at offset 105
-          // escrowEndsAt is at offset 105 + 8 + 8 = 121
-          const amount = new BN(escrowInfo.data.slice(105, 113), 'le').toString();
-          const escrowEndsAt = new BN(escrowInfo.data.slice(121, 129), 'le').toString();
-
-          setEscrowData({
-            amount,
-            escrowEndsAt
-          });
-        } else {
-          setEscrowData(null);
-        }
-
-        // Fetch balances in parallel
-        const [power, balance] = await Promise.all([
-          client.getVotingPower(),
-          client.getJupBalance()
-        ]);
+        const { votingPower, jupBalance } = await client.fetchBalances();
 
         if (mounted) {
-          setVotingPower(power);
-          setWalletBalance(balance);
+          console.log("Fetched balances:", { votingPower, jupBalance });
+          setWalletBalance(jupBalance);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -120,8 +98,9 @@ export default function DelegateForm() {
 
   const handleMaxClick = (type: "stake" | "unstake") => {
     if (type === "stake") {
-      const maxAmount = parseFloat(walletBalance);
-      setStakeAmount(maxAmount.toFixed(2));
+      const maxAmount = parseFloat(walletBalance) / 1_000_000;
+      console.log("Max amount:", maxAmount);
+      setStakeAmount(maxAmount.toString());
     } else {
       setUnstakeAmount("50.00"); // Keep original unstake logic
     }
@@ -129,8 +108,9 @@ export default function DelegateForm() {
 
   const handleHalfClick = (type: "stake" | "unstake") => {
     if (type === "stake") {
-      const halfAmount = parseFloat(walletBalance) / 2;
-      setStakeAmount(halfAmount.toFixed(2));
+      const halfAmount = Math.ceil(parseFloat(walletBalance) / 2) / 1_000_000;
+      console.log("Half amount:", halfAmount);
+      setStakeAmount(halfAmount.toString());
     } else {
       setUnstakeAmount("25.00"); // Keep original unstake logic
     }
@@ -148,12 +128,8 @@ export default function DelegateForm() {
 
       // Refresh data after successful transaction
       if (client) {
-        const [power, balance] = await Promise.all([
-          client.getVotingPower(),
-          client.getJupBalance()
-        ]);
-        setVotingPower(power);
-        setWalletBalance(balance);
+        const { jupBalance } = await client.fetchBalances();
+        setWalletBalance(jupBalance);
       }
     } catch (error) {
       toast({
@@ -167,26 +143,27 @@ export default function DelegateForm() {
 
   const handleStake = async () => {
     const amount = parseFloat(stakeAmount);
-    if (!(amount > 0)) return;
-
-    console.log(`Staking ${amount} JUP...`);
-    await handleTx("Staking", client.stakeJup(amount));
+    if (amount > 0) {
+      console.log(`Staking ${amount} JUP...`);
+      await handleTx("Staking", client.stakeJup(amount));
+    }
   };
 
   const handleUnstake = async () => {
     const amount = parseFloat(unstakeAmount);
-    if (!(amount > 0)) return;
-
-    console.log(`Unstaking ${amount} JUP...`);
-    await handleTx("Unstaking", client.unstakeJup(amount));
+    if (amount > 0) {
+      console.log(`Unstaking ${amount} JUP...`);
+      await handleTx("Unstaking", client.unstakeJup(amount));
+    }
   };
 
-  const handleCancelUnstake = (index: number) => {
+  const handleCancelUnstake = async (index: number) => {
     setUnstakeItems(unstakeItems.filter((_, i) => i !== index));
+    await handleTx("Cancel unstake", client.cancelUnstake());
   };
 
   const formatCountdown = (endTime: number) => {
-    const diff = Math.max(0, endTime - now);
+    const diff = Math.max(0, endTime - nowSec) * 1000;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -254,7 +231,7 @@ export default function DelegateForm() {
                         {isLoadingBalance ? (
                           <Skeleton className="h-6 w-16 inline-block" />
                         ) : (
-                          walletBalance
+                          parseFloat(walletBalance) / 1_000_000
                         )}
                       </div>
                       <div className="h-8 space-x-2">
@@ -281,7 +258,6 @@ export default function DelegateForm() {
                       type="text"
                       value={stakeAmount}
                       onChange={(e) => setStakeAmount(e.target.value)}
-                      onFocus={(e) => setStakeAmount("")}
                       className="text-right text-xl sm:text-2xl"
                       disabled={isLoadingBalance}
                     />
@@ -289,7 +265,11 @@ export default function DelegateForm() {
                   <Button
                     className="w-full py-2 sm:py-3 text-foreground dark:text-background"
                     onClick={handleStake}
-                    disabled={!(parseFloat(stakeAmount) > 0) || spinner || isLoadingBalance}
+                    disabled={
+                      !(parseFloat(stakeAmount) > 0) ||
+                      spinner ||
+                      isLoadingBalance
+                    }
                   >
                     Stake {spinner ? "..." : ""}
                   </Button>
@@ -343,7 +323,10 @@ export default function DelegateForm() {
                   <Button
                     className="w-full py-2 sm:py-3 text-foreground dark:text-background"
                     onClick={handleUnstake}
-                    disabled={spinner || Boolean(escrowData?.escrowEndsAt !== "0")}
+                    disabled={
+                      spinner ||
+                      Boolean(escrowData?.escrowEndsAt.toString() !== "0")
+                    }
                   >
                     Unstake All{spinner ? "..." : ""}
                   </Button>
@@ -369,7 +352,7 @@ export default function DelegateForm() {
                                 <span className="w-full text-sm sm:text-base">
                                   {item.amount} JUP
                                 </span>
-                                {now < item.endTime ? (
+                                {nowSec < item.endTime ? (
                                   <>
                                     <span className="w-full text-sm sm:text-base font-mono text-lime-500 dark:text-primary text-right mr-4">
                                       {formatCountdown(item.endTime)}
