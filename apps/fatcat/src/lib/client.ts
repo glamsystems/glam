@@ -1,11 +1,21 @@
 import { AnchorProvider, BN } from "@coral-xyz/anchor";
-import { Connection, PublicKey, SystemProgram } from "@solana/web3.js";
+import {
+  Connection,
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  SystemProgram,
+  VersionedTransaction,
+} from "@solana/web3.js";
 import {
   createAssociatedTokenAccountIdempotentInstruction,
   createTransferCheckedInstruction,
 } from "@solana/spl-token";
-import { GlamClient } from "@glamsystems/glam-sdk";
+import { GlamClient, getPriorityFeeEstimate } from "@glamsystems/glam-sdk";
 import { AnchorWallet } from "@solana/wallet-adapter-react";
+import {
+  PRIORITY_FEE_SETTINGS_KEY,
+  PriorityFeeSettings,
+} from "@/components/settings-dialog";
 
 const JUP = new PublicKey("JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN");
 const FATCAT_SERVICE_PUBKEY = new PublicKey(
@@ -50,6 +60,44 @@ export class FatcatGlamClient extends GlamClient {
         commitment: "confirmed",
       }),
     });
+  }
+
+  get priorityFeeTxOptions() {
+    const json = localStorage.getItem(PRIORITY_FEE_SETTINGS_KEY);
+    const priorityFeeSettings = JSON.parse(json || "{}") as PriorityFeeSettings;
+    const { priorityLevel, priorityMode, maxCap, exactFee } =
+      priorityFeeSettings;
+
+    if (priorityMode === "Max Cap") {
+      return {
+        getPriorityFeeMicroLamports: async (tx: VersionedTransaction) =>
+          getPriorityFeeEstimate(
+            process.env.NEXT_PUBLIC_HELIUS_API_KEY!,
+            tx,
+            undefined,
+            priorityLevel,
+          ),
+        maxFeeLamports: maxCap * LAMPORTS_PER_SOL,
+        useMaxFee: false,
+      };
+    }
+
+    if (priorityMode === "Exact Fee") {
+      return {
+        getPriorityFeeMicroLamports: async (tx: VersionedTransaction) =>
+          Promise.resolve(0),
+        maxFeeLamports: exactFee * LAMPORTS_PER_SOL,
+        useMaxFee: true,
+      };
+    }
+
+    // Default case
+    return {
+      getPriorityFeeMicroLamports: async (tx: VersionedTransaction) =>
+        Promise.resolve(0),
+      maxFeeLamports: 0,
+      useMaxFee: false,
+    };
   }
 
   public calculateVotingPower(amount: BN, escrowEndsAt: BN): string {
@@ -163,6 +211,7 @@ export class FatcatGlamClient extends GlamClient {
     const tx = await this.jupiterVote.stakeJup(state, amountBN, {
       preInstructions,
       lookupTables,
+      ...this.priorityFeeTxOptions,
     });
 
     // Clear cache
@@ -174,13 +223,17 @@ export class FatcatGlamClient extends GlamClient {
 
   cancelUnstake = async () => {
     const { state } = this.getFatcatState();
-    const tx = await this.jupiterVote.cancelUnstake(state);
+    const tx = await this.jupiterVote.cancelUnstake(state, {
+      ...this.priorityFeeTxOptions,
+    });
     return tx;
   };
 
   withdraw = async () => {
     const { state } = this.getFatcatState();
-    const tx = await this.jupiterVote.withdrawJup(state);
+    const tx = await this.jupiterVote.withdrawJup(state, {
+      ...this.priorityFeeTxOptions,
+    });
     return tx;
   };
 
@@ -189,7 +242,9 @@ export class FatcatGlamClient extends GlamClient {
 
     // TODO: partial unstake
     // always use full unstake for now
-    const tx = await this.jupiterVote.unstakeJup(state);
+    const tx = await this.jupiterVote.unstakeJup(state, {
+      ...this.priorityFeeTxOptions,
+    });
 
     // Clear cache
     this.cachedBalances = {};

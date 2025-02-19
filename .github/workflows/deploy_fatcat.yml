@@ -43,6 +43,7 @@ jobs:
         run: |
           echo "NEXT_PUBLIC_SOLANA_RPC=https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}" > $DOT_ENV_FILE
           echo "NEXT_PUBLIC_TX_RPC=https://staked.helius-rpc.com/?api-key=${HELIUS_API_KEY}" >> $DOT_ENV_FILE 
+          echo "NEXT_PUBLIC_HELIUS_API_KEY=${HELIUS_API_KEY}" >> $DOT_ENV_FILE
           echo "NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}" >> $DOT_ENV_FILE
           echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}" >> $DOT_ENV_FILE
 

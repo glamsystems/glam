@@ -415,7 +415,7 @@ export default function DelegateForm() {
 
                     <div className="relative">
                       <ScrollArea className="h-[180px] sm:h-[210px] w-full rounded p-4">
-                        {unstakeItems.filter((item) => item.endTime < nowSec)
+                        {unstakeItems.filter((item) => nowSec > item.endTime)
                           .length === 0 ? (
                           <p className="text-center text-muted-foreground">
                             No claimable JUP.
@@ -428,14 +428,19 @@ export default function DelegateForm() {
                             >
                               <div className="flex justify-between items-center">
                                 {nowSec > item.endTime ? (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    loading={isTxPending}
-                                    onClick={() => handleWithdraw(index)}
-                                  >
-                                    Withdraw
-                                  </Button>
+                                  <>
+                                    <span className="w-full text-sm sm:text-base">
+                                      {item.amount} JUP
+                                    </span>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      loading={isTxPending}
+                                      onClick={() => handleWithdraw(index)}
+                                    >
+                                      Withdraw
+                                    </Button>
+                                  </>
                                 ) : null}
                               </div>
                             </div>
