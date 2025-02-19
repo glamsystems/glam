@@ -20,7 +20,7 @@ export function ExplorerLink({
   className?: string;
   explorer?: string;
 }) {
-  let href = "https://solscan.io/";
+  let href = `https://solscan.io/${path}`;
   return (
     <a
       href={href}

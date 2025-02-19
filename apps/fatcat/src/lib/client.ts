@@ -14,13 +14,10 @@ const FATCAT_SERVICE_PUBKEY = new PublicKey(
 const LOOKUP_TABLE_PUBKEY = new PublicKey(
   "EbPbkJfa66FSD3f4Xa4USZHvfWE644R7zjJ1df5EZ5zH",
 );
-const JUP_STAKE_LOCKER = new PublicKey(
-  "CVMdMd79no569tjc5Sq7kzz8isbfCcFyBS5TLGsrZ5dN",
-);
 
 const MAX_STAKE_DURATION_SECONDS = 2592000;
 
-interface EscrowData {
+export interface EscrowData {
   amount: BN;
   escrowStartedAt: BN;
   escrowEndsAt: BN;
@@ -32,21 +29,6 @@ function parseTokenAccountBalance(data: Buffer): BN {
   const amount = new BN(dataView.getBigUint64(64, true).toString(), 10);
 
   return amount;
-}
-
-function parseEscrowAccount(data: Buffer): EscrowData {
-  const dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
-
-  // Read 8-byte (64-bit) integers using DataView
-  const amount = new BN(dataView.getBigUint64(105, true).toString(), 10);
-  const escrowStartedAt = new BN(
-    dataView.getBigUint64(113, true).toString(),
-    10,
-  );
-  const escrowEndsAt = new BN(dataView.getBigUint64(121, true).toString(), 10);
-  const isMaxLock = !!data[161];
-
-  return { amount, escrowStartedAt, escrowEndsAt, isMaxLock };
 }
 
 export class FatcatGlamClient extends GlamClient {
@@ -75,7 +57,7 @@ export class FatcatGlamClient extends GlamClient {
     const endTime = escrowEndsAt.toNumber();
 
     if (now >= endTime) {
-      return "0.00";
+      return "0";
     }
 
     const timeRemaining = endTime - now;
@@ -109,8 +91,9 @@ export class FatcatGlamClient extends GlamClient {
 
     // default pda
     const state = this.getStatePda(stateModel);
+    const vault = this.getVaultPda(state);
 
-    return { state, stateModel, name };
+    return { state, stateModel, vault, name };
   };
 
   async stakeJup(amount: number) {
@@ -169,10 +152,10 @@ export class FatcatGlamClient extends GlamClient {
       ],
     );
 
-    const lookupTbleAccount =
+    const lookupTableAccount =
       await this.provider.connection.getAddressLookupTable(LOOKUP_TABLE_PUBKEY);
-    const lookupTables = lookupTbleAccount.value
-      ? [lookupTbleAccount.value]
+    const lookupTables = lookupTableAccount.value
+      ? [lookupTableAccount.value]
       : [];
 
     // prepare the staking transaction
@@ -189,9 +172,20 @@ export class FatcatGlamClient extends GlamClient {
     return tx;
   }
 
-  unstakeJup = async (amount: number) => {
+  cancelUnstake = async () => {
     const { state } = this.getFatcatState();
-    const amountBN = new BN(amount * 1_000_000); // 6 decimals
+    const tx = await this.jupiterVote.cancelUnstake(state);
+    return tx;
+  };
+
+  withdraw = async () => {
+    const { state } = this.getFatcatState();
+    const tx = await this.jupiterVote.withdrawJup(state);
+    return tx;
+  };
+
+  unstakeJup = async () => {
+    const { state } = this.getFatcatState();
 
     // TODO: partial unstake
     // always use full unstake for now
@@ -233,42 +227,32 @@ export class FatcatGlamClient extends GlamClient {
         const signer = this.getSigner();
 
         const signerAta = this.getAta(JUP, signer);
-        const [escrow] = PublicKey.findProgramAddressSync(
-          [
-            Buffer.from("Escrow"),
-            JUP_STAKE_LOCKER.toBuffer(),
-            vault.toBuffer(),
-          ],
-          new PublicKey("voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"),
-        );
-        const escrowAta = this.getAta(JUP, escrow);
+        const escrow = this.jupiterVote.getEscrowPda(vault);
+
+        console.log("escrow", escrow.toString());
 
         // Fetch all accounts in a single RPC call
-        const accounts = await this.provider.connection.getMultipleAccountsInfo(
-          [signerAta, escrowAta],
-        );
+        const [signerAtaAccountInfo, escrowAtaAccountInfo] =
+          await this.provider.connection.getMultipleAccountsInfo([
+            signerAta,
+            escrow,
+          ]);
 
-        // Process wallet balance
-        let jupBalance = "0.00";
-        if (accounts[0]) {
-          // const signerBalance = await this.provider.connection.getTokenAccountBalance(signerAta);
-          // jupBalance = Number(signerBalance.value.uiAmount || 0).toFixed(2);
-          const signerInfo = accounts[0];
-          const tokenAccountBalance = parseTokenAccountBalance(signerInfo.data);
-          jupBalance = tokenAccountBalance
-            .div(new BN(1_000_000))
-            .toNumber()
-            .toFixed(2);
+        let jupBalance = "0";
+        let votingPower = "0";
+
+        if (signerAtaAccountInfo) {
+          const tokenAccountBalance = parseTokenAccountBalance(
+            signerAtaAccountInfo.data,
+          );
+          jupBalance = tokenAccountBalance.toNumber().toString();
         }
 
-        let votingPower = "0.00";
-        if (accounts[1]) {
-          const escrowInfo = accounts[1];
-          const escrowData = parseEscrowAccount(escrowInfo.data);
-          votingPower = this.calculateVotingPower(
-            escrowData.amount,
-            escrowData.escrowEndsAt,
+        if (escrowAtaAccountInfo) {
+          const { amount, escrowEndsAt } = this.parseEscrowAccount(
+            escrowAtaAccountInfo.data,
           );
+          votingPower = this.calculateVotingPower(amount, escrowEndsAt);
         }
 
         // Update cache
@@ -291,6 +275,31 @@ export class FatcatGlamClient extends GlamClient {
     })();
 
     return this.pendingBalanceFetch;
+  }
+
+  parseEscrowAccount(data: Buffer): EscrowData {
+    // Calculate offsets:
+    // 8 (discriminator) + 32 (locker) + 32 (owner) + 1 (bump) + 32 (tokens) = 105
+    // amount is at offset 105
+    // escrowEndsAt is at offset 105 + 8 + 8 = 121
+    const amount = new BN(data.subarray(105, 113), "le");
+    const escrowStartedAt = new BN(data.subarray(113, 121), "le");
+    const escrowEndsAt = new BN(data.subarray(121, 129), "le");
+    const isMaxLock = !!data[161];
+
+    return {
+      amount,
+      escrowStartedAt,
+      escrowEndsAt,
+      isMaxLock,
+    };
+  }
+
+  async getEscrowData(escrow: PublicKey): Promise<EscrowData | undefined> {
+    const escrowInfo = await this.provider.connection.getAccountInfo(escrow);
+    if (escrowInfo) {
+      return this.parseEscrowAccount(escrowInfo.data);
+    }
   }
 
   async getJupBalance() {
