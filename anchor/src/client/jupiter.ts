@@ -16,7 +16,6 @@ import { BaseClient, TxOptions } from "./base";
 import {
   GOVERNANCE_PROGRAM_ID,
   JUP,
-  JUP_STAKE_LOCKER,
   JUP_VOTE_PROGRAM,
   JUPITER_PROGRAM_ID,
   WSOL,
@@ -74,6 +73,8 @@ type SwapInstructions = {
   cleanupInstruction?: InstructionFromJupiter;
   addressLookupTableAddresses: string[];
 };
+
+const BASE = new PublicKey("bJ1TRoFo2P6UHVwqdiipp6Qhp2HaaHpLowZ5LHet8Gm");
 
 export class JupiterSwapClient {
   public constructor(readonly base: BaseClient) {}
@@ -163,8 +164,10 @@ export class JupiterSwapClient {
     const swapIx: { data: any; keys: AccountMeta[] } =
       this.toTransactionInstruction(swapInstruction, vault.toBase58());
 
-    const inputTokenProgram = await this.getTokenProgram(inputMint);
-    const outputTokenProgram = await this.getTokenProgram(outputMint);
+    const [inputTokenProgram, outputTokenProgram] = await Promise.all([
+      this.getTokenProgram(inputMint),
+      this.getTokenProgram(outputMint),
+    ]);
 
     const inputStakePool =
       ASSETS_MAINNET.get(inputMint.toBase58())?.stateAccount || null;
@@ -180,30 +183,17 @@ export class JupiterSwapClient {
       inputTokenProgram,
       outputTokenProgram,
     );
-    //@ts-ignore
     const tx = await this.base.program.methods
       .jupiterSwap(amount, swapIx.data)
-      .accountsPartial({
+      .accounts({
         state: statePda,
         signer,
-        vault,
-        inputVaultAta: this.base.getVaultAta(
-          statePda,
-          inputMint,
-          inputTokenProgram,
-        ),
-        outputVaultAta: this.base.getVaultAta(
-          statePda,
-          outputMint,
-          outputTokenProgram,
-        ),
         inputMint,
         outputMint,
         inputTokenProgram,
         outputTokenProgram,
         inputStakePool,
         outputStakePool,
-        jupiterProgram: JUPITER_PROGRAM_ID,
       })
       .remainingAccounts(swapIx.keys)
       .preInstructions(preInstructions)
@@ -248,34 +238,18 @@ export class JupiterSwapClient {
     inputTokenProgram: PublicKey = TOKEN_PROGRAM_ID,
     outputTokenProgram: PublicKey = TOKEN_PROGRAM_ID,
   ): Promise<TransactionInstruction[]> => {
-    let preInstructions = [];
+    const vault = this.base.getVaultPda(statePda);
+    const ata = this.base.getAta(outputMint, vault, outputTokenProgram);
 
-    const ataParams = [
-      {
-        payer: signer,
-        ata: this.base.getVaultAta(statePda, outputMint, outputTokenProgram),
-        owner: this.base.getVaultPda(statePda),
-        mint: outputMint,
-        tokenProgram: outputTokenProgram,
-      },
+    const preInstructions = [
+      createAssociatedTokenAccountIdempotentInstruction(
+        signer,
+        ata,
+        vault,
+        outputMint,
+        outputTokenProgram,
+      ),
     ];
-    for (const { payer, ata, owner, mint, tokenProgram } of ataParams) {
-      // const ataAccountInfo = await this.base.provider.connection.getAccountInfo(
-      //   ata
-      // );
-      // if (ataAccountInfo) {
-      //   continue;
-      // }
-      preInstructions.push(
-        createAssociatedTokenAccountIdempotentInstruction(
-          payer,
-          ata,
-          owner,
-          mint,
-          tokenProgram,
-        ),
-      );
-    }
 
     // Transfer SOL to wSOL ATA if needed for the vault
     if (inputMint.equals(WSOL)) {
@@ -389,7 +363,7 @@ export class JupiterVoteClient {
           .initLockedVoterEscrow()
           .accounts({
             state: statePda,
-            locker: JUP_STAKE_LOCKER,
+            locker: this.stakeLocker,
             escrow,
           })
           .instruction(),
@@ -399,7 +373,7 @@ export class JupiterVoteClient {
           .toggleMaxLock(true)
           .accounts({
             state: statePda,
-            locker: JUP_STAKE_LOCKER,
+            locker: this.stakeLocker,
             escrow,
           })
           .instruction(),
@@ -418,7 +392,7 @@ export class JupiterVoteClient {
       .increaseLockedAmount(amount)
       .accounts({
         state: statePda,
-        locker: JUP_STAKE_LOCKER,
+        locker: this.stakeLocker,
         escrow,
         escrowJupAta,
         vaultJupAta,
@@ -450,11 +424,10 @@ export class JupiterVoteClient {
       .toggleMaxLock(false)
       .accounts({
         state: statePda,
-        locker: JUP_STAKE_LOCKER,
+        locker: this.stakeLocker,
         escrow,
       })
       .transaction();
-
     const vTx = await this.base.intoVersionedTransaction({
       tx,
       ...txOptions,
@@ -473,7 +446,7 @@ export class JupiterVoteClient {
       .withdrawAllUnstakedJup()
       .accounts({
         state: statePda,
-        locker: JUP_STAKE_LOCKER,
+        locker: this.stakeLocker,
         escrow,
         escrowJupAta,
         vaultJupAta,
@@ -504,7 +477,7 @@ export class JupiterVoteClient {
       .toggleMaxLock(true)
       .accounts({
         state: statePda,
-        locker: JUP_STAKE_LOCKER,
+        locker: this.stakeLocker,
         escrow,
       })
       .transaction();
@@ -522,7 +495,6 @@ export class JupiterVoteClient {
    *
    * @param statePda
    * @param proposal
-   * @param governor
    * @param side
    * @param txOptions
    * @returns
@@ -530,13 +502,16 @@ export class JupiterVoteClient {
   public async voteOnProposal(
     statePda: PublicKey,
     proposal: PublicKey,
-    governor: PublicKey,
     side: number,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const vault = this.base.getVaultPda(statePda);
     const [vote] = PublicKey.findProgramAddressSync(
       [Buffer.from("Vote"), proposal.toBuffer(), vault.toBuffer()],
+      GOVERNANCE_PROGRAM_ID,
+    );
+    const [governor] = PublicKey.findProgramAddressSync(
+      [Buffer.from("Governor"), BASE.toBuffer()],
       GOVERNANCE_PROGRAM_ID,
     );
 
@@ -566,7 +541,7 @@ export class JupiterVoteClient {
         escrow,
         proposal,
         vote,
-        locker: JUP_STAKE_LOCKER,
+        locker: this.stakeLocker,
         governor,
       })
       .transaction();
@@ -579,9 +554,17 @@ export class JupiterVoteClient {
   /*
    * Utils
    */
+  get stakeLocker() {
+    const [locker] = PublicKey.findProgramAddressSync(
+      [Buffer.from("Locker"), BASE.toBuffer()],
+      JUP_VOTE_PROGRAM,
+    );
+    return locker;
+  }
+
   getEscrowPda(owner: PublicKey): PublicKey {
     const [escrow] = PublicKey.findProgramAddressSync(
-      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), owner.toBuffer()],
+      [Buffer.from("Escrow"), this.stakeLocker.toBuffer(), owner.toBuffer()],
       JUP_VOTE_PROGRAM,
     );
     return escrow;

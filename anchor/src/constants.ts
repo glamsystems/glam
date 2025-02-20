@@ -61,6 +61,9 @@ export const SANCTUM_STAKE_POOL_PROGRAM_ID = new PublicKey(
 export const GOVERNANCE_PROGRAM_ID = new PublicKey(
   "GovaE4iu227srtG2s3tZzB4RmWBzw8sTwrCLZz7kN7rY",
 );
+export const JUP_VOTE_PROGRAM = new PublicKey(
+  "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj",
+);
 
 /**
  * Stake pools
@@ -71,14 +74,4 @@ export const JITO_STAKE_POOL = new PublicKey(
 
 export const JUPSOL_STAKE_POOL = new PublicKey(
   "8VpRhuxa7sUUepdY3kQiTmX9rS5vx4WgaXiAnXq4KCtr",
-);
-
-/**
- * JUP staking & voting
- */
-export const JUP_STAKE_LOCKER = new PublicKey(
-  "CVMdMd79no569tjc5Sq7kzz8isbfCcFyBS5TLGsrZ5dN",
-);
-export const JUP_VOTE_PROGRAM = new PublicKey(
-  "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj",
 );

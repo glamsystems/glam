@@ -28,6 +28,10 @@ import {
 } from "@/components/ui/tooltip";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useGlamClient } from "@/providers/clientProvider";
+import { toast } from "./ui/use-toast";
+import { ExplorerLink } from "./ExplorerLink";
+import { parseTxError } from "@/lib/error";
 
 const PROPOSALS_LIMIT = 9999;
 const DEFAULT_PROPOSAL = {
@@ -159,6 +163,44 @@ const ProposalItem = memo(
     onVoteChange: (key: string, value: string) => void;
     formatDate: (date: string | null) => string;
   }) => {
+    const { glamClient } = useGlamClient();
+
+    const handleOverrideVote = useCallback(async () => {
+      const selectedOption = selectedVotes[proposal.key];
+      console.log("Override Vote:", {
+        proposal: {
+          key: proposal.key,
+          title: proposal.title,
+        },
+        selectedOption,
+      });
+      if (!selectedOption) {
+        toast({
+          title: "Vote side not selected",
+          description: "Please select a vote side",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      try {
+        const txSig = await glamClient.castVote(
+          proposal.key,
+          parseInt(selectedOption),
+        );
+        toast({
+          title: `Vote succeeded`,
+          description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
+        });
+      } catch (error) {
+        toast({
+          title: `Vote succeeded`,
+          description: parseTxError(error),
+          variant: "destructive",
+        });
+      }
+    }, [proposal, selectedVotes]);
+
     const status = useMemo(
       () =>
         getProposalStatus(
@@ -362,6 +404,7 @@ const ProposalItem = memo(
                         !selectedVotes[proposal.key] || status !== "ongoing"
                       }
                       className="text-foreground dark:text-background shadow-none w-full"
+                      onClick={handleOverrideVote}
                     >
                       Override Vote
                     </Button>

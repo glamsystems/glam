@@ -617,7 +617,6 @@ const vote = program
       const txId = await glamClient.jupiterVote.voteOnProposal(
         statePda,
         proposal,
-        governor,
         Number(side),
       );
       console.log("castVote:", txId);
