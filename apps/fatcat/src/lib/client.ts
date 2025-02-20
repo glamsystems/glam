@@ -253,6 +253,19 @@ export class FatcatGlamClient extends GlamClient {
     return tx;
   };
 
+  castVote = async (proposal: string, side: number) => {
+    console.log("Casting vote:", { proposal, side });
+    const { state } = this.getFatcatState();
+    const tx = await this.jupiterVote.voteOnProposal(
+      state,
+      new PublicKey(proposal),
+      new PublicKey(0),
+      side,
+      { ...this.priorityFeeTxOptions },
+    );
+    return tx;
+  };
+
   private isCacheValid(): boolean {
     return (
       this.cachedBalances.lastFetch !== undefined &&
