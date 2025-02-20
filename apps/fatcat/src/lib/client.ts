@@ -259,7 +259,6 @@ export class FatcatGlamClient extends GlamClient {
     const tx = await this.jupiterVote.voteOnProposal(
       state,
       new PublicKey(proposal),
-      new PublicKey(0),
       side,
       { ...this.priorityFeeTxOptions },
     );
