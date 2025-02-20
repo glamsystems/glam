@@ -164,8 +164,10 @@ export class JupiterSwapClient {
     const swapIx: { data: any; keys: AccountMeta[] } =
       this.toTransactionInstruction(swapInstruction, vault.toBase58());
 
-    const inputTokenProgram = await this.getTokenProgram(inputMint);
-    const outputTokenProgram = await this.getTokenProgram(outputMint);
+    const [inputTokenProgram, outputTokenProgram] = await Promise.all([
+      this.getTokenProgram(inputMint),
+      this.getTokenProgram(outputMint),
+    ]);
 
     const inputStakePool =
       ASSETS_MAINNET.get(inputMint.toBase58())?.stateAccount || null;
@@ -183,27 +185,15 @@ export class JupiterSwapClient {
     );
     const tx = await this.base.program.methods
       .jupiterSwap(amount, swapIx.data)
-      .accountsPartial({
+      .accounts({
         state: statePda,
         signer,
-        vault,
-        inputVaultAta: this.base.getVaultAta(
-          statePda,
-          inputMint,
-          inputTokenProgram,
-        ),
-        outputVaultAta: this.base.getVaultAta(
-          statePda,
-          outputMint,
-          outputTokenProgram,
-        ),
         inputMint,
         outputMint,
         inputTokenProgram,
         outputTokenProgram,
         inputStakePool,
         outputStakePool,
-        jupiterProgram: JUPITER_PROGRAM_ID,
       })
       .remainingAccounts(swapIx.keys)
       .preInstructions(preInstructions)
@@ -248,34 +238,18 @@ export class JupiterSwapClient {
     inputTokenProgram: PublicKey = TOKEN_PROGRAM_ID,
     outputTokenProgram: PublicKey = TOKEN_PROGRAM_ID,
   ): Promise<TransactionInstruction[]> => {
-    let preInstructions = [];
+    const vault = this.base.getVaultPda(statePda);
+    const ata = this.base.getAta(outputMint, vault, outputTokenProgram);
 
-    const ataParams = [
-      {
-        payer: signer,
-        ata: this.base.getVaultAta(statePda, outputMint, outputTokenProgram),
-        owner: this.base.getVaultPda(statePda),
-        mint: outputMint,
-        tokenProgram: outputTokenProgram,
-      },
+    const preInstructions = [
+      createAssociatedTokenAccountIdempotentInstruction(
+        signer,
+        ata,
+        vault,
+        outputMint,
+        outputTokenProgram,
+      ),
     ];
-    for (const { payer, ata, owner, mint, tokenProgram } of ataParams) {
-      // const ataAccountInfo = await this.base.provider.connection.getAccountInfo(
-      //   ata
-      // );
-      // if (ataAccountInfo) {
-      //   continue;
-      // }
-      preInstructions.push(
-        createAssociatedTokenAccountIdempotentInstruction(
-          payer,
-          ata,
-          owner,
-          mint,
-          tokenProgram,
-        ),
-      );
-    }
 
     // Transfer SOL to wSOL ATA if needed for the vault
     if (inputMint.equals(WSOL)) {
@@ -454,7 +428,6 @@ export class JupiterVoteClient {
         escrow,
       })
       .transaction();
-
     const vTx = await this.base.intoVersionedTransaction({
       tx,
       ...txOptions,
