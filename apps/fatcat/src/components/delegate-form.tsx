@@ -177,22 +177,19 @@ export default function DelegateForm() {
 
   const handleStake = async () => {
     setShowStakeConfirm(false);
-    setIsTxPending(true);
-    try {
-      const txSig = await client.stakeJup(parseFloat(stakeAmount));
-      toast({
-        title: `Stake succeeded`,
-        description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
-      });
-    } catch (error) {
-      toast({
-        title: `Stake failed`,
-        description: parseTxError(error),
-        variant: "destructive",
-      });
-    } finally {
-      setIsTxPending(false);
+    const amount = parseFloat(stakeAmount);
+    if (amount <= 0) {
+      console.log(`Invalid amount: ${amount}`);
+      return;
     }
+
+    console.log(`Staking ${amount} JUP...`);
+    await handleTx("Staking", client.stakeJup(amount), {
+      onSuccess: async () => {
+        await onTxSuccess();
+        setStakeAmount("0");
+      },
+    });
   };
 
   const handleUnstake = async () => {
