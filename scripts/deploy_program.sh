@@ -3,7 +3,6 @@
 set -e
 
 PROGRAM_KEYPAIR=${PROGRAM_KEYPAIR:-/path/to/program-keypair.json}
-PROGRAM_ID=
 SOLANA=${SOLANA:-solana}
 PRIORITY_FEE=${PRIORITY_FEE:-10000}
 MAX_ATTEMPTS=${MAX_ATTEMPTS:-1000}
@@ -76,7 +75,7 @@ deploy_program() {
 
     case "$choice" in
         y | Y) 
-            $cmd
+            ${cmd[@]}
             ;;
         n | N) 
             echo "Aborted"
@@ -126,6 +125,4 @@ echo "==== Program size ===="
 echo "glam.so: $size_kb ($size_bytes bytes)"
 echo "======================"
 
-deploy_program
-
-deploy_idl
+deploy_program && deploy_idl
