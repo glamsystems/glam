@@ -23,6 +23,13 @@ import { Skeleton } from "@/components/skeleton";
 import { DynamicVotingPower } from "@/components/dynamic-voting-power";
 import { BN } from "@coral-xyz/anchor";
 import { EscrowData } from "@/lib/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface UnstakeItem {
   amount: number;
@@ -41,6 +48,7 @@ export default function DelegateForm() {
   const [isLoadingVotingPower, setIsLoadingVotingPower] = useState(true);
   const [isTxPending, setIsTxPending] = useState<boolean>(false);
   const [escrowData, setEscrowData] = useState<EscrowData | null>(null);
+  const [showStakeConfirm, setShowStakeConfirm] = useState(false);
 
   useEffect(() => {
     const { amount, escrowStartedAt, escrowEndsAt, isMaxLock } =
@@ -168,16 +176,23 @@ export default function DelegateForm() {
   };
 
   const handleStake = async () => {
-    const amount = parseFloat(stakeAmount);
-    if (amount <= 0) {
-      console.log(`Invalid amount: ${amount}`);
-      return;
+    setShowStakeConfirm(false);
+    setIsTxPending(true);
+    try {
+      const txSig = await client.stakeJup(parseFloat(stakeAmount));
+      toast({
+        title: `Stake succeeded`,
+        description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
+      });
+    } catch (error) {
+      toast({
+        title: `Stake failed`,
+        description: parseTxError(error),
+        variant: "destructive",
+      });
+    } finally {
+      setIsTxPending(false);
     }
-
-    console.log(`Staking ${amount} JUP...`);
-    await handleTx("Staking", client.stakeJup(amount), {
-      onSuccess: onTxSuccess,
-    });
   };
 
   const handleUnstake = async () => {
@@ -222,6 +237,19 @@ export default function DelegateForm() {
       return `${minutes}m ${seconds.toString().padStart(2, "0")}s`;
     } else {
       return `${seconds}s`;
+    }
+  };
+
+  const handleStakeClick = () => {
+    // Check if there are any unstaking items in progress
+    const hasUnstakingInProgress = unstakeItems.some(
+      (item) => item.endTime > nowSec,
+    );
+
+    if (hasUnstakingInProgress) {
+      setShowStakeConfirm(true);
+    } else {
+      handleStake();
     }
   };
 
@@ -313,7 +341,7 @@ export default function DelegateForm() {
                   </div>
                   <Button
                     className="w-full py-2 sm:py-3 text-foreground dark:text-background"
-                    onClick={handleStake}
+                    onClick={handleStakeClick}
                     loading={isTxPending}
                     disabled={
                       !(parseFloat(stakeAmount) > 0) || isLoadingBalance
@@ -324,45 +352,6 @@ export default function DelegateForm() {
                 </div>
               </TabsContent>
 
-              {/* TODO: Previous version with manual amount input - keep for future reference*/}
-              {/* <TabsContent value="unstake" className="h-full">*/}
-              {/*  <div className="space-y-4 h-full flex flex-col justify-between">*/}
-              {/*    <div className="space-y-2">*/}
-              {/*      <Label htmlFor="unstake-amount">Staked JUP</Label>*/}
-              {/*      <div className="flex justify-end space-x-2">*/}
-              {/*        <Button*/}
-              {/*          variant="outline"*/}
-              {/*          size="sm"*/}
-              {/*          onClick={() => handleHalfClick("unstake")}*/}
-              {/*        >*/}
-              {/*          HALF*/}
-              {/*        </Button>*/}
-              {/*        <Button*/}
-              {/*          variant="outline"*/}
-              {/*          size="sm"*/}
-              {/*          onClick={() => handleMaxClick("unstake")}*/}
-              {/*        >*/}
-              {/*          MAX*/}
-              {/*        </Button>*/}
-              {/*      </div>*/}
-              {/*      <Input*/}
-              {/*        id="unstake-amount"*/}
-              {/*        type="text"*/}
-              {/*        value={unstakeAmount}*/}
-              {/*        onChange={(e) => setUnstakeAmount(e.target.value)}*/}
-              {/*        onFocus={(e) => setUnstakeAmount("")}*/}
-              {/*        className="text-right text-xl sm:text-2xl"*/}
-              {/*      />*/}
-              {/*    </div>*/}
-              {/*    <Button*/}
-              {/*      className="w-full py-2 sm:py-3 text-foreground dark:text-background"*/}
-              {/*      onClick={handleUnstake}*/}
-              {/*      disabled={!(parseFloat(unstakeAmount) > 0) || spinner}*/}
-              {/*    >*/}
-              {/*      Unstake{spinner ? "..." : ""}*/}
-              {/*    </Button>*/}
-              {/*  </div>*/}
-              {/*</TabsContent> */}
               <TabsContent value="unstake" className="h-full">
                 <div className="space-y-4 h-full flex flex-col justify-between">
                   <div className="space-y-2">
@@ -455,6 +444,35 @@ export default function DelegateForm() {
           </Tabs>
         </CardContent>
       </Card>
+      <Dialog open={showStakeConfirm} onOpenChange={setShowStakeConfirm}>
+        <DialogContent className="sm:max-w-[425px] border-muted rounded">
+          <DialogHeader>
+            <DialogTitle className="text-xl mb-2">
+              Staking JUP while unstaking in progress
+            </DialogTitle>
+            <DialogDescription className="text-base">
+              When staking more JUP tokens during unstaking, you'll get partial
+              voting power based on the remaining unstaking period, and the
+              newly staked tokens join the unstaking queue.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 mt-4">
+            <Button
+              className="w-full text-foreground dark:text-background"
+              onClick={handleStake}
+            >
+              Proceed
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setShowStakeConfirm(false)}
+            >
+              Cancel
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
