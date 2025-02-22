@@ -386,25 +386,21 @@ export class DriftClient {
     const initializeUserIx = await this.base.program.methods
       //@ts-ignore
       .driftInitializeUser(0, GLAM_NAME)
-      .accountsPartial({
+      .accounts({
         glamState,
-        glamVault,
         user,
         userStats,
         state,
-        authority: glamVault,
         glamSigner,
       })
       .instruction();
 
     const tx = await this.base.program.methods
       .driftInitializeUserStats()
-      .accountsPartial({
+      .accounts({
         glamState,
-        glamVault,
         state,
         userStats,
-        authority: glamVault,
         glamSigner,
       })
       .postInstructions([initializeUserIx])
@@ -431,11 +427,10 @@ export class DriftClient {
 
     const tx = await this.base.program.methods
       .driftUpdateUserCustomMarginRatio(subAccountId, marginRatio)
-      .accountsPartial({
+      .accounts({
         glamState,
         glamSigner,
         user,
-        authority: glamVault,
       })
       .transaction();
 
@@ -452,16 +447,14 @@ export class DriftClient {
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const glamSigner = txOptions.signer || this.base.getSigner();
-    const glamVault = this.base.getVaultPda(glamState);
     const [user] = this.getUser(glamState, subAccountId);
 
     const tx = await this.base.program.methods
       .driftUpdateUserMarginTradingEnabled(subAccountId, marginTradingEnabled)
-      .accountsPartial({
+      .accounts({
         glamState,
         glamSigner,
         user,
-        authority: glamVault,
       })
       .transaction();
 
@@ -478,16 +471,14 @@ export class DriftClient {
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const glamSigner = txOptions.signer || this.base.getSigner();
-    const glamVault = this.base.getVaultPda(glamState);
     const [user] = this.getUser(glamState, subAccountId);
 
     const tx = await this.base.program.methods
       .driftUpdateUserDelegate(subAccountId, delegate)
-      .accountsPartial({
+      .accounts({
         glamState,
         glamSigner,
         user,
-        authority: glamVault,
       })
       .transaction();
 
@@ -503,7 +494,6 @@ export class DriftClient {
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const glamSigner = txOptions.signer || this.base.getSigner();
-    const glamVault = this.base.getVaultPda(glamState);
     const [user, userStats] = this.getUser(glamState, subAccountId);
     const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
@@ -515,7 +505,6 @@ export class DriftClient {
         user,
         userStats,
         glamSigner,
-        authority: glamVault,
       })
       .transaction();
 
@@ -554,9 +543,8 @@ export class DriftClient {
 
     const tx = await this.base.program.methods
       .driftDeposit(marketIndex, amount, false)
-      .accountsPartial({
+      .accounts({
         glamState: statePda,
-        authority: this.base.getVaultPda(statePda),
         state,
         user,
         userStats,
@@ -620,9 +608,8 @@ export class DriftClient {
 
     const tx = await this.base.program.methods
       .driftWithdraw(marketIndex, amount, false)
-      .accountsPartial({
+      .accounts({
         glamState: statePda,
-        authority: vault,
         state,
         user,
         userStats,
@@ -659,19 +646,17 @@ export class DriftClient {
     );
 
     const glamSigner = txOptions.signer || this.base.getSigner();
-    const glamVault = this.base.getVaultPda(glamState);
     const [user] = this.getUser(glamState, subAccountId);
     const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
     const tx = await this.base.program.methods
       // @ts-ignore
       .driftPlaceOrders([orderParams])
-      .accountsPartial({
+      .accounts({
         glamState,
         user,
         state,
         glamSigner,
-        authority: glamVault,
       })
       .remainingAccounts(remainingAccounts)
       .transaction();
@@ -705,12 +690,11 @@ export class DriftClient {
     const tx = await this.base.program.methods
       // @ts-ignore
       .driftModifyOrder(1, modifyOrderParams)
-      .accountsPartial({
+      .accounts({
         glamState: statePda,
         glamSigner: signer,
         user,
         state: driftState,
-        authority: this.base.getVaultPda(statePda),
       })
       // .remainingAccounts(remainingAccounts)
       .transaction();
@@ -751,7 +735,6 @@ export class DriftClient {
         glamSigner,
         user,
         state: driftState,
-        authority: glamVault,
       })
       .remainingAccounts(remainingAccounts)
       .transaction();
@@ -770,7 +753,6 @@ export class DriftClient {
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const glamSigner = txOptions.signer || this.base.getSigner();
-    const glamVault = this.base.getVaultPda(glamState);
     const [user] = this.getUser(glamState, subAccountId);
     const driftState = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
@@ -787,7 +769,6 @@ export class DriftClient {
         glamSigner,
         user,
         state: driftState,
-        authority: glamVault,
       })
       .remainingAccounts(remainingAccounts)
       .transaction();

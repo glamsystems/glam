@@ -1354,9 +1354,6 @@
         {
           "name": "user",
           "writable": true
-        },
-        {
-          "name": "authority"
         }
       ],
       "args": [

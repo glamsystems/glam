@@ -1360,9 +1360,6 @@ export type Glam = {
         {
           "name": "user",
           "writable": true
-        },
-        {
-          "name": "authority"
         }
       ],
       "args": [
