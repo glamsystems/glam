@@ -757,9 +757,6 @@ export type Glam = {
         {
           "name": "user",
           "writable": true
-        },
-        {
-          "name": "authority"
         }
       ],
       "args": [
@@ -856,9 +853,6 @@ export type Glam = {
         {
           "name": "user",
           "writable": true
-        },
-        {
-          "name": "authority"
         }
       ],
       "args": [
@@ -940,10 +934,6 @@ export type Glam = {
         {
           "name": "state",
           "writable": true
-        },
-        {
-          "name": "authority",
-          "writable": true
         }
       ],
       "args": []
@@ -1019,9 +1009,6 @@ export type Glam = {
         {
           "name": "userStats",
           "writable": true
-        },
-        {
-          "name": "authority"
         },
         {
           "name": "spotMarketVault",
@@ -1107,9 +1094,6 @@ export type Glam = {
         {
           "name": "state",
           "writable": true
-        },
-        {
-          "name": "authority"
         },
         {
           "name": "payer",
@@ -1209,9 +1193,6 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "authority"
-        },
-        {
           "name": "payer",
           "writable": true,
           "signer": true
@@ -1293,9 +1274,6 @@ export type Glam = {
         {
           "name": "user",
           "writable": true
-        },
-        {
-          "name": "authority"
         }
       ],
       "args": [
@@ -1463,9 +1441,6 @@ export type Glam = {
         {
           "name": "user",
           "writable": true
-        },
-        {
-          "name": "authority"
         }
       ],
       "args": [
@@ -1542,9 +1517,6 @@ export type Glam = {
         {
           "name": "user",
           "writable": true
-        },
-        {
-          "name": "authority"
         }
       ],
       "args": [
@@ -1621,9 +1593,6 @@ export type Glam = {
         {
           "name": "user",
           "writable": true
-        },
-        {
-          "name": "authority"
         }
       ],
       "args": [
@@ -1708,9 +1677,6 @@ export type Glam = {
         {
           "name": "userStats",
           "writable": true
-        },
-        {
-          "name": "authority"
         },
         {
           "name": "spotMarketVault",

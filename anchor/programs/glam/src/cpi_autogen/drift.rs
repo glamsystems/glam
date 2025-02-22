@@ -26,9 +26,6 @@ pub struct DriftInitializeUser<'info> {
     /// CHECK: should be validated by target program
     #[account(mut)]
     pub state: AccountInfo<'info>,
-    /// CHECK: should be validated by target program
-    #[account(address = glam_state.vault)]
-    pub authority: AccountInfo<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub rent: Sysvar<'info, Rent>,
@@ -52,9 +49,6 @@ pub struct DriftInitializeUserStats<'info> {
     /// CHECK: should be validated by target program
     #[account(mut)]
     pub state: AccountInfo<'info>,
-    /// CHECK: should be validated by target program
-    #[account(address = glam_state.vault)]
-    pub authority: AccountInfo<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub rent: Sysvar<'info, Rent>,
@@ -81,9 +75,6 @@ pub struct DriftDeposit<'info> {
     /// CHECK: should be validated by target program
     #[account(mut)]
     pub user_stats: AccountInfo<'info>,
-    /// CHECK: should be validated by target program
-    #[account(address = glam_state.vault)]
-    pub authority: AccountInfo<'info>,
     /// CHECK: should be validated by target program
     #[account(mut)]
     pub spot_market_vault: AccountInfo<'info>,
@@ -115,9 +106,6 @@ pub struct DriftWithdraw<'info> {
     #[account(mut)]
     pub user_stats: AccountInfo<'info>,
     /// CHECK: should be validated by target program
-    #[account(address = glam_state.vault)]
-    pub authority: AccountInfo<'info>,
-    /// CHECK: should be validated by target program
     #[account(mut)]
     pub spot_market_vault: AccountInfo<'info>,
     /// CHECK: should be validated by target program
@@ -145,9 +133,6 @@ pub struct DriftCancelOrders<'info> {
     /// CHECK: should be validated by target program
     #[account(mut)]
     pub user: AccountInfo<'info>,
-    /// CHECK: should be validated by target program
-    #[account(address = glam_state.vault)]
-    pub authority: AccountInfo<'info>,
 }
 #[derive(Accounts)]
 pub struct DriftModifyOrder<'info> {
@@ -166,9 +151,6 @@ pub struct DriftModifyOrder<'info> {
     /// CHECK: should be validated by target program
     #[account(mut)]
     pub user: AccountInfo<'info>,
-    /// CHECK: should be validated by target program
-    #[account(address = glam_state.vault)]
-    pub authority: AccountInfo<'info>,
 }
 #[derive(Accounts)]
 pub struct DriftUpdateUser<'info> {
@@ -185,9 +167,6 @@ pub struct DriftUpdateUser<'info> {
     /// CHECK: should be validated by target program
     #[account(mut)]
     pub user: AccountInfo<'info>,
-    /// CHECK: should be validated by target program
-    #[account(address = glam_state.vault)]
-    pub authority: AccountInfo<'info>,
 }
 #[derive(Accounts)]
 pub struct DriftDeleteUser<'info> {
@@ -211,9 +190,6 @@ pub struct DriftDeleteUser<'info> {
     /// CHECK: should be validated by target program
     #[account(mut)]
     pub state: AccountInfo<'info>,
-    /// CHECK: should be validated by target program
-    #[account(mut, address = glam_state.vault)]
-    pub authority: AccountInfo<'info>,
 }
 #[access_control(
     acl::check_access(
@@ -236,7 +212,7 @@ pub fn drift_initialize_user(
                 user: ctx.accounts.user.to_account_info(),
                 user_stats: ctx.accounts.user_stats.to_account_info(),
                 state: ctx.accounts.state.to_account_info(),
-                authority: ctx.accounts.authority.to_account_info(),
+                authority: ctx.accounts.glam_vault.to_account_info(),
                 payer: ctx.accounts.payer.to_account_info(),
                 rent: ctx.accounts.rent.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
@@ -265,7 +241,7 @@ pub fn drift_initialize_user_stats(
             drift::cpi::accounts::InitializeUserStats {
                 user_stats: ctx.accounts.user_stats.to_account_info(),
                 state: ctx.accounts.state.to_account_info(),
-                authority: ctx.accounts.authority.to_account_info(),
+                authority: ctx.accounts.glam_vault.to_account_info(),
                 payer: ctx.accounts.payer.to_account_info(),
                 rent: ctx.accounts.rent.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
@@ -296,7 +272,7 @@ pub fn drift_deposit<'c: 'info, 'info>(
                     state: ctx.accounts.state.to_account_info(),
                     user: ctx.accounts.user.to_account_info(),
                     user_stats: ctx.accounts.user_stats.to_account_info(),
-                    authority: ctx.accounts.authority.to_account_info(),
+                    authority: ctx.accounts.glam_vault.to_account_info(),
                     spot_market_vault: ctx.accounts.spot_market_vault.to_account_info(),
                     user_token_account: ctx
                         .accounts
@@ -334,7 +310,7 @@ pub fn drift_withdraw<'c: 'info, 'info>(
                     state: ctx.accounts.state.to_account_info(),
                     user: ctx.accounts.user.to_account_info(),
                     user_stats: ctx.accounts.user_stats.to_account_info(),
-                    authority: ctx.accounts.authority.to_account_info(),
+                    authority: ctx.accounts.glam_vault.to_account_info(),
                     spot_market_vault: ctx.accounts.spot_market_vault.to_account_info(),
                     drift_signer: ctx.accounts.drift_signer.to_account_info(),
                     user_token_account: ctx
@@ -372,7 +348,7 @@ pub fn drift_cancel_orders<'c: 'info, 'info>(
                 drift::cpi::accounts::CancelOrders {
                     state: ctx.accounts.state.to_account_info(),
                     user: ctx.accounts.user.to_account_info(),
-                    authority: ctx.accounts.authority.to_account_info(),
+                    authority: ctx.accounts.glam_vault.to_account_info(),
                 },
                 glam_vault_signer_seeds,
             )
@@ -401,7 +377,7 @@ pub fn drift_cancel_orders_by_ids<'c: 'info, 'info>(
                 drift::cpi::accounts::CancelOrdersByIds {
                     state: ctx.accounts.state.to_account_info(),
                     user: ctx.accounts.user.to_account_info(),
-                    authority: ctx.accounts.authority.to_account_info(),
+                    authority: ctx.accounts.glam_vault.to_account_info(),
                 },
                 glam_vault_signer_seeds,
             )
@@ -429,7 +405,7 @@ pub fn drift_modify_order(
             drift::cpi::accounts::ModifyOrder {
                 state: ctx.accounts.state.to_account_info(),
                 user: ctx.accounts.user.to_account_info(),
-                authority: ctx.accounts.authority.to_account_info(),
+                authority: ctx.accounts.glam_vault.to_account_info(),
             },
             glam_vault_signer_seeds,
         ),
@@ -456,7 +432,7 @@ pub fn drift_update_user_custom_margin_ratio(
             ctx.accounts.cpi_program.to_account_info(),
             drift::cpi::accounts::UpdateUserCustomMarginRatio {
                 user: ctx.accounts.user.to_account_info(),
-                authority: ctx.accounts.authority.to_account_info(),
+                authority: ctx.accounts.glam_vault.to_account_info(),
             },
             glam_vault_signer_seeds,
         ),
@@ -483,7 +459,7 @@ pub fn drift_update_user_margin_trading_enabled(
             ctx.accounts.cpi_program.to_account_info(),
             drift::cpi::accounts::UpdateUserMarginTradingEnabled {
                 user: ctx.accounts.user.to_account_info(),
-                authority: ctx.accounts.authority.to_account_info(),
+                authority: ctx.accounts.glam_vault.to_account_info(),
             },
             glam_vault_signer_seeds,
         ),
@@ -510,7 +486,7 @@ pub fn drift_update_user_delegate(
             ctx.accounts.cpi_program.to_account_info(),
             drift::cpi::accounts::UpdateUserDelegate {
                 user: ctx.accounts.user.to_account_info(),
-                authority: ctx.accounts.authority.to_account_info(),
+                authority: ctx.accounts.glam_vault.to_account_info(),
             },
             glam_vault_signer_seeds,
         ),
@@ -535,7 +511,7 @@ pub fn drift_delete_user(ctx: Context<DriftDeleteUser>) -> Result<()> {
                 user: ctx.accounts.user.to_account_info(),
                 user_stats: ctx.accounts.user_stats.to_account_info(),
                 state: ctx.accounts.state.to_account_info(),
-                authority: ctx.accounts.authority.to_account_info(),
+                authority: ctx.accounts.glam_vault.to_account_info(),
             },
             glam_vault_signer_seeds,
         ),
