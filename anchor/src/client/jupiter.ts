@@ -500,14 +500,14 @@ export class JupiterVoteClient {
    * @returns
    */
   public async voteOnProposal(
-    statePda: PublicKey,
+    glamState: PublicKey,
     proposal: PublicKey,
     side: number,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const vault = this.base.getVaultPda(statePda);
+    const glamVault = this.base.getVaultPda(glamState);
     const [vote] = PublicKey.findProgramAddressSync(
-      [Buffer.from("Vote"), proposal.toBuffer(), vault.toBuffer()],
+      [Buffer.from("Vote"), proposal.toBuffer(), glamVault.toBuffer()],
       GOVERNANCE_PROGRAM_ID,
     );
     const [governor] = PublicKey.findProgramAddressSync(
@@ -523,21 +523,21 @@ export class JupiterVoteClient {
       console.log("Will create vote account:", vote.toBase58());
       preInstructions.push(
         await this.base.program.methods
-          .newVote()
-          .accounts({
-            state: statePda,
-            vote,
+          .jupiterGovNewVote(glamVault)
+          .accountsPartial({
+            glamState,
             proposal,
+            vote,
           })
           .instruction(),
       );
     }
 
-    const escrow = this.getEscrowPda(vault);
+    const escrow = this.getEscrowPda(glamVault);
     const tx = await this.base.program.methods
       .castVote(side, null)
       .accounts({
-        state: statePda,
+        glamState,
         escrow,
         proposal,
         vote,
@@ -554,7 +554,7 @@ export class JupiterVoteClient {
   /*
    * Utils
    */
-  get stakeLocker() {
+  get stakeLocker(): PublicKey {
     const [locker] = PublicKey.findProgramAddressSync(
       [Buffer.from("Locker"), BASE.toBuffer()],
       JUP_VOTE_PROGRAM,

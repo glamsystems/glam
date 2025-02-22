@@ -1,3 +1,6 @@
+#
+# Drift
+#
 drift:
   - ix_name: initializeUserStats
     permission: DriftInitialize
@@ -72,6 +75,10 @@ drift:
     integration: Drift
     vault_aliases: ["authority"]
     signed_by_vault: true
+
+#
+# Kamino Lending
+#
 kamino_lending:
   - ix_name: initUserMetadata
     permission: KaminoInit
@@ -81,7 +88,7 @@ kamino_lending:
   - ix_name: initObligation
     permission: KaminoInit
     integration: KaminoLending
-    vault_aliases: ["obligationOwner"]
+    vault_aliases: ["obligation_owner"]
     signed_by_vault: true
   - ix_name: initObligationFarmsForReserve
     permission: KaminoInit
@@ -92,4 +99,59 @@ kamino_lending:
     permission: KaminoDeposit
     integration: KaminoLending
     vault_aliases: ["owner"]
+    signed_by_vault: true
+
+#
+# Jupiter Governance and Vote
+#
+jupiter_gov:
+  - ix_name: newVote
+    permission: VoteOnProposal
+    integration: JupiterVote
+    signed_by_vault: true
+
+jupiter_vote:
+  - ix_name: newEscrow
+    permission: StakeJup
+    integration: JupiterVote
+    vault_aliases: ["escrow_owner"]
+    signed_by_vault: true
+  - ix_name: increaseLockedAmount
+    permission: VoteOnProposal
+    integration: JupiterVote
+    # https://github.com/glamsystems/glam/pull/402
+    vault_aliases: ["payer"]
+    signed_by_vault: true
+    mutable_vault: true # vault is fee payer
+  - ix_name: openPartialUnstaking
+    permission: UnstakeJup
+    integration: JupiterVote
+    vault_aliases: ["owner"]
+    signed_by_vault: true
+  - ix_name: mergePartialUnstaking
+    permission: UnstakeJup
+    integration: JupiterVote
+    vault_aliases: ["owner"]
+    signed_by_vault: true
+  - ix_name: withdraw
+    permission: UnstakeJup
+    integration: JupiterVote
+    vault_aliases: ["escrow_owner", "payer"]
+    signed_by_vault: true
+    mutable_vault: true # vault is fee payer
+  - ix_name: withdrawPartialUnstaking
+    permission: UnstakeJup
+    integration: JupiterVote
+    vault_aliases: ["owner", "payer"]
+    signed_by_vault: true
+    mutable_vault: true # vault is fee payer
+  - ix_name: toggleMaxLock
+    permission: UnstakeJup
+    integration: JupiterVote
+    vault_aliases: ["escrow_owner"]
+    signed_by_vault: true
+  - ix_name: castVote
+    permission: VoteOnProposal
+    integration: JupiterVote
+    vault_aliases: ["vote_delegate"]
     signed_by_vault: true

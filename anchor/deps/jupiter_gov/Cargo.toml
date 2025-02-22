@@ -1,12 +1,12 @@
 [package]
-name = "jup_locked_voter"
+name = "jupiter_gov"
 version = "0.1.0"
 description = "Created with Anchor"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "jup_locked_voter"
+name = "jupiter_gov"
 
 [features]
 no-entrypoint = []
