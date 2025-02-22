@@ -149,7 +149,6 @@ pub struct DriftCancelOrders<'info> {
     #[account(address = glam_state.vault)]
     pub authority: AccountInfo<'info>,
 }
-pub type DriftCancelOrdersByIds<'info> = DriftCancelOrders<'info>;
 #[derive(Accounts)]
 pub struct DriftModifyOrder<'info> {
     pub glam_state: Box<Account<'info, StateAccount>>,
@@ -171,10 +170,8 @@ pub struct DriftModifyOrder<'info> {
     #[account(address = glam_state.vault)]
     pub authority: AccountInfo<'info>,
 }
-pub type DriftUpdateUserCustomMarginRatio<'info> = DriftUpdateUserDelegate<'info>;
-pub type DriftUpdateUserMarginTradingEnabled<'info> = DriftUpdateUserDelegate<'info>;
 #[derive(Accounts)]
-pub struct DriftUpdateUserDelegate<'info> {
+pub struct DriftUpdateUser<'info> {
     pub glam_state: Box<Account<'info, StateAccount>>,
     #[account(
         seeds = [crate::constants::SEED_VAULT.as_bytes(),
@@ -395,7 +392,7 @@ pub fn drift_cancel_orders<'c: 'info, 'info>(
 #[access_control(acl::check_integration(&ctx.accounts.glam_state, Integration::Drift))]
 #[glam_macros::glam_vault_signer_seeds]
 pub fn drift_cancel_orders_by_ids<'c: 'info, 'info>(
-    ctx: Context<'_, '_, 'c, 'info, DriftCancelOrdersByIds<'info>>,
+    ctx: Context<'_, '_, 'c, 'info, DriftCancelOrders<'info>>,
     order_ids: Vec<u32>,
 ) -> Result<()> {
     drift::cpi::cancel_orders_by_ids(
@@ -450,7 +447,7 @@ pub fn drift_modify_order(
 #[access_control(acl::check_integration(&ctx.accounts.glam_state, Integration::Drift))]
 #[glam_macros::glam_vault_signer_seeds]
 pub fn drift_update_user_custom_margin_ratio(
-    ctx: Context<DriftUpdateUserCustomMarginRatio>,
+    ctx: Context<DriftUpdateUser>,
     sub_account_id: u16,
     margin_ratio: u32,
 ) -> Result<()> {
@@ -477,7 +474,7 @@ pub fn drift_update_user_custom_margin_ratio(
 #[access_control(acl::check_integration(&ctx.accounts.glam_state, Integration::Drift))]
 #[glam_macros::glam_vault_signer_seeds]
 pub fn drift_update_user_margin_trading_enabled(
-    ctx: Context<DriftUpdateUserMarginTradingEnabled>,
+    ctx: Context<DriftUpdateUser>,
     sub_account_id: u16,
     margin_trading_enabled: bool,
 ) -> Result<()> {
@@ -504,7 +501,7 @@ pub fn drift_update_user_margin_trading_enabled(
 #[access_control(acl::check_integration(&ctx.accounts.glam_state, Integration::Drift))]
 #[glam_macros::glam_vault_signer_seeds]
 pub fn drift_update_user_delegate(
-    ctx: Context<DriftUpdateUserDelegate>,
+    ctx: Context<DriftUpdateUser>,
     sub_account_id: u16,
     delegate: Pubkey,
 ) -> Result<()> {

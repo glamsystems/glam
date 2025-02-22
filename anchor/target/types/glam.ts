@@ -8038,26 +8038,8 @@ export type Glam = {
           {
             "name": "policy",
             "type": {
-              "option": {
-                "defined": {
-                  "name": "modifyOrderPolicy"
-                }
-              }
+              "option": "u8"
             }
-          }
-        ]
-      }
-    },
-    {
-      "name": "modifyOrderPolicy",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "tryModify"
-          },
-          {
-            "name": "mustModify"
           }
         ]
       }

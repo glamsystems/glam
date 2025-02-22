@@ -308,7 +308,7 @@ pub mod glam {
     /// # Integration required
     /// - Integration::Drift
     pub fn drift_update_user_custom_margin_ratio(
-        ctx: Context<DriftUpdateUserDelegate>,
+        ctx: Context<DriftUpdateUser>,
         sub_account_id: u16,
         margin_ratio: u32,
     ) -> Result<()> {
@@ -328,7 +328,7 @@ pub mod glam {
     /// # Integration required
     /// - Integration::Drift
     pub fn drift_update_user_margin_trading_enabled(
-        ctx: Context<DriftUpdateUserDelegate>,
+        ctx: Context<DriftUpdateUser>,
         sub_account_id: u16,
         margin_trading_enabled: bool,
     ) -> Result<()> {
@@ -352,7 +352,7 @@ pub mod glam {
     /// # Integration required
     /// - Integration::Drift
     pub fn drift_update_user_delegate(
-        ctx: Context<DriftUpdateUserDelegate>,
+        ctx: Context<DriftUpdateUser>,
         sub_account_id: u16,
         delegate: Pubkey,
     ) -> Result<()> {
