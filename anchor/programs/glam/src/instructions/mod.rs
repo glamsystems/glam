@@ -1,6 +1,7 @@
 pub mod drift;
 pub mod investor;
 pub mod jupiter;
+pub mod jupiter_vote;
 pub mod marinade;
 pub mod mint;
 pub mod policy_hook;
@@ -12,6 +13,7 @@ pub mod wsol;
 pub use drift::*;
 pub use investor::*;
 pub use jupiter::*;
+pub use jupiter_vote::*;
 pub use marinade::*;
 pub use mint::*;
 pub use policy_hook::*;

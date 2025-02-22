@@ -1151,8 +1151,8 @@ dependencies = [
  "anchor-spl",
  "drift",
  "glam_macros",
- "jup_governance",
- "jup_locked_voter",
+ "jupiter_gov",
+ "jupiter_vote",
  "kamino_lending",
  "marinade-finance",
  "phf",
@@ -1338,7 +1338,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "jup_governance"
+name = "jupiter_gov"
 version = "0.1.0"
 dependencies = [
  "anchor-gen",
@@ -1346,7 +1346,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "jup_locked_voter"
+name = "jupiter_vote"
 version = "0.1.0"
 dependencies = [
  "anchor-gen",

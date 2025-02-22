@@ -20,7 +20,7 @@ export type Glam = {
         "Adds a new mint.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `mint_model`: An instance of `MintModel` containing the metadata for the new mint.",
         "",
         "# Permission required",
@@ -138,7 +138,7 @@ export type Glam = {
         "Burns a specified amount of tokens for the given mint.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `mint_id`: The id of the mint to burn tokens for.",
         "- `amount`: The amount of tokens to burn.",
         "",
@@ -248,109 +248,12 @@ export type Glam = {
       ]
     },
     {
-      "name": "castVote",
-      "docs": [
-        "Casts a vote.",
-        "",
-        "# Parameters",
-        "- `ctx`: The context for the transaction.",
-        "- `new_side`: The side to vote for.",
-        "- `current_side`: The current side of the vote.",
-        "",
-        "# Permission required",
-        "- Permission::VoteOnProposal",
-        "",
-        "# Integration required",
-        "- Integration::JupiterVote"
-      ],
-      "discriminator": [
-        20,
-        212,
-        15,
-        189,
-        69,
-        180,
-        69,
-        151
-      ],
-      "accounts": [
-        {
-          "name": "state",
-          "writable": true
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "state"
-              }
-            ]
-          }
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "locker"
-        },
-        {
-          "name": "escrow"
-        },
-        {
-          "name": "proposal",
-          "writable": true
-        },
-        {
-          "name": "vote",
-          "writable": true
-        },
-        {
-          "name": "governor"
-        },
-        {
-          "name": "lockedVoterProgram",
-          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
-        },
-        {
-          "name": "governanceProgram",
-          "address": "GovaE4iu227srtG2s3tZzB4RmWBzw8sTwrCLZz7kN7rY"
-        }
-      ],
-      "args": [
-        {
-          "name": "newSide",
-          "type": "u8"
-        },
-        {
-          "name": "currentSide",
-          "type": {
-            "option": "u8"
-          }
-        }
-      ]
-    },
-    {
       "name": "closeMint",
       "docs": [
         "Closes a mint and releases its resources.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `mint_id`: The id of the mint to be closed.",
         "",
         "# Permission required",
@@ -481,7 +384,7 @@ export type Glam = {
         "Closes a state account and releases its resources.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "",
         "# Permission required",
         "- Owner only, delegates not allowed"
@@ -566,7 +469,7 @@ export type Glam = {
         "Closes token accounts owned by the vault.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "",
         "# Permission required",
         "- Owner only, delegates not allowed"
@@ -630,7 +533,7 @@ export type Glam = {
         "Deactivates stake accounts.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "",
         "# Permission required",
         "- Permission::Unstake",
@@ -696,7 +599,7 @@ export type Glam = {
         "Cancels drift orders.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `market_type`: The type of market (spot or perp) to cancel orders for.",
         "- `market_index`: The index of the market to cancel orders for.",
         "- `direction`: The direction of orders to cancel (long or short).",
@@ -794,7 +697,7 @@ export type Glam = {
         "Cancels drift orders by order IDs.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `order_ids`: A list of order IDs.",
         "",
         "# Permission required",
@@ -870,7 +773,7 @@ export type Glam = {
         "Deletes a drift user (sub account).",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "",
         "# Permission required",
         "- Permission::DriftDeleteUser",
@@ -944,7 +847,7 @@ export type Glam = {
         "Deposits to drift.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `market_index`: Index of the drift spot market.",
         "- `amount`: Amount of asset to deposit.",
         "",
@@ -1132,7 +1035,7 @@ export type Glam = {
         "Initializes a drift account owned by vault and creates a subaccount.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "",
         "# Permission required",
         "- Permission::DriftInitialize",
@@ -1214,7 +1117,7 @@ export type Glam = {
         "Modifies an existing drift order.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `order_id`: The ID of the order to modify.",
         "- `modify_order_params`: The parameters to modify the order with.",
         "",
@@ -1299,7 +1202,7 @@ export type Glam = {
         "Places orders on drift.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `params`: A list of orders.",
         "",
         "# Permissions required",
@@ -1381,7 +1284,7 @@ export type Glam = {
         "Updates custom margin ratio.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `sub_account_id`: Sub account.",
         "- `margin_ratio`: Margin ratio.",
         "",
@@ -1457,7 +1360,7 @@ export type Glam = {
         "Sets a delegate on the specified sub account.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `sub_account_id`: Sub account.",
         "- `delegate`: Delegate's wallet address.",
         "",
@@ -1533,7 +1436,7 @@ export type Glam = {
         "Enables/Disables margin trading.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `sub_account_id`: Sub account.",
         "- `margin_trading_enabled`: Whether to enable or disable margin trading.",
         "",
@@ -1609,7 +1512,7 @@ export type Glam = {
         "Withdraws from drift.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `market_index`: Index of the drift spot market.",
         "- `amount`: Amount to withdraw.",
         "",
@@ -1711,7 +1614,7 @@ export type Glam = {
         "Forcefully transfers a specified amount of tokens from one account to another.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `mint_id`: The id of the mint to transfer tokens for.",
         "- `amount`: The amount of tokens to transfer.",
         "",
@@ -1882,174 +1785,12 @@ export type Glam = {
       ]
     },
     {
-      "name": "increaseLockedAmount",
-      "docs": [
-        "Increases the locked amount (aka stakes JUP).",
-        "",
-        "# Parameters",
-        "- `ctx`: The context for the transaction.",
-        "- `amount`: The amount of JUP to stake.",
-        "",
-        "# Permission required",
-        "- Permission::StakeJup",
-        "",
-        "# Integration required",
-        "- Integration::JupiterVote"
-      ],
-      "discriminator": [
-        5,
-        168,
-        118,
-        53,
-        72,
-        46,
-        203,
-        146
-      ],
-      "accounts": [
-        {
-          "name": "state"
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "state"
-              }
-            ]
-          }
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "locker",
-          "writable": true
-        },
-        {
-          "name": "escrowJupAta",
-          "writable": true
-        },
-        {
-          "name": "vaultJupAta",
-          "writable": true
-        },
-        {
-          "name": "escrow",
-          "writable": true
-        },
-        {
-          "name": "lockedVoterProgram",
-          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
-        },
-        {
-          "name": "tokenProgram",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        }
-      ],
-      "args": [
-        {
-          "name": "amount",
-          "type": "u64"
-        }
-      ]
-    },
-    {
-      "name": "initLockedVoterEscrow",
-      "docs": [
-        "Initializes a locked voter escrow.",
-        "",
-        "# Parameters",
-        "- `ctx`: The context for the transaction.",
-        "",
-        "# Permission required",
-        "- Permission::StakeJup",
-        "",
-        "# Integration required",
-        "- Integration::JupiterVote"
-      ],
-      "discriminator": [
-        148,
-        74,
-        247,
-        66,
-        206,
-        51,
-        119,
-        243
-      ],
-      "accounts": [
-        {
-          "name": "state"
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "state"
-              }
-            ]
-          }
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "locker",
-          "writable": true
-        },
-        {
-          "name": "escrow",
-          "writable": true
-        },
-        {
-          "name": "lockedVoterProgram",
-          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": []
-    },
-    {
       "name": "initializeAndDelegateStake",
       "docs": [
         "Initializes a stake account and delegates it to a validator.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `lamports`: The amount of SOL to initialize the stake account with.",
         "",
         "# Permission required",
@@ -2145,7 +1886,7 @@ export type Glam = {
         "Initializes a state account from the provided StateModel instance.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `state`: An instance of `StateModel` containing the details of the state to be initialized.",
         "",
         "# Permission required",
@@ -2258,12 +1999,94 @@ export type Glam = {
       ]
     },
     {
+      "name": "jupiterGovNewVote",
+      "docs": [
+        "Creates a new vote.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the instruction.",
+        "",
+        "# Permission required",
+        "- Permission::VoteOnProposal",
+        "",
+        "# Integration required",
+        "- Integration::JupiterVote"
+      ],
+      "discriminator": [
+        235,
+        179,
+        170,
+        64,
+        64,
+        57,
+        17,
+        69
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "GovaE4iu227srtG2s3tZzB4RmWBzw8sTwrCLZz7kN7rY"
+        },
+        {
+          "name": "proposal"
+        },
+        {
+          "name": "vote",
+          "writable": true
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "voter",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
       "name": "jupiterSetMaxSwapSlippage",
       "docs": [
         "Sets the max swap slippage.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `slippage`: The maximum allowed slippage in basis points.",
         "",
         "# Permission required",
@@ -2303,7 +2126,7 @@ export type Glam = {
         "Swaps assets using Jupiter.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `amount`: The amount of input asset to swap.",
         "- `data`: The serialized Jupiter route data containing swap instructions and parameters.",
         "",
@@ -2511,6 +2334,753 @@ export type Glam = {
           "type": "bytes"
         }
       ]
+    },
+    {
+      "name": "jupiterVoteCastVote",
+      "docs": [
+        "Casts a vote.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the instruction.",
+        "- `side`: The side to vote for.",
+        "",
+        "# Permission required",
+        "- Permission::VoteOnProposal",
+        "",
+        "# Integration required",
+        "- Integration::JupiterVote"
+      ],
+      "discriminator": [
+        11,
+        197,
+        234,
+        57,
+        164,
+        74,
+        181,
+        239
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "locker"
+        },
+        {
+          "name": "escrow"
+        },
+        {
+          "name": "proposal",
+          "writable": true
+        },
+        {
+          "name": "vote",
+          "writable": true
+        },
+        {
+          "name": "governor"
+        },
+        {
+          "name": "governProgram"
+        }
+      ],
+      "args": [
+        {
+          "name": "side",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "jupiterVoteCastVoteChecked",
+      "docs": [
+        "Casts a vote, only if expected_side is already recorded.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the instruction.",
+        "- `side`: The side to vote for.",
+        "- `expected_side`: The expected side to check in the Vote account.",
+        "",
+        "# Permission required",
+        "- Permission::VoteOnProposal",
+        "",
+        "# Integration required",
+        "- Integration::JupiterVote"
+      ],
+      "discriminator": [
+        247,
+        3,
+        146,
+        233,
+        35,
+        189,
+        192,
+        187
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "locker"
+        },
+        {
+          "name": "escrow"
+        },
+        {
+          "name": "proposal",
+          "writable": true
+        },
+        {
+          "name": "vote",
+          "writable": true
+        },
+        {
+          "name": "governor"
+        },
+        {
+          "name": "governProgram"
+        }
+      ],
+      "args": [
+        {
+          "name": "side",
+          "type": "u8"
+        },
+        {
+          "name": "expectedSide",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "jupiterVoteIncreaseLockedAmount",
+      "docs": [
+        "Increases the locked amount (aka stakes JUP).",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the instruction.",
+        "- `amount`: The amount of JUP to stake.",
+        "",
+        "# Permission required",
+        "- Permission::StakeJup",
+        "",
+        "# Integration required",
+        "- Integration::JupiterVote"
+      ],
+      "discriminator": [
+        225,
+        38,
+        201,
+        123,
+        148,
+        23,
+        47,
+        128
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "locker",
+          "writable": true
+        },
+        {
+          "name": "escrow",
+          "writable": true
+        },
+        {
+          "name": "escrowTokens",
+          "writable": true
+        },
+        {
+          "name": "sourceTokens",
+          "writable": true
+        },
+        {
+          "name": "tokenProgram"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "jupiterVoteMergePartialUnstaking",
+      "docs": [
+        "Merges partial unstaking.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the instruction.",
+        "",
+        "# Permission required",
+        "- Permission::UnstakeJup",
+        "",
+        "# Integration required",
+        "- Integration::JupiterVote"
+      ],
+      "discriminator": [
+        93,
+        226,
+        122,
+        120,
+        130,
+        35,
+        189,
+        208
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "locker",
+          "writable": true
+        },
+        {
+          "name": "escrow",
+          "writable": true
+        },
+        {
+          "name": "partialUnstake",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "jupiterVoteNewEscrow",
+      "docs": [
+        "Initializes a locked voter escrow.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the instruction.",
+        "",
+        "# Permission required",
+        "- Permission::StakeJup",
+        "",
+        "# Integration required",
+        "- Integration::JupiterVote"
+      ],
+      "discriminator": [
+        255,
+        87,
+        157,
+        219,
+        61,
+        178,
+        144,
+        159
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "locker",
+          "writable": true
+        },
+        {
+          "name": "escrow",
+          "writable": true
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "jupiterVoteOpenPartialUnstaking",
+      "docs": [
+        "Partially unstakes JUP.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the instruction.",
+        "- `amount`: The amount of JUP to partially unstake.",
+        "- `memo`: The memo for the partial unstaking.",
+        "",
+        "# Permission required",
+        "- Permission::UnstakeJup",
+        "",
+        "# Integration required",
+        "- Integration::JupiterVote"
+      ],
+      "discriminator": [
+        84,
+        7,
+        113,
+        220,
+        212,
+        63,
+        237,
+        218
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "locker",
+          "writable": true
+        },
+        {
+          "name": "escrow",
+          "writable": true
+        },
+        {
+          "name": "partialUnstake",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "memo",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "jupiterVoteToggleMaxLock",
+      "docs": [
+        "Toggles max lock.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the instruction.",
+        "- `is_max_lock`: true to allow staking, false to initiate full unstaking.",
+        "",
+        "# Permission required",
+        "- Permission::StakeJup (if is_max_lock == true)",
+        "- Permission::UnstakeJup (if is_max_lock == false)",
+        "",
+        "# Integration required",
+        "- Integration::JupiterVote"
+      ],
+      "discriminator": [
+        204,
+        158,
+        192,
+        21,
+        219,
+        25,
+        154,
+        87
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "locker"
+        },
+        {
+          "name": "escrow",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "isMaxLock",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "jupiterVoteWithdraw",
+      "docs": [
+        "Withdraws all unstaked JUP.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the instruction.",
+        "",
+        "# Permission required",
+        "- Permission::UnstakeJup",
+        "",
+        "# Integration required",
+        "- Integration::JupiterVote"
+      ],
+      "discriminator": [
+        195,
+        172,
+        184,
+        195,
+        23,
+        178,
+        145,
+        191
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "locker",
+          "writable": true
+        },
+        {
+          "name": "escrow",
+          "writable": true
+        },
+        {
+          "name": "escrowTokens",
+          "writable": true
+        },
+        {
+          "name": "destinationTokens",
+          "writable": true
+        },
+        {
+          "name": "tokenProgram"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "jupiterVoteWithdrawPartialUnstaking",
+      "docs": [
+        "Withdraws JUP from partial unstaking.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the instruction.",
+        "",
+        "# Permission required",
+        "- Permission::UnstakeJup",
+        "",
+        "# Integration required",
+        "- Integration::JupiterVote"
+      ],
+      "discriminator": [
+        109,
+        98,
+        65,
+        252,
+        184,
+        0,
+        216,
+        240
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
+        },
+        {
+          "name": "locker",
+          "writable": true
+        },
+        {
+          "name": "escrow",
+          "writable": true
+        },
+        {
+          "name": "partialUnstake",
+          "writable": true
+        },
+        {
+          "name": "escrowTokens",
+          "writable": true
+        },
+        {
+          "name": "destinationTokens",
+          "writable": true
+        },
+        {
+          "name": "tokenProgram"
+        }
+      ],
+      "args": []
     },
     {
       "name": "kaminoLendingDepositReserveLiquidityAndObligationCollateral",
@@ -2881,7 +3451,7 @@ export type Glam = {
         "Claims tickets that were unstaked in the previous epoch to get SOL.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "",
         "# Permission required",
         "- Permission::Unstake",
@@ -2968,7 +3538,7 @@ export type Glam = {
         "Unstakes mSOL to get a ticket that can be claimed at the next epoch.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `msol_amount`: Amount of mSOL to unstake.",
         "",
         "# Permission required",
@@ -3074,7 +3644,7 @@ export type Glam = {
         "Deposits SOL to get mSOL.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `lamports`: The amount of SOL to deposit.",
         "",
         "# Permission required",
@@ -3272,7 +3842,7 @@ export type Glam = {
         "Deposits a stake account to get mSOL.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `validator_idx`: Validator index.",
         "",
         "# Permission required",
@@ -3481,7 +4051,7 @@ export type Glam = {
         "Unstakes mSOL to get SOL immediately.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `msol_amount`: Amount of mSOL to unstake.",
         "",
         "# Permission required",
@@ -3580,90 +4150,12 @@ export type Glam = {
       ]
     },
     {
-      "name": "mergePartialUnstaking",
-      "docs": [
-        "Merges partial unstaking.",
-        "",
-        "# Parameters",
-        "- `ctx`: The context for the transaction.",
-        "",
-        "# Permission required",
-        "- Permission::UnstakeJup",
-        "",
-        "# Integration required",
-        "- Integration::JupiterVote"
-      ],
-      "discriminator": [
-        190,
-        154,
-        163,
-        153,
-        168,
-        115,
-        40,
-        173
-      ],
-      "accounts": [
-        {
-          "name": "state"
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "state"
-              }
-            ]
-          }
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "partialUnstake",
-          "writable": true
-        },
-        {
-          "name": "locker",
-          "writable": true
-        },
-        {
-          "name": "escrow",
-          "writable": true
-        },
-        {
-          "name": "lockedVoterProgram",
-          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": []
-    },
-    {
       "name": "mergeStakeAccounts",
       "docs": [
         "Merges two stake accounts.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "",
         "# Permission required",
         "- Permission::Stake",
@@ -3746,7 +4238,7 @@ export type Glam = {
         "Mints a specified amount of tokens for the given mint.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `mint_id`: The id of the mint to mint tokens for.",
         "- `amount`: The amount of tokens to mint.",
         "",
@@ -3857,175 +4349,12 @@ export type Glam = {
       ]
     },
     {
-      "name": "newVote",
-      "docs": [
-        "Creates a new vote.",
-        "",
-        "# Parameters",
-        "- `ctx`: The context for the transaction.",
-        "",
-        "# Permission required",
-        "- Permission::VoteOnProposal",
-        "",
-        "# Integration required",
-        "- Integration::JupiterVote"
-      ],
-      "discriminator": [
-        163,
-        108,
-        157,
-        189,
-        140,
-        80,
-        13,
-        143
-      ],
-      "accounts": [
-        {
-          "name": "state"
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "state"
-              }
-            ]
-          }
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "proposal",
-          "writable": true
-        },
-        {
-          "name": "vote",
-          "writable": true
-        },
-        {
-          "name": "governanceProgram",
-          "address": "GovaE4iu227srtG2s3tZzB4RmWBzw8sTwrCLZz7kN7rY"
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "openPartialUnstaking",
-      "docs": [
-        "Partially unstakes JUP.",
-        "",
-        "# Parameters",
-        "- `ctx`: The context for the transaction.",
-        "- `amount`: The amount of JUP to partially unstake.",
-        "- `memo`: The memo for the partial unstaking.",
-        "",
-        "# Permission required",
-        "- Permission::UnstakeJup",
-        "",
-        "# Integration required",
-        "- Integration::JupiterVote"
-      ],
-      "discriminator": [
-        201,
-        137,
-        207,
-        175,
-        79,
-        95,
-        220,
-        27
-      ],
-      "accounts": [
-        {
-          "name": "state"
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "state"
-              }
-            ]
-          }
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "partialUnstake",
-          "writable": true
-        },
-        {
-          "name": "locker",
-          "writable": true
-        },
-        {
-          "name": "escrow",
-          "writable": true
-        },
-        {
-          "name": "lockedVoterProgram",
-          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "amount",
-          "type": "u64"
-        },
-        {
-          "name": "memo",
-          "type": "string"
-        }
-      ]
-    },
-    {
       "name": "redeem",
       "docs": [
         "Redeems a specified amount of shares.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `amount`: The amount of shares to redeem.",
         "- `in_kind`: Whether to redeem in kind.",
         "- `skip_state`: Should always be true (state check to be implemented)."
@@ -4145,7 +4474,7 @@ export type Glam = {
         "Redelegates an existing stake account to a new validator (a new stake account will be created).",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "",
         "# Permission required",
         "- Permission::Unstake",
@@ -4232,7 +4561,7 @@ export type Glam = {
         "This allows the owner to pause/unpause subscription and redemption of a fund.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `enabled`: A boolean indicating whether to enable or disable the subscribe and redeem functionality.",
         "",
         "# Permission required",
@@ -4272,7 +4601,7 @@ export type Glam = {
         "Sets the frozen state of the token accounts for the specified mint.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `mint_id`: The id of the mint to set the frozen state for.",
         "- `frozen`: The new frozen state.",
         "",
@@ -4327,7 +4656,7 @@ export type Glam = {
         "Splits from an existing stake account to get a new stake account.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `lamports`: The amount of SOL to split.",
         "",
         "# Permission required",
@@ -4412,7 +4741,7 @@ export type Glam = {
         "Deposits SOL to a stake pool to get pool token.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `lamports`: The amount of SOL to deposit.",
         "",
         "# Permission required",
@@ -4599,7 +4928,7 @@ export type Glam = {
         "Deposits a stake account to a stake pool to get pool token.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "",
         "# Permission required",
         "- Permission::Stake",
@@ -4808,7 +5137,7 @@ export type Glam = {
         "Unstakes from pool token to get SOL immediately.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `pool_token_amount`: Amount of pool token to unstake.",
         "",
         "# Permission required",
@@ -4917,7 +5246,7 @@ export type Glam = {
         "Unstakes from pool token into a stake account.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `pool_token_amount`: Amount of pool token to unstake.",
         "",
         "# Permission required",
@@ -5032,7 +5361,7 @@ export type Glam = {
         "Subscribes to a specified amount of shares.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `amount`: The amount of shares to subscribe.",
         "- `skip_state`: Should always be true (state check to be implemented)."
       ],
@@ -5214,86 +5543,6 @@ export type Glam = {
       ]
     },
     {
-      "name": "toggleMaxLock",
-      "docs": [
-        "Toggles max lock.",
-        "",
-        "# Parameters",
-        "- `ctx`: The context for the transaction.",
-        "- `value`: The value to toggle.",
-        "",
-        "# Permission required",
-        "- Permission::UnstakeJup",
-        "",
-        "# Integration required",
-        "- Integration::JupiterVote"
-      ],
-      "discriminator": [
-        163,
-        157,
-        161,
-        132,
-        179,
-        107,
-        127,
-        143
-      ],
-      "accounts": [
-        {
-          "name": "state"
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "state"
-              }
-            ]
-          }
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "locker",
-          "writable": true
-        },
-        {
-          "name": "escrow",
-          "writable": true
-        },
-        {
-          "name": "lockedVoterProgram",
-          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
-        },
-        {
-          "name": "tokenProgram",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        }
-      ],
-      "args": [
-        {
-          "name": "value",
-          "type": "bool"
-        }
-      ]
-    },
-    {
       "name": "transferHook",
       "discriminator": [
         105,
@@ -5430,7 +5679,7 @@ export type Glam = {
         "Updates an existing mint with new metadata.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `mint_id`: The id of the mint to be updated.",
         "- `mint_model`: An instance of `MintModel` containing the updated metadata for the new mint.",
         "",
@@ -5487,7 +5736,7 @@ export type Glam = {
         "Updates an existing state account with new parameters.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `state`: An instance of `StateModel` containing the updated details of the state.",
         "",
         "# Permission required",
@@ -5531,7 +5780,7 @@ export type Glam = {
         "Withdraw asset from vault into owner's wallet.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `amount`: The amount to withdraw.",
         "",
         "# Permission required",
@@ -5708,94 +5957,12 @@ export type Glam = {
       ]
     },
     {
-      "name": "withdrawAllUnstakedJup",
-      "docs": [
-        "Withdraws all unstaked JUP.",
-        "",
-        "# Parameters",
-        "- `ctx`: The context for the transaction.",
-        "",
-        "# Permission required",
-        "- Permission::UnstakeJup",
-        "",
-        "# Integration required",
-        "- Integration::JupiterVote"
-      ],
-      "discriminator": [
-        7,
-        192,
-        129,
-        123,
-        174,
-        255,
-        252,
-        219
-      ],
-      "accounts": [
-        {
-          "name": "state"
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "state"
-              }
-            ]
-          }
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "locker",
-          "writable": true
-        },
-        {
-          "name": "escrow",
-          "writable": true
-        },
-        {
-          "name": "escrowJupAta",
-          "writable": true
-        },
-        {
-          "name": "vaultJupAta",
-          "writable": true
-        },
-        {
-          "name": "lockedVoterProgram",
-          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
-        },
-        {
-          "name": "tokenProgram",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        }
-      ],
-      "args": []
-    },
-    {
       "name": "withdrawFromStakeAccounts",
       "docs": [
         "Withdraws SOL from stake accounts.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "",
         "# Permission required",
         "- Permission::Unstake",
@@ -5861,98 +6028,12 @@ export type Glam = {
       "args": []
     },
     {
-      "name": "withdrawPartialUnstaking",
-      "docs": [
-        "Withdraws JUP from partial unstaking.",
-        "",
-        "# Parameters",
-        "- `ctx`: The context for the transaction.",
-        "",
-        "# Permission required",
-        "- Permission::UnstakeJup",
-        "",
-        "# Integration required",
-        "- Integration::JupiterVote"
-      ],
-      "discriminator": [
-        201,
-        202,
-        137,
-        124,
-        2,
-        3,
-        245,
-        87
-      ],
-      "accounts": [
-        {
-          "name": "state"
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "state"
-              }
-            ]
-          }
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "partialUnstake",
-          "writable": true
-        },
-        {
-          "name": "locker",
-          "writable": true
-        },
-        {
-          "name": "escrow",
-          "writable": true
-        },
-        {
-          "name": "escrowJupAta",
-          "writable": true
-        },
-        {
-          "name": "vaultJupAta",
-          "writable": true
-        },
-        {
-          "name": "lockedVoterProgram",
-          "address": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj"
-        },
-        {
-          "name": "tokenProgram",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        }
-      ],
-      "args": []
-    },
-    {
       "name": "wsolUnwrap",
       "docs": [
         "Unwraps all wSOL to get SOL.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "",
         "# Permission required",
         "- Permission::WSolUnwrap"
@@ -6105,7 +6186,7 @@ export type Glam = {
         "Wraps SOL to get wSOL.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the transaction.",
+        "- `ctx`: The context for the instruction.",
         "- `lamports`: The amount of SOL to wrap.",
         "",
         "# Permission required",
@@ -6269,45 +6350,6 @@ export type Glam = {
   ],
   "accounts": [
     {
-      "name": "escrow",
-      "discriminator": [
-        31,
-        213,
-        123,
-        187,
-        186,
-        22,
-        218,
-        155
-      ]
-    },
-    {
-      "name": "governor",
-      "discriminator": [
-        37,
-        136,
-        44,
-        80,
-        68,
-        85,
-        213,
-        178
-      ]
-    },
-    {
-      "name": "locker",
-      "discriminator": [
-        74,
-        246,
-        6,
-        113,
-        249,
-        228,
-        75,
-        169
-      ]
-    },
-    {
       "name": "openfundsMetadataAccount",
       "discriminator": [
         5,
@@ -6318,19 +6360,6 @@ export type Glam = {
         158,
         209,
         219
-      ]
-    },
-    {
-      "name": "partialUnstaking",
-      "discriminator": [
-        172,
-        146,
-        58,
-        213,
-        40,
-        250,
-        107,
-        63
       ]
     },
     {
@@ -6347,19 +6376,6 @@ export type Glam = {
       ]
     },
     {
-      "name": "proposal",
-      "discriminator": [
-        26,
-        94,
-        189,
-        187,
-        116,
-        136,
-        53,
-        33
-      ]
-    },
-    {
       "name": "stateAccount",
       "discriminator": [
         142,
@@ -6370,19 +6386,6 @@ export type Glam = {
         133,
         249,
         103
-      ]
-    },
-    {
-      "name": "vote",
-      "discriminator": [
-        96,
-        91,
-        104,
-        57,
-        145,
-        35,
-        172,
-        155
       ]
     }
   ],
@@ -6966,70 +6969,6 @@ export type Glam = {
       }
     },
     {
-      "name": "escrow",
-      "docs": [
-        "Account: Escrow"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "locker",
-            "type": "pubkey"
-          },
-          {
-            "name": "owner",
-            "type": "pubkey"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "tokens",
-            "type": "pubkey"
-          },
-          {
-            "name": "amount",
-            "type": "u64"
-          },
-          {
-            "name": "escrowStartedAt",
-            "type": "i64"
-          },
-          {
-            "name": "escrowEndsAt",
-            "type": "i64"
-          },
-          {
-            "name": "voteDelegate",
-            "type": "pubkey"
-          },
-          {
-            "name": "isMaxLock",
-            "type": "bool"
-          },
-          {
-            "name": "partialUnstakingAmount",
-            "type": "u64"
-          },
-          {
-            "name": "padding",
-            "type": "u64"
-          },
-          {
-            "name": "buffers",
-            "type": {
-              "array": [
-                "u128",
-                9
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "fundField",
       "type": {
         "kind": "struct",
@@ -7337,86 +7276,6 @@ export type Glam = {
       }
     },
     {
-      "name": "governanceParameters",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "votingDelay",
-            "type": "u64"
-          },
-          {
-            "name": "votingPeriod",
-            "type": "u64"
-          },
-          {
-            "name": "quorumVotes",
-            "type": "u64"
-          },
-          {
-            "name": "timelockDelaySeconds",
-            "type": "i64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "governor",
-      "docs": [
-        "Account: Governor"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "base",
-            "type": "pubkey"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "proposalCount",
-            "type": "u64"
-          },
-          {
-            "name": "locker",
-            "type": "pubkey"
-          },
-          {
-            "name": "smartWallet",
-            "type": "pubkey"
-          },
-          {
-            "name": "params",
-            "type": {
-              "defined": {
-                "name": "governanceParameters"
-              }
-            }
-          },
-          {
-            "name": "votingReward",
-            "type": {
-              "defined": {
-                "name": "votingReward"
-              }
-            }
-          },
-          {
-            "name": "buffers",
-            "type": {
-              "array": [
-                "u128",
-                32
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "initObligationArgs",
       "type": {
         "kind": "struct",
@@ -7460,82 +7319,6 @@ export type Glam = {
           },
           {
             "name": "kaminoLending"
-          }
-        ]
-      }
-    },
-    {
-      "name": "locker",
-      "docs": [
-        "Account: Locker"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "base",
-            "type": "pubkey"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "tokenMint",
-            "type": "pubkey"
-          },
-          {
-            "name": "lockedSupply",
-            "type": "u64"
-          },
-          {
-            "name": "totalEscrow",
-            "type": "u64"
-          },
-          {
-            "name": "governor",
-            "type": "pubkey"
-          },
-          {
-            "name": "params",
-            "type": {
-              "defined": {
-                "name": "lockerParams"
-              }
-            }
-          },
-          {
-            "name": "buffers",
-            "type": {
-              "array": [
-                "u128",
-                32
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "lockerParams",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "maxStakeVoteMultiplier",
-            "type": "u8"
-          },
-          {
-            "name": "minStakeDuration",
-            "type": "u64"
-          },
-          {
-            "name": "maxStakeDuration",
-            "type": "u64"
-          },
-          {
-            "name": "proposalActivationMinVotes",
-            "type": "u64"
           }
         ]
       }
@@ -8215,42 +7998,6 @@ export type Glam = {
       }
     },
     {
-      "name": "partialUnstaking",
-      "docs": [
-        "Account: PartialUnstaking"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "escrow",
-            "type": "pubkey"
-          },
-          {
-            "name": "amount",
-            "type": "u64"
-          },
-          {
-            "name": "expiration",
-            "type": "i64"
-          },
-          {
-            "name": "buffers",
-            "type": {
-              "array": [
-                "u128",
-                6
-              ]
-            }
-          },
-          {
-            "name": "memo",
-            "type": "string"
-          }
-        ]
-      }
-    },
-    {
       "name": "permission",
       "docs": [
         "* Delegate ACL"
@@ -8384,152 +8131,6 @@ export type Glam = {
           },
           {
             "name": "slide"
-          }
-        ]
-      }
-    },
-    {
-      "name": "proposal",
-      "docs": [
-        "Account: Proposal"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "governor",
-            "type": "pubkey"
-          },
-          {
-            "name": "index",
-            "type": "u64"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "proposer",
-            "type": "pubkey"
-          },
-          {
-            "name": "quorumVotes",
-            "type": "u64"
-          },
-          {
-            "name": "maxOption",
-            "type": "u8"
-          },
-          {
-            "name": "optionVotes",
-            "type": {
-              "vec": "u64"
-            }
-          },
-          {
-            "name": "canceledAt",
-            "type": "i64"
-          },
-          {
-            "name": "createdAt",
-            "type": "i64"
-          },
-          {
-            "name": "activatedAt",
-            "type": "i64"
-          },
-          {
-            "name": "votingEndsAt",
-            "type": "i64"
-          },
-          {
-            "name": "queuedAt",
-            "type": "i64"
-          },
-          {
-            "name": "queuedTransaction",
-            "type": "pubkey"
-          },
-          {
-            "name": "votingReward",
-            "type": {
-              "defined": {
-                "name": "votingReward"
-              }
-            }
-          },
-          {
-            "name": "totalClaimedReward",
-            "type": "u64"
-          },
-          {
-            "name": "proposalType",
-            "type": "u8"
-          },
-          {
-            "name": "buffers",
-            "type": {
-              "array": [
-                "u128",
-                10
-              ]
-            }
-          },
-          {
-            "name": "instructions",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "proposalInstruction"
-                }
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "proposalAccountMeta",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "pubkey",
-            "type": "pubkey"
-          },
-          {
-            "name": "isSigner",
-            "type": "bool"
-          },
-          {
-            "name": "isWritable",
-            "type": "bool"
-          }
-        ]
-      }
-    },
-    {
-      "name": "proposalInstruction",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "programId",
-            "type": "pubkey"
-          },
-          {
-            "name": "keys",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "proposalAccountMeta"
-                }
-              }
-            }
-          },
-          {
-            "name": "data",
-            "type": "bytes"
           }
         ]
       }
@@ -9056,70 +8657,6 @@ export type Glam = {
                 }
               }
             }
-          }
-        ]
-      }
-    },
-    {
-      "name": "vote",
-      "docs": [
-        "Account: Vote"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "proposal",
-            "type": "pubkey"
-          },
-          {
-            "name": "voter",
-            "type": "pubkey"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "side",
-            "type": "u8"
-          },
-          {
-            "name": "votingPower",
-            "type": "u64"
-          },
-          {
-            "name": "claimed",
-            "type": "bool"
-          },
-          {
-            "name": "buffers",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "votingReward",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "rewardMint",
-            "type": "pubkey"
-          },
-          {
-            "name": "rewardVault",
-            "type": "pubkey"
-          },
-          {
-            "name": "rewardPerProposal",
-            "type": "u64"
           }
         ]
       }

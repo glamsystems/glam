@@ -1,9 +1,9 @@
-use anchor_lang::prelude::*;
 use crate::state::{
     acl::{self, *},
     StateAccount,
 };
-use drift::program::Drift;
+use anchor_lang::prelude::*;
+pub use drift::program::Drift as Drift;
 use drift::typedefs::*;
 #[derive(Accounts)]
 pub struct DriftInitializeUser<'info> {
@@ -517,4 +517,3 @@ pub fn drift_delete_user(ctx: Context<DriftDeleteUser>) -> Result<()> {
         ),
     )
 }
-

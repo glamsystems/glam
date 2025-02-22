@@ -7,7 +7,7 @@ pub mod state;
 pub mod utils;
 
 use anchor_lang::prelude::*;
-use cpi_autogen::{drift::*, kamino_lending::*};
+use cpi_autogen::{drift::*, jupiter_gov::*, jupiter_vote::*, kamino_lending::*};
 use instructions::{state as glam_state, *};
 
 pub use constants::*;
@@ -34,7 +34,7 @@ pub mod glam {
     /// Initializes a state account from the provided StateModel instance.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `state`: An instance of `StateModel` containing the details of the state to be initialized.
     ///
     /// # Permission required
@@ -49,7 +49,7 @@ pub mod glam {
     /// Updates an existing state account with new parameters.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `state`: An instance of `StateModel` containing the updated details of the state.
     ///
     /// # Permission required
@@ -64,7 +64,7 @@ pub mod glam {
     /// Closes a state account and releases its resources.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     ///
     /// # Permission required
     /// - Owner only, delegates not allowed
@@ -77,7 +77,7 @@ pub mod glam {
     /// This allows the owner to pause/unpause subscription and redemption of a fund.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `enabled`: A boolean indicating whether to enable or disable the subscribe and redeem functionality.
     ///
     /// # Permission required
@@ -92,7 +92,7 @@ pub mod glam {
     /// Closes token accounts owned by the vault.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     ///
     /// # Permission required
     /// - Owner only, delegates not allowed
@@ -105,7 +105,7 @@ pub mod glam {
     /// Withdraw asset from vault into owner's wallet.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `amount`: The amount to withdraw.
     ///
     /// # Permission required
@@ -121,7 +121,7 @@ pub mod glam {
     /// Adds a new mint.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `mint_model`: An instance of `MintModel` containing the metadata for the new mint.
     ///
     /// # Permission required
@@ -136,7 +136,7 @@ pub mod glam {
     /// Updates an existing mint with new metadata.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `mint_id`: The id of the mint to be updated.
     /// - `mint_model`: An instance of `MintModel` containing the updated metadata for the new mint.
     ///
@@ -149,7 +149,7 @@ pub mod glam {
     /// Closes a mint and releases its resources.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `mint_id`: The id of the mint to be closed.
     ///
     /// # Permission required
@@ -161,7 +161,7 @@ pub mod glam {
     /// Mints a specified amount of tokens for the given mint.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `mint_id`: The id of the mint to mint tokens for.
     /// - `amount`: The amount of tokens to mint.
     ///
@@ -181,7 +181,7 @@ pub mod glam {
     /// Forcefully transfers a specified amount of tokens from one account to another.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `mint_id`: The id of the mint to transfer tokens for.
     /// - `amount`: The amount of tokens to transfer.
     ///
@@ -201,7 +201,7 @@ pub mod glam {
     /// Burns a specified amount of tokens for the given mint.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `mint_id`: The id of the mint to burn tokens for.
     /// - `amount`: The amount of tokens to burn.
     ///
@@ -217,7 +217,7 @@ pub mod glam {
     /// Sets the frozen state of the token accounts for the specified mint.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `mint_id`: The id of the mint to set the frozen state for.
     /// - `frozen`: The new frozen state.
     ///
@@ -241,7 +241,7 @@ pub mod glam {
     /// Subscribes to a specified amount of shares.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `amount`: The amount of shares to subscribe.
     /// - `skip_state`: Should always be true (state check to be implemented).
     pub fn subscribe<'c: 'info, 'info>(
@@ -256,7 +256,7 @@ pub mod glam {
     /// Redeems a specified amount of shares.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `amount`: The amount of shares to redeem.
     /// - `in_kind`: Whether to redeem in kind.
     /// - `skip_state`: Should always be true (state check to be implemented).
@@ -276,7 +276,7 @@ pub mod glam {
     /// Initializes a drift account owned by vault and creates a subaccount.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     ///
     /// # Permission required
     /// - Permission::DriftInitialize
@@ -298,7 +298,7 @@ pub mod glam {
     /// Updates custom margin ratio.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `sub_account_id`: Sub account.
     /// - `margin_ratio`: Margin ratio.
     ///
@@ -318,7 +318,7 @@ pub mod glam {
     /// Enables/Disables margin trading.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `sub_account_id`: Sub account.
     /// - `margin_trading_enabled`: Whether to enable or disable margin trading.
     ///
@@ -342,7 +342,7 @@ pub mod glam {
     /// Sets a delegate on the specified sub account.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `sub_account_id`: Sub account.
     /// - `delegate`: Delegate's wallet address.
     ///
@@ -362,7 +362,7 @@ pub mod glam {
     /// Deposits to drift.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `market_index`: Index of the drift spot market.
     /// - `amount`: Amount of asset to deposit.
     ///
@@ -383,7 +383,7 @@ pub mod glam {
     /// Withdraws from drift.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `market_index`: Index of the drift spot market.
     /// - `amount`: Amount to withdraw.
     ///
@@ -404,7 +404,7 @@ pub mod glam {
     /// Deletes a drift user (sub account).
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     ///
     /// # Permission required
     /// - Permission::DriftDeleteUser
@@ -418,7 +418,7 @@ pub mod glam {
     /// Places orders on drift.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `params`: A list of orders.
     ///
     /// # Permissions required
@@ -437,7 +437,7 @@ pub mod glam {
     /// Modifies an existing drift order.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `order_id`: The ID of the order to modify.
     /// - `modify_order_params`: The parameters to modify the order with.
     ///
@@ -457,7 +457,7 @@ pub mod glam {
     /// Cancels drift orders.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `market_type`: The type of market (spot or perp) to cancel orders for.
     /// - `market_index`: The index of the market to cancel orders for.
     /// - `direction`: The direction of orders to cancel (long or short).
@@ -479,7 +479,7 @@ pub mod glam {
     /// Cancels drift orders by order IDs.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `order_ids`: A list of order IDs.
     ///
     /// # Permission required
@@ -501,7 +501,7 @@ pub mod glam {
     /// Deposits SOL to get mSOL.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `lamports`: The amount of SOL to deposit.
     ///
     /// # Permission required
@@ -516,7 +516,7 @@ pub mod glam {
     /// Deposits a stake account to get mSOL.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `validator_idx`: Validator index.
     ///
     /// # Permission required
@@ -534,7 +534,7 @@ pub mod glam {
     /// Unstakes mSOL to get SOL immediately.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `msol_amount`: Amount of mSOL to unstake.
     ///
     /// # Permission required
@@ -552,7 +552,7 @@ pub mod glam {
     /// Unstakes mSOL to get a ticket that can be claimed at the next epoch.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `msol_amount`: Amount of mSOL to unstake.
     ///
     /// # Permission required
@@ -570,7 +570,7 @@ pub mod glam {
     /// Claims tickets that were unstaked in the previous epoch to get SOL.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     ///
     /// # Permission required
     /// - Permission::Unstake
@@ -590,7 +590,7 @@ pub mod glam {
     /// Deposits SOL to a stake pool to get pool token.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `lamports`: The amount of SOL to deposit.
     ///
     /// # Permission required
@@ -605,7 +605,7 @@ pub mod glam {
     /// Deposits a stake account to a stake pool to get pool token.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     ///
     /// # Permission required
     /// - Permission::Stake
@@ -619,7 +619,7 @@ pub mod glam {
     /// Unstakes from pool token to get SOL immediately.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `pool_token_amount`: Amount of pool token to unstake.
     ///
     /// # Permission required
@@ -637,7 +637,7 @@ pub mod glam {
     /// Unstakes from pool token into a stake account.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `pool_token_amount`: Amount of pool token to unstake.
     ///
     /// # Permission required
@@ -659,7 +659,7 @@ pub mod glam {
     /// Initializes a stake account and delegates it to a validator.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `lamports`: The amount of SOL to initialize the stake account with.
     ///
     /// # Permission required
@@ -677,7 +677,7 @@ pub mod glam {
     /// Deactivates stake accounts.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     ///
     /// # Permission required
     /// - Permission::Unstake
@@ -693,7 +693,7 @@ pub mod glam {
     /// Withdraws SOL from stake accounts.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     ///
     /// # Permission required
     /// - Permission::Unstake
@@ -709,7 +709,7 @@ pub mod glam {
     /// Merges two stake accounts.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     ///
     /// # Permission required
     /// - Permission::Stake
@@ -725,7 +725,7 @@ pub mod glam {
     /// Splits from an existing stake account to get a new stake account.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `lamports`: The amount of SOL to split.
     ///
     /// # Permission required
@@ -743,7 +743,7 @@ pub mod glam {
     /// Redelegates an existing stake account to a new validator (a new stake account will be created).
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     ///
     /// # Permission required
     /// - Permission::Unstake
@@ -763,7 +763,7 @@ pub mod glam {
     /// Swaps assets using Jupiter.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `amount`: The amount of input asset to swap.
     /// - `data`: The serialized Jupiter route data containing swap instructions and parameters.
     ///
@@ -786,7 +786,7 @@ pub mod glam {
     /// Sets the max swap slippage.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `slippage`: The maximum allowed slippage in basis points.
     ///
     /// # Permission required
@@ -805,36 +805,40 @@ pub mod glam {
     /// Initializes a locked voter escrow.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     ///
     /// # Permission required
     /// - Permission::StakeJup
     ///
     /// # Integration required
     /// - Integration::JupiterVote
-    pub fn init_locked_voter_escrow<'info>(ctx: Context<InitLockedVoterEscrow>) -> Result<()> {
-        jupiter::init_locked_voter_escrow_handler(ctx)
+    pub fn jupiter_vote_new_escrow<'info>(ctx: Context<JupiterVoteNewEscrow>) -> Result<()> {
+        cpi_autogen::jupiter_vote::jupiter_vote_new_escrow(ctx)
     }
 
     /// Toggles max lock.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
-    /// - `value`: The value to toggle.
+    /// - `ctx`: The context for the instruction.
+    /// - `is_max_lock`: true to allow staking, false to initiate full unstaking.
     ///
     /// # Permission required
-    /// - Permission::UnstakeJup
+    /// - Permission::StakeJup (if is_max_lock == true)
+    /// - Permission::UnstakeJup (if is_max_lock == false)
     ///
     /// # Integration required
     /// - Integration::JupiterVote
-    pub fn toggle_max_lock<'info>(ctx: Context<ToogleMaxLock>, value: bool) -> Result<()> {
-        jupiter::toggle_max_lock_handler(ctx, value)
+    pub fn jupiter_vote_toggle_max_lock<'info>(
+        ctx: Context<JupiterVoteToggleMaxLock>,
+        is_max_lock: bool,
+    ) -> Result<()> {
+        jupiter_vote::jupiter_vote_toggle_max_lock(ctx, is_max_lock)
     }
 
     /// Increases the locked amount (aka stakes JUP).
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `amount`: The amount of JUP to stake.
     ///
     /// # Permission required
@@ -842,17 +846,17 @@ pub mod glam {
     ///
     /// # Integration required
     /// - Integration::JupiterVote
-    pub fn increase_locked_amount<'info>(
-        ctx: Context<IncreaseLockedAmount>,
+    pub fn jupiter_vote_increase_locked_amount<'info>(
+        ctx: Context<JupiterVoteIncreaseLockedAmount>,
         amount: u64,
     ) -> Result<()> {
-        jupiter::increase_locked_amount_handler(ctx, amount)
+        cpi_autogen::jupiter_vote::jupiter_vote_increase_locked_amount(ctx, amount)
     }
 
     /// Partially unstakes JUP.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `amount`: The amount of JUP to partially unstake.
     /// - `memo`: The memo for the partial unstaking.
     ///
@@ -861,88 +865,113 @@ pub mod glam {
     ///
     /// # Integration required
     /// - Integration::JupiterVote
-    pub fn open_partial_unstaking<'info>(
-        ctx: Context<PartialUnstaking>,
+    pub fn jupiter_vote_open_partial_unstaking<'info>(
+        ctx: Context<JupiterVoteOpenPartialUnstaking>,
         amount: u64,
         memo: String,
     ) -> Result<()> {
-        jupiter::open_partial_unstaking_handler(ctx, amount, memo)
+        cpi_autogen::jupiter_vote::jupiter_vote_open_partial_unstaking(ctx, amount, memo)
     }
 
     /// Merges partial unstaking.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     ///
     /// # Permission required
     /// - Permission::UnstakeJup
     ///
     /// # Integration required
     /// - Integration::JupiterVote
-    pub fn merge_partial_unstaking<'info>(ctx: Context<PartialUnstaking>) -> Result<()> {
-        jupiter::merge_partial_unstaking_handler(ctx)
+    pub fn jupiter_vote_merge_partial_unstaking<'info>(
+        ctx: Context<JupiterVoteMergePartialUnstaking>,
+    ) -> Result<()> {
+        cpi_autogen::jupiter_vote::jupiter_vote_merge_partial_unstaking(ctx)
     }
 
     /// Withdraws JUP from partial unstaking.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     ///
     /// # Permission required
     /// - Permission::UnstakeJup
     ///
     /// # Integration required
     /// - Integration::JupiterVote
-    pub fn withdraw_partial_unstaking<'info>(ctx: Context<WithdrawPartialUnstaking>) -> Result<()> {
-        jupiter::withdraw_partial_unstaking_handler(ctx)
+    pub fn jupiter_vote_withdraw_partial_unstaking<'info>(
+        ctx: Context<JupiterVoteWithdrawPartialUnstaking>,
+    ) -> Result<()> {
+        cpi_autogen::jupiter_vote::jupiter_vote_withdraw_partial_unstaking(ctx)
     }
 
     /// Withdraws all unstaked JUP.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     ///
     /// # Permission required
     /// - Permission::UnstakeJup
     ///
     /// # Integration required
     /// - Integration::JupiterVote
-    pub fn withdraw_all_unstaked_jup<'info>(ctx: Context<WithdrawAllUnstakedJup>) -> Result<()> {
-        jupiter::withdraw_all_handler(ctx)
+    pub fn jupiter_vote_withdraw<'info>(ctx: Context<JupiterVoteWithdraw>) -> Result<()> {
+        cpi_autogen::jupiter_vote::jupiter_vote_withdraw(ctx)
     }
 
     /// Creates a new vote.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     ///
     /// # Permission required
     /// - Permission::VoteOnProposal
     ///
     /// # Integration required
     /// - Integration::JupiterVote
-    pub fn new_vote<'info>(ctx: Context<NewVote>) -> Result<()> {
-        jupiter::new_vote_handler(ctx)
+    pub fn jupiter_gov_new_vote<'info>(
+        ctx: Context<JupiterGovNewVote>,
+        voter: Pubkey,
+    ) -> Result<()> {
+        cpi_autogen::jupiter_gov::jupiter_gov_new_vote(ctx, voter)
     }
 
     /// Casts a vote.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
-    /// - `new_side`: The side to vote for.
-    /// - `current_side`: The current side of the vote.
+    /// - `ctx`: The context for the instruction.
+    /// - `side`: The side to vote for.
     ///
     /// # Permission required
     /// - Permission::VoteOnProposal
     ///
     /// # Integration required
     /// - Integration::JupiterVote
-    pub fn cast_vote<'info>(
-        ctx: Context<CastVote>,
-        new_side: u8,
-        current_side: Option<u8>,
+    pub fn jupiter_vote_cast_vote<'info>(
+        ctx: Context<JupiterVoteCastVote>,
+        side: u8,
     ) -> Result<()> {
-        jupiter::cast_vote_handler(ctx, new_side, current_side)
+        cpi_autogen::jupiter_vote::jupiter_vote_cast_vote(ctx, side)
+    }
+
+    /// Casts a vote, only if expected_side is already recorded.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the instruction.
+    /// - `side`: The side to vote for.
+    /// - `expected_side`: The expected side to check in the Vote account.
+    ///
+    /// # Permission required
+    /// - Permission::VoteOnProposal
+    ///
+    /// # Integration required
+    /// - Integration::JupiterVote
+    pub fn jupiter_vote_cast_vote_checked<'info>(
+        ctx: Context<JupiterVoteCastVote>,
+        side: u8,
+        expected_side: u8,
+    ) -> Result<()> {
+        jupiter_vote::jupiter_vote_cast_vote_checked(ctx, side, expected_side)
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -983,7 +1012,7 @@ pub mod glam {
     /// Wraps SOL to get wSOL.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     /// - `lamports`: The amount of SOL to wrap.
     ///
     /// # Permission required
@@ -995,7 +1024,7 @@ pub mod glam {
     /// Unwraps all wSOL to get SOL.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the transaction.
+    /// - `ctx`: The context for the instruction.
     ///
     /// # Permission required
     /// - Permission::WSolUnwrap

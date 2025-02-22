@@ -29,8 +29,8 @@ pyth-solana-receiver-sdk = { workspace = true }
 strum = { workspace = true }
 phf = { workspace = true }
 
-jup_locked_voter = { workspace = true }
-jup_governance = { workspace = true }
+jupiter_vote = { workspace = true }
+jupiter_gov = { workspace = true }
 drift = { workspace = true }
 marinade = { workspace = true }
 kamino_lending = { workspace = true }

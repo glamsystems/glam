@@ -7,7 +7,7 @@ import {
   stateModelForTest,
   sleep,
 } from "./setup";
-import { GlamClient, JUP_STAKE_LOCKER, JUP_VOTE_PROGRAM } from "../src";
+import { GlamClient, JUP_VOTE_PROGRAM } from "../src";
 import { Keypair } from "@solana/web3.js";
 import { getAccount } from "@solana/spl-token";
 import { BN, Wallet } from "@coral-xyz/anchor";
@@ -488,20 +488,22 @@ describe("glam_jupiter", () => {
 
   it("Create JUP escrow", async () => {
     const vault = glamClient.getVaultPda(statePda);
+    const stateLocker = glamClient.jupiterVote.stakeLocker;
     const [escrow] = PublicKey.findProgramAddressSync(
-      [Buffer.from("Escrow"), JUP_STAKE_LOCKER.toBuffer(), vault.toBuffer()],
+      [Buffer.from("Escrow"), stateLocker.toBuffer(), vault.toBuffer()],
       JUP_VOTE_PROGRAM,
     );
     try {
       const txId = await glamClient.program.methods
-        .initLockedVoterEscrow()
+        .jupiterVoteNewEscrow()
         .accounts({
-          state: statePda,
-          locker: JUP_STAKE_LOCKER,
+          glamState: statePda,
+          locker: stateLocker,
           escrow,
+          escrowOwner: vault,
         })
         .rpc();
-      console.log("initLockedVoterEscrow txId", txId);
+      console.log("jupiterVoteNewEscrow txId", txId);
     } catch (e) {
       console.error(e);
       throw e;
