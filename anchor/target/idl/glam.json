@@ -751,9 +751,6 @@
         {
           "name": "user",
           "writable": true
-        },
-        {
-          "name": "authority"
         }
       ],
       "args": [
@@ -850,9 +847,6 @@
         {
           "name": "user",
           "writable": true
-        },
-        {
-          "name": "authority"
         }
       ],
       "args": [
@@ -934,10 +928,6 @@
         {
           "name": "state",
           "writable": true
-        },
-        {
-          "name": "authority",
-          "writable": true
         }
       ],
       "args": []
@@ -1013,9 +1003,6 @@
         {
           "name": "user_stats",
           "writable": true
-        },
-        {
-          "name": "authority"
         },
         {
           "name": "spot_market_vault",
@@ -1101,9 +1088,6 @@
         {
           "name": "state",
           "writable": true
-        },
-        {
-          "name": "authority"
         },
         {
           "name": "payer",
@@ -1203,9 +1187,6 @@
           "writable": true
         },
         {
-          "name": "authority"
-        },
-        {
           "name": "payer",
           "writable": true,
           "signer": true
@@ -1287,9 +1268,6 @@
         {
           "name": "user",
           "writable": true
-        },
-        {
-          "name": "authority"
         }
       ],
       "args": [
@@ -1376,9 +1354,6 @@
         {
           "name": "user",
           "writable": true
-        },
-        {
-          "name": "authority"
         }
       ],
       "args": [
@@ -1457,9 +1432,6 @@
         {
           "name": "user",
           "writable": true
-        },
-        {
-          "name": "authority"
         }
       ],
       "args": [
@@ -1536,9 +1508,6 @@
         {
           "name": "user",
           "writable": true
-        },
-        {
-          "name": "authority"
         }
       ],
       "args": [
@@ -1615,9 +1584,6 @@
         {
           "name": "user",
           "writable": true
-        },
-        {
-          "name": "authority"
         }
       ],
       "args": [
@@ -1702,9 +1668,6 @@
         {
           "name": "user_stats",
           "writable": true
-        },
-        {
-          "name": "authority"
         },
         {
           "name": "spot_market_vault",

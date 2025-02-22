@@ -24,9 +24,6 @@ pub struct DriftPlaceOrders<'info> {
     /// CHECK: should be validated by target program
     #[account(mut)]
     pub user: AccountInfo<'info>,
-    /// CHECK: should be validated by target program
-    #[account(address = glam_state.vault)]
-    pub authority: AccountInfo<'info>,
 }
 
 pub fn drift_place_orders_pre_checks<'c: 'info, 'info>(
@@ -100,7 +97,7 @@ pub fn drift_place_orders<'c: 'info, 'info>(
             drift::cpi::accounts::PlaceOrders {
                 state: ctx.accounts.state.to_account_info(),
                 user: ctx.accounts.user.to_account_info(),
-                authority: ctx.accounts.authority.to_account_info(),
+                authority: ctx.accounts.glam_vault.to_account_info(),
             },
             glam_vault_signer_seeds,
         )

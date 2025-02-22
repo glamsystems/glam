@@ -1,6 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import { DriftMarketConfigs, GlamClient } from "../src";
-import { airdrop, createGlamStateForTest } from "./setup";
+import { airdrop, createGlamStateForTest, stateModelForTest } from "./setup";
 import {
   DriftClient,
   getOrderParams,
@@ -121,25 +121,17 @@ describe("glam_drift", () => {
   };
 
   it("Create and initialize glam state", async () => {
-    const stateData = await createGlamStateForTest();
+    const stateData = await createGlamStateForTest(glamClient, {
+      ...stateModelForTest,
+      integrations: [{ drift: {} }],
+    });
     statePda = stateData.statePda;
     vaultPda = stateData.vaultPda;
 
     const state = await glamClient.fetchStateAccount(statePda);
     expect(state.mints.length).toEqual(1);
     expect(state.name).toEqual("Glam Fund SOL-mSOL");
-
-    // Enable drift integration
-    const updated = {
-      integrations: [{ drift: {} }],
-    };
-    try {
-      const txSig = await glamClient.state.updateState(statePda, updated);
-      console.log("Enable drift integration tx:", txSig);
-    } catch (e) {
-      console.error(e);
-      throw e;
-    }
+    expect(state.integrations.length).toEqual(1);
   });
 
   it("Airdrop 10 SOL to vault", async () => {
@@ -156,7 +148,7 @@ describe("glam_drift", () => {
       console.error(e);
       throw e;
     }
-  });
+  }, 15_000);
 
   it("Drift: update trader", async () => {
     const trader = glamClient.getSigner();
