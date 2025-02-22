@@ -27,6 +27,7 @@
       "permission": "DriftUpdateUser",
       "integration": "Drift",
       "vault_aliases": ["authority"],
+      "accounts_struct": "UpdateUser",
       "signed_by_vault": true
     },
     {
@@ -34,7 +35,7 @@
       "permission": "DriftUpdateUser",
       "integration": "Drift",
       "vault_aliases": ["authority"],
-      "accounts_type_alias": "updateUserDelegate",
+      "accounts_struct": "UpdateUser",
       "signed_by_vault": true
     },
     {
@@ -42,7 +43,7 @@
       "permission": "DriftUpdateUser",
       "integration": "Drift",
       "vault_aliases": ["authority"],
-      "accounts_type_alias": "updateUserDelegate",
+      "accounts_struct": "UpdateUser",
       "signed_by_vault": true
     },
     {
@@ -85,7 +86,7 @@
       "permission": "DriftCancelOrders",
       "integration": "Drift",
       "vault_aliases": ["authority"],
-      "accounts_type_alias": "cancelOrders",
+      "accounts_struct": "CancelOrders",
       "with_remaining_accounts": true,
       "signed_by_vault": true
     },
