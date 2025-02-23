@@ -37,5 +37,7 @@ marinade = { package = "marinade-finance", git = "https://github.com/glamsystems
     "cpi",
 ] }
 kamino_lending = { path = "./deps/kamino_lending" }
+meteora_amm = { path = "./deps/meteora_amm" }
+meteora_dlmm = { path = "./deps/meteora_dlmm" }
 
 glam_macros = { path = "./libs/macros" }
