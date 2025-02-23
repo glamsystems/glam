@@ -382,7 +382,10 @@ export class DriftClient {
     const [user, userStats] = this.getUser(glamState);
     const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
-    const GLAM_NAME = "GLAM *.+".split("").concat(Array(24).fill(0));
+    const GLAM_NAME = "GLAM *.+"
+      .split("")
+      .map((char) => char.charCodeAt(0))
+      .concat(Array(24).fill(0));
     const initializeUserIx = await this.base.program.methods
       //@ts-ignore
       .driftInitializeUser(0, GLAM_NAME)
@@ -500,7 +503,7 @@ export class DriftClient {
   }
 
   public async depositTx(
-    statePda: PublicKey,
+    glamState: PublicKey,
     amount: anchor.BN,
     marketIndex: number = 1,
     subAccountId: number = 0,
@@ -508,16 +511,52 @@ export class DriftClient {
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
     const glamSigner = txOptions.signer || this.base.getSigner();
-    const [user, userStats] = this.getUser(statePda, subAccountId);
+    const [user, userStats] = this.getUser(glamState, subAccountId);
     const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
 
     const { mint, oracle, marketPDA, vaultPDA } =
       marketConfigs.spot[marketIndex];
 
     const preInstructions = [];
+
+    // If drift user doesn't exist, create it first
+    const vault = this.base.getVaultPda(glamState);
+    const response = await fetch(
+      `https://api.glam.systems/v0/drift/user?authority=${vault.toBase58()}&accountId=${subAccountId}`,
+    );
+    const data = await response.json();
+    if (!data) {
+      const initializeUserStatsIx = await this.base.program.methods
+        .driftInitializeUserStats()
+        .accounts({
+          glamState,
+          state,
+          userStats,
+          glamSigner,
+        })
+        .instruction();
+
+      const GLAM_NAME = "GLAM *.+"
+        .split("")
+        .map((char) => char.charCodeAt(0))
+        .concat(Array(24).fill(0));
+      const initializeUserIx = await this.base.program.methods
+        .driftInitializeUser(0, GLAM_NAME)
+        .accounts({
+          glamState,
+          user,
+          userStats,
+          state,
+          glamSigner,
+        })
+        .instruction();
+
+      preInstructions.push(initializeUserStatsIx, initializeUserIx); // init user stats first
+    }
+
     if (mint === WSOL.toBase58()) {
       const wrapSolIx = await this.base.maybeWrapSol(
-        statePda,
+        glamState,
         amount,
         glamSigner,
       );
@@ -529,12 +568,12 @@ export class DriftClient {
     const tx = await this.base.program.methods
       .driftDeposit(marketIndex, amount, false)
       .accounts({
-        glamState: statePda,
+        glamState: glamState,
         state,
         user,
         userStats,
         spotMarketVault: new PublicKey(vaultPDA),
-        userTokenAccount: this.base.getVaultAta(statePda, new PublicKey(mint)),
+        userTokenAccount: this.base.getVaultAta(glamState, new PublicKey(mint)),
         glamSigner,
         tokenProgram: TOKEN_PROGRAM_ID,
       })
