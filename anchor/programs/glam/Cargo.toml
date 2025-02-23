@@ -34,4 +34,6 @@ jupiter_gov = { workspace = true }
 drift = { workspace = true }
 marinade = { workspace = true }
 kamino_lending = { workspace = true }
+meteora_amm = { workspace = true }
+meteora_dlmm = { workspace = true }
 glam_macros = { workspace = true }
