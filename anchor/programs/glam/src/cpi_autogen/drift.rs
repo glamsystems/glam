@@ -3,7 +3,7 @@ use crate::state::{
     StateAccount,
 };
 use anchor_lang::prelude::*;
-pub use drift::program::Drift as Drift;
+pub use drift::program::Drift;
 use drift::typedefs::*;
 #[derive(Accounts)]
 pub struct DriftInitializeUser<'info> {

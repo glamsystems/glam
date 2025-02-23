@@ -360,9 +360,9 @@ export class JupiterVoteClient {
       console.log("Will create escrow account:", escrow.toBase58());
       preInstructions.push(
         await this.base.program.methods
-          .initLockedVoterEscrow()
+          .jupiterVoteNewEscrow()
           .accounts({
-            state: statePda,
+            glamState: statePda,
             locker: this.stakeLocker,
             escrow,
           })
@@ -370,9 +370,9 @@ export class JupiterVoteClient {
       );
       preInstructions.push(
         await this.base.program.methods
-          .toggleMaxLock(true)
+          .jupiterVoteToggleMaxLock(true)
           .accounts({
-            state: statePda,
+            glamState: statePda,
             locker: this.stakeLocker,
             escrow,
           })
@@ -389,13 +389,14 @@ export class JupiterVoteClient {
     );
 
     const tx = await this.base.program.methods
-      .increaseLockedAmount(amount)
+      .jupiterVoteIncreaseLockedAmount(amount)
       .accounts({
-        state: statePda,
+        glamState: statePda,
         locker: this.stakeLocker,
         escrow,
-        escrowJupAta,
-        vaultJupAta,
+        escrowTokens: escrowJupAta,
+        sourceTokens: vaultJupAta,
+        tokenProgram: TOKEN_PROGRAM_ID,
       })
       .preInstructions(preInstructions)
       .transaction();
@@ -421,9 +422,9 @@ export class JupiterVoteClient {
     const escrow = this.getEscrowPda(vault);
 
     const tx = await this.base.program.methods
-      .toggleMaxLock(false)
+      .jupiterVoteToggleMaxLock(false)
       .accounts({
-        state: statePda,
+        glamState: statePda,
         locker: this.stakeLocker,
         escrow,
       })
@@ -443,13 +444,14 @@ export class JupiterVoteClient {
     const vaultJupAta = this.base.getAta(JUP, vault);
 
     const tx = await this.base.program.methods
-      .withdrawAllUnstakedJup()
+      .jupiterVoteWithdraw()
       .accounts({
-        state: statePda,
+        glamState: statePda,
         locker: this.stakeLocker,
         escrow,
-        escrowJupAta,
-        vaultJupAta,
+        escrowTokens: escrowJupAta,
+        destinationTokens: vaultJupAta,
+        tokenProgram: TOKEN_PROGRAM_ID,
       })
       .preInstructions([
         createAssociatedTokenAccountIdempotentInstruction(
@@ -474,9 +476,9 @@ export class JupiterVoteClient {
     const escrow = this.getEscrowPda(vault);
 
     const tx = await this.base.program.methods
-      .toggleMaxLock(true)
+      .jupiterVoteToggleMaxLock(true)
       .accounts({
-        state: statePda,
+        glamState: statePda,
         locker: this.stakeLocker,
         escrow,
       })
@@ -535,7 +537,7 @@ export class JupiterVoteClient {
 
     const escrow = this.getEscrowPda(glamVault);
     const tx = await this.base.program.methods
-      .castVote(side, null)
+      .jupiterVoteCastVote(side)
       .accounts({
         glamState,
         escrow,
@@ -543,6 +545,7 @@ export class JupiterVoteClient {
         vote,
         locker: this.stakeLocker,
         governor,
+        governProgram: GOVERNANCE_PROGRAM_ID,
       })
       .transaction();
     const vTx = await this.base.intoVersionedTransaction({

@@ -24,7 +24,7 @@ esac
 build() {
     case $CLUSTER in
         devnet) anchor test;;
-        mainnet-beta) anchor build -- --features mainnet;;
+        mainnet-beta) anchor clean && anchor build -- --features mainnet;;
     esac
 }
 
