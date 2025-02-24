@@ -317,7 +317,7 @@ const BASE_STRUCTURES = {
     },
     {
       group: "Configuration",
-      itemKeys: ["vaultAccess", "vaultPolicies", "vaultIntegrations"],
+      itemKeys: ["vaultAccess", "vaultIntegrations"],
     },
   ],
   MINT: [

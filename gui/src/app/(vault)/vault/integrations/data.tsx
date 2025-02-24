@@ -46,6 +46,7 @@ export const allIntegrations = GlamIntegrations.sort().map((integ, index) => ({
   id: index,
   name: integ,
   enabled: false,
+  comingSoon: false,
   ...(metadata[integ] || {}),
 }));
 // TODO: move to metadata list once program is ready
@@ -55,6 +56,7 @@ allIntegrations.push({
   enabled: false,
   description: "Coming soon.",
   labels: ["LP"],
+  comingSoon: true,
 });
 
 export type Integration = (typeof allIntegrations)[number];

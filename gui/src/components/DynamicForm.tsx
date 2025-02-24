@@ -173,7 +173,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   const renderFields = (fields: Record<string, SchemaField>) => {
     const filteredFields = filterFields(fields);
     const sortedFields = filteredFields.sort(
-      ([, a], [, b]) => (a["x-order"] || 0) - (b["x-order"] || 0)
+      ([, a], [, b]) => (a["x-order"] || 0) - (b["x-order"] || 0),
     );
 
     if (columns === 1) {
@@ -273,40 +273,42 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
     fetchEnumValues();
   }, [schema, isNested, groups, enumValues]);
 
-  const form = useForm<FormData>({
-    resolver: async (values) => {
-      const valid = validate(values);
-      const errors: any = {};
+  const form =
+    formData ||
+    useForm<FormData>({
+      resolver: async (values) => {
+        const valid = validate(values);
+        const errors: any = {};
 
-      if (!valid) {
-        validate.errors?.forEach((error) => {
-          let fieldKey = error.instancePath.substring(1);
+        if (!valid) {
+          validate.errors?.forEach((error) => {
+            let fieldKey = error.instancePath.substring(1);
 
-          if (error.keyword === "required") {
-            fieldKey = error.params.missingProperty;
-          }
+            if (error.keyword === "required") {
+              fieldKey = error.params.missingProperty;
+            }
 
-          const fieldSchema = schema.fields?.[fieldKey];
-          const customError = fieldSchema?.["x-error"];
-          const requiredError =
-            error.keyword === "required"
-              ? `${fieldSchema?.title || fieldKey} is required.`
-              : "";
+            const fieldSchema = schema.fields?.[fieldKey];
+            const customError = fieldSchema?.["x-error"];
+            const requiredError =
+              error.keyword === "required"
+                ? `${fieldSchema?.title || fieldKey} is required.`
+                : "";
 
-          errors[fieldKey] = {
-            type: error.keyword,
-            message: [customError, requiredError].filter(Boolean).join(" "),
-          };
-        });
-      }
+            errors[fieldKey] = {
+              type: error.keyword,
+              message: [customError, requiredError].filter(Boolean).join(" "),
+            };
+          });
+        }
 
-      return {
-        values: valid ? values : {},
-        errors: valid ? {} : errors,
-      };
-    },
-    defaultValues: defaultValues,
-  });
+        return {
+          values: valid ? values : {},
+          errors: valid ? {} : errors,
+        };
+      },
+      defaultValues: defaultValues,
+    });
 
   useEffect(() => {
     if (defaultValues) {
@@ -318,7 +320,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 
   useEffect(() => {
     if (onChange) {
-      const subscription = form.watch((formData) => {
+      const subscription = form.watch((formData: FormData) => {
         onChange(formData);
       });
       return () => subscription.unsubscribe();
@@ -425,7 +427,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   const renderComponent = (
     key: string,
     schemaField: SchemaField,
-    field: any
+    field: any,
   ) => {
     const options: { label: string; value: string | number }[] =
       enumValues[key] || [];
@@ -433,7 +435,12 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 
     const updateField = (value: any) => {
       field.onChange(value);
-      form.setValue(key, value);
+      if (formData) {
+        formData.trigger(key); // Trigger validation
+      }
+      if (onChange) {
+        onChange(form.getValues());
+      }
     };
 
     // Handle boolean type with select component
@@ -537,8 +544,8 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
         const date = field.value
           ? new Date(field.value)
           : schemaField.default
-          ? new Date(schemaField.default)
-          : undefined;
+            ? new Date(schemaField.default)
+            : undefined;
         return (
           <FormItem className="flex flex-col">
             <Popover>
@@ -548,7 +555,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                     variant={"outline"}
                     className={cn(
                       "w-full pl-3 text-left font-normal",
-                      !date && "text-muted-foreground"
+                      !date && "text-muted-foreground",
                     )}
                   >
                     {date ? format(date, "PPP") : placeholder || "Pick a date"}
@@ -580,7 +587,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                     role="combobox"
                     className={cn(
                       "w-full justify-between",
-                      !field.value && "text-muted-foreground"
+                      !field.value && "text-muted-foreground",
                     )}
                   >
                     {field.value
@@ -610,7 +617,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                               "mr-2 h-4 w-4",
                               option.value === field.value
                                 ? "opacity-100"
-                                : "opacity-0"
+                                : "opacity-0",
                             )}
                           />
                           {option.label}
@@ -642,7 +649,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                                 <FormControl>
                                   <Checkbox
                                     checked={(field.value || []).includes(
-                                      item.value
+                                      item.value,
                                     )}
                                     onCheckedChange={(checked) => {
                                       const newValue = checked
@@ -652,7 +659,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                                           ].sort()
                                         : (field.value || []).filter(
                                             (value: number) =>
-                                              value !== item.value
+                                              value !== item.value,
                                           );
                                       updateField(newValue);
                                     }}
@@ -686,22 +693,20 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {isNested && groups.length
-          ? groups.map((group) =>
-              schema[group]?.fields ? renderFields(schema[group].fields) : null
-            )
-          : formSchema.fields
+    <div className="space-y-8">
+      {isNested && groups.length
+        ? groups.map((group) =>
+            schema[group]?.fields ? renderFields(schema[group].fields) : null,
+          )
+        : formSchema.fields
           ? renderFields(formSchema.fields)
           : null}
-        {showSubmitButton && (
-          <Button type="submit" className="w-full">
-            Submit
-          </Button>
-        )}
-      </form>
-    </Form>
+      {showSubmitButton && (
+        <Button type="submit" className="w-full">
+          Submit
+        </Button>
+      )}
+    </div>
   );
 };
 
