@@ -76,6 +76,7 @@ interface Vault {
 interface GlamStateCache {
   address: string;
   pubkey: PublicKey;
+  owner: PublicKey;
   sparkleKey: string;
   name: string;
   product: "Mint" | "Vault" | "Fund";
@@ -104,12 +105,16 @@ const deserializeGlamStateCache = (s: any) => {
     s.address = s.pubkey;
     s.pubkey = new PublicKey(s.pubkey);
   }
+  if (typeof s.owner === "string") {
+    s.owner = new PublicKey(s.owner);
+  }
   return s as GlamStateCache;
 };
 
 const toStateCache = (s: StateModel) => {
   return {
     pubkey: s.id,
+    owner: s.owner?.pubkey || new PublicKey(0),
     sparkleKey: s.sparkleKey,
     address: s.idStr,
     name: s.name,

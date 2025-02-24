@@ -48,5 +48,13 @@ export const allIntegrations = GlamIntegrations.sort().map((integ, index) => ({
   enabled: false,
   ...(metadata[integ] || {}),
 }));
+// TODO: move to metadata list once program is ready
+allIntegrations.push({
+  id: allIntegrations.length,
+  name: "Meteora",
+  enabled: false,
+  description: "Coming soon.",
+  labels: ["DEX"],
+});
 
 export type Integration = (typeof allIntegrations)[number];

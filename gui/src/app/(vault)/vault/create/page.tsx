@@ -106,6 +106,7 @@ export default function Create() {
       setActiveGlamState({
         address: statePd.toBase58(),
         pubkey: statePd,
+        owner: glamClient.getSigner(),
         sparkleKey: statePd.toBase58(),
         name: values.productName,
         product: "Vault",

@@ -21,9 +21,11 @@ export function IntegrationsList({
         {items.map((item) => (
           <button
             key={item.id}
+            disabled={item.name === "Meteora"}
             className={cn(
               "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent min-h-[70px]",
               selected === item.id && "bg-muted",
+              item.name === "Meteora" && "opacity-50",
             )}
             onClick={() => onSelect(item)}
           >
