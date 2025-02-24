@@ -54,7 +54,7 @@ allIntegrations.push({
   name: "Meteora",
   enabled: false,
   description: "Coming soon.",
-  labels: ["DEX"],
+  labels: ["LP"],
 });
 
 export type Integration = (typeof allIntegrations)[number];
