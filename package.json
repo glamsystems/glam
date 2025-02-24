@@ -43,6 +43,7 @@
     "@radix-ui/react-toggle-group": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.2",
     "@solana-developers/preset-react": "^3.0.1",
+    "@solana/qr-code-styling": "^1.6.0",
     "@solana/spl-stake-pool": "^1.1.5",
     "@solana/spl-token": "^0.3.9",
     "@solana/spl-token-metadata": "^0.1.4",

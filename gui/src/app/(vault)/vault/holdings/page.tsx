@@ -2,7 +2,7 @@
 
 import { DataTable } from "./components/data-table";
 import { columns } from "./components/columns";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { PublicKey } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import PageContentWrapper from "@/components/PageContentWrapper";
@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/sheet";
 import { ClickToCopyText } from "@/components/ClickToCopyText";
 import { Button } from "@/components/ui/button";
-import QRCodeSVG from "qrcode.react";
+import QRCodeStyling from "@solana/qr-code-styling";
 import { DangerCard } from "@/components/DangerCard";
 import { parseTxError } from "@/lib/error";
 import { toast } from "@/components/ui/use-toast";
@@ -39,10 +39,86 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { PencilIcon } from "lucide-react";
+import { useTheme } from "next-themes";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const SKELETON_ROW_COUNT = 5;
 
+const VaultQRCode = React.memo(({ pubkey }: { pubkey: string }) => {
+  const qrRef = useRef<HTMLDivElement>(null);
+  const { resolvedTheme } = useTheme();
+  const [isQRCodeRendered, setIsQRCodeRendered] = useState(false);
+
+  // Create QR code instance only when we have all required data
+  const qrCode = useMemo(() => {
+    if (!pubkey || !resolvedTheme) return null;
+    
+    const isDark = resolvedTheme === 'dark';
+    return new QRCodeStyling({
+      width: 200,
+      height: 200,
+      type: "svg",
+      data: `solana:${pubkey}`,
+      dotsOptions: {
+        color: isDark ? '#ffffff' : '#000000',
+        type: "rounded"
+      },
+      cornersSquareOptions: {
+        type: "extra-rounded",
+        color: isDark ? '#ffffff' : '#000000',
+      },
+      cornersDotOptions: {
+        type: "dot",
+        color: isDark ? '#ffffff' : '#000000',
+      },
+      backgroundOptions: {
+        color: isDark ? '#000000' : '#ffffff',
+      }
+    });
+  }, [pubkey, resolvedTheme]);
+
+  // Effect for handling QR code rendering and cleanup
+  useEffect(() => {
+    if (!qrRef.current || !qrCode) {
+      setIsQRCodeRendered(false);
+      return;
+    }
+
+    const renderQRCode = () => {
+      if (!qrRef.current) return;
+      qrRef.current.innerHTML = '';
+      qrCode.append(qrRef.current);
+      setIsQRCodeRendered(true);
+    };
+
+    // Initial render
+    const timeoutId = setTimeout(renderQRCode, 0);
+
+    // Cleanup function
+    return () => {
+      clearTimeout(timeoutId);
+      if (qrRef.current) {
+        qrRef.current.innerHTML = '';
+        setIsQRCodeRendered(false);
+      }
+    };
+  }, [qrCode]);
+
+  return (
+    <div className="relative bg-background rounded-lg p-4">
+      <div ref={qrRef} className="w-[200px] h-[200px] transition-opacity duration-200" 
+           style={{ opacity: isQRCodeRendered ? 1 : 0 }} />
+      {!isQRCodeRendered && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Skeleton className="w-[200px] h-[200px]" />
+        </div>
+      )}
+    </div>
+  );
+});
+
 export default function Holdings() {
+  
   const {
     activeGlamState,
     vault,
@@ -88,6 +164,40 @@ export default function Holdings() {
 
   const [tableData, setTableData] = useState<Holding[]>([]);
 
+  const { resolvedTheme } = useTheme();
+
+  // Create QR code instance only when we have all required data
+  const qrCode = useMemo(() => {
+    if (!vault?.pubkey || !resolvedTheme) return null;
+    
+    const isDark = resolvedTheme === 'dark';
+    return new QRCodeStyling({
+      width: 200,
+      height: 200,
+      type: "svg",
+      data: `solana:${vault.pubkey.toBase58()}`,
+      dotsOptions: {
+        color: isDark ? '#ffffff' : '#000000',
+        type: "rounded"
+      },
+      cornersSquareOptions: {
+        type: "extra-rounded",
+        color: isDark ? '#ffffff' : '#000000',
+      },
+      cornersDotOptions: {
+        type: "dot",
+        color: isDark ? '#ffffff' : '#000000',
+      },
+      backgroundOptions: {
+        color: isDark ? '#000000' : '#ffffff',
+      }
+    });
+  }, [vault?.pubkey, resolvedTheme]);
+
+  // Separate state to track QR code rendering status
+  const [isQRCodeRendered, setIsQRCodeRendered] = useState(false);
+
+  // Effect for handling QR code rendering and cleanup
   useEffect(() => {
     const holdings: Holding[] = [];
     if (vault.uiAmount && vault.balanceLamports > 0) {
@@ -315,7 +425,7 @@ export default function Holdings() {
 
           <div className="grid grid-cols-1 2xl:grid-cols-[200px_1fr] gap-6 py-6">
             <div className="flex flex-col items-center justify-start">
-              <QRCodeSVG value={`solana:vaultAddress`} level="M" size={200} />
+              {vault?.pubkey && <VaultQRCode pubkey={vault.pubkey.toBase58()} />}
               <div className="flex flex-row items-center justify-center mt-2">
                 <p className="text-sm text-muted-foreground text-center">
                   This is your Vault address.
