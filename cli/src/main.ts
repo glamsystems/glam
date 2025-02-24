@@ -6,6 +6,7 @@ import {
   GlamClient,
   GlamIntegrations,
   GlamPermissions,
+  QuoteParams,
 } from "@glamsystems/glam-sdk";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { Command } from "commander";
@@ -14,7 +15,6 @@ import fs from "fs";
 import inquirer from "inquirer";
 
 import { loadingConfig, parseTxError, setStateToConfig } from "./utils";
-import { QuoteParams } from "anchor/src/client/jupiter";
 import { VersionedTransaction } from "@solana/web3.js";
 
 const cliConfig = loadingConfig();
@@ -133,7 +133,8 @@ program
 program
   .command("update-owner <new-owner-pubkey>")
   .description("Update the owner of a GLAM product")
-  .action(async (newOwnerPubkey) => {
+  .option("-y, --yes", "Skip confirmation prompt")
+  .action(async (newOwnerPubkey, options) => {
     const glamState = cliConfig.glam_state
       ? new PublicKey(cliConfig.glam_state)
       : null;
@@ -141,6 +142,22 @@ program
       console.error("GLAM state not set");
       process.exit(1);
     }
+
+    if (!options?.yes) {
+      const confirmation = await inquirer.prompt([
+        {
+          type: "confirm",
+          name: "proceed",
+          message: `Confirm update of owner to ${newOwnerPubkey}?`,
+          default: false,
+        },
+      ]);
+      if (!confirmation.proceed) {
+        console.log("Operation cancelled by the user.");
+        process.exit(0);
+      }
+    }
+
     try {
       const newOwner = new PublicKey(newOwnerPubkey);
       await glamClient.state.updateState(glamState, {

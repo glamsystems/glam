@@ -1,7 +1,7 @@
 {
   "name": "@glamsystems/glam-sdk",
-  "version": "0.1.6",
-  "description": "TypeScript SDK for GLAM Protocol",
+  "version": "0.1.7",
+  "description": "TypeScript SDK for the GLAM Protocol",
   "main": "./index.cjs",
   "module": "./index.esm.js",
   "homepage": "https://www.glam.systems",
@@ -10,7 +10,7 @@
     "url": "git@github.com:glamsystems/glam.git"
   },
   "keywords": [
-    "glam-protocol",
+    "glam",
     "solana"
   ],
   "license": "Apache-2.0",
