@@ -37,16 +37,19 @@ const txOptions = {
       ? await getPriorityFeeEstimate(helius_api_key, tx, undefined, level)
       : 0;
   },
+  simulate: true,
 };
 
 const glamClient = new GlamClient();
 
 const program = new Command();
+let globalOpts = { skipSimulation: false };
 
 program
   .name("glam-cli")
   .description("CLI for interacting with the GLAM Protocol")
-  .version("0.1.0");
+  .version("0.1.1")
+  .option("-S, --skip-simulation", "Skip transaction simulation");
 
 program
   .command("env")
@@ -123,6 +126,33 @@ program
       console.log("Set active GLAM product to:", state);
     } catch (e) {
       console.error("Not a valid pubkey:", state);
+      process.exit(1);
+    }
+  });
+
+program
+  .command("update-owner <new-owner-pubkey>")
+  .description("Update the owner of a GLAM product")
+  .action(async (newOwnerPubkey) => {
+    const glamState = cliConfig.glam_state
+      ? new PublicKey(cliConfig.glam_state)
+      : null;
+    if (!glamState) {
+      console.error("GLAM state not set");
+      process.exit(1);
+    }
+    try {
+      const newOwner = new PublicKey(newOwnerPubkey);
+      await glamClient.state.updateState(glamState, {
+        owner: {
+          portfolioManagerName: null,
+          pubkey: newOwner,
+          kind: { wallet: {} },
+        },
+      });
+      console.log(`Updated owner of ${glamState} to ${newOwnerPubkey}`);
+    } catch (e) {
+      console.error("Not a valid pubkey:", newOwnerPubkey);
       process.exit(1);
     }
   });
@@ -702,27 +732,42 @@ program
     if (!mints.includes(WSOL.toBase58())) {
       mints.push(WSOL.toBase58());
     }
-    const response = await fetch(
+    const pricesResp = await fetch(
       `https://api.jup.ag/price/v2?ids=${mints.join(",")}`,
     );
-    const { data } = await response.json();
+    const tokensResp = await fetch(
+      "https://tokens.jup.ag/tokens?tags=verified",
+    );
 
-    console.log("Token", "\t", "Amount", "\t", "Value (USD)");
+    const { data: pricesData } = await pricesResp.json();
+    const tokens = await tokensResp.json(); // an array of tokens
+
+    console.log("Token", "\t", "Mint", "\t", "Amount", "\t", "Value (USD)");
     console.log(
       "SOL",
       "\t",
+      "N/A",
+      "\t",
       solBalance / LAMPORTS_PER_SOL,
       "\t",
-      (parseFloat(data[WSOL.toBase58()].price) * solBalance) / LAMPORTS_PER_SOL,
+      (parseFloat(pricesData[WSOL.toBase58()].price) * solBalance) /
+        LAMPORTS_PER_SOL,
     );
     tokenAccounts.forEach((ta) => {
-      if (all || ta.uiAmount > 0) {
+      const { uiAmount, mint } = ta;
+      const mintStr = mint.toBase58();
+
+      if (all || uiAmount > 0) {
+        const token = tokens.find((t) => t.address === mintStr);
+
         console.log(
-          ta.mint.toBase58(),
+          token.symbol === "SOL" ? "wSOL" : token.symbol,
           "\t",
-          ta.uiAmount,
+          mintStr,
           "\t",
-          parseFloat(data[ta.mint.toBase58()].price) * ta.uiAmount,
+          uiAmount,
+          "\t",
+          parseFloat(pricesData[mintStr].price) * uiAmount,
         );
       }
     });
@@ -788,7 +833,7 @@ program
         quoteParams,
         undefined,
         undefined,
-        txOptions,
+        { ...txOptions, simulate: !globalOpts.skipSimulation },
       );
       console.log(`Swapped ${amount} ${from} to ${to}: ${txSig}`);
     } catch (e) {
@@ -1052,3 +1097,4 @@ if (process.env.NODE_ENV === "development") {
 } else {
   program.parse(process.argv);
 }
+globalOpts = program.opts();
