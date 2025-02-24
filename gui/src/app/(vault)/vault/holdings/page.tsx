@@ -384,18 +384,35 @@ export default function Holdings() {
               </div>
 
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Owner</p>
-                <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2 h-10">
-                  <ClickToCopyText text={ownerAddress} />
-                </div>
-              </div>
-
-              <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">Vault</p>
                 <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2 h-10">
                   <ClickToCopyText text={vaultAddress} />
                 </div>
               </div>
+
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="state">
+                  <AccordionTrigger className="py-2 text-muted-foreground font-normal">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm">Owner</p>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2">
+                        <ClickToCopyText text={ownerAddress} />
+                      </div>
+                      <div className="flex gap-2 items-center">
+                        <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">
+                          Assets sent to this account go to the Owner, not the
+                          Vault.
+                        </p>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="state">
