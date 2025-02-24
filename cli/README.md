@@ -2,25 +2,13 @@
 
 A convenient way of interacting with the GLAM program.
 
-- [Build](#build)
-- [Configure](#configure)
-- [Docker](#docker)
-- [Usage](#usage)
-  - [General Commands](#general-commands)
-  - [Managing Products](#managing-products)
-  - [Delegate Management](#delegate-management)
-  - [Integration Management](#integration-management)
-  - [Token Operations](#token-operations)
-  - [Liquid Staking](#liquid-staking)
-  - [Jupiter (JUP) Staking](#jupiter-jup-staking)
-
-## Build
-
-Clone https://github.com/glamsystems/glam/, enter the repo and run:
+## Installation
 
 ```bash
-pnpm install && pnpm run cli-build
+npm install -g @glamsystems/glam-cli
 ```
+
+After installation, you can use the CLI with the `glam-cli` command.
 
 ## Configure
 
@@ -53,21 +41,87 @@ Here's a quick explanation of each field:
   - `helius_api_key`: Optional. Only applied if cluster is `mainnet-beta`. If not provided `level` will be ignored. The API key is needed to fetch the priority fee estimate from Helius.
 - `glam_state`: Optional. If you want to set a default active GLAM state, you can do so here. Alternatively, you can use the `set` command to set the active GLAM state later on.
 
-## Run the CLI
+## Commands
+
+Run `glam-cli --help` to see all available commands. Here are the main command categories:
+
+### General Commands
+
+- `glam-cli env` - Show environment setup
+- `glam-cli list` - List GLAM products the wallet has access to
+  - `-o, --owner-only` - Only list products the wallet owns
+  - `-a, --all` - List all GLAM products
+
+### Product Management
+
+- `glam-cli view [state]` - View a GLAM product by its state pubkey
+  - `-c, --compact` - Compact output
+- `glam-cli set <state>` - Set active GLAM product
+- `glam-cli create <path>` - Create a new GLAM product from a JSON file
+- `glam-cli close [state]` - Close a GLAM product
+  - `-y, --yes` - Skip confirmation prompt
+- `glam-cli update-owner <new-owner-pubkey>` - Update the owner of a GLAM product (**dangerous! may lead to loss of assets if you don't control the new owner wallet**)
+  - `-y, --yes` - Skip confirmation prompt
+- `glam-cli withdraw <asset> <amount>` - Withdraw asset (mint address) from the vault
+  - `-y, --yes` - Skip confirmation prompt
+
+### Delegate Management
+
+- `glam-cli delegate list` - List delegates and permissions
+- `glam-cli delegate set <pubkey> <permissions...>` - Set delegate permissions
+- `glam-cli delegate delete <pubkey>` - Revoke all delegate permissions for a pubkey
+
+### Integration Management
+
+- `glam-cli integration list` - List all enabled integrations
+- `glam-cli integration enable <name>` - Enable an integration
+- `glam-cli integration disable <name>` - Disable an integration
+
+### Token Operations
+
+- `glam-cli swap <from> <to> <amount>` - Swap assets held in the vault
+  - `-m, --max-accounts <num>` - Specify max accounts allowed
+  - `-s, --slippage-bps <bps>` - Specify slippage bps
+  - `-d, --only-direct-routes` - Direct routes only
+
+### Liquid Staking
+
+- `glam-cli lst stake <stakepool> <amount>` - Stake `<amount>` SOL into `<stakepool>`
+- `glam-cli lst unstake <asset> <amount>` - Unstake `<amount>` worth of `<asset>` (mint address)
+- `glam-cli lst list` - List all stake accounts
+- `glam-cli lst withdraw <accounts...>` - Withdraw staking accounts (space-separated pubkeys)
+- `glam-cli lst marinade-list` - List all Marinade tickets
+- `glam-cli lst marinade-claim <tickets...>` - Claim Marinade tickets (space-separated)
+
+### Jupiter (JUP) Staking
+
+- `glam-cli jup stake <amount>` - Stake JUP tokens
+- `glam-cli jup unstake` - Unstake all JUP tokens
+- `glam-cli jup withdraw` - Withdraw all unstaked JUP
+
+### Governance
+
+- `glam-cli vote <proposal> <side>` - Vote on a proposal
+
+## Development
+
+### Build from Source
+
+Clone https://github.com/glamsystems/glam/, enter the repo and run:
 
 ```bash
-node dist/cli/main.js -h
+pnpm install && pnpm run cli-build
 ```
 
-To run the CLI in development mode:
+### Run in Development Mode
 
 ```bash
 npx nx run cli:dev -- --args="command [options]"
 ```
 
-## Docker
+## Docker Support
 
-### Build docker image
+### Build Docker Image
 
 From the root of the repo:
 
@@ -75,268 +129,34 @@ From the root of the repo:
 docker build -f ./cli/Dockerfile -t glam-cli .
 ```
 
-This builds a docker image and tags it as `glam-cli`.
-
-We have a pre-built docker image available at https://github.com/glamsystems/glam/pkgs/container/glam-cli. To pull the latest image, run:
+We have a pre-built docker image available at https://github.com/glamsystems/glam/pkgs/container/glam-cli. To pull the latest image:
 
 ```bash
 docker pull ghcr.io/glamsystems/glam-cli
 ```
 
-### Run the CLI in docker container
+### Run in Docker Container
 
-The docker image doesn't come with a configuration file or a keypair. Instead, you'll need to provide them to the container by mounting a volume from a host directory to the container's `/workspace` directory.
-
-Create a local directory (for example, `$HOME/.glam-cli-docker`) and place both the configuration file and keypair into it. Assuming your keypair filename is `keypair.json`, the directory and the config file should look like the following:
+Mount your configuration directory to the container's `/workspace`:
 
 ```bash
-$ ls $HOME/.glam-cli-docker
-config.json  keypair.json
+docker run -v $HOME/.glam-cli-docker:/workspace glam-cli [command] [options]
+```
 
-$ cat $HOME/.glam-cli-docker/config.json
+The mounted directory should contain:
+
+- `config.json` - CLI configuration file
+- `keypair.json` - Your Solana keypair file
+
+Example config for Docker:
+
+```json
 {
   "cluster": "mainnet-beta",
-  "json_rpc_url": "[redacted]",
+  "json_rpc_url": "[your-rpc-url]",
   "keypair_path": "/workspace/keypair.json",
   "priority_fee": {
-    "level": "Min",
-    "helius_api_key": "[redacted]"
-  },
-  "glam_state": "[redacted]"
+    "micro_lamports": 0
+  }
 }
 ```
-
-To start the container and get the cli ready to use:
-
-```bash
-docker run -it --rm -v $HOME/.glam-cli-docker:/workspace glam-cli bash
-```
-
-Replace `glam-cli` with `ghcr.io/glamsystems/glam-cli` if using the pre-built docker image.
-
-Example usage:
-
-```bash
-$ docker run -it --rm -v $HOME/.glam-cli-docker:/workspace glam-cli bash
-
-root@af07b0e1891d:/mnt/glam# node dist/cli/main.js env
-Wallet connected: [redacted]
-RPC endpoint: [redacted]
-Priority fee: {
-  level: 'Min',
-  helius_api_key: '[redacted]'
-}
-```
-
-## Usage
-
-### General Commands
-
-- **View Environment Setup**:
-
-  ```bash
-  glam-cli env
-  ```
-
-- **Set Active GLAM Product**:
-
-  ```bash
-  glam-cli set <state>
-  ```
-
-- **View a GLAM Product**:
-
-  - `--compact`: if set the output will be a compact json blob
-  - `state`: if not set the current active GLAM product will be used
-
-  ```bash
-  glam-cli view [--compact] [state]
-  ```
-
-### Managing Products
-
-- **List Products**:
-
-  - By default only products the wallet has access to (either as owner or delegate) will be listed
-  - `--owner-only`: if set only products owned by the wallet will be listed
-  - `--all`: if set all products will be listed
-
-  ```bash
-  glam-cli list [--owner-only] [--all]
-  ```
-
-- **Create a New Product**:
-
-  - See the `templates/` directory for available templates
-
-  ```bash
-  glam-cli create <path-to-json>
-  ```
-
-- **Close a Product**:
-
-  - `state`: if not set the current active GLAM product will be used
-  - `--yes`: if set, no confirmation prompt will be shown
-
-  ```bash
-  glam-cli close [state] [--yes]
-  ```
-
-### Delegate Management
-
-- **List Delegates**:
-
-  ```bash
-  glam-cli delegate list
-  ```
-
-- **Set Delegate Permissions**:
-
-  - `pubkey`: Public key of the delegate
-  - `permissions...`: A space-separated list of permissions. Available permissions can be found in `anchor/programs/glam/src/state/acl.rs`
-
-  ```bash
-  glam-cli delegate set <pubkey> <permissions...>
-  ```
-
-- **Revoke Delegate Permissions**:
-  ```bash
-  glam-cli delegate delete <pubkey>
-  ```
-
-### Integration Management
-
-- **List Enabled Integrations**:
-
-  ```bash
-  glam-cli integration list
-  ```
-
-- **Enable an Integration**:
-
-  - `integration`: Name of the integration. Available integrations can be found in `anchor/programs/glam/src/state/acl.rs`
-
-  ```bash
-  glam-cli integration enable <integration>
-  ```
-
-- **Disable an Integration**:
-
-  - `integration`: Name of the integration. Available integrations can be found in `anchor/programs/glam/src/state/acl.rs`
-
-  ```bash
-  glam-cli integration disable <integration>
-  ```
-
-### Token Operations
-
-- **View Balances**:
-
-  - `--all`: if set all token accounts will be listed, including those with zero balances
-
-  ```bash
-  glam-cli balances [--all]
-  ```
-
-- **Wrap SOL**:
-
-  ```bash
-  glam-cli wrap <amount>
-  ```
-
-- **Unwrap wSOL**:
-
-  - Unwraps all wSOL into SOL
-
-  ```bash
-  glam-cli unwrap
-  ```
-
-- **Swap Tokens**:
-
-  - `from`: Source token mint
-  - `to`: Destination token mint
-  - `amount`: Amount to swap
-  - `--max-accounts`: Specify max accounts allowed
-  - `--slippage-bps`: Specify slippage bps
-  - `--only-direct-routes`: Direct routes only if set
-
-  ```bash
-  glam-cli swap <from> <to> <amount> [--max-accounts <num>] [--slippage-bps <bps>] [--only-direct-routes]
-  ```
-
-- **Withdraw from Vault**:
-
-  - `asset`: Asset (token mint) to withdraw
-  - `amount`: Amount to withdraw
-  - `--yes`: Skip confirmation prompt
-
-  ```bash
-  glam-cli withdraw <asset> <amount> [--yes]
-  ```
-
-### Liquid Staking
-
-- **Stake into a Stake Pool**:
-
-  ```bash
-  glam-cli lst stake <stakepool> <amount>
-  ```
-
-- **Unstake Tokens**:
-
-  - Unstakes from a stake pool and gets tokens into a stake account (or a marinade ticket if asset is mSOL)
-  - `asset`: Asset (pool token mint) to unstake
-
-  ```bash
-  glam-cli lst unstake <asset> <amount>
-  ```
-
-- **List Stake Accounts**:
-
-  ```bash
-  glam-cli lst list
-  ```
-
-- **Withdraw Stake Accounts**:
-
-  - Withdraws SOL from stake accounts
-  - `accounts...`: A space-separated list of stake account pubkeys
-
-  ```bash
-  glam-cli lst withdraw <accounts...>
-  ```
-
-- **Manage Marinade Tickets**:
-
-  - List Tickets:
-
-    ```bash
-    glam-cli lst marinade-list
-    ```
-
-  - Claim Tickets:
-    ```bash
-    glam-cli lst marinade-claim <tickets...>
-    ```
-
-### Jupiter (JUP) Staking
-
-- **Stake JUP Tokens**:
-
-  ```bash
-  glam-cli jup stake <amount>
-  ```
-
-- **Unstake JUP Tokens**:
-
-  - Unstakes all JUP
-
-  ```bash
-  glam-cli jup unstake
-  ```
-
-- **Vote on Proposals**:
-  ```bash
-  glam-cli vote <proposal> <side>
-  ```
