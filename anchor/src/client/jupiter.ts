@@ -199,11 +199,7 @@ export class JupiterSwapClient {
       .preInstructions(preInstructions)
       .transaction();
 
-    return this.base.intoVersionedTransaction({
-      tx,
-      lookupTables,
-      ...txOptions,
-    });
+    return this.base.intoVersionedTransaction(tx, { lookupTables, ...txOptions });
   }
 
   public async setMaxSwapSlippageTx(
@@ -219,10 +215,7 @@ export class JupiterSwapClient {
         signer,
       })
       .transaction();
-    return this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return this.base.intoVersionedTransaction(tx, { ...txOptions });
   }
 
   /*
@@ -401,10 +394,7 @@ export class JupiterVoteClient {
       .preInstructions(preInstructions)
       .transaction();
 
-    const vTx = await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    const vTx = await this.base.intoVersionedTransaction(tx, { ...txOptions });
 
     return await this.base.sendAndConfirm(vTx);
   }
@@ -429,10 +419,7 @@ export class JupiterVoteClient {
         escrow,
       })
       .transaction();
-    const vTx = await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    const vTx = await this.base.intoVersionedTransaction(tx, { ...txOptions });
 
     return await this.base.sendAndConfirm(vTx);
   }
@@ -463,10 +450,7 @@ export class JupiterVoteClient {
       ])
       .transaction();
 
-    const vTx = await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    const vTx = await this.base.intoVersionedTransaction(tx, { ...txOptions });
 
     return await this.base.sendAndConfirm(vTx);
   }
@@ -484,10 +468,7 @@ export class JupiterVoteClient {
       })
       .transaction();
 
-    const vTx = await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    const vTx = await this.base.intoVersionedTransaction(tx, { ...txOptions });
 
     return await this.base.sendAndConfirm(vTx);
   }
@@ -548,10 +529,7 @@ export class JupiterVoteClient {
         governProgram: GOVERNANCE_PROGRAM_ID,
       })
       .transaction();
-    const vTx = await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    const vTx = await this.base.intoVersionedTransaction(tx, { ...txOptions });
     return await this.base.sendAndConfirm(vTx);
   }
   /*

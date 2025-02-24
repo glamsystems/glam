@@ -197,7 +197,7 @@ export class InvestorClient {
       .preInstructions(preInstructions)
       .transaction();
 
-    return await this.base.intoVersionedTransaction({ tx, ...txOptions });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async redeemTx(
@@ -296,6 +296,6 @@ export class InvestorClient {
       .preInstructions(preInstructions)
       .transaction();
 
-    return await this.base.intoVersionedTransaction({ tx, ...txOptions });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 }

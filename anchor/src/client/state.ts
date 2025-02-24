@@ -151,7 +151,7 @@ export class StateClient {
         state: statePda,
       })
       .transaction();
-    return await this.base.intoVersionedTransaction({ tx, ...txOptions });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async closeState(
@@ -168,7 +168,7 @@ export class StateClient {
       .preInstructions(txOptions.preInstructions || [])
       .transaction();
 
-    const vTx = await this.base.intoVersionedTransaction({ tx, ...txOptions });
+    const vTx = await this.base.intoVersionedTransaction(tx, txOptions);
     return await this.base.sendAndConfirm(vTx);
   }
 
@@ -360,7 +360,7 @@ export class StateClient {
         })),
       )
       .transaction();
-    return await this.base.intoVersionedTransaction({ tx, ...txOptions });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   /* Deposit & Withdraw */
@@ -419,7 +419,7 @@ export class StateClient {
       ),
     );
 
-    return await this.base.intoVersionedTransaction({ tx, ...txOptions });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async withdrawIxs(
@@ -497,6 +497,6 @@ export class StateClient {
       .postInstructions(postInstructions)
       .transaction();
 
-    return await this.base.intoVersionedTransaction({ tx, ...txOptions });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 }

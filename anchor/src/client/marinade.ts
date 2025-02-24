@@ -230,10 +230,7 @@ export class MarinadeClient {
       })
       .transaction();
 
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async depositStakeTx(
@@ -284,10 +281,7 @@ export class MarinadeClient {
       })
       .transaction();
 
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async delayedUnstakeTx(
@@ -338,10 +332,7 @@ export class MarinadeClient {
       .preInstructions([createTicketIx])
       .transaction();
 
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async claimTicketsTx(
@@ -368,10 +359,7 @@ export class MarinadeClient {
       )
       .transaction();
 
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async liquidUnstakeTx(
@@ -401,9 +389,6 @@ export class MarinadeClient {
       })
       .transaction();
 
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 }

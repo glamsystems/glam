@@ -748,8 +748,13 @@ program
     const response = await fetch("https://tokens.jup.ag/tokens?tags=verified");
     const data = await response.json(); // an array of tokens
 
-    const tokenFrom = data.find((t) => t.address === from);
-    const tokenTo = data.find((t) => t.address === to);
+    const tokenFrom = data.find(
+      (t) =>
+        t.address === from || t.symbol.toLowerCase() === from.toLowerCase(),
+    );
+    const tokenTo = data.find(
+      (t) => t.address === to || t.symbol.toLowerCase() === to.toLowerCase(),
+    );
 
     if (!tokenFrom || !tokenTo) {
       console.error("Error: cannot swap unverified token");
@@ -757,8 +762,8 @@ program
     }
 
     let quoteParams = {
-      inputMint: from,
-      outputMint: to,
+      inputMint: tokenFrom.address,
+      outputMint: tokenTo.address,
       amount: Math.floor(parseFloat(amount) * 10 ** tokenFrom.decimals),
       swapMode: "ExactIn",
       slippageBps: slippageBps ? parseInt(slippageBps) : 5,
@@ -785,7 +790,7 @@ program
         undefined,
         txOptions,
       );
-      console.log(`Swapped ${amount} ${from} to ${to}`);
+      console.log(`Swapped ${amount} ${from} to ${to}: ${txSig}`);
     } catch (e) {
       console.error(parseTxError(e));
       process.exit(1);

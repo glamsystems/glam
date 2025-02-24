@@ -406,10 +406,7 @@ export class DriftClient {
       .postInstructions([initializeUserIx])
       .transaction();
 
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async updateUserCustomMarginRatioTx(
@@ -434,10 +431,7 @@ export class DriftClient {
       })
       .transaction();
 
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async updateUserMarginTradingEnabledTx(
@@ -458,10 +452,7 @@ export class DriftClient {
       })
       .transaction();
 
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async updateUserDelegateTx(
@@ -482,10 +473,7 @@ export class DriftClient {
       })
       .transaction();
 
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async deleteUserTx(
@@ -508,10 +496,7 @@ export class DriftClient {
       })
       .transaction();
 
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async depositTx(
@@ -560,10 +545,7 @@ export class DriftClient {
       .preInstructions(preInstructions)
       .transaction();
 
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async withdrawTx(
@@ -623,10 +605,7 @@ export class DriftClient {
       .preInstructions(preInstructions)
       .transaction();
 
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async placeOrderTx(
@@ -661,10 +640,7 @@ export class DriftClient {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async modifyOrderTx(
@@ -699,10 +675,7 @@ export class DriftClient {
       // .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async cancelOrdersTx(
@@ -739,10 +712,7 @@ export class DriftClient {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async cancelOrdersByIdsTx(
@@ -773,9 +743,6 @@ export class DriftClient {
       .remainingAccounts(remainingAccounts)
       .transaction();
 
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 }
