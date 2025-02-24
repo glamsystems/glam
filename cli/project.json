@@ -14,12 +14,32 @@
         "compiler": "tsc",
         "outputPath": "dist/cli",
         "main": "cli/src/main.ts",
+        "assets": [
+          {
+            "glob": "README.md",
+            "input": "cli/",
+            "output": "."
+          },
+          {
+            "glob": "package.json",
+            "input": "cli/",
+            "output": "."
+          }
+        ],
         "tsConfig": "cli/tsconfig.app.json",
         "webpackConfig": "cli/webpack.config.js"
       },
       "configurations": {
         "development": {},
         "production": {}
+      }
+    },
+    "prepare-publish": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "echo '#!/usr/bin/env node' | cat - dist/cli/main.js > temp && mv temp dist/cli/main.js && chmod +x dist/cli/main.js",
+        "cwd": "{workspaceRoot}"
       }
     },
     "dev": {
@@ -33,7 +53,15 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "cli/jest.config.ts"
+        "jestConfig": "jest.config.ts"
+      }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["prepare-publish"],
+      "options": {
+        "command": "npm publish --access public",
+        "cwd": "{workspaceRoot}/dist/cli"
       }
     }
   }

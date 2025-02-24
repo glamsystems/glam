@@ -6,6 +6,7 @@ import {
   GlamClient,
   GlamIntegrations,
   GlamPermissions,
+  QuoteParams,
 } from "@glamsystems/glam-sdk";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { Command } from "commander";
@@ -14,7 +15,6 @@ import fs from "fs";
 import inquirer from "inquirer";
 
 import { loadingConfig, parseTxError, setStateToConfig } from "./utils";
-import { QuoteParams } from "anchor/src/client/jupiter";
 import { VersionedTransaction } from "@solana/web3.js";
 
 const cliConfig = loadingConfig();

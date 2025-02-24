@@ -1,0 +1,35 @@
+{
+  "name": "@glamsystems/glam-cli",
+  "version": "0.1.1",
+  "description": "CLI for interacting with the GLAM Protocol",
+  "main": "./main.js",
+  "bin": {
+    "glam-cli": "./main.js"
+  },
+  "homepage": "https://www.glam.systems",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:glamsystems/glam.git"
+  },
+  "keywords": [
+    "glam",
+    "cli",
+    "solana"
+  ],
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20.18.0"
+  },
+  "dependencies": {
+    "@glamsystems/glam-sdk": "0.1.7",
+    "commander": "^11.1.0",
+    "inquirer": "^8.2.6"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^8.2.10",
+    "typescript": "^5.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

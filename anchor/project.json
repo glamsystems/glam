@@ -58,6 +58,7 @@
     },
     "publish": {
       "executor": "nx:run-commands",
+      "dependsOn": ["build"],
       "options": {
         "command": "npm publish --access public",
         "cwd": "{workspaceRoot}/dist/anchor"
