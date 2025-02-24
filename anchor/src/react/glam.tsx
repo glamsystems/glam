@@ -114,7 +114,7 @@ const deserializeGlamStateCache = (s: any) => {
 const toStateCache = (s: StateModel) => {
   return {
     pubkey: s.id,
-    owner: s.owner.pubkey,
+    owner: s.owner?.pubkey || new PublicKey(0),
     sparkleKey: s.sparkleKey,
     address: s.idStr,
     name: s.name,

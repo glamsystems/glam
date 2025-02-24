@@ -133,6 +133,7 @@ export default function MultiStepForm() {
         fundGroupName: openfundsData.company.fundGroupName,
       },
       owner: {
+        portfolioManagerName: null,
         pubkey: glamClient.getSigner(),
         kind: { wallet: {} },
       },
@@ -153,17 +154,17 @@ export default function MultiStepForm() {
           // },
         },
       ],
-    };
+    } as Partial<StateModel>;
 
     try {
       const [txSig, statePda] = await glamClient.state.createState(
-        // @ts-ignore
         glamState,
         true,
       );
       setActiveGlamState({
         address: statePda.toBase58(),
         pubkey: statePda,
+        owner: glamClient.getSigner(),
         sparkleKey: statePda.toBase58(),
         name: basicInfoFormData.name,
         product: "Mint",
