@@ -190,6 +190,9 @@ export default function Holdings() {
   }, [vault, jupTokenList, prices, activeGlamState]);
 
   const vaultAddress = vault?.pubkey ? vault.pubkey.toBase58() : "";
+  const ownerAddress = activeGlamState?.owner
+    ? activeGlamState.owner.toBase58()
+    : "";
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState("");
@@ -378,6 +381,13 @@ export default function Holdings() {
                     </div>
                   </div>
                 )}
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Owner</p>
+                <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2 h-10">
+                  <ClickToCopyText text={ownerAddress} />
+                </div>
               </div>
 
               <div className="space-y-2">
