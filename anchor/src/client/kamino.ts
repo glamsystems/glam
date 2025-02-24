@@ -308,7 +308,7 @@ export class KaminoLendingClient {
       .postInstructions([initObligationIx, initObligationFarmIx])
       .transaction();
 
-    const vTx = await this.base.intoVersionedTransaction({ tx, ...txOptions });
+    const vTx = await this.base.intoVersionedTransaction(tx, txOptions);
     return vTx;
   }
 
@@ -395,10 +395,7 @@ export class KaminoLendingClient {
       .postInstructions([refreshIxs[2]]) // 1 refresh ix
       .transaction();
 
-    const vTx = await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    const vTx = await this.base.intoVersionedTransaction(tx, txOptions);
     return vTx;
   }
 }

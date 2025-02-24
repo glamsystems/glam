@@ -57,10 +57,7 @@ export class WSolClient {
       })
       .transaction();
 
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async unwrapTx(
@@ -82,9 +79,6 @@ export class WSolClient {
       })
       .transaction();
 
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 }

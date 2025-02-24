@@ -2,7 +2,6 @@ import * as anchor from "@coral-xyz/anchor";
 import { AnchorProvider, Wallet } from "@coral-xyz/anchor";
 import {
   AddressLookupTableAccount,
-  BlockhashWithExpiryBlockHeight,
   ComputeBudgetProgram,
   Connection,
   Keypair,
@@ -63,6 +62,7 @@ export type TxOptions = {
   jitoTipLamports?: number;
   preInstructions?: TransactionInstruction[];
   lookupTables?: AddressLookupTableAccount[];
+  simulate?: boolean;
 };
 
 export type TokenAccount = {
@@ -210,27 +210,19 @@ export class BaseClient {
     ];
   }
 
-  async intoVersionedTransaction({
-    tx,
-    lookupTables,
-    signer,
-    computeUnitLimit,
-    getPriorityFeeMicroLamports,
-    maxFeeLamports,
-    useMaxFee,
-    jitoTipLamports,
-    latestBlockhash,
-  }: {
-    tx: Transaction;
-    lookupTables?: AddressLookupTableAccount[];
-    signer?: PublicKey;
-    computeUnitLimit?: number;
-    getPriorityFeeMicroLamports?: (tx: VersionedTransaction) => Promise<number>;
-    maxFeeLamports?: number;
-    useMaxFee?: boolean;
-    jitoTipLamports?: number;
-    latestBlockhash?: BlockhashWithExpiryBlockHeight;
-  }): Promise<VersionedTransaction> {
+  async intoVersionedTransaction(
+    tx: Transaction,
+    {
+      lookupTables,
+      signer,
+      computeUnitLimit,
+      getPriorityFeeMicroLamports,
+      maxFeeLamports,
+      useMaxFee = false,
+      jitoTipLamports,
+      simulate = false,
+    }: TxOptions,
+  ): Promise<VersionedTransaction> {
     signer = signer || this.getSigner();
 
     const instructions = tx.instructions;
@@ -246,9 +238,7 @@ export class BaseClient {
       );
     }
 
-    const recentBlockhash = (
-      latestBlockhash ? latestBlockhash : await this.blockhashWithCache.get()
-    ).blockhash;
+    const recentBlockhash = (await this.blockhashWithCache.get()).blockhash;
 
     try {
       computeUnitLimit = await getSimulationComputeUnits(
@@ -258,10 +248,11 @@ export class BaseClient {
         lookupTables,
       );
     } catch (e) {
-      // TODO: add a flag to control if we should throw error on failed simulation
-      // when we run tests with failure cases, this RPC call fails with
-      // an incorrect error message so we should ignore it
-      // in the regular case, if this errors the tx will have the default CUs
+      // by default, a simulation error doesn't prevent the tx from being sent
+      // - when we run tests with failure cases, this RPC call fails with an incorrect error message so we should ignore it by default
+      // - gui: wallet apps usually do the simulation themselves, we should ignore the simulation error here by default
+      // - cli: we should set simulate=true
+      if (simulate) throw e;
     }
 
     if (computeUnitLimit) {
@@ -339,6 +330,7 @@ export class BaseClient {
     });
 
     // await confirmation
+    console.log("Confirming tx:", txSig);
     const latestBlockhash = await this.blockhashWithCache.get();
     const res = await connection.confirmTransaction({
       ...latestBlockhash,

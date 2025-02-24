@@ -410,10 +410,7 @@ export class StakingClient {
       })
       .transaction();
 
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async stakePoolDepositStakeTx(
@@ -478,10 +475,8 @@ export class StakingClient {
         stakeProgram: StakeProgram.programId,
       })
       .transaction();
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async stakePoolWithdrawStakeTx(
@@ -561,10 +556,7 @@ export class StakingClient {
       .postInstructions(postInstructions)
       .transaction();
 
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async initializeAndDelegateStakeTx(
@@ -593,10 +585,7 @@ export class StakingClient {
       .preInstructions([createStakeAccountIx])
       .transaction();
 
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async deactivateStakeAccountsTx(
@@ -623,10 +612,8 @@ export class StakingClient {
         })),
       )
       .transaction();
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async withdrawFromStakeAccountsTx(
@@ -654,10 +641,8 @@ export class StakingClient {
         })),
       )
       .transaction();
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async mergeStakeAccountsTx(
@@ -680,10 +665,8 @@ export class StakingClient {
         stakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
       })
       .transaction();
-    return await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async splitStakeAccountTx(
@@ -709,10 +692,7 @@ export class StakingClient {
       })
       .preInstructions([createStakeAccountIx])
       .transaction();
-    const vTx = await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    const vTx = await this.base.intoVersionedTransaction(tx, txOptions);
 
     return { tx: vTx, newStake };
   }
@@ -742,10 +722,7 @@ export class StakingClient {
       })
       .preInstructions([createStakeAccountIx])
       .transaction();
-    const vTx = await this.base.intoVersionedTransaction({
-      tx,
-      ...txOptions,
-    });
+    const vTx = await this.base.intoVersionedTransaction(tx, txOptions);
 
     return { tx: vTx, newStake };
   }
