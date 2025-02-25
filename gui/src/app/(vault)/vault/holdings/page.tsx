@@ -656,6 +656,7 @@ export default function Holdings() {
                   name="amount"
                   label="Amount"
                   balance={assetBalance}
+                  hideBalance={true}
                   className="flex-1"
                   selectedAsset={selectedAsset}
                   onSelectAsset={handleAssetSelect}
@@ -685,7 +686,7 @@ export default function Holdings() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="px-2 h-10 mt-1"
+                  className="px-2 h-10 mt-8"
                   onClick={() => {
                     console.log("Current balance:", assetBalance);
 
@@ -731,7 +732,7 @@ export default function Holdings() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="px-2 h-10 mt-1"
+                  className="px-2 h-10 mt-8"
                   onClick={() => {
                     if (selectedAsset === "SOL") {
                       const solBalance =
