@@ -102,15 +102,14 @@ export const AssetInput: React.FC<AssetInputProps> = ({
 
   useEffect(() => {
     if (!useMaxAmount) {
-      setValue(name, 0);
-      // setDisplayValue("0");
+      setValue(name, "");
     }
   }, [selectedAsset, setValue, name, useMaxAmount]);
 
   const formattedBalance = new Intl.NumberFormat("en-US").format(
     assets.find((asset) => asset.symbol === selectedAsset)?.balance ||
       balance ||
-      0
+      0,
   );
 
   const handleInputChange = (value: string) => {
@@ -128,7 +127,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
   const formatDisplayValue = (value: string) => {
     const [integerPart, decimalPart] = value.split(".");
     const formattedIntegerPart = new Intl.NumberFormat("en-US").format(
-      parseInt(integerPart || "0")
+      parseInt(integerPart || "0"),
     );
     return decimalPart
       ? `${formattedIntegerPart}.${decimalPart}`
@@ -151,13 +150,14 @@ export const AssetInput: React.FC<AssetInputProps> = ({
                 type="number"
                 step={step}
                 ref={inputRef}
+                onClick={() => setValue(name, "")}
                 value={
                   disableAmountInput
                     ? getValues()[name] || ""
                     : getValues()[name]
                 }
                 className="pr-20"
-                placeholder=""
+                placeholder="0"
                 onChange={(e) => handleInputChange(e.target.value)}
                 onKeyDown={(e) => {
                   if (disableSubmitOnEnter && e.key === "Enter") {
