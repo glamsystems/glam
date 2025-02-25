@@ -612,7 +612,7 @@ export default function Holdings() {
         <SheetTrigger asChild></SheetTrigger>
         <SheetContent
           side="right"
-          className="p-12 sm:max-w-none w-1/2 overflow-y-auto max-h-screen"
+          className="p-12 sm:max-w-none w-1/4 overflow-y-auto max-h-screen"
         >
           <SheetHeader>
             <SheetTitle>Deposit</SheetTitle>
