@@ -211,37 +211,6 @@ export default function Holdings() {
 
   const { resolvedTheme } = useTheme();
 
-  // Create QR code instance only when we have all required data
-  const qrCode = useMemo(() => {
-    if (!vault?.pubkey || !resolvedTheme) return null;
-
-    const isDark = resolvedTheme === "dark";
-    return new QRCodeStyling({
-      width: 200,
-      height: 200,
-      type: "svg",
-      data: `solana:${vault.pubkey.toBase58()}`,
-      dotsOptions: {
-        color: isDark ? "#ffffff" : "#000000",
-        type: "rounded",
-      },
-      cornersSquareOptions: {
-        type: "extra-rounded",
-        color: isDark ? "#ffffff" : "#000000",
-      },
-      cornersDotOptions: {
-        type: "dot",
-        color: isDark ? "#ffffff" : "#000000",
-      },
-      backgroundOptions: {
-        color: isDark ? "#000000" : "#ffffff",
-      },
-    });
-  }, [vault?.pubkey, resolvedTheme]);
-
-  // Separate state to track QR code rendering status
-  const [isQRCodeRendered, setIsQRCodeRendered] = useState(false);
-
   // Effect for handling QR code rendering and cleanup
   useEffect(() => {
     const holdings: Holding[] = [];
@@ -696,7 +665,6 @@ export default function Holdings() {
                       symbol: "SOL",
                       balance:
                         (userWallet?.balanceLamports || 0) / LAMPORTS_PER_SOL,
-                      key: "SOL",
                       address: "SOL",
                     },
                     ...(userWallet?.tokenAccounts || []).map((ta) => {
@@ -709,7 +677,6 @@ export default function Holdings() {
                         symbol:
                           tokenInfo?.symbol || address.slice(0, 6) + "...",
                         balance: ta.uiAmount,
-                        key: address,
                         address: address,
                       };
                     }),

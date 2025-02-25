@@ -1,4 +1,4 @@
-//components/DynamicForm.tsx
+"use client";
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
@@ -153,6 +153,16 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   const [enumValues, setEnumValues] = useState<
     Record<string, { label: string; value: string | number }[]>
   >({});
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Don't render anything until mounted
+  if (!isMounted) {
+    return null;
+  }
 
   // Filter fields based on tags and hidden status
   const filterFields = (fields: Record<string, SchemaField>) => {
