@@ -25,7 +25,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-// Import integration-specific settings components
+// Import integration-specific policies components
 import JupiterPolicies from "./policies/jupiter-policies";
 import DriftPolicies from "./policies/drift-policies";
 
@@ -70,7 +70,7 @@ export default function PageIntegrations() {
         return s.charAt(0).toLowerCase() + s.slice(1);
       };
 
-      const integration = lowercaseFirstLetter(allIntegrations[integ.id].name);
+      const integration = lowercaseFirstLetter(allIntegrations[integ.id].key);
 
       const action = enabled ? "disable" : "enable";
 
@@ -107,7 +107,7 @@ export default function PageIntegrations() {
           ),
         );
         // Force content refresh
-        setContentKey(prev => prev + 1);
+        setContentKey((prev) => prev + 1);
 
         toast({
           title: `Successfully ${action}d integration ${integration}`,
@@ -129,23 +129,25 @@ export default function PageIntegrations() {
   useEffect(() => {
     if (!activeGlamState?.address || !allGlamStates) return;
 
-    const state = allGlamStates.find(s => s.idStr === activeGlamState.address);
+    const state = allGlamStates.find(
+      (s) => s.idStr === activeGlamState.address,
+    );
     if (!state) return;
 
-    const enabledIntegrations = (state.integrations || []).map(
-      integ => Object.keys(integ)[0].toLowerCase()
+    const enabledIntegrations = (state.integrations || []).map((integ) =>
+      Object.keys(integ)[0].toLowerCase(),
     );
 
-    setIntegrations(prev => 
-      prev.map(integ => ({
+    setIntegrations((prev) =>
+      prev.map((integ) => ({
         ...integ,
-        enabled: enabledIntegrations.includes(integ.name.toLowerCase())
-      }))
+        enabled: enabledIntegrations.includes(integ.key.toLowerCase()),
+      })),
     );
   }, [allGlamStates, activeGlamState]);
 
-  // Function to render the settings component based on selected integration
-  const renderIntegrationSettings = useCallback(() => {
+  // Function to render the policies component based on selected integration
+  const renderIntegrationPolicies = useCallback(() => {
     if (selected < 0 || !integrations[selected]) return null;
 
     const integration = integrations[selected];
@@ -153,8 +155,8 @@ export default function PageIntegrations() {
       return <div></div>;
     }
 
-    // Return the appropriate settings component based on the integration name
-    switch (integration.name.toLowerCase()) {
+    // Return the appropriate policies component based on the integration name
+    switch (integration.key.toLowerCase()) {
       case "jupiterswap":
         return <JupiterPolicies key={contentKey} />;
       case "drift":
@@ -291,7 +293,9 @@ export default function PageIntegrations() {
             <Card className="w-full border-none shadow-none">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>{integrations[selected].name}</CardTitle>
+                  <CardTitle className="text-lg">
+                    {integrations[selected].name}
+                  </CardTitle>
                   <div className="flex items-center space-x-2">
                     <Switch
                       id={`integration-${integrations[selected].id}`}
@@ -313,16 +317,16 @@ export default function PageIntegrations() {
                 </div>
                 <CardDescription className="mt-2">
                   {integrations[selected].description ||
-                    "Configure this integration's settings below."}
+                    "Configure this integration's policies below."}
                 </CardDescription>
               </CardHeader>
-              <CardContent>{renderIntegrationSettings()}</CardContent>
+              <CardContent>{renderIntegrationPolicies()}</CardContent>
             </Card>
           )}
           {selected < 0 && (
             <div className="flex h-full items-center justify-center text-muted-foreground">
               Select an integration from the list to view and configure its
-              settings.
+              policies.
             </div>
           )}
         </div>

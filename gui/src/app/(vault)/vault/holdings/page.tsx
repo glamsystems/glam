@@ -68,11 +68,11 @@ const VaultQRCode = React.memo(({ pubkey }: { pubkey: string }) => {
         type: "rounded",
       },
       cornersSquareOptions: {
-        type: "extra-rounded",
+        type: "square",
         color: isDark ? "#ffffff" : "#000000",
       },
       cornersDotOptions: {
-        type: "dot",
+        type: "square",
         color: isDark ? "#ffffff" : "#000000",
       },
       backgroundOptions: {
@@ -612,12 +612,12 @@ export default function Holdings() {
         <SheetTrigger asChild></SheetTrigger>
         <SheetContent
           side="right"
-          className="p-12 sm:max-w-none w-1/2 overflow-y-auto max-h-screen"
+          className="p-12 sm:max-w-none w-1/4 overflow-y-auto max-h-screen"
         >
           <SheetHeader>
             <SheetTitle>Deposit</SheetTitle>
             <SheetDescription>
-              Deposit Solana or any SPL token to your vault.
+              Deposit Solana or any SPL token into your vault.
             </SheetDescription>
           </SheetHeader>
 
@@ -656,6 +656,7 @@ export default function Holdings() {
                   name="amount"
                   label="Amount"
                   balance={assetBalance}
+                  hideBalance={true}
                   className="flex-1"
                   selectedAsset={selectedAsset}
                   onSelectAsset={handleAssetSelect}
@@ -685,7 +686,7 @@ export default function Holdings() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="px-2 h-10 mt-1"
+                  className="px-2 h-10 mt-8"
                   onClick={() => {
                     console.log("Current balance:", assetBalance);
 
@@ -731,7 +732,7 @@ export default function Holdings() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="px-2 h-10 mt-1"
+                  className="px-2 h-10 mt-8"
                   onClick={() => {
                     if (selectedAsset === "SOL") {
                       const solBalance =

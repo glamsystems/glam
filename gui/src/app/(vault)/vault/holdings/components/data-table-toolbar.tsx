@@ -5,7 +5,7 @@ import {
   MixerHorizontalIcon,
   PlusIcon,
   ReloadIcon,
-  DoubleArrowDownIcon,
+  OpenInNewWindowIcon,
 } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
 
@@ -61,7 +61,7 @@ export function DataTableToolbar<TData>({
             className="h-8"
             onClick={onOpenDepositSheet}
           >
-            <DoubleArrowDownIcon className="mr-2 w-4 h-4" />
+            <OpenInNewWindowIcon className="mr-2 w-4 h-4" />
             Deposit
           </Button>
         </div>
