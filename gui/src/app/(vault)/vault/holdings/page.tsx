@@ -2,7 +2,11 @@
 
 import { DataTable } from "./components/data-table";
 import { columns } from "./components/columns";
-import React, { useEffect, useMemo, useState } from "react";
+import { AssetInput } from "@/components/AssetInput";
+import { useForm, FormProvider } from "react-hook-form";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { z } from "zod";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { PublicKey } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import PageContentWrapper from "@/components/PageContentWrapper";
@@ -20,7 +24,7 @@ import {
 } from "@/components/ui/sheet";
 import { ClickToCopyText } from "@/components/ClickToCopyText";
 import { Button } from "@/components/ui/button";
-import QRCodeSVG from "qrcode.react";
+import QRCodeStyling from "@solana/qr-code-styling";
 import { DangerCard } from "@/components/DangerCard";
 import { parseTxError } from "@/lib/error";
 import { toast } from "@/components/ui/use-toast";
@@ -39,8 +43,86 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { PencilIcon } from "lucide-react";
+import { useTheme } from "next-themes";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const SKELETON_ROW_COUNT = 5;
+
+const VaultQRCode = React.memo(({ pubkey }: { pubkey: string }) => {
+  const qrRef = useRef<HTMLDivElement>(null);
+  const { resolvedTheme } = useTheme();
+  const [isQRCodeRendered, setIsQRCodeRendered] = useState(false);
+
+  // Create QR code instance only when we have all required data
+  const qrCode = useMemo(() => {
+    if (!pubkey || !resolvedTheme) return null;
+
+    const isDark = resolvedTheme === "dark";
+    return new QRCodeStyling({
+      width: 200,
+      height: 200,
+      type: "svg",
+      data: `solana:${pubkey}`,
+      dotsOptions: {
+        color: isDark ? "#ffffff" : "#000000",
+        type: "rounded",
+      },
+      cornersSquareOptions: {
+        type: "extra-rounded",
+        color: isDark ? "#ffffff" : "#000000",
+      },
+      cornersDotOptions: {
+        type: "dot",
+        color: isDark ? "#ffffff" : "#000000",
+      },
+      backgroundOptions: {
+        color: isDark ? "#000000" : "#ffffff",
+      },
+    });
+  }, [pubkey, resolvedTheme]);
+
+  // Effect for handling QR code rendering and cleanup
+  useEffect(() => {
+    if (!qrRef.current || !qrCode) {
+      setIsQRCodeRendered(false);
+      return;
+    }
+
+    const renderQRCode = () => {
+      if (!qrRef.current) return;
+      qrRef.current.innerHTML = "";
+      qrCode.append(qrRef.current);
+      setIsQRCodeRendered(true);
+    };
+
+    // Initial render
+    const timeoutId = setTimeout(renderQRCode, 0);
+
+    // Cleanup function
+    return () => {
+      clearTimeout(timeoutId);
+      if (qrRef.current) {
+        qrRef.current.innerHTML = "";
+        setIsQRCodeRendered(false);
+      }
+    };
+  }, [qrCode]);
+
+  return (
+    <div className="relative bg-background rounded-lg p-4">
+      <div
+        ref={qrRef}
+        className="w-[200px] h-[200px] transition-opacity duration-200"
+        style={{ opacity: isQRCodeRendered ? 1 : 0 }}
+      />
+      {!isQRCodeRendered && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Skeleton className="w-[200px] h-[200px]" />
+        </div>
+      )}
+    </div>
+  );
+});
 
 export default function Holdings() {
   const {
@@ -53,6 +135,7 @@ export default function Holdings() {
     glamClient,
     setActiveGlamState,
     refresh,
+    userWallet,
   } = useGlam();
 
   const [showZeroBalances, setShowZeroBalances] = useState(true);
@@ -60,12 +143,50 @@ export default function Holdings() {
   const [txStatus, setTxStatus] = useState({ rename: false, close: false });
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const openSheet = () => setIsSheetOpen(true);
-  const closeSheet = () => setIsSheetOpen(false);
+  const [isDepositSheetOpen, setIsDepositSheetOpen] = useState(false);
+
+  const [selectedAsset, setSelectedAsset] = useState<string>("SOL");
+  const [assetBalance, setAssetBalance] = useState(
+    (userWallet?.balanceLamports || 0) / LAMPORTS_PER_SOL,
+  );
 
   useEffect(() => {
-    isSheetOpen || refresh();
-  }, [isSheetOpen]);
+    if (selectedAsset === "SOL") {
+      setAssetBalance((userWallet?.balanceLamports || 0) / LAMPORTS_PER_SOL);
+    }
+  }, [userWallet?.balanceLamports, selectedAsset]);
+
+  const depositForm = useForm({
+    defaultValues: {
+      amount: "",
+    },
+  });
+
+  const handleAssetSelect = (asset: string) => {
+    setSelectedAsset(asset);
+
+    // Get balance from user wallet
+    if (asset === "SOL") {
+      setAssetBalance((userWallet?.balanceLamports || 0) / LAMPORTS_PER_SOL);
+    } else {
+      const tokenAccount = (userWallet?.tokenAccounts || []).find(
+        (a) => a.mint.toBase58() === asset,
+      );
+      if (tokenAccount) {
+        setAssetBalance(tokenAccount.uiAmount);
+      } else {
+        setAssetBalance(0);
+      }
+    }
+  };
+  const openSheet = () => setIsSheetOpen(true);
+  const closeSheet = () => setIsSheetOpen(false);
+  const openDepositSheet = () => setIsDepositSheetOpen(true);
+  const closeDepositSheet = () => setIsDepositSheetOpen(false);
+
+  useEffect(() => {
+    isSheetOpen || isDepositSheetOpen || refresh();
+  }, [isSheetOpen, isDepositSheetOpen]);
 
   const createSkeletonHolding = (): Holding => ({
     name: "",
@@ -88,6 +209,9 @@ export default function Holdings() {
 
   const [tableData, setTableData] = useState<Holding[]>([]);
 
+  const { resolvedTheme } = useTheme();
+
+  // Effect for handling QR code rendering and cleanup
   useEffect(() => {
     const holdings: Holding[] = [];
     if (vault.uiAmount && vault.balanceLamports > 0) {
@@ -293,6 +417,7 @@ export default function Holdings() {
         showZeroBalances={showZeroBalances}
         setShowZeroBalances={setShowZeroBalances}
         onOpenSheet={openSheet}
+        onOpenDepositSheet={openDepositSheet}
       />
       <Sheet
         open={isSheetOpen}
@@ -315,7 +440,9 @@ export default function Holdings() {
 
           <div className="grid grid-cols-1 2xl:grid-cols-[200px_1fr] gap-6 py-6">
             <div className="flex flex-col items-center justify-start">
-              <QRCodeSVG value={`solana:vaultAddress`} level="M" size={200} />
+              {vault?.pubkey && (
+                <VaultQRCode pubkey={vault.pubkey.toBase58()} />
+              )}
               <div className="flex flex-row items-center justify-center mt-2">
                 <p className="text-sm text-muted-foreground text-center">
                   This is your Vault address.
@@ -384,18 +511,35 @@ export default function Holdings() {
               </div>
 
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Owner</p>
-                <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2 h-10">
-                  <ClickToCopyText text={ownerAddress} />
-                </div>
-              </div>
-
-              <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">Vault</p>
                 <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2 h-10">
                   <ClickToCopyText text={vaultAddress} />
                 </div>
               </div>
+
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="state">
+                  <AccordionTrigger className="py-2 text-muted-foreground font-normal">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm">Owner</p>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2">
+                        <ClickToCopyText text={ownerAddress} />
+                      </div>
+                      <div className="flex gap-2 items-center">
+                        <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">
+                          Assets sent to this account go to the Owner, not the
+                          Vault.
+                        </p>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="state">
@@ -456,6 +600,174 @@ export default function Holdings() {
               </AccordionContent>
             </AccordionItem>
           </Accordion>
+        </SheetContent>
+      </Sheet>
+
+      <Sheet
+        open={isDepositSheetOpen}
+        onOpenChange={(change) => {
+          setIsDepositSheetOpen(change);
+        }}
+      >
+        <SheetTrigger asChild></SheetTrigger>
+        <SheetContent
+          side="right"
+          className="p-12 sm:max-w-none w-1/2 overflow-y-auto max-h-screen"
+        >
+          <SheetHeader>
+            <SheetTitle>Deposit</SheetTitle>
+            <SheetDescription>
+              Deposit Solana or any SPL token to your vault.
+            </SheetDescription>
+          </SheetHeader>
+
+          <FormProvider {...depositForm}>
+            <form
+              className="flex flex-col space-y-6 py-6"
+              onSubmit={depositForm.handleSubmit(async (data) => {
+                if (!selectedAsset) {
+                  // TODO: Show error toast that asset must be selected
+                  return;
+                }
+
+                try {
+                  // TODO: Execute deposit transaction
+                  console.log("Deposit data:", {
+                    asset: selectedAsset,
+                    amount: data.amount,
+                  });
+
+                  // Close the sheet after successful deposit
+                  setIsDepositSheetOpen(false);
+                  // Reset form
+                  depositForm.reset();
+                  setSelectedAsset("SOL");
+                  setAssetBalance(
+                    (userWallet?.balanceLamports || 0) / LAMPORTS_PER_SOL,
+                  );
+                } catch (error) {
+                  console.error("Deposit failed:", error);
+                  // TODO: Show error toast
+                }
+              })}
+            >
+              <div className="flex items-center gap-2">
+                <AssetInput
+                  name="amount"
+                  label="Amount"
+                  balance={assetBalance}
+                  className="flex-1"
+                  selectedAsset={selectedAsset}
+                  onSelectAsset={handleAssetSelect}
+                  assets={[
+                    {
+                      name: "SOL",
+                      symbol: "SOL",
+                      balance:
+                        (userWallet?.balanceLamports || 0) / LAMPORTS_PER_SOL,
+                      address: "SOL",
+                    },
+                    ...(userWallet?.tokenAccounts || []).map((ta) => {
+                      const address = ta.mint.toBase58();
+                      const tokenInfo = jupTokenList?.find(
+                        (t) => t.address === address,
+                      );
+                      return {
+                        name: tokenInfo?.name || address,
+                        symbol:
+                          tokenInfo?.symbol || address.slice(0, 6) + "...",
+                        balance: ta.uiAmount,
+                        address: address,
+                      };
+                    }),
+                  ]}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="px-2 h-10 mt-1"
+                  onClick={() => {
+                    console.log("Current balance:", assetBalance);
+
+                    if (assetBalance <= 0.000001) {
+                      // Use small epsilon for floating point comparison
+                      toast({
+                        title: "No balance available",
+                        description: `You don't have any ${selectedAsset} balance to deposit.`,
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+
+                    if (selectedAsset === "SOL") {
+                      const availableAfterFees = Math.max(
+                        0,
+                        assetBalance - 0.05,
+                      );
+                      console.log("Available after fees:", availableAfterFees);
+
+                      if (availableAfterFees <= 0.000001) {
+                        toast({
+                          title: "Insufficient balance",
+                          description:
+                            "Need to keep at least 0.05 SOL for transaction fees.",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      const halfAmount = availableAfterFees / 2;
+                      console.log("Setting half amount:", halfAmount);
+                      depositForm.setValue("amount", halfAmount.toString());
+                    } else {
+                      const halfAmount = assetBalance / 2;
+                      console.log("Setting half amount:", halfAmount);
+                      depositForm.setValue("amount", halfAmount.toString());
+                    }
+                  }}
+                  type="button"
+                >
+                  Half
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="px-2 h-10 mt-1"
+                  onClick={() => {
+                    if (selectedAsset === "SOL") {
+                      const solBalance =
+                        (userWallet?.balanceLamports || 0) / LAMPORTS_PER_SOL;
+                      const maxAmount = Math.max(0, solBalance - 0.05);
+                      depositForm.setValue("amount", String(maxAmount));
+                    } else {
+                      depositForm.setValue("amount", String(assetBalance));
+                    }
+                  }}
+                  type="button"
+                >
+                  Max
+                </Button>
+              </div>
+
+              {selectedAsset === "SOL" &&
+                (userWallet?.balanceLamports || 0) / LAMPORTS_PER_SOL <
+                  0.05 && (
+                  <div className="text-sm text-red-500 mb-2">
+                    Insufficient SOL balance. We recommend leaving 0.05 SOL in
+                    your wallet for transaction fees.
+                  </div>
+                )}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={
+                  selectedAsset === "SOL" &&
+                  (userWallet?.balanceLamports || 0) / LAMPORTS_PER_SOL < 0.05
+                }
+              >
+                Deposit
+              </Button>
+            </form>
+          </FormProvider>
         </SheetContent>
       </Sheet>
     </PageContentWrapper>

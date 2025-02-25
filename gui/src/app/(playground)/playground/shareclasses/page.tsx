@@ -1,6 +1,6 @@
 "use client";
 
-import DynamicForm from "@/components/DynamicForm";
+import dynamic from 'next/dynamic';
 import schema from "../../../../data/glamFormSchema.json";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShareClassesList } from "./components/shareClasses-list";
@@ -27,6 +27,11 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import * as React from "react";
+
+const DynamicFormNoSSR = dynamic(
+  () => import('@/components/DynamicForm'),
+  { ssr: false }
+);
 
 export default function Products() {
   return (
@@ -128,7 +133,7 @@ export default function Products() {
           </Tabs>
         </div>
         <div className="w-full ml-16 pt-[26px]">
-          <DynamicForm
+          <DynamicFormNoSSR
             schema={schema}
             isNested={true}
             groups={["shareClass"]}

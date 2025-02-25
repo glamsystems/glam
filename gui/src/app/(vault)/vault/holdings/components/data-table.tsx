@@ -32,6 +32,7 @@ interface DataTableProps<TData, TValue> {
   showZeroBalances: boolean;
   setShowZeroBalances: (showZeroBalances: boolean) => void;
   onOpenSheet: () => void;
+  onOpenDepositSheet: () => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -40,6 +41,7 @@ export function DataTable<TData, TValue>({
   showZeroBalances,
   setShowZeroBalances,
   onOpenSheet,
+  onOpenDepositSheet,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -77,6 +79,7 @@ export function DataTable<TData, TValue>({
         showZeroBalances={showZeroBalances}
         setShowZeroBalances={setShowZeroBalances}
         onOpenSheet={onOpenSheet}
+        onOpenDepositSheet={onOpenDepositSheet}
       />
       <div className="rounded-md border">
         <Table>

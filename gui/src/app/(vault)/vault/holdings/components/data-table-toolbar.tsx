@@ -5,6 +5,7 @@ import {
   MixerHorizontalIcon,
   PlusIcon,
   ReloadIcon,
+  DoubleArrowDownIcon,
 } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
 
@@ -28,6 +29,7 @@ interface DataTableToolbarProps<TData> {
   showZeroBalances: boolean;
   setShowZeroBalances: (showZeroBalances: boolean) => void;
   onOpenSheet: () => void;
+  onOpenDepositSheet: () => void;
 }
 
 export function DataTableToolbar<TData>({
@@ -35,6 +37,7 @@ export function DataTableToolbar<TData>({
   showZeroBalances,
   setShowZeroBalances,
   onOpenSheet,
+  onOpenDepositSheet,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
   const { refresh } = useGlam();
@@ -42,15 +45,26 @@ export function DataTableToolbar<TData>({
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-2">
-        <Button
-          variant="default"
-          size="sm"
-          className="h-8"
-          onClick={onOpenSheet} // Trigger the Sheet opening
-        >
-          <QrCodeIcon className="mr-2 w-4 h-4" />
-          Details
-        </Button>
+        <div className="flex space-x-2">
+          <Button
+            variant="default"
+            size="sm"
+            className="h-8"
+            onClick={onOpenSheet}
+          >
+            <QrCodeIcon className="mr-2 w-4 h-4" />
+            Details
+          </Button>
+          <Button
+            variant="default"
+            size="sm"
+            className="h-8"
+            onClick={onOpenDepositSheet}
+          >
+            <DoubleArrowDownIcon className="mr-2 w-4 h-4" />
+            Deposit
+          </Button>
+        </div>
 
         <Input
           placeholder="Search holdings..."

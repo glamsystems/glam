@@ -99,6 +99,9 @@ importers:
       '@solana-developers/preset-react':
         specifier: ^3.0.1
         version: 3.0.1(@babel/traverse@7.26.9)(@swc-node/register@1.10.2(@swc/core@1.6.13(@swc/helpers@0.5.11))(@swc/types@0.1.9)(typescript@5.5.3))(@swc/core@1.6.13(@swc/helpers@0.5.11))(@types/node@18.19.39)(bufferutil@4.0.8)(esbuild@0.25.0)(js-yaml@4.1.0)(nx@19.4.1(@swc-node/register@1.10.2(@swc/core@1.6.13(@swc/helpers@0.5.11))(@swc/types@0.1.9)(typescript@5.5.3))(@swc/core@1.6.13(@swc/helpers@0.5.11)))(ts-node@10.9.2(@swc/core@1.6.13(@swc/helpers@0.5.11))(@types/node@18.19.39)(typescript@5.5.3))(typescript@5.5.3)(utf-8-validate@5.0.10)(webpack@5.92.1(@swc/core@1.6.13(@swc/helpers@0.5.11))(esbuild@0.25.0))
+      '@solana/qr-code-styling':
+        specifier: ^1.6.0
+        version: 1.6.0
       '@solana/spl-stake-pool':
         specifier: ^1.1.5
         version: 1.1.5(bufferutil@4.0.8)(fastestsmallesttextencoderdecoder@1.0.22)(utf-8-validate@5.0.10)
@@ -3945,6 +3948,9 @@ packages:
 
   '@solana/options@2.0.0-preview.2':
     resolution: {integrity: sha512-FAHqEeH0cVsUOTzjl5OfUBw2cyT8d5Oekx4xcn5hn+NyPAfQJgM3CEThzgRD6Q/4mM5pVUnND3oK/Mt1RzSE/w==}
+
+  '@solana/qr-code-styling@1.6.0':
+    resolution: {integrity: sha512-KyBmyFKPxQPhUkP0jjnxV2ZeF1R1guTD8Hrd0YvHvMnhtrNEoEEdv4Jpp4W0GN4qCGG2KYOM5d3TgoLD+CNf9Q==}
 
   '@solana/spl-memo@0.2.5':
     resolution: {integrity: sha512-0Zx5t3gAdcHlRTt2O3RgGlni1x7vV7Xq7j4z9q8kKOMgU03PyoTbFQ/BSYCcICHzkaqD7ZxAiaJ6dlXolg01oA==}
@@ -9894,6 +9900,9 @@ packages:
 
   qr.js@0.0.0:
     resolution: {integrity: sha512-c4iYnWb+k2E+vYpRimHqSu575b1/wKl4XFeJGpFmrJQz5I88v9aY2czh7s0w36srfCM1sXgC/xpoJz5dJfq+OQ==}
+
+  qrcode-generator@1.4.4:
+    resolution: {integrity: sha512-HM7yY8O2ilqhmULxGMpcHSF1EhJJ9yBj8gvDEuZ6M+KGJ0YY2hKpnXvRD+hZPLrDVck3ExIGhmPtSdcjC+guuw==}
 
   qrcode.react@1.0.1:
     resolution: {integrity: sha512-8d3Tackk8IRLXTo67Y+c1rpaiXjoz/Dd2HpcMdW//62/x8J1Nbho14Kh8x974t9prsLHN6XqVgcnRiBGFptQmg==}
@@ -17287,6 +17296,10 @@ snapshots:
     dependencies:
       '@solana/codecs-core': 2.0.0-preview.2
       '@solana/codecs-numbers': 2.0.0-preview.2
+
+  '@solana/qr-code-styling@1.6.0':
+    dependencies:
+      qrcode-generator: 1.4.4
 
   '@solana/spl-memo@0.2.5(@solana/web3.js@1.98.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
     dependencies:
@@ -24850,6 +24863,8 @@ snapshots:
       bitcoin-ops: 1.4.1
 
   qr.js@0.0.0: {}
+
+  qrcode-generator@1.4.4: {}
 
   qrcode.react@1.0.1(react@18.3.1):
     dependencies:

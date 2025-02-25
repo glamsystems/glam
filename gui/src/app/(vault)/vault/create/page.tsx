@@ -22,7 +22,7 @@ import { UpdateIcon } from "@radix-ui/react-icons";
 import PageContentWrapper from "@/components/PageContentWrapper";
 import { PublicKey } from "@solana/web3.js";
 import { useRouter } from "next/navigation";
-import { TokenMultiSelect } from "@/components/TokenMultiSelect";
+import { IntegrationMultiSelect } from "@/components/IntegrationMultiSelect";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { parseTxError } from "@/lib/error";
@@ -31,7 +31,7 @@ const createSchema = z.object({
   productName: z.string().min(3, {
     message: "Vault name must be at least 3 characters.",
   }),
-  assets: z.array(z.string()),
+  integrations: z.array(z.string()),
 });
 
 type CreateSchema = z.infer<typeof createSchema>;
@@ -47,7 +47,7 @@ export default function Create() {
     resolver: zodResolver(createSchema),
     defaultValues: {
       productName: "",
-      assets: [],
+      integrations: [],
     },
   });
 
@@ -68,7 +68,28 @@ export default function Create() {
         accountType: { vault: {} },
         name: values.productName,
         enabled: true,
-        assets: values.assets.map((address) => new PublicKey(address)),
+        integrations: values.integrations.map((name) => {
+          switch (name) {
+            case "Drift":
+              return { drift: {} };
+            case "SplStakePool":
+              return { splStakePool: {} };
+            case "SanctumStakePool":
+              return { sanctumStakePool: {} };
+            case "NativeStaking":
+              return { nativeStaking: {} };
+            case "Marinade":
+              return { marinade: {} };
+            case "JupiterSwap":
+              return { jupiterSwap: {} };
+            case "JupiterVote":
+              return { jupiterVote: {} };
+            case "KaminoLending":
+              return { kaminoLending: {} };
+            default:
+              throw new Error(`Unknown integration: ${name}`);
+          }
+        }),
       };
 
       const [txId, statePd] = await glamClient.state.createState(glamState);
@@ -77,12 +98,7 @@ export default function Create() {
       // Reset form
       form.reset({
         productName: "",
-        assets: [],
-      });
-
-      const symbols = values.assets.map((asset) => {
-        const jupToken = jupTokenList?.find((t) => t.address === asset);
-        return jupToken?.symbol;
+        integrations: [],
       });
 
       toast({
@@ -95,9 +111,9 @@ export default function Create() {
             <p>
               Transaction: <ExplorerLink path={`tx/${txId}`} label={txId} />
             </p>
-            <p>Assets:</p>
+            <p>Integrations:</p>
             <pre className="mt-2 text-xs">
-              {JSON.stringify(symbols, null, 2)}
+              {values.integrations.join(", ")}
             </pre>
           </div>
         ),
@@ -129,7 +145,7 @@ export default function Create() {
     event.preventDefault();
     const generatedName = ProductNameGen();
     form.setValue("productName", generatedName);
-    form.setValue("assets", []);
+    form.setValue("integrations", []);
   };
 
   const handleRefresh = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -169,21 +185,22 @@ export default function Create() {
                 <UpdateIcon />
               </Button>
             </div>
-            <div className="flex space-x-4 items-top">
+            <div className="mt-8">
               <FormField
                 control={form.control}
-                name="assets"
+                name="integrations"
                 render={({ field }) => (
-                  <FormItem className="w-full">
-                    <FormLabel>Vault Assets</FormLabel>
+                  <FormItem>
+                    <FormLabel>Integrations</FormLabel>
                     <FormControl>
-                      <TokenMultiSelect
+                      <IntegrationMultiSelect
                         selected={field.value}
                         onChange={field.onChange}
                       />
                     </FormControl>
                     <FormDescription>
-                      Select the assets allowed in the vault.
+                      Select the integrations you want to enable for your vault.
+                      This can be changed later.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

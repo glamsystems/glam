@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import PageContentWrapper from "@/components/PageContentWrapper";
 import {
   Form,
   FormControl,
@@ -16,9 +15,9 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TokenMultiSelect } from "@/components/TokenMultiSelect";
 import { useGlam } from "@glamsystems/glam-sdk/react";
-import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { parseTxError } from "@/lib/error";
+import { FormButtons } from "@/app/(vault)/vault/integrations/policies/components/form-buttons";
 import { PublicKey } from "@solana/web3.js";
 import { ExplorerLink } from "@/components/ExplorerLink";
 
@@ -28,27 +27,39 @@ const formSchema = z.object({
 
 type FormSchema = z.infer<typeof formSchema>;
 
-export default function VaultPoliciesPage() {
+export default function JupiterPoliciesPage() {
   const [isTxPending, setIsTxPending] = useState(false);
-
   const { activeGlamState, glamClient, allGlamStates } = useGlam();
   const state = allGlamStates?.find(
     (s) => s.idStr === activeGlamState?.address,
   );
 
   const form = useForm<FormSchema>({
+    mode: "onChange",
     resolver: zodResolver(formSchema),
     defaultValues: {
       assets: [],
     },
   });
 
+  // Add form change detection for browser navigation
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (form.formState.isDirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [form.formState.isDirty]);
+
   useEffect(() => {
     if (state) {
-      form.setValue(
-        "assets",
-        (state.assets || []).map((a) => a.toBase58()),
-      );
+      form.reset({
+        assets: (state.assets || []).map((a) => a.toBase58())
+      });
     }
   }, [state]);
 
@@ -60,13 +71,12 @@ export default function VaultPoliciesPage() {
     );
   };
 
-  const handleUpdateAssets = async (event: React.MouseEvent) => {
-    event.preventDefault();
+  const handleUpdateAssets = async (data: FormSchema) => {
     if (!state) {
       return;
     }
     const vaultAssets = (state.assets || []).map((a) => a.toBase58()).sort();
-    const formAssets = form.getValues().assets.sort();
+    const formAssets = data.assets.sort();
     if (
       (state.assets || []).length === formAssets.length &&
       vaultAssets.every((value, index) => value === formAssets[index])
@@ -81,16 +91,16 @@ export default function VaultPoliciesPage() {
     setIsTxPending(true);
     try {
       let updated = {
-        assets: form.getValues().assets.map((a) => new PublicKey(a)),
+        assets: data.assets.map((a) => new PublicKey(a)),
       };
       const txSig = await glamClient.state.updateState(state.id!, updated);
       toast({
-        title: "Assets allowlist updated",
+        title: "Jupiter assets allowlist updated",
         description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
       });
     } catch (error: any) {
       toast({
-        title: "Failed to update assets allowlist",
+        title: "Failed to update Jupiter assets allowlist",
         description: parseTxError(error),
         variant: "destructive",
       });
@@ -99,49 +109,37 @@ export default function VaultPoliciesPage() {
   };
 
   return (
-    <PageContentWrapper>
-      <div className="w-full xl:w-2/3 self-center">
-        <Form {...form}>
-          <div className="flex space-x-4 space-y-4 items-top flex-col ">
-            <FormField
-              control={form.control}
-              name="assets"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Vault Assets</FormLabel>
-                  <FormControl>
-                    <TokenMultiSelect
-                      selected={field.value}
-                      onChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Select the assets allowed in the vault.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="flex space-x-4">
-              <Button
-                className="w-1/2"
-                variant="ghost"
-                onClick={(event) => handleReset(event)}
-              >
-                Reset
-              </Button>
-              <Button
-                className="w-1/2"
-                type="submit"
-                loading={isTxPending}
-                onClick={(event) => handleUpdateAssets(event)}
-              >
-                Submit
-              </Button>
-            </div>
-          </div>
-        </Form>
-      </div>
-    </PageContentWrapper>
+    <form onSubmit={form.handleSubmit(handleUpdateAssets)} className="flex flex-col space-y-4">
+      <Form {...form}>
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="assets"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Allowed Assets</FormLabel>
+                <FormControl>
+                  <TokenMultiSelect
+                    selected={field.value}
+                    onChange={field.onChange}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Select the assets allowed for Jupiter swaps.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      </Form>
+      <FormButtons
+        integrationName="Jupiter"
+        onReset={handleReset}
+        isLoading={isTxPending}
+        isDirty={form.formState.isDirty}
+        onSubmit={form.handleSubmit(handleUpdateAssets)}
+      />
+    </form>
   );
 }
