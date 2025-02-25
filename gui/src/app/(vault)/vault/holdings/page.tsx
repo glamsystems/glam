@@ -68,11 +68,11 @@ const VaultQRCode = React.memo(({ pubkey }: { pubkey: string }) => {
         type: "rounded",
       },
       cornersSquareOptions: {
-        type: "extra-rounded",
+        type: "square",
         color: isDark ? "#ffffff" : "#000000",
       },
       cornersDotOptions: {
-        type: "dot",
+        type: "square",
         color: isDark ? "#ffffff" : "#000000",
       },
       backgroundOptions: {
