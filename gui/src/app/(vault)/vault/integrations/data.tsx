@@ -1,9 +1,29 @@
 import { GlamIntegrations } from "@glamsystems/glam-sdk";
 
 export interface IntegrationMetadata {
+  name?: string;
   description: string;
   labels: string[];
   imagePath: string;
+}
+
+export function formatIntegrationName(
+  key: string,
+  metadata?: IntegrationMetadata,
+): string {
+  if (metadata?.name) return metadata.name;
+
+  // Find sequences of capital letters (acronyms)
+  const parts = key.split(/(?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z])/)
+    .map(part => {
+      // If the part is all uppercase and longer than one letter, treat it as an acronym
+      if (part.length > 1 && part === part.toUpperCase()) {
+        return part; // Keep acronyms together
+      }
+      return part.charAt(0).toUpperCase() + part.slice(1);
+    });
+  
+  return parts.join(' ');
 }
 
 export const metadata: { [key: string]: IntegrationMetadata } = {
@@ -13,6 +33,7 @@ export const metadata: { [key: string]: IntegrationMetadata } = {
     imagePath: "/images/integrations/drift.svg",
   },
   SplStakePool: {
+    name: "SPL Stake Pool",
     description:
       "Stake SOL with the SPL liquid staking protocol and receive liquid staked tokens.",
     labels: ["Staking", "LST"],
@@ -37,12 +58,14 @@ export const metadata: { [key: string]: IntegrationMetadata } = {
     imagePath: "/images/integrations/marinade.svg",
   },
   JupiterSwap: {
+    name: "Jupiter Swap",
     description:
       "Swap tokens using Jupiter, a DEX aggregator with access to multiple liquidity sources.",
     labels: ["DEX"],
     imagePath: "/images/integrations/jupiter.svg",
   },
   JupiterVote: {
+    name: "Jupiter Governance",
     description:
       "Participate in Jupiter DAO governance by voting on proposals.",
     labels: ["Governance"],
@@ -58,7 +81,8 @@ export const metadata: { [key: string]: IntegrationMetadata } = {
 
 export const allIntegrations = GlamIntegrations.sort().map((integ, index) => ({
   id: index,
-  name: integ,
+  name: formatIntegrationName(integ, metadata[integ]),
+  key: integ, // Keep original key for integration identification
   enabled: false,
   comingSoon: false,
   ...(metadata[integ] || {}),
@@ -66,7 +90,8 @@ export const allIntegrations = GlamIntegrations.sort().map((integ, index) => ({
 // TODO: move to metadata list once program is ready
 allIntegrations.push({
   id: allIntegrations.length,
-  name: "MeteoraDLMM",
+  name: "Meteora DLMM",
+  key: "MeteoraDLMM",
   enabled: false,
   description:
     "Trade tokens on Meteora's Dynamic Liquidity Market Maker (DLMM).",

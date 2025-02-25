@@ -70,7 +70,7 @@ export default function PageIntegrations() {
         return s.charAt(0).toLowerCase() + s.slice(1);
       };
 
-      const integration = lowercaseFirstLetter(allIntegrations[integ.id].name);
+      const integration = lowercaseFirstLetter(allIntegrations[integ.id].key);
 
       const action = enabled ? "disable" : "enable";
 
@@ -141,7 +141,7 @@ export default function PageIntegrations() {
     setIntegrations((prev) =>
       prev.map((integ) => ({
         ...integ,
-        enabled: enabledIntegrations.includes(integ.name.toLowerCase()),
+        enabled: enabledIntegrations.includes(integ.key.toLowerCase()),
       })),
     );
   }, [allGlamStates, activeGlamState]);
@@ -156,7 +156,7 @@ export default function PageIntegrations() {
     }
 
     // Return the appropriate policies component based on the integration name
-    switch (integration.name.toLowerCase()) {
+    switch (integration.key.toLowerCase()) {
       case "jupiterswap":
         return <JupiterPolicies key={contentKey} />;
       case "drift":
