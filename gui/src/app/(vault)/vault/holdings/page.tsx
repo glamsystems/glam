@@ -617,7 +617,7 @@ export default function Holdings() {
           <SheetHeader>
             <SheetTitle>Deposit</SheetTitle>
             <SheetDescription>
-              Deposit Solana or any SPL token to your vault.
+              Deposit Solana or any SPL token into your vault.
             </SheetDescription>
           </SheetHeader>
 
