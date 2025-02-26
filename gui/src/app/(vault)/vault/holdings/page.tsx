@@ -30,6 +30,10 @@ import { parseTxError } from "@/lib/error";
 import { toast } from "@/components/ui/use-toast";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import {
+  getPriorityFeeMicroLamports,
+  getMaxCapFeeLamports,
+} from "@/app/(shared)/settings/priorityfee";
+import {
   Accordion,
   AccordionContent,
   AccordionItem,
@@ -45,6 +49,8 @@ import { Input } from "@/components/ui/input";
 import { PencilIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
+import { TransferForm } from "./components/transfer-form";
 
 const SKELETON_ROW_COUNT = 5;
 
@@ -144,6 +150,8 @@ export default function Holdings() {
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isDepositSheetOpen, setIsDepositSheetOpen] = useState(false);
+  const [isWithdrawSheetOpen, setIsWithdrawSheetOpen] = useState(false);
+  const [isTransferSheetOpen, setIsTransferSheetOpen] = useState(false);
 
   const [selectedAsset, setSelectedAsset] = useState<string>("SOL");
   const [assetBalance, setAssetBalance] = useState(
@@ -183,10 +191,23 @@ export default function Holdings() {
   const closeSheet = () => setIsSheetOpen(false);
   const openDepositSheet = () => setIsDepositSheetOpen(true);
   const closeDepositSheet = () => setIsDepositSheetOpen(false);
+  const openWithdrawSheet = () => setIsWithdrawSheetOpen(true);
+  const closeWithdrawSheet = () => setIsWithdrawSheetOpen(false);
+  const openTransferSheet = () => setIsTransferSheetOpen(true);
+  const closeTransferSheet = () => setIsTransferSheetOpen(false);
 
   useEffect(() => {
-    isSheetOpen || isDepositSheetOpen || refresh();
-  }, [isSheetOpen, isDepositSheetOpen]);
+    isSheetOpen ||
+      isDepositSheetOpen ||
+      isWithdrawSheetOpen ||
+      isTransferSheetOpen ||
+      refresh();
+  }, [
+    isSheetOpen,
+    isDepositSheetOpen,
+    isWithdrawSheetOpen,
+    isTransferSheetOpen,
+  ]);
 
   const createSkeletonHolding = (): Holding => ({
     name: "",
@@ -418,6 +439,8 @@ export default function Holdings() {
         setShowZeroBalances={setShowZeroBalances}
         onOpenSheet={openSheet}
         onOpenDepositSheet={openDepositSheet}
+        onOpenWithdrawSheet={openWithdrawSheet}
+        onOpenTransferSheet={openTransferSheet}
       />
       <Sheet
         open={isSheetOpen}
@@ -769,6 +792,267 @@ export default function Holdings() {
               </Button>
             </form>
           </FormProvider>
+        </SheetContent>
+      </Sheet>
+
+      <Sheet
+        open={isWithdrawSheetOpen}
+        onOpenChange={(change) => {
+          setIsWithdrawSheetOpen(change);
+        }}
+      >
+        <SheetTrigger asChild></SheetTrigger>
+        <SheetContent
+          side="right"
+          className="p-12 sm:max-w-none w-1/4 overflow-y-auto max-h-screen"
+        >
+          <SheetHeader>
+            <SheetTitle>Withdraw</SheetTitle>
+            <SheetDescription>
+              Withdraw Solana or any SPL token from your vault.
+            </SheetDescription>
+          </SheetHeader>
+
+          <FormProvider {...depositForm}>
+            <form
+              className="flex flex-col space-y-6 py-6"
+              onSubmit={depositForm.handleSubmit(async (data) => {
+                if (!selectedAsset) {
+                  toast({
+                    title: "Asset not selected",
+                    description: "Please select an asset to withdraw",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+
+                try {
+                  if (!activeGlamState?.pubkey || !glamClient) {
+                    toast({
+                      title: "Vault not available",
+                      description:
+                        "Please ensure your vault is properly set up",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+
+                  // Find the asset in the vault
+                  const asset = tableData.find(
+                    (item) =>
+                      (item.symbol === "SOL" && selectedAsset === "SOL") ||
+                      item.mint === selectedAsset,
+                  );
+
+                  if (!asset) {
+                    toast({
+                      title: "Asset not found in vault",
+                      description:
+                        "The selected asset was not found in your vault",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+
+                  const amount = parseFloat(data.amount);
+                  if (isNaN(amount) || amount <= 0) {
+                    toast({
+                      title: "Invalid amount",
+                      description: "Please enter a valid amount to withdraw",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+
+                  // Calculate amount in base units
+                  const amountBaseUnits = new BN(
+                    Math.floor(amount * 10 ** asset.decimals),
+                  );
+
+                  // Execute withdraw transaction
+                  const txId = await glamClient.state.withdraw(
+                    activeGlamState.pubkey,
+                    new PublicKey(
+                      selectedAsset === "SOL" ? WSOL.toBase58() : selectedAsset,
+                    ),
+                    amountBaseUnits,
+                    {
+                      getPriorityFeeMicroLamports,
+                      maxFeeLamports: getMaxCapFeeLamports(),
+                    },
+                  );
+
+                  toast({
+                    title: `Withdrew ${amount} ${selectedAsset === "SOL" ? "SOL" : asset.symbol}`,
+                    description: (
+                      <ExplorerLink path={`tx/${txId}`} label={txId} />
+                    ),
+                  });
+
+                  // Close the sheet after successful withdrawal
+                  setIsWithdrawSheetOpen(false);
+                  // Reset form
+                  depositForm.reset();
+                  setSelectedAsset("SOL");
+                } catch (error) {
+                  console.error("Withdrawal failed:", error);
+                  toast({
+                    title: "Withdrawal failed",
+                    description: parseTxError(error),
+                    variant: "destructive",
+                  });
+                }
+              })}
+            >
+              <div className="flex items-center gap-2">
+                <AssetInput
+                  name="amount"
+                  label="Amount"
+                  balance={(() => {
+                    // Get balance from vault based on selected asset
+                    if (selectedAsset === "SOL") {
+                      return vault?.uiAmount || 0;
+                    } else {
+                      const tokenAccount = (vault?.tokenAccounts || []).find(
+                        (a) => a.mint.toBase58() === selectedAsset,
+                      );
+                      return tokenAccount ? tokenAccount.uiAmount : 0;
+                    }
+                  })()}
+                  hideBalance={true}
+                  className="flex-1"
+                  selectedAsset={selectedAsset}
+                  onSelectAsset={(asset) => {
+                    setSelectedAsset(asset);
+                    // Reset amount when changing assets
+                    depositForm.setValue("amount", "");
+                  }}
+                  assets={[
+                    // Include SOL if vault holds SOL
+                    ...(vault.uiAmount > 0
+                      ? [
+                          {
+                            name: "Solana",
+                            symbol: "SOL",
+                            balance: vault.uiAmount || 0,
+                            address: "SOL",
+                          },
+                        ]
+                      : []),
+                    // Include all SPL tokens in vault
+                    ...(vault?.tokenAccounts || []).map((ta) => {
+                      const address = ta.mint.toBase58();
+                      const tokenInfo = jupTokenList?.find(
+                        (t) => t.address === address,
+                      );
+                      return {
+                        name: tokenInfo?.name || address,
+                        symbol:
+                          tokenInfo?.symbol || address.slice(0, 6) + "...",
+                        balance: ta.uiAmount,
+                        address: address,
+                      };
+                    }),
+                  ]}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="px-2 h-10 mt-8"
+                  onClick={() => {
+                    const currentBalance = (() => {
+                      if (selectedAsset === "SOL") {
+                        return vault?.uiAmount || 0;
+                      } else {
+                        const tokenAccount = (vault?.tokenAccounts || []).find(
+                          (a) => a.mint.toBase58() === selectedAsset,
+                        );
+                        return tokenAccount ? tokenAccount.uiAmount : 0;
+                      }
+                    })();
+
+                    if (currentBalance <= 0) {
+                      toast({
+                        title: "No balance available",
+                        description: `You don't have any ${selectedAsset} balance in your vault.`,
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+
+                    const halfAmount = currentBalance / 2;
+                    depositForm.setValue("amount", halfAmount.toString());
+                  }}
+                  type="button"
+                >
+                  Half
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="px-2 h-10 mt-8"
+                  onClick={() => {
+                    const currentBalance = (() => {
+                      if (selectedAsset === "SOL") {
+                        return vault?.uiAmount || 0;
+                      } else {
+                        const tokenAccount = (vault?.tokenAccounts || []).find(
+                          (a) => a.mint.toBase58() === selectedAsset,
+                        );
+                        return tokenAccount ? tokenAccount.uiAmount : 0;
+                      }
+                    })();
+
+                    if (currentBalance <= 0) {
+                      toast({
+                        title: "No balance available",
+                        description: `You don't have any ${selectedAsset} balance in your vault.`,
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+
+                    depositForm.setValue("amount", currentBalance.toString());
+                  }}
+                  type="button"
+                >
+                  Max
+                </Button>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={!vault || vault.uiAmount === 0}
+              >
+                Withdraw
+              </Button>
+            </form>
+          </FormProvider>
+        </SheetContent>
+      </Sheet>
+
+      <Sheet
+        open={isTransferSheetOpen}
+        onOpenChange={(change) => {
+          setIsTransferSheetOpen(change);
+        }}
+      >
+        <SheetTrigger asChild></SheetTrigger>
+        <SheetContent
+          side="right"
+          className="p-12 sm:max-w-none w-2/5 overflow-y-auto max-h-screen"
+        >
+          <SheetHeader>
+            <SheetTitle>Transfer</SheetTitle>
+            <SheetDescription>
+              Transfer assets between your vault, Drift, and owner.
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="py-6">
+            <TransferForm onClose={() => setIsTransferSheetOpen(false)} />
+          </div>
         </SheetContent>
       </Sheet>
     </PageContentWrapper>

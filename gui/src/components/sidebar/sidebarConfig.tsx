@@ -250,12 +250,6 @@ const ALL_NAV_ITEMS = {
     shortcut: "",
     Icon: ShuffleIcon,
   },
-  transfer: {
-    route: "/vault/transfer",
-    text: "Transfer",
-    shortcut: "",
-    Icon: ExitIcon,
-  },
   vault: {
     route: "/vault",
     text: "Vault",
@@ -313,7 +307,7 @@ const BASE_STRUCTURES = {
   VAULT: [
     {
       group: "Operations",
-      itemKeys: ["holdings", "stake", "trade", "transfer", "wrap"],
+      itemKeys: ["holdings", "stake", "trade", "wrap"],
     },
     {
       group: "Configuration",
