@@ -1,0 +1,62 @@
+{
+  "program_id": "GovaE4iu227srtG2s3tZzB4RmWBzw8sTwrCLZz7kN7rY",
+  "instructions": [
+    {
+      "src_ix_name": "new_vote",
+      "src_discriminator": [
+        163,
+        108,
+        157,
+        189,
+        140,
+        80,
+        13,
+        143
+      ],
+      "dst_ix_name": "jupiter_gov_new_vote",
+      "dst_discriminator": [
+        235,
+        179,
+        170,
+        64,
+        64,
+        57,
+        17,
+        69
+      ],
+      "dynamic_accounts": [
+        {
+          "name": "glam_state",
+          "index": 0,
+          "writable": false,
+          "signer": false
+        },
+        {
+          "name": "glam_vault",
+          "index": 1,
+          "writable": false,
+          "signer": false
+        },
+        {
+          "name": "glam_signer",
+          "index": 2,
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "index": 3,
+          "writable": false,
+          "signer": false
+        }
+      ],
+      "static_accounts": [],
+      "index_map": [
+        4,
+        5,
+        6,
+        7
+      ]
+    }
+  ]
+}

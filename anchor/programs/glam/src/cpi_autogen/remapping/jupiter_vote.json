@@ -1,0 +1,418 @@
+{
+  "program_id": "voTpe3tHQ7AjQHMapgSue2HJFAh2cGsdokqN3XqmVSj",
+  "instructions": [
+    {
+      "src_ix_name": "new_escrow",
+      "src_discriminator": [
+        216,
+        182,
+        143,
+        11,
+        220,
+        38,
+        86,
+        185
+      ],
+      "dst_ix_name": "jupiter_vote_new_escrow",
+      "dst_discriminator": [
+        255,
+        87,
+        157,
+        219,
+        61,
+        178,
+        144,
+        159
+      ],
+      "dynamic_accounts": [
+        {
+          "name": "glam_state",
+          "index": 0,
+          "writable": false,
+          "signer": false
+        },
+        {
+          "name": "glam_vault",
+          "index": 1,
+          "writable": false,
+          "signer": false
+        },
+        {
+          "name": "glam_signer",
+          "index": 2,
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "index": 3,
+          "writable": false,
+          "signer": false
+        }
+      ],
+      "static_accounts": [],
+      "index_map": [
+        4,
+        5,
+        -1,
+        6,
+        7
+      ]
+    },
+    {
+      "src_ix_name": "increase_locked_amount",
+      "src_discriminator": [
+        5,
+        168,
+        118,
+        53,
+        72,
+        46,
+        203,
+        146
+      ],
+      "dst_ix_name": "jupiter_vote_increase_locked_amount",
+      "dst_discriminator": [
+        225,
+        38,
+        201,
+        123,
+        148,
+        23,
+        47,
+        128
+      ],
+      "dynamic_accounts": [
+        {
+          "name": "glam_state",
+          "index": 0,
+          "writable": false,
+          "signer": false
+        },
+        {
+          "name": "glam_vault",
+          "index": 1,
+          "writable": true,
+          "signer": false
+        },
+        {
+          "name": "glam_signer",
+          "index": 2,
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "index": 3,
+          "writable": false,
+          "signer": false
+        }
+      ],
+      "static_accounts": [],
+      "index_map": [
+        4,
+        5,
+        6,
+        -1,
+        7,
+        8
+      ]
+    },
+    {
+      "src_ix_name": "withdraw",
+      "src_discriminator": [
+        183,
+        18,
+        70,
+        156,
+        148,
+        109,
+        161,
+        34
+      ],
+      "dst_ix_name": "jupiter_vote_withdraw",
+      "dst_discriminator": [
+        195,
+        172,
+        184,
+        195,
+        23,
+        178,
+        145,
+        191
+      ],
+      "dynamic_accounts": [
+        {
+          "name": "glam_state",
+          "index": 0,
+          "writable": false,
+          "signer": false
+        },
+        {
+          "name": "glam_vault",
+          "index": 1,
+          "writable": true,
+          "signer": false
+        },
+        {
+          "name": "glam_signer",
+          "index": 2,
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "index": 3,
+          "writable": false,
+          "signer": false
+        }
+      ],
+      "static_accounts": [],
+      "index_map": [
+        4,
+        5,
+        -1,
+        6,
+        7,
+        -1,
+        8
+      ]
+    },
+    {
+      "src_ix_name": "cast_vote",
+      "src_discriminator": [
+        20,
+        212,
+        15,
+        189,
+        69,
+        180,
+        69,
+        151
+      ],
+      "dst_ix_name": "jupiter_vote_cast_vote",
+      "dst_discriminator": [
+        11,
+        197,
+        234,
+        57,
+        164,
+        74,
+        181,
+        239
+      ],
+      "dynamic_accounts": [
+        {
+          "name": "glam_state",
+          "index": 0,
+          "writable": false,
+          "signer": false
+        },
+        {
+          "name": "glam_vault",
+          "index": 1,
+          "writable": false,
+          "signer": false
+        },
+        {
+          "name": "glam_signer",
+          "index": 2,
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "index": 3,
+          "writable": false,
+          "signer": false
+        }
+      ],
+      "static_accounts": [],
+      "index_map": [
+        4,
+        5,
+        -1,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    {
+      "src_ix_name": "open_partial_unstaking",
+      "src_discriminator": [
+        201,
+        137,
+        207,
+        175,
+        79,
+        95,
+        220,
+        27
+      ],
+      "dst_ix_name": "jupiter_vote_open_partial_unstaking",
+      "dst_discriminator": [
+        84,
+        7,
+        113,
+        220,
+        212,
+        63,
+        237,
+        218
+      ],
+      "dynamic_accounts": [
+        {
+          "name": "glam_state",
+          "index": 0,
+          "writable": false,
+          "signer": false
+        },
+        {
+          "name": "glam_vault",
+          "index": 1,
+          "writable": false,
+          "signer": false
+        },
+        {
+          "name": "glam_signer",
+          "index": 2,
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "index": 3,
+          "writable": false,
+          "signer": false
+        }
+      ],
+      "static_accounts": [],
+      "index_map": [
+        4,
+        5,
+        6,
+        -1,
+        7
+      ]
+    },
+    {
+      "src_ix_name": "merge_partial_unstaking",
+      "src_discriminator": [
+        190,
+        154,
+        163,
+        153,
+        168,
+        115,
+        40,
+        173
+      ],
+      "dst_ix_name": "jupiter_vote_merge_partial_unstaking",
+      "dst_discriminator": [
+        93,
+        226,
+        122,
+        120,
+        130,
+        35,
+        189,
+        208
+      ],
+      "dynamic_accounts": [
+        {
+          "name": "glam_state",
+          "index": 0,
+          "writable": false,
+          "signer": false
+        },
+        {
+          "name": "glam_vault",
+          "index": 1,
+          "writable": false,
+          "signer": false
+        },
+        {
+          "name": "glam_signer",
+          "index": 2,
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "index": 3,
+          "writable": false,
+          "signer": false
+        }
+      ],
+      "static_accounts": [],
+      "index_map": [
+        4,
+        5,
+        6,
+        -1
+      ]
+    },
+    {
+      "src_ix_name": "withdraw_partial_unstaking",
+      "src_discriminator": [
+        201,
+        202,
+        137,
+        124,
+        2,
+        3,
+        245,
+        87
+      ],
+      "dst_ix_name": "jupiter_vote_withdraw_partial_unstaking",
+      "dst_discriminator": [
+        109,
+        98,
+        65,
+        252,
+        184,
+        0,
+        216,
+        240
+      ],
+      "dynamic_accounts": [
+        {
+          "name": "glam_state",
+          "index": 0,
+          "writable": false,
+          "signer": false
+        },
+        {
+          "name": "glam_vault",
+          "index": 1,
+          "writable": true,
+          "signer": false
+        },
+        {
+          "name": "glam_signer",
+          "index": 2,
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "index": 3,
+          "writable": false,
+          "signer": false
+        }
+      ],
+      "static_accounts": [],
+      "index_map": [
+        4,
+        5,
+        6,
+        -1,
+        7,
+        8,
+        -1,
+        9
+      ]
+    }
+  ]
+}
