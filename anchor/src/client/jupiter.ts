@@ -199,7 +199,10 @@ export class JupiterSwapClient {
       .preInstructions(preInstructions)
       .transaction();
 
-    return this.base.intoVersionedTransaction(tx, { lookupTables, ...txOptions });
+    return this.base.intoVersionedTransaction(tx, {
+      lookupTables,
+      ...txOptions,
+    });
   }
 
   public async setMaxSwapSlippageTx(
@@ -528,6 +531,7 @@ export class JupiterVoteClient {
         governor,
         governProgram: GOVERNANCE_PROGRAM_ID,
       })
+      .preInstructions(preInstructions)
       .transaction();
     const vTx = await this.base.intoVersionedTransaction(tx, { ...txOptions });
     return await this.base.sendAndConfirm(vTx);
