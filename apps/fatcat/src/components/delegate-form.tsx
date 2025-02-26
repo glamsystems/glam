@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -42,7 +42,8 @@ export default function DelegateForm() {
 
   const [stakeAmount, setStakeAmount] = useState<string>("0");
   const [unstakeItems, setUnstakeItems] = useState<UnstakeItem[]>([]);
-  const [nowSec, setNowSec] = useState(Date.now() / 1000);
+  const nowSecRef = useRef<number>(Date.now() / 1000);
+  const [nowSec, setNowSec] = useState(nowSecRef.current);
   const [walletBalance, setWalletBalance] = useState<string>("0");
   const [isLoadingBalance, setIsLoadingBalance] = useState(true);
   const [isLoadingVotingPower, setIsLoadingVotingPower] = useState(true);
@@ -63,37 +64,33 @@ export default function DelegateForm() {
         ]);
       }
     }
-  }, [escrowData]);
+  }, [escrowData, nowSec]);
+
+  const fetchData = useCallback(async () => {
+    if (!wallet || !client) {
+      return;
+    }
+
+    try {
+      const { vault } = client.getFatcatState();
+      const escrow = client.jupiterVote.getEscrowPda(vault);
+      const escrowData = await client.getEscrowData(escrow);
+      setEscrowData(escrowData ? escrowData : null);
+
+      const { votingPower, jupBalance } = await client.fetchBalances();
+
+      console.log("Fetched balances:", { votingPower, jupBalance });
+      setWalletBalance(jupBalance);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoadingVotingPower(false);
+      setIsLoadingBalance(false);
+    }
+  }, [wallet, client]);
 
   useEffect(() => {
     let mounted = true;
-
-    const fetchData = async () => {
-      if (!wallet || !client) {
-        return;
-      }
-
-      try {
-        const { vault } = client.getFatcatState();
-        const escrow = client.jupiterVote.getEscrowPda(vault);
-        const escrowData = await client.getEscrowData(escrow);
-        setEscrowData(escrowData ? escrowData : null);
-
-        const { votingPower, jupBalance } = await client.fetchBalances();
-
-        if (mounted) {
-          console.log("Fetched balances:", { votingPower, jupBalance });
-          setWalletBalance(jupBalance);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        if (mounted) {
-          setIsLoadingVotingPower(false);
-          setIsLoadingBalance(false);
-        }
-      }
-    };
 
     setIsLoadingVotingPower(true);
     setIsLoadingBalance(true);
@@ -102,30 +99,43 @@ export default function DelegateForm() {
     return () => {
       mounted = false;
     };
-  }, [wallet, client]);
+  }, [fetchData]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setNowSec(Math.floor(Date.now() / 1000));
-    }, 1000);
+    // Use requestAnimationFrame for smoother updates
+    let animationFrameId: number;
+    let lastUpdateTime = 0;
+    const UPDATE_INTERVAL = 1000; // Still update UI every second
 
-    // Cleanup interval on unmount
-    return () => clearInterval(interval);
-  }, []); // Empty dependency array since we don't depend on any props/state
+    const updateTime = (timestamp: number) => {
+      if (timestamp - lastUpdateTime >= UPDATE_INTERVAL) {
+        nowSecRef.current = Date.now() / 1000;
+        setNowSec(nowSecRef.current);
+        lastUpdateTime = timestamp;
+      }
+      animationFrameId = requestAnimationFrame(updateTime);
+    };
 
-  const handleMaxClick = (type: "stake" | "unstake") => {
+    animationFrameId = requestAnimationFrame(updateTime);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  const handleMaxClick = useCallback(() => {
     const maxAmount = parseFloat(walletBalance) / 1_000_000;
     console.log("Max amount:", maxAmount);
     setStakeAmount(maxAmount.toString());
-  };
+  }, [walletBalance]);
 
-  const handleHalfClick = (type: "stake" | "unstake") => {
+  const handleHalfClick = useCallback(() => {
     const halfAmount = Math.ceil(parseFloat(walletBalance) / 2) / 1_000_000;
     console.log("Half amount:", halfAmount);
     setStakeAmount(halfAmount.toString());
-  };
+  }, [walletBalance]);
 
-  const onTxSuccess = async () => {
+  const onTxSuccess = useCallback(async () => {
     // Refresh data after successful transaction
     if (client) {
       const { jupBalance } = await client.fetchBalances();
@@ -139,43 +149,46 @@ export default function DelegateForm() {
       console.log("[onTxSuccess] fetched wallet jup balances:", jupBalance);
       console.log("[onTxSuccess] fetched escrow data:", escrowData);
     }
-  };
+  }, [client]);
 
-  const handleTx = async (
-    action: string,
-    tx: Promise<string>,
-    callbacks?: {
-      onSuccess?: () => Promise<void>;
-      onError?: (error: any) => void;
+  const handleTx = useCallback(
+    async (
+      action: string,
+      tx: Promise<string>,
+      callbacks?: {
+        onSuccess?: () => Promise<void>;
+        onError?: (error: any) => void;
+      },
+    ) => {
+      setIsTxPending(true);
+      try {
+        const txId = await tx;
+        console.log(`${action} succeeded: ${txId}`);
+        toast({
+          title: `${action} succeeded`,
+          description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+        });
+
+        if (callbacks?.onSuccess) {
+          await callbacks.onSuccess();
+        }
+      } catch (error) {
+        toast({
+          title: `${action} failed`,
+          description: parseTxError(error),
+          variant: "destructive",
+        });
+
+        if (callbacks?.onError) {
+          callbacks.onError(error);
+        }
+      }
+      setIsTxPending(false);
     },
-  ) => {
-    setIsTxPending(true);
-    try {
-      const txId = await tx;
-      console.log(`${action} succeeded: ${txId}`);
-      toast({
-        title: `${action} succeeded`,
-        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
-      });
+    [],
+  );
 
-      if (callbacks?.onSuccess) {
-        await callbacks.onSuccess();
-      }
-    } catch (error) {
-      toast({
-        title: `${action} failed`,
-        description: parseTxError(error),
-        variant: "destructive",
-      });
-
-      if (callbacks?.onError) {
-        callbacks.onError(error);
-      }
-    }
-    setIsTxPending(false);
-  };
-
-  const handleStake = async () => {
+  const handleStake = useCallback(async () => {
     setShowStakeConfirm(false);
     const amount = parseFloat(stakeAmount);
     if (amount <= 0) {
@@ -190,37 +203,43 @@ export default function DelegateForm() {
         setStakeAmount("0");
       },
     });
-  };
+  }, [client, handleTx, onTxSuccess, stakeAmount]);
 
-  const handleUnstake = async () => {
+  const handleUnstake = useCallback(async () => {
     console.log(`Unstaking all JUP...`);
     await handleTx("Unstaking", client.unstakeJup(), {
       onSuccess: onTxSuccess,
     });
-  };
+  }, [client, handleTx, onTxSuccess]);
 
-  const handleCancelUnstake = async (index: number) => {
-    console.log(`Cancelling unstake...`);
-    await handleTx("Cancelling unstake", client.cancelUnstake(), {
-      onSuccess: async () => {
-        await onTxSuccess();
-        setUnstakeItems(unstakeItems.filter((_, i) => i !== index));
-      },
-    });
-  };
+  const handleCancelUnstake = useCallback(
+    async (index: number) => {
+      console.log(`Cancelling unstake...`);
+      await handleTx("Cancelling unstake", client.cancelUnstake(), {
+        onSuccess: async () => {
+          await onTxSuccess();
+          setUnstakeItems(unstakeItems.filter((_, i) => i !== index));
+        },
+      });
+    },
+    [client, handleTx, onTxSuccess, unstakeItems],
+  );
 
-  const handleWithdraw = async (index: number) => {
-    console.log(`Withdrawing...`);
-    await handleTx("Withdrawing", client.withdraw(), {
-      onSuccess: async () => {
-        await onTxSuccess();
-        setUnstakeItems(unstakeItems.filter((_, i) => i !== index));
-      },
-    });
-  };
+  const handleWithdraw = useCallback(
+    async (index: number) => {
+      console.log(`Withdrawing...`);
+      await handleTx("Withdrawing", client.withdraw(), {
+        onSuccess: async () => {
+          await onTxSuccess();
+          setUnstakeItems(unstakeItems.filter((_, i) => i !== index));
+        },
+      });
+    },
+    [client, handleTx, onTxSuccess, unstakeItems],
+  );
 
-  const formatCountdown = (endTime: number) => {
-    const diff = Math.max(0, endTime - nowSec) * 1000;
+  const formatCountdown = useCallback((endTime: number) => {
+    const diff = Math.max(0, endTime - nowSecRef.current) * 1000;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -235,12 +254,12 @@ export default function DelegateForm() {
     } else {
       return `${seconds}s`;
     }
-  };
+  }, []);
 
-  const handleStakeClick = () => {
+  const handleStakeClick = useCallback(() => {
     // Check if there are any unstaking items in progress
     const hasUnstakingInProgress = unstakeItems.some(
-      (item) => item.endTime > nowSec,
+      (item) => item.endTime > nowSecRef.current,
     );
 
     if (hasUnstakingInProgress) {
@@ -248,7 +267,18 @@ export default function DelegateForm() {
     } else {
       handleStake();
     }
-  };
+  }, [handleStake, unstakeItems]);
+
+  // Memoize filtered unstake items to prevent unnecessary recalculations
+  const unstakingInProgress = useMemo(
+    () => unstakeItems.filter((item) => item.endTime > nowSec),
+    [unstakeItems, nowSec],
+  );
+
+  const claimableItems = useMemo(
+    () => unstakeItems.filter((item) => nowSec > item.endTime),
+    [unstakeItems, nowSec],
+  );
 
   return (
     <div className="w-full max-w-xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
@@ -312,7 +342,7 @@ export default function DelegateForm() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleHalfClick("stake")}
+                          onClick={handleHalfClick}
                           disabled={isLoadingBalance}
                         >
                           HALF
@@ -320,7 +350,7 @@ export default function DelegateForm() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleMaxClick("stake")}
+                          onClick={handleMaxClick}
                           disabled={isLoadingBalance}
                         >
                           MAX
@@ -352,8 +382,7 @@ export default function DelegateForm() {
               <TabsContent value="unstake" className="h-full">
                 <div className="space-y-4 h-full flex flex-col justify-between">
                   <div className="space-y-2">
-                    {unstakeItems.filter((item) => item.endTime > nowSec)
-                      .length === 0 ? (
+                    {unstakingInProgress.length === 0 ? (
                       <Label>Click below to unstake all your JUP tokens</Label>
                     ) : (
                       <Label>Unstaking in progress</Label>
@@ -365,7 +394,7 @@ export default function DelegateForm() {
                           <span className="w-full text-sm sm:text-base">
                             {item.amount} JUP
                           </span>
-                          {nowSec < item.endTime ? (
+                          {nowSecRef.current < item.endTime ? (
                             <>
                               <span className="w-full text-sm sm:text-base font-mono text-lime-500 dark:text-primary text-right mr-4">
                                 {formatCountdown(item.endTime)}
@@ -401,19 +430,18 @@ export default function DelegateForm() {
 
                     <div className="relative">
                       <ScrollArea className="h-[180px] sm:h-[210px] w-full rounded p-4">
-                        {unstakeItems.filter((item) => nowSec > item.endTime)
-                          .length === 0 ? (
+                        {claimableItems.length === 0 ? (
                           <p className="text-center text-muted-foreground">
                             No claimable JUP.
                           </p>
                         ) : (
-                          unstakeItems.map((item, index) => (
+                          claimableItems.map((item, index) => (
                             <div
                               key={index}
                               className="rounded mb-2 last:mb-16"
                             >
                               <div className="flex justify-between items-center">
-                                {nowSec > item.endTime ? (
+                                {nowSecRef.current > item.endTime ? (
                                   <>
                                     <span className="w-full text-sm sm:text-base">
                                       {item.amount} JUP
