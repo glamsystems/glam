@@ -149,20 +149,33 @@ const getBadgeVariant = (status: ProposalStatus) => {
   }
 };
 
+// Helper function moved outside component to prevent recreation on each render
+const formatDate = (dateString: string | null) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true,
+  });
+};
+
 // Create a memoized ProposalItem component
 const ProposalItem = memo(
   ({
     proposal,
     selectedVotes,
     onVoteChange,
-    formatDate,
   }: {
     proposal: Proposal;
     selectedVotes: Record<string, string>;
     onVoteChange: (key: string, value: string) => void;
-    formatDate: (date: string | null) => string;
   }) => {
     const { glamClient } = useGlamClient();
+    const [isVoting, setIsVoting] = useState(false);
 
     const handleOverrideVote = useCallback(async () => {
       const selectedOption = selectedVotes[proposal.key];
@@ -182,6 +195,7 @@ const ProposalItem = memo(
         return;
       }
 
+      setIsVoting(true);
       try {
         const txSig = await glamClient.castVote(
           proposal.key,
@@ -197,6 +211,8 @@ const ProposalItem = memo(
           description: parseTxError(error),
           variant: "destructive",
         });
+      } finally {
+        setIsVoting(false);
       }
     }, [proposal, selectedVotes]);
 
@@ -402,6 +418,7 @@ const ProposalItem = memo(
                       variant="default"
                       size="sm"
                       disabled={status !== "active"}
+                      loading={isVoting}
                       className="text-foreground dark:text-background shadow-none w-full"
                       onClick={handleOverrideVote}
                     >
@@ -427,8 +444,12 @@ export default function VoteList() {
   const [selectedVotes, setSelectedVotes] = useState<Record<string, string>>(
     {},
   );
+  const [isLoadingVotes, setIsLoadingVotes] = useState(false);
+  const [voteError, setVoteError] = useState<string | null>(null);
+
   const { glamClient } = useGlamClient();
 
+  // Fetch proposals
   useEffect(() => {
     let mounted = true;
 
@@ -481,6 +502,7 @@ export default function VoteList() {
     [proposals],
   );
 
+  // Fetch votes for active proposals
   useEffect(() => {
     const fetchVotes = async () => {
       if (!glamClient) return;
@@ -499,19 +521,6 @@ export default function VoteList() {
 
     fetchVotes();
   }, [activeProposals, glamClient]);
-
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      hour12: true,
-    });
-  };
 
   return (
     <div className="w-full max-w-xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
@@ -565,7 +574,6 @@ export default function VoteList() {
                             [key]: value,
                           }))
                         }
-                        formatDate={formatDate}
                       />
                     ))}
                   </Accordion>
