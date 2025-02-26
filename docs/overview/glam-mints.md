@@ -1,2 +1,0 @@
-# GLAM Mints
-

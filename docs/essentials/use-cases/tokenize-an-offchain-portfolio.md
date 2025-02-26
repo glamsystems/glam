@@ -1,2 +1,0 @@
-# Tokenize an Offchain Portfolio
-
