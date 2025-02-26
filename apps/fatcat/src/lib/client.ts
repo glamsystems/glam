@@ -144,6 +144,12 @@ export class FatcatGlamClient extends GlamClient {
     return { state, stateModel, vault, name };
   };
 
+  async fetchVotes(proposals: PublicKey[] | string[]) {
+    const { state } = this.getFatcatState();
+    const votes = await this.jupiterVote.fetchVotes(state, proposals);
+    return votes;
+  }
+
   async stakeJup(amount: number) {
     const { state, stateModel, name } = this.getFatcatState();
     const vault = this.getVaultPda(state);

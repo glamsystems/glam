@@ -9,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -360,6 +359,10 @@ const ProposalItem = memo(
                               className={
                                 status === "active" ? "" : "pointer-events-none"
                               }
+                              checked={
+                                selectedVotes[proposal.key] ===
+                                optionData.index.toString()
+                              }
                               value={optionData.index.toString()}
                               id={`${proposal.key}-${optionData.index}`}
                               disabled={status !== "active"}
@@ -419,13 +422,14 @@ const ProposalItem = memo(
 ProposalItem.displayName = "ProposalItem";
 
 export default function VoteList() {
-  const [filter, setFilter] = useState<"all" | "active">("all");
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const [selectedVotes, setSelectedVotes] = useState<Record<string, string>>(
     {},
   );
+  const { glamClient } = useGlamClient();
 
   useEffect(() => {
     let mounted = true;
@@ -466,20 +470,37 @@ export default function VoteList() {
     };
   }, []);
 
-  const filteredProposals = useMemo(
+  const activeProposals = useMemo(
     () =>
-      filter === "active"
-        ? proposals.filter((proposal) => {
-            const status = getProposalStatus(
-              proposal.activatedAt,
-              proposal.votingEndsAt,
-              proposal.canceledAt,
-            );
-            return status === "inactive" || status === "active";
-          })
-        : proposals,
-    [filter, proposals],
+      proposals.filter(
+        (proposal) =>
+          getProposalStatus(
+            proposal.activatedAt,
+            proposal.votingEndsAt,
+            proposal.canceledAt,
+          ) === "active",
+      ),
+    [proposals],
   );
+
+  useEffect(() => {
+    const fetchVotes = async () => {
+      if (!glamClient) return;
+      const proposalKeys = activeProposals.map((proposal) => proposal.key);
+      const fetchedVotes = await glamClient.fetchVotes(proposalKeys);
+
+      const votes = fetchedVotes.reduce(
+        (acc, vote) => {
+          acc[vote.proposal.toBase58()] = vote.side.toString();
+          return acc;
+        },
+        {} as Record<string, string>,
+      );
+      setSelectedVotes(votes);
+    };
+
+    fetchVotes();
+  }, [activeProposals, glamClient]);
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "";
@@ -525,7 +546,7 @@ export default function VoteList() {
                   <div className="h-full w-full flex flex-col items-center justify-center py-8">
                     <p className="text-destructive">{error}</p>
                   </div>
-                ) : filteredProposals.length === 0 ? (
+                ) : proposals.length === 0 ? (
                   <p className="text-center text-muted-foreground py-4">
                     No active or inactive proposals.
                   </p>
@@ -535,7 +556,7 @@ export default function VoteList() {
                     collapsible
                     className="space-y-2 w-full"
                   >
-                    {filteredProposals.map((proposal) => (
+                    {proposals.map((proposal) => (
                       <ProposalItem
                         key={proposal.key}
                         proposal={proposal}

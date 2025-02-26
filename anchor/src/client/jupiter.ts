@@ -492,14 +492,8 @@ export class JupiterVoteClient {
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const glamVault = this.base.getVaultPda(glamState);
-    const [vote] = PublicKey.findProgramAddressSync(
-      [Buffer.from("Vote"), proposal.toBuffer(), glamVault.toBuffer()],
-      GOVERNANCE_PROGRAM_ID,
-    );
-    const [governor] = PublicKey.findProgramAddressSync(
-      [Buffer.from("Governor"), BASE.toBuffer()],
-      GOVERNANCE_PROGRAM_ID,
-    );
+    const vote = this.getVotePda(proposal, glamVault);
+    const governor = this.getGovernorPda();
 
     const voteAccountInfo =
       await this.base.provider.connection.getAccountInfo(vote);
@@ -536,9 +530,33 @@ export class JupiterVoteClient {
     const vTx = await this.base.intoVersionedTransaction(tx, { ...txOptions });
     return await this.base.sendAndConfirm(vTx);
   }
+
   /*
    * Utils
    */
+  async fetchVotes(glamState: PublicKey, proposals: PublicKey[] | string[]) {
+    const glamVault = this.base.getVaultPda(glamState);
+    const votes = proposals.map((proposal) =>
+      this.getVotePda(new PublicKey(proposal), glamVault),
+    );
+
+    const votesAccountInfo =
+      await this.base.provider.connection.getMultipleAccountsInfo(votes);
+    return votesAccountInfo
+      .filter((accountInfo) => accountInfo !== null)
+      .map((accountInfo) => ({
+        // offsets:
+        // 8 (discriminator)
+        // 32 (proposal)
+        // 32 (voter)
+        // 1 (bump)
+        // 1 (side)
+        proposal: new PublicKey(accountInfo.data.subarray(8, 40)),
+        voter: new PublicKey(accountInfo.data.subarray(40, 72)),
+        side: accountInfo.data.readUInt8(73),
+      }));
+  }
+
   get stakeLocker(): PublicKey {
     const [locker] = PublicKey.findProgramAddressSync(
       [Buffer.from("Locker"), BASE.toBuffer()],
@@ -553,5 +571,21 @@ export class JupiterVoteClient {
       JUP_VOTE_PROGRAM,
     );
     return escrow;
+  }
+
+  getVotePda(proposal: PublicKey, voter: PublicKey): PublicKey {
+    const [vote] = PublicKey.findProgramAddressSync(
+      [Buffer.from("Vote"), proposal.toBuffer(), voter.toBuffer()],
+      GOVERNANCE_PROGRAM_ID,
+    );
+    return vote;
+  }
+
+  getGovernorPda(): PublicKey {
+    const [governor] = PublicKey.findProgramAddressSync(
+      [Buffer.from("Governor"), BASE.toBuffer()],
+      GOVERNANCE_PROGRAM_ID,
+    );
+    return governor;
   }
 }
