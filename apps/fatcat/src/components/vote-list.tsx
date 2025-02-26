@@ -401,13 +401,11 @@ const ProposalItem = memo(
                     <Button
                       variant="default"
                       size="sm"
-                      disabled={
-                        !selectedVotes[proposal.key] || status !== "active"
-                      }
+                      disabled={status !== "active"}
                       className="text-foreground dark:text-background shadow-none w-full"
                       onClick={handleOverrideVote}
                     >
-                      Override Vote
+                      {selectedVotes[proposal.key] ? "Override Vote" : "Vote"}
                     </Button>
                   </div>
                 </div>
