@@ -55,7 +55,7 @@ interface Proposal {
   type: number;
 }
 
-type ProposalStatus = "upcoming" | "ongoing" | "completed" | "canceled";
+type ProposalStatus = "inactive" | "active" | "completed" | "canceled";
 
 const fetchProposals = async (): Promise<Proposal[]> => {
   const maxRetries = 3;
@@ -126,24 +126,24 @@ const getProposalStatus = (
   canceledAt: string | null,
 ): ProposalStatus => {
   if (canceledAt) return "canceled";
-  if (!activatedAt || !votingEndsAt) return "upcoming";
+  if (!activatedAt || !votingEndsAt) return "inactive";
 
   const now = Date.now();
   const activationDate = new Date(activatedAt).getTime();
   const endDate = new Date(votingEndsAt).getTime();
 
-  if (now < activationDate) return "upcoming";
+  if (now < activationDate) return "inactive";
   if (now > endDate) return "completed";
-  return "ongoing";
+  return "active";
 };
 
 const getBadgeVariant = (status: ProposalStatus) => {
   switch (status) {
-    case "ongoing":
+    case "active":
       return "default";
     case "completed":
       return "secondary";
-    case "upcoming":
+    case "inactive":
       return "outline";
     case "canceled":
       return "secondary";
@@ -347,8 +347,8 @@ const ProposalItem = memo(
                       onValueChange={(value) => {
                         onVoteChange(proposal.key, value);
                       }}
-                      className={`space-y-2 mb-6 ${status === "ongoing" ? "cursor-pointer" : "[&:disabled]:cursor-default"}`}
-                      disabled={status !== "ongoing"}
+                      className={`space-y-2 mb-6 ${status === "active" ? "cursor-pointer" : "[&:disabled]:cursor-default"}`}
+                      disabled={status !== "active"}
                     >
                       {optionsWithVotes.map((optionData) => (
                         <div
@@ -358,13 +358,11 @@ const ProposalItem = memo(
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem
                               className={
-                                status === "ongoing"
-                                  ? ""
-                                  : "pointer-events-none"
+                                status === "active" ? "" : "pointer-events-none"
                               }
                               value={optionData.index.toString()}
                               id={`${proposal.key}-${optionData.index}`}
-                              disabled={status !== "ongoing"}
+                              disabled={status !== "active"}
                             />
                             <label
                               htmlFor={`${proposal.key}-${optionData.index}`}
@@ -401,7 +399,7 @@ const ProposalItem = memo(
                       variant="default"
                       size="sm"
                       disabled={
-                        !selectedVotes[proposal.key] || status !== "ongoing"
+                        !selectedVotes[proposal.key] || status !== "active"
                       }
                       className="text-foreground dark:text-background shadow-none w-full"
                       onClick={handleOverrideVote}
@@ -477,7 +475,7 @@ export default function VoteList() {
               proposal.votingEndsAt,
               proposal.canceledAt,
             );
-            return status === "upcoming" || status === "ongoing";
+            return status === "inactive" || status === "active";
           })
         : proposals,
     [filter, proposals],
@@ -540,7 +538,7 @@ export default function VoteList() {
                   </div>
                 ) : filteredProposals.length === 0 ? (
                   <p className="text-center text-muted-foreground py-4">
-                    No active or upcoming proposals.
+                    No active or inactive proposals.
                   </p>
                 ) : (
                   <Accordion
