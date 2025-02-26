@@ -194,7 +194,7 @@ const ProposalItem = memo(
         });
       } catch (error) {
         toast({
-          title: `Vote succeeded`,
+          title: `Vote failed`,
           description: parseTxError(error),
           variant: "destructive",
         });
@@ -512,17 +512,6 @@ export default function VoteList() {
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
-            {/*<ToggleGroup
-                            type="single"
-                            value={filter}
-                            onValueChange={(value) => {
-                                if (value) setFilter(value as 'all' | 'active');
-                            }}
-                            className="mb-4 select-none"
-                        >
-                            <ToggleGroupItem value="all" aria-label="Show all proposals">All</ToggleGroupItem>
-                            <ToggleGroupItem value="active" aria-label="Show active proposals">Active</ToggleGroupItem>
-                        </ToggleGroup>*/}
             <ScrollArea className="h-[600px] rounded w-full">
               <div className="pb-20">
                 {isLoading ? (
