@@ -1,0 +1,320 @@
+{
+  "program_id": "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD",
+  "instructions": [
+    {
+      "src_ix_name": "deposit",
+      "src_discriminator": [
+        242,
+        35,
+        198,
+        137,
+        82,
+        225,
+        242,
+        182
+      ],
+      "dst_ix_name": "marinade_deposit",
+      "dst_discriminator": [
+        62,
+        236,
+        248,
+        28,
+        222,
+        232,
+        182,
+        73
+      ],
+      "dynamic_accounts": [
+        {
+          "name": "glam_state",
+          "index": 0,
+          "writable": false,
+          "signer": false
+        },
+        {
+          "name": "glam_vault",
+          "index": 1,
+          "writable": true,
+          "signer": false
+        },
+        {
+          "name": "glam_signer",
+          "index": 2,
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "index": 3,
+          "writable": false,
+          "signer": false
+        }
+      ],
+      "static_accounts": [],
+      "index_map": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        -1,
+        10,
+        11,
+        12,
+        13
+      ]
+    },
+    {
+      "src_ix_name": "deposit_stake_account",
+      "src_discriminator": [
+        110,
+        130,
+        115,
+        41,
+        164,
+        102,
+        2,
+        59
+      ],
+      "dst_ix_name": "marinade_deposit_stake_account",
+      "dst_discriminator": [
+        141,
+        230,
+        58,
+        103,
+        56,
+        205,
+        159,
+        138
+      ],
+      "dynamic_accounts": [
+        {
+          "name": "glam_state",
+          "index": 0,
+          "writable": true,
+          "signer": false
+        },
+        {
+          "name": "glam_vault",
+          "index": 1,
+          "writable": true,
+          "signer": false
+        },
+        {
+          "name": "glam_signer",
+          "index": 2,
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "index": 3,
+          "writable": false,
+          "signer": false
+        }
+      ],
+      "static_accounts": [],
+      "index_map": [
+        4,
+        5,
+        6,
+        7,
+        -1,
+        8,
+        -1,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "src_ix_name": "liquid_unstake",
+      "src_discriminator": [
+        30,
+        30,
+        119,
+        240,
+        191,
+        227,
+        12,
+        16
+      ],
+      "dst_ix_name": "marinade_liquid_unstake",
+      "dst_discriminator": [
+        29,
+        146,
+        34,
+        21,
+        26,
+        68,
+        141,
+        161
+      ],
+      "dynamic_accounts": [
+        {
+          "name": "glam_state",
+          "index": 0,
+          "writable": false,
+          "signer": false
+        },
+        {
+          "name": "glam_vault",
+          "index": 1,
+          "writable": true,
+          "signer": false
+        },
+        {
+          "name": "glam_signer",
+          "index": 2,
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "index": 3,
+          "writable": false,
+          "signer": false
+        }
+      ],
+      "static_accounts": [],
+      "index_map": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        -1,
+        -1,
+        10,
+        11
+      ]
+    },
+    {
+      "src_ix_name": "order_unstake",
+      "src_discriminator": [
+        97,
+        167,
+        144,
+        107,
+        117,
+        190,
+        128,
+        36
+      ],
+      "dst_ix_name": "marinade_order_unstake",
+      "dst_discriminator": [
+        202,
+        3,
+        33,
+        27,
+        183,
+        156,
+        57,
+        231
+      ],
+      "dynamic_accounts": [
+        {
+          "name": "glam_state",
+          "index": 0,
+          "writable": true,
+          "signer": false
+        },
+        {
+          "name": "glam_vault",
+          "index": 1,
+          "writable": true,
+          "signer": false
+        },
+        {
+          "name": "glam_signer",
+          "index": 2,
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "index": 3,
+          "writable": false,
+          "signer": false
+        }
+      ],
+      "static_accounts": [],
+      "index_map": [
+        4,
+        5,
+        6,
+        -1,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    {
+      "src_ix_name": "claim",
+      "src_discriminator": [
+        62,
+        198,
+        214,
+        193,
+        213,
+        159,
+        108,
+        210
+      ],
+      "dst_ix_name": "marinade_claim",
+      "dst_discriminator": [
+        54,
+        44,
+        48,
+        204,
+        218,
+        141,
+        36,
+        5
+      ],
+      "dynamic_accounts": [
+        {
+          "name": "glam_state",
+          "index": 0,
+          "writable": true,
+          "signer": false
+        },
+        {
+          "name": "glam_vault",
+          "index": 1,
+          "writable": true,
+          "signer": false
+        },
+        {
+          "name": "glam_signer",
+          "index": 2,
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "index": 3,
+          "writable": false,
+          "signer": false
+        }
+      ],
+      "static_accounts": [],
+      "index_map": [
+        4,
+        5,
+        6,
+        -1,
+        7,
+        8
+      ]
+    }
+  ]
+}
