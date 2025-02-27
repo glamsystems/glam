@@ -45,10 +45,9 @@ export function DataTableRowActions<TData>({
       const ticketPublicKey = new PublicKey(ticketOrStake.publicKey);
       console.log("Claim marinade ticket:", ticketPublicKey.toBase58());
 
-      const txId = await glamClient.marinade.claimTickets(
-        activeGlamState.pubkey,
-        [ticketPublicKey],
-      );
+      const txId = await glamClient.marinade.claim(activeGlamState.pubkey, [
+        ticketPublicKey,
+      ]);
 
       toast({
         title: "Marinade ticket claimed successfully",

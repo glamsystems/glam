@@ -56,7 +56,7 @@ export class StakingClient {
     let tx;
     if (assetStr === MSOL.toBase58()) {
       // Marinade
-      tx = await this.marinade.delayedUnstakeTx(
+      tx = await this.marinade.orderUnstakeTx(
         statePda,
         new BN(amount),
         txOptions,

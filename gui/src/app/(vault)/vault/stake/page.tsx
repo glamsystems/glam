@@ -108,7 +108,7 @@ export default function Stake() {
     enabled: (activeGlamState?.pubkey && vault) !== undefined,
     queryFn: () =>
       Promise.all([
-        glamClient.marinade.getTickets(activeGlamState!.pubkey),
+        glamClient.marinade.getParsedTickets(activeGlamState!.pubkey),
         glamClient.staking.getStakeAccountsWithStates(
           new PublicKey(vault!.pubkey),
         ),
@@ -223,7 +223,7 @@ export default function Stake() {
       },
       "Liquid Staking": async () => {
         if (values.poolTokenSymbol === "mSOL") {
-          return await glamClient.marinade.depositSol(
+          return await glamClient.marinade.deposit(
             activeGlamState.pubkey,
             new BN(values.amountIn * LAMPORTS_PER_SOL),
           );
