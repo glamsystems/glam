@@ -176,9 +176,13 @@ const ProposalItem = memo(
   }) => {
     const { glamClient } = useGlamClient();
     const [isVoting, setIsVoting] = useState(false);
+    const [localVoteSelection, setLocalVoteSelection] = useState<string | null>(
+      null,
+    );
 
     const handleOverrideVote = useCallback(async () => {
-      const selectedOption = selectedVotes[proposal.key];
+      // Determine the selected option from the local state first, then fallback to fetched votes
+      const selectedOption = localVoteSelection || selectedVotes[proposal.key];
       console.log("Override Vote:", {
         proposal: {
           key: proposal.key,
@@ -214,7 +218,7 @@ const ProposalItem = memo(
       } finally {
         setIsVoting(false);
       }
-    }, [proposal, selectedVotes]);
+    }, [proposal, selectedVotes, localVoteSelection]);
 
     const status = useMemo(
       () =>
@@ -358,9 +362,12 @@ const ProposalItem = memo(
                   </div>
                   <div>
                     <RadioGroup
-                      value={selectedVotes[proposal.key] || ""}
+                      value={
+                        localVoteSelection || selectedVotes[proposal.key] || ""
+                      }
                       onValueChange={(value) => {
                         onVoteChange(proposal.key, value);
+                        setLocalVoteSelection(value);
                       }}
                       className={`space-y-2 mb-6 ${status === "active" ? "cursor-pointer" : "[&:disabled]:cursor-default"}`}
                       disabled={status !== "active"}
@@ -376,7 +383,8 @@ const ProposalItem = memo(
                                 status === "active" ? "" : "pointer-events-none"
                               }
                               checked={
-                                selectedVotes[proposal.key] ===
+                                (localVoteSelection ||
+                                  selectedVotes[proposal.key]) ===
                                 optionData.index.toString()
                               }
                               value={optionData.index.toString()}
@@ -422,7 +430,15 @@ const ProposalItem = memo(
                       className="text-foreground dark:text-background shadow-none w-full"
                       onClick={handleOverrideVote}
                     >
-                      {selectedVotes[proposal.key] ? "Override Vote" : "Vote"}
+                      {(() => {
+                        console.log(
+                          `Proposal ${proposal.key} - Vote exists: ${selectedVotes[proposal.key] !== undefined}, Local selection: ${localVoteSelection !== null}`,
+                        );
+                        // Only consider onchain votes for the button text
+                        return selectedVotes[proposal.key] !== undefined
+                          ? "Override Vote"
+                          : "Vote";
+                      })()}
                     </Button>
                   </div>
                 </div>
@@ -509,6 +525,8 @@ export default function VoteList() {
       const proposalKeys = activeProposals.map((proposal) => proposal.key);
       const fetchedVotes = await glamClient.fetchVotes(proposalKeys);
 
+      console.log("Fetched onchain votes:", fetchedVotes);
+
       const votes = fetchedVotes.reduce(
         (acc, vote) => {
           acc[vote.proposal.toBase58()] = vote.side.toString();
@@ -516,6 +534,8 @@ export default function VoteList() {
         },
         {} as Record<string, string>,
       );
+
+      console.log("Processed votes:", votes);
       setSelectedVotes(votes);
     };
 
@@ -568,12 +588,10 @@ export default function VoteList() {
                         key={proposal.key}
                         proposal={proposal}
                         selectedVotes={selectedVotes}
-                        onVoteChange={(key, value) =>
-                          setSelectedVotes((prev) => ({
-                            ...prev,
-                            [key]: value,
-                          }))
-                        }
+                        onVoteChange={(key, value) => {
+                          // Don't update selectedVotes here, as it should only contain onchain votes
+                          // The local selection is managed within the ProposalItem component
+                        }}
                       />
                     ))}
                   </Accordion>
