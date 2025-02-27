@@ -21,7 +21,7 @@ import {
   MSOL,
   WSOL,
   StateModel,
-  MintClassOpenfundsModel,
+  MintOpenfundsModel,
   ManagerModel,
   FundOpenfundsModel,
 } from "@glamsystems/glam-sdk/react";
@@ -99,7 +99,7 @@ export default function Create() {
               launchPrice: "1",
               launchPriceCurrency: "SOL",
               launchPriceDate: new Date().toISOString().split("T")[0],
-            } as Partial<MintClassOpenfundsModel>,
+            } as Partial<MintOpenfundsModel>,
           },
         ],
         enabled: true,

@@ -20,7 +20,7 @@ import {
   FundOpenfundsModel,
   ManagerModel,
   MintModel,
-  MintClassOpenfundsModel,
+  MintOpenfundsModel,
   CreatedModel,
   Metadata,
 } from "../models";
@@ -239,7 +239,7 @@ export class StateClient {
           mint.rawOpenfunds.shareClassLaunchDate =
             mint.rawOpenfunds.shareClassLaunchDate || defaultDate;
         }
-        mint.rawOpenfunds = new MintClassOpenfundsModel(mint.rawOpenfunds);
+        mint.rawOpenfunds = new MintOpenfundsModel(mint.rawOpenfunds);
         mint.isRawOpenfunds = true;
       } else {
         mint.isRawOpenfunds = false;

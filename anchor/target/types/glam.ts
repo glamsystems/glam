@@ -3446,12 +3446,12 @@ export type Glam = {
       ]
     },
     {
-      "name": "marinadeClaimTickets",
+      "name": "marinadeClaim",
       "docs": [
         "Claims tickets that were unstaked in the previous epoch to get SOL.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the instruction.",
+        "- `ctx`: The context containing the required accounts.",
         "",
         "# Permission required",
         "- Permission::Unstake",
@@ -3460,27 +3460,22 @@ export type Glam = {
         "- Integration::Marinade"
       ],
       "discriminator": [
-        14,
-        146,
-        182,
-        30,
-        205,
-        47,
-        134,
-        189
+        54,
+        44,
+        48,
+        204,
+        218,
+        141,
+        36,
+        5
       ],
       "accounts": [
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "state",
+          "name": "glamState",
           "writable": true
         },
         {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3496,13 +3491,22 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
         },
         {
-          "name": "marinadeState",
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
+        },
+        {
+          "name": "state",
           "writable": true
         },
         {
@@ -3510,142 +3514,28 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
+          "name": "ticketAccount",
+          "writable": true
         },
         {
-          "name": "clock",
-          "address": "SysvarC1ock11111111111111111111111111111111"
+          "name": "clock"
         },
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
-        },
-        {
-          "name": "tokenProgram",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "marinadeProgram",
-          "address": "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
         }
       ],
       "args": []
     },
     {
-      "name": "marinadeDelayedUnstake",
-      "docs": [
-        "Unstakes mSOL to get a ticket that can be claimed at the next epoch.",
-        "",
-        "# Parameters",
-        "- `ctx`: The context for the instruction.",
-        "- `msol_amount`: Amount of mSOL to unstake.",
-        "",
-        "# Permission required",
-        "- Permission::Unstake",
-        "",
-        "# Integration required",
-        "- Integration::Marinade"
-      ],
-      "discriminator": [
-        117,
-        66,
-        3,
-        222,
-        230,
-        94,
-        129,
-        95
-      ],
-      "accounts": [
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "state",
-          "writable": true
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "state"
-              }
-            ]
-          }
-        },
-        {
-          "name": "ticket",
-          "writable": true
-        },
-        {
-          "name": "msolMint",
-          "writable": true
-        },
-        {
-          "name": "burnMsolFrom",
-          "writable": true
-        },
-        {
-          "name": "marinadeState",
-          "writable": true
-        },
-        {
-          "name": "reservePda",
-          "writable": true
-        },
-        {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
-        },
-        {
-          "name": "clock",
-          "address": "SysvarC1ock11111111111111111111111111111111"
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        },
-        {
-          "name": "tokenProgram",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "marinadeProgram",
-          "address": "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
-        }
-      ],
-      "args": [
-        {
-          "name": "msolAmount",
-          "type": "u64"
-        }
-      ]
-    },
-    {
-      "name": "marinadeDepositSol",
+      "name": "marinadeDeposit",
       "docs": [
         "marinade",
         "Deposits SOL to get mSOL.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the instruction.",
-        "- `lamports`: The amount of SOL to deposit.",
+        "- `ctx`: The context containing the required accounts.",
+        "- `lamports`: The amount of SOL (in lamports) to deposit.",
         "",
         "# Permission required",
         "- Permission::Stake",
@@ -3654,26 +3544,21 @@ export type Glam = {
         "- Integration::Marinade"
       ],
       "discriminator": [
-        64,
-        140,
-        200,
-        40,
-        56,
-        218,
-        181,
-        68
+        62,
+        236,
+        248,
+        28,
+        222,
+        232,
+        182,
+        73
       ],
       "accounts": [
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
+          "name": "glamState"
         },
         {
-          "name": "state"
-        },
-        {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3689,17 +3574,22 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
         },
         {
-          "name": "marinadeState",
-          "writable": true
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
         },
         {
-          "name": "reservePda",
+          "name": "cpiProgram",
+          "address": "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
+        },
+        {
+          "name": "state",
           "writable": true
         },
         {
@@ -3707,7 +3597,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "msolMintAuthority",
+          "name": "liqPoolSolLegPda",
           "writable": true
         },
         {
@@ -3715,118 +3605,25 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "liqPoolMsolLegAuthority",
-          "writable": true
+          "name": "liqPoolMsolLegAuthority"
         },
         {
-          "name": "liqPoolSolLegPda",
+          "name": "reservePda",
           "writable": true
         },
         {
           "name": "mintTo",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "vault"
-              },
-              {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "msolMint"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
+          "writable": true
         },
         {
-          "name": "marinadeProgram",
-          "address": "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
-        },
-        {
-          "name": "associatedTokenProgram",
-          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+          "name": "msolMintAuthority"
         },
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         },
         {
-          "name": "tokenProgram",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "name": "tokenProgram"
         }
       ],
       "args": [
@@ -3837,13 +3634,13 @@ export type Glam = {
       ]
     },
     {
-      "name": "marinadeDepositStake",
+      "name": "marinadeDepositStakeAccount",
       "docs": [
         "Deposits a stake account to get mSOL.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the instruction.",
-        "- `validator_idx`: Validator index.",
+        "- `ctx`: The context containing the required accounts.",
+        "- `validator_idx`: Validator index in Marinade's validator list.",
         "",
         "# Permission required",
         "- Permission::Stake",
@@ -3852,26 +3649,22 @@ export type Glam = {
         "- Integration::Marinade"
       ],
       "discriminator": [
-        69,
-        207,
-        194,
-        211,
-        186,
-        55,
-        199,
-        130
+        141,
+        230,
+        58,
+        103,
+        56,
+        205,
+        159,
+        138
       ],
       "accounts": [
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
+          "name": "glamState",
+          "writable": true
         },
         {
-          "name": "state"
-        },
-        {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3887,13 +3680,22 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
         },
         {
-          "name": "marinadeState",
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
+        },
+        {
+          "name": "state",
           "writable": true
         },
         {
@@ -3905,7 +3707,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "vaultStakeAccount",
+          "name": "stakeAccount",
           "writable": true
         },
         {
@@ -3917,125 +3719,28 @@ export type Glam = {
           "writable": true
         },
         {
+          "name": "mintTo",
+          "writable": true
+        },
+        {
           "name": "msolMintAuthority"
         },
         {
-          "name": "mintTo",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "vault"
-              },
-              {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "msolMint"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
-        },
-        {
-          "name": "clock",
-          "address": "SysvarC1ock11111111111111111111111111111111"
+          "name": "clock"
         },
         {
           "name": "rent",
           "address": "SysvarRent111111111111111111111111111111111"
         },
         {
-          "name": "marinadeProgram",
-          "address": "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
-        },
-        {
-          "name": "associatedTokenProgram",
-          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
-        },
-        {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         },
         {
-          "name": "tokenProgram",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "name": "tokenProgram"
         },
         {
-          "name": "stakeProgram",
-          "address": "Stake11111111111111111111111111111111111111"
+          "name": "stakeProgram"
         }
       ],
       "args": [
@@ -4048,14 +3753,14 @@ export type Glam = {
     {
       "name": "marinadeLiquidUnstake",
       "docs": [
-        "Unstakes mSOL to get SOL immediately.",
+        "Unstakes mSOL to get SOL immediately with a small fee.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the instruction.",
+        "- `ctx`: The context containing the required accounts.",
         "- `msol_amount`: Amount of mSOL to unstake.",
         "",
         "# Permission required",
-        "- Permission::LiquidUnstake",
+        "- Permission::Unstake",
         "",
         "# Integration required",
         "- Integration::Marinade"
@@ -4072,15 +3777,10 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
+          "name": "glamState"
         },
         {
-          "name": "state"
-        },
-        {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -4096,13 +3796,22 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
         },
         {
-          "name": "marinadeState",
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
+        },
+        {
+          "name": "state",
           "writable": true
         },
         {
@@ -4126,20 +3835,106 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "getMsolFromAuthority",
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "tokenProgram"
+        }
+      ],
+      "args": [
+        {
+          "name": "msolAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "marinadeOrderUnstake",
+      "docs": [
+        "Unstakes mSOL to get a ticket that can be claimed at the next epoch.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context containing the required accounts.",
+        "- `msol_amount`: Amount of mSOL to unstake.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- Integration::Marinade"
+      ],
+      "discriminator": [
+        202,
+        3,
+        33,
+        27,
+        183,
+        156,
+        57,
+        231
+      ],
+      "accounts": [
+        {
+          "name": "glamState",
           "writable": true
         },
         {
-          "name": "marinadeProgram",
+          "name": "glamVault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
           "address": "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
         },
         {
-          "name": "tokenProgram",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "name": "state",
+          "writable": true
         },
         {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
+          "name": "msolMint",
+          "writable": true
+        },
+        {
+          "name": "burnMsolFrom",
+          "writable": true
+        },
+        {
+          "name": "newTicketAccount",
+          "writable": true
+        },
+        {
+          "name": "clock"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        },
+        {
+          "name": "tokenProgram"
         }
       ],
       "args": [

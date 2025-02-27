@@ -155,3 +155,43 @@ jupiter_vote:
     integration: JupiterVote
     vault_aliases: ["vote_delegate"]
     signed_by_vault: true
+
+#
+# Marinade
+#
+
+marinade:
+  - ix_name: deposit
+    permission: Stake
+    integration: Marinade
+    vault_aliases: ["transfer_from"]
+    signed_by_vault: true
+    mutable_vault: true
+  - ix_name: liquidUnstake
+    permission: Unstake
+    integration: Marinade
+    vault_aliases: ["transfer_sol_to", "get_msol_from_authority"]
+    signed_by_vault: true
+    mutable_vault: true
+  - ix_name: claim
+    permission: Unstake
+    integration: Marinade
+    vault_aliases: ["transfer_sol_to"]
+    signed_by_vault: true
+    with_remaining_accounts: true
+    mutable_vault: true
+    mutable_state: true
+  - ix_name: orderUnstake
+    permission: Unstake
+    integration: Marinade
+    vault_aliases: ["burn_msol_authority"]
+    signed_by_vault: true
+    mutable_vault: true
+    mutable_state: true
+  - ix_name: depositStakeAccount
+    permission: Stake
+    integration: Marinade
+    vault_aliases: ["stake_authority", "rent_payer"]
+    signed_by_vault: true
+    mutable_vault: true
+    mutable_state: true

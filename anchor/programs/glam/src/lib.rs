@@ -501,44 +501,44 @@ pub mod glam {
     /// Deposits SOL to get mSOL.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the instruction.
-    /// - `lamports`: The amount of SOL to deposit.
+    /// - `ctx`: The context containing the required accounts.
+    /// - `lamports`: The amount of SOL (in lamports) to deposit.
     ///
     /// # Permission required
     /// - Permission::Stake
     ///
     /// # Integration required
     /// - Integration::Marinade
-    pub fn marinade_deposit_sol(ctx: Context<MarinadeDepositSol>, lamports: u64) -> Result<()> {
-        marinade::marinade_deposit_sol_handler(ctx, lamports)
+    pub fn marinade_deposit(ctx: Context<MarinadeDeposit>, lamports: u64) -> Result<()> {
+        marinade::marinade_deposit(ctx, lamports)
     }
 
     /// Deposits a stake account to get mSOL.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the instruction.
-    /// - `validator_idx`: Validator index.
+    /// - `ctx`: The context containing the required accounts.
+    /// - `validator_idx`: Validator index in Marinade's validator list.
     ///
     /// # Permission required
     /// - Permission::Stake
     ///
     /// # Integration required
     /// - Integration::Marinade
-    pub fn marinade_deposit_stake(
-        ctx: Context<MarinadeDepositStake>,
+    pub fn marinade_deposit_stake_account(
+        ctx: Context<MarinadeDepositStakeAccount>,
         validator_idx: u32,
     ) -> Result<()> {
-        marinade::marinade_deposit_stake_handler(ctx, validator_idx)
+        marinade::marinade_deposit_stake_account(ctx, validator_idx)
     }
 
-    /// Unstakes mSOL to get SOL immediately.
+    /// Unstakes mSOL to get SOL immediately with a small fee.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the instruction.
+    /// - `ctx`: The context containing the required accounts.
     /// - `msol_amount`: Amount of mSOL to unstake.
     ///
     /// # Permission required
-    /// - Permission::LiquidUnstake
+    /// - Permission::Unstake
     ///
     /// # Integration required
     /// - Integration::Marinade
@@ -546,13 +546,13 @@ pub mod glam {
         ctx: Context<MarinadeLiquidUnstake>,
         msol_amount: u64,
     ) -> Result<()> {
-        marinade::liquid_unstake_handler(ctx, msol_amount)
+        marinade::marinade_liquid_unstake(ctx, msol_amount)
     }
 
     /// Unstakes mSOL to get a ticket that can be claimed at the next epoch.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the instruction.
+    /// - `ctx`: The context containing the required accounts.
     /// - `msol_amount`: Amount of mSOL to unstake.
     ///
     /// # Permission required
@@ -560,27 +560,27 @@ pub mod glam {
     ///
     /// # Integration required
     /// - Integration::Marinade
-    pub fn marinade_delayed_unstake(
-        ctx: Context<MarinadeDelayedUnstake>,
+    pub fn marinade_order_unstake(
+        ctx: Context<MarinadeOrderUnstake>,
         msol_amount: u64,
     ) -> Result<()> {
-        marinade::delayed_unstake_handler(ctx, msol_amount)
+        marinade::marinade_order_unstake(ctx, msol_amount)
     }
 
     /// Claims tickets that were unstaked in the previous epoch to get SOL.
     ///
     /// # Parameters
-    /// - `ctx`: The context for the instruction.
+    /// - `ctx`: The context containing the required accounts.
     ///
     /// # Permission required
     /// - Permission::Unstake
     ///
     /// # Integration required
     /// - Integration::Marinade
-    pub fn marinade_claim_tickets<'info>(
-        ctx: Context<'_, '_, '_, 'info, MarinadeClaimTickets<'info>>,
+    pub fn marinade_claim<'info>(
+        ctx: Context<'_, '_, '_, 'info, MarinadeClaim<'info>>,
     ) -> Result<()> {
-        marinade::claim_tickets_handler(ctx)
+        marinade::marinade_claim(ctx)
     }
 
     //////////////////////////////////////////////////////////////////////

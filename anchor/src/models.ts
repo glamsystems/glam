@@ -214,7 +214,7 @@ export class StateModel extends StateIdlModel {
           // @ts-ignore
           mintOpenfundsFields[name] = value;
         });
-        mintIdlModel["rawOpenfunds"] = new MintClassOpenfundsModel(
+        mintIdlModel["rawOpenfunds"] = new MintOpenfundsModel(
           mintOpenfundsFields,
         );
       }
@@ -314,7 +314,7 @@ export class MintIdlModel implements MintModelType {
   defaultAccountStateFrozen: boolean | null;
 
   isRawOpenfunds: boolean | null;
-  rawOpenfunds: MintClassOpenfundsModel | null;
+  rawOpenfunds: MintOpenfundsModel | null;
 
   constructor(data: Partial<MintModelType>) {
     this.symbol = data.symbol ?? null;
@@ -355,7 +355,7 @@ export class MintModel extends MintIdlModel {
 }
 
 export type MintOpenfundsModelType = IdlTypes<Glam>["mintOpenfundsModel"];
-export class MintClassOpenfundsModel implements MintOpenfundsModelType {
+export class MintOpenfundsModel implements MintOpenfundsModelType {
   isin: string | null;
   shareClassCurrency: string | null;
   currencyOfMinimalSubscription: string | null;

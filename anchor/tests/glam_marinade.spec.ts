@@ -26,7 +26,7 @@ describe("glam_marinade", () => {
 
   it("Marinade desposit: stake 20 SOL", async () => {
     try {
-      const tx = await glamClient.marinade.depositSol(
+      const tx = await glamClient.marinade.deposit(
         statePda,
         new anchor.BN(2e10),
       );
@@ -50,40 +50,41 @@ describe("glam_marinade", () => {
     }
   });
 
-  it("Order unstake 1 mSOL x5", async () => {
+  it("Order unstake 1 mSOL x3", async () => {
     try {
-      for (let i = 0; i < 5; i++) {
-        const tx = await glamClient.marinade.delayedUnstake(
+      for (let i = 0; i < 3; i++) {
+        const tx = await glamClient.marinade.orderUnstake(
           statePda,
           new anchor.BN(1e9),
         );
-        console.log(`Delayed unstake #${i}:`, tx);
+        console.log(`Order unstake #${i}:`, tx);
       }
     } catch (error) {
       console.log("Error", error);
       throw error;
     }
-  }, 20_000);
+  }, 10_000);
 
   it("Check tickets before claim", async () => {
-    const tickets = await glamClient.marinade.getExistingTickets(statePda);
+    const tickets = await glamClient.marinade.getTickets(statePda);
     console.log(
       "Tickets:",
       tickets.map((t) => t.toBase58()),
     );
-    expect(tickets.length).toBe(5);
+    expect(tickets.length).toBe(3);
 
     const stateModel = await glamClient.fetchState(statePda);
+
     expect(stateModel.externalVaultAccounts?.length).toBe(tickets.length);
     expect(stateModel.externalVaultAccounts?.sort()).toEqual(tickets.sort());
-  });
+  }, 10_000);
 
   it("Claim tickets", async () => {
     // wait for 30s so that the ticket is ready to be claimed
     await sleep(30_000);
-    const tickets = await glamClient.marinade.getExistingTickets(statePda);
+    const tickets = await glamClient.marinade.getTickets(statePda);
     try {
-      const tx = await glamClient.marinade.claimTickets(statePda, tickets);
+      const tx = await glamClient.marinade.claim(statePda, tickets);
       console.log("Claim tickets:", tx);
     } catch (error) {
       console.log("Error", error);
@@ -92,7 +93,7 @@ describe("glam_marinade", () => {
   }, 45_000);
 
   it("Check tickets after claim", async () => {
-    const tickets = await glamClient.marinade.getExistingTickets(statePda);
+    const tickets = await glamClient.marinade.getTickets(statePda);
     expect(tickets.length).toBe(0);
 
     const stateModel = await glamClient.fetchState(statePda);
@@ -114,6 +115,9 @@ describe("glam_marinade", () => {
       console.error(e);
       throw e;
     }
+
+    const stateModel = await glamClient.fetchState(statePda);
+    expect(stateModel.externalVaultAccounts?.length).toBe(1);
   });
 
   it("Desposit stake account", async () => {
@@ -123,7 +127,7 @@ describe("glam_marinade", () => {
     expect(stakeAccounts.length).toEqual(1);
 
     try {
-      await glamClient.marinade.depositStake(statePda, stakeAccounts[0]);
+      await glamClient.marinade.depositStakeAccount(statePda, stakeAccounts[0]);
     } catch (error) {
       console.log("Error", error);
       throw error;

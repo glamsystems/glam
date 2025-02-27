@@ -21,7 +21,7 @@ import {
   StateModel,
   FundOpenfundsModel,
   ManagerModel,
-  MintClassOpenfundsModel,
+  MintOpenfundsModel,
   useGlam,
 } from "@glamsystems/glam-sdk/react";
 import { PublicKey } from "@solana/web3.js";

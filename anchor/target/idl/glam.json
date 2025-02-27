@@ -3440,12 +3440,12 @@
       ]
     },
     {
-      "name": "marinade_claim_tickets",
+      "name": "marinade_claim",
       "docs": [
         "Claims tickets that were unstaked in the previous epoch to get SOL.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the instruction.",
+        "- `ctx`: The context containing the required accounts.",
         "",
         "# Permission required",
         "- Permission::Unstake",
@@ -3454,27 +3454,22 @@
         "- Integration::Marinade"
       ],
       "discriminator": [
-        14,
-        146,
-        182,
-        30,
-        205,
-        47,
-        134,
-        189
+        54,
+        44,
+        48,
+        204,
+        218,
+        141,
+        36,
+        5
       ],
       "accounts": [
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "state",
+          "name": "glam_state",
           "writable": true
         },
         {
-          "name": "vault",
+          "name": "glam_vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3490,13 +3485,22 @@
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glam_state"
               }
             ]
           }
         },
         {
-          "name": "marinade_state",
+          "name": "glam_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "address": "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
+        },
+        {
+          "name": "state",
           "writable": true
         },
         {
@@ -3504,142 +3508,28 @@
           "writable": true
         },
         {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
+          "name": "ticket_account",
+          "writable": true
         },
         {
-          "name": "clock",
-          "address": "SysvarC1ock11111111111111111111111111111111"
+          "name": "clock"
         },
         {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
-        },
-        {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "marinade_program",
-          "address": "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
         }
       ],
       "args": []
     },
     {
-      "name": "marinade_delayed_unstake",
-      "docs": [
-        "Unstakes mSOL to get a ticket that can be claimed at the next epoch.",
-        "",
-        "# Parameters",
-        "- `ctx`: The context for the instruction.",
-        "- `msol_amount`: Amount of mSOL to unstake.",
-        "",
-        "# Permission required",
-        "- Permission::Unstake",
-        "",
-        "# Integration required",
-        "- Integration::Marinade"
-      ],
-      "discriminator": [
-        117,
-        66,
-        3,
-        222,
-        230,
-        94,
-        129,
-        95
-      ],
-      "accounts": [
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "state",
-          "writable": true
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "state"
-              }
-            ]
-          }
-        },
-        {
-          "name": "ticket",
-          "writable": true
-        },
-        {
-          "name": "msol_mint",
-          "writable": true
-        },
-        {
-          "name": "burn_msol_from",
-          "writable": true
-        },
-        {
-          "name": "marinade_state",
-          "writable": true
-        },
-        {
-          "name": "reserve_pda",
-          "writable": true
-        },
-        {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
-        },
-        {
-          "name": "clock",
-          "address": "SysvarC1ock11111111111111111111111111111111"
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        },
-        {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "marinade_program",
-          "address": "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
-        }
-      ],
-      "args": [
-        {
-          "name": "msol_amount",
-          "type": "u64"
-        }
-      ]
-    },
-    {
-      "name": "marinade_deposit_sol",
+      "name": "marinade_deposit",
       "docs": [
         "Marinade",
         "Deposits SOL to get mSOL.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the instruction.",
-        "- `lamports`: The amount of SOL to deposit.",
+        "- `ctx`: The context containing the required accounts.",
+        "- `lamports`: The amount of SOL (in lamports) to deposit.",
         "",
         "# Permission required",
         "- Permission::Stake",
@@ -3648,26 +3538,21 @@
         "- Integration::Marinade"
       ],
       "discriminator": [
-        64,
-        140,
-        200,
-        40,
-        56,
-        218,
-        181,
-        68
+        62,
+        236,
+        248,
+        28,
+        222,
+        232,
+        182,
+        73
       ],
       "accounts": [
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
+          "name": "glam_state"
         },
         {
-          "name": "state"
-        },
-        {
-          "name": "vault",
+          "name": "glam_vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3683,17 +3568,22 @@
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glam_state"
               }
             ]
           }
         },
         {
-          "name": "marinade_state",
-          "writable": true
+          "name": "glam_signer",
+          "writable": true,
+          "signer": true
         },
         {
-          "name": "reserve_pda",
+          "name": "cpi_program",
+          "address": "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
+        },
+        {
+          "name": "state",
           "writable": true
         },
         {
@@ -3701,7 +3591,7 @@
           "writable": true
         },
         {
-          "name": "msol_mint_authority",
+          "name": "liq_pool_sol_leg_pda",
           "writable": true
         },
         {
@@ -3709,118 +3599,25 @@
           "writable": true
         },
         {
-          "name": "liq_pool_msol_leg_authority",
-          "writable": true
+          "name": "liq_pool_msol_leg_authority"
         },
         {
-          "name": "liq_pool_sol_leg_pda",
+          "name": "reserve_pda",
           "writable": true
         },
         {
           "name": "mint_to",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "vault"
-              },
-              {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "msol_mint"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
+          "writable": true
         },
         {
-          "name": "marinade_program",
-          "address": "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
-        },
-        {
-          "name": "associated_token_program",
-          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+          "name": "msol_mint_authority"
         },
         {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "name": "token_program"
         }
       ],
       "args": [
@@ -3831,13 +3628,13 @@
       ]
     },
     {
-      "name": "marinade_deposit_stake",
+      "name": "marinade_deposit_stake_account",
       "docs": [
         "Deposits a stake account to get mSOL.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the instruction.",
-        "- `validator_idx`: Validator index.",
+        "- `ctx`: The context containing the required accounts.",
+        "- `validator_idx`: Validator index in Marinade's validator list.",
         "",
         "# Permission required",
         "- Permission::Stake",
@@ -3846,26 +3643,22 @@
         "- Integration::Marinade"
       ],
       "discriminator": [
-        69,
-        207,
-        194,
-        211,
-        186,
-        55,
-        199,
-        130
+        141,
+        230,
+        58,
+        103,
+        56,
+        205,
+        159,
+        138
       ],
       "accounts": [
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
+          "name": "glam_state",
+          "writable": true
         },
         {
-          "name": "state"
-        },
-        {
-          "name": "vault",
+          "name": "glam_vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3881,13 +3674,22 @@
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glam_state"
               }
             ]
           }
         },
         {
-          "name": "marinade_state",
+          "name": "glam_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "address": "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
+        },
+        {
+          "name": "state",
           "writable": true
         },
         {
@@ -3899,7 +3701,7 @@
           "writable": true
         },
         {
-          "name": "vault_stake_account",
+          "name": "stake_account",
           "writable": true
         },
         {
@@ -3911,125 +3713,28 @@
           "writable": true
         },
         {
+          "name": "mint_to",
+          "writable": true
+        },
+        {
           "name": "msol_mint_authority"
         },
         {
-          "name": "mint_to",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "vault"
-              },
-              {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "msol_mint"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
-        },
-        {
-          "name": "clock",
-          "address": "SysvarC1ock11111111111111111111111111111111"
+          "name": "clock"
         },
         {
           "name": "rent",
           "address": "SysvarRent111111111111111111111111111111111"
         },
         {
-          "name": "marinade_program",
-          "address": "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
-        },
-        {
-          "name": "associated_token_program",
-          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
-        },
-        {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "name": "token_program"
         },
         {
-          "name": "stake_program",
-          "address": "Stake11111111111111111111111111111111111111"
+          "name": "stake_program"
         }
       ],
       "args": [
@@ -4042,14 +3747,14 @@
     {
       "name": "marinade_liquid_unstake",
       "docs": [
-        "Unstakes mSOL to get SOL immediately.",
+        "Unstakes mSOL to get SOL immediately with a small fee.",
         "",
         "# Parameters",
-        "- `ctx`: The context for the instruction.",
+        "- `ctx`: The context containing the required accounts.",
         "- `msol_amount`: Amount of mSOL to unstake.",
         "",
         "# Permission required",
-        "- Permission::LiquidUnstake",
+        "- Permission::Unstake",
         "",
         "# Integration required",
         "- Integration::Marinade"
@@ -4066,15 +3771,10 @@
       ],
       "accounts": [
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
+          "name": "glam_state"
         },
         {
-          "name": "state"
-        },
-        {
-          "name": "vault",
+          "name": "glam_vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -4090,13 +3790,22 @@
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glam_state"
               }
             ]
           }
         },
         {
-          "name": "marinade_state",
+          "name": "glam_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "address": "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
+        },
+        {
+          "name": "state",
           "writable": true
         },
         {
@@ -4120,20 +3829,106 @@
           "writable": true
         },
         {
-          "name": "get_msol_from_authority",
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "msol_amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "marinade_order_unstake",
+      "docs": [
+        "Unstakes mSOL to get a ticket that can be claimed at the next epoch.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context containing the required accounts.",
+        "- `msol_amount`: Amount of mSOL to unstake.",
+        "",
+        "# Permission required",
+        "- Permission::Unstake",
+        "",
+        "# Integration required",
+        "- Integration::Marinade"
+      ],
+      "discriminator": [
+        202,
+        3,
+        33,
+        27,
+        183,
+        156,
+        57,
+        231
+      ],
+      "accounts": [
+        {
+          "name": "glam_state",
           "writable": true
         },
         {
-          "name": "marinade_program",
+          "name": "glam_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glam_state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glam_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
           "address": "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "name": "state",
+          "writable": true
         },
         {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
+          "name": "msol_mint",
+          "writable": true
+        },
+        {
+          "name": "burn_msol_from",
+          "writable": true
+        },
+        {
+          "name": "new_ticket_account",
+          "writable": true
+        },
+        {
+          "name": "clock"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        },
+        {
+          "name": "token_program"
         }
       ],
       "args": [

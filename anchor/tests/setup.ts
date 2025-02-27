@@ -5,11 +5,10 @@ import {
   MSOL,
   USDC,
   StateModel,
-  ShareClassOpenfundsModel,
+  MintOpenfundsModel,
   FundOpenfundsModel,
 } from "../src";
 import { Connection } from "@solana/web3.js";
-import { BN } from "@coral-xyz/anchor";
 
 export const sleep = async (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
@@ -73,7 +72,7 @@ export const stateModelForTest = {
         launchPrice: "100",
         launchPriceCurrency: "USD",
         launchPriceDate: new Date().toISOString().split("T")[0],
-      } as Partial<ShareClassOpenfundsModel>,
+      } as Partial<MintOpenfundsModel>,
     },
   ],
   // Glam
