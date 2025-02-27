@@ -10,10 +10,9 @@ Licensed Work: GLAM Protocol
 
 Additional Use Grant: None
 
-Change Date: Four years from first release for the specific version.
+Change Date: 2030-02-03
 
-Change License: MIT, text at https://opensource.org/license/mit/ with the following copyright notice:
-Copyright 2024-present Lamport Systems, Inc.
+Change License: [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
 ## Terms
 
