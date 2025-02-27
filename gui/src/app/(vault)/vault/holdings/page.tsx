@@ -51,6 +51,7 @@ import { useTheme } from "next-themes";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { TransferForm } from "./components/transfer-form";
+import { WrapForm } from "./components/wrap-form";
 
 const SKELETON_ROW_COUNT = 5;
 
@@ -152,6 +153,7 @@ export default function Holdings() {
   const [isDepositSheetOpen, setIsDepositSheetOpen] = useState(false);
   const [isWithdrawSheetOpen, setIsWithdrawSheetOpen] = useState(false);
   const [isTransferSheetOpen, setIsTransferSheetOpen] = useState(false);
+  const [isWrapSheetOpen, setIsWrapSheetOpen] = useState(false);
 
   const [selectedAsset, setSelectedAsset] = useState<string>("SOL");
   const [assetBalance, setAssetBalance] = useState(
@@ -195,18 +197,22 @@ export default function Holdings() {
   const closeWithdrawSheet = () => setIsWithdrawSheetOpen(false);
   const openTransferSheet = () => setIsTransferSheetOpen(true);
   const closeTransferSheet = () => setIsTransferSheetOpen(false);
+  const openWrapSheet = () => setIsWrapSheetOpen(true);
+  const closeWrapSheet = () => setIsWrapSheetOpen(false);
 
   useEffect(() => {
     isSheetOpen ||
       isDepositSheetOpen ||
       isWithdrawSheetOpen ||
       isTransferSheetOpen ||
+      isWrapSheetOpen ||
       refresh();
   }, [
     isSheetOpen,
     isDepositSheetOpen,
     isWithdrawSheetOpen,
     isTransferSheetOpen,
+    isWrapSheetOpen,
   ]);
 
   const createSkeletonHolding = (): Holding => ({
@@ -441,6 +447,7 @@ export default function Holdings() {
         onOpenDepositSheet={openDepositSheet}
         onOpenWithdrawSheet={openWithdrawSheet}
         onOpenTransferSheet={openTransferSheet}
+        onOpenWrapSheet={openWrapSheet}
       />
       <Sheet
         open={isSheetOpen}
@@ -635,7 +642,7 @@ export default function Holdings() {
         <SheetTrigger asChild></SheetTrigger>
         <SheetContent
           side="right"
-          className="p-12 sm:max-w-none w-1/4 overflow-y-auto max-h-screen"
+          className="p-12 sm:max-w-none w-2/5 overflow-y-auto max-h-screen"
         >
           <SheetHeader>
             <SheetTitle>Deposit</SheetTitle>
@@ -804,7 +811,7 @@ export default function Holdings() {
         <SheetTrigger asChild></SheetTrigger>
         <SheetContent
           side="right"
-          className="p-12 sm:max-w-none w-1/4 overflow-y-auto max-h-screen"
+          className="p-12 sm:max-w-none w-2/5 overflow-y-auto max-h-screen"
         >
           <SheetHeader>
             <SheetTitle>Withdraw</SheetTitle>
@@ -1052,6 +1059,30 @@ export default function Holdings() {
 
           <div className="py-6">
             <TransferForm onClose={() => setIsTransferSheetOpen(false)} />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      <Sheet
+        open={isWrapSheetOpen}
+        onOpenChange={(change) => {
+          setIsWrapSheetOpen(change);
+        }}
+      >
+        <SheetTrigger asChild></SheetTrigger>
+        <SheetContent
+          side="right"
+          className="p-12 sm:max-w-none w-2/5 overflow-y-auto max-h-screen"
+        >
+          <SheetHeader>
+            <SheetTitle>Wrap/Unwrap SOL</SheetTitle>
+            <SheetDescription>
+              Wrap SOL into wSOL or unwrap wSOL back to SOL.
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="py-6">
+            <WrapForm onClose={() => setIsWrapSheetOpen(false)} />
           </div>
         </SheetContent>
       </Sheet>
