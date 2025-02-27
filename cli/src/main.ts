@@ -1089,7 +1089,7 @@ lst
     }
 
     try {
-      const txSig = await glamClient.marinade.claimTickets(
+      const txSig = await glamClient.marinade.claim(
         statePda,
         tickets.map((addr: string) => new PublicKey(addr)),
       );

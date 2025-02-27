@@ -195,14 +195,16 @@ impl StateAccount {
     }
 
     pub fn add_to_engine_field(&mut self, engine_field_name: EngineFieldName, pubkey: Pubkey) {
-        // Try to find the MarinadeTickets field, if it exists.
         let mut engine_field = self.params[0]
             .iter_mut()
             .find(|field| field.name == engine_field_name);
 
         // If the field does not exist, create it and push it to params.
         if engine_field.is_none() {
-            msg!("Adding engine field {:?} to fund params", engine_field_name);
+            msg!(
+                "Adding engine field {:?} to state params",
+                engine_field_name
+            );
             self.params[0].push(EngineField {
                 name: engine_field_name,
                 value: EngineFieldValue::VecPubkey { val: Vec::new() },
@@ -213,7 +215,6 @@ impl StateAccount {
                 .find(|field| field.name == engine_field_name);
         }
 
-        // Now, safely add the ticket to the VecPubkey in the MarinadeTickets field.
         if let Some(EngineField {
             value: EngineFieldValue::VecPubkey { val },
             ..
