@@ -6,6 +6,7 @@ import {
   TransactionInstruction,
   TransactionSignature,
   ComputeBudgetProgram,
+  SystemProgram,
 } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import { BaseClient, TxOptions } from "./base";
@@ -366,13 +367,38 @@ export class StateClient {
   /* Deposit & Withdraw */
 
   public async deposit(
-    statePda: PublicKey,
-    asset: PublicKey,
+    glamState: PublicKey | string,
+    asset: PublicKey | string,
     amount: number | BN,
-    txOptions: TxOptions = {} as TxOptions,
+    txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const tx = await this.depositTx(statePda, asset, amount, txOptions);
+    const tx = await this.depositTx(
+      new PublicKey(glamState),
+      new PublicKey(asset),
+      amount,
+      txOptions,
+    );
     return await this.base.sendAndConfirm(tx);
+  }
+
+  public async depositSol(
+    glamState: PublicKey,
+    lamports: number | BN,
+    txOptions: TxOptions = {},
+  ): Promise<TransactionSignature> {
+    const signer = txOptions.signer || this.base.getSigner();
+    const vault = this.base.getVaultPda(glamState);
+
+    const tx = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey: signer,
+        toPubkey: vault,
+        lamports:
+          lamports instanceof BN ? BigInt(lamports.toString()) : lamports,
+      }),
+    );
+    const vTx = await this.base.intoVersionedTransaction(tx, txOptions);
+    return await this.base.sendAndConfirm(vTx);
   }
 
   public async withdraw(

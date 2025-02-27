@@ -2,15 +2,28 @@
 
 import { DataTable } from "./components/data-table";
 import { columns } from "./components/columns";
-import { AssetInput } from "@/components/AssetInput";
-import { useForm, FormProvider } from "react-hook-form";
+import { Asset, AssetInput } from "@/components/AssetInput";
+import { useForm, SubmitHandler, FormProvider } from "react-hook-form";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { z } from "zod";
-import React, { useEffect, useMemo, useState, useRef } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+  useCallback,
+} from "react";
 import { PublicKey } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import PageContentWrapper from "@/components/PageContentWrapper";
-import { useGlam, WSOL } from "@glamsystems/glam-sdk/react";
+import {
+  Vault,
+  useGlam,
+  WSOL,
+  TokenPrice,
+  GlamDriftUser,
+  DriftMarketConfigs,
+  JupTokenListItem,
+} from "@glamsystems/glam-sdk/react";
 import { Holding } from "./data/holdingSchema";
 import {
   Sheet,
@@ -52,6 +65,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { TransferForm } from "./components/transfer-form";
 import { WrapForm } from "./components/wrap-form";
+import { Form } from "@/components/ui/form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const SKELETON_ROW_COUNT = 5;
 
@@ -131,6 +147,101 @@ const VaultQRCode = React.memo(({ pubkey }: { pubkey: string }) => {
   );
 });
 
+const depositSchema = z.object({
+  amount: z.number(),
+});
+type DepositSchema = z.infer<typeof depositSchema>;
+
+/**
+ * Transforms vault data into a list of holdings
+ */
+function getVaultToHoldings(
+  vault: Vault,
+  prices?: TokenPrice[],
+  jupTokenList?: JupTokenListItem[],
+  driftUser?: GlamDriftUser,
+  driftMarketConfigs?: DriftMarketConfigs,
+): Holding[] {
+  const holdings: Holding[] = [];
+
+  // Add SOL balance if available
+  if (vault.uiAmount && vault.balanceLamports > 0) {
+    const mint = WSOL.toBase58();
+    const price = prices?.find((p) => p.mint === mint)?.price || 0;
+    holdings.push({
+      name: "Solana",
+      symbol: "SOL",
+      mint: "",
+      ata: "",
+      price,
+      amount: vault?.balanceLamports.toString() || "NaN",
+      balance: vault?.uiAmount || NaN,
+      decimals: 9,
+      notional: vault.uiAmount * price || NaN,
+      location: "vault",
+      logoURI:
+        "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
+      lst: false,
+    });
+  }
+
+  (vault?.tokenAccounts || []).forEach(
+    ({ mint, pubkey, amount, uiAmount, decimals }) => {
+      const jupToken = jupTokenList?.find((t) => t.address === mint.toBase58());
+      const logoURI = jupToken?.logoURI || "";
+      const name = jupToken?.name || "Unknown";
+      const symbol = jupToken?.symbol || mint.toBase58();
+      const price = prices?.find((p) => p.mint === mint.toBase58())?.price || 0;
+      const tags = jupToken?.tags || [];
+      holdings.push({
+        name,
+        symbol: symbol === "SOL" ? "wSOL" : symbol,
+        mint: mint.toBase58(),
+        ata: pubkey.toBase58(),
+        price,
+        amount,
+        balance: uiAmount,
+        decimals,
+        notional: uiAmount * price || 0,
+        logoURI,
+        location: "vault",
+        lst: tags.indexOf("lst") >= 0,
+      });
+    },
+  );
+
+  (driftUser?.spotPositions || []).forEach(({ marketIndex, balance }) => {
+    const market = driftMarketConfigs?.spot?.find(
+      (m) => m.marketIndex === marketIndex,
+    );
+    const price = prices?.find((p) => p.mint === market?.mint)?.price || 0;
+    const decimals = market?.decimals || 9;
+    const amount = Number(balance) * 10 ** decimals;
+
+    holdings.push({
+      name: `${marketIndex}`,
+      symbol: market?.symbol || "",
+      mint: "",
+      ata: "",
+      price,
+      amount: amount.toString(),
+      balance: Number(balance),
+      decimals,
+      notional: Number(balance) * price || 0,
+      logoURI: "https://avatars.githubusercontent.com/u/83389928?s=48&v=4",
+      location: "drift",
+      lst: false,
+    });
+  });
+
+  holdings.sort((a, b) => {
+    if (b.location > a.location) return 1;
+    if (b.location < a.location) return -1;
+    return b.balance - a.balance;
+  });
+  return holdings;
+}
+
 export default function Holdings() {
   const {
     activeGlamState,
@@ -147,10 +258,8 @@ export default function Holdings() {
 
   const [showZeroBalances, setShowZeroBalances] = useState(true);
   const [isLoadingData, setIsLoading] = useState(true);
-  const [txStatus, setTxStatus] = useState({ rename: false, close: false });
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [isDepositSheetOpen, setIsDepositSheetOpen] = useState(false);
   const [isWithdrawSheetOpen, setIsWithdrawSheetOpen] = useState(false);
   const [isTransferSheetOpen, setIsTransferSheetOpen] = useState(false);
   const [isWrapSheetOpen, setIsWrapSheetOpen] = useState(false);
@@ -166,31 +275,70 @@ export default function Holdings() {
     }
   }, [userWallet?.balanceLamports, selectedAsset]);
 
-  const depositForm = useForm({
-    defaultValues: {
-      amount: "",
-    },
+  const [txStatus, setTxStatus] = useState({
+    rename: false,
+    close: false,
+    deposit: false,
   });
 
-  const handleAssetSelect = (asset: string) => {
-    setSelectedAsset(asset);
+  const [isDetailsSheetOpen, setIsDetailsSheetOpen] = useState(false);
+  const [isDepositSheetOpen, setIsDepositSheetOpen] = useState(false);
 
-    // Get balance from user wallet
-    if (asset === "SOL") {
-      setAssetBalance((userWallet?.balanceLamports || 0) / LAMPORTS_PER_SOL);
-    } else {
-      const tokenAccount = (userWallet?.tokenAccounts || []).find(
-        (a) => a.mint.toBase58() === asset,
-      );
-      if (tokenAccount) {
-        setAssetBalance(tokenAccount.uiAmount);
-      } else {
-        setAssetBalance(0);
-      }
-    }
-  };
-  const openSheet = () => setIsSheetOpen(true);
-  const closeSheet = () => setIsSheetOpen(false);
+  const depositForm = useForm<DepositSchema>({
+    resolver: zodResolver(depositSchema),
+    defaultValues: { amount: 0 },
+  });
+
+  const defaultDepositAsset = useMemo(
+    () => ({
+      name: "Solana",
+      symbol: "SOL",
+      address: "",
+      decimals: 9,
+      balance: userWallet?.uiAmount || 0,
+    }),
+    [userWallet],
+  );
+  const [depositAsset, setDepositAsset] = useState<Asset>(defaultDepositAsset);
+
+  // On wallet changes reset states
+  useEffect(() => {
+    depositForm.reset();
+    setDepositAsset(defaultDepositAsset);
+  }, [userWallet]);
+
+  const userWalletAssets = useMemo(
+    () => [
+      {
+        name: "SOL",
+        symbol: "SOL",
+        balance: userWallet?.uiAmount || 0,
+        address: "SOL",
+        decimals: 9,
+      },
+      ...(userWallet?.tokenAccounts || [])
+        .filter((ta) => ta.uiAmount > 0)
+        .map(({ mint, uiAmount, decimals }) => {
+          const address = mint.toBase58();
+          const token = jupTokenList?.find((t) => t.address === address);
+          const symbol =
+            (token?.symbol === "SOL" ? "wSOL" : token?.symbol) ||
+            address.slice(0, 6) + "...";
+          const name = token?.name || address;
+          return {
+            name,
+            symbol,
+            balance: uiAmount,
+            address,
+            decimals,
+          };
+        }),
+    ],
+    [userWallet, jupTokenList],
+  );
+
+  const openDetailsSheet = () => setIsDetailsSheetOpen(true);
+  const closeDetailsSheet = () => setIsDetailsSheetOpen(false);
   const openDepositSheet = () => setIsDepositSheetOpen(true);
   const closeDepositSheet = () => setIsDepositSheetOpen(false);
   const openWithdrawSheet = () => setIsWithdrawSheetOpen(true);
@@ -215,130 +363,37 @@ export default function Holdings() {
     isWrapSheetOpen,
   ]);
 
-  const createSkeletonHolding = (): Holding => ({
-    name: "",
-    symbol: "",
-    mint: "",
-    ata: "",
-    price: 0,
-    amount: "0",
-    balance: 0,
-    decimals: 0,
-    notional: 0,
-    logoURI: "",
-    location: "",
-    lst: false,
-  });
-
-  const skeletonData = useMemo(() => {
-    return Array(SKELETON_ROW_COUNT).fill(null).map(createSkeletonHolding);
-  }, []);
+  const skeletonData = useMemo(
+    () =>
+      Array(SKELETON_ROW_COUNT).fill({
+        name: "",
+        symbol: "",
+        mint: "",
+        ata: "",
+        price: 0,
+        amount: "0",
+        balance: 0,
+        decimals: 0,
+        notional: 0,
+        logoURI: "",
+        location: "",
+        lst: false,
+      } as Holding),
+    [],
+  );
 
   const [tableData, setTableData] = useState<Holding[]>([]);
 
-  const { resolvedTheme } = useTheme();
-
-  // Effect for handling QR code rendering and cleanup
   useEffect(() => {
-    const holdings: Holding[] = [];
-    if (vault.uiAmount && vault.balanceLamports > 0) {
-      const mint = WSOL.toBase58();
-      const price = prices?.find((p) => p.mint === mint)?.price || 0;
-      holdings.push({
-        name: "Solana",
-        symbol: "SOL",
-        mint: "",
-        ata: "",
-        price,
-        amount: vault?.balanceLamports.toString() || "NaN",
-        balance: vault?.uiAmount || NaN,
-        decimals: 9,
-        notional: vault.uiAmount * price || 0,
-        location: "vault",
-        logoURI:
-          "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
-        lst: false,
-      });
-    }
-
-    if (vault?.tokenAccounts) {
-      holdings.push(
-        ...vault.tokenAccounts.map(
-          ({ mint, pubkey, amount, uiAmount, decimals }) => {
-            const jupToken = jupTokenList?.find(
-              (t) => t.address === mint.toBase58(),
-            );
-            const logoURI = jupToken?.logoURI || "";
-            const name = jupToken?.name || "Unknown";
-            const symbol = jupToken?.symbol || mint.toBase58();
-            const price =
-              prices?.find((p) => p.mint === mint.toBase58())?.price || 0;
-            const tags = jupToken?.tags || [];
-
-            return {
-              name,
-              symbol: symbol === "SOL" ? "wSOL" : symbol,
-              mint: mint.toBase58(),
-              ata: pubkey.toBase58(),
-              price,
-              amount,
-              balance: uiAmount,
-              decimals,
-              notional: uiAmount * price || 0,
-              logoURI,
-              location: "vault",
-              lst: tags.indexOf("lst") >= 0,
-            };
-          },
-        ),
-      );
-    }
-
-    const { spotPositions } = driftUser;
-
-    if (spotPositions && spotPositions.length > 0) {
-      const spotMarkets = driftMarketConfigs.spot;
-      const driftHoldings = spotPositions.map((p) => {
-        const market = spotMarkets.find((m) => m.marketIndex === p.marketIndex);
-        const price = prices?.find((p) => p.mint === market?.mint)?.price || 0;
-        // FIXME: balance is UI amount added by glam api, it doesn't existing in the drift sdk types
-        // @ts-ignore
-        const balance = Number(p.balance);
-        const decimals = market?.decimals || 9;
-        const amount = new BN(balance).mul(new BN(10 ** decimals));
-        return {
-          name: `${p.marketIndex}`,
-          symbol: market?.symbol || "",
-          mint: "NA",
-          ata: "NA",
-          price,
-          amount: amount.toString(),
-          balance,
-          decimals,
-          notional: balance * price || 0,
-          logoURI: "https://avatars.githubusercontent.com/u/83389928?s=48&v=4",
-          location: "drift",
-          lst: false,
-        };
-      });
-      holdings.push(...driftHoldings);
-    }
-
-    holdings.sort((a, b) => {
-      if (b.location > a.location) return 1;
-      if (b.location < a.location) return -1;
-      return b.balance - a.balance;
-    });
-    setTableData(holdings);
-  }, [vault, driftUser, jupTokenList, prices]);
-
-  useEffect(() => {
-    if (activeGlamState && vault && jupTokenList && prices) {
-      setIsLoading(false);
-    } else {
-      setIsLoading(true);
-    }
-  }, [vault, jupTokenList, prices, activeGlamState]);
+    const vaultHoldings = getVaultToHoldings(
+      vault,
+      prices,
+      jupTokenList,
+      driftUser,
+      driftMarketConfigs,
+    );
+    setTableData(vaultHoldings);
+  }, [vault, driftUser, jupTokenList, prices, driftMarketConfigs]);
 
   const vaultAddress = vault?.pubkey ? vault.pubkey.toBase58() : "";
   const ownerAddress = activeGlamState?.owner
@@ -354,22 +409,24 @@ export default function Holdings() {
     if (!activeGlamState?.pubkey) {
       return;
     }
-    const statePda = activeGlamState.pubkey;
 
+    const glamState = activeGlamState.pubkey;
     const tokenAccounts = (tableData || [])
-      .filter((d) => d.ata && d.location === "vault")
-      .map((d) => new PublicKey(d.ata));
+      .filter((row) => row.ata && row.location === "vault")
+      .map((row) => new PublicKey(row.ata));
 
-    let preInstructions = (
+    const preInstructions = (
       await Promise.all(
         (tableData || [])
-          .filter((d) => d.balance > 0 && d.mint && d.location === "vault")
-          .map(async (d) => {
-            console.log(`withdraw ${d.name} from ${d.location}`);
+          .filter(
+            (row) => row.balance > 0 && row.mint && row.location === "vault",
+          )
+          .map(async (row) => {
+            console.log(`withdraw ${row.name} from ${row.location}`);
             return await glamClient.state.withdrawIxs(
-              statePda,
-              new PublicKey(d.mint),
-              new BN(d.amount),
+              glamState,
+              new PublicKey(row.mint),
+              new BN(row.amount),
               {},
             );
           }),
@@ -378,12 +435,12 @@ export default function Holdings() {
 
     console.log("closing ATAs:", tokenAccounts);
     preInstructions.push(
-      await glamClient.state.closeTokenAccountsIx(statePda, tokenAccounts),
+      await glamClient.state.closeTokenAccountsIx(glamState, tokenAccounts),
     );
 
     setTxStatus((prev) => ({ ...prev, close: true }));
     try {
-      const txSig = await glamClient.state.closeState(statePda, {
+      const txSig = await glamClient.state.closeState(glamState, {
         preInstructions,
       });
       toast({
@@ -430,29 +487,116 @@ export default function Holdings() {
     setTxStatus((prev) => ({ ...prev, rename: false }));
   };
 
+  const onSetAmount = useCallback(
+    (input: "half" | "max") => {
+      console.log(
+        `Deposit ${depositAsset.symbol} (${depositAsset.address}), current balance:`,
+        depositAsset.balance,
+      );
+
+      if (depositAsset.balance <= 0.000001) {
+        // Use small epsilon for floating point comparison
+        toast({
+          title: "No balance available",
+          description: `You don't have any ${depositAsset.symbol} balance to deposit.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      let amount: number;
+      if (depositAsset.symbol === "SOL") {
+        const availableAfterFees = Math.max(0, depositAsset.balance - 0.005);
+        console.log("Available after fees:", availableAfterFees);
+
+        if (availableAfterFees <= 0.000001) {
+          toast({
+            title: "Insufficient balance",
+            description:
+              "Need to keep at least 0.005 SOL for transaction fees.",
+            variant: "destructive",
+          });
+          return;
+        }
+        amount = availableAfterFees / (input === "half" ? 2 : 1);
+      } else {
+        amount = depositAsset.balance / (input === "half" ? 2 : 1);
+      }
+
+      console.log(`Setting ${input} amount:`, amount.toPrecision(6));
+      depositForm.setValue("amount", Number(amount.toPrecision(6)));
+    },
+    [depositAsset, depositForm],
+  );
+
+  const onSubmitDeposit: SubmitHandler<DepositSchema> = useCallback(
+    async (values, event) => {
+      if (!activeGlamState) {
+        return;
+      }
+
+      setTxStatus((prev) => ({ ...prev, deposit: true }));
+      const { amount } = values;
+      try {
+        console.log("Deposit data:", {
+          asset: depositAsset,
+          amount,
+        });
+
+        const txSig =
+          depositAsset.symbol === "SOL"
+            ? await glamClient.state.depositSol(
+                activeGlamState.pubkey,
+                amount * LAMPORTS_PER_SOL,
+              )
+            : await glamClient.state.deposit(
+                activeGlamState.pubkey,
+                depositAsset.address!,
+                amount * 10 ** depositAsset.decimals!,
+              );
+
+        toast({
+          title: "Deposit sent",
+          description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
+        });
+
+        // Close the sheet after successful deposit and reset states
+        setIsDepositSheetOpen(false);
+        depositForm.reset();
+        setDepositAsset(defaultDepositAsset);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Deposit failed",
+          description: parseTxError(error),
+        });
+      }
+      setTxStatus((prev) => ({ ...prev, deposit: false }));
+    },
+    [activeGlamState, depositAsset, depositForm, userWallet],
+  );
+
   return (
     <PageContentWrapper>
       <DataTable
         data={
-          isLoadingData
+          tableData.length === 0
             ? skeletonData
-            : showZeroBalances
-              ? tableData
-              : tableData.filter((d) => d.balance > 0)
+            : tableData.filter((d) => d.balance > 0 || showZeroBalances)
         }
         columns={columns}
         showZeroBalances={showZeroBalances}
         setShowZeroBalances={setShowZeroBalances}
-        onOpenSheet={openSheet}
+        onOpenSheet={openDetailsSheet}
         onOpenDepositSheet={openDepositSheet}
         onOpenWithdrawSheet={openWithdrawSheet}
         onOpenTransferSheet={openTransferSheet}
         onOpenWrapSheet={openWrapSheet}
       />
       <Sheet
-        open={isSheetOpen}
+        open={isDetailsSheetOpen}
         onOpenChange={(change) => {
-          setIsSheetOpen(change);
+          setIsDetailsSheetOpen(change);
           setIsEditingName(false);
         }}
       >
@@ -633,12 +777,7 @@ export default function Holdings() {
         </SheetContent>
       </Sheet>
 
-      <Sheet
-        open={isDepositSheetOpen}
-        onOpenChange={(change) => {
-          setIsDepositSheetOpen(change);
-        }}
-      >
+      <Sheet open={isDepositSheetOpen} onOpenChange={setIsDepositSheetOpen}>
         <SheetTrigger asChild></SheetTrigger>
         <SheetContent
           side="right"
@@ -652,152 +791,60 @@ export default function Holdings() {
           </SheetHeader>
 
           <FormProvider {...depositForm}>
-            <form
-              className="flex flex-col space-y-6 py-6"
-              onSubmit={depositForm.handleSubmit(async (data) => {
-                if (!selectedAsset) {
-                  // TODO: Show error toast that asset must be selected
-                  return;
-                }
-
-                try {
-                  // TODO: Execute deposit transaction
-                  console.log("Deposit data:", {
-                    asset: selectedAsset,
-                    amount: data.amount,
-                  });
-
-                  // Close the sheet after successful deposit
-                  setIsDepositSheetOpen(false);
-                  // Reset form
-                  depositForm.reset();
-                  setSelectedAsset("SOL");
-                  setAssetBalance(
-                    (userWallet?.balanceLamports || 0) / LAMPORTS_PER_SOL,
-                  );
-                } catch (error) {
-                  console.error("Deposit failed:", error);
-                  // TODO: Show error toast
-                }
-              })}
-            >
-              <div className="flex items-center gap-2">
-                <AssetInput
-                  name="amount"
-                  label="Amount"
-                  balance={assetBalance}
-                  hideBalance={true}
-                  className="flex-1"
-                  selectedAsset={selectedAsset}
-                  onSelectAsset={handleAssetSelect}
-                  assets={[
-                    {
-                      name: "SOL",
-                      symbol: "SOL",
-                      balance:
-                        (userWallet?.balanceLamports || 0) / LAMPORTS_PER_SOL,
-                      address: "SOL",
-                    },
-                    ...(userWallet?.tokenAccounts || []).map((ta) => {
-                      const address = ta.mint.toBase58();
-                      const tokenInfo = jupTokenList?.find(
-                        (t) => t.address === address,
-                      );
-                      return {
-                        name: tokenInfo?.name || address,
-                        symbol:
-                          tokenInfo?.symbol || address.slice(0, 6) + "...",
-                        balance: ta.uiAmount,
-                        address: address,
-                      };
-                    }),
-                  ]}
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="px-2 h-10 mt-8"
-                  onClick={() => {
-                    console.log("Current balance:", assetBalance);
-
-                    if (assetBalance <= 0.000001) {
-                      // Use small epsilon for floating point comparison
-                      toast({
-                        title: "No balance available",
-                        description: `You don't have any ${selectedAsset} balance to deposit.`,
-                        variant: "destructive",
-                      });
-                      return;
-                    }
-
-                    if (selectedAsset === "SOL") {
-                      const availableAfterFees = Math.max(
-                        0,
-                        assetBalance - 0.05,
-                      );
-                      console.log("Available after fees:", availableAfterFees);
-
-                      if (availableAfterFees <= 0.000001) {
-                        toast({
-                          title: "Insufficient balance",
-                          description:
-                            "Need to keep at least 0.05 SOL for transaction fees.",
-                          variant: "destructive",
-                        });
-                        return;
-                      }
-                      const halfAmount = availableAfterFees / 2;
-                      console.log("Setting half amount:", halfAmount);
-                      depositForm.setValue("amount", halfAmount.toString());
-                    } else {
-                      const halfAmount = assetBalance / 2;
-                      console.log("Setting half amount:", halfAmount);
-                      depositForm.setValue("amount", halfAmount.toString());
-                    }
-                  }}
-                  type="button"
-                >
-                  Half
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="px-2 h-10 mt-8"
-                  onClick={() => {
-                    if (selectedAsset === "SOL") {
-                      const solBalance =
-                        (userWallet?.balanceLamports || 0) / LAMPORTS_PER_SOL;
-                      const maxAmount = Math.max(0, solBalance - 0.05);
-                      depositForm.setValue("amount", String(maxAmount));
-                    } else {
-                      depositForm.setValue("amount", String(assetBalance));
-                    }
-                  }}
-                  type="button"
-                >
-                  Max
-                </Button>
-              </div>
-
-              {selectedAsset === "SOL" &&
-                (userWallet?.balanceLamports || 0) / LAMPORTS_PER_SOL <
-                  0.05 && (
-                  <div className="text-sm text-red-500 mb-2">
-                    Insufficient SOL balance. We recommend leaving 0.05 SOL in
-                    your wallet for transaction fees.
-                  </div>
-                )}
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={
-                  selectedAsset === "SOL" &&
-                  (userWallet?.balanceLamports || 0) / LAMPORTS_PER_SOL < 0.05
-                }
+            <Form {...depositForm}>
+              <form
+                className="flex flex-col space-y-6 py-6"
+                onSubmit={depositForm.handleSubmit(onSubmitDeposit)}
               >
-                Deposit
-              </Button>
-            </form>
+                <div className="flex items-top gap-2">
+                  <AssetInput
+                    name="amount"
+                    label="Amount"
+                    className="flex-1"
+                    selectedAsset={depositAsset.symbol}
+                    onSelectAsset={setDepositAsset}
+                    assets={userWalletAssets}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="px-2 h-10 mt-8"
+                    onClick={() => onSetAmount("half")}
+                    type="button"
+                  >
+                    Half
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="px-2 h-10 mt-8"
+                    onClick={() => onSetAmount("max")}
+                    type="button"
+                  >
+                    Max
+                  </Button>
+                </div>
+
+                {depositAsset.symbol === "SOL" &&
+                  userWallet.uiAmount < 0.005 && (
+                    <div className="text-sm text-red-500 mb-2">
+                      Insufficient SOL balance. We recommend leaving 0.005 SOL
+                      in your wallet for transaction fees.
+                    </div>
+                  )}
+
+                <Button
+                  type="submit"
+                  className="w-full"
+                  loading={txStatus.deposit}
+                  disabled={
+                    depositAsset.symbol === "SOL" && userWallet.uiAmount < 0.005
+                  }
+                >
+                  Deposit
+                </Button>
+              </form>
+            </Form>
           </FormProvider>
         </SheetContent>
       </Sheet>
@@ -861,7 +908,7 @@ export default function Holdings() {
                     return;
                   }
 
-                  const amount = parseFloat(data.amount);
+                  const amount = data.amount;
                   if (isNaN(amount) || amount <= 0) {
                     toast({
                       title: "Invalid amount",
@@ -930,9 +977,8 @@ export default function Holdings() {
                   className="flex-1"
                   selectedAsset={selectedAsset}
                   onSelectAsset={(asset) => {
-                    setSelectedAsset(asset);
-                    // Reset amount when changing assets
-                    depositForm.setValue("amount", "");
+                    setSelectedAsset(asset.symbol);
+                    depositForm.setValue("amount", 0);
                   }}
                   assets={[
                     // Include SOL if vault holds SOL
@@ -988,7 +1034,7 @@ export default function Holdings() {
                     }
 
                     const halfAmount = currentBalance / 2;
-                    depositForm.setValue("amount", halfAmount.toString());
+                    depositForm.setValue("amount", halfAmount);
                   }}
                   type="button"
                 >
@@ -1019,7 +1065,7 @@ export default function Holdings() {
                       return;
                     }
 
-                    depositForm.setValue("amount", currentBalance.toString());
+                    depositForm.setValue("amount", currentBalance);
                   }}
                   type="button"
                 >

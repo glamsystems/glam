@@ -161,7 +161,9 @@ export default function Wrap() {
                   ]}
                   balance={displayBalance}
                   selectedAsset={amountAsset}
-                  onSelectAsset={setAmountAsset}
+                  onSelectAsset={(asset) => {
+                    setAmountAsset(asset.symbol);
+                  }}
                   disableAssetChange={true}
                   disableAmountInput={direction === "unwrap"}
                   useMaxAmount={direction === "unwrap"}

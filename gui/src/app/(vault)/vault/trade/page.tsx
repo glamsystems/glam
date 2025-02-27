@@ -1136,8 +1136,8 @@ export default function Trade() {
                       }
                       selectedAsset={fromAsset}
                       onSelectAsset={(from) => {
-                        setFromAsset(from);
-                        if (from === toAsset) {
+                        setFromAsset(from.symbol);
+                        if (from.symbol === toAsset) {
                           setToAsset(toAsset === "SOL" ? "USDC" : "SOL");
                         }
                       }}
@@ -1181,8 +1181,8 @@ export default function Trade() {
                       }
                       selectedAsset={toAsset}
                       onSelectAsset={(to) => {
-                        setToAsset(to);
-                        if (to === fromAsset) {
+                        setToAsset(to.symbol);
+                        if (to.symbol === fromAsset) {
                           setFromAsset(fromAsset === "SOL" ? "USDC" : "SOL");
                         }
                       }}

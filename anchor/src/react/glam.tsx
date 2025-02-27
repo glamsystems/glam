@@ -37,7 +37,7 @@ export interface JupTokenListItem {
   tags: string[];
 }
 
-interface TokenPrice {
+export interface TokenPrice {
   mint: string;
   price: number; // USD
 }
@@ -66,7 +66,7 @@ interface UserWallet {
   tokenAccounts: TokenAccount[];
 }
 
-interface Vault {
+export interface Vault {
   pubkey: PublicKey;
   balanceLamports: number; // TODO: this should be a BN or string, it works until ~9M SOL
   uiAmount: number;
@@ -243,12 +243,11 @@ export function GlamProvider({
 
   const refreshDelegateAcls = async () => {
     if (activeGlamState?.pubkey) {
-      console.log(
-        "fetching delegate acls for active glam state:",
-        activeGlamState.address,
-      );
       const glamState = await glamClient.fetchState(activeGlamState?.pubkey);
-      console.log("delegate acls:", glamState.delegateAcls);
+      console.log(
+        `${activeGlamState.address} delegate acls:`,
+        glamState.delegateAcls,
+      );
       setDelegateAcls(glamState.delegateAcls || []);
     }
   };
@@ -308,7 +307,7 @@ export function GlamProvider({
   // Balance and token accounts of the connected wallet
   //
   const walletBalancesQueryKey = ["balances", wallet?.publicKey];
-  const { data: walletBalances } = useQuery({
+  const { data: walletBalances, refetch: refetchWalletBalances } = useQuery({
     queryKey: walletBalancesQueryKey,
     enabled: !!wallet?.publicKey,
     queryFn: () => fetchBalances(glamClient, wallet?.publicKey!),
@@ -365,7 +364,7 @@ export function GlamProvider({
   //
   // Fetch drift positions
   //
-  const { data: driftUserData } = useQuery({
+  const { data: driftUserData, refetch: refetchDriftUser } = useQuery({
     queryKey: ["/drift-positions", vault?.pubkey],
     enabled: !!vault,
     refetchInterval: 30 * 1000,
@@ -395,6 +394,8 @@ export function GlamProvider({
     refresh: async () => {
       refreshVaultHoldings();
       refreshDelegateAcls();
+      refetchDriftUser();
+      refetchWalletBalances();
     },
   };
 

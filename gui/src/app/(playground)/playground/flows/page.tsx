@@ -650,7 +650,9 @@ function InvestorWidget({ fundModel }: { fundModel?: StateModel }) {
                 label="Amount"
                 balance={balance}
                 selectedAsset={amountInAsset}
-                onSelectAsset={setAmountInAsset}
+                onSelectAsset={(asset) => {
+                  setAmountInAsset(asset.symbol);
+                }}
                 disableAssetChange={true}
               />
             </div>

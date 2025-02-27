@@ -33,16 +33,16 @@ export interface Asset {
   symbol: string;
   address?: string;
   decimals?: number;
-  balance: number;
+  balance: number; // ui amount
 }
 
 interface AssetInputProps {
   name: string;
   label: string;
-  balance: number;
+  balance?: number;
   assets?: Asset[];
   selectedAsset?: string;
-  onSelectAsset?: (value: string) => void;
+  onSelectAsset?: (asset: Asset) => void;
   className?: string;
   step?: string;
   disableAssetChange?: boolean;
@@ -70,19 +70,14 @@ export const AssetInput: React.FC<AssetInputProps> = ({
   disableSubmitOnEnter = true,
 }) => {
   const { control, getValues, setValue, reset } = useFormContext();
-  // const [displayValue, setDisplayValue] = useState<string>("0");
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [selected, setSelected] = useState<string>(selectedAsset || "");
 
-  const handleSelect = (value: string) => {
+  const handleSelect = (value: Asset) => {
     onSelectAsset(value);
+    setSelected(value.symbol);
     setOpen(false);
-  };
-
-  const handleBalanceClick = () => {
-    // const balanceValue = balance.toString();
-    // setDisplayValue(balanceValue);
-    setValue(name, balance);
   };
 
   useEffect(() => {
@@ -91,30 +86,21 @@ export const AssetInput: React.FC<AssetInputProps> = ({
 
   useEffect(() => {
     if (useMaxAmount) {
-      // const balanceValue = balance.toString();
-      // setDisplayValue(balanceValue);
       setValue(name, balance);
-    } else {
-      setValue(name, 0);
-      // setDisplayValue("0");
-    }
-  }, [useMaxAmount, balance, name, setValue]);
-
-  useEffect(() => {
-    if (!useMaxAmount) {
+    } else if (selected) {
       setValue(name, "");
     }
-  }, [selectedAsset, setValue, name, useMaxAmount]);
+  }, [useMaxAmount, balance, selected, name, setValue]);
 
+  const selectedAssetBalance = assets.find(
+    (asset) => asset.symbol === selected,
+  )?.balance;
   const formattedBalance = new Intl.NumberFormat("en-US").format(
-    assets.find((asset) => asset.symbol === selectedAsset)?.balance ||
-      balance ||
-      0,
+    balance || selectedAssetBalance || 0,
   );
 
   const handleInputChange = (value: string) => {
     if (/^\d*\.?\d*$/.test(value)) {
-      // setDisplayValue(value);
       const numericValue = parseFloat(value.replace(/,/g, ""));
       if (!isNaN(numericValue)) {
         setValue(name, numericValue);
@@ -122,16 +108,6 @@ export const AssetInput: React.FC<AssetInputProps> = ({
         setValue(name, "");
       }
     }
-  };
-
-  const formatDisplayValue = (value: string) => {
-    const [integerPart, decimalPart] = value.split(".");
-    const formattedIntegerPart = new Intl.NumberFormat("en-US").format(
-      parseInt(integerPart || "0"),
-    );
-    return decimalPart
-      ? `${formattedIntegerPart}.${decimalPart}`
-      : formattedIntegerPart;
   };
 
   hideBalance = hideBalance || Number.isNaN(balance);
@@ -151,11 +127,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
                 step={step}
                 ref={inputRef}
                 onClick={() => setValue(name, "")}
-                value={
-                  disableAmountInput
-                    ? getValues()[name] || ""
-                    : getValues()[name]
-                }
+                value={getValues()[name]}
                 className="pr-20"
                 placeholder="0"
                 onChange={(e) => handleInputChange(e.target.value)}
@@ -178,7 +150,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
                       variant="secondary"
                       className="absolute pr-2 pl-2 h-6 inset-y-0 top-2 right-2 border-l-0"
                     >
-                      {selectedAsset || "Asset"}
+                      {selected || "Asset"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="p-0" side="right" align="start">
@@ -191,7 +163,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
                             <CommandItem
                               key={asset.address}
                               value={asset.symbol}
-                              onSelect={() => handleSelect(asset.symbol)}
+                              onSelect={() => handleSelect(asset)}
                             >
                               <span className="font-medium text-nowrap">
                                 {asset.symbol}
@@ -216,7 +188,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
                   className="absolute pr-2 pl-2 h-6 inset-y-0 top-2 right-2 border-l-0"
                   disabled
                 >
-                  {selectedAsset || "Asset"}
+                  {selected || "Asset"}
                 </Button>
               )}
             </div>
@@ -228,7 +200,9 @@ export const AssetInput: React.FC<AssetInputProps> = ({
                 className={`select-none cursor-pointer ${
                   disableAmountInput ? "pointer-events-none text-gray-400" : ""
                 }`}
-                onClick={!disableAmountInput ? handleBalanceClick : undefined}
+                onClick={() => {
+                  disableAmountInput || setValue(name, selectedAssetBalance);
+                }}
               >
                 {formattedBalance}
               </FormDescription>
