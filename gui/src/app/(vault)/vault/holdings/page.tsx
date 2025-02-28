@@ -23,6 +23,7 @@ import {
   GlamDriftUser,
   DriftMarketConfigs,
   JupTokenListItem,
+  TokenAccount,
 } from "@glamsystems/glam-sdk/react";
 import { Holding } from "./data/holdingSchema";
 import {
@@ -62,7 +63,6 @@ import { Input } from "@/components/ui/input";
 import { PencilIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Skeleton } from "@/components/ui/skeleton";
-import Link from "next/link";
 import { TransferForm } from "./components/transfer-form";
 import { WrapForm } from "./components/wrap-form";
 import { Form } from "@/components/ui/form";
@@ -151,6 +151,11 @@ const depositSchema = z.object({
   amount: z.number(),
 });
 type DepositSchema = z.infer<typeof depositSchema>;
+
+const withdrawSchema = z.object({
+  amount: z.number(),
+});
+type WithdrawSchema = z.infer<typeof withdrawSchema>;
 
 /**
  * Transforms vault data into a list of holdings
@@ -242,6 +247,29 @@ function getVaultToHoldings(
   return holdings;
 }
 
+function tokenAccountsToAssets(
+  tokenAccounts: TokenAccount[],
+  jupTokenList?: JupTokenListItem[],
+) {
+  return tokenAccounts
+    .filter((ta) => ta.uiAmount > 0)
+    .map(({ mint, uiAmount, decimals }) => {
+      const address = mint.toBase58();
+      const token = jupTokenList?.find((t) => t.address === address);
+      const symbol =
+        (token?.symbol === "SOL" ? "wSOL" : token?.symbol) ||
+        address.slice(0, 6) + "...";
+      const name = token?.name || address;
+      return {
+        name,
+        symbol,
+        balance: uiAmount,
+        address,
+        decimals,
+      };
+    });
+}
+
 export default function Holdings() {
   const {
     activeGlamState,
@@ -257,35 +285,26 @@ export default function Holdings() {
   } = useGlam();
 
   const [showZeroBalances, setShowZeroBalances] = useState(true);
-  const [isLoadingData, setIsLoading] = useState(true);
 
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isDetailsSheetOpen, setIsDetailsSheetOpen] = useState(false);
+  const [isDepositSheetOpen, setIsDepositSheetOpen] = useState(false);
   const [isWithdrawSheetOpen, setIsWithdrawSheetOpen] = useState(false);
   const [isTransferSheetOpen, setIsTransferSheetOpen] = useState(false);
   const [isWrapSheetOpen, setIsWrapSheetOpen] = useState(false);
-
-  const [selectedAsset, setSelectedAsset] = useState<string>("SOL");
-  const [assetBalance, setAssetBalance] = useState(
-    (userWallet?.balanceLamports || 0) / LAMPORTS_PER_SOL,
-  );
-
-  useEffect(() => {
-    if (selectedAsset === "SOL") {
-      setAssetBalance((userWallet?.balanceLamports || 0) / LAMPORTS_PER_SOL);
-    }
-  }, [userWallet?.balanceLamports, selectedAsset]);
 
   const [txStatus, setTxStatus] = useState({
     rename: false,
     close: false,
     deposit: false,
+    withdraw: false,
   });
-
-  const [isDetailsSheetOpen, setIsDetailsSheetOpen] = useState(false);
-  const [isDepositSheetOpen, setIsDepositSheetOpen] = useState(false);
 
   const depositForm = useForm<DepositSchema>({
     resolver: zodResolver(depositSchema),
+    defaultValues: { amount: 0 },
+  });
+  const withdrawForm = useForm<WithdrawSchema>({
+    resolver: zodResolver(withdrawSchema),
     defaultValues: { amount: 0 },
   });
 
@@ -300,6 +319,10 @@ export default function Holdings() {
     [userWallet],
   );
   const [depositAsset, setDepositAsset] = useState<Asset>(defaultDepositAsset);
+  const [withdrawAsset, setWithdrawAsset] = useState<Asset>({
+    ...defaultDepositAsset,
+    balance: vault?.uiAmount || 0,
+  });
 
   // On wallet changes reset states
   useEffect(() => {
@@ -310,31 +333,28 @@ export default function Holdings() {
   const userWalletAssets = useMemo(
     () => [
       {
-        name: "SOL",
+        name: "Solana",
         symbol: "SOL",
         balance: userWallet?.uiAmount || 0,
-        address: "SOL",
+        address: "",
         decimals: 9,
       },
-      ...(userWallet?.tokenAccounts || [])
-        .filter((ta) => ta.uiAmount > 0)
-        .map(({ mint, uiAmount, decimals }) => {
-          const address = mint.toBase58();
-          const token = jupTokenList?.find((t) => t.address === address);
-          const symbol =
-            (token?.symbol === "SOL" ? "wSOL" : token?.symbol) ||
-            address.slice(0, 6) + "...";
-          const name = token?.name || address;
-          return {
-            name,
-            symbol,
-            balance: uiAmount,
-            address,
-            decimals,
-          };
-        }),
+      ...tokenAccountsToAssets(userWallet?.tokenAccounts || [], jupTokenList),
     ],
     [userWallet, jupTokenList],
+  );
+  const vaultAssets = useMemo(
+    () => [
+      {
+        name: "Solana",
+        symbol: "SOL",
+        balance: vault.uiAmount || 0,
+        address: "",
+        decimals: 9,
+      },
+      ...tokenAccountsToAssets(vault?.tokenAccounts || [], jupTokenList),
+    ],
+    [vault, jupTokenList],
   );
 
   const openDetailsSheet = () => setIsDetailsSheetOpen(true);
@@ -349,14 +369,14 @@ export default function Holdings() {
   const closeWrapSheet = () => setIsWrapSheetOpen(false);
 
   useEffect(() => {
-    isSheetOpen ||
+    isDetailsSheetOpen ||
       isDepositSheetOpen ||
       isWithdrawSheetOpen ||
       isTransferSheetOpen ||
       isWrapSheetOpen ||
       refresh();
   }, [
-    isSheetOpen,
+    isDetailsSheetOpen,
     isDepositSheetOpen,
     isWithdrawSheetOpen,
     isTransferSheetOpen,
@@ -488,25 +508,29 @@ export default function Holdings() {
   };
 
   const onSetAmount = useCallback(
-    (input: "half" | "max") => {
+    (
+      input: "half" | "max",
+      action: "deposit" | "withdraw",
+      asset: Asset,
+      form: any,
+    ) => {
       console.log(
-        `Deposit ${depositAsset.symbol} (${depositAsset.address}), current balance:`,
-        depositAsset.balance,
+        `${action} ${asset.symbol} (${asset.address}), current balance:`,
+        asset.balance,
       );
 
-      if (depositAsset.balance <= 0.000001) {
-        // Use small epsilon for floating point comparison
+      if (asset.balance <= 0.000001) {
         toast({
           title: "No balance available",
-          description: `You don't have any ${depositAsset.symbol} balance to deposit.`,
+          description: `You don't have any ${asset.symbol} balance to ${action}.`,
           variant: "destructive",
         });
         return;
       }
 
       let amount: number;
-      if (depositAsset.symbol === "SOL") {
-        const availableAfterFees = Math.max(0, depositAsset.balance - 0.005);
+      if (asset.symbol === "SOL" && action === "deposit") {
+        const availableAfterFees = Math.max(0, asset.balance - 0.005);
         console.log("Available after fees:", availableAfterFees);
 
         if (availableAfterFees <= 0.000001) {
@@ -520,13 +544,13 @@ export default function Holdings() {
         }
         amount = availableAfterFees / (input === "half" ? 2 : 1);
       } else {
-        amount = depositAsset.balance / (input === "half" ? 2 : 1);
+        amount = asset.balance / (input === "half" ? 2 : 1);
       }
 
       console.log(`Setting ${input} amount:`, amount.toPrecision(6));
-      depositForm.setValue("amount", Number(amount.toPrecision(6)));
+      form.setValue("amount", Number(amount.toPrecision(6)));
     },
-    [depositAsset, depositForm],
+    [],
   );
 
   const onSubmitDeposit: SubmitHandler<DepositSchema> = useCallback(
@@ -576,6 +600,75 @@ export default function Holdings() {
     [activeGlamState, depositAsset, depositForm, userWallet],
   );
 
+  const onSubmitWithdraw: SubmitHandler<WithdrawSchema> = useCallback(
+    async (values, event) => {
+      if (!withdrawAsset) {
+        toast({
+          title: "Asset not selected",
+          description: "Please select an asset to withdraw",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!activeGlamState?.pubkey || !glamClient) {
+        toast({
+          title: "Vault not available",
+          description: "Please ensure your vault is properly set up",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { amount } = values;
+      if (amount <= 0) {
+        toast({
+          title: "Invalid amount",
+          description: "Please enter a valid amount to withdraw",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      try {
+        setTxStatus((prev) => ({ ...prev, withdraw: true }));
+
+        const txId = await glamClient.state.withdraw(
+          activeGlamState.pubkey,
+          withdrawAsset.symbol === "SOL"
+            ? WSOL.toBase58()
+            : new PublicKey(withdrawAsset.address!),
+          amount * 10 ** withdrawAsset.decimals!,
+          {
+            getPriorityFeeMicroLamports,
+            maxFeeLamports: getMaxCapFeeLamports(),
+          },
+        );
+
+        toast({
+          title: `Withdrew ${amount} ${withdrawAsset.symbol === "SOL" ? "SOL" : withdrawAsset.symbol}`,
+          description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+        });
+
+        // Close the sheet after successful withdrawal and reset states
+        setIsWithdrawSheetOpen(false);
+        withdrawForm.reset();
+        setWithdrawAsset({
+          ...defaultDepositAsset,
+          balance: vault?.uiAmount || 0,
+        });
+      } catch (error) {
+        toast({
+          title: "Withdrawal failed",
+          description: parseTxError(error),
+          variant: "destructive",
+        });
+      }
+      setTxStatus((prev) => ({ ...prev, withdraw: false }));
+    },
+    [],
+  );
+
   return (
     <PageContentWrapper>
       <DataTable
@@ -587,7 +680,7 @@ export default function Holdings() {
         columns={columns}
         showZeroBalances={showZeroBalances}
         setShowZeroBalances={setShowZeroBalances}
-        onOpenSheet={openDetailsSheet}
+        onOpenDetailsSheet={openDetailsSheet}
         onOpenDepositSheet={openDepositSheet}
         onOpenWithdrawSheet={openWithdrawSheet}
         onOpenTransferSheet={openTransferSheet}
@@ -809,7 +902,9 @@ export default function Holdings() {
                     variant="outline"
                     size="sm"
                     className="px-2 h-10 mt-8"
-                    onClick={() => onSetAmount("half")}
+                    onClick={() =>
+                      onSetAmount("half", "deposit", depositAsset, depositForm)
+                    }
                     type="button"
                   >
                     Half
@@ -818,7 +913,9 @@ export default function Holdings() {
                     variant="outline"
                     size="sm"
                     className="px-2 h-10 mt-8"
-                    onClick={() => onSetAmount("max")}
+                    onClick={() =>
+                      onSetAmount("max", "deposit", depositAsset, depositForm)
+                    }
                     type="button"
                   >
                     Max
@@ -867,220 +964,65 @@ export default function Holdings() {
             </SheetDescription>
           </SheetHeader>
 
-          <FormProvider {...depositForm}>
-            <form
-              className="flex flex-col space-y-6 py-6"
-              onSubmit={depositForm.handleSubmit(async (data) => {
-                if (!selectedAsset) {
-                  toast({
-                    title: "Asset not selected",
-                    description: "Please select an asset to withdraw",
-                    variant: "destructive",
-                  });
-                  return;
-                }
-
-                try {
-                  if (!activeGlamState?.pubkey || !glamClient) {
-                    toast({
-                      title: "Vault not available",
-                      description:
-                        "Please ensure your vault is properly set up",
-                      variant: "destructive",
-                    });
-                    return;
-                  }
-
-                  // Find the asset in the vault
-                  const asset = tableData.find(
-                    (item) =>
-                      (item.symbol === "SOL" && selectedAsset === "SOL") ||
-                      item.mint === selectedAsset,
-                  );
-
-                  if (!asset) {
-                    toast({
-                      title: "Asset not found in vault",
-                      description:
-                        "The selected asset was not found in your vault",
-                      variant: "destructive",
-                    });
-                    return;
-                  }
-
-                  const amount = data.amount;
-                  if (isNaN(amount) || amount <= 0) {
-                    toast({
-                      title: "Invalid amount",
-                      description: "Please enter a valid amount to withdraw",
-                      variant: "destructive",
-                    });
-                    return;
-                  }
-
-                  // Calculate amount in base units
-                  const amountBaseUnits = new BN(
-                    Math.floor(amount * 10 ** asset.decimals),
-                  );
-
-                  // Execute withdraw transaction
-                  const txId = await glamClient.state.withdraw(
-                    activeGlamState.pubkey,
-                    new PublicKey(
-                      selectedAsset === "SOL" ? WSOL.toBase58() : selectedAsset,
-                    ),
-                    amountBaseUnits,
-                    {
-                      getPriorityFeeMicroLamports,
-                      maxFeeLamports: getMaxCapFeeLamports(),
-                    },
-                  );
-
-                  toast({
-                    title: `Withdrew ${amount} ${selectedAsset === "SOL" ? "SOL" : asset.symbol}`,
-                    description: (
-                      <ExplorerLink path={`tx/${txId}`} label={txId} />
-                    ),
-                  });
-
-                  // Close the sheet after successful withdrawal
-                  setIsWithdrawSheetOpen(false);
-                  // Reset form
-                  depositForm.reset();
-                  setSelectedAsset("SOL");
-                } catch (error) {
-                  console.error("Withdrawal failed:", error);
-                  toast({
-                    title: "Withdrawal failed",
-                    description: parseTxError(error),
-                    variant: "destructive",
-                  });
-                }
-              })}
-            >
-              <div className="flex items-center gap-2">
-                <AssetInput
-                  name="amount"
-                  label="Amount"
-                  balance={(() => {
-                    // Get balance from vault based on selected asset
-                    if (selectedAsset === "SOL") {
-                      return vault?.uiAmount || 0;
-                    } else {
-                      const tokenAccount = (vault?.tokenAccounts || []).find(
-                        (a) => a.mint.toBase58() === selectedAsset,
-                      );
-                      return tokenAccount ? tokenAccount.uiAmount : 0;
-                    }
-                  })()}
-                  hideBalance={true}
-                  className="flex-1"
-                  selectedAsset={selectedAsset}
-                  onSelectAsset={(asset) => {
-                    setSelectedAsset(asset.symbol);
-                    depositForm.setValue("amount", 0);
-                  }}
-                  assets={[
-                    // Include SOL if vault holds SOL
-                    ...(vault.uiAmount > 0
-                      ? [
-                          {
-                            name: "Solana",
-                            symbol: "SOL",
-                            balance: vault.uiAmount || 0,
-                            address: "SOL",
-                          },
-                        ]
-                      : []),
-                    // Include all SPL tokens in vault
-                    ...(vault?.tokenAccounts || []).map((ta) => {
-                      const address = ta.mint.toBase58();
-                      const tokenInfo = jupTokenList?.find(
-                        (t) => t.address === address,
-                      );
-                      return {
-                        name: tokenInfo?.name || address,
-                        symbol:
-                          tokenInfo?.symbol || address.slice(0, 6) + "...",
-                        balance: ta.uiAmount,
-                        address: address,
-                      };
-                    }),
-                  ]}
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="px-2 h-10 mt-8"
-                  onClick={() => {
-                    const currentBalance = (() => {
-                      if (selectedAsset === "SOL") {
-                        return vault?.uiAmount || 0;
-                      } else {
-                        const tokenAccount = (vault?.tokenAccounts || []).find(
-                          (a) => a.mint.toBase58() === selectedAsset,
-                        );
-                        return tokenAccount ? tokenAccount.uiAmount : 0;
-                      }
-                    })();
-
-                    if (currentBalance <= 0) {
-                      toast({
-                        title: "No balance available",
-                        description: `You don't have any ${selectedAsset} balance in your vault.`,
-                        variant: "destructive",
-                      });
-                      return;
-                    }
-
-                    const halfAmount = currentBalance / 2;
-                    depositForm.setValue("amount", halfAmount);
-                  }}
-                  type="button"
-                >
-                  Half
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="px-2 h-10 mt-8"
-                  onClick={() => {
-                    const currentBalance = (() => {
-                      if (selectedAsset === "SOL") {
-                        return vault?.uiAmount || 0;
-                      } else {
-                        const tokenAccount = (vault?.tokenAccounts || []).find(
-                          (a) => a.mint.toBase58() === selectedAsset,
-                        );
-                        return tokenAccount ? tokenAccount.uiAmount : 0;
-                      }
-                    })();
-
-                    if (currentBalance <= 0) {
-                      toast({
-                        title: "No balance available",
-                        description: `You don't have any ${selectedAsset} balance in your vault.`,
-                        variant: "destructive",
-                      });
-                      return;
-                    }
-
-                    depositForm.setValue("amount", currentBalance);
-                  }}
-                  type="button"
-                >
-                  Max
-                </Button>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={!vault || vault.uiAmount === 0}
+          <FormProvider {...withdrawForm}>
+            <Form {...withdrawForm}>
+              <form
+                className="flex flex-col space-y-6 py-6"
+                onSubmit={withdrawForm.handleSubmit(onSubmitWithdraw)}
               >
-                Withdraw
-              </Button>
-            </form>
+                <div className="flex items-top gap-2">
+                  <AssetInput
+                    name="amount"
+                    label="Amount"
+                    className="flex-1"
+                    selectedAsset={withdrawAsset.symbol}
+                    onSelectAsset={setWithdrawAsset}
+                    assets={vaultAssets}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="px-2 h-10 mt-8"
+                    onClick={() =>
+                      onSetAmount(
+                        "half",
+                        "withdraw",
+                        withdrawAsset,
+                        withdrawForm,
+                      )
+                    }
+                    type="button"
+                  >
+                    Half
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="px-2 h-10 mt-8"
+                    onClick={() =>
+                      onSetAmount(
+                        "max",
+                        "withdraw",
+                        withdrawAsset,
+                        withdrawForm,
+                      )
+                    }
+                    type="button"
+                  >
+                    Max
+                  </Button>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={vaultAssets.length === 0}
+                  loading={txStatus.withdraw}
+                >
+                  Withdraw
+                </Button>
+              </form>
+            </Form>
           </FormProvider>
         </SheetContent>
       </Sheet>

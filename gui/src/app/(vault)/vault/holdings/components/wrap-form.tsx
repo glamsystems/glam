@@ -110,7 +110,7 @@ export function WrapForm({ onClose }: WrapFormProps) {
         title: `Successful ${direction}`,
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
       });
-      
+
       // Close the sheet after successful operation
       onClose();
     } catch (error) {
@@ -165,7 +165,7 @@ export function WrapForm({ onClose }: WrapFormProps) {
               ]}
               balance={displayBalance}
               selectedAsset={amountAsset}
-              onSelectAsset={setAmountAsset}
+              onSelectAsset={(asset) => setAmountAsset(asset.symbol)}
               disableAssetChange={true}
               disableAmountInput={direction === "unwrap"}
               useMaxAmount={direction === "unwrap"}

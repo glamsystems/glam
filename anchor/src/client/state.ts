@@ -402,12 +402,17 @@ export class StateClient {
   }
 
   public async withdraw(
-    statePda: PublicKey,
-    asset: PublicKey,
+    glamState: PublicKey,
+    asset: PublicKey | string,
     amount: number | BN,
     txOptions: TxOptions = {} as TxOptions,
   ): Promise<TransactionSignature> {
-    const tx = await this.withdrawTx(statePda, asset, amount, txOptions);
+    const tx = await this.withdrawTx(
+      glamState,
+      new PublicKey(asset),
+      amount,
+      txOptions,
+    );
     return await this.base.sendAndConfirm(tx);
   }
 

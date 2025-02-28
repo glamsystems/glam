@@ -67,7 +67,7 @@ export function TransferForm({ onClose }: TransferFormProps) {
 
   const vaultAssets = () => {
     if (!vault || !jupTokenList) return [];
-    
+
     const assets = (vault?.tokenAccounts || []).map(
       ({ mint, uiAmount, decimals }) => {
         const jupToken = jupTokenList?.find(
@@ -102,27 +102,29 @@ export function TransferForm({ onClose }: TransferFormProps) {
 
   const driftAssets = () => {
     if (!driftUser || !driftMarketConfigs) return [];
-    
+
     const { spotPositions } = driftUser;
-    const assets = (spotPositions || []).map((position: any) => {
-      // balance is a string of ui amount, needs to be converted to number
-      const { marketIndex, balance } = position;
-      const marketConfig = driftMarketConfigs.spot.find(
-        (spot) => spot.marketIndex === marketIndex,
-      );
-      if (!marketConfig) {
-        return {} as Asset;
-      }
-      const { symbol, mint, decimals } = marketConfig;
-      return {
-        name: symbol,
-        symbol,
-        address: mint,
-        decimals,
-        balance: Number(balance),
-      } as Asset;
-    }).filter(asset => Object.keys(asset).length > 0);
-    
+    const assets = (spotPositions || [])
+      .map((position: any) => {
+        // balance is a string of ui amount, needs to be converted to number
+        const { marketIndex, balance } = position;
+        const marketConfig = driftMarketConfigs.spot.find(
+          (spot) => spot.marketIndex === marketIndex,
+        );
+        if (!marketConfig) {
+          return {} as Asset;
+        }
+        const { symbol, mint, decimals } = marketConfig;
+        return {
+          name: symbol,
+          symbol,
+          address: mint,
+          decimals,
+          balance: Number(balance),
+        } as Asset;
+      })
+      .filter((asset) => Object.keys(asset).length > 0);
+
     return assets;
   };
 
@@ -318,7 +320,7 @@ export function TransferForm({ onClose }: TransferFormProps) {
                 )?.balance || 0
               }
               selectedAsset={amountAsset}
-              onSelectAsset={setAmountAsset}
+              onSelectAsset={(asset) => setAmountAsset(asset.symbol)}
             />
             <FormField
               control={form.control}

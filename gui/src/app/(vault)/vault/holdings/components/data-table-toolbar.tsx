@@ -34,7 +34,7 @@ interface DataTableToolbarProps<TData> {
   table: Table<TData>;
   showZeroBalances: boolean;
   setShowZeroBalances: (showZeroBalances: boolean) => void;
-  onOpenSheet: () => void;
+  onOpenDetailsSheet: () => void;
   onOpenDepositSheet: () => void;
   onOpenWithdrawSheet: () => void;
   onOpenTransferSheet: () => void;
@@ -45,7 +45,7 @@ export function DataTableToolbar<TData>({
   table,
   showZeroBalances,
   setShowZeroBalances,
-  onOpenSheet,
+  onOpenDetailsSheet,
   onOpenDepositSheet,
   onOpenWithdrawSheet,
   onOpenTransferSheet,
@@ -55,55 +55,47 @@ export function DataTableToolbar<TData>({
   const { refresh } = useGlam();
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between space-x-2">
       <div className="flex flex-1 items-center space-x-2">
-        <div className="flex space-x-2">
-          <Button
-            variant="default"
-            size="sm"
-            className="h-8"
-            onClick={onOpenSheet}
-          >
-            <QrCodeIcon className="mr-2 w-4 h-4" />
-            Details
-          </Button>
-          <Button
-            variant="default"
-            size="sm"
-            className="h-8"
-            onClick={onOpenDepositSheet}
-          >
-            <OpenInNewWindowIcon className="mr-2 w-4 h-4 transform rotate-90" />
-            Deposit
-          </Button>
-          <Button
-            variant="default"
-            size="sm"
-            className="h-8"
-            onClick={onOpenWithdrawSheet}
-          >
-            <ExternalLinkIcon className="mr-2 w-4 h-4" />
-            Withdraw
-          </Button>
-          <Button
-            variant="default"
-            size="sm"
-            className="h-8"
-            onClick={onOpenTransferSheet}
-          >
-            <LoopIcon className="mr-2 w-4 h-4" />
-            Transfer
-          </Button>
-          <Button
-            variant="default"
-            size="sm"
-            className="h-8"
-            onClick={onOpenWrapSheet}
-          >
-            <MarginIcon className="mr-2 w-4 h-4" />
-            Wrap
-          </Button>
-        </div>
+        <Button
+          variant="default"
+          size="sm"
+          className="h-8 space-x-2"
+          onClick={onOpenDetailsSheet}
+        >
+          <QrCodeIcon className="w-4 h-4" />
+          <span className="hidden xl:block">Details</span>
+        </Button>
+        <Button
+          variant="default"
+          size="sm"
+          className="h-8 space-x-2"
+          onClick={onOpenDepositSheet}
+        >
+          <OpenInNewWindowIcon className="w-4 h-4 transform rotate-90" />
+          <span className="hidden xl:block">Deposit</span>
+        </Button>
+        <Button
+          variant="default"
+          size="sm"
+          className="h-8 space-x-2"
+          onClick={onOpenWithdrawSheet}
+        >
+          <ExternalLinkIcon className="w-4 h-4" />
+          <span className="hidden xl:block">Withdraw</span>
+        </Button>
+        <Button
+          size="sm"
+          className="h-8 space-x-2"
+          onClick={onOpenTransferSheet}
+        >
+          <LoopIcon className="w-4 h-4" />
+          <span className="hidden xl:block">Transfer</span>
+        </Button>
+        <Button size="sm" className="h-8 space-x-2" onClick={onOpenWrapSheet}>
+          <MarginIcon className="w-4 h-4" />
+          <span className="hidden xl:block">Wrap</span>
+        </Button>
 
         <Input
           placeholder="Search holdings..."
@@ -111,24 +103,24 @@ export function DataTableToolbar<TData>({
           onChange={(event) =>
             table.getColumn("symbol")?.setFilterValue(event.target.value)
           }
-          className="h-8 w-[150px] lg:w-1/3"
+          className="h-8"
         />
 
         {isFiltered && (
           <Button
             variant="ghost"
             onClick={() => table.resetColumnFilters()}
-            className="h-8 px-2 lg:px-3"
+            className="h-8 px-2 space-x-2"
           >
-            Reset
-            <Cross2Icon className="ml-2 h-4 w-4" />
+            <span>Reset</span>
+            <Cross2Icon className="h-4 w-4" />
           </Button>
         )}
       </div>
 
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="icon" className="mr-2 h-8 flex">
+          <Button variant="outline" size="icon" className="h-8 flex">
             <MixerHorizontalIcon className="h-4 w-4" />
           </Button>
         </PopoverTrigger>
