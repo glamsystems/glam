@@ -27,10 +27,6 @@ pub mod glam {
 
     use super::*;
 
-    //////////////////////////////////////////////////////////////////////
-    /// State
-    //////////////////////////////////////////////////////////////////////
-
     /// Initializes a state account from the provided StateModel instance.
     ///
     /// # Parameters
@@ -113,10 +109,6 @@ pub mod glam {
     pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
         glam_state::withdraw(ctx, amount)
     }
-
-    //////////////////////////////////////////////////////////////////////
-    /// Mint
-    //////////////////////////////////////////////////////////////////////
 
     /// Adds a new mint.
     ///
@@ -234,10 +226,6 @@ pub mod glam {
         mint::set_token_accounts_states_handler(ctx, mint_id, frozen)
     }
 
-    //////////////////////////////////////////////////////////////////////
-    /// Investor
-    //////////////////////////////////////////////////////////////////////
-
     /// Subscribes to a specified amount of shares.
     ///
     /// # Parameters
@@ -268,10 +256,6 @@ pub mod glam {
     ) -> Result<()> {
         investor::redeem_handler(ctx, amount, in_kind, skip_state)
     }
-
-    //////////////////////////////////////////////////////////////////////
-    /// Drift
-    //////////////////////////////////////////////////////////////////////
 
     /// Initializes a drift account owned by vault and creates a subaccount.
     ///
@@ -494,10 +478,6 @@ pub mod glam {
         cpi_autogen::drift::drift_cancel_orders_by_ids(ctx, order_ids)
     }
 
-    //////////////////////////////////////////////////////////////////////
-    /// Marinade
-    //////////////////////////////////////////////////////////////////////
-
     /// Deposits SOL to get mSOL.
     ///
     /// # Parameters
@@ -583,10 +563,6 @@ pub mod glam {
         marinade::marinade_claim(ctx)
     }
 
-    //////////////////////////////////////////////////////////////////////
-    // Stake pool
-    //////////////////////////////////////////////////////////////////////
-
     /// Deposits SOL to a stake pool to get pool token.
     ///
     /// # Parameters
@@ -651,10 +627,6 @@ pub mod glam {
     ) -> Result<()> {
         stake_pool::withdraw_stake_handler(ctx, pool_token_amount)
     }
-
-    //////////////////////////////////////////////////////////////////////
-    // Native staking
-    //////////////////////////////////////////////////////////////////////
 
     /// Initializes a stake account and delegates it to a validator.
     ///
@@ -756,10 +728,6 @@ pub mod glam {
         stake::redelegate_stake_handler(ctx)
     }
 
-    //////////////////////////////////////////////////////////////////////
-    // Jupiter swap
-    //////////////////////////////////////////////////////////////////////
-
     /// Swaps assets using Jupiter.
     ///
     /// # Parameters
@@ -797,10 +765,6 @@ pub mod glam {
     ) -> Result<()> {
         jupiter::set_max_swap_slippage_handler(ctx, slippage)
     }
-
-    //////////////////////////////////////////////////////////////////////
-    // Jupiter vote
-    //////////////////////////////////////////////////////////////////////
 
     /// Initializes a locked voter escrow.
     ///
@@ -974,9 +938,6 @@ pub mod glam {
         jupiter_vote::jupiter_vote_cast_vote_checked(ctx, side, expected_side)
     }
 
-    //////////////////////////////////////////////////////////////////////
-    // Kamino
-    //////////////////////////////////////////////////////////////////////
     pub fn kamino_lending_init_user_metadata<'info>(
         ctx: Context<KaminoLendingInitUserMetadata>,
         user_lookup_table: Pubkey,
@@ -1005,10 +966,6 @@ pub mod glam {
         cpi_autogen::kamino_lending::kamino_lending_deposit_reserve_liquidity_and_obligation_collateral(ctx, liquidity_amount)
     }
 
-    //////////////////////////////////////////////////////////////////////
-    // wSOL
-    //////////////////////////////////////////////////////////////////////
-
     /// Wraps SOL to get wSOL.
     ///
     /// # Parameters
@@ -1019,6 +976,18 @@ pub mod glam {
     /// - Permission::WSolWrap
     pub fn wsol_wrap(ctx: Context<WSolWrap>, lamports: u64) -> Result<()> {
         wsol::wrap_handler(ctx, lamports)
+    }
+
+    /// Transfer vault SOL to wSOL token account.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the instruction.
+    /// - `lamports`: The amount of SOL to transfer.
+    ///
+    /// # Permission required
+    /// - Permission::WSolWrap
+    pub fn transfer_sol_to_wsol(ctx: Context<SolToWSol>, lamports: u64) -> Result<()> {
+        wsol::sol_to_wsol_handler(ctx, lamports)
     }
 
     /// Unwraps all wSOL to get SOL.

@@ -167,7 +167,7 @@ export class FatcatGlamClient extends GlamClient {
       const initStateIx = await this.program.methods
         .initializeState(stateModel)
         .accountsPartial({
-          state,
+          glamState: state,
         })
         .instruction();
       preInstructions.push(initStateIx);

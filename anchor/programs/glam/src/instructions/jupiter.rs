@@ -1,7 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
-use glam_macros::vault_signer_seeds;
 
 use solana_program::{instruction::Instruction, program::invoke_signed};
 
@@ -79,18 +78,18 @@ impl Jupiter {
 
 #[derive(Accounts)]
 pub struct JupiterSetMaxSwapSlippage<'info> {
-    #[account(mut, constraint = state.owner == signer.key() @ GlamError::NotAuthorized)]
-    pub state: Account<'info, StateAccount>,
+    #[account(mut, constraint = glam_state.owner == glam_signer.key() @ GlamError::NotAuthorized)]
+    pub glam_state: Account<'info, StateAccount>,
 
     #[account(mut)]
-    pub signer: Signer<'info>,
+    pub glam_signer: Signer<'info>,
 }
 
 pub fn set_max_swap_slippage_handler(
     ctx: Context<JupiterSetMaxSwapSlippage>,
     slippage: u64,
 ) -> Result<()> {
-    let state = &mut ctx.accounts.state;
+    let state = &mut ctx.accounts.glam_state;
     state.set_max_swap_slippage(slippage);
     Ok(())
 }
@@ -98,14 +97,20 @@ pub fn set_max_swap_slippage_handler(
 #[derive(Accounts)]
 pub struct JupiterSwap<'info> {
     #[account(mut)]
-    pub state: Box<Account<'info, StateAccount>>,
-    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
-    pub vault: SystemAccount<'info>,
+    pub glam_state: Box<Account<'info, StateAccount>>,
+
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), glam_state.key().as_ref()], bump)]
+    pub glam_vault: SystemAccount<'info>,
+
+    #[account(mut)]
+    pub glam_signer: Signer<'info>,
+
+    pub cpi_program: Program<'info, Jupiter>,
 
     #[account(
         mut,
         associated_token::mint = input_mint,
-        associated_token::authority = vault,
+        associated_token::authority = glam_vault,
         associated_token::token_program = input_token_program
     )]
     pub input_vault_ata: Box<InterfaceAccount<'info, TokenAccount>>,
@@ -113,7 +118,7 @@ pub struct JupiterSwap<'info> {
     #[account(
         mut,
         associated_token::mint = output_mint,
-        associated_token::authority = vault,
+        associated_token::authority = glam_vault,
         associated_token::token_program = output_token_program
     )]
     pub output_vault_ata: Box<InterfaceAccount<'info, TokenAccount>>,
@@ -121,18 +126,13 @@ pub struct JupiterSwap<'info> {
     pub input_mint: Box<InterfaceAccount<'info, Mint>>,
     pub output_mint: Box<InterfaceAccount<'info, Mint>>,
 
-    #[account(mut)]
-    pub signer: Signer<'info>,
-
     /// CHECK: manually check in handler
     pub input_stake_pool: Option<AccountInfo<'info>>,
     /// CHECK: manually check in handler
     pub output_stake_pool: Option<AccountInfo<'info>>,
 
     // programs
-    pub jupiter_program: Program<'info, Jupiter>,
     pub associated_token_program: Program<'info, AssociatedToken>,
-
     pub input_token_program: Interface<'info, TokenInterface>,
     pub output_token_program: Interface<'info, TokenInterface>,
 }
@@ -143,7 +143,7 @@ fn parse_route(ctx: &Context<JupiterSwap>) -> bool {
 
     res &= ctx.remaining_accounts[0].key() == ctx.accounts.output_token_program.key()
         || ctx.remaining_accounts[0].key() == ctx.accounts.input_token_program.key();
-    res &= ctx.remaining_accounts[1].key() == ctx.accounts.vault.key();
+    res &= ctx.remaining_accounts[1].key() == ctx.accounts.glam_vault.key();
     res &= ctx.remaining_accounts[2].key() == ctx.accounts.input_vault_ata.key();
     res &= ctx.remaining_accounts[3].key() == ctx.accounts.output_vault_ata.key();
     res &= ctx.remaining_accounts[4].key() == Jupiter::id(); // null key
@@ -161,7 +161,7 @@ fn parse_exact_out_route(ctx: &Context<JupiterSwap>) -> bool {
 
     res &= ctx.remaining_accounts[0].key() == ctx.accounts.output_token_program.key()
         || ctx.remaining_accounts[0].key() == ctx.accounts.input_token_program.key();
-    res &= ctx.remaining_accounts[1].key() == ctx.accounts.vault.key();
+    res &= ctx.remaining_accounts[1].key() == ctx.accounts.glam_vault.key();
     res &= ctx.remaining_accounts[2].key() == ctx.accounts.input_vault_ata.key();
     res &= ctx.remaining_accounts[3].key() == ctx.accounts.output_vault_ata.key();
     res &= ctx.remaining_accounts[4].key() == Jupiter::id(); // null key
@@ -185,7 +185,7 @@ fn parse_shared_accounts_route(ctx: &Context<JupiterSwap>) -> bool {
         || ctx.remaining_accounts[0].key() == ctx.accounts.input_token_program.key();
     // res &= ctx.remaining_accounts[1].key() - programAuthority ignored
 
-    res &= ctx.remaining_accounts[2].key() == ctx.accounts.vault.key();
+    res &= ctx.remaining_accounts[2].key() == ctx.accounts.glam_vault.key();
     res &= ctx.remaining_accounts[3].key() == ctx.accounts.input_vault_ata.key();
     // res &= ctx.remaining_accounts[4].key() - programSourceTokenAccount ignored
     // res &= ctx.remaining_accounts[5].key() - programDestinationTokenAccount ignored
@@ -231,15 +231,15 @@ fn is_lst<'info>(mint: &Pubkey, stake_pool_account: Option<&AccountInfo<'info>>)
 }
 
 #[access_control(
-    acl::check_integration(&ctx.accounts.state, Integration::JupiterSwap)
+    acl::check_integration(&ctx.accounts.glam_state, Integration::JupiterSwap)
 )]
-#[vault_signer_seeds]
+#[glam_macros::glam_vault_signer_seeds]
 pub fn swap_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, JupiterSwap<'info>>,
     _amount: u64,
     data: Vec<u8>,
 ) -> Result<()> {
-    let state = &mut ctx.accounts.state;
+    let state = &mut ctx.accounts.glam_state;
 
     // Check slippage limit
     if let Some(max_slippage) = state.max_swap_slippage() {
@@ -273,7 +273,7 @@ pub fn swap_handler<'c: 'info, 'info>(
     if input_is_lst && output_is_lst {
         accepted_permissions.push(Permission::JupiterSwapLst);
     }
-    acl::check_access_any(&state, &ctx.accounts.signer.key, accepted_permissions)?;
+    acl::check_access_any(&state, &ctx.accounts.glam_signer.key, accepted_permissions)?;
 
     // TODO: should we add missing assets to the list after permission check?
     // This will gradually expand the assets allowlist and auto escalate JupiterSwapAllowlisted privilege over time
@@ -300,7 +300,7 @@ pub fn swap_handler<'c: 'info, 'info>(
     //
 
     // Map remaining_accounts -> AccountMeta
-    let vault_key = ctx.accounts.vault.key();
+    let vault_key = ctx.accounts.glam_vault.key();
     let accounts: Vec<AccountMeta> = ctx
         .remaining_accounts
         .iter()
@@ -319,7 +319,7 @@ pub fn swap_handler<'c: 'info, 'info>(
             data,
         },
         ctx.remaining_accounts,
-        vault_signer_seeds,
+        glam_vault_signer_seeds,
     )?;
 
     Ok(())

@@ -12,6 +12,7 @@ import { BN } from "@coral-xyz/anchor";
 import { BaseClient, TxOptions } from "./base";
 import {
   createAssociatedTokenAccountIdempotentInstruction,
+  createSyncNativeInstruction,
   createTransferCheckedInstruction,
 } from "@solana/spl-token";
 import {
@@ -41,11 +42,12 @@ export class StateClient {
     singleTx: boolean = false,
     txOptions: TxOptions = {},
   ): Promise<[TransactionSignature, PublicKey]> {
+    const glamSigner = txOptions.signer || this.base.getSigner();
     let stateModel = this.enrichStateModel(partialStateModel);
 
-    const statePda = this.base.getStatePda(stateModel);
-    const vault = this.base.getVaultPda(statePda);
-    const openfunds = this.base.getOpenfundsPda(statePda);
+    const glamState = this.base.getStatePda(stateModel);
+    const glamVault = this.base.getVaultPda(glamState);
+    const openfunds = this.base.getOpenfundsPda(glamState);
 
     const mints = stateModel.mints;
     stateModel.mints = [];
@@ -58,52 +60,46 @@ export class StateClient {
     if (mints && mints.length === 0) {
       const txSig = await this.base.program.methods
         .initializeState(stateModel)
-        .accountsPartial({
-          state: statePda,
-          vault,
-          openfundsMetadata: openfunds,
-        })
+        .accountsPartial({ glamState, glamSigner, glamVault })
         .rpc();
-      return [txSig, statePda];
+      return [txSig, glamState];
     }
 
     if (mints && mints.length > 0 && singleTx) {
       const initStateIx = await this.base.program.methods
         .initializeState(stateModel)
-        .accountsPartial({
-          state: statePda,
-          vault,
-          openfundsMetadata: openfunds,
-        })
+        .accountsPartial({ glamState, glamSigner, glamVault })
         .instruction();
 
       // FIXME: setting rawOpenfunds to null is a workarond for
       // Access violation in stack frame 5 at address 0x200005ff8 of size 8
       mints[0].rawOpenfunds = null;
-      const mintPda = this.base.getMintPda(statePda, 0);
+      const newMint = this.base.getMintPda(glamState, 0);
       const txSig = await this.base.program.methods
         .addMint(mints[0])
         .accounts({
-          glamState: statePda,
-          newMint: mintPda,
+          glamState,
+          glamSigner,
+          newMint,
         })
         .preInstructions([initStateIx])
         .rpc();
-      return [txSig, statePda];
+      return [txSig, glamState];
     }
 
     const txSig = await this.base.program.methods
       .initializeState(stateModel)
       .accountsPartial({
-        state: statePda,
-        vault,
+        glamState,
+        glamVault,
+        glamSigner,
         openfundsMetadata: openfunds,
       })
       .rpc();
 
     const addMintTxs = await Promise.all(
       (mints || []).map(async (mint, j: number) => {
-        const mintPda = this.base.getMintPda(statePda, j);
+        const newMint = this.base.getMintPda(glamState, j);
 
         // FIXME: setting rawOpenfunds to null is a workarond for
         // Access violation in stack frame 5 at address 0x200005ff8 of size 8
@@ -111,8 +107,9 @@ export class StateClient {
         return await this.base.program.methods
           .addMint(mint)
           .accounts({
-            glamState: statePda,
-            newMint: mintPda,
+            glamState,
+            glamSigner,
+            newMint,
           })
           .preInstructions([
             // FIXME: estimate compute units
@@ -122,19 +119,19 @@ export class StateClient {
       }),
     );
     console.log("addMintTxs", addMintTxs);
-    return [txSig, statePda];
+    return [txSig, glamState];
   }
 
   public async updateState(
-    statePda: PublicKeyOrString,
+    glamState: PublicKeyOrString,
     updated: Partial<StateModel>,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     console.log(
-      `await glam.state.updateState("${statePda.toString()}", ${JSON.stringify(updated)}, ${JSON.stringify(txOptions)});`,
+      `await glam.state.updateState("${glamState.toString()}", ${JSON.stringify(updated)}, ${JSON.stringify(txOptions)});`,
     );
     const tx = await this.updateStateTx(
-      getPublicKey(statePda),
+      getPublicKey(glamState),
       updated,
       txOptions,
     );
@@ -142,29 +139,32 @@ export class StateClient {
   }
 
   public async updateStateTx(
-    statePda: PublicKey,
+    glamState: PublicKey,
     updated: Partial<StateModel>,
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
+    const glamSigner = txOptions.signer || this.base.getSigner();
     const tx = await this.base.program.methods
       .updateState(new StateModel(updated))
       .accounts({
-        state: statePda,
+        glamState,
+        glamSigner,
       })
       .transaction();
     return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async closeState(
-    statePda: PublicKey,
+    glamState: PublicKey,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const openfunds = this.base.getOpenfundsPda(statePda);
+    const glamSigner = txOptions.signer || this.base.getSigner();
 
     const tx = await this.base.program.methods
       .closeState()
       .accounts({
-        state: statePda,
+        glamState,
+        glamSigner,
       })
       .preInstructions(txOptions.preInstructions || [])
       .transaction();
@@ -283,33 +283,35 @@ export class StateClient {
   }
 
   public async upsertDelegateAcls(
-    statePda: PublicKey,
+    glamState: PublicKey,
     delegateAcls: DelegateAcl[],
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    return await this.updateState(statePda, { delegateAcls }, txOptions);
+    return await this.updateState(glamState, { delegateAcls }, txOptions);
   }
 
   public async setSubscribeRedeemEnabled(
-    statePda: PublicKey,
+    glamState: PublicKey,
     enabled: boolean,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
+    const glamSigner = txOptions.signer || this.base.getSigner();
     return await this.base.program.methods
       .setSubscribeRedeemEnabled(enabled)
       .accounts({
-        state: statePda,
+        glamState,
+        glamSigner,
       })
       .rpc();
   }
 
   public async closeTokenAccounts(
-    statePda: PublicKey,
+    glamState: PublicKey,
     tokenAccounts: PublicKey[],
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const tx = await this.closeTokenAccountsTx(
-      statePda,
+      glamState,
       tokenAccounts,
       txOptions,
     );
@@ -319,19 +321,19 @@ export class StateClient {
   /**
    * Close fund treasury's token accounts
    *
-   * @param statePda
+   * @param glamState
    * @param tokenAccounts
    * @param txOptions
    * @returns
    */
   public async closeTokenAccountsIx(
-    statePda: PublicKey,
+    glamState: PublicKey,
     tokenAccounts: PublicKey[],
   ): Promise<TransactionInstruction> {
     return await this.base.program.methods
       .closeTokenAccounts()
       .accounts({
-        state: statePda,
+        glamState,
       })
       .remainingAccounts(
         tokenAccounts.map((account) => ({
@@ -344,14 +346,16 @@ export class StateClient {
   }
 
   public async closeTokenAccountsTx(
-    statePda: PublicKey,
+    glamState: PublicKey,
     tokenAccounts: PublicKey[],
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
+    const glamSigner = txOptions.signer || this.base.getSigner();
     const tx = await this.base.program.methods
       .closeTokenAccounts()
       .accounts({
-        state: statePda,
+        glamState,
+        glamSigner,
       })
       .remainingAccounts(
         tokenAccounts.map((account) => ({
@@ -384,21 +388,51 @@ export class StateClient {
   public async depositSol(
     glamState: PublicKey,
     lamports: number | BN,
+    wrap = true,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
+    const tx = await this.depositSolTx(glamState, lamports, wrap, txOptions);
+    return await this.base.sendAndConfirm(tx);
+  }
+
+  public async depositSolTx(
+    glamState: PublicKey,
+    lamports: number | BN,
+    wrap = true,
+    txOptions: TxOptions = {},
+  ): Promise<VersionedTransaction> {
     const signer = txOptions.signer || this.base.getSigner();
     const vault = this.base.getVaultPda(glamState);
 
+    const _lamports =
+      lamports instanceof BN ? BigInt(lamports.toString()) : lamports;
+    if (!wrap) {
+      const tx = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: signer,
+          toPubkey: vault,
+          lamports: _lamports,
+        }),
+      );
+      return await this.base.intoVersionedTransaction(tx, txOptions);
+    }
+
+    const vaultAta = this.base.getAta(WSOL, vault);
     const tx = new Transaction().add(
+      createAssociatedTokenAccountIdempotentInstruction(
+        signer,
+        vaultAta,
+        vault,
+        WSOL,
+      ),
       SystemProgram.transfer({
         fromPubkey: signer,
-        toPubkey: vault,
-        lamports:
-          lamports instanceof BN ? BigInt(lamports.toString()) : lamports,
+        toPubkey: vaultAta,
+        lamports: _lamports,
       }),
+      createSyncNativeInstruction(vaultAta),
     );
-    const vTx = await this.base.intoVersionedTransaction(tx, txOptions);
-    return await this.base.sendAndConfirm(vTx);
+    return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async withdraw(
@@ -454,27 +488,28 @@ export class StateClient {
   }
 
   public async withdrawIxs(
-    statePda: PublicKey,
+    glamState: PublicKey,
     asset: PublicKey,
     amount: number | BN,
     txOptions: TxOptions,
   ): Promise<TransactionInstruction[]> {
-    const signer = txOptions.signer || this.base.getSigner();
+    const glamSigner = txOptions.signer || this.base.getSigner();
     const { tokenProgram } = await this.base.fetchMintWithOwner(asset);
-    const signerAta = this.base.getAta(asset, signer, tokenProgram);
+    const signerAta = this.base.getAta(asset, glamSigner, tokenProgram);
 
     return [
       createAssociatedTokenAccountIdempotentInstruction(
-        signer,
+        glamSigner,
         signerAta,
-        signer,
+        glamSigner,
         asset,
         tokenProgram,
       ),
       await this.base.program.methods
         .withdraw(new BN(amount))
         .accounts({
-          state: statePda,
+          glamState,
+          glamSigner,
           asset,
           tokenProgram,
         })
@@ -483,20 +518,20 @@ export class StateClient {
   }
 
   public async withdrawTx(
-    statePda: PublicKey,
+    glamState: PublicKey,
     asset: PublicKey,
     amount: number | BN,
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
-    const signer = txOptions.signer || this.base.getSigner();
+    const glamSigner = txOptions.signer || this.base.getSigner();
     const { tokenProgram } = await this.base.fetchMintWithOwner(asset);
-    const signerAta = this.base.getAta(asset, signer, tokenProgram);
+    const signerAta = this.base.getAta(asset, glamSigner, tokenProgram);
 
     const preInstructions = [
       createAssociatedTokenAccountIdempotentInstruction(
-        signer,
+        glamSigner,
         signerAta,
-        signer,
+        glamSigner,
         asset,
         tokenProgram,
       ),
@@ -504,14 +539,18 @@ export class StateClient {
     const postInstructions = [];
 
     if (asset.equals(WSOL)) {
-      const wrapSolIx = await this.base.maybeWrapSol(statePda, amount, signer);
+      const wrapSolIx = await this.base.maybeWrapSol(
+        glamState,
+        amount,
+        glamSigner,
+      );
       if (wrapSolIx) {
         preInstructions.push(wrapSolIx);
         // If we need to wrap SOL, it means the wSOL balance will be drained,
         // and we close the wSOL token account for convenience
         postInstructions.push(
-          await this.closeTokenAccountsIx(statePda, [
-            this.base.getVaultAta(statePda, WSOL),
+          await this.closeTokenAccountsIx(glamState, [
+            this.base.getVaultAta(glamState, WSOL),
           ]),
         );
       }
@@ -520,7 +559,8 @@ export class StateClient {
     const tx = await this.base.program.methods
       .withdraw(new BN(amount))
       .accounts({
-        state: statePda,
+        glamState,
+        glamSigner,
         asset,
         tokenProgram,
       })

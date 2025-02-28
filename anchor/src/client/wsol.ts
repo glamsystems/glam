@@ -16,19 +16,19 @@ export class WSolClient {
    */
 
   public async wrap(
-    statePda: PublicKey,
+    glamState: PublicKey,
     amount: BN,
     txOptions: TxOptions = {} as TxOptions,
   ): Promise<TransactionSignature> {
-    const tx = await this.wrapTx(statePda, amount, txOptions);
+    const tx = await this.wrapTx(glamState, amount, txOptions);
     return await this.base.sendAndConfirm(tx);
   }
 
   public async unwrap(
-    statePda: PublicKey,
+    glamState: PublicKey,
     txOptions: TxOptions = {} as TxOptions,
   ): Promise<TransactionSignature> {
-    const tx = await this.unwrapTx(statePda, txOptions);
+    const tx = await this.unwrapTx(glamState, txOptions);
     return await this.base.sendAndConfirm(tx);
   }
 
@@ -37,46 +37,30 @@ export class WSolClient {
    */
 
   public async wrapTx(
-    statePda: PublicKey,
+    glamState: PublicKey,
     amount: BN,
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
-    const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(statePda);
-    const vaultWsolAta = this.base.getVaultAta(statePda, WSOL);
+    const glamSigner = txOptions.signer || this.base.getSigner();
+    const vaultWsolAta = this.base.getVaultAta(glamState, WSOL);
 
-    // @ts-ignore
     const tx = await this.base.program.methods
       .wsolWrap(amount)
-      .accountsPartial({
-        state: statePda,
-        vault,
-        vaultWsolAta,
-        wsolMint: WSOL,
-        signer,
-      })
+      .accountsPartial({ glamState, glamSigner, vaultWsolAta, wsolMint: WSOL })
       .transaction();
 
     return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
   public async unwrapTx(
-    statePda: PublicKey,
+    glamState: PublicKey,
     txOptions: TxOptions,
   ): Promise<VersionedTransaction> {
-    const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(statePda);
-    const vaultWsolAta = this.base.getVaultAta(statePda, WSOL);
+    const glamSigner = txOptions.signer || this.base.getSigner();
 
     const tx = await this.base.program.methods
       .wsolUnwrap()
-      .accountsPartial({
-        state: statePda,
-        vault,
-        vaultWsolAta,
-        wsolMint: WSOL,
-        signer,
-      })
+      .accounts({ glamState, glamSigner })
       .transaction();
 
     return await this.base.intoVersionedTransaction(tx, txOptions);

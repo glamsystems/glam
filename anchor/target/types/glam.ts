@@ -16,7 +16,6 @@ export type Glam = {
     {
       "name": "addMint",
       "docs": [
-        "mint",
         "Adds a new mint.",
         "",
         "# Parameters",
@@ -42,13 +41,13 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "newMint",
-          "writable": true
-        },
-        {
-          "name": "signer",
+          "name": "glamSigner",
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "newMint",
+          "writable": true
         },
         {
           "name": "extraAccountMetaList",
@@ -401,8 +400,35 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "state",
+          "name": "glamState",
           "writable": true
+        },
+        {
+          "name": "glamVault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "metadata",
@@ -424,37 +450,10 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "state"
-              }
-            ]
-          }
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
         },
         {
           "name": "systemProgram",
@@ -486,11 +485,11 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "state",
+          "name": "glamState",
           "writable": true
         },
         {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -506,13 +505,13 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
         },
         {
-          "name": "signer",
+          "name": "glamSigner",
           "writable": true,
           "signer": true
         },
@@ -553,15 +552,10 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
+          "name": "glamState"
         },
         {
-          "name": "state"
-        },
-        {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -577,10 +571,15 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "clock",
@@ -1031,7 +1030,6 @@ export type Glam = {
     {
       "name": "driftInitializeUserStats",
       "docs": [
-        "drift",
         "Initializes a drift account owned by vault and creates a subaccount.",
         "",
         "# Parameters",
@@ -1811,16 +1809,11 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "state",
+          "name": "glamState",
           "writable": true
         },
         {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1836,10 +1829,15 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "vaultStakeAccount",
@@ -1882,7 +1880,6 @@ export type Glam = {
     {
       "name": "initializeState",
       "docs": [
-        "State",
         "Initializes a state account from the provided StateModel instance.",
         "",
         "# Parameters",
@@ -1904,7 +1901,7 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "state",
+          "name": "glamState",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1920,7 +1917,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "signer"
+                "path": "glamSigner"
               },
               {
                 "kind": "arg",
@@ -1930,7 +1927,7 @@ export type Glam = {
           }
         },
         {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1946,13 +1943,13 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
         },
         {
-          "name": "signer",
+          "name": "glamSigner",
           "writable": true,
           "signer": true
         },
@@ -1977,7 +1974,7 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
@@ -2104,11 +2101,11 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "state",
+          "name": "glamState",
           "writable": true
         },
         {
-          "name": "signer",
+          "name": "glamSigner",
           "writable": true,
           "signer": true
         }
@@ -2151,11 +2148,11 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "state",
+          "name": "glamState",
           "writable": true
         },
         {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -2171,10 +2168,19 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"
         },
         {
           "name": "inputVaultAta",
@@ -2183,7 +2189,7 @@ export type Glam = {
             "seeds": [
               {
                 "kind": "account",
-                "path": "vault"
+                "path": "glamVault"
               },
               {
                 "kind": "account",
@@ -2240,7 +2246,7 @@ export type Glam = {
             "seeds": [
               {
                 "kind": "account",
-                "path": "vault"
+                "path": "glamVault"
               },
               {
                 "kind": "account",
@@ -2297,21 +2303,12 @@ export type Glam = {
           "name": "outputMint"
         },
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
           "name": "inputStakePool",
           "optional": true
         },
         {
           "name": "outputStakePool",
           "optional": true
-        },
-        {
-          "name": "jupiterProgram",
-          "address": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"
         },
         {
           "name": "associatedTokenProgram",
@@ -3530,7 +3527,6 @@ export type Glam = {
     {
       "name": "marinadeDeposit",
       "docs": [
-        "marinade",
         "Deposits SOL to get mSOL.",
         "",
         "# Parameters",
@@ -3970,16 +3966,11 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "state",
+          "name": "glamState",
           "writable": true
         },
         {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -3995,10 +3986,15 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "toStake",
@@ -4289,16 +4285,11 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "state",
+          "name": "glamState",
           "writable": true
         },
         {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -4314,10 +4305,15 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "existingStake",
@@ -4374,11 +4370,11 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "state",
+          "name": "glamState",
           "writable": true
         },
         {
-          "name": "signer",
+          "name": "glamSigner",
           "writable": true,
           "signer": true
         }
@@ -4472,16 +4468,11 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "state",
+          "name": "glamState",
           "writable": true
         },
         {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -4497,10 +4488,15 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "existingStake",
@@ -4557,15 +4553,10 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
+          "name": "glamState"
         },
         {
-          "name": "state"
-        },
-        {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -4581,10 +4572,15 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "stakePool",
@@ -4612,7 +4608,7 @@ export type Glam = {
             "seeds": [
               {
                 "kind": "account",
-                "path": "vault"
+                "path": "glamVault"
               },
               {
                 "kind": "const",
@@ -4743,16 +4739,11 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "state",
+          "name": "glamState",
           "writable": true
         },
         {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -4768,10 +4759,15 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "vaultStakeAccount",
@@ -4784,7 +4780,7 @@ export type Glam = {
             "seeds": [
               {
                 "kind": "account",
-                "path": "vault"
+                "path": "glamVault"
               },
               {
                 "kind": "const",
@@ -4953,15 +4949,10 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
+          "name": "glamState"
         },
         {
-          "name": "state"
-        },
-        {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -4977,10 +4968,15 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "stakePool",
@@ -5062,16 +5058,11 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "state",
+          "name": "glamState",
           "writable": true
         },
         {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -5087,10 +5078,15 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "vaultStakeAccount",
@@ -5152,7 +5148,6 @@ export type Glam = {
     {
       "name": "subscribe",
       "docs": [
-        "Investor",
         "Subscribes to a specified amount of shares.",
         "",
         "# Parameters",
@@ -5469,6 +5464,202 @@ export type Glam = {
       ]
     },
     {
+      "name": "transferSolToWsol",
+      "docs": [
+        "Transfer vault SOL to wSOL token account.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the instruction.",
+        "- `lamports`: The amount of SOL to transfer.",
+        "",
+        "# Permission required",
+        "- Permission::WSolWrap"
+      ],
+      "discriminator": [
+        42,
+        189,
+        85,
+        229,
+        150,
+        198,
+        3,
+        195
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "to",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "glamVault"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  155,
+                  136,
+                  87,
+                  254,
+                  171,
+                  129,
+                  132,
+                  251,
+                  104,
+                  127,
+                  99,
+                  70,
+                  24,
+                  192,
+                  53,
+                  218,
+                  196,
+                  57,
+                  220,
+                  26,
+                  235,
+                  59,
+                  85,
+                  152,
+                  160,
+                  240,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associatedTokenProgram",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        }
+      ],
+      "args": [
+        {
+          "name": "lamports",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "updateMint",
       "docs": [
         "Updates an existing mint with new metadata.",
@@ -5549,11 +5740,11 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "state",
+          "name": "glamState",
           "writable": true
         },
         {
-          "name": "signer",
+          "name": "glamSigner",
           "writable": true,
           "signer": true
         }
@@ -5593,11 +5784,11 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "state",
+          "name": "glamState",
           "writable": true
         },
         {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -5613,10 +5804,15 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "asset"
@@ -5628,7 +5824,7 @@ export type Glam = {
             "seeds": [
               {
                 "kind": "account",
-                "path": "vault"
+                "path": "glamVault"
               },
               {
                 "kind": "account",
@@ -5685,7 +5881,7 @@ export type Glam = {
             "seeds": [
               {
                 "kind": "account",
-                "path": "signer"
+                "path": "glamSigner"
               },
               {
                 "kind": "account",
@@ -5736,11 +5932,6 @@ export type Glam = {
           }
         },
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
           "name": "tokenProgram"
         }
       ],
@@ -5777,16 +5968,11 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "state",
+          "name": "glamState",
           "writable": true
         },
         {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -5802,10 +5988,15 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "clock",
@@ -5845,10 +6036,10 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "state"
+          "name": "glamState"
         },
         {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -5864,10 +6055,15 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "vaultWsolAta",
@@ -5876,7 +6072,7 @@ export type Glam = {
             "seeds": [
               {
                 "kind": "account",
-                "path": "vault"
+                "path": "glamVault"
               },
               {
                 "kind": "const",
@@ -5916,8 +6112,41 @@ export type Glam = {
                 ]
               },
               {
-                "kind": "account",
-                "path": "wsolMint"
+                "kind": "const",
+                "value": [
+                  6,
+                  155,
+                  136,
+                  87,
+                  254,
+                  171,
+                  129,
+                  132,
+                  251,
+                  104,
+                  127,
+                  99,
+                  70,
+                  24,
+                  192,
+                  53,
+                  218,
+                  196,
+                  57,
+                  220,
+                  26,
+                  235,
+                  59,
+                  85,
+                  152,
+                  160,
+                  240,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1
+                ]
               }
             ],
             "program": {
@@ -5958,15 +6187,6 @@ export type Glam = {
               ]
             }
           }
-        },
-        {
-          "name": "wsolMint",
-          "address": "So11111111111111111111111111111111111111112"
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
         },
         {
           "name": "tokenProgram",
@@ -5999,10 +6219,10 @@ export type Glam = {
       ],
       "accounts": [
         {
-          "name": "state"
+          "name": "glamState"
         },
         {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -6018,10 +6238,15 @@ export type Glam = {
               },
               {
                 "kind": "account",
-                "path": "state"
+                "path": "glamState"
               }
             ]
           }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "vaultWsolAta",
@@ -6030,7 +6255,7 @@ export type Glam = {
             "seeds": [
               {
                 "kind": "account",
-                "path": "vault"
+                "path": "glamVault"
               },
               {
                 "kind": "const",
@@ -6114,13 +6339,7 @@ export type Glam = {
           }
         },
         {
-          "name": "wsolMint",
-          "address": "So11111111111111111111111111111111111111112"
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
+          "name": "wsolMint"
         },
         {
           "name": "systemProgram",

@@ -116,25 +116,25 @@ export class MintClient {
   /**
    * Freeze or thaw token accounts of a share class
    *
-   * @param state
+   * @param glamState
    * @param mintId
    * @param frozen
    * @param txOptions
    * @returns
    */
   public async setTokenAccountsStates(
-    state: PublicKey,
+    glamState: PublicKey,
     mintId: number,
     tokenAccounts: PublicKey[],
     frozen: boolean,
     txOptions: TxOptions = {},
   ) {
-    const mintPda = this.base.getMintPda(state, mintId);
+    const glamMint = this.base.getMintPda(glamState, mintId);
     return await this.base.program.methods
       .setTokenAccountsStates(mintId, frozen)
       .accounts({
-        glamState: state,
-        glamMint: mintPda,
+        glamState,
+        glamMint,
       })
       .remainingAccounts(
         tokenAccounts.map((account) => ({
@@ -150,7 +150,7 @@ export class MintClient {
   /**
    * Mint share to recipient
    *
-   * @param state
+   * @param glamState
    * @param mintId
    * @param recipient Recipient's wallet address
    * @param amount Amount of shares to mint
@@ -159,15 +159,15 @@ export class MintClient {
    * @returns Transaction signature
    */
   public async mint(
-    state: PublicKey,
+    glamState: PublicKey,
     mintId: number,
     recipient: PublicKey,
     amount: anchor.BN,
     forceThaw: boolean = false,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const mintPda = this.base.getMintPda(state, mintId);
-    const mintTo = this.base.getMintAta(recipient, mintPda);
+    const glamMint = this.base.getMintPda(glamState, mintId);
+    const mintTo = this.base.getMintAta(recipient, glamMint);
 
     const preInstructions = [];
     preInstructions.push(
@@ -175,7 +175,7 @@ export class MintClient {
         this.base.getSigner(),
         mintTo,
         recipient,
-        mintPda,
+        glamMint,
         TOKEN_2022_PROGRAM_ID,
       ),
     );
@@ -184,8 +184,8 @@ export class MintClient {
         await this.base.program.methods
           .setTokenAccountsStates(mintId, false)
           .accounts({
-            glamState: state,
-            glamMint: mintPda,
+            glamState,
+            glamMint,
           })
           .remainingAccounts([
             { pubkey: mintTo, isSigner: false, isWritable: true },
@@ -198,23 +198,23 @@ export class MintClient {
       .mintTokens(0, amount)
       .accounts({
         recipient,
-        glamState: state,
-        glamMint: mintPda,
+        glamState,
+        glamMint,
       })
       .preInstructions(preInstructions)
       .rpc();
   }
 
   public async burn(
-    state: PublicKey,
+    glamState: PublicKey,
     mintId: number,
     amount: anchor.BN,
     from: PublicKey,
     forceThaw: boolean = false,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const mintPda = this.base.getMintPda(state, mintId);
-    const ata = this.base.getMintAta(from, mintPda);
+    const glamMint = this.base.getMintPda(glamState, mintId);
+    const ata = this.base.getMintAta(from, glamMint);
 
     const preInstructions = [];
     if (forceThaw) {
@@ -222,8 +222,8 @@ export class MintClient {
         await this.base.program.methods
           .setTokenAccountsStates(mintId, false)
           .accounts({
-            glamState: state,
-            glamMint: mintPda,
+            glamState,
+            glamMint,
           })
           .remainingAccounts([
             { pubkey: ata, isSigner: false, isWritable: true },
@@ -235,8 +235,8 @@ export class MintClient {
     return await this.base.program.methods
       .burnTokens(mintId, amount)
       .accounts({
-        glamState: state,
-        glamMint: mintPda,
+        glamState,
+        glamMint,
         from,
       })
       .preInstructions(preInstructions)
@@ -244,7 +244,7 @@ export class MintClient {
   }
 
   public async forceTransfer(
-    state: PublicKey,
+    glamState: PublicKey,
     mintId: number,
     amount: anchor.BN,
     from: PublicKey,
@@ -252,9 +252,9 @@ export class MintClient {
     forceThaw: boolean = false,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const mintPda = this.base.getMintPda(state, mintId);
-    const fromAta = this.base.getMintAta(from, mintPda);
-    const toAta = this.base.getMintAta(to, mintPda);
+    const glamMint = this.base.getMintPda(glamState, mintId);
+    const fromAta = this.base.getMintAta(from, glamMint);
+    const toAta = this.base.getMintAta(to, glamMint);
 
     const preInstructions = [];
     preInstructions.push(
@@ -262,7 +262,7 @@ export class MintClient {
         this.base.getSigner(),
         toAta,
         to,
-        mintPda,
+        glamMint,
         TOKEN_2022_PROGRAM_ID,
       ),
     );
@@ -271,8 +271,8 @@ export class MintClient {
         await this.base.program.methods
           .setTokenAccountsStates(mintId, false)
           .accounts({
-            glamState: state,
-            glamMint: mintPda,
+            glamState,
+            glamMint,
           })
           .remainingAccounts([
             // fromAta is already unfrozen, still add it to test the ix is idempotent
@@ -286,8 +286,8 @@ export class MintClient {
     return await this.base.program.methods
       .forceTransferTokens(mintId, amount)
       .accounts({
-        glamState: state,
-        glamMint: mintPda,
+        glamState,
+        glamMint,
         from,
         to,
       })

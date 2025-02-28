@@ -84,14 +84,14 @@ export class JupiterSwapClient {
    */
 
   public async swap(
-    statePda: PublicKey,
+    glamState: PublicKey,
     quoteParams?: QuoteParams,
     quoteResponse?: QuoteResponse,
     swapInstructions?: SwapInstructions,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const tx = await this.swapTx(
-      statePda,
+      glamState,
       quoteParams,
       quoteResponse,
       swapInstructions,
@@ -118,14 +118,14 @@ export class JupiterSwapClient {
    */
 
   async swapTx(
-    statePda: PublicKey,
+    glamState: PublicKey,
     quoteParams?: QuoteParams,
     quoteResponse?: QuoteResponse,
     swapInstructions?: SwapInstructions,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(statePda);
+    const glamSigner = txOptions.signer || this.base.getSigner();
+    const glamVault = this.base.getVaultPda(glamState);
 
     let swapInstruction: InstructionFromJupiter;
     let addressLookupTableAddresses: string[];
@@ -148,7 +148,7 @@ export class JupiterSwapClient {
         quoteResponse = await this.getQuoteResponse(quoteParams);
       }
 
-      const ins = await this.getSwapInstructions(quoteResponse, vault);
+      const ins = await this.getSwapInstructions(quoteResponse, glamVault);
       swapInstruction = ins.swapInstruction;
       addressLookupTableAddresses = ins.addressLookupTableAddresses;
     } else {
@@ -162,7 +162,7 @@ export class JupiterSwapClient {
     );
 
     const swapIx: { data: any; keys: AccountMeta[] } =
-      this.toTransactionInstruction(swapInstruction, vault.toBase58());
+      this.toTransactionInstruction(swapInstruction, glamVault.toBase58());
 
     const [inputTokenProgram, outputTokenProgram] = await Promise.all([
       this.getTokenProgram(inputMint),
@@ -175,8 +175,8 @@ export class JupiterSwapClient {
       ASSETS_MAINNET.get(outputMint.toBase58())?.stateAccount || null;
 
     const preInstructions = await this.getPreInstructions(
-      statePda,
-      signer,
+      glamState,
+      glamSigner,
       inputMint,
       outputMint,
       amount,
@@ -186,8 +186,8 @@ export class JupiterSwapClient {
     const tx = await this.base.program.methods
       .jupiterSwap(amount, swapIx.data)
       .accounts({
-        state: statePda,
-        signer,
+        glamState,
+        glamSigner,
         inputMint,
         outputMint,
         inputTokenProgram,
@@ -206,16 +206,16 @@ export class JupiterSwapClient {
   }
 
   public async setMaxSwapSlippageTx(
-    statePda: PublicKey,
+    glamState: PublicKey,
     slippageBps: number,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const signer = txOptions.signer || this.base.getSigner();
+    const glamSigner = txOptions.signer || this.base.getSigner();
     const tx = await this.base.program.methods
       .jupiterSetMaxSwapSlippage(new BN(slippageBps))
       .accounts({
-        state: statePda,
-        signer,
+        glamState,
+        glamSigner,
       })
       .transaction();
     return this.base.intoVersionedTransaction(tx, { ...txOptions });
