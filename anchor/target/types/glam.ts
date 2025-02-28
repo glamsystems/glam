@@ -162,6 +162,11 @@ export type Glam = {
           "name": "glamState"
         },
         {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
           "name": "glamMint",
           "writable": true
         },
@@ -226,11 +231,6 @@ export type Glam = {
           "name": "from"
         },
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
           "name": "token2022Program",
           "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
         }
@@ -274,7 +274,7 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "vault",
+          "name": "glamVault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -294,6 +294,11 @@ export type Glam = {
               }
             ]
           }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "glamMint",
@@ -359,11 +364,6 @@ export type Glam = {
               }
             ]
           }
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
         },
         {
           "name": "token2022Program",
@@ -1638,6 +1638,11 @@ export type Glam = {
           "writable": true
         },
         {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
           "name": "glamMint",
           "writable": true
         },
@@ -1760,11 +1765,6 @@ export type Glam = {
         },
         {
           "name": "to"
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
         },
         {
           "name": "token2022Program",
@@ -4055,13 +4055,13 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "glamMint",
-          "writable": true
-        },
-        {
-          "name": "signer",
+          "name": "glamSigner",
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "glamMint",
+          "writable": true
         },
         {
           "name": "mintTo",
@@ -4417,13 +4417,13 @@ export type Glam = {
           "name": "glamState"
         },
         {
-          "name": "glamMint",
-          "writable": true
-        },
-        {
-          "name": "signer",
+          "name": "glamSigner",
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "glamMint",
+          "writable": true
         },
         {
           "name": "token2022Program",
@@ -5688,13 +5688,13 @@ export type Glam = {
           "writable": true
         },
         {
-          "name": "glamMint",
-          "writable": true
-        },
-        {
-          "name": "signer",
+          "name": "glamSigner",
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "glamMint",
+          "writable": true
         },
         {
           "name": "token2022Program",
@@ -6532,7 +6532,7 @@ export type Glam = {
     {
       "code": 51002,
       "name": "subscribeRedeemDisable",
-      "msg": "Fund is disabled for subscription and redemption"
+      "msg": "Subscription and redemption disabled"
     },
     {
       "code": 51003,

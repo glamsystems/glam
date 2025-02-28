@@ -81,7 +81,7 @@ pub enum GlamError {
     #[msg("Subscription not allowed: invalid stable coin price")]
     InvalidStableCoinPriceForSubscribe,
 
-    #[msg("Fund is disabled for subscription and redemption")]
+    #[msg("Subscription and redemption disabled")]
     SubscribeRedeemDisable,
 
     #[msg("Policy account is mandatory")]

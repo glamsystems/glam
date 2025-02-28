@@ -156,6 +156,11 @@
           "name": "glam_state"
         },
         {
+          "name": "glam_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
           "name": "glam_mint",
           "writable": true
         },
@@ -220,11 +225,6 @@
           "name": "from"
         },
         {
-          "name": "signer",
-          "writable": true,
-          "signer": true
-        },
-        {
           "name": "token_2022_program",
           "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
         }
@@ -268,7 +268,7 @@
           "writable": true
         },
         {
-          "name": "vault",
+          "name": "glam_vault",
           "writable": true,
           "pda": {
             "seeds": [
@@ -288,6 +288,11 @@
               }
             ]
           }
+        },
+        {
+          "name": "glam_signer",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "glam_mint",
@@ -353,11 +358,6 @@
               }
             ]
           }
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
         },
         {
           "name": "token_2022_program",
@@ -1632,6 +1632,11 @@
           "writable": true
         },
         {
+          "name": "glam_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
           "name": "glam_mint",
           "writable": true
         },
@@ -1754,11 +1759,6 @@
         },
         {
           "name": "to"
-        },
-        {
-          "name": "signer",
-          "writable": true,
-          "signer": true
         },
         {
           "name": "token_2022_program",
@@ -4049,13 +4049,13 @@
           "writable": true
         },
         {
-          "name": "glam_mint",
-          "writable": true
-        },
-        {
-          "name": "signer",
+          "name": "glam_signer",
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "glam_mint",
+          "writable": true
         },
         {
           "name": "mint_to",
@@ -4411,13 +4411,13 @@
           "name": "glam_state"
         },
         {
-          "name": "glam_mint",
-          "writable": true
-        },
-        {
-          "name": "signer",
+          "name": "glam_signer",
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "glam_mint",
+          "writable": true
         },
         {
           "name": "token_2022_program",
@@ -5682,13 +5682,13 @@
           "writable": true
         },
         {
-          "name": "glam_mint",
-          "writable": true
-        },
-        {
-          "name": "signer",
+          "name": "glam_signer",
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "glam_mint",
+          "writable": true
         },
         {
           "name": "token_2022_program",
@@ -6526,7 +6526,7 @@
     {
       "code": 51002,
       "name": "SubscribeRedeemDisable",
-      "msg": "Fund is disabled for subscription and redemption"
+      "msg": "Subscription and redemption disabled"
     },
     {
       "code": 51003,

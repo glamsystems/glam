@@ -52,65 +52,75 @@ export class MintClient {
     });
   }
 
-  public async closeMintIx(state: PublicKey, mintId: number = 0) {
-    const openfunds = this.base.getOpenfundsPda(state);
-    const mintPda = this.base.getMintPda(state, mintId);
+  public async closeMintIx(glamState: PublicKey, mintId: number = 0) {
+    const glamMint = this.base.getMintPda(glamState, mintId);
 
     return await this.base.program.methods
       .closeMint(mintId)
       .accounts({
-        glamState: state,
-        glamMint: mintPda,
+        glamState,
+        glamMint,
       })
       .instruction();
   }
 
   public async closeMint(
-    state: PublicKey,
+    glamState: PublicKey,
     mintId: number = 0,
     txOptions: TxOptions = {},
   ) {
-    const openfunds = this.base.getOpenfundsPda(state);
-    const mintPda = this.base.getMintPda(state, mintId);
+    const glamSigner = txOptions.signer || this.base.getSigner();
+    const glamMint = this.base.getMintPda(glamState, mintId);
 
-    return await this.base.program.methods
+    const tx = await this.base.program.methods
       .closeMint(mintId)
       .accounts({
-        glamState: state,
-        glamMint: mintPda,
+        glamState,
+        glamSigner,
+        glamMint,
       })
-      .rpc();
+      .transaction();
+
+    const vTx = await this.base.intoVersionedTransaction(tx, txOptions);
+    return await this.base.sendAndConfirm(vTx);
   }
 
   /**
    * Create a share class token account for a specific user
    *
-   * @param state
+   * @param glamState
    * @param owner
    * @param mintId
    * @param txOptions
    * @returns
    */
   public async createTokenAccount(
-    state: PublicKey,
+    glamState: PublicKey,
     owner: PublicKey,
     mintId: number = 0,
     setFrozen: boolean = true,
     txOptions: TxOptions = {},
   ) {
-    const mintPda = this.base.getMintPda(state, mintId);
-    const ata = this.base.getMintAta(owner, mintPda);
+    const glamSigner = txOptions.signer || this.base.getSigner();
+    const glamMint = this.base.getMintPda(glamState, mintId);
+    const ata = this.base.getMintAta(owner, glamMint);
     const ixCreateAta = createAssociatedTokenAccountIdempotentInstruction(
-      this.base.getSigner(),
+      glamSigner,
       ata,
       owner,
-      mintPda,
+      glamMint,
       TOKEN_2022_PROGRAM_ID,
     );
-    return await this.setTokenAccountsStates(state, mintId, [ata], setFrozen, {
-      preInstructions: [ixCreateAta],
-      ...txOptions,
-    });
+    return await this.setTokenAccountsStates(
+      glamState,
+      mintId,
+      [ata],
+      setFrozen,
+      {
+        preInstructions: [ixCreateAta],
+        ...txOptions,
+      },
+    );
   }
 
   /**
@@ -129,11 +139,13 @@ export class MintClient {
     frozen: boolean,
     txOptions: TxOptions = {},
   ) {
+    const glamSigner = txOptions.signer || this.base.getSigner();
     const glamMint = this.base.getMintPda(glamState, mintId);
-    return await this.base.program.methods
+    const tx = await this.base.program.methods
       .setTokenAccountsStates(mintId, frozen)
       .accounts({
         glamState,
+        glamSigner,
         glamMint,
       })
       .remainingAccounts(
@@ -144,7 +156,10 @@ export class MintClient {
         })),
       )
       .preInstructions(txOptions.preInstructions || [])
-      .rpc();
+      .transaction();
+
+    const vTx = await this.base.intoVersionedTransaction(tx, txOptions);
+    return await this.base.sendAndConfirm(vTx);
   }
 
   /**
@@ -166,13 +181,14 @@ export class MintClient {
     forceThaw: boolean = false,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
+    const glamSigner = txOptions.signer || this.base.getSigner();
     const glamMint = this.base.getMintPda(glamState, mintId);
     const mintTo = this.base.getMintAta(recipient, glamMint);
 
     const preInstructions = [];
     preInstructions.push(
       createAssociatedTokenAccountIdempotentInstruction(
-        this.base.getSigner(),
+        glamSigner,
         mintTo,
         recipient,
         glamMint,
@@ -185,6 +201,7 @@ export class MintClient {
           .setTokenAccountsStates(mintId, false)
           .accounts({
             glamState,
+            glamSigner,
             glamMint,
           })
           .remainingAccounts([
@@ -194,15 +211,19 @@ export class MintClient {
       );
     }
 
-    return await this.base.program.methods
+    const tx = await this.base.program.methods
       .mintTokens(0, amount)
       .accounts({
-        recipient,
         glamState,
+        glamSigner,
         glamMint,
+        recipient,
       })
       .preInstructions(preInstructions)
-      .rpc();
+      .transaction();
+
+    const vTx = await this.base.intoVersionedTransaction(tx, txOptions);
+    return await this.base.sendAndConfirm(vTx);
   }
 
   public async burn(
@@ -213,6 +234,7 @@ export class MintClient {
     forceThaw: boolean = false,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
+    const glamSigner = txOptions.signer || this.base.getSigner();
     const glamMint = this.base.getMintPda(glamState, mintId);
     const ata = this.base.getMintAta(from, glamMint);
 
@@ -223,6 +245,7 @@ export class MintClient {
           .setTokenAccountsStates(mintId, false)
           .accounts({
             glamState,
+            glamSigner,
             glamMint,
           })
           .remainingAccounts([
@@ -232,15 +255,19 @@ export class MintClient {
       );
     }
 
-    return await this.base.program.methods
+    const tx = await this.base.program.methods
       .burnTokens(mintId, amount)
       .accounts({
         glamState,
+        glamSigner,
         glamMint,
         from,
       })
       .preInstructions(preInstructions)
-      .rpc();
+      .transaction();
+
+    const vTx = await this.base.intoVersionedTransaction(tx, txOptions);
+    return await this.base.sendAndConfirm(vTx);
   }
 
   public async forceTransfer(
@@ -252,6 +279,7 @@ export class MintClient {
     forceThaw: boolean = false,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
+    const glamSigner = txOptions.signer || this.base.getSigner();
     const glamMint = this.base.getMintPda(glamState, mintId);
     const fromAta = this.base.getMintAta(from, glamMint);
     const toAta = this.base.getMintAta(to, glamMint);
@@ -272,6 +300,7 @@ export class MintClient {
           .setTokenAccountsStates(mintId, false)
           .accounts({
             glamState,
+            glamSigner,
             glamMint,
           })
           .remainingAccounts([
@@ -283,15 +312,19 @@ export class MintClient {
       );
     }
 
-    return await this.base.program.methods
+    const tx = await this.base.program.methods
       .forceTransferTokens(mintId, amount)
       .accounts({
         glamState,
+        glamSigner,
         glamMint,
         from,
         to,
       })
       .preInstructions(preInstructions)
-      .rpc();
+      .transaction();
+
+    const vTx = await this.base.intoVersionedTransaction(tx, txOptions);
+    return await this.base.sendAndConfirm(vTx);
   }
 }

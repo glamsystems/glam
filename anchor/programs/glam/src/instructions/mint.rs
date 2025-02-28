@@ -353,16 +353,16 @@ pub fn add_mint_handler<'c: 'info, 'info>(
 pub struct SetTokenAccountsStates<'info> {
     pub glam_state: Box<Account<'info, StateAccount>>,
 
+    #[account(mut)]
+    pub glam_signer: Signer<'info>,
+
     #[account(mut, seeds = [SEED_MINT.as_ref(), &[mint_id], glam_state.key().as_ref()], bump)]
     pub glam_mint: InterfaceAccount<'info, Mint>,
-
-    #[account(mut)]
-    pub signer: Signer<'info>,
 
     pub token_2022_program: Program<'info, Token2022>,
 }
 
-#[access_control(acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.signer.key, Permission::SetTokenAccountState))]
+#[access_control(acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.glam_signer.key, Permission::SetTokenAccountState))]
 #[access_control(acl::check_state_type(&ctx.accounts.glam_state, AccountType::Mint))]
 #[mint_signer_seeds]
 pub fn set_token_accounts_states_handler<'info>(
@@ -426,6 +426,10 @@ pub fn set_token_accounts_states_handler<'info>(
 pub struct ForceTransferTokens<'info> {
     #[account(mut)]
     pub glam_state: Box<Account<'info, StateAccount>>,
+
+    #[account(mut)]
+    pub glam_signer: Signer<'info>,
+
     #[account(
         mut,
         seeds = [SEED_MINT.as_ref(), &[mint_id], glam_state.key().as_ref()],
@@ -456,13 +460,10 @@ pub struct ForceTransferTokens<'info> {
     /// CHECK: any address owned by system program, or the system program
     pub to: AccountInfo<'info>,
 
-    #[account(mut)]
-    pub signer: Signer<'info>,
-
     pub token_2022_program: Program<'info, Token2022>,
 }
 
-#[access_control(acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.signer.key, Permission::ForceTransferTokens))]
+#[access_control(acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.glam_signer.key, Permission::ForceTransferTokens))]
 #[access_control(acl::check_state_type(&ctx.accounts.glam_state, AccountType::Mint))]
 #[mint_signer_seeds]
 pub fn force_transfer_tokens_handler(
@@ -504,6 +505,9 @@ pub fn force_transfer_tokens_handler(
 pub struct BurnTokens<'info> {
     pub glam_state: Box<Account<'info, StateAccount>>,
 
+    #[account(mut)]
+    pub glam_signer: Signer<'info>,
+
     #[account(
         mut,
         seeds = [SEED_MINT.as_ref(), &[mint_id], glam_state.key().as_ref()],
@@ -524,13 +528,10 @@ pub struct BurnTokens<'info> {
     /// CHECK: any address owned by system program
     pub from: SystemAccount<'info>,
 
-    #[account(mut)]
-    pub signer: Signer<'info>,
-
     pub token_2022_program: Program<'info, Token2022>,
 }
 
-#[access_control(acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.signer.key, Permission::BurnTokens))]
+#[access_control(acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.glam_signer.key, Permission::BurnTokens))]
 #[access_control(acl::check_state_type(&ctx.accounts.glam_state, AccountType::Mint))]
 #[mint_signer_seeds]
 pub fn burn_tokens_handler(ctx: Context<BurnTokens>, mint_id: u8, amount: u64) -> Result<()> {
@@ -563,6 +564,9 @@ pub struct MintTokens<'info> {
     #[account(mut)]
     pub glam_state: Box<Account<'info, StateAccount>>,
 
+    #[account(mut)]
+    pub glam_signer: Signer<'info>,
+
     #[account(
         mut,
         seeds = [SEED_MINT.as_ref(), &[mint_id], glam_state.key().as_ref()],
@@ -570,10 +574,7 @@ pub struct MintTokens<'info> {
         mint::authority = glam_mint,
         mint::token_program = token_2022_program
     )]
-    glam_mint: InterfaceAccount<'info, Mint>,
-
-    #[account(mut)]
-    pub signer: Signer<'info>,
+    pub glam_mint: InterfaceAccount<'info, Mint>,
 
     #[account(
         mut,
@@ -589,7 +590,7 @@ pub struct MintTokens<'info> {
     pub token_2022_program: Program<'info, Token2022>,
 }
 
-#[access_control(acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.signer.key, Permission::MintTokens))]
+#[access_control(acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.glam_signer.key, Permission::MintTokens))]
 #[access_control(acl::check_state_type(&ctx.accounts.glam_state, AccountType::Mint))]
 #[mint_signer_seeds]
 pub fn mint_tokens_handler<'info>(
@@ -616,8 +617,11 @@ pub fn mint_tokens_handler<'info>(
 #[derive(Accounts)]
 #[instruction(mint_id: u8)]
 pub struct UpdateMint<'info> {
-    #[account(mut, constraint = glam_state.owner == signer.key() @ GlamError::NotAuthorized)]
+    #[account(mut, constraint = glam_state.owner == glam_signer.key() @ GlamError::NotAuthorized)]
     pub glam_state: Box<Account<'info, StateAccount>>,
+
+    #[account(mut)]
+    pub glam_signer: Signer<'info>,
 
     #[account(
         mut,
@@ -626,10 +630,7 @@ pub struct UpdateMint<'info> {
         mint::authority = glam_mint,
         mint::token_program = token_2022_program
     )]
-    glam_mint: InterfaceAccount<'info, Mint>,
-
-    #[account(mut)]
-    pub signer: Signer<'info>,
+    pub glam_mint: InterfaceAccount<'info, Mint>,
 
     pub token_2022_program: Program<'info, Token2022>,
 }
@@ -660,11 +661,14 @@ pub fn update_mint_handler(
 #[derive(Accounts)]
 #[instruction(mint_id: u8)]
 pub struct CloseMint<'info> {
-    #[account(mut, constraint = glam_state.owner == signer.key() @ GlamError::NotAuthorized)]
+    #[account(mut, constraint = glam_state.owner == glam_signer.key() @ GlamError::NotAuthorized)]
     pub glam_state: Account<'info, StateAccount>,
 
     #[account(mut, seeds = [SEED_VAULT.as_bytes(), glam_state.key().as_ref()], bump)]
-    pub vault: SystemAccount<'info>,
+    pub glam_vault: SystemAccount<'info>,
+
+    #[account(mut)]
+    pub glam_signer: Signer<'info>,
 
     #[account(
         mut,
@@ -691,9 +695,6 @@ pub struct CloseMint<'info> {
     #[account(mut, seeds = [SEED_METADATA.as_bytes(), glam_state.key().as_ref()], bump)]
     pub metadata: AccountInfo<'info>,
 
-    #[account(mut)]
-    pub signer: Signer<'info>,
-
     pub token_2022_program: Program<'info, Token2022>,
 }
 
@@ -715,7 +716,7 @@ pub fn close_mint_handler(ctx: Context<CloseMint>, mint_id: u8) -> Result<()> {
         ctx.accounts.token_2022_program.to_account_info(),
         CloseToken2022Account {
             account: ctx.accounts.glam_mint.to_account_info(),
-            destination: ctx.accounts.vault.to_account_info(),
+            destination: ctx.accounts.glam_vault.to_account_info(),
             authority: ctx.accounts.glam_mint.to_account_info(),
         },
         mint_signer_seeds,
@@ -734,7 +735,7 @@ pub fn close_mint_handler(ctx: Context<CloseMint>, mint_id: u8) -> Result<()> {
 
     close_account_info(
         ctx.accounts.extra_account_meta_list.to_account_info(),
-        ctx.accounts.vault.to_account_info(),
+        ctx.accounts.glam_vault.to_account_info(),
     )?;
 
     msg!("Mint closed: {}", ctx.accounts.glam_mint.key());

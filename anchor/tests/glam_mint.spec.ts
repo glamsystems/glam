@@ -50,7 +50,7 @@ describe("glam_mint", () => {
       );
       expect(txSig).toBeUndefined();
     } catch (e) {
-      expect(e.logs).toContain("Program log: Error: Account is frozen");
+      expect(e.programLogs).toContain("Program log: Error: Account is frozen");
     }
   });
 
@@ -190,7 +190,7 @@ describe("glam_mint", () => {
       console.log("subscribe:", txSig);
     } catch (e) {
       expect((e as GlamError).message).toEqual(
-        "Fund is disabled for subscription and redemption.",
+        "Subscription and redemption disabled.",
       );
     }
   }, 15_000);
