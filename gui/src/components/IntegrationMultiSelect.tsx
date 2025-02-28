@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect } from "react";
 import { MultiSelect } from "@/components/ui/multiple-select";
 import {
   allIntegrations,
@@ -22,30 +22,55 @@ interface IntegrationMultiSelectProps {
   onChange: (value: string[]) => void;
 }
 
+// Pre-process integrations data outside component entirely
+// This ensures it only happens once when the module is loaded, not on each render or mount
+const processedIntegrations: IntegrationData[] = allIntegrations
+  .filter(integ => !integ.comingSoon) // Only include available integrations by default
+  .map((integ) => ({
+    value: integ.name,
+    label: integ.name,
+    name: integ.name,
+    description: metadata[integ.name]?.description || integ.description,
+    labels: metadata[integ.name]?.labels || integ.labels || [],
+    imagePath: metadata[integ.name]?.imagePath || integ.imagePath,
+    comingSoon: integ.comingSoon,
+  }));
+
+// Keep a separate list of coming soon integrations to show but not select
+const comingSoonIntegrations: IntegrationData[] = allIntegrations
+  .filter(integ => integ.comingSoon)
+  .map((integ) => ({
+    value: integ.name,
+    label: integ.name,
+    name: integ.name,
+    description: metadata[integ.name]?.description || integ.description,
+    labels: metadata[integ.name]?.labels || integ.labels || [],
+    imagePath: metadata[integ.name]?.imagePath || integ.imagePath,
+    comingSoon: true,
+  }));
+
+// Combine the lists
+const allProcessedIntegrations = [...processedIntegrations, ...comingSoonIntegrations];
+
+// Preload images to ensure they're available immediately when needed
+const preloadImages = () => {
+  allProcessedIntegrations.forEach(integ => {
+    if (integ.imagePath) {
+      const img = new Image();
+      img.src = integ.imagePath;
+    }
+  });
+};
+
+// Invoke preloading immediately, but only in browser environment
+if (typeof window !== 'undefined') {
+  preloadImages();
+}
+
 export function IntegrationMultiSelect({
   selected,
   onChange,
 }: IntegrationMultiSelectProps) {
-  const [integrations] = useState<IntegrationData[]>(() => {
-    // First map the integrations
-    const mappedIntegrations = allIntegrations.map((integ) => ({
-      value: integ.name,
-      label: integ.name,
-      name: integ.name,
-      description: metadata[integ.name]?.description || integ.description,
-      labels: metadata[integ.name]?.labels || integ.labels || [],
-      imagePath: metadata[integ.name]?.imagePath || integ.imagePath,
-      comingSoon: integ.comingSoon,
-    }));
-
-    // Then sort them - available first, coming soon last
-    return mappedIntegrations.sort((a, b) => {
-      if (a.comingSoon && !b.comingSoon) return 1;
-      if (!a.comingSoon && b.comingSoon) return -1;
-      return 0;
-    });
-  });
-
   const renderOption = useCallback(
     (option: IntegrationData) => (
       <div
@@ -56,12 +81,12 @@ export function IntegrationMultiSelect({
             src={option.imagePath}
             alt={option.name}
             className="w-5 h-5"
-            loading="lazy"
+            loading="eager" // Changed from lazy to eager to ensure immediate rendering
             decoding="async"
           />
           <span className="font-medium text-nowrap">{option.name}</span>
           <span className="ml-1.5 truncate text-muted-foreground text-xs">
-            {option.description.length > 50
+            {option.description && option.description.length > 50
               ? `${option.description.slice(0, 50)}...`
               : option.description}
           </span>
@@ -85,7 +110,7 @@ export function IntegrationMultiSelect({
           src={option.imagePath}
           alt={option.name}
           className="w-4 h-4"
-          loading="lazy"
+          loading="eager" // Changed from lazy to eager
           decoding="async"
         />
         <span className="font-medium">{option.name}</span>
@@ -99,7 +124,7 @@ export function IntegrationMultiSelect({
       const searchLower = search.toLowerCase();
       return (
         option.name.toLowerCase().includes(searchLower) ||
-        option.description.toLowerCase().includes(searchLower) ||
+        (option.description && option.description.toLowerCase().includes(searchLower)) ||
         option.labels.some((label) => label.toLowerCase().includes(searchLower))
       );
     },
@@ -110,17 +135,17 @@ export function IntegrationMultiSelect({
     (newSelected: string[]) => {
       // Filter out any coming soon items that might have been selected
       const filteredSelected = newSelected.filter((value) => {
-        const integration = integrations.find((i) => i.value === value);
+        const integration = processedIntegrations.find((i) => i.value === value);
         return integration && !integration.comingSoon;
       });
       onChange(filteredSelected);
     },
-    [onChange, integrations]
+    [onChange]
   );
 
-  return integrations.length > 0 ? (
+  return (
     <MultiSelect<IntegrationData>
-      options={integrations}
+      options={allProcessedIntegrations}
       selected={selected}
       onChange={handleChange}
       placeholder="Select integrations..."
@@ -129,7 +154,5 @@ export function IntegrationMultiSelect({
       renderOption={renderOption}
       renderBadge={renderBadge}
     />
-  ) : (
-    <div>No integrations available</div>
   );
 }

@@ -6,6 +6,12 @@ import {
   PlusIcon,
   ReloadIcon,
   OpenInNewWindowIcon,
+  ExitIcon,
+  ArrowRightIcon,
+  ExternalLinkIcon,
+  LoopIcon,
+  LayersIcon,
+  MarginIcon,
 } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
 
@@ -30,6 +36,9 @@ interface DataTableToolbarProps<TData> {
   setShowZeroBalances: (showZeroBalances: boolean) => void;
   onOpenSheet: () => void;
   onOpenDepositSheet: () => void;
+  onOpenWithdrawSheet: () => void;
+  onOpenTransferSheet: () => void;
+  onOpenWrapSheet: () => void;
 }
 
 export function DataTableToolbar<TData>({
@@ -38,6 +47,9 @@ export function DataTableToolbar<TData>({
   setShowZeroBalances,
   onOpenSheet,
   onOpenDepositSheet,
+  onOpenWithdrawSheet,
+  onOpenTransferSheet,
+  onOpenWrapSheet,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
   const { refresh } = useGlam();
@@ -61,8 +73,35 @@ export function DataTableToolbar<TData>({
             className="h-8"
             onClick={onOpenDepositSheet}
           >
-            <OpenInNewWindowIcon className="mr-2 w-4 h-4" />
+            <OpenInNewWindowIcon className="mr-2 w-4 h-4 transform rotate-90" />
             Deposit
+          </Button>
+          <Button
+            variant="default"
+            size="sm"
+            className="h-8"
+            onClick={onOpenWithdrawSheet}
+          >
+            <ExternalLinkIcon className="mr-2 w-4 h-4" />
+            Withdraw
+          </Button>
+          <Button
+            variant="default"
+            size="sm"
+            className="h-8"
+            onClick={onOpenTransferSheet}
+          >
+            <LoopIcon className="mr-2 w-4 h-4" />
+            Transfer
+          </Button>
+          <Button
+            variant="default"
+            size="sm"
+            className="h-8"
+            onClick={onOpenWrapSheet}
+          >
+            <MarginIcon className="mr-2 w-4 h-4" />
+            Wrap
           </Button>
         </div>
 
@@ -72,7 +111,7 @@ export function DataTableToolbar<TData>({
           onChange={(event) =>
             table.getColumn("symbol")?.setFilterValue(event.target.value)
           }
-          className="h-8 w-[150px] lg:w-1/2"
+          className="h-8 w-[150px] lg:w-1/3"
         />
 
         {isFiltered && (

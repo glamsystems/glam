@@ -313,7 +313,7 @@ const BASE_STRUCTURES = {
   VAULT: [
     {
       group: "Operations",
-      itemKeys: ["holdings", "stake", "trade", "transfer", "wrap"],
+      itemKeys: ["holdings", "stake", "trade"],
     },
     {
       group: "Configuration",
