@@ -946,12 +946,7 @@ export default function Holdings() {
         </SheetContent>
       </Sheet>
 
-      <Sheet
-        open={isWithdrawSheetOpen}
-        onOpenChange={(change) => {
-          setIsWithdrawSheetOpen(change);
-        }}
-      >
+      <Sheet open={isWithdrawSheetOpen} onOpenChange={setIsWithdrawSheetOpen}>
         <SheetTrigger asChild></SheetTrigger>
         <SheetContent
           side="right"
@@ -1027,12 +1022,7 @@ export default function Holdings() {
         </SheetContent>
       </Sheet>
 
-      <Sheet
-        open={isTransferSheetOpen}
-        onOpenChange={(change) => {
-          setIsTransferSheetOpen(change);
-        }}
-      >
+      <Sheet open={isTransferSheetOpen} onOpenChange={setIsTransferSheetOpen}>
         <SheetTrigger asChild></SheetTrigger>
         <SheetContent
           side="right"
@@ -1051,12 +1041,7 @@ export default function Holdings() {
         </SheetContent>
       </Sheet>
 
-      <Sheet
-        open={isWrapSheetOpen}
-        onOpenChange={(change) => {
-          setIsWrapSheetOpen(change);
-        }}
-      >
+      <Sheet open={isWrapSheetOpen} onOpenChange={setIsWrapSheetOpen}>
         <SheetTrigger asChild></SheetTrigger>
         <SheetContent
           side="right"

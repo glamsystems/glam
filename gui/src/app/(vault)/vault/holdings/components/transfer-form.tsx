@@ -24,18 +24,15 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/use-toast";
 import { useGlam, WSOL } from "@glamsystems/glam-sdk/react";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { parseTxError } from "@/lib/error";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import {
   getPriorityFeeMicroLamports,
   getMaxCapFeeLamports,
 } from "@/app/(shared)/settings/priorityfee";
-import { WarningCard } from "@/components/WarningCard";
 import { PublicKey } from "@solana/web3.js";
-import { ClickToCopyText } from "@/components/ClickToCopyText";
 
-const venues = ["Vault", "Drift", "Owner"] as const;
+const venues = ["Vault", "Drift"] as const;
 const transferSchema = z.object({
   origin: z.enum(venues),
   destination: z.enum(venues),
@@ -62,7 +59,6 @@ export function TransferForm({ onClose }: TransferFormProps) {
   const [amountAsset, setAmountAsset] = useState<string>("SOL");
   const [isTxPending, setIsTxPending] = useState(false);
   const [fromAssetList, setFromAssetList] = useState<Asset[]>([]);
-  const [warning, setWarning] = useState<string>("");
   const [transferButtonDisabled, setTransferButtonDisabled] = useState(false);
 
   const vaultAssets = () => {
@@ -105,7 +101,7 @@ export function TransferForm({ onClose }: TransferFormProps) {
 
     const { spotPositions } = driftUser;
     const assets = (spotPositions || [])
-      .map((position: any) => {
+      .map((position) => {
         // balance is a string of ui amount, needs to be converted to number
         const { marketIndex, balance } = position;
         const marketConfig = driftMarketConfigs.spot.find(
@@ -144,63 +140,9 @@ export function TransferForm({ onClose }: TransferFormProps) {
 
   const from = form.watch("origin");
   useEffect(() => {
-    if (from === "Owner") {
-      setWarning(
-        "To deposit into the vault, transfer any asset from any wallet to the vault address provided below.",
-      );
-      setTransferButtonDisabled(true);
-      return;
-    }
-
-    setWarning("");
     setTransferButtonDisabled(false);
-
-    if (from === "Drift") {
-      setFromAssetList(driftAssets());
-      return;
-    }
-
-    setFromAssetList(vaultAssets());
+    setFromAssetList(from === "Drift" ? driftAssets() : vaultAssets());
   }, [from, driftUser, driftMarketConfigs]);
-
-  const withdrawFromVault = async (symbol: string, amount: number) => {
-    if (!activeGlamState?.pubkey || !glamClient) return; // already checked, to avoid type issue
-
-    const asset = vaultAssets().find((a) => a.symbol === symbol);
-    if (!asset) {
-      toast({
-        title: "Asset not found",
-        variant: "destructive",
-      });
-      return;
-    }
-    console.log(asset);
-
-    try {
-      setIsTxPending(true);
-      const txId = await glamClient.state.withdraw(
-        activeGlamState.pubkey,
-        new PublicKey(asset?.address || ""),
-        new anchor.BN(amount * 10 ** (asset?.decimals || 9)),
-        {
-          getPriorityFeeMicroLamports,
-          maxFeeLamports: getMaxCapFeeLamports(),
-        },
-      );
-      toast({
-        title: `Withdraw ${amount} ${asset?.symbol} from vault`,
-        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
-      });
-      onClose();
-    } catch (error: any) {
-      toast({
-        title: "Failed to withdraw from vault",
-        description: parseTxError(error),
-        variant: "destructive",
-      });
-    }
-    setIsTxPending(false);
-  };
 
   const onSubmit: SubmitHandler<TransferSchema> = async (values, event) => {
     const nativeEvent = event as unknown as React.BaseSyntheticEvent & {
@@ -214,8 +156,8 @@ export function TransferForm({ onClose }: TransferFormProps) {
 
     if (!activeGlamState?.pubkey) {
       toast({
-        title: "Invalid fund",
-        description: "Please select a valid fund",
+        title: "Invalid vault",
+        description: "Please select a valid vault",
         variant: "destructive",
       });
       return;
@@ -229,19 +171,6 @@ export function TransferForm({ onClose }: TransferFormProps) {
         variant: "destructive",
       });
       return;
-    }
-
-    if (origin === "Owner") {
-      toast({
-        title: "Invalid 'From'",
-        description: "Not yet implemented",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (origin === "Vault" && destination === "Owner") {
-      return withdrawFromVault(amountAsset, amount);
     }
 
     const spotMarket = driftMarketConfigs?.spot.find(
@@ -395,13 +324,6 @@ export function TransferForm({ onClose }: TransferFormProps) {
               )}
             />
           </div>
-
-          {warning && (
-            <>
-              <WarningCard className="p-2" message={warning} />
-              <ClickToCopyText text={vault?.pubkey?.toBase58() || ""} />
-            </>
-          )}
 
           <div className="flex space-x-4 w-full">
             <Button
