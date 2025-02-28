@@ -136,7 +136,7 @@ export default function Transfer() {
   useEffect(() => {
     if (from === "Owner") {
       setWarning(
-        "To deposit into the vault, transfer any asset from any wallet to the vault address provided below.",
+        "To deposit into the vault, transfer any asset from any wallet to the vault address provided below, or use the Deposit button on the Holdings page.",
       );
       setTransferButtonDisabled(true);
       return;
@@ -309,7 +309,9 @@ export default function Transfer() {
                     )?.balance || 0
                   }
                   selectedAsset={amountAsset}
-                  onSelectAsset={setAmountAsset}
+                  onSelectAsset={(asset) => {
+                    setAmountAsset(asset.symbol);
+                  }}
                 />
                 <FormField
                   control={form.control}

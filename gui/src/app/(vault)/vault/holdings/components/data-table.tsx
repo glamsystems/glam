@@ -31,7 +31,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   showZeroBalances: boolean;
   setShowZeroBalances: (showZeroBalances: boolean) => void;
-  onOpenSheet: () => void;
+  onOpenDetailsSheet: () => void;
   onOpenDepositSheet: () => void;
   onOpenWithdrawSheet: () => void;
   onOpenTransferSheet: () => void;
@@ -43,7 +43,7 @@ export function DataTable<TData, TValue>({
   data,
   showZeroBalances,
   setShowZeroBalances,
-  onOpenSheet,
+  onOpenDetailsSheet,
   onOpenDepositSheet,
   onOpenWithdrawSheet,
   onOpenTransferSheet,
@@ -84,7 +84,7 @@ export function DataTable<TData, TValue>({
         table={table}
         showZeroBalances={showZeroBalances}
         setShowZeroBalances={setShowZeroBalances}
-        onOpenSheet={onOpenSheet}
+        onOpenDetailsSheet={onOpenDetailsSheet}
         onOpenDepositSheet={onOpenDepositSheet}
         onOpenWithdrawSheet={onOpenWithdrawSheet}
         onOpenTransferSheet={onOpenTransferSheet}

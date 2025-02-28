@@ -72,7 +72,7 @@ export interface DriftMarketConfigs {
 export interface GlamDriftUser {
   delegate: string;
   name: string;
-  spotPositions: SpotPosition[];
+  spotPositions: (SpotPosition & { balance: string })[]; // balance is added by glam api
   perpPositions: PerpPosition[];
   marginMode: string;
   subAccountId: number;

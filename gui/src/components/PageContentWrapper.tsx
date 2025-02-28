@@ -68,11 +68,8 @@ export default function PageContentWrapper({
   return (
     <Component
       className={cn(
-        "flex flex-col w-full max-w-[1440px] mt-10 overscroll-none",
-        "transition-all duration-200 ease-linear",
-        isCollapsed
-          ? "pt-[56px] pb-[56px] pl-[178px] pr-[178px]"
-          : "pt-[56px] pb-[56px] pl-[178px] pr-[178px]"
+        "flex flex-col w-full max-w-[1440px] mt-10 overscroll-none transition-all duration-200 ease-linear",
+        "py-[56px] px-[128px] 2xl:px-[178px]",
       )}
       {...motionProps}
     >
