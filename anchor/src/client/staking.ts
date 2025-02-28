@@ -46,7 +46,7 @@ export class StakingClient {
    * High-level API methods
    */
   public async unstake(
-    statePda: PublicKey,
+    glamState: PublicKey,
     asset: PublicKey,
     amount: number | BN,
     txOptions: TxOptions = {},
@@ -57,7 +57,7 @@ export class StakingClient {
     if (assetStr === MSOL.toBase58()) {
       // Marinade
       tx = await this.marinade.orderUnstakeTx(
-        statePda,
+        glamState,
         new BN(amount),
         txOptions,
       );
@@ -68,7 +68,7 @@ export class StakingClient {
         throw new Error("Invalid LST: " + asset);
       }
       tx = await this.stakePoolWithdrawStakeTx(
-        statePda,
+        glamState,
         assetMeta.stateAccount,
         new BN(amount),
         true,
@@ -83,22 +83,22 @@ export class StakingClient {
    */
 
   public async stakePoolDepositSol(
-    statePda: PublicKey,
+    glamState: PublicKey,
     stakePool: PublicKey,
     amount: BN,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const tx = await this.stakePoolDepositSolTx(statePda, stakePool, amount);
+    const tx = await this.stakePoolDepositSolTx(glamState, stakePool, amount);
     return await this.base.sendAndConfirm(tx);
   }
 
   public async stakePoolDepositStake(
-    statePda: PublicKey,
+    glamState: PublicKey,
     stakePool: PublicKey,
     stakeAccount: PublicKey,
   ): Promise<TransactionSignature> {
     const tx = await this.stakePoolDepositStakeTx(
-      statePda,
+      glamState,
       stakePool,
       stakeAccount,
     );
@@ -106,55 +106,59 @@ export class StakingClient {
   }
 
   public async stakePoolWithdrawStake(
-    statePda: PublicKey,
+    glamState: PublicKey,
     stakePool: PublicKey,
     amount: BN,
   ): Promise<TransactionSignature> {
-    const tx = await this.stakePoolWithdrawStakeTx(statePda, stakePool, amount);
+    const tx = await this.stakePoolWithdrawStakeTx(
+      glamState,
+      stakePool,
+      amount,
+    );
     return await this.base.sendAndConfirm(tx);
   }
 
   public async initializeAndDelegateStake(
-    statePda: PublicKey,
+    glamState: PublicKey,
     vote: PublicKey,
     amount: BN,
   ): Promise<TransactionSignature> {
-    const tx = await this.initializeAndDelegateStakeTx(statePda, vote, amount);
+    const tx = await this.initializeAndDelegateStakeTx(glamState, vote, amount);
     return await this.base.sendAndConfirm(tx);
   }
 
   public async deactivateStakeAccounts(
-    statePda: PublicKey,
+    glamState: PublicKey,
     stakeAccounts: PublicKey[],
   ): Promise<TransactionSignature> {
-    const tx = await this.deactivateStakeAccountsTx(statePda, stakeAccounts);
+    const tx = await this.deactivateStakeAccountsTx(glamState, stakeAccounts);
     return await this.base.sendAndConfirm(tx);
   }
 
   public async withdrawFromStakeAccounts(
-    statePda: PublicKey,
+    glamState: PublicKey,
     stakeAccounts: PublicKey[],
   ): Promise<TransactionSignature> {
-    const tx = await this.withdrawFromStakeAccountsTx(statePda, stakeAccounts);
+    const tx = await this.withdrawFromStakeAccountsTx(glamState, stakeAccounts);
     return await this.base.sendAndConfirm(tx);
   }
 
   public async mergeStakeAccounts(
-    statePda: PublicKey,
+    glamState: PublicKey,
     toStake: PublicKey,
     fromStake: PublicKey,
   ): Promise<TransactionSignature> {
-    const tx = await this.mergeStakeAccountsTx(statePda, toStake, fromStake);
+    const tx = await this.mergeStakeAccountsTx(glamState, toStake, fromStake);
     return await this.base.sendAndConfirm(tx);
   }
 
   public async splitStakeAccount(
-    statePda: PublicKey,
+    glamState: PublicKey,
     existingStake: PublicKey,
     lamports: BN,
   ): Promise<{ newStake: PublicKey; txSig: TransactionSignature }> {
     const { tx, newStake } = await this.splitStakeAccountTx(
-      statePda,
+      glamState,
       existingStake,
       lamports,
     );
@@ -163,12 +167,12 @@ export class StakingClient {
   }
 
   public async redelegateStake(
-    statePda: PublicKey,
+    glamState: PublicKey,
     existingStake: PublicKey,
     vote: PublicKey,
   ): Promise<{ newStake: PublicKey; txSig: TransactionSignature }> {
     const { newStake, tx } = await this.redelegateStakeTx(
-      statePda,
+      glamState,
       existingStake,
       vote,
     );
@@ -375,13 +379,13 @@ export class StakingClient {
    */
 
   public async stakePoolDepositSolTx(
-    statePda: PublicKey,
+    glamState: PublicKey,
     stakePool: PublicKey,
     amount: BN,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(statePda);
+    const glamSigner = txOptions.signer || this.base.getSigner();
+    const glamVault = this.base.getVaultPda(glamState);
     const {
       programId: stakePoolProgram,
       poolMint,
@@ -396,10 +400,10 @@ export class StakingClient {
     const tx = await this.base.program.methods
       .stakePoolDepositSol(amount)
       .accountsPartial({
-        signer,
-        state: statePda,
-        vault,
-        mintTo: this.base.getVaultAta(statePda, poolMint),
+        glamSigner,
+        glamState,
+        glamVault,
+        mintTo: this.base.getVaultAta(glamState, poolMint),
         stakePoolProgram,
         stakePool,
         poolMint: poolMint,
@@ -414,13 +418,13 @@ export class StakingClient {
   }
 
   public async stakePoolDepositStakeTx(
-    statePda: PublicKey,
+    glamState: PublicKey,
     stakePool: PublicKey,
     stakeAccount: PublicKey,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(statePda);
+    const glamSigner = txOptions.signer || this.base.getSigner();
+    const glamVault = this.base.getVaultPda(glamState);
     const {
       programId: stakePoolProgram,
       poolMint,
@@ -455,11 +459,11 @@ export class StakingClient {
     const tx = await this.base.program.methods
       .stakePoolDepositStake()
       .accountsPartial({
-        signer,
-        state: statePda,
-        vault,
+        glamSigner,
+        glamState,
+        glamVault,
         vaultStakeAccount: stakeAccount,
-        mintTo: this.base.getVaultAta(statePda, poolMint),
+        mintTo: this.base.getVaultAta(glamState, poolMint),
         poolMint,
         feeAccount,
         stakePool,
@@ -480,14 +484,14 @@ export class StakingClient {
   }
 
   public async stakePoolWithdrawStakeTx(
-    statePda: PublicKey,
+    glamState: PublicKey,
     stakePool: PublicKey,
     amount: BN,
     deactivate: boolean = false,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(statePda);
+    const glamSigner = txOptions.signer || this.base.getSigner();
+    const glamVault = this.base.getVaultPda(glamState);
     const {
       programId: stakePoolProgram,
       poolMint,
@@ -509,16 +513,16 @@ export class StakingClient {
         : validatorStakeCandidates[0].address;
 
     const [stakeAccount, createStakeAccountIx] =
-      await this.createStakeAccount(signer);
+      await this.createStakeAccount(glamSigner);
 
     const postInstructions = deactivate
       ? [
           await this.base.program.methods
             .deactivateStakeAccounts()
             .accountsPartial({
-              signer,
-              state: statePda,
-              vault,
+              glamSigner,
+              glamState,
+              glamVault,
               clock: SYSVAR_CLOCK_PUBKEY,
               stakeProgram: StakeProgram.programId,
             })
@@ -536,14 +540,14 @@ export class StakingClient {
     const tx = await this.base.program.methods
       .stakePoolWithdrawStake(amount)
       .accountsPartial({
-        signer,
-        state: statePda,
-        vault,
+        glamSigner,
+        glamState,
+        glamVault,
         vaultStakeAccount: stakeAccount,
         stakePoolProgram,
         stakePool,
         poolMint,
-        poolTokenAta: this.base.getVaultAta(statePda, poolMint),
+        poolTokenAta: this.base.getVaultAta(glamState, poolMint),
         validatorList,
         validatorStakeAccount,
         withdrawAuthority,
@@ -560,22 +564,22 @@ export class StakingClient {
   }
 
   public async initializeAndDelegateStakeTx(
-    statePda: PublicKey,
+    glamState: PublicKey,
     vote: PublicKey,
     amount: BN,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(statePda);
+    const glamSigner = txOptions.signer || this.base.getSigner();
+    const glamVault = this.base.getVaultPda(glamState);
     const [stakeAccount, createStakeAccountIx] =
-      await this.createStakeAccount(signer);
+      await this.createStakeAccount(glamSigner);
 
     const tx = await this.base.program.methods
       .initializeAndDelegateStake(amount)
       .accountsPartial({
-        signer,
-        state: statePda,
-        vault,
+        glamState,
+        glamSigner,
+        glamVault,
         vaultStakeAccount: stakeAccount,
         vote,
         stakeConfig: STAKE_CONFIG_ID,
@@ -589,18 +593,18 @@ export class StakingClient {
   }
 
   public async deactivateStakeAccountsTx(
-    statePda: PublicKey,
+    glamState: PublicKey,
     stakeAccounts: PublicKey[],
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(statePda);
+    const glamSigner = txOptions.signer || this.base.getSigner();
+    const glamVault = this.base.getVaultPda(glamState);
     const tx = await this.base.program.methods
       .deactivateStakeAccounts()
       .accountsPartial({
-        signer,
-        state: statePda,
-        vault,
+        glamState,
+        glamSigner,
+        glamVault,
         clock: SYSVAR_CLOCK_PUBKEY,
         stakeProgram: StakeProgram.programId,
       })
@@ -617,18 +621,18 @@ export class StakingClient {
   }
 
   public async withdrawFromStakeAccountsTx(
-    statePda: PublicKey,
+    glamState: PublicKey,
     stakeAccounts: PublicKey[],
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(statePda);
+    const glamSigner = txOptions.signer || this.base.getSigner();
+    const glamVault = this.base.getVaultPda(glamState);
     const tx = await this.base.program.methods
       .withdrawFromStakeAccounts()
       .accountsPartial({
-        signer,
-        state: statePda,
-        vault,
+        glamSigner,
+        glamState,
+        glamVault,
         clock: SYSVAR_CLOCK_PUBKEY,
         stakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
         stakeProgram: StakeProgram.programId,
@@ -646,19 +650,19 @@ export class StakingClient {
   }
 
   public async mergeStakeAccountsTx(
-    statePda: PublicKey,
+    glamState: PublicKey,
     toStake: PublicKey,
     fromStake: PublicKey,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(statePda);
+    const glamSigner = txOptions.signer || this.base.getSigner();
+    const glamVault = this.base.getVaultPda(glamState);
     const tx = await this.base.program.methods
       .mergeStakeAccounts()
       .accountsPartial({
-        signer,
-        state: statePda,
-        vault,
+        glamSigner,
+        glamState,
+        glamVault,
         toStake,
         fromStake,
         stakeProgram: StakeProgram.programId,
@@ -670,22 +674,22 @@ export class StakingClient {
   }
 
   public async splitStakeAccountTx(
-    state: PublicKey,
+    glamState: PublicKey,
     existingStake: PublicKey,
     lamports: BN,
     txOptions: TxOptions = {},
   ) {
-    const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(state);
+    const glamSigner = txOptions.signer || this.base.getSigner();
+    const glamVault = this.base.getVaultPda(glamState);
     const [newStake, createStakeAccountIx] =
-      await this.createStakeAccount(signer);
+      await this.createStakeAccount(glamSigner);
 
     const tx = await this.base.program.methods
       .splitStakeAccount(lamports)
       .accountsPartial({
-        signer,
-        state,
-        vault,
+        glamSigner,
+        glamState,
+        glamVault,
         existingStake,
         newStake,
         stakeProgram: StakeProgram.programId,
@@ -698,22 +702,22 @@ export class StakingClient {
   }
 
   public async redelegateStakeTx(
-    statePda: PublicKey,
+    glamState: PublicKey,
     existingStake: PublicKey,
     vote: PublicKey,
     txOptions: TxOptions = {},
   ) {
-    const signer = txOptions.signer || this.base.getSigner();
-    const vault = this.base.getVaultPda(statePda);
+    const glamSigner = txOptions.signer || this.base.getSigner();
+    const glamVault = this.base.getVaultPda(glamState);
     const [newStake, createStakeAccountIx] =
-      await this.createStakeAccount(signer);
+      await this.createStakeAccount(glamSigner);
 
     const tx = await this.base.program.methods
       .redelegateStake()
       .accountsPartial({
-        signer,
-        state: statePda,
-        vault,
+        glamSigner,
+        glamState,
+        glamVault,
         vote,
         existingStake,
         newStake,

@@ -29,8 +29,11 @@ use {
 
 #[derive(Accounts)]
 pub struct NewMint<'info> {
-    #[account(mut, constraint = glam_state.owner == signer.key() @ GlamError::NotAuthorized)]
+    #[account(mut, constraint = glam_state.owner == glam_signer.key() @ GlamError::NotAuthorized)]
     pub glam_state: Box<Account<'info, StateAccount>>,
+
+    #[account(mut)]
+    pub glam_signer: Signer<'info>,
 
     /// CHECK: Token2022 Mint, we manually create it with dynamic extensions
     #[account(
@@ -44,16 +47,13 @@ pub struct NewMint<'info> {
     )]
     pub new_mint: AccountInfo<'info>,
 
-    #[account(mut)]
-    pub signer: Signer<'info>,
-
     /// CHECK: Token2022 Transfer Hook, we manually create it
     #[account(
         init,
         space = ExtraAccountMetaList::size_of(TRANSFER_HOOK_EXTRA_ACCOUNTS).unwrap(),
         seeds = [b"extra-account-metas", new_mint.key().as_ref()],
         bump,
-        payer = signer,
+        payer = glam_signer,
     )]
     pub extra_account_meta_list: UncheckedAccount<'info>,
 
@@ -187,7 +187,7 @@ pub fn add_mint_handler<'c: 'info, 'info>(
         CpiContext::new_with_signer(
             ctx.accounts.token_2022_program.to_account_info(),
             system_program::CreateAccount {
-                from: ctx.accounts.signer.to_account_info(),
+                from: ctx.accounts.glam_signer.to_account_info(),
                 to: mint_account_info.clone(),
             },
             &[signer_seeds],
