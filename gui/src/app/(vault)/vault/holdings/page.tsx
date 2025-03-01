@@ -324,6 +324,13 @@ export default function Holdings() {
     balance: vault?.uiAmount || 0,
   });
 
+  useEffect(() => {
+    setWithdrawAsset({
+      ...defaultDepositAsset,
+      balance: vault?.uiAmount || 0,
+    });
+  }, [vault]);
+
   // On wallet changes reset states
   useEffect(() => {
     depositForm.reset();
@@ -612,6 +619,7 @@ export default function Holdings() {
       }
 
       if (!activeGlamState?.pubkey || !glamClient) {
+        console.log("activeGlamState", activeGlamState);
         toast({
           title: "Vault not available",
           description: "Please ensure your vault is properly set up",
@@ -1031,7 +1039,8 @@ export default function Holdings() {
           <SheetHeader>
             <SheetTitle>Transfer</SheetTitle>
             <SheetDescription>
-              Transfer assets between your vault, Drift, and owner.
+              Transfer assets between your vault and DeFi protocols (e.g.,
+              Drift).
             </SheetDescription>
           </SheetHeader>
 
@@ -1050,7 +1059,7 @@ export default function Holdings() {
           <SheetHeader>
             <SheetTitle>Wrap/Unwrap SOL</SheetTitle>
             <SheetDescription>
-              Wrap SOL into wSOL or unwrap wSOL back to SOL.
+              Wrap SOL into wSOL or unwrap wSOL back to SOL within your vault.
             </SheetDescription>
           </SheetHeader>
 

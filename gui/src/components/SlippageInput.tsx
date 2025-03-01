@@ -32,6 +32,7 @@ export const SlippageInput: React.FC<Props> = ({
   name,
   label,
   symbol,
+  step = "5",
   className,
   disableSubmitOnEnter = true,
 }) => {
@@ -58,17 +59,17 @@ export const SlippageInput: React.FC<Props> = ({
     if (/^\d*\.?\d*$/.test(value)) {
       const numericValue = parseFloat(value.replace(/,/g, ""));
       if (isNaN(numericValue)) {
-        setValue(name, 0);
+        setValue(name, 0, { shouldDirty: true });
       } else {
-        setValue(name, numericValue);
+        setValue(name, numericValue, { shouldDirty: true });
       }
     }
   };
 
   // Adjust step based on symbol
   const getStep = () => {
-    if (symbol === "BPS") return "5"; // BPS are whole numbers
-    if (symbol === "%") return "0.05"; // Standard percentage step
+    if (symbol === "BPS") return step; // BPS are whole numbers
+    if (symbol === "%") return Number(step) * 0.01; // Standard percentage step
   };
 
   return (

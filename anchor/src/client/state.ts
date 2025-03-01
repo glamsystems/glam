@@ -150,6 +150,7 @@ export class StateClient {
         glamState,
         glamSigner,
       })
+      .preInstructions(txOptions.preInstructions || [])
       .transaction();
     return await this.base.intoVersionedTransaction(tx, txOptions);
   }

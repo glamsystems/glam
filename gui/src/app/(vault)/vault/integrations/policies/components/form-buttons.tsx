@@ -8,10 +8,16 @@ interface FormButtonsProps {
   onReset: (event: React.MouseEvent) => void;
   isLoading?: boolean;
   isDirty?: boolean;
-  onSubmit?: () => void;
+  onSubmit?: () => void; // Keep as optional for backward compatibility
 }
 
-export function FormButtons({ integrationName, onReset, isLoading, isDirty, onSubmit }: FormButtonsProps) {
+export function FormButtons({
+  integrationName,
+  onReset,
+  isLoading,
+  isDirty,
+  onSubmit,
+}: FormButtonsProps) {
   return (
     <div className="flex space-x-4">
       <Button
@@ -25,9 +31,9 @@ export function FormButtons({ integrationName, onReset, isLoading, isDirty, onSu
       <Button
         className="w-1/2"
         type="button"
-        onClick={onSubmit}
         disabled={!isDirty}
         loading={isLoading}
+        onClick={onSubmit}
       >
         Update {integrationName} Policies
       </Button>

@@ -93,6 +93,13 @@ function MultiSelect<T extends Option>({
     overscan: 10,
   });
 
+  // Prevent rendering the virtualizer when component is not mounted
+  const [isMounted, setIsMounted] = React.useState(false);
+  React.useEffect(() => {
+    setIsMounted(true);
+    return () => setIsMounted(false);
+  }, []);
+
   const handleSelect = React.useCallback(
     (value: string) => {
       onChange([...selected, value]);
@@ -178,37 +185,39 @@ function MultiSelect<T extends Option>({
                     ref={parentRef}
                     className="relative h-[320px] overflow-auto"
                   >
-                    <div
-                      style={{
-                        height: `${rowVirtualizer.getTotalSize()}px`,
-                        width: "100%",
-                        position: "relative",
-                      }}
-                    >
-                      {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                        const option = filteredOptions[virtualRow.index];
-                        return (
-                          <div
-                            key={option.value}
-                            className="absolute top-0 left-0 w-full"
-                            style={{
-                              height: `${virtualRow.size}px`,
-                              transform: `translateY(${virtualRow.start}px)`,
-                            }}
-                          >
-                            <CommandItem
-                              value={option.value}
-                              onSelect={() => handleSelect(option.value)}
-                              className="w-full"
+                    {isMounted && (
+                      <div
+                        style={{
+                          height: `${rowVirtualizer.getTotalSize()}px`,
+                          width: "100%",
+                          position: "relative",
+                        }}
+                      >
+                        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                          const option = filteredOptions[virtualRow.index];
+                          return (
+                            <div
+                              key={option.value}
+                              className="absolute top-0 left-0 w-full"
+                              style={{
+                                height: `${virtualRow.size}px`,
+                                transform: `translateY(${virtualRow.start}px)`,
+                              }}
                             >
-                              {renderOption
-                                ? renderOption(option)
-                                : option.label}
-                            </CommandItem>
-                          </div>
-                        );
-                      })}
-                    </div>
+                              <CommandItem
+                                value={option.value}
+                                onSelect={() => handleSelect(option.value)}
+                                className="w-full"
+                              >
+                                {renderOption
+                                  ? renderOption(option)
+                                  : option.label}
+                              </CommandItem>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
               </CommandGroup>

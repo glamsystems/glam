@@ -155,131 +155,75 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   >({});
   const [isMounted, setIsMounted] = useState(false);
 
+  const validate = useMemo(() => ajv.compile(schema), [schema]);
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Don't render anything until mounted
-  if (!isMounted) {
-    return null;
-  }
+  // Define fetchEnumValues function
+  const fetchEnumValues = () => {
+    const values: Record<string, { label: string; value: string | number }[]> =
+      {};
 
-  // Filter fields based on tags and hidden status
-  const filterFields = (fields: Record<string, SchemaField>) => {
-    return Object.entries(fields).filter(([, field]) => {
-      // First check if the field is hidden
-      if (field["x-hidden"]) return false;
-
-      // If there are tag filters, check if the field's tag matches
-      if (filters?.tags && filters.tags.length > 0) {
-        return filters.tags.includes(field["x-tag"] || "");
+    if (isNested && groups.length) {
+      groups.forEach((group) => {
+        if (schema[group]?.fields) {
+          const fields = schema[group].fields as Record<string, SchemaField>;
+          for (const [key, field] of Object.entries(fields)) {
+            if (field["x-enumValues"]) {
+              const enumData =
+                (openfundsConstants as any)[field["x-enumValues"]] ||
+                (constants as any)[field["x-enumValues"]];
+              if (Array.isArray(enumData)) {
+                if (field["x-enumValuesLabel"] && field["x-enumValuesValue"]) {
+                  values[key] = enumData.map((item: any) => ({
+                    label:
+                      item[field["x-enumValuesLabel"] as string] || item.label,
+                    value:
+                      item[field["x-enumValuesValue"] as string] || item.value,
+                  }));
+                } else {
+                  values[key] = enumData.map((item: string, j) => ({
+                    label: item,
+                    value: j,
+                  }));
+                }
+              }
+            } else if (field.enum) {
+              values[key] = field.enum.map((item: string, j) => ({
+                label: item,
+                value: j,
+              }));
+            }
+          }
+        }
+      });
+    } else if (schema.fields) {
+      for (const [key, field] of Object.entries(schema.fields)) {
+        if (field["x-enumValues"]) {
+          const enumData = (openfundsConstants as any)[field["x-enumValues"]];
+          if (Array.isArray(enumData)) {
+            values[key] = enumData.map((item: any) => ({
+              label: item[field["x-enumValuesLabel"] as string] || item.label,
+              value: item[field["x-enumValuesValue"] as string] || item.value,
+            }));
+          }
+        } else if (field.enum) {
+          values[key] = field.enum.map((item: string, j) => ({
+            label: item,
+            value: j,
+          }));
+        }
       }
+    }
 
-      // If no filters or the field passes all filters, include it
-      return true;
-    });
-  };
-
-  const renderFields = (fields: Record<string, SchemaField>) => {
-    const filteredFields = filterFields(fields);
-    const sortedFields = filteredFields.sort(
-      ([, a], [, b]) => (a["x-order"] || 0) - (b["x-order"] || 0),
-    );
-
-    if (columns === 1) {
-      return sortedFields.map(([key, field]) => renderField(key, field));
-    } else {
-      const rows = [];
-      for (let i = 0; i < sortedFields.length; i += 2) {
-        const row = (
-          <div key={i} className="flex space-x-4">
-            <div className="flex-1">
-              {renderField(sortedFields[i][0], sortedFields[i][1])}
-            </div>
-            {i + 1 < sortedFields.length && (
-              <div className="flex-1">
-                {renderField(sortedFields[i + 1][0], sortedFields[i + 1][1])}
-              </div>
-            )}
-          </div>
-        );
-        rows.push(row);
-      }
-      return rows;
+    if (JSON.stringify(enumValues) !== JSON.stringify(values)) {
+      setEnumValues(values);
     }
   };
 
-  const validate = useMemo(() => ajv.compile(schema), [schema]);
-
   useEffect(() => {
-    const fetchEnumValues = () => {
-      const values: Record<
-        string,
-        { label: string; value: string | number }[]
-      > = {};
-
-      if (isNested && groups.length) {
-        groups.forEach((group) => {
-          if (schema[group]?.fields) {
-            const fields = schema[group].fields as Record<string, SchemaField>;
-            for (const [key, field] of Object.entries(fields)) {
-              if (field["x-enumValues"]) {
-                const enumData =
-                  (openfundsConstants as any)[field["x-enumValues"]] ||
-                  (constants as any)[field["x-enumValues"]];
-                if (Array.isArray(enumData)) {
-                  if (
-                    field["x-enumValuesLabel"] &&
-                    field["x-enumValuesValue"]
-                  ) {
-                    values[key] = enumData.map((item: any) => ({
-                      label:
-                        item[field["x-enumValuesLabel"] as string] ||
-                        item.label,
-                      value:
-                        item[field["x-enumValuesValue"] as string] ||
-                        item.value,
-                    }));
-                  } else {
-                    values[key] = enumData.map((item: string, j) => ({
-                      label: item,
-                      value: j,
-                    }));
-                  }
-                }
-              } else if (field.enum) {
-                values[key] = field.enum.map((item: string, j) => ({
-                  label: item,
-                  value: j,
-                }));
-              }
-            }
-          }
-        });
-      } else if (schema.fields) {
-        for (const [key, field] of Object.entries(schema.fields)) {
-          if (field["x-enumValues"]) {
-            const enumData = (openfundsConstants as any)[field["x-enumValues"]];
-            if (Array.isArray(enumData)) {
-              values[key] = enumData.map((item: any) => ({
-                label: item[field["x-enumValuesLabel"] as string] || item.label,
-                value: item[field["x-enumValuesValue"] as string] || item.value,
-              }));
-            }
-          } else if (field.enum) {
-            values[key] = field.enum.map((item: string, j) => ({
-              label: item,
-              value: j,
-            }));
-          }
-        }
-      }
-
-      if (JSON.stringify(enumValues) !== JSON.stringify(values)) {
-        setEnumValues(values);
-      }
-    };
-
     fetchEnumValues();
   }, [schema, isNested, groups, enumValues]);
 
@@ -337,9 +281,58 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
     }
   }, [form, onChange]);
 
+  if (!isMounted) {
+    return null;
+  }
+
   if (!formSchema) {
     return <div>Loading...</div>;
   }
+
+  // Filter fields based on tags and hidden status
+  const filterFields = (fields: Record<string, SchemaField>) => {
+    return Object.entries(fields).filter(([, field]) => {
+      // First check if the field is hidden
+      if (field["x-hidden"]) return false;
+
+      // If there are tag filters, check if the field's tag matches
+      if (filters?.tags && filters.tags.length > 0) {
+        return filters.tags.includes(field["x-tag"] || "");
+      }
+
+      // If no filters or the field passes all filters, include it
+      return true;
+    });
+  };
+
+  const renderFields = (fields: Record<string, SchemaField>) => {
+    const filteredFields = filterFields(fields);
+    const sortedFields = filteredFields.sort(
+      ([, a], [, b]) => (a["x-order"] || 0) - (b["x-order"] || 0),
+    );
+
+    if (columns === 1) {
+      return sortedFields.map(([key, field]) => renderField(key, field));
+    } else {
+      const rows = [];
+      for (let i = 0; i < sortedFields.length; i += 2) {
+        const row = (
+          <div key={i} className="flex space-x-4">
+            <div className="flex-1">
+              {renderField(sortedFields[i][0], sortedFields[i][1])}
+            </div>
+            {i + 1 < sortedFields.length && (
+              <div className="flex-1">
+                {renderField(sortedFields[i + 1][0], sortedFields[i + 1][1])}
+              </div>
+            )}
+          </div>
+        );
+        rows.push(row);
+      }
+      return rows;
+    }
+  };
 
   const renderField = (key: string, field: SchemaField) => {
     const isRequired = schema.required?.includes(key);

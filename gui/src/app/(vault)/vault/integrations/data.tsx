@@ -1,33 +1,15 @@
 import { GlamIntegrations } from "@glamsystems/glam-sdk";
 
 export interface IntegrationMetadata {
-  name?: string;
+  name: string;
   description: string;
   labels: string[];
   imagePath: string;
 }
 
-export function formatIntegrationName(
-  key: string,
-  metadata?: IntegrationMetadata,
-): string {
-  if (metadata?.name) return metadata.name;
-
-  // Find sequences of capital letters (acronyms)
-  const parts = key.split(/(?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z])/)
-    .map(part => {
-      // If the part is all uppercase and longer than one letter, treat it as an acronym
-      if (part.length > 1 && part === part.toUpperCase()) {
-        return part; // Keep acronyms together
-      }
-      return part.charAt(0).toUpperCase() + part.slice(1);
-    });
-  
-  return parts.join(' ');
-}
-
 export const metadata: { [key: string]: IntegrationMetadata } = {
   Drift: {
+    name: "Drift",
     description: "Trade perpetual futures on Drift, a decentralized exchange.",
     labels: ["DEX", "Derivatives"],
     imagePath: "/images/integrations/drift.svg",
@@ -40,18 +22,21 @@ export const metadata: { [key: string]: IntegrationMetadata } = {
     imagePath: "/images/integrations/solana.svg",
   },
   SanctumStakePool: {
+    name: "Sanctum Stake Pool",
     description:
       "Stake SOL with the Sanctum liquid staking protocol and receive liquid staked tokens.",
     labels: ["Staking", "LST"],
     imagePath: "/images/integrations/sanctum.svg",
   },
   NativeStaking: {
+    name: "Native Staking",
     description:
       "Stake SOL natively to secure the Solana network and earn yield.",
     labels: ["Staking"],
     imagePath: "/images/integrations/solana.svg",
   },
   Marinade: {
+    name: "Marinade",
     description:
       "Stake SOL with Marinade and receive mSOL, a liquid staking token.",
     labels: ["Staking", "LST"],
@@ -72,6 +57,7 @@ export const metadata: { [key: string]: IntegrationMetadata } = {
     imagePath: "/images/integrations/jupiter.svg",
   },
   KaminoLending: {
+    name: "Kamino Lending",
     description:
       "Lend and borrow SOL and other assets with Kamino, a decentralized lending protocol.",
     labels: ["Lending"],
@@ -81,7 +67,6 @@ export const metadata: { [key: string]: IntegrationMetadata } = {
 
 export const allIntegrations = GlamIntegrations.sort().map((integ, index) => ({
   id: index,
-  name: formatIntegrationName(integ, metadata[integ]),
   key: integ, // Keep original key for integration identification
   enabled: false,
   comingSoon: false,

@@ -221,6 +221,21 @@ export class JupiterSwapClient {
     return this.base.intoVersionedTransaction(tx, { ...txOptions });
   }
 
+  public async setMaxSwapSlippageIx(
+    glamState: PublicKey,
+    slippageBps: number,
+    txOptions: TxOptions = {},
+  ): Promise<TransactionInstruction> {
+    const glamSigner = txOptions.signer || this.base.getSigner();
+    return await this.base.program.methods
+      .jupiterSetMaxSwapSlippage(new BN(slippageBps))
+      .accounts({
+        glamState,
+        glamSigner,
+      })
+      .instruction();
+  }
+
   /*
    * Utils
    */
