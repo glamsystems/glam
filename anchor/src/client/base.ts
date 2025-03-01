@@ -435,11 +435,11 @@ export class BaseClient {
   }
 
   getVaultAta(
-    statePda: PublicKey,
+    glamState: PublicKey,
     mint: PublicKey,
     programId?: PublicKey,
   ): PublicKey {
-    return this.getAta(mint, this.getVaultPda(statePda), programId);
+    return this.getAta(mint, this.getVaultPda(glamState), programId);
   }
 
   /**
@@ -489,11 +489,11 @@ export class BaseClient {
   }
 
   async getVaultTokenBalance(
-    statePda: PublicKey,
+    glamState: PublicKey,
     mint: PublicKey,
     programId?: PublicKey,
   ): Promise<number> {
-    const ata = this.getVaultAta(statePda, mint);
+    const ata = this.getVaultAta(glamState, mint);
     const _mint = await getMint(this.provider.connection, mint);
     try {
       const account = await getAccount(this.provider.connection, ata);
@@ -585,12 +585,12 @@ export class BaseClient {
    * @returns
    */
   public async maybeWrapSol(
-    state: PublicKey,
+    glamState: PublicKey,
     amount: number | anchor.BN,
     signer?: PublicKey,
   ): Promise<TransactionInstruction | null> {
-    const vaultPda = this.getVaultPda(state);
-    const vaultWsolAta = this.getVaultAta(state, WSOL);
+    const glamVault = this.getVaultPda(glamState);
+    const vaultWsolAta = this.getVaultAta(glamState, WSOL);
     let wsolBalance = new anchor.BN(0);
     try {
       wsolBalance = new anchor.BN(
@@ -600,7 +600,7 @@ export class BaseClient {
       );
     } catch (err) {}
     const solBalance = new anchor.BN(
-      await this.provider.connection.getBalance(vaultPda),
+      await this.provider.connection.getBalance(glamVault),
     );
     const delta = new anchor.BN(amount).sub(wsolBalance); // wSOL amount needed
     if (solBalance.lt(delta)) {
@@ -612,11 +612,11 @@ export class BaseClient {
       return await this.program.methods
         .wsolWrap(delta)
         .accountsPartial({
-          state,
-          vault: vaultPda,
+          glamState,
+          glamVault,
+          glamSigner: signer || this.getSigner(),
           vaultWsolAta,
           wsolMint: WSOL,
-          signer: signer || this.getSigner(),
         })
         .instruction();
     }

@@ -602,12 +602,12 @@ describe("glam_investor", () => {
         ...(await connection.getLatestBlockhash()),
         signature: airdropTx,
       });
-      const txDeposit = await glamClient.marinade.depositSol(
+      const txDeposit = await glamClient.marinade.deposit(
         statePda,
         new anchor.BN(10 ** 9),
       );
       console.log("marinade deposit:", txDeposit);
-      const txUnstake = await glamClient.marinade.delayedUnstake(
+      const txUnstake = await glamClient.marinade.orderUnstake(
         statePda,
         new anchor.BN(10 ** 8),
       );

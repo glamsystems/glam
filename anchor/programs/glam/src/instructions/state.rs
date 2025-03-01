@@ -9,7 +9,6 @@ use anchor_spl::{
     },
     token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
 };
-use glam_macros::vault_signer_seeds;
 
 #[derive(Accounts)]
 #[instruction(state_model: StateModel)]
@@ -18,26 +17,26 @@ pub struct InitializeState<'info> {
         init,
         seeds = [
             SEED_STATE.as_bytes(),
-            signer.key().as_ref(),
+            glam_signer.key().as_ref(),
             state_model.created.as_ref().unwrap().key.as_ref()
         ],
         bump,
-        payer = signer,
+        payer = glam_signer,
         space = 8 + StateAccount::INIT_SIZE
     )]
-    pub state: Box<Account<'info, StateAccount>>,
+    pub glam_state: Box<Account<'info, StateAccount>>,
 
-    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
-    pub vault: SystemAccount<'info>,
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), glam_state.key().as_ref()], bump)]
+    pub glam_vault: SystemAccount<'info>,
 
     #[account(mut)]
-    pub signer: Signer<'info>,
+    pub glam_signer: Signer<'info>,
 
     #[account(
         init,
-        seeds = [SEED_METADATA.as_bytes(), state.key().as_ref()],
+        seeds = [SEED_METADATA.as_bytes(), glam_state.key().as_ref()],
         bump,
-        payer = signer,
+        payer = glam_signer,
         space = 8 + OpenfundsMetadataAccount::INIT_SIZE
     )]
     pub openfunds_metadata: Option<Box<Account<'info, OpenfundsMetadataAccount>>>,
@@ -52,7 +51,7 @@ pub fn initialize_state_handler<'c: 'info, 'info>(
     //
     // Initialize state account
     //
-    let state = &mut ctx.accounts.state;
+    let state = &mut ctx.accounts.glam_state;
     let model = state_model.clone();
 
     state.account_type = model.account_type.ok_or(GlamError::InvalidAccountType)?;
@@ -68,7 +67,7 @@ pub fn initialize_state_handler<'c: 'info, 'info>(
     if let Some(created) = model.created {
         state.created = CreatedModel {
             key: created.key,
-            created_by: ctx.accounts.signer.key(),
+            created_by: ctx.accounts.glam_signer.key(),
             created_at: Clock::get()?.unix_timestamp,
         };
     }
@@ -91,32 +90,32 @@ pub fn initialize_state_handler<'c: 'info, 'info>(
         }
     }
 
-    state.vault = ctx.accounts.vault.key();
-    state.owner = ctx.accounts.signer.key();
+    state.vault = ctx.accounts.glam_vault.key();
+    state.owner = ctx.accounts.glam_signer.key();
     state.enabled = model.enabled.unwrap_or(true);
     state.assets = model.assets.unwrap_or_default();
     state.integrations = model.integrations.unwrap_or_default();
     state.delegate_acls = model.delegate_acls.unwrap_or_default();
     state.params = vec![vec![]];
 
-    msg!("State account created: {}", ctx.accounts.state.key());
+    msg!("State account created: {}", ctx.accounts.glam_state.key());
     Ok(())
 }
 
 #[derive(Accounts)]
 pub struct UpdateState<'info> {
-    #[account(mut, constraint = state.owner == signer.key() @ GlamError::NotAuthorized)]
-    pub state: Account<'info, StateAccount>,
+    #[account(mut, constraint = glam_state.owner == glam_signer.key() @ GlamError::NotAuthorized)]
+    pub glam_state: Account<'info, StateAccount>,
 
     #[account(mut)]
-    pub signer: Signer<'info>,
+    pub glam_signer: Signer<'info>,
 }
 
 pub fn update_state_handler<'c: 'info, 'info>(
     ctx: Context<'_, '_, 'c, 'info, UpdateState<'info>>,
     state_model: StateModel,
 ) -> Result<()> {
-    let state = &mut ctx.accounts.state;
+    let state = &mut ctx.accounts.glam_state;
 
     if let Some(name) = state_model.name {
         require!(
@@ -220,67 +219,67 @@ pub fn update_state_handler<'c: 'info, 'info>(
 
 #[derive(Accounts)]
 pub struct CloseState<'info> {
-    #[account(mut, close = signer, constraint = state.owner == signer.key() @ GlamError::NotAuthorized)]
-    pub state: Account<'info, StateAccount>,
+    #[account(mut, close = glam_signer, constraint = glam_state.owner == glam_signer.key() @ GlamError::NotAuthorized)]
+    pub glam_state: Account<'info, StateAccount>,
 
-    /// CHECK: Manually deserialized
-    #[account(mut, seeds = [SEED_METADATA.as_bytes(), state.key().as_ref()], bump)]
-    pub metadata: AccountInfo<'info>,
-
-    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
-    pub vault: SystemAccount<'info>,
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), glam_state.key().as_ref()], bump)]
+    pub glam_vault: SystemAccount<'info>,
 
     #[account(mut)]
-    pub signer: Signer<'info>,
+    pub glam_signer: Signer<'info>,
+
+    /// CHECK: Manually deserialized
+    #[account(mut, seeds = [SEED_METADATA.as_bytes(), glam_state.key().as_ref()], bump)]
+    pub metadata: AccountInfo<'info>,
 
     pub system_program: Program<'info, System>,
 }
 
-#[vault_signer_seeds]
+#[glam_macros::glam_vault_signer_seeds]
 pub fn close_state_handler(ctx: Context<CloseState>) -> Result<()> {
     require!(
-        ctx.accounts.state.mints.len() == 0,
+        ctx.accounts.glam_state.mints.len() == 0,
         GlamError::ShareClassesNotClosed
     );
 
-    if ctx.accounts.vault.lamports() > 0 {
+    if ctx.accounts.glam_vault.lamports() > 0 {
         solana_program::program::invoke_signed(
             &solana_program::system_instruction::transfer(
-                ctx.accounts.vault.key,
-                ctx.accounts.signer.key,
-                ctx.accounts.vault.lamports(),
+                ctx.accounts.glam_vault.key,
+                ctx.accounts.glam_signer.key,
+                ctx.accounts.glam_vault.lamports(),
             ),
             &[
-                ctx.accounts.vault.to_account_info(),
-                ctx.accounts.signer.to_account_info(),
+                ctx.accounts.glam_vault.to_account_info(),
+                ctx.accounts.glam_signer.to_account_info(),
             ],
-            vault_signer_seeds,
+            glam_vault_signer_seeds,
         )?;
     }
 
     close_account_info(
         ctx.accounts.metadata.to_account_info(),
-        ctx.accounts.signer.to_account_info(),
+        ctx.accounts.glam_signer.to_account_info(),
     )?;
 
-    msg!("State account closed: {}", ctx.accounts.state.key());
+    msg!("State account closed: {}", ctx.accounts.glam_state.key());
     Ok(())
 }
 
 #[derive(Accounts)]
 pub struct SetSubscribeRedeemEnabled<'info> {
-    #[account(mut, constraint = state.owner == signer.key() @ GlamError::NotAuthorized)]
-    pub state: Box<Account<'info, StateAccount>>,
+    #[account(mut, constraint = glam_state.owner == glam_signer.key() @ GlamError::NotAuthorized)]
+    pub glam_state: Box<Account<'info, StateAccount>>,
 
     #[account(mut)]
-    pub signer: Signer<'info>,
+    pub glam_signer: Signer<'info>,
 }
 
 pub fn set_subscribe_redeem_enabled_handler(
     ctx: Context<SetSubscribeRedeemEnabled>,
     enabled: bool,
 ) -> Result<()> {
-    let state = &mut ctx.accounts.state;
+    let state = &mut ctx.accounts.glam_state;
 
     if enabled {
         state.delete_from_engine_field(EngineFieldName::ExternalVaultAccounts, system_program::ID);
@@ -298,18 +297,21 @@ pub fn set_subscribe_redeem_enabled_handler(
 
 #[derive(Accounts)]
 pub struct Withdraw<'info> {
-    #[account(mut, constraint = state.owner == signer.key() @ GlamError::NotAuthorized)]
-    pub state: Account<'info, StateAccount>,
+    #[account(mut, constraint = glam_state.owner == glam_signer.key() @ GlamError::NotAuthorized)]
+    pub glam_state: Account<'info, StateAccount>,
 
-    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
-    pub vault: SystemAccount<'info>,
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), glam_state.key().as_ref()], bump)]
+    pub glam_vault: SystemAccount<'info>,
+
+    #[account(mut)]
+    pub glam_signer: Signer<'info>,
 
     pub asset: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(
         mut,
         associated_token::mint = asset,
-        associated_token::authority = vault,
+        associated_token::authority = glam_vault,
         associated_token::token_program = token_program
     )]
     pub vault_ata: Box<InterfaceAccount<'info, TokenAccount>>,
@@ -317,24 +319,21 @@ pub struct Withdraw<'info> {
     #[account(
         mut,
         associated_token::mint = asset,
-        associated_token::authority = signer,
+        associated_token::authority = glam_signer,
         associated_token::token_program = token_program
     )]
     pub signer_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
-    #[account(mut)]
-    pub signer: Signer<'info>,
-
     pub token_program: Interface<'info, TokenInterface>,
 }
 
-#[vault_signer_seeds]
+#[glam_macros::glam_vault_signer_seeds]
 pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
     //TODO: atm we allow transfers only from vaults (to their owner),
     //      i.e. funds with no share classes.
     //      We may want to enable transfers for funds with external assets.
     require!(
-        ctx.accounts.state.mints.len() == 0,
+        ctx.accounts.glam_state.mints.len() == 0,
         GlamError::WithdrawDenied
     );
 
@@ -345,9 +344,9 @@ pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
                 from: ctx.accounts.vault_ata.to_account_info(),
                 mint: ctx.accounts.asset.to_account_info(),
                 to: ctx.accounts.signer_ata.to_account_info(),
-                authority: ctx.accounts.vault.to_account_info(),
+                authority: ctx.accounts.glam_vault.to_account_info(),
             },
-            vault_signer_seeds,
+            glam_vault_signer_seeds,
         ),
         amount,
         ctx.accounts.asset.decimals,
@@ -358,20 +357,20 @@ pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct CloseTokenAccounts<'info> {
-    #[account(mut, constraint = state.owner == signer.key() @ GlamError::NotAuthorized)]
-    pub state: Account<'info, StateAccount>,
+    #[account(mut, constraint = glam_state.owner == glam_signer.key() @ GlamError::NotAuthorized)]
+    pub glam_state: Account<'info, StateAccount>,
 
-    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
-    pub vault: SystemAccount<'info>,
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), glam_state.key().as_ref()], bump)]
+    pub glam_vault: SystemAccount<'info>,
 
     #[account(mut)]
-    pub signer: Signer<'info>,
+    pub glam_signer: Signer<'info>,
 
     pub token_program: Program<'info, Token>,
     pub token_2022_program: Program<'info, Token2022>,
 }
 
-#[vault_signer_seeds]
+#[glam_macros::glam_vault_signer_seeds]
 pub fn close_token_accounts_handler<'info>(
     ctx: Context<'_, '_, '_, 'info, CloseTokenAccounts<'info>>,
 ) -> Result<()> {
@@ -381,20 +380,20 @@ pub fn close_token_accounts_handler<'info>(
                 ctx.accounts.token_program.to_account_info(),
                 CloseTokenAccount {
                     account: account.to_account_info(),
-                    destination: ctx.accounts.vault.to_account_info(),
-                    authority: ctx.accounts.vault.to_account_info(),
+                    destination: ctx.accounts.glam_vault.to_account_info(),
+                    authority: ctx.accounts.glam_vault.to_account_info(),
                 },
-                vault_signer_seeds,
+                glam_vault_signer_seeds,
             ))
         } else {
             close_token_2022_account(CpiContext::new_with_signer(
                 ctx.accounts.token_2022_program.to_account_info(),
                 CloseToken2022Account {
                     account: account.to_account_info(),
-                    destination: ctx.accounts.vault.to_account_info(),
-                    authority: ctx.accounts.vault.to_account_info(),
+                    destination: ctx.accounts.glam_vault.to_account_info(),
+                    authority: ctx.accounts.glam_vault.to_account_info(),
                 },
-                vault_signer_seeds,
+                glam_vault_signer_seeds,
             ))
         }
     })?;

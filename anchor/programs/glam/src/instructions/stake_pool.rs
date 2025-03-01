@@ -7,7 +7,6 @@ use anchor_spl::{
     token_interface::TokenInterface,
 };
 
-use glam_macros::vault_signer_seeds;
 use solana_program::program::invoke_signed;
 use spl_stake_pool::{
     instruction::{deposit_sol, deposit_stake, withdraw_sol, withdraw_stake},
@@ -27,13 +26,13 @@ impl anchor_lang::Ids for StakePoolProgramInterface {
 
 #[derive(Accounts)]
 pub struct StakePoolDepositSol<'info> {
+    pub glam_state: Box<Account<'info, StateAccount>>,
+
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), glam_state.key().as_ref()], bump)]
+    pub glam_vault: SystemAccount<'info>,
+
     #[account(mut)]
-    pub signer: Signer<'info>,
-
-    pub state: Box<Account<'info, StateAccount>>,
-
-    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
-    pub vault: SystemAccount<'info>,
+    pub glam_signer: Signer<'info>,
 
     /// CHECK: checked by stake pool program
     #[account(mut)]
@@ -56,9 +55,9 @@ pub struct StakePoolDepositSol<'info> {
 
     #[account(
         init_if_needed,
-        payer = signer,
+        payer = glam_signer,
         associated_token::mint = pool_mint,
-        associated_token::authority = vault,
+        associated_token::authority = glam_vault,
     )]
     pub mint_to: Account<'info, TokenAccount>,
 
@@ -69,10 +68,10 @@ pub struct StakePoolDepositSol<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Stake)
+    acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.glam_signer.key, Permission::Stake)
 )]
-#[access_control(acl::check_stake_pool_integration(&ctx.accounts.state, &ctx.accounts.stake_pool_program.key))]
-#[vault_signer_seeds]
+#[access_control(acl::check_stake_pool_integration(&ctx.accounts.glam_state, &ctx.accounts.stake_pool_program.key))]
+#[glam_macros::glam_vault_signer_seeds]
 pub fn deposit_sol_handler<'c: 'info, 'info>(
     ctx: Context<StakePoolDepositSol>,
     lamports: u64,
@@ -82,7 +81,7 @@ pub fn deposit_sol_handler<'c: 'info, 'info>(
         ctx.accounts.stake_pool.key,
         ctx.accounts.withdraw_authority.key,
         ctx.accounts.reserve_stake.key,
-        ctx.accounts.vault.key,
+        ctx.accounts.glam_vault.key,
         &ctx.accounts.mint_to.key(),
         ctx.accounts.fee_account.key,
         &ctx.accounts.mint_to.key(),
@@ -97,14 +96,14 @@ pub fn deposit_sol_handler<'c: 'info, 'info>(
             ctx.accounts.stake_pool.clone(),
             ctx.accounts.withdraw_authority.clone(),
             ctx.accounts.reserve_stake.clone(),
-            ctx.accounts.vault.to_account_info(),
+            ctx.accounts.glam_vault.to_account_info(),
             ctx.accounts.fee_account.clone(),
             ctx.accounts.mint_to.to_account_info(),
             ctx.accounts.pool_mint.to_account_info(),
             ctx.accounts.system_program.to_account_info(),
             ctx.accounts.token_program.to_account_info(),
         ],
-        vault_signer_seeds,
+        glam_vault_signer_seeds,
     );
 
     Ok(())
@@ -113,22 +112,22 @@ pub fn deposit_sol_handler<'c: 'info, 'info>(
 #[derive(Accounts)]
 pub struct StakePoolDepositStake<'info> {
     #[account(mut)]
-    pub signer: Signer<'info>,
+    pub glam_state: Box<Account<'info, StateAccount>>,
+
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), glam_state.key().as_ref()], bump)]
+    pub glam_vault: SystemAccount<'info>,
 
     #[account(mut)]
-    pub state: Box<Account<'info, StateAccount>>,
-
-    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
-    pub vault: SystemAccount<'info>,
+    pub glam_signer: Signer<'info>,
 
     #[account(mut)]
     pub vault_stake_account: Box<Account<'info, StakeAccount>>,
 
     #[account(
         init_if_needed,
-        payer = signer,
+        payer = glam_signer,
         associated_token::mint = pool_mint,
-        associated_token::authority = vault,
+        associated_token::authority = glam_vault,
     )]
     pub mint_to: Account<'info, TokenAccount>,
 
@@ -172,10 +171,10 @@ pub struct StakePoolDepositStake<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Stake)
+    acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.glam_signer.key, Permission::Stake)
 )]
-#[access_control(acl::check_stake_pool_integration(&ctx.accounts.state, &ctx.accounts.stake_pool_program.key))]
-#[vault_signer_seeds]
+#[access_control(acl::check_stake_pool_integration(&ctx.accounts.glam_state, &ctx.accounts.stake_pool_program.key))]
+#[glam_macros::glam_vault_signer_seeds]
 pub fn deposit_stake_handler<'c: 'info, 'info>(ctx: Context<StakePoolDepositStake>) -> Result<()> {
     let vec_ix = deposit_stake(
         ctx.accounts.stake_pool_program.key,
@@ -183,7 +182,7 @@ pub fn deposit_stake_handler<'c: 'info, 'info>(ctx: Context<StakePoolDepositStak
         ctx.accounts.validator_list.key,
         ctx.accounts.withdraw_authority.key, // stake pool withdraw authority
         &ctx.accounts.vault_stake_account.key(),
-        ctx.accounts.vault.key, // stake account withdraw authority
+        ctx.accounts.glam_vault.key, // stake account withdraw authority
         &ctx.accounts.validator_stake_account.key(),
         &ctx.accounts.reserve_stake_account.key(),
         &ctx.accounts.mint_to.key(),
@@ -209,14 +208,14 @@ pub fn deposit_stake_handler<'c: 'info, 'info>(ctx: Context<StakePoolDepositStak
         ctx.accounts.stake_history.to_account_info(),
         ctx.accounts.token_program.to_account_info(),
         ctx.accounts.stake_pool_program.to_account_info(),
-        ctx.accounts.vault.to_account_info(),
+        ctx.accounts.glam_vault.to_account_info(),
     ];
 
     for ix in vec_ix {
-        let _ = invoke_signed(&ix, &account_infos, vault_signer_seeds);
+        let _ = invoke_signed(&ix, &account_infos, glam_vault_signer_seeds);
     }
 
-    let fund = &mut ctx.accounts.state;
+    let fund = &mut ctx.accounts.glam_state;
     fund.delete_from_engine_field(
         EngineFieldName::ExternalVaultAccounts,
         ctx.accounts.vault_stake_account.key(),
@@ -227,13 +226,13 @@ pub fn deposit_stake_handler<'c: 'info, 'info>(ctx: Context<StakePoolDepositStak
 
 #[derive(Accounts)]
 pub struct StakePoolWithdrawSol<'info> {
+    pub glam_state: Box<Account<'info, StateAccount>>,
+
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), glam_state.key().as_ref()], bump)]
+    pub glam_vault: SystemAccount<'info>,
+
     #[account(mut)]
-    pub signer: Signer<'info>,
-
-    pub state: Box<Account<'info, StateAccount>>,
-
-    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
-    pub vault: SystemAccount<'info>,
+    pub glam_signer: Signer<'info>,
 
     /// CHECK: checked by stake pool program
     #[account(mut)]
@@ -267,10 +266,10 @@ pub struct StakePoolWithdrawSol<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::LiquidUnstake)
+    acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.glam_signer.key, Permission::LiquidUnstake)
 )]
-#[access_control(acl::check_stake_pool_integration(&ctx.accounts.state, &ctx.accounts.stake_pool_program.key))]
-#[vault_signer_seeds]
+#[access_control(acl::check_stake_pool_integration(&ctx.accounts.glam_state, &ctx.accounts.stake_pool_program.key))]
+#[glam_macros::glam_vault_signer_seeds]
 pub fn withdraw_sol_handler<'c: 'info, 'info>(
     ctx: Context<StakePoolWithdrawSol>,
     pool_token_amount: u64,
@@ -279,10 +278,10 @@ pub fn withdraw_sol_handler<'c: 'info, 'info>(
         ctx.accounts.stake_pool_program.key,
         ctx.accounts.stake_pool.key,
         ctx.accounts.withdraw_authority.key,
-        ctx.accounts.vault.key,
+        ctx.accounts.glam_vault.key,
         &ctx.accounts.pool_token_ata.key(),
         ctx.accounts.reserve_stake.key,
-        ctx.accounts.vault.key,
+        ctx.accounts.glam_vault.key,
         ctx.accounts.fee_account.key,
         &ctx.accounts.pool_mint.key(),
         ctx.accounts.token_program.key,
@@ -295,7 +294,7 @@ pub fn withdraw_sol_handler<'c: 'info, 'info>(
             ctx.accounts.stake_pool_program.to_account_info(),
             ctx.accounts.stake_pool.clone(),
             ctx.accounts.withdraw_authority.clone(),
-            ctx.accounts.vault.to_account_info(),
+            ctx.accounts.glam_vault.to_account_info(),
             ctx.accounts.pool_token_ata.to_account_info(),
             ctx.accounts.reserve_stake.clone(),
             ctx.accounts.fee_account.clone(),
@@ -305,7 +304,7 @@ pub fn withdraw_sol_handler<'c: 'info, 'info>(
             ctx.accounts.stake_program.to_account_info(),
             ctx.accounts.token_program.to_account_info(),
         ],
-        vault_signer_seeds,
+        glam_vault_signer_seeds,
     );
 
     Ok(())
@@ -314,13 +313,13 @@ pub fn withdraw_sol_handler<'c: 'info, 'info>(
 #[derive(Accounts)]
 pub struct StakePoolWithdrawStake<'info> {
     #[account(mut)]
-    pub signer: Signer<'info>,
+    pub glam_state: Box<Account<'info, StateAccount>>,
+
+    #[account(mut, seeds = [SEED_VAULT.as_bytes(), glam_state.key().as_ref()], bump)]
+    pub glam_vault: SystemAccount<'info>,
 
     #[account(mut)]
-    pub state: Box<Account<'info, StateAccount>>,
-
-    #[account(mut, seeds = [SEED_VAULT.as_bytes(), state.key().as_ref()], bump)]
-    pub vault: SystemAccount<'info>,
+    pub glam_signer: Signer<'info>,
 
     /// CHECK: will be initialized in the instruction
     #[account(mut)]
@@ -360,12 +359,12 @@ pub struct StakePoolWithdrawStake<'info> {
 }
 
 #[access_control(
-    acl::check_access(&ctx.accounts.state, &ctx.accounts.signer.key, Permission::Unstake)
+    acl::check_access(&ctx.accounts.glam_state, &ctx.accounts.glam_signer.key, Permission::Unstake)
 )]
 #[access_control(
-    acl::check_stake_pool_integration(&ctx.accounts.state, &ctx.accounts.stake_pool_program.key)
+    acl::check_stake_pool_integration(&ctx.accounts.glam_state, &ctx.accounts.stake_pool_program.key)
 )]
-#[vault_signer_seeds]
+#[glam_macros::glam_vault_signer_seeds]
 pub fn withdraw_stake_handler<'c: 'info, 'info>(
     ctx: Context<StakePoolWithdrawStake>,
     pool_token_amount: u64,
@@ -377,8 +376,8 @@ pub fn withdraw_stake_handler<'c: 'info, 'info>(
         ctx.accounts.withdraw_authority.key,
         &ctx.accounts.validator_stake_account.key(),
         ctx.accounts.vault_stake_account.key,
-        ctx.accounts.vault.key,
-        ctx.accounts.vault.key,
+        ctx.accounts.glam_vault.key,
+        ctx.accounts.glam_vault.key,
         &ctx.accounts.pool_token_ata.key(),
         ctx.accounts.fee_account.key,
         &ctx.accounts.pool_mint.key(),
@@ -394,8 +393,8 @@ pub fn withdraw_stake_handler<'c: 'info, 'info>(
             ctx.accounts.withdraw_authority.clone(),
             ctx.accounts.validator_stake_account.to_account_info(),
             ctx.accounts.vault_stake_account.to_account_info(),
-            ctx.accounts.vault.to_account_info(),
-            ctx.accounts.vault.to_account_info(), // pool token authority
+            ctx.accounts.glam_vault.to_account_info(),
+            ctx.accounts.glam_vault.to_account_info(), // pool token authority
             ctx.accounts.pool_token_ata.to_account_info(),
             ctx.accounts.fee_account.clone(),
             ctx.accounts.pool_mint.to_account_info(),
@@ -403,11 +402,11 @@ pub fn withdraw_stake_handler<'c: 'info, 'info>(
             ctx.accounts.token_program.to_account_info(),
             ctx.accounts.stake_program.to_account_info(),
         ],
-        vault_signer_seeds,
+        glam_vault_signer_seeds,
     )?;
 
     // Add stake account to the fund params
-    let state = &mut ctx.accounts.state;
+    let state = &mut ctx.accounts.glam_state;
     state.add_to_engine_field(
         EngineFieldName::ExternalVaultAccounts,
         ctx.accounts.vault_stake_account.key(),

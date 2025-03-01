@@ -267,7 +267,7 @@ program
       const builder = await glamClient.program.methods
         .closeState()
         .accounts({
-          state: statePda,
+          glamState: statePda,
         })
         .preInstructions(preInstructions);
 
@@ -509,7 +509,7 @@ integration
     try {
       const txSig = await glamClient.program.methods
         .updateState(updated)
-        .accounts({ state: statePda })
+        .accounts({ glamState: statePda })
         .rpc();
       console.log("txSig:", txSig);
       console.log(
@@ -549,7 +549,7 @@ integration
     try {
       const txSig = await glamClient.program.methods
         .updateState(updated)
-        .accounts({ state: statePda })
+        .accounts({ glamState: statePda })
         .rpc();
       console.log("txSig:", txSig);
       console.log(
