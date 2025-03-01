@@ -11,7 +11,7 @@ name = "glam"
 [features]
 no-entrypoint = []
 cpi = ["no-entrypoint"]
-default = []
+default = ["mainnet"]
 mainnet = []
 idl-build = ["mainnet", "anchor-lang/idl-build", "anchor-spl/idl-build"]
 
