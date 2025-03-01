@@ -409,9 +409,11 @@ export default function Holdings() {
     [],
   );
 
-  const [tableData, setTableData] = useState<Holding[]>([]);
+  // Initial state undefined means table data has not loaded yet
+  const [tableData, setTableData] = useState<Holding[] | null>(null);
 
   useEffect(() => {
+    if (!vault || !vault.tokenAccounts) return;
     const vaultHoldings = getVaultToHoldings(
       vault,
       prices,
@@ -420,7 +422,13 @@ export default function Holdings() {
       driftMarketConfigs,
     );
     setTableData(vaultHoldings);
-  }, [vault, driftUser, jupTokenList, prices, driftMarketConfigs]);
+  }, [
+    vault.tokenAccounts,
+    driftUser,
+    jupTokenList,
+    prices,
+    driftMarketConfigs,
+  ]);
 
   const vaultAddress = vault?.pubkey ? vault.pubkey.toBase58() : "";
   const ownerAddress = activeGlamState?.owner
@@ -680,7 +688,7 @@ export default function Holdings() {
     <PageContentWrapper>
       <DataTable
         data={
-          tableData.length === 0
+          tableData === null
             ? skeletonData
             : tableData.filter((d) => d.balance > 0 || showZeroBalances)
         }

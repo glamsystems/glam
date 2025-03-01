@@ -24,7 +24,7 @@ import { SlippageInput } from "@/components/SlippageInput";
 
 const formSchema = z.object({
   assets: z.array(z.string()),
-  maxSlippage: z.number().nonnegative(),
+  maxSlippage: z.union([z.number().nonnegative(), z.literal("NA")]),
   maxSlippageUnit: z.enum(["BPS", "%"]),
 });
 
@@ -33,7 +33,9 @@ type FormSchema = z.infer<typeof formSchema>;
 export default function JupiterPoliciesPage() {
   const [isTxPending, setIsTxPending] = useState(false);
   const { activeGlamState, glamClient, allGlamStates } = useGlam();
-  const [currentMaxSlippageBps, setCurrentMaxSlippageBps] = useState(0);
+  const [currentMaxSlippageBps, setCurrentMaxSlippageBps] = useState<
+    number | "NA"
+  >("NA");
   const glamState = allGlamStates?.find(
     (s) => s.idStr === activeGlamState?.address,
   );
@@ -43,7 +45,7 @@ export default function JupiterPoliciesPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       assets: [],
-      maxSlippage: 0,
+      maxSlippage: "NA",
       maxSlippageUnit: "BPS",
     },
   });
@@ -72,10 +74,10 @@ export default function JupiterPoliciesPage() {
         glamState.id!,
       );
 
+      console.log("glam state params", glamStateAccount.params[0]);
       glamStateAccount.params[0].forEach((param) => {
         const name = Object.keys(param.name)[0];
         const value = Object.values(param.value)[0].val;
-        console.log("glam state param", name, value);
         if (name === "maxSwapSlippageBps") {
           setCurrentMaxSlippageBps(Number(value));
           form.setValue("maxSlippage", Number(value));
@@ -87,12 +89,11 @@ export default function JupiterPoliciesPage() {
 
   const handleReset = (event: React.MouseEvent) => {
     event.preventDefault();
-    form.setValue(
-      "assets",
-      (glamState?.assets || []).map((a) => a.toBase58()),
-    );
-    form.setValue("maxSlippage", currentMaxSlippageBps);
-    form.setValue("maxSlippageUnit", "BPS");
+    form.reset({
+      assets: (glamState?.assets || []).map((a) => a.toBase58()),
+      maxSlippage: currentMaxSlippageBps,
+      maxSlippageUnit: "BPS",
+    });
   };
 
   const onSubmitForm = async (data: FormSchema) => {
@@ -103,42 +104,51 @@ export default function JupiterPoliciesPage() {
       .map((a) => a.toBase58())
       .sort();
     const formAssets = data.assets.sort();
+
+    const maxSlippageNotChanged =
+      data.maxSlippage === "NA" || data.maxSlippage === currentMaxSlippageBps;
     if (
       (glamState.assets || []).length === formAssets.length &&
       vaultAssets.every((value, index) => value === formAssets[index]) &&
-      data.maxSlippage === currentMaxSlippageBps
+      maxSlippageNotChanged
     ) {
       toast({
         title: "No changes detected",
-        description: "No changes were detected in the assets list.",
+        description: "No changes were detected in the policies.",
       });
       return;
     }
 
-    const maxSlippageBps =
-      data.maxSlippage * (data.maxSlippageUnit === "%" ? 100 : 1);
-    const setMaxSlippageIx = await glamClient.jupiterSwap.setMaxSwapSlippageIx(
-      glamState.id!,
-      maxSlippageBps,
-    );
-    console.log("setMaxSlippage:", maxSlippageBps);
+    // Skip slippage update if NA is selected
+    const preInstructions = [];
+    if (data.maxSlippage !== "NA") {
+      const maxSlippageBps =
+        data.maxSlippage * (data.maxSlippageUnit === "%" ? 100 : 1);
+      const setMaxSlippageIx =
+        await glamClient.jupiterSwap.setMaxSwapSlippageIx(
+          glamState.id!,
+          maxSlippageBps,
+        );
+      console.log("setMaxSlippage:", maxSlippageBps);
+      preInstructions.push(setMaxSlippageIx);
+    }
 
     setIsTxPending(true);
     try {
-      let updated = {
+      const updated = {
         assets: data.assets.map((a) => new PublicKey(a)),
       };
       const txSig = await glamClient.state.updateState(glamState.id!, updated, {
-        preInstructions: [setMaxSlippageIx],
+        preInstructions,
       });
 
       toast({
-        title: "Jupiter assets allowlist updated",
+        title: "Jupiter swap policies updated",
         description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
       });
     } catch (error: any) {
       toast({
-        title: "Failed to update Jupiter assets allowlist",
+        title: "Failed to update Jupiter swap policies",
         description: parseTxError(error),
         variant: "destructive",
       });
@@ -175,6 +185,7 @@ export default function JupiterPoliciesPage() {
             label="Max Slippage"
             step="1"
             symbol={form.watch("maxSlippageUnit")}
+            description="The maximum slippage allowed for Jupiter swaps (NA means not set)."
           />
         </div>
         <FormButtons
