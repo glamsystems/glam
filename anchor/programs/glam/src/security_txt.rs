@@ -8,7 +8,7 @@ pub mod security {
         policy: "https://gui.glam.systems/vault/disclaimer",
         contacts: "email: hello@glam.systems",
         preferred_languages: "en",
-        source_release: "v0.4.0",
+        source_release: "v0.4.5",
         source_code: "https://github.com/glamsystems/glam"
     }
 }
