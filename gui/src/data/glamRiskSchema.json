@@ -8,12 +8,16 @@
         "x-id": "d1",
         "type": "number",
         "title": "Access Control Model",
-        "description": " ",
+        "description": "Select the access control model to determine how Drift integration will be configured",
         "x-order": 1,
         "x-component": "radio",
-        "enum": ["Drift delegated account", "GLAM fine grain access control"],
+        "enum": [
+          "Drift delegated account",
+          "GLAM fine-grained access control (recommended)"
+        ],
         "readOnly": false,
-        "x-hidden": false
+        "x-hidden": false,
+        "x-glam-only": false
       },
       "driftDelegatedAccount": {
         "x-id": "d2",
@@ -23,66 +27,73 @@
         "x-order": 2,
         "x-component": "input",
         "readOnly": false,
-        "x-hidden": false
+        "x-hidden": false,
+        "x-glam-only": false
+      },
+      "driftMaxLeverage": {
+        "x-id": "d3",
+        "type": "number",
+        "title": "Max Leverage",
+        "description": "Set the maximum leverage allowed for trading.",
+        "x-order": 3,
+        "x-component": "input",
+        "readOnly": false,
+        "x-hidden": false,
+        "x-glam-only": false
+      },
+      "driftEnableSpotMargin": {
+        "x-id": "d4",
+        "type": "boolean",
+        "title": "Enable Spot Margin",
+        "description": "Allow spot margin trading on Drift.",
+        "x-order": 4,
+        "x-component": "switch",
+        "readOnly": false,
+        "x-hidden": false,
+        "x-glam-only": false
       },
       "driftMarketIndexesPerp": {
-        "x-id": "d3",
+        "x-id": "d5",
         "type": "array",
         "title": "Perp Markets",
-        "description": "Enable only selected markets. This requires GLAM fine grain access control",
-        "x-order": 3,
+        "description": "Enable only selected perp markets.",
+        "x-order": 5,
         "x-component": "checklist",
         "x-enumSource": "constants/drift.tsx",
         "x-enumValues": "DRIFT_PERP_MARKETS",
         "readOnly": false,
         "x-hidden": false,
-        "x-enforced": false
+        "x-enforced": false,
+        "x-glam-only": true
       },
       "driftOrderTypes": {
-        "x-id": "d4",
+        "x-id": "d6",
         "type": "array",
         "title": "Order Types",
-        "description": "Enable only selected order types. This requires GLAM fine grain access control",
-        "x-order": 4,
+        "description": "Enable only selected order types.",
+        "x-order": 6,
         "x-component": "checklist",
         "x-enumSource": "constants/drift.tsx",
         "x-enumValues": "DRIFT_ORDER_TYPES",
         "readOnly": false,
         "x-hidden": false,
-        "x-enforced": false
-      },
-      "driftMaxLeverage": {
-        "x-id": "d5",
-        "type": "number",
-        "title": "Max Leverage",
-        "description": " ",
-        "x-order": 5,
-        "x-component": "input",
-        "readOnly": false,
-        "x-hidden": false
-      },
-      "driftEnableSpot": {
-        "x-id": "d1",
-        "type": "boolean",
-        "title": "Enable Spot Trading",
-        "description": " ",
-        "x-order": 6,
-        "x-component": "switch",
-        "readOnly": false,
-        "x-hidden": false
+        "x-enforced": false,
+        "x-glam-only": true,
+        "x-height": 120
       },
       "driftMarketIndexesSpot": {
         "x-id": "d7",
         "type": "string",
         "title": "Spot Markets",
-        "description": "Enable only selected markets. This requires GLAM fine grain access control",
+        "description": "Enable only selected spot markets.",
         "x-order": 7,
         "x-component": "checklist",
         "x-enumSource": "constants/drift.tsx",
         "x-enumValues": "DRIFT_SPOT_MARKETS",
         "readOnly": false,
         "x-hidden": false,
-        "x-enforced": false
+        "x-enforced": false,
+        "x-glam-only": true
       }
     }
   }

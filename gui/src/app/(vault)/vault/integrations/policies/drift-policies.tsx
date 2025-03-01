@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useGlam } from "@glamsystems/glam-sdk/react";
 import DynamicForm from "@/components/DynamicForm";
@@ -10,26 +10,43 @@ import { parseTxError } from "@/lib/error";
 import { ExplorerLink } from "@/components/ExplorerLink";
 import { FormButtons } from "@/app/(vault)/vault/integrations/policies/components/form-buttons";
 import { Form } from "@/components/ui/form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const formSchema = z.object({
+  driftAccessControl: z.number(),
+  driftDelegatedAccount: z.string().nullable(),
+  driftMarketIndexesPerp: z.array(z.number()).nullable(),
+  driftOrderTypes: z.array(z.number()).nullable(),
+  driftMaxLeverage: z.number().nullable(),
+  driftEnableSpotMargin: z.boolean(),
+  driftMarketIndexesSpot: z.array(z.number()).nullable(),
+});
+
+type FormSchema = z.infer<typeof formSchema>;
+
+const defaultValues: FormSchema = {
+  driftAccessControl: 0,
+  driftDelegatedAccount: null,
+  driftMarketIndexesPerp: [],
+  driftOrderTypes: [],
+  driftMaxLeverage: null,
+  driftEnableSpotMargin: false,
+  driftMarketIndexesSpot: [],
+};
 
 export default function DriftPoliciesPage() {
   const [isTxPending, setIsTxPending] = useState(false);
-  const { activeGlamState, glamClient, allGlamStates } = useGlam();
-  const state = allGlamStates?.find(
+  const { activeGlamState, glamClient, allGlamStates, driftUser } = useGlam();
+  const glamState = allGlamStates?.find(
     (s) => s.idStr === activeGlamState?.address,
   );
 
-  const driftForm = useForm<any>({
+  const driftForm = useForm<FormSchema>({
     mode: "onChange",
     reValidateMode: "onChange",
-    defaultValues: {
-      driftAccessControl: 0,
-      driftDelegatedAccount: null,
-      driftMarketIndexesPerp: [],
-      driftOrderTypes: [],
-      driftMaxLeverage: null,
-      driftEnableSpot: false,
-      driftMarketIndexesSpot: [],
-    },
+    resolver: zodResolver(formSchema),
+    defaultValues,
   });
 
   // Add form change detection for browser navigation
@@ -37,10 +54,8 @@ export default function DriftPoliciesPage() {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (driftForm.formState.isDirty) {
         e.preventDefault();
-        e.returnValue = "";
       }
     };
-
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [driftForm.formState.isDirty]);
@@ -48,22 +63,21 @@ export default function DriftPoliciesPage() {
   // Load existing drift policy configuration
   useEffect(() => {
     const fetchDriftData = async () => {
-      if (!state) return;
-
+      if (!glamState || !driftUser) return;
       try {
-        // Get the current drift configuration from state
-        const driftPolicy =
-          state.integrations?.find(
-            // @ts-ignore
-            (integ) => Object.keys(integ)[0] === "drift",
-          )?.drift || {
-            driftAccessControl: 0,
-            driftDelegatedAccount: null,
-            driftMarketIndexesSpot: [],
-          };
-
         // Set initial values
-        driftForm.reset(driftPolicy);
+        driftForm.reset({
+          driftAccessControl: 0,
+          driftDelegatedAccount:
+            driftUser.delegate === "11111111111111111111111111111111"
+              ? null
+              : driftUser.delegate,
+          driftMarketIndexesPerp: glamState.driftMarketIndexesPerp,
+          driftOrderTypes: glamState.driftOrderTypes,
+          driftMaxLeverage: driftUser.maxMarginRatio,
+          driftEnableSpotMargin: driftUser.isMarginTradingEnabled,
+          driftMarketIndexesSpot: glamState.driftMarketIndexesSpot || [1, 2],
+        });
       } catch (error: any) {
         toast({
           title: "Failed to load Drift policy configuration",
@@ -74,82 +88,150 @@ export default function DriftPoliciesPage() {
     };
 
     fetchDriftData();
-  }, [state, driftForm]);
+  }, [glamState, driftUser, driftForm]);
 
   // Update form fields visibility based on access control selection
-  const watchDriftAccessControl = driftForm.watch("driftAccessControl");
-  useEffect(() => {
-    if (watchDriftAccessControl === 0) {
-      // Reset fields when switching to GLAM
-      driftForm.setValue("driftDelegatedAccount", null);
-      driftForm.setValue("driftMarketIndexesPerp", []);
-      driftForm.setValue("driftOrderTypes", []);
-      driftForm.setValue("driftMarketIndexesSpot", []);
-      driftForm.setValue("driftMaxLeverage", null);
-      driftForm.setValue("driftEnableSpot", false);
+  const watchDriftAccessControl = Number(driftForm.watch("driftAccessControl"));
+  const dynamicSchema = useMemo(() => {
+    // Create a deep copy of the schema to avoid mutating the original
+    const schemaCopy = JSON.parse(JSON.stringify(schema));
+    delete schemaCopy.$id; // Remove the $id to avoid conflicts with Ajv
+    const isDelegatedMode = watchDriftAccessControl === 0;
 
-      schema.drift.fields.driftDelegatedAccount["x-hidden"] = false;
-      schema.drift.fields.driftMarketIndexesPerp["x-hidden"] = true;
-      schema.drift.fields.driftOrderTypes["x-hidden"] = true;
-      schema.drift.fields.driftMarketIndexesSpot["x-hidden"] = true;
-    } else {
-      schema.drift.fields.driftDelegatedAccount["x-hidden"] = true;
-      schema.drift.fields.driftMarketIndexesPerp["x-hidden"] = false;
-      schema.drift.fields.driftOrderTypes["x-hidden"] = false;
-      schema.drift.fields.driftMarketIndexesSpot["x-hidden"] = false;
-    }
+    Object.keys(schemaCopy.drift.fields).forEach((fieldName) => {
+      const field = schemaCopy.drift.fields[fieldName];
+      if (fieldName === "driftAccessControl") {
+        field["x-hidden"] = false;
+      } else if (fieldName === "driftDelegatedAccount") {
+        field["x-hidden"] = !isDelegatedMode;
+      } else if (field["x-glam-only"]) {
+        field["x-hidden"] = isDelegatedMode; // Hide GLAM-only fields in delegated mode
+      }
+    });
+
+    return schemaCopy;
   }, [watchDriftAccessControl]);
 
-  const handleSubmit = async (data: any) => {
-    if (!state) return;
+  const updateDelegatedAccount = useCallback(
+    async (data: FormSchema) => {
+      if (!glamState) return;
 
-    setIsTxPending(true);
-    try {
-      // Update the state with the new drift configuration
-      const updated = {
-        integrations: [
-          ...(state.integrations || []).filter(
-            // @ts-ignore
-            (integ) => Object.keys(integ)[0] !== "drift",
+      const { driftDelegatedAccount, driftEnableSpotMargin, driftMaxLeverage } =
+        data;
+
+      const preInstructions = [];
+      if (
+        driftDelegatedAccount !== null &&
+        driftDelegatedAccount.length >= 32
+      ) {
+        preInstructions.push(
+          await glamClient.drift.updateUserDelegateIx(
+            glamState.id!,
+            driftDelegatedAccount,
           ),
-          { drift: data },
-        ],
-      };
-      const txSig = await glamClient.state.updateState(state.id!, updated);
-      toast({
-        title: "Drift policy configuration updated",
-        description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
-      });
-      // Reset form with new values to update dirty state
-      driftForm.reset(data);
-    } catch (error: any) {
-      toast({
-        title: "Failed to update Drift policy configuration",
-        description: parseTxError(error),
-        variant: "destructive",
-      });
-    }
-    setIsTxPending(false);
-  };
+        );
+      }
+
+      if (driftMaxLeverage) {
+        preInstructions.push(
+          await glamClient.drift.updateUserCustomMarginRatioIx(
+            glamState.id!,
+            driftMaxLeverage,
+          ),
+        );
+      }
+
+      try {
+        const txSig = await glamClient.drift.updateUserMarginTradingEnabled(
+          glamState.id!,
+          driftEnableSpotMargin,
+          0,
+          {
+            preInstructions,
+          },
+        );
+        toast({
+          title: "Updated Drift policy configuration",
+          description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
+        });
+      } catch (error: any) {
+        toast({
+          title: "Failed to update Drift policy configuration",
+          description: parseTxError(error),
+          variant: "destructive",
+        });
+      }
+    },
+    [glamState, glamClient],
+  );
+
+  const updateGlamDriftPolicies = useCallback(
+    async (data: FormSchema) => {
+      setIsTxPending(true);
+      try {
+        // Update the state with the new drift configuration
+        const updated = {
+          integrations: [
+            ...(glamState.integrations || []).filter(
+              // @ts-ignore
+              (integ) => Object.keys(integ)[0] !== "drift",
+            ),
+            { drift: data },
+          ],
+        };
+        const txSig = await glamClient.state.updateState(
+          glamState.id!,
+          updated,
+        );
+        toast({
+          title: "Drift policy configuration updated",
+          description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
+        });
+        // Reset form with new values to update dirty state
+        driftForm.reset(data);
+      } catch (error: any) {
+        toast({
+          title: "Failed to update Drift policy configuration",
+          description: parseTxError(error),
+          variant: "destructive",
+        });
+      }
+      setIsTxPending(false);
+    },
+    [glamState, driftForm, glamClient],
+  );
+
+  const onSubmitForm = useCallback(
+    async (data: FormSchema) => {
+      switch (watchDriftAccessControl) {
+        case 0:
+          await updateDelegatedAccount(data);
+          break;
+        case 1:
+          await updateGlamDriftPolicies(data);
+          break;
+      }
+    },
+    [watchDriftAccessControl],
+  );
 
   const handleReset = async () => {
-    if (!state) return;
+    if (!glamState) return;
 
     try {
       // Get the current drift configuration from state
-      const driftPolicy =
-        state.integrations?.find(
-          // @ts-ignore
-          (integ) => Object.keys(integ)[0] === "drift",
-        )?.drift || {
-          driftAccessControl: 0,
-          driftDelegatedAccount: null,
-          driftMarketIndexesPerp: [],
-          driftOrderTypes: [],
-          driftMaxLeverage: null,
-          driftEnableSpot: false,
-          driftMarketIndexesSpot: [],
-        };
+      const driftPolicy = glamState.integrations?.find(
+        // @ts-ignore
+        (integ) => Object.keys(integ)[0] === "drift",
+      )?.drift || {
+        driftAccessControl: 0,
+        driftDelegatedAccount: null,
+        driftMarketIndexesPerp: [],
+        driftOrderTypes: [],
+        driftMaxLeverage: null,
+        driftEnableSpotMargin: false,
+        driftMarketIndexesSpot: [],
+      };
 
       // Reset form with values
       driftForm.reset(driftPolicy);
@@ -173,29 +255,26 @@ export default function DriftPoliciesPage() {
   }, [driftForm]);
 
   return (
-    <form
-      onSubmit={driftForm.handleSubmit(handleSubmit)}
-      className="flex flex-col space-y-4"
-    >
-      <Form {...driftForm}>
+    <Form {...driftForm}>
+      <div className="flex flex-col space-y-4">
         <div className="space-y-4">
           <DynamicForm
-            schema={schema}
+            schema={dynamicSchema}
             isNested={true}
             groups={["drift"]}
             formData={driftForm}
             showSubmitButton={false}
-            onSubmit={handleSubmit}
           />
         </div>
-      </Form>
-      <FormButtons
-        integrationName="Drift"
-        onReset={handleReset}
-        isLoading={isTxPending}
-        isDirty={formState.isDirty}
-        onSubmit={driftForm.handleSubmit(handleSubmit)}
-      />
-    </form>
+        <FormButtons
+          integrationName="Drift"
+          onReset={handleReset}
+          isLoading={isTxPending}
+          // isDirty={formState.isDirty}
+          isDirty={true}
+          onSubmit={driftForm.handleSubmit(onSubmitForm)}
+        />
+      </div>
+    </Form>
   );
 }

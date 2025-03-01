@@ -446,6 +446,8 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
       }
     };
 
+    const checklistHeight = schemaField["x-height"] || 185;
+
     // Handle boolean type with select component
     if (
       schemaField.type === "boolean" &&
@@ -636,7 +638,9 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
       case "checklist":
         return (
           <FormItem className="flex flex-col">
-            <ScrollArea className="h-[185px] w-full border p-4">
+            <ScrollArea
+              className={`h-[${checklistHeight}px] w-full border p-4`}
+            >
               <FormField
                 name="items"
                 render={() => {
