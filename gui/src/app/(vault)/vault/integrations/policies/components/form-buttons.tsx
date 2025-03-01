@@ -8,7 +8,7 @@ interface FormButtonsProps {
   onReset: (event: React.MouseEvent) => void;
   isLoading?: boolean;
   isDirty?: boolean;
-  onSubmit?: () => void; // Keep as optional for backward compatibility
+  onSubmit?: () => void;
 }
 
 export function FormButtons({

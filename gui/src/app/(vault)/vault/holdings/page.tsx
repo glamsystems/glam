@@ -619,7 +619,6 @@ export default function Holdings() {
       }
 
       if (!activeGlamState?.pubkey || !glamClient) {
-        console.log("activeGlamState", activeGlamState);
         toast({
           title: "Vault not available",
           description: "Please ensure your vault is properly set up",
