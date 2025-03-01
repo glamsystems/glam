@@ -44,15 +44,76 @@ function getBadgeVariantFromLabel(
   return "secondary";
 }
 
+const IntegrationsTabContent = React.memo(
+  ({
+    value,
+    integrations,
+    selected,
+    onSelectIntegration,
+  }: {
+    value: string;
+    integrations: Integration[];
+    selected: number;
+    onSelectIntegration: (integ: Integration) => void;
+  }) => {
+    return (
+      <TabsContent value={value} className="mt-4">
+        <ScrollArea className="h-[calc(100vh-200px)]">
+          <div className="flex flex-col gap-2 pr-4">
+            {integrations
+              .filter(
+                (integ) =>
+                  value === "all" || (integ.enabled && !integ.comingSoon),
+              )
+              .map((integ) => (
+                <button
+                  key={integ.id}
+                  className={cn(
+                    "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent min-h-[70px] cursor-pointer",
+                    selected === integ.id && "bg-muted",
+                  )}
+                  onClick={() => onSelectIntegration(integ)}
+                >
+                  <div className="flex w-full flex-col gap-1">
+                    <div className="flex items-center">
+                      <div className="flex items-center gap-2">
+                        <div className="font-semibold">{integ.name}</div>
+                        {integ.enabled && !integ.comingSoon && (
+                          <span className="flex h-2 w-2 bg-emerald-500" />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  {integ.labels && integ.labels.length > 0 ? (
+                    <div className="flex items-center gap-2">
+                      {integ.labels.map((label) => (
+                        <Badge
+                          key={label}
+                          variant={getBadgeVariantFromLabel(label)}
+                          className="rounded-none"
+                        >
+                          {label}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : null}
+                </button>
+              ))}
+          </div>
+        </ScrollArea>
+      </TabsContent>
+    );
+  },
+);
+
 export default function PageIntegrations() {
   const { glamClient, allGlamStates, activeGlamState } = useGlam();
-  const [selected, setSelected] = useState(-1);
+  const [selected, setSelected] = useState(-1); // index of selected integration
   const [integrations, setIntegrations] = useState(allIntegrations);
   const [contentKey, setContentKey] = useState(0);
   const [isTxPending, setIsTxPending] = useState(false);
 
   const selectIntegration = useCallback((integ: Integration) => {
-    // Don't select if integration is coming soon
     if (integ.comingSoon) return;
     setSelected(integ.id);
   }, []);
@@ -134,6 +195,10 @@ export default function PageIntegrations() {
     );
     if (!state) return;
 
+    console.log(
+      `Enabled integrations on ${state.name} (${state.idStr}):`,
+      state.integrations,
+    );
     const enabledIntegrations = (state.integrations || []).map((integ) =>
       Object.keys(integ)[0].toLowerCase(),
     );
@@ -152,14 +217,14 @@ export default function PageIntegrations() {
 
     const integration = integrations[selected];
     if (!integration.enabled) {
-      return <div></div>;
+      return null;
     }
 
     // Return the appropriate policies component based on the integration name
-    switch (integration.key.toLowerCase()) {
-      case "jupiterswap":
+    switch (integration.key) {
+      case "JupiterSwap":
         return <JupiterPolicies key={contentKey} />;
-      case "drift":
+      case "Drift":
         return <DriftPolicies key={contentKey} />;
       default:
         return (
@@ -181,111 +246,19 @@ export default function PageIntegrations() {
                 <TabsTrigger value="active">Active</TabsTrigger>
               </TabsList>
             </div>
-            <TabsContent value="all" className="mt-4">
-              <ScrollArea className="h-[calc(100vh-220px)]">
-                <div className="flex flex-col gap-2 pr-4">
-                  {integrations.map((item) => (
-                    <button
-                      key={item.id}
-                      className={cn(
-                        "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all min-h-[70px]",
-                        selected === item.id && "bg-muted",
-                        !item.comingSoon && "hover:bg-accent cursor-pointer",
-                        item.comingSoon && "opacity-70 cursor-not-allowed",
-                      )}
-                      onClick={() => selectIntegration(item)}
-                      disabled={item.comingSoon}
-                    >
-                      <div className="flex w-full flex-col gap-1">
-                        <div className="flex items-center">
-                          <div className="flex items-center gap-2">
-                            <div className="font-semibold">{item.name}</div>
-                            {item.enabled && !item.comingSoon && (
-                              <span className="flex h-2 w-2 bg-emerald-500" />
-                            )}
-                          </div>
-                          <div
-                            className={cn(
-                              "ml-auto text-xs",
-                              selected === item.id
-                                ? "text-foreground"
-                                : "text-muted-foreground",
-                            )}
-                          >
-                            {item.comingSoon && (
-                              <span className="text-muted-foreground font-medium">
-                                Coming Soon
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      {item.labels && item.labels.length > 0 ? (
-                        <div className="flex items-center gap-2">
-                          {item.labels.map((label) => (
-                            <Badge
-                              key={label}
-                              variant={getBadgeVariantFromLabel(label)}
-                              className="rounded-none"
-                            >
-                              {label}
-                            </Badge>
-                          ))}
-                        </div>
-                      ) : null}
-                    </button>
-                  ))}
-                </div>
-              </ScrollArea>
-            </TabsContent>
-            <TabsContent value="active" className="mt-4">
-              <ScrollArea className="h-[calc(100vh-200px)]">
-                <div className="flex flex-col gap-2 pr-4">
-                  {integrations
-                    .filter((item) => item.enabled && !item.comingSoon)
-                    .map((item) => (
-                      <button
-                        key={item.id}
-                        className={cn(
-                          "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent min-h-[70px] cursor-pointer",
-                          selected === item.id && "bg-muted",
-                        )}
-                        onClick={() => selectIntegration(item)}
-                      >
-                        <div className="flex w-full flex-col gap-1">
-                          <div className="flex items-center">
-                            <div className="flex items-center gap-2">
-                              <div className="font-semibold">{item.name}</div>
-                              <span className="flex h-2 w-2 bg-emerald-500" />
-                            </div>
-                            <div
-                              className={cn(
-                                "ml-auto text-xs",
-                                selected === item.id
-                                  ? "text-foreground"
-                                  : "text-muted-foreground",
-                              )}
-                            ></div>
-                          </div>
-                        </div>
-                        {item.labels && item.labels.length > 0 ? (
-                          <div className="flex items-center gap-2">
-                            {item.labels.map((label) => (
-                              <Badge
-                                key={label}
-                                variant={getBadgeVariantFromLabel(label)}
-                                className="rounded-none"
-                              >
-                                {label}
-                              </Badge>
-                            ))}
-                          </div>
-                        ) : null}
-                      </button>
-                    ))}
-                </div>
-              </ScrollArea>
-            </TabsContent>
+
+            <IntegrationsTabContent
+              value="all"
+              integrations={integrations}
+              selected={selected}
+              onSelectIntegration={selectIntegration}
+            />
+            <IntegrationsTabContent
+              value="active"
+              integrations={integrations}
+              selected={selected}
+              onSelectIntegration={selectIntegration}
+            />
           </Tabs>
         </div>
         <div className="w-full ml-16">
