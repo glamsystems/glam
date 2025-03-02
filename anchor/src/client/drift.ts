@@ -3,6 +3,8 @@ import {
   PublicKey,
   VersionedTransaction,
   TransactionSignature,
+  TransactionInstruction,
+  Transaction,
 } from "@solana/web3.js";
 import {
   DRIFT_PROGRAM_ID,
@@ -77,6 +79,7 @@ export interface GlamDriftUser {
   marginMode: string;
   subAccountId: number;
   isMarginTradingEnabled: boolean;
+  maxMarginRatio: number;
 }
 
 const DRIFT_VAULT = new PublicKey(
@@ -113,11 +116,13 @@ export class DriftClient {
     statePda: PublicKey,
     marginTradingEnabled: boolean,
     subAccountId: number = 0,
+    txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
     const tx = await this.updateUserMarginTradingEnabledTx(
       statePda,
       marginTradingEnabled,
       subAccountId,
+      txOptions,
     );
     return await this.base.sendAndConfirm(tx);
   }
@@ -412,29 +417,62 @@ export class DriftClient {
     return await this.base.intoVersionedTransaction(tx, txOptions);
   }
 
-  public async updateUserCustomMarginRatioTx(
+  public async updateUserCustomMarginRatioIx(
     glamState: PublicKey,
     maxLeverage: number, // 1=1x, 2=2x ... 50=50x leverage
     subAccountId: number = 0,
     txOptions: TxOptions = {},
-  ): Promise<VersionedTransaction> {
+  ): Promise<TransactionInstruction> {
     const glamSigner = txOptions.signer || this.base.getSigner();
-    const glamVault = this.base.getVaultPda(glamState);
     const [user] = this.getUser(glamState, subAccountId);
 
     // https://github.com/drift-labs/protocol-v2/blob/babed162b08b1fe34e49a81c5aa3e4ec0a88ecdf/programs/drift/src/math/constants.rs#L183-L184
     const marginRatio = DRIFT_MARGIN_PRECISION / maxLeverage;
 
-    const tx = await this.base.program.methods
+    return await this.base.program.methods
       .driftUpdateUserCustomMarginRatio(subAccountId, marginRatio)
       .accounts({
         glamState,
         glamSigner,
         user,
       })
-      .transaction();
+      .instruction();
+  }
 
+  public async updateUserCustomMarginRatioTx(
+    glamState: PublicKey,
+    maxLeverage: number, // 1=1x, 2=2x ... 50=50x leverage
+    subAccountId: number = 0,
+    txOptions: TxOptions = {},
+  ): Promise<VersionedTransaction> {
+    const tx = new Transaction().add(
+      await this.updateUserCustomMarginRatioIx(
+        glamState,
+        maxLeverage,
+        subAccountId,
+        txOptions,
+      ),
+    );
     return await this.base.intoVersionedTransaction(tx, txOptions);
+  }
+
+  public async updateUserMarginTradingEnabledIx(
+    glamState: PublicKey,
+    marginTradingEnabled: boolean,
+    subAccountId: number = 0,
+    txOptions: TxOptions = {},
+  ): Promise<TransactionInstruction> {
+    const glamSigner = txOptions.signer || this.base.getSigner();
+    const [user] = this.getUser(glamState, subAccountId);
+
+    return await this.base.program.methods
+      .driftUpdateUserMarginTradingEnabled(subAccountId, marginTradingEnabled)
+      .accounts({
+        glamState,
+        glamSigner,
+        user,
+      })
+      .instruction();
   }
 
   public async updateUserMarginTradingEnabledTx(
@@ -443,19 +481,36 @@ export class DriftClient {
     subAccountId: number = 0,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
+    const tx = new Transaction().add(
+      ...(txOptions.preInstructions || []),
+      await this.updateUserMarginTradingEnabledIx(
+        glamState,
+        marginTradingEnabled,
+        subAccountId,
+        txOptions,
+      ),
+    );
+
+    return await this.base.intoVersionedTransaction(tx, txOptions);
+  }
+
+  public async updateUserDelegateIx(
+    glamState: PublicKey,
+    delegate: PublicKey | string,
+    subAccountId: number = 0,
+    txOptions: TxOptions = {},
+  ): Promise<TransactionInstruction> {
     const glamSigner = txOptions.signer || this.base.getSigner();
     const [user] = this.getUser(glamState, subAccountId);
 
-    const tx = await this.base.program.methods
-      .driftUpdateUserMarginTradingEnabled(subAccountId, marginTradingEnabled)
+    return await this.base.program.methods
+      .driftUpdateUserDelegate(subAccountId, new PublicKey(delegate))
       .accounts({
         glamState,
         glamSigner,
         user,
       })
-      .transaction();
-
-    return await this.base.intoVersionedTransaction(tx, txOptions);
+      .instruction();
   }
 
   public async updateUserDelegateTx(
@@ -464,17 +519,14 @@ export class DriftClient {
     subAccountId: number = 0,
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
-    const glamSigner = txOptions.signer || this.base.getSigner();
-    const [user] = this.getUser(glamState, subAccountId);
-
-    const tx = await this.base.program.methods
-      .driftUpdateUserDelegate(subAccountId, delegate)
-      .accounts({
+    const tx = new Transaction().add(
+      await this.updateUserDelegateIx(
         glamState,
-        glamSigner,
-        user,
-      })
-      .transaction();
+        delegate,
+        subAccountId,
+        txOptions,
+      ),
+    );
 
     return await this.base.intoVersionedTransaction(tx, txOptions);
   }

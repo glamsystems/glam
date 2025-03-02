@@ -3,6 +3,7 @@ import { useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -17,6 +18,7 @@ interface Props {
   step?: string;
   className?: string;
   disableSubmitOnEnter?: boolean;
+  description?: string;
 }
 
 const BPS_PER_PERCENT = 100; // 1% = 100 BPS
@@ -35,6 +37,7 @@ export const SlippageInput: React.FC<Props> = ({
   step = "5",
   className,
   disableSubmitOnEnter = true,
+  description,
 }) => {
   const { control, getValues, setValue } = useFormContext();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -83,7 +86,7 @@ export const SlippageInput: React.FC<Props> = ({
             <div className="relative">
               <Input
                 {...field}
-                type="number"
+                type="text"
                 step={getStep()}
                 ref={inputRef}
                 value={getValues()[name]}
@@ -106,6 +109,7 @@ export const SlippageInput: React.FC<Props> = ({
               </Button>
             </div>
           </FormControl>
+          {description && <FormDescription>{description}</FormDescription>}
           <FormMessage />
         </FormItem>
       )}
