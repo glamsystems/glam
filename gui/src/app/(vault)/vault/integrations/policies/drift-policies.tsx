@@ -168,34 +168,8 @@ export default function DriftPoliciesPage() {
   const updateGlamDriftPolicies = useCallback(
     async (data: FormSchema) => {
       setIsTxPending(true);
-      try {
-        // Update the state with the new drift configuration
-        const updated = {
-          integrations: [
-            ...(glamState.integrations || []).filter(
-              // @ts-ignore
-              (integ) => Object.keys(integ)[0] !== "drift",
-            ),
-            { drift: data },
-          ],
-        };
-        const txSig = await glamClient.state.updateState(
-          glamState.id!,
-          updated,
-        );
-        toast({
-          title: "Drift policy configuration updated",
-          description: <ExplorerLink path={`tx/${txSig}`} label={txSig} />,
-        });
-        // Reset form with new values to update dirty state
-        driftForm.reset(data);
-      } catch (error: any) {
-        toast({
-          title: "Failed to update Drift policy configuration",
-          description: parseTxError(error),
-          variant: "destructive",
-        });
-      }
+      // TODO: Update drift policies
+
       setIsTxPending(false);
     },
     [glamState, driftForm, glamClient],
