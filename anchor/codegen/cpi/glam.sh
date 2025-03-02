@@ -23,7 +23,7 @@ $CPI_GEN $DRIFT_IDL \
     --ixs cancelOrders \
     --ixs cancelOrdersByIds \
     --ixs modifyOrder \
-    > $DRIFT_OUT
+    --output $DRIFT_OUT
 
 #
 # JUPITER GOV
@@ -43,11 +43,11 @@ $CPI_GEN $JUP_VOTE_IDL --idl-name-alias jupiter_vote \
     --ixs withdraw \
     --ixs withdrawPartialUnstaking \
     --ixs castVote \
-    > $JUP_VOTE_OUT
+    --output $JUP_VOTE_OUT
 
 $CPI_GEN $JUP_GOV_IDL --idl-name-alias jupiter_gov \
     --ixs newVote \
-    > $JUP_GOV_OUT
+    --output $JUP_GOV_OUT
 
 #
 # METEORA AMM & DLMM
@@ -61,7 +61,7 @@ $CPI_GEN $MET_AMM_IDL --idl-name-alias meteora_amm \
     --ixs swap \
     --ixs addImbalanceLiquidity \
     --ixs removeBalanceLiquidity \
-    > $MET_AMM_OUT
+    --output $MET_AMM_OUT
 
 $CPI_GEN $MET_DLMM_IDL --idl-name-alias meteora_dlmm \
     --ixs initializePosition \
@@ -70,7 +70,7 @@ $CPI_GEN $MET_DLMM_IDL --idl-name-alias meteora_dlmm \
     --ixs claimFee \
     --ixs closePosition \
     --ixs swap \
-    > $MET_DLMM_OUT
+    --output $MET_DLMM_OUT
 
 #
 # KAMINO
