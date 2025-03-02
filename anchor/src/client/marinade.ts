@@ -24,6 +24,7 @@ export type Ticket = {
   lamports: number;
   createdEpoch: number;
   isDue: boolean;
+  isClaimable: boolean; // >30min since the start of the current epoch
 };
 
 export class MarinadeClient {
@@ -111,11 +112,13 @@ export class MarinadeClient {
       const createdEpoch = Number(
         (a.account.data as Buffer).readBigInt64LE(80),
       );
+      const isDue = currentEpoch.epoch > createdEpoch;
       return {
         address: a.pubkey,
         lamports,
         createdEpoch,
-        isDue: currentEpoch.epoch > createdEpoch,
+        isDue,
+        isClaimable: isDue && currentEpoch.slotIndex > 5000, // 5000 slots ~= 33.3 minutes
       };
     });
   }

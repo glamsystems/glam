@@ -217,11 +217,11 @@ export const ASSETS_MAINNET: Map<string, AssetMeta> = new Map([
     },
   ],
   [
-    // mallowSOL - mallowSOL
-    "MLLWWq9TLHK3oQznWqwPyqD7kH4LXTHSKXK4yLz7LjD",
+    // BNSOL - Binance Staked SOL
+    "BNso1VUJnh4zcfpZa6986Ea66P6TCp59hvtNJ8b1X85",
     {
       stateAccount: new PublicKey(
-        "7thbAQrn9oRJsbz2CchoPSujGYpu4hCHnVrniBHupQsx", // state
+        "Hr9pzexrBge3vgmBNRR8u42CNQgBXdHm4UkUN2DH4a7r", // state
       ),
     },
   ],

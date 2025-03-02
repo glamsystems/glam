@@ -134,7 +134,7 @@ export default function Stake() {
       publicKey: ticket.address.toBase58(),
       lamports: ticket.lamports,
       service: "marinade",
-      status: ticket.isDue ? "claimable" : "pending",
+      status: ticket.isClaimable ? "claimable" : "pending",
       type: "ticket" as const,
     }));
 
