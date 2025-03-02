@@ -1155,6 +1155,8 @@ dependencies = [
  "jupiter_vote",
  "kamino_lending",
  "marinade-finance",
+ "meteora_amm",
+ "meteora_dlmm",
  "phf",
  "pyth-solana-receiver-sdk",
  "solana-program",
@@ -1501,6 +1503,22 @@ dependencies = [
  "keccak",
  "rand_core 0.6.4",
  "zeroize",
+]
+
+[[package]]
+name = "meteora_amm"
+version = "0.1.0"
+dependencies = [
+ "anchor-gen",
+ "anchor-lang",
+]
+
+[[package]]
+name = "meteora_dlmm"
+version = "0.1.0"
+dependencies = [
+ "anchor-gen",
+ "anchor-lang",
 ]
 
 [[package]]

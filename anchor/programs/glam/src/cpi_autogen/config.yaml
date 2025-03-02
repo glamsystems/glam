@@ -159,7 +159,6 @@ jupiter_vote:
 #
 # Marinade
 #
-
 marinade:
   - ix_name: deposit
     permission: Stake
@@ -195,3 +194,37 @@ marinade:
     signed_by_vault: true
     mutable_vault: true
     mutable_state: true
+
+#
+# Meteora AMM
+#
+meteora_amm:
+  - ix_name: swap
+    permission: MeteoraSwap
+    integration: MeteoraAmm
+  - ix_name: addImbalanceLiquidity
+    permission: MeteoraLiquidity
+    integration: MeteoraAmm
+  - ix_name: removeBalanceLiquidity
+    permission: MeteoraLiquidity
+    integration: MeteoraAmm
+
+meteora_dlmm:
+  - ix_name: initializePosition
+    permission: MeteoraSwap
+    integration: MeteoraDlmm
+  - ix_name: addLiquidityByStrategy
+    permission: MeteoraLiquidity
+    integration: MeteoraDlmm
+  - ix_name: removeLiquidityByRange
+    permission: MeteoraLiquidity
+    integration: MeteoraDlmm
+  - ix_name: claimFee
+    permission: MeteoraLiquidity
+    integration: MeteoraDlmm
+  - ix_name: closePosition
+    permission: MeteoraLiquidity
+    integration: MeteoraDlmm
+  - ix_name: swap
+    permission: MeteoraLiquidity
+    integration: MeteoraDlmm
