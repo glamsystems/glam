@@ -690,7 +690,9 @@ export default function Holdings() {
         data={
           tableData === null
             ? skeletonData
-            : tableData.filter((d) => d.balance > 0 || showZeroBalances)
+            : tableData.filter(
+                (d) => Math.abs(d.balance) * 1e9 > 0 || showZeroBalances,
+              )
         }
         columns={columns}
         showZeroBalances={showZeroBalances}

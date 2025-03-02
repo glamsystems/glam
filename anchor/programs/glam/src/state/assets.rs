@@ -377,14 +377,14 @@ static ASSETS: phf::Map<&'static str, AssetMeta> = phf_map! {
         staking_state: "CAEsfzw43mvaVauCxXCSJh8DvnFsTMiTyeL1kjs6UwaT",
     },
 
-    // mallowSOL - mallowSOL
-    "MLLWWq9TLHK3oQznWqwPyqD7kH4LXTHSKXK4yLz7LjD" =>
+    // BNSOL - Binance Staked SOL
+    "BNso1VUJnh4zcfpZa6986Ea66P6TCp59hvtNJ8b1X85" =>
     AssetMeta {
         decimals: 9,
         is_stable_coin: false,
         is_token_2022: false,
         pyth_account: "",
-        staking_state: "7thbAQrn9oRJsbz2CchoPSujGYpu4hCHnVrniBHupQsx",
+        staking_state: "Hr9pzexrBge3vgmBNRR8u42CNQgBXdHm4UkUN2DH4a7r",
     },
 
     // pwrSOL - Power Staked SOL
