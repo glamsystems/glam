@@ -4018,6 +4018,599 @@
       "args": []
     },
     {
+      "name": "meteora_dlmm_add_liquidity_by_strategy",
+      "discriminator": [
+        81,
+        139,
+        59,
+        146,
+        176,
+        196,
+        240,
+        216
+      ],
+      "accounts": [
+        {
+          "name": "glam_state"
+        },
+        {
+          "name": "glam_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glam_state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glam_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "address": "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo"
+        },
+        {
+          "name": "position",
+          "writable": true
+        },
+        {
+          "name": "lb_pair",
+          "writable": true
+        },
+        {
+          "name": "bin_array_bitmap_extension",
+          "writable": true
+        },
+        {
+          "name": "user_token_x",
+          "writable": true
+        },
+        {
+          "name": "user_token_y",
+          "writable": true
+        },
+        {
+          "name": "reserve_x",
+          "writable": true
+        },
+        {
+          "name": "reserve_y",
+          "writable": true
+        },
+        {
+          "name": "token_x_mint"
+        },
+        {
+          "name": "token_y_mint"
+        },
+        {
+          "name": "bin_array_lower",
+          "writable": true
+        },
+        {
+          "name": "bin_array_upper",
+          "writable": true
+        },
+        {
+          "name": "token_x_program"
+        },
+        {
+          "name": "token_y_program"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "LiquidityParameterByStrategy"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "meteora_dlmm_claim_fee",
+      "discriminator": [
+        78,
+        116,
+        98,
+        78,
+        50,
+        82,
+        72,
+        37
+      ],
+      "accounts": [
+        {
+          "name": "glam_state"
+        },
+        {
+          "name": "glam_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glam_state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glam_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "address": "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo"
+        },
+        {
+          "name": "lb_pair",
+          "writable": true
+        },
+        {
+          "name": "position",
+          "writable": true
+        },
+        {
+          "name": "bin_array_lower",
+          "writable": true
+        },
+        {
+          "name": "bin_array_upper",
+          "writable": true
+        },
+        {
+          "name": "reserve_x",
+          "writable": true
+        },
+        {
+          "name": "reserve_y",
+          "writable": true
+        },
+        {
+          "name": "user_token_x",
+          "writable": true
+        },
+        {
+          "name": "user_token_y",
+          "writable": true
+        },
+        {
+          "name": "token_x_mint"
+        },
+        {
+          "name": "token_y_mint"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "meteora_dlmm_close_position",
+      "discriminator": [
+        186,
+        117,
+        42,
+        24,
+        221,
+        194,
+        34,
+        143
+      ],
+      "accounts": [
+        {
+          "name": "glam_state"
+        },
+        {
+          "name": "glam_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glam_state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glam_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "address": "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo"
+        },
+        {
+          "name": "position",
+          "writable": true
+        },
+        {
+          "name": "lb_pair",
+          "writable": true
+        },
+        {
+          "name": "bin_array_lower",
+          "writable": true
+        },
+        {
+          "name": "bin_array_upper",
+          "writable": true
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "meteora_dlmm_initialize_position",
+      "discriminator": [
+        223,
+        94,
+        215,
+        96,
+        175,
+        181,
+        195,
+        204
+      ],
+      "accounts": [
+        {
+          "name": "glam_state"
+        },
+        {
+          "name": "glam_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glam_state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glam_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "address": "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo"
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "position",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "lb_pair"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "lower_bin_id",
+          "type": "i32"
+        },
+        {
+          "name": "width",
+          "type": "i32"
+        }
+      ]
+    },
+    {
+      "name": "meteora_dlmm_remove_liquidity_by_range",
+      "discriminator": [
+        223,
+        12,
+        177,
+        181,
+        96,
+        109,
+        60,
+        124
+      ],
+      "accounts": [
+        {
+          "name": "glam_state"
+        },
+        {
+          "name": "glam_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glam_state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glam_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "address": "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo"
+        },
+        {
+          "name": "position",
+          "writable": true
+        },
+        {
+          "name": "lb_pair",
+          "writable": true
+        },
+        {
+          "name": "bin_array_bitmap_extension",
+          "writable": true
+        },
+        {
+          "name": "user_token_x",
+          "writable": true
+        },
+        {
+          "name": "user_token_y",
+          "writable": true
+        },
+        {
+          "name": "reserve_x",
+          "writable": true
+        },
+        {
+          "name": "reserve_y",
+          "writable": true
+        },
+        {
+          "name": "token_x_mint"
+        },
+        {
+          "name": "token_y_mint"
+        },
+        {
+          "name": "bin_array_lower",
+          "writable": true
+        },
+        {
+          "name": "bin_array_upper",
+          "writable": true
+        },
+        {
+          "name": "token_x_program"
+        },
+        {
+          "name": "token_y_program"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "from_bin_id",
+          "type": "i32"
+        },
+        {
+          "name": "to_bin_id",
+          "type": "i32"
+        },
+        {
+          "name": "bps_to_remove",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "meteora_dlmm_swap",
+      "discriminator": [
+        127,
+        64,
+        37,
+        138,
+        173,
+        243,
+        207,
+        84
+      ],
+      "accounts": [
+        {
+          "name": "glam_state"
+        },
+        {
+          "name": "glam_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glam_state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glam_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "address": "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo"
+        },
+        {
+          "name": "lb_pair",
+          "writable": true
+        },
+        {
+          "name": "bin_array_bitmap_extension"
+        },
+        {
+          "name": "reserve_x",
+          "writable": true
+        },
+        {
+          "name": "reserve_y",
+          "writable": true
+        },
+        {
+          "name": "user_token_in",
+          "writable": true
+        },
+        {
+          "name": "user_token_out",
+          "writable": true
+        },
+        {
+          "name": "token_x_mint"
+        },
+        {
+          "name": "token_y_mint"
+        },
+        {
+          "name": "oracle",
+          "writable": true
+        },
+        {
+          "name": "host_fee_in",
+          "writable": true
+        },
+        {
+          "name": "token_x_program"
+        },
+        {
+          "name": "token_y_program"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount_in",
+          "type": "u64"
+        },
+        {
+          "name": "min_amount_out",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "mint_tokens",
       "docs": [
         "Mints a specified amount of tokens for the given mint.",
@@ -7327,6 +7920,41 @@
           },
           {
             "name": "KaminoLending"
+          },
+          {
+            "name": "MeteoraDlmm"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LiquidityParameterByStrategy",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "amount_x",
+            "type": "u64"
+          },
+          {
+            "name": "amount_y",
+            "type": "u64"
+          },
+          {
+            "name": "active_id",
+            "type": "i32"
+          },
+          {
+            "name": "max_active_bin_slippage",
+            "type": "i32"
+          },
+          {
+            "name": "strategy_parameters",
+            "type": {
+              "defined": {
+                "name": "StrategyParameters"
+              }
+            }
           }
         ]
       }
@@ -8093,6 +8721,18 @@
           },
           {
             "name": "DriftModifyOrders"
+          },
+          {
+            "name": "MeteoraDlmmInitPosition"
+          },
+          {
+            "name": "MeteoraDlmmClosePosition"
+          },
+          {
+            "name": "MeteoraDlmmLiquidity"
+          },
+          {
+            "name": "MeteoraDlmmSwap"
           }
         ]
       }
@@ -8665,6 +9305,74 @@
                 }
               }
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "StrategyParameters",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "min_bin_id",
+            "type": "i32"
+          },
+          {
+            "name": "max_bin_id",
+            "type": "i32"
+          },
+          {
+            "name": "strategy_type",
+            "type": {
+              "defined": {
+                "name": "StrategyType"
+              }
+            }
+          },
+          {
+            "name": "parameteres",
+            "type": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "StrategyType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "SpotOneSide"
+          },
+          {
+            "name": "CurveOneSide"
+          },
+          {
+            "name": "BidAskOneSide"
+          },
+          {
+            "name": "SpotBalanced"
+          },
+          {
+            "name": "CurveBalanced"
+          },
+          {
+            "name": "BidAskBalanced"
+          },
+          {
+            "name": "SpotImBalanced"
+          },
+          {
+            "name": "CurveImBalanced"
+          },
+          {
+            "name": "BidAskImBalanced"
           }
         ]
       }

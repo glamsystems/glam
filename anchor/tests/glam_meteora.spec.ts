@@ -1,0 +1,61 @@
+import { Keypair, PublicKey } from "@solana/web3.js";
+import { BN } from "@coral-xyz/anchor";
+
+import { airdrop, createGlamStateForTest } from "./setup";
+import { GlamClient } from "../src";
+
+const METEORA_DLMM = new PublicKey(
+  "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo",
+);
+
+describe("glam_meteora", () => {
+  const glamClient = new GlamClient();
+  let statePda: PublicKey;
+  let vaultPda: PublicKey;
+
+  it("Initialize glam state", async () => {
+    const stateData = await createGlamStateForTest(glamClient);
+    statePda = stateData.statePda;
+
+    const stateModel = await glamClient.fetchState(statePda);
+    vaultPda = stateModel.vaultPda;
+
+    await airdrop(
+      glamClient.provider.connection,
+      stateData.vaultPda,
+      10_000_000_000,
+    );
+
+    // Enable kamino lending
+    await glamClient.state.updateState(statePda, {
+      integrations: [{ meteoraDlmm: {} }],
+    });
+
+    await glamClient.wsol.wrap(statePda, new BN(1_000_000_000));
+  });
+
+  it("Init position", async () => {
+    const glamSigner = glamClient.getSigner();
+    const position = Keypair.generate();
+
+    try {
+      const txSig = await glamClient.program.methods
+        .meteoraDlmmInitializePosition(-4813, 53)
+        .accounts({
+          glamState: statePda,
+          lbPair: new PublicKey("5rCf1DM8LjKTw4YqhnoLcngyZYeNnQqztScTogYHAS6"),
+          position: position.publicKey,
+          eventAuthority: new PublicKey(
+            "D1ZN9Wj1fRSUQfCjhvnu1hqDMT7hzjzBBpi12nVniYD6",
+          ),
+          program: METEORA_DLMM,
+        })
+        .signers([position])
+        .rpc();
+      console.log("init position", txSig);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  });
+});

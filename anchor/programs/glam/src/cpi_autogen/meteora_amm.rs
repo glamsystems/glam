@@ -9,6 +9,7 @@ use meteora_amm::typedefs::*;
 pub struct MeteoraAmmSwap<'info> {
     pub glam_state: Box<Account<'info, StateAccount>>,
     #[account(
+        mut,
         seeds = [crate::constants::SEED_VAULT.as_bytes(),
         glam_state.key().as_ref()],
         bump
@@ -53,7 +54,6 @@ pub struct MeteoraAmmSwap<'info> {
     /// CHECK: should be validated by target program
     #[account(mut)]
     pub protocol_token_fee: AccountInfo<'info>,
-    pub user: Signer<'info>,
     /// CHECK: should be validated by target program
     pub vault_program: AccountInfo<'info>,
     /// CHECK: should be validated by target program
@@ -63,6 +63,7 @@ pub struct MeteoraAmmSwap<'info> {
 pub struct MeteoraAmmAddImbalanceLiquidity<'info> {
     pub glam_state: Box<Account<'info, StateAccount>>,
     #[account(
+        mut,
         seeds = [crate::constants::SEED_VAULT.as_bytes(),
         glam_state.key().as_ref()],
         bump
@@ -110,7 +111,6 @@ pub struct MeteoraAmmAddImbalanceLiquidity<'info> {
     /// CHECK: should be validated by target program
     #[account(mut)]
     pub user_b_token: AccountInfo<'info>,
-    pub user: Signer<'info>,
     /// CHECK: should be validated by target program
     pub vault_program: AccountInfo<'info>,
     /// CHECK: should be validated by target program
@@ -120,6 +120,7 @@ pub struct MeteoraAmmAddImbalanceLiquidity<'info> {
 pub struct MeteoraAmmRemoveBalanceLiquidity<'info> {
     pub glam_state: Box<Account<'info, StateAccount>>,
     #[account(
+        mut,
         seeds = [crate::constants::SEED_VAULT.as_bytes(),
         glam_state.key().as_ref()],
         bump
@@ -167,7 +168,6 @@ pub struct MeteoraAmmRemoveBalanceLiquidity<'info> {
     /// CHECK: should be validated by target program
     #[account(mut)]
     pub user_b_token: AccountInfo<'info>,
-    pub user: Signer<'info>,
     /// CHECK: should be validated by target program
     pub vault_program: AccountInfo<'info>,
     /// CHECK: should be validated by target program
@@ -177,19 +177,20 @@ pub struct MeteoraAmmRemoveBalanceLiquidity<'info> {
     acl::check_access(
         &ctx.accounts.glam_state,
         &ctx.accounts.glam_signer.key,
-        Permission::MeteoraSwap
+        Permission::MeteoraAmmSwap
     )
 )]
 #[access_control(
     acl::check_integration(&ctx.accounts.glam_state, Integration::MeteoraAmm)
 )]
+#[glam_macros::glam_vault_signer_seeds]
 pub fn meteora_amm_swap(
     ctx: Context<MeteoraAmmSwap>,
     in_amount: u64,
     minimum_out_amount: u64,
 ) -> Result<()> {
     meteora_amm::cpi::swap(
-        CpiContext::new(
+        CpiContext::new_with_signer(
             ctx.accounts.cpi_program.to_account_info(),
             meteora_amm::cpi::accounts::Swap {
                 pool: ctx.accounts.pool.to_account_info(),
@@ -207,10 +208,11 @@ pub fn meteora_amm_swap(
                 a_vault_lp: ctx.accounts.a_vault_lp.to_account_info(),
                 b_vault_lp: ctx.accounts.b_vault_lp.to_account_info(),
                 protocol_token_fee: ctx.accounts.protocol_token_fee.to_account_info(),
-                user: ctx.accounts.user.to_account_info(),
+                user: ctx.accounts.glam_vault.to_account_info(),
                 vault_program: ctx.accounts.vault_program.to_account_info(),
                 token_program: ctx.accounts.token_program.to_account_info(),
             },
+            glam_vault_signer_seeds,
         ),
         in_amount,
         minimum_out_amount,
@@ -220,12 +222,13 @@ pub fn meteora_amm_swap(
     acl::check_access(
         &ctx.accounts.glam_state,
         &ctx.accounts.glam_signer.key,
-        Permission::MeteoraLiquidity
+        Permission::MeteoraAmmLiquidity
     )
 )]
 #[access_control(
     acl::check_integration(&ctx.accounts.glam_state, Integration::MeteoraAmm)
 )]
+#[glam_macros::glam_vault_signer_seeds]
 pub fn meteora_amm_add_imbalance_liquidity(
     ctx: Context<MeteoraAmmAddImbalanceLiquidity>,
     minimum_pool_token_amount: u64,
@@ -233,7 +236,7 @@ pub fn meteora_amm_add_imbalance_liquidity(
     token_b_amount: u64,
 ) -> Result<()> {
     meteora_amm::cpi::add_imbalance_liquidity(
-        CpiContext::new(
+        CpiContext::new_with_signer(
             ctx.accounts.cpi_program.to_account_info(),
             meteora_amm::cpi::accounts::AddImbalanceLiquidity {
                 pool: ctx.accounts.pool.to_account_info(),
@@ -249,10 +252,11 @@ pub fn meteora_amm_add_imbalance_liquidity(
                 b_token_vault: ctx.accounts.b_token_vault.to_account_info(),
                 user_a_token: ctx.accounts.user_a_token.to_account_info(),
                 user_b_token: ctx.accounts.user_b_token.to_account_info(),
-                user: ctx.accounts.user.to_account_info(),
+                user: ctx.accounts.glam_vault.to_account_info(),
                 vault_program: ctx.accounts.vault_program.to_account_info(),
                 token_program: ctx.accounts.token_program.to_account_info(),
             },
+            glam_vault_signer_seeds,
         ),
         minimum_pool_token_amount,
         token_a_amount,
@@ -263,12 +267,13 @@ pub fn meteora_amm_add_imbalance_liquidity(
     acl::check_access(
         &ctx.accounts.glam_state,
         &ctx.accounts.glam_signer.key,
-        Permission::MeteoraLiquidity
+        Permission::MeteoraAmmLiquidity
     )
 )]
 #[access_control(
     acl::check_integration(&ctx.accounts.glam_state, Integration::MeteoraAmm)
 )]
+#[glam_macros::glam_vault_signer_seeds]
 pub fn meteora_amm_remove_balance_liquidity(
     ctx: Context<MeteoraAmmRemoveBalanceLiquidity>,
     pool_token_amount: u64,
@@ -276,7 +281,7 @@ pub fn meteora_amm_remove_balance_liquidity(
     minimum_b_token_out: u64,
 ) -> Result<()> {
     meteora_amm::cpi::remove_balance_liquidity(
-        CpiContext::new(
+        CpiContext::new_with_signer(
             ctx.accounts.cpi_program.to_account_info(),
             meteora_amm::cpi::accounts::RemoveBalanceLiquidity {
                 pool: ctx.accounts.pool.to_account_info(),
@@ -292,10 +297,11 @@ pub fn meteora_amm_remove_balance_liquidity(
                 b_token_vault: ctx.accounts.b_token_vault.to_account_info(),
                 user_a_token: ctx.accounts.user_a_token.to_account_info(),
                 user_b_token: ctx.accounts.user_b_token.to_account_info(),
-                user: ctx.accounts.user.to_account_info(),
+                user: ctx.accounts.glam_vault.to_account_info(),
                 vault_program: ctx.accounts.vault_program.to_account_info(),
                 token_program: ctx.accounts.token_program.to_account_info(),
             },
+            glam_vault_signer_seeds,
         ),
         pool_token_amount,
         minimum_a_token_out,

@@ -200,31 +200,58 @@ marinade:
 #
 meteora_amm:
   - ix_name: swap
-    permission: MeteoraSwap
+    permission: MeteoraAmmSwap
     integration: MeteoraAmm
+    vault_aliases: ["user"]
+    signed_by_vault: true
+    mutable_vault: true
   - ix_name: addImbalanceLiquidity
-    permission: MeteoraLiquidity
+    permission: MeteoraAmmLiquidity
     integration: MeteoraAmm
+    vault_aliases: ["user"]
+    signed_by_vault: true
+    mutable_vault: true
   - ix_name: removeBalanceLiquidity
-    permission: MeteoraLiquidity
+    permission: MeteoraAmmLiquidity
     integration: MeteoraAmm
+    vault_aliases: ["user"]
+    signed_by_vault: true
+    mutable_vault: true
 
 meteora_dlmm:
   - ix_name: initializePosition
-    permission: MeteoraSwap
+    permission: MeteoraDlmmInitPosition
     integration: MeteoraDlmm
+    vault_aliases: ["owner"]
+    signed_by_vault: true
+    mutable_vault: true
   - ix_name: addLiquidityByStrategy
-    permission: MeteoraLiquidity
+    permission: MeteoraDlmmLiquidity
     integration: MeteoraDlmm
+    vault_aliases: ["sender"]
+    signed_by_vault: true
+    mutable_vault: true
   - ix_name: removeLiquidityByRange
-    permission: MeteoraLiquidity
+    permission: MeteoraDlmmLiquidity
     integration: MeteoraDlmm
+    vault_aliases: ["sender"]
+    signed_by_vault: true
+    mutable_vault: true
   - ix_name: claimFee
-    permission: MeteoraLiquidity
+    permission: MeteoraDlmmLiquidity
     integration: MeteoraDlmm
+    vault_aliases: ["sender"]
+    signed_by_vault: true
+    mutable_vault: true
   - ix_name: closePosition
-    permission: MeteoraLiquidity
+    permission: MeteoraDlmmClosePosition
     integration: MeteoraDlmm
+    vault_aliases: ["sender", "rent_receiver"]
+    signed_by_vault: true
+    mutable_vault: true
   - ix_name: swap
-    permission: MeteoraLiquidity
+    permission: MeteoraDlmmSwap
     integration: MeteoraDlmm
+    vault_aliases: ["user"]
+    signed_by_vault: true
+    mutable_vault: true

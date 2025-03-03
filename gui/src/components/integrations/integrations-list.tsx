@@ -1,9 +1,9 @@
 import { ComponentProps } from "react";
 
-import { cn } from "../../lib/utils";
+import { cn } from "@/lib/utils";
 import { Integration } from "../../app/(vault)/vault/integrations/data";
-import { Badge } from "../../components/ui/badge";
-import { ScrollArea } from "../../components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import React from "react";
 
 export function IntegrationsList({

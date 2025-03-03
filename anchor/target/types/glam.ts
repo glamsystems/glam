@@ -4024,6 +4024,599 @@ export type Glam = {
       "args": []
     },
     {
+      "name": "meteoraDlmmAddLiquidityByStrategy",
+      "discriminator": [
+        81,
+        139,
+        59,
+        146,
+        176,
+        196,
+        240,
+        216
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo"
+        },
+        {
+          "name": "position",
+          "writable": true
+        },
+        {
+          "name": "lbPair",
+          "writable": true
+        },
+        {
+          "name": "binArrayBitmapExtension",
+          "writable": true
+        },
+        {
+          "name": "userTokenX",
+          "writable": true
+        },
+        {
+          "name": "userTokenY",
+          "writable": true
+        },
+        {
+          "name": "reserveX",
+          "writable": true
+        },
+        {
+          "name": "reserveY",
+          "writable": true
+        },
+        {
+          "name": "tokenXMint"
+        },
+        {
+          "name": "tokenYMint"
+        },
+        {
+          "name": "binArrayLower",
+          "writable": true
+        },
+        {
+          "name": "binArrayUpper",
+          "writable": true
+        },
+        {
+          "name": "tokenXProgram"
+        },
+        {
+          "name": "tokenYProgram"
+        },
+        {
+          "name": "eventAuthority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "liquidityParameterByStrategy"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "meteoraDlmmClaimFee",
+      "discriminator": [
+        78,
+        116,
+        98,
+        78,
+        50,
+        82,
+        72,
+        37
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo"
+        },
+        {
+          "name": "lbPair",
+          "writable": true
+        },
+        {
+          "name": "position",
+          "writable": true
+        },
+        {
+          "name": "binArrayLower",
+          "writable": true
+        },
+        {
+          "name": "binArrayUpper",
+          "writable": true
+        },
+        {
+          "name": "reserveX",
+          "writable": true
+        },
+        {
+          "name": "reserveY",
+          "writable": true
+        },
+        {
+          "name": "userTokenX",
+          "writable": true
+        },
+        {
+          "name": "userTokenY",
+          "writable": true
+        },
+        {
+          "name": "tokenXMint"
+        },
+        {
+          "name": "tokenYMint"
+        },
+        {
+          "name": "tokenProgram"
+        },
+        {
+          "name": "eventAuthority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "meteoraDlmmClosePosition",
+      "discriminator": [
+        186,
+        117,
+        42,
+        24,
+        221,
+        194,
+        34,
+        143
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo"
+        },
+        {
+          "name": "position",
+          "writable": true
+        },
+        {
+          "name": "lbPair",
+          "writable": true
+        },
+        {
+          "name": "binArrayLower",
+          "writable": true
+        },
+        {
+          "name": "binArrayUpper",
+          "writable": true
+        },
+        {
+          "name": "eventAuthority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "meteoraDlmmInitializePosition",
+      "discriminator": [
+        223,
+        94,
+        215,
+        96,
+        175,
+        181,
+        195,
+        204
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo"
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "position",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "lbPair"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        },
+        {
+          "name": "eventAuthority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "lowerBinId",
+          "type": "i32"
+        },
+        {
+          "name": "width",
+          "type": "i32"
+        }
+      ]
+    },
+    {
+      "name": "meteoraDlmmRemoveLiquidityByRange",
+      "discriminator": [
+        223,
+        12,
+        177,
+        181,
+        96,
+        109,
+        60,
+        124
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo"
+        },
+        {
+          "name": "position",
+          "writable": true
+        },
+        {
+          "name": "lbPair",
+          "writable": true
+        },
+        {
+          "name": "binArrayBitmapExtension",
+          "writable": true
+        },
+        {
+          "name": "userTokenX",
+          "writable": true
+        },
+        {
+          "name": "userTokenY",
+          "writable": true
+        },
+        {
+          "name": "reserveX",
+          "writable": true
+        },
+        {
+          "name": "reserveY",
+          "writable": true
+        },
+        {
+          "name": "tokenXMint"
+        },
+        {
+          "name": "tokenYMint"
+        },
+        {
+          "name": "binArrayLower",
+          "writable": true
+        },
+        {
+          "name": "binArrayUpper",
+          "writable": true
+        },
+        {
+          "name": "tokenXProgram"
+        },
+        {
+          "name": "tokenYProgram"
+        },
+        {
+          "name": "eventAuthority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "fromBinId",
+          "type": "i32"
+        },
+        {
+          "name": "toBinId",
+          "type": "i32"
+        },
+        {
+          "name": "bpsToRemove",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "meteoraDlmmSwap",
+      "discriminator": [
+        127,
+        64,
+        37,
+        138,
+        173,
+        243,
+        207,
+        84
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "glamSigner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpiProgram",
+          "address": "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo"
+        },
+        {
+          "name": "lbPair",
+          "writable": true
+        },
+        {
+          "name": "binArrayBitmapExtension"
+        },
+        {
+          "name": "reserveX",
+          "writable": true
+        },
+        {
+          "name": "reserveY",
+          "writable": true
+        },
+        {
+          "name": "userTokenIn",
+          "writable": true
+        },
+        {
+          "name": "userTokenOut",
+          "writable": true
+        },
+        {
+          "name": "tokenXMint"
+        },
+        {
+          "name": "tokenYMint"
+        },
+        {
+          "name": "oracle",
+          "writable": true
+        },
+        {
+          "name": "hostFeeIn",
+          "writable": true
+        },
+        {
+          "name": "tokenXProgram"
+        },
+        {
+          "name": "tokenYProgram"
+        },
+        {
+          "name": "eventAuthority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "amountIn",
+          "type": "u64"
+        },
+        {
+          "name": "minAmountOut",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "mintTokens",
       "docs": [
         "Mints a specified amount of tokens for the given mint.",
@@ -7333,6 +7926,41 @@ export type Glam = {
           },
           {
             "name": "kaminoLending"
+          },
+          {
+            "name": "meteoraDlmm"
+          }
+        ]
+      }
+    },
+    {
+      "name": "liquidityParameterByStrategy",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "amountX",
+            "type": "u64"
+          },
+          {
+            "name": "amountY",
+            "type": "u64"
+          },
+          {
+            "name": "activeId",
+            "type": "i32"
+          },
+          {
+            "name": "maxActiveBinSlippage",
+            "type": "i32"
+          },
+          {
+            "name": "strategyParameters",
+            "type": {
+              "defined": {
+                "name": "strategyParameters"
+              }
+            }
           }
         ]
       }
@@ -8099,6 +8727,18 @@ export type Glam = {
           },
           {
             "name": "driftModifyOrders"
+          },
+          {
+            "name": "meteoraDlmmInitPosition"
+          },
+          {
+            "name": "meteoraDlmmClosePosition"
+          },
+          {
+            "name": "meteoraDlmmLiquidity"
+          },
+          {
+            "name": "meteoraDlmmSwap"
           }
         ]
       }
@@ -8671,6 +9311,74 @@ export type Glam = {
                 }
               }
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "strategyParameters",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "minBinId",
+            "type": "i32"
+          },
+          {
+            "name": "maxBinId",
+            "type": "i32"
+          },
+          {
+            "name": "strategyType",
+            "type": {
+              "defined": {
+                "name": "strategyType"
+              }
+            }
+          },
+          {
+            "name": "parameteres",
+            "type": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "strategyType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "spotOneSide"
+          },
+          {
+            "name": "curveOneSide"
+          },
+          {
+            "name": "bidAskOneSide"
+          },
+          {
+            "name": "spotBalanced"
+          },
+          {
+            "name": "curveBalanced"
+          },
+          {
+            "name": "bidAskBalanced"
+          },
+          {
+            "name": "spotImBalanced"
+          },
+          {
+            "name": "curveImBalanced"
+          },
+          {
+            "name": "bidAskImBalanced"
           }
         ]
       }
