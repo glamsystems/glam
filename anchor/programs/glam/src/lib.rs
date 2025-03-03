@@ -7,14 +7,15 @@ pub mod state;
 pub mod utils;
 
 use anchor_lang::prelude::*;
-use cpi_autogen::{drift::*, jupiter_gov::*, jupiter_vote::*, kamino_lending::*};
+use cpi_autogen::{drift::*, jupiter_gov::*, jupiter_vote::*, kamino_lending::*, meteora_dlmm::*};
 use instructions::{state as glam_state, *};
 
 pub use constants::*;
 pub use state::model::*;
 
 use ::drift::{MarketType, ModifyOrderParams, OrderParams, PositionDirection};
-use kamino_lending::InitObligationArgs;
+use ::kamino_lending::InitObligationArgs;
+use ::meteora_dlmm::LiquidityParameterByStrategy;
 
 #[cfg(feature = "mainnet")]
 declare_id!("GLAMbTqav9N9witRjswJ8enwp9vv5G8bsSJ2kPJ4rcyc");
@@ -964,6 +965,53 @@ pub mod glam {
         liquidity_amount: u64,
     ) -> Result<()> {
         cpi_autogen::kamino_lending::kamino_lending_deposit_reserve_liquidity_and_obligation_collateral(ctx, liquidity_amount)
+    }
+
+    pub fn meteora_dlmm_initialize_position<'info>(
+        ctx: Context<MeteoraDlmmInitializePosition>,
+        lower_bin_id: i32,
+        width: i32,
+    ) -> Result<()> {
+        cpi_autogen::meteora_dlmm::meteora_dlmm_initialize_position(ctx, lower_bin_id, width)
+    }
+
+    pub fn meteora_dlmm_close_position<'info>(
+        ctx: Context<MeteoraDlmmClosePosition>,
+    ) -> Result<()> {
+        cpi_autogen::meteora_dlmm::meteora_dlmm_close_position(ctx)
+    }
+
+    pub fn meteora_dlmm_claim_fee<'info>(ctx: Context<MeteoraDlmmClaimFee>) -> Result<()> {
+        cpi_autogen::meteora_dlmm::meteora_dlmm_claim_fee(ctx)
+    }
+
+    pub fn meteora_dlmm_add_liquidity_by_strategy<'info>(
+        ctx: Context<MeteoraDlmmAddLiquidityByStrategy>,
+        params: LiquidityParameterByStrategy,
+    ) -> Result<()> {
+        cpi_autogen::meteora_dlmm::meteora_dlmm_add_liquidity_by_strategy(ctx, params)
+    }
+
+    pub fn meteora_dlmm_remove_liquidity_by_range<'info>(
+        ctx: Context<MeteoraDlmmRemoveLiquidityByRange>,
+        from_bin_id: i32,
+        to_bin_id: i32,
+        bps_to_remove: u16,
+    ) -> Result<()> {
+        cpi_autogen::meteora_dlmm::meteora_dlmm_remove_liquidity_by_range(
+            ctx,
+            from_bin_id,
+            to_bin_id,
+            bps_to_remove,
+        )
+    }
+
+    pub fn meteora_dlmm_swap<'info>(
+        ctx: Context<MeteoraDlmmSwap>,
+        amount_in: u64,
+        min_amount_out: u64,
+    ) -> Result<()> {
+        cpi_autogen::meteora_dlmm::meteora_dlmm_swap(ctx, amount_in, min_amount_out)
     }
 
     /// Wraps SOL to get wSOL.

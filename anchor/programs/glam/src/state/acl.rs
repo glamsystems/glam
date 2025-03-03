@@ -36,6 +36,10 @@ pub enum Permission {
     KaminoInit,
     KaminoDeposit,
     DriftModifyOrders,
+    MeteoraDlmmInitPosition,
+    MeteoraDlmmClosePosition,
+    MeteoraDlmmLiquidity,
+    MeteoraDlmmSwap,
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, Debug, PartialEq)]
@@ -55,6 +59,7 @@ pub enum Integration {
     JupiterSwap, // Jupiter Swap
     JupiterVote, // Jupiter Vote
     KaminoLending,
+    MeteoraDlmm,
 }
 
 pub fn check_access(state: &StateAccount, signer: &Pubkey, permission: Permission) -> Result<()> {
