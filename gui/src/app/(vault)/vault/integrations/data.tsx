@@ -63,6 +63,13 @@ export const metadata: { [key: string]: IntegrationMetadata } = {
     labels: ["Lending"],
     imagePath: "/images/integrations/kamino2.svg",
   },
+  MeteoraDlmm: {
+    name: "Meteora DLMM",
+    description:
+      "Trade tokens on Meteora's Dynamic Liquidity Market Maker (DLMM).",
+    labels: ["LP"],
+    imagePath: "/images/integrations/meteora.svg",
+  },
 } satisfies { [key: string]: IntegrationMetadata };
 
 export const allIntegrations = GlamIntegrations.sort().map((integ, index) => ({
@@ -72,17 +79,5 @@ export const allIntegrations = GlamIntegrations.sort().map((integ, index) => ({
   comingSoon: false,
   ...(metadata[integ] || {}),
 }));
-// TODO: move to metadata list once program is ready
-allIntegrations.push({
-  id: allIntegrations.length,
-  name: "Meteora DLMM",
-  key: "MeteoraDLMM",
-  enabled: false,
-  description:
-    "Trade tokens on Meteora's Dynamic Liquidity Market Maker (DLMM).",
-  labels: ["LP"],
-  comingSoon: true,
-  imagePath: "/images/integrations/meteora.svg",
-});
 
 export type Integration = (typeof allIntegrations)[number];
