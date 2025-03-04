@@ -1122,9 +1122,9 @@ meteora
     }
   });
 meteora
-  .command("add <pool> <position> <amount> <strategy>")
+  .command("add <position> <amount> <strategy>")
   .description("Add liquidity to position")
-  .action(async (pool, position, amount, strategy) => {
+  .action(async (position, amount, strategy) => {
     if (!cliConfig.glam_state) {
       console.error("GLAM state not found in config file");
       process.exit(1);
@@ -1133,7 +1133,6 @@ meteora
     try {
       const txSig = await glamClient.meteoraDlmm.addLiquidity(
         cliConfig.glam_state,
-        pool,
         position,
         new anchor.BN(amount),
         strategy.toString(),
@@ -1145,9 +1144,9 @@ meteora
     }
   });
 meteora
-  .command("remove <pool> <position> <bps>")
+  .command("remove <position> <bps>")
   .description("Remove liquidity from position")
-  .action(async (pool, position, bps) => {
+  .action(async (position, bps) => {
     if (!cliConfig.glam_state) {
       console.error("GLAM state not found in config file");
       process.exit(1);
@@ -1156,7 +1155,6 @@ meteora
     try {
       const txSig = await glamClient.meteoraDlmm.removeLiquidity(
         cliConfig.glam_state,
-        pool,
         position,
         bps,
       );
@@ -1167,9 +1165,9 @@ meteora
     }
   });
 meteora
-  .command("claim <pool> <position>")
+  .command("claim <position>")
   .description("Claim fee")
-  .action(async (pool, position) => {
+  .action(async (position) => {
     if (!cliConfig.glam_state) {
       console.error("GLAM state not found in config file");
       process.exit(1);
@@ -1178,7 +1176,6 @@ meteora
     try {
       const txSig = await glamClient.meteoraDlmm.claimFee(
         cliConfig.glam_state,
-        pool,
         position,
       );
       console.log(`Claimed fee from ${position}:`, txSig);
@@ -1188,9 +1185,9 @@ meteora
     }
   });
 meteora
-  .command("close <pool> <position>")
+  .command("close <position>")
   .description("Close a Meteora DLMM position")
-  .action(async (pool, position) => {
+  .action(async (position) => {
     if (!cliConfig.glam_state) {
       console.error("GLAM state not found in config file");
       process.exit(1);
@@ -1199,7 +1196,6 @@ meteora
     try {
       const txSig = await glamClient.meteoraDlmm.closePosition(
         cliConfig.glam_state,
-        pool,
         position,
       );
       console.log(`Closed Meteora DLMM position: ${txSig}`);
