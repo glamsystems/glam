@@ -39,7 +39,7 @@ export class MeteoraDlmmClient {
 
   public constructor(readonly base: BaseClient) {}
 
-  public async getDlmmPool(pool: PublicKey | string) {
+  public async getDlmmPool(pool: PublicKey | string): Promise<DLMM> {
     const key = typeof pool === "string" ? pool : pool.toString();
     if (!this._dlmmPool.get(key)) {
       this._dlmmPool.set(
@@ -47,7 +47,11 @@ export class MeteoraDlmmClient {
         await DLMM.create(this.base.provider.connection, new PublicKey(pool)),
       );
     }
-    return this._dlmmPool.get(key);
+    const dlmmPool = this._dlmmPool.get(key);
+    if (!dlmmPool) {
+      throw new Error(`DLMM pool ${key} not found`);
+    }
+    return dlmmPool;
   }
 
   public async initializePosition(
