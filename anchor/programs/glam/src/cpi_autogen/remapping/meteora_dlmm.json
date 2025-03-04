@@ -1,0 +1,400 @@
+{
+  "program_id": "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo",
+  "instructions": [
+    {
+      "src_ix_name": "add_liquidity_by_strategy",
+      "src_discriminator": [
+        7,
+        3,
+        150,
+        127,
+        148,
+        40,
+        61,
+        200
+      ],
+      "dst_ix_name": "meteora_dlmm_add_liquidity_by_strategy",
+      "dst_discriminator": [
+        81,
+        139,
+        59,
+        146,
+        176,
+        196,
+        240,
+        216
+      ],
+      "dynamic_accounts": [
+        {
+          "name": "glam_state",
+          "index": 0,
+          "writable": false,
+          "signer": false
+        },
+        {
+          "name": "glam_vault",
+          "index": 1,
+          "writable": true,
+          "signer": false
+        },
+        {
+          "name": "glam_signer",
+          "index": 2,
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "index": 3,
+          "writable": false,
+          "signer": false
+        }
+      ],
+      "static_accounts": [],
+      "index_map": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        -1,
+        15,
+        16,
+        17,
+        18
+      ]
+    },
+    {
+      "src_ix_name": "initialize_position",
+      "src_discriminator": [
+        219,
+        192,
+        234,
+        71,
+        190,
+        191,
+        102,
+        80
+      ],
+      "dst_ix_name": "meteora_dlmm_initialize_position",
+      "dst_discriminator": [
+        223,
+        94,
+        215,
+        96,
+        175,
+        181,
+        195,
+        204
+      ],
+      "dynamic_accounts": [
+        {
+          "name": "glam_state",
+          "index": 0,
+          "writable": false,
+          "signer": false
+        },
+        {
+          "name": "glam_vault",
+          "index": 1,
+          "writable": true,
+          "signer": false
+        },
+        {
+          "name": "glam_signer",
+          "index": 2,
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "index": 3,
+          "writable": false,
+          "signer": false
+        }
+      ],
+      "static_accounts": [],
+      "index_map": [
+        4,
+        5,
+        6,
+        -1,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    {
+      "src_ix_name": "swap",
+      "src_discriminator": [
+        248,
+        198,
+        158,
+        145,
+        225,
+        117,
+        135,
+        200
+      ],
+      "dst_ix_name": "meteora_dlmm_swap",
+      "dst_discriminator": [
+        127,
+        64,
+        37,
+        138,
+        173,
+        243,
+        207,
+        84
+      ],
+      "dynamic_accounts": [
+        {
+          "name": "glam_state",
+          "index": 0,
+          "writable": false,
+          "signer": false
+        },
+        {
+          "name": "glam_vault",
+          "index": 1,
+          "writable": true,
+          "signer": false
+        },
+        {
+          "name": "glam_signer",
+          "index": 2,
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "index": 3,
+          "writable": false,
+          "signer": false
+        }
+      ],
+      "static_accounts": [],
+      "index_map": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        -1,
+        14,
+        15,
+        16,
+        17
+      ]
+    },
+    {
+      "src_ix_name": "claim_fee",
+      "src_discriminator": [
+        169,
+        32,
+        79,
+        137,
+        136,
+        232,
+        70,
+        137
+      ],
+      "dst_ix_name": "meteora_dlmm_claim_fee",
+      "dst_discriminator": [
+        78,
+        116,
+        98,
+        78,
+        50,
+        82,
+        72,
+        37
+      ],
+      "dynamic_accounts": [
+        {
+          "name": "glam_state",
+          "index": 0,
+          "writable": false,
+          "signer": false
+        },
+        {
+          "name": "glam_vault",
+          "index": 1,
+          "writable": true,
+          "signer": false
+        },
+        {
+          "name": "glam_signer",
+          "index": 2,
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "index": 3,
+          "writable": false,
+          "signer": false
+        }
+      ],
+      "static_accounts": [],
+      "index_map": [
+        4,
+        5,
+        6,
+        7,
+        -1,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "src_ix_name": "close_position",
+      "src_discriminator": [
+        123,
+        134,
+        81,
+        0,
+        49,
+        68,
+        98,
+        98
+      ],
+      "dst_ix_name": "meteora_dlmm_close_position",
+      "dst_discriminator": [
+        186,
+        117,
+        42,
+        24,
+        221,
+        194,
+        34,
+        143
+      ],
+      "dynamic_accounts": [
+        {
+          "name": "glam_state",
+          "index": 0,
+          "writable": false,
+          "signer": false
+        },
+        {
+          "name": "glam_vault",
+          "index": 1,
+          "writable": true,
+          "signer": false
+        },
+        {
+          "name": "glam_signer",
+          "index": 2,
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "index": 3,
+          "writable": false,
+          "signer": false
+        }
+      ],
+      "static_accounts": [],
+      "index_map": [
+        4,
+        5,
+        6,
+        7,
+        -1,
+        -1,
+        8,
+        9
+      ]
+    },
+    {
+      "src_ix_name": "remove_liquidity_by_range",
+      "src_discriminator": [
+        26,
+        82,
+        102,
+        152,
+        240,
+        74,
+        105,
+        26
+      ],
+      "dst_ix_name": "meteora_dlmm_remove_liquidity_by_range",
+      "dst_discriminator": [
+        223,
+        12,
+        177,
+        181,
+        96,
+        109,
+        60,
+        124
+      ],
+      "dynamic_accounts": [
+        {
+          "name": "glam_state",
+          "index": 0,
+          "writable": false,
+          "signer": false
+        },
+        {
+          "name": "glam_vault",
+          "index": 1,
+          "writable": true,
+          "signer": false
+        },
+        {
+          "name": "glam_signer",
+          "index": 2,
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "cpi_program",
+          "index": 3,
+          "writable": false,
+          "signer": false
+        }
+      ],
+      "static_accounts": [],
+      "index_map": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        -1,
+        15,
+        16,
+        17,
+        18
+      ]
+    }
+  ]
+}

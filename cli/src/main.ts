@@ -1100,6 +1100,115 @@ lst
     }
   });
 
+const meteora = program.command("meteora").description("Meteora DLMM");
+meteora
+  .command("init <pool>")
+  .description("Initialize Meteora DLMM position")
+  .action(async (pool) => {
+    if (!cliConfig.glam_state) {
+      console.error("GLAM state not found in config file");
+      process.exit(1);
+    }
+
+    try {
+      const txSig = await glamClient.meteoraDlmm.initializePosition(
+        cliConfig.glam_state,
+        pool,
+      );
+      console.log(`Initialized Meteora DLMM position: ${txSig}`);
+    } catch (e) {
+      console.error(parseTxError(e));
+      process.exit(1);
+    }
+  });
+meteora
+  .command("add <pool> <position> <amount> <strategy>")
+  .description("Add liquidity to position")
+  .action(async (pool, position, amount, strategy) => {
+    if (!cliConfig.glam_state) {
+      console.error("GLAM state not found in config file");
+      process.exit(1);
+    }
+
+    try {
+      const txSig = await glamClient.meteoraDlmm.addLiquidity(
+        cliConfig.glam_state,
+        pool,
+        position,
+        new anchor.BN(amount),
+        strategy.toString(),
+      );
+      console.log(`Added liquidity to ${position}:`, txSig);
+    } catch (e) {
+      console.error(parseTxError(e));
+      process.exit(1);
+    }
+  });
+meteora
+  .command("remove <pool> <position> <bps>")
+  .description("Remove liquidity from position")
+  .action(async (pool, position, bps) => {
+    if (!cliConfig.glam_state) {
+      console.error("GLAM state not found in config file");
+      process.exit(1);
+    }
+
+    try {
+      const txSig = await glamClient.meteoraDlmm.removeLiquidity(
+        cliConfig.glam_state,
+        pool,
+        position,
+        bps,
+      );
+      console.log(`Removed liquidity from ${position}:`, txSig);
+    } catch (e) {
+      console.error(parseTxError(e));
+      process.exit(1);
+    }
+  });
+meteora
+  .command("claim <pool> <position>")
+  .description("Claim fee")
+  .action(async (pool, position) => {
+    if (!cliConfig.glam_state) {
+      console.error("GLAM state not found in config file");
+      process.exit(1);
+    }
+
+    try {
+      const txSig = await glamClient.meteoraDlmm.claimFee(
+        cliConfig.glam_state,
+        pool,
+        position,
+      );
+      console.log(`Claimed fee from ${position}:`, txSig);
+    } catch (e) {
+      console.error(parseTxError(e));
+      process.exit(1);
+    }
+  });
+meteora
+  .command("close <pool> <position>")
+  .description("Close a Meteora DLMM position")
+  .action(async (pool, position) => {
+    if (!cliConfig.glam_state) {
+      console.error("GLAM state not found in config file");
+      process.exit(1);
+    }
+
+    try {
+      const txSig = await glamClient.meteoraDlmm.closePosition(
+        cliConfig.glam_state,
+        pool,
+        position,
+      );
+      console.log(`Closed Meteora DLMM position: ${txSig}`);
+    } catch (e) {
+      console.error(parseTxError(e));
+      process.exit(1);
+    }
+  });
+
 //
 // Run the CLI in development mode as follows:
 // npx nx run cli:dev -- --args="view <pubkey>"
