@@ -10,6 +10,7 @@ import { StakingClient } from "./client/staking";
 import { StateClient } from "./client/state";
 import { MintClient } from "./client/mint";
 import { KaminoLendingClient } from "./client/kamino";
+import { MeteoraDlmmClient } from "./client/meteora";
 
 export { JUPITER_API_DEFAULT } from "./client/base";
 
@@ -29,6 +30,7 @@ export class GlamClient extends BaseClient {
   private _state?: StateClient;
   private _mint?: MintClient;
   private _kaminoLending?: KaminoLendingClient;
+  private _meteoraDlmm?: MeteoraDlmmClient;
 
   public constructor(config?: GlamClientConfig) {
     super(config);
@@ -102,5 +104,12 @@ export class GlamClient extends BaseClient {
       this._kaminoLending = new KaminoLendingClient(this);
     }
     return this._kaminoLending;
+  }
+
+  get meteoraDlmm(): MeteoraDlmmClient {
+    if (!this._meteoraDlmm) {
+      this._meteoraDlmm = new MeteoraDlmmClient(this);
+    }
+    return this._meteoraDlmm;
   }
 }

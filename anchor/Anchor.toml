@@ -27,6 +27,7 @@ wallet = "~/.config/solana/id.json"
 test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_crud"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_mint"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_kamino"
+#test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_meteora"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_investor"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_drift"
 #test = "../node_modules/.bin/nx run --skip-nx-cache anchor:jest --verbose --testPathPattern tests/ --testNamePattern glam_marinade"
@@ -341,3 +342,13 @@ filename = "./fixtures/accounts/phaseeExd43yGjjad2FZSigdG9UTRpMdxS4aMerx821.json
 [[test.validator.account]] # validator stake account
 address = "Enh5W2UMiUc8ANgjwQMuKXNQLnAEddwjBsSPibddtN7R"
 filename = "./fixtures/accounts/Enh5W2UMiUc8ANgjwQMuKXNQLnAEddwjBsSPibddtN7R.json"
+
+#
+# Meteora dlmm
+#
+[[test.genesis]]
+address = "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo"
+program = "./fixtures/programs/meteora_dlmm.so"
+
+[[test.validator.clone]] # SOL-USDC market
+address = "5rCf1DM8LjKTw4YqhnoLcngyZYeNnQqztScTogYHAS6"

@@ -36,26 +36,13 @@ describe("glam_meteora", () => {
 
   it("Init position", async () => {
     const glamSigner = glamClient.getSigner();
-    const position = Keypair.generate();
 
     try {
-      const txSig = await glamClient.program.methods
-        .meteoraDlmmInitializePosition(-4813, 53)
-        .accounts({
-          glamState: statePda,
-          lbPair: new PublicKey("5rCf1DM8LjKTw4YqhnoLcngyZYeNnQqztScTogYHAS6"),
-          position: position.publicKey,
-          eventAuthority: new PublicKey(
-            "D1ZN9Wj1fRSUQfCjhvnu1hqDMT7hzjzBBpi12nVniYD6",
-          ),
-          program: METEORA_DLMM,
-        })
-        .signers([position])
-        .rpc();
+      const txSig = await glamClient.meteoraDlmm.initializePosition(statePda);
       console.log("init position", txSig);
     } catch (e) {
       console.error(e);
       throw e;
     }
-  });
+  }, 15_000);
 });

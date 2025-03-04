@@ -252,7 +252,16 @@ export class BaseClient {
       // - when we run tests with failure cases, this RPC call fails with an incorrect error message so we should ignore it by default
       // - gui: wallet apps usually do the simulation themselves, we should ignore the simulation error here by default
       // - cli: we should set simulate=true
-      if (simulate) throw e;
+      if (simulate) {
+        tx.recentBlockhash = recentBlockhash;
+        tx.feePayer = signer;
+        console.log(
+          "Tx payload:",
+          tx.serialize({ verifySignatures: false }).toString("base64"),
+        );
+        console.error("Simulation failed.");
+        throw e;
+      }
     }
 
     if (computeUnitLimit) {
@@ -284,7 +293,7 @@ export class BaseClient {
 
   async sendAndConfirm(
     tx: VersionedTransaction | Transaction,
-    signerOverride?: Keypair,
+    additionalSigners: Keypair[] = [],
   ): Promise<TransactionSignature> {
     const connection = this.provider.connection;
 
@@ -305,22 +314,21 @@ export class BaseClient {
     // txs, for example transfer SOL, create ATA, etc.
     if (tx instanceof Transaction) {
       return await sendAndConfirmTransaction(txConnection, tx, [
-        signerOverride || this.getWallet().payer,
+        this.getWallet().payer,
+        ...additionalSigners,
       ]);
     }
 
     let serializedTx: Uint8Array;
 
-    if (signerOverride) {
-      tx.sign([signerOverride]);
-      serializedTx = tx.serialize();
-    } else {
-      // Anchor provider.sendAndConfirm forces a signature with the wallet, which we don't want
-      // https://github.com/coral-xyz/anchor/blob/v0.30.0/ts/packages/anchor/src/provider.ts#L159
-      const wallet = this.getWallet();
-      const signedTx = await wallet.signTransaction(tx);
-      serializedTx = signedTx.serialize();
+    // Anchor provider.sendAndConfirm forces a signature with the wallet, which we don't want
+    // https://github.com/coral-xyz/anchor/blob/v0.30.0/ts/packages/anchor/src/provider.ts#L159
+    const wallet = this.getWallet();
+    const signedTx = await wallet.signTransaction(tx);
+    if (additionalSigners && additionalSigners.length > 0) {
+      signedTx.sign(additionalSigners);
     }
+    serializedTx = signedTx.serialize();
 
     const txSig = await txConnection.sendRawTransaction(serializedTx, {
       // skip simulation since we just did it to compute CUs
