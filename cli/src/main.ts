@@ -1102,22 +1102,19 @@ lst
 
 const meteora = program.command("meteora").description("Meteora DLMM");
 meteora
-  .command("init")
+  .command("init <pool>")
   .description("Initialize Meteora DLMM position")
-  .action(async () => {
-    const statePda = cliConfig.glam_state
-      ? new PublicKey(cliConfig.glam_state)
-      : null;
-
-    if (!statePda) {
+  .action(async (pool) => {
+    if (!cliConfig.glam_state) {
       console.error("GLAM state not found in config file");
       process.exit(1);
     }
 
     try {
-      const txSig = await glamClient.meteoraDlmm.initializePosition(statePda, {
-        simulate: !globalOpts.skipSimulation,
-      });
+      const txSig = await glamClient.meteoraDlmm.initializePosition(
+        cliConfig.glam_state,
+        pool,
+      );
       console.log(`Initialized Meteora DLMM position: ${txSig}`);
     } catch (e) {
       console.error(parseTxError(e));
@@ -1125,23 +1122,21 @@ meteora
     }
   });
 meteora
-  .command("add <position> <amount>")
+  .command("add <pool> <position> <amount> <strategy>")
   .description("Add liquidity to position")
-  .action(async (position, amount) => {
-    const statePda = cliConfig.glam_state
-      ? new PublicKey(cliConfig.glam_state)
-      : null;
-
-    if (!statePda) {
+  .action(async (pool, position, amount, strategy) => {
+    if (!cliConfig.glam_state) {
       console.error("GLAM state not found in config file");
       process.exit(1);
     }
 
     try {
       const txSig = await glamClient.meteoraDlmm.addLiquidity(
-        statePda,
-        new PublicKey(position),
+        cliConfig.glam_state,
+        pool,
+        position,
         new anchor.BN(amount),
+        strategy.toString(),
       );
       console.log(`Added liquidity to ${position}:`, txSig);
     } catch (e) {
@@ -1150,23 +1145,20 @@ meteora
     }
   });
 meteora
-  .command("remove <position>")
+  .command("remove <pool> <position> <bps>")
   .description("Remove liquidity from position")
-  .action(async (position) => {
-    const statePda = cliConfig.glam_state
-      ? new PublicKey(cliConfig.glam_state)
-      : null;
-
-    if (!statePda) {
+  .action(async (pool, position, bps) => {
+    if (!cliConfig.glam_state) {
       console.error("GLAM state not found in config file");
       process.exit(1);
     }
 
     try {
       const txSig = await glamClient.meteoraDlmm.removeLiquidity(
-        statePda,
-        new PublicKey(position),
-        10000,
+        cliConfig.glam_state,
+        pool,
+        position,
+        bps,
       );
       console.log(`Removed liquidity from ${position}:`, txSig);
     } catch (e) {
@@ -1175,22 +1167,19 @@ meteora
     }
   });
 meteora
-  .command("claim <position>")
+  .command("claim <pool> <position>")
   .description("Claim fee")
-  .action(async (position) => {
-    const statePda = cliConfig.glam_state
-      ? new PublicKey(cliConfig.glam_state)
-      : null;
-
-    if (!statePda) {
+  .action(async (pool, position) => {
+    if (!cliConfig.glam_state) {
       console.error("GLAM state not found in config file");
       process.exit(1);
     }
 
     try {
       const txSig = await glamClient.meteoraDlmm.claimFee(
-        statePda,
-        new PublicKey(position),
+        cliConfig.glam_state,
+        pool,
+        position,
       );
       console.log(`Claimed fee from ${position}:`, txSig);
     } catch (e) {
@@ -1199,24 +1188,19 @@ meteora
     }
   });
 meteora
-  .command("close <position>")
+  .command("close <pool> <position>")
   .description("Close a Meteora DLMM position")
-  .action(async (position) => {
-    const statePda = cliConfig.glam_state
-      ? new PublicKey(cliConfig.glam_state)
-      : null;
-
-    if (!statePda) {
+  .action(async (pool, position) => {
+    if (!cliConfig.glam_state) {
       console.error("GLAM state not found in config file");
       process.exit(1);
     }
+
     try {
       const txSig = await glamClient.meteoraDlmm.closePosition(
-        statePda,
+        cliConfig.glam_state,
+        pool,
         position,
-        {
-          simulate: !globalOpts.skipSimulation,
-        },
       );
       console.log(`Closed Meteora DLMM position: ${txSig}`);
     } catch (e) {
