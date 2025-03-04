@@ -270,6 +270,9 @@ export class MeteoraDlmmClient {
   async parsePosition(position: PublicKey) {
     const positionAccountInfo =
       await this.base.provider.connection.getAccountInfo(position);
+    if (!positionAccountInfo) {
+      throw new Error("Position not found");
+    }
     const positionData = positionAccountInfo.data;
 
     const lbPair = new PublicKey(positionData.subarray(8, 40));
