@@ -85,16 +85,15 @@ export class MeteoraDlmmClient {
 
   public async addLiquidity(
     statePda: PublicKey | string,
-    pool: PublicKey | string,
     position: PublicKey | string,
     amountX: BN | number,
     strategyType: keyof typeof Strategy,
     txOptions: TxOptions = {},
   ) {
-    const dlmmPool = await this.getDlmmPool(pool);
-    const { minBinId, maxBinId, binArrayLower, binArrayUpper } =
-      await this.minMaxBinsData(dlmmPool, new PublicKey(position));
+    const { lbPair, lowerBinId, upperBinId, binArrayLower, binArrayUpper } =
+      await this.parsePosition(new PublicKey(position));
 
+    const dlmmPool = await this.getDlmmPool(lbPair);
     const { amountY, activeBinId } = await this.getAmounts(
       dlmmPool,
       new BN(amountX),
@@ -116,8 +115,8 @@ export class MeteoraDlmmClient {
       activeId: activeBinId,
       maxActiveBinSlippage: 20,
       strategyParameters: {
-        minBinId,
-        maxBinId,
+        minBinId: lowerBinId,
+        maxBinId: upperBinId,
         strategyType: Strategy[strategyType],
         parameteres: Array(64).fill(0),
       },
@@ -127,7 +126,7 @@ export class MeteoraDlmmClient {
       .accounts({
         glamState,
         position: new PublicKey(position),
-        lbPair: new PublicKey(pool),
+        lbPair,
         binArrayBitmapExtension: dlmmPool.binArrayBitmapExtension
           ? dlmmPool.binArrayBitmapExtension.publicKey
           : METEORA_DLMM,
@@ -151,14 +150,13 @@ export class MeteoraDlmmClient {
 
   public async removeLiquidity(
     statePda: PublicKey | string,
-    pool: PublicKey | string,
     position: PublicKey | string,
     bpsToRemove: number,
     txOptions: TxOptions = {},
   ) {
-    const dlmmPool = await this.getDlmmPool(pool);
-    const { minBinId, maxBinId, binArrayLower, binArrayUpper } =
-      await this.minMaxBinsData(dlmmPool, new PublicKey(position));
+    const { lbPair, lowerBinId, upperBinId, binArrayLower, binArrayUpper } =
+      await this.parsePosition(new PublicKey(position));
+    const dlmmPool = await this.getDlmmPool(lbPair);
 
     const glamState = new PublicKey(statePda);
     const vaultTokenXAta = this.base.getVaultAta(
@@ -171,11 +169,11 @@ export class MeteoraDlmmClient {
     );
 
     const tx = await this.base.program.methods
-      .meteoraDlmmRemoveLiquidityByRange(minBinId, maxBinId, bpsToRemove)
+      .meteoraDlmmRemoveLiquidityByRange(lowerBinId, upperBinId, bpsToRemove)
       .accounts({
         glamState,
         position: new PublicKey(position),
-        lbPair: new PublicKey(pool),
+        lbPair,
         binArrayBitmapExtension: dlmmPool.binArrayBitmapExtension
           ? dlmmPool.binArrayBitmapExtension.publicKey
           : METEORA_DLMM,
@@ -199,15 +197,13 @@ export class MeteoraDlmmClient {
 
   public async claimFee(
     statePda: PublicKey | string,
-    pool: PublicKey | string,
     position: PublicKey | string,
     txOptions: TxOptions = {},
   ) {
-    const dlmmPool = await this.getDlmmPool(pool);
-    const { binArrayLower, binArrayUpper } = await this.minMaxBinsData(
-      dlmmPool,
+    const { lbPair, binArrayLower, binArrayUpper } = await this.parsePosition(
       new PublicKey(position),
     );
+    const dlmmPool = await this.getDlmmPool(lbPair);
 
     const glamState = new PublicKey(statePda);
     const vaultTokenXAta = this.base.getVaultAta(
@@ -224,7 +220,7 @@ export class MeteoraDlmmClient {
       .accounts({
         glamState,
         position: new PublicKey(position),
-        lbPair: new PublicKey(pool),
+        lbPair,
         binArrayLower,
         binArrayUpper,
         reserveX: dlmmPool.tokenX.reserve,
@@ -245,13 +241,10 @@ export class MeteoraDlmmClient {
 
   public async closePosition(
     statePda: PublicKey | string,
-    pool: PublicKey | string,
     position: PublicKey | string,
     txOptions: TxOptions = {},
   ): Promise<TransactionSignature> {
-    const dlmmPool = await this.getDlmmPool(pool);
-    const { binArrayLower, binArrayUpper } = await this.minMaxBinsData(
-      dlmmPool,
+    const { lbPair, binArrayLower, binArrayUpper } = await this.parsePosition(
       new PublicKey(position),
     );
     const glamState = new PublicKey(statePda);
@@ -261,7 +254,7 @@ export class MeteoraDlmmClient {
       .accounts({
         glamState,
         position: new PublicKey(position),
-        lbPair: new PublicKey(pool),
+        lbPair,
         binArrayLower,
         binArrayUpper,
         eventAuthority: EVENT_AUTHORITY,
@@ -274,29 +267,42 @@ export class MeteoraDlmmClient {
     return await this.base.sendAndConfirm(vTx);
   }
 
-  async minMaxBinsData(dlmmPool: DLMM, position: PublicKey) {
-    const lbPosition = await dlmmPool.getPosition(position);
-    const { lowerBinId: minBinId, upperBinId: maxBinId } =
-      lbPosition.positionData;
+  async parsePosition(position: PublicKey) {
+    const positionAccountInfo =
+      await this.base.provider.connection.getAccountInfo(position);
+    if (!positionAccountInfo) {
+      throw new Error("Position not found");
+    }
+    const positionData = positionAccountInfo.data;
 
-    const lowerBinArrayIndex = binIdToBinArrayIndex(new BN(minBinId));
+    const lbPair = new PublicKey(positionData.subarray(8, 40));
+    const lowerBinId = positionData.subarray(7912, 7916).readInt32LE();
+    const upperBinId = positionData.subarray(7916, 7920).readInt32LE();
+
+    const lowerBinArrayIndex = binIdToBinArrayIndex(new BN(lowerBinId));
     const [binArrayLower] = deriveBinArray(
-      SOL_USDC_MARKET,
+      lbPair,
       lowerBinArrayIndex,
       METEORA_DLMM,
     );
 
     const upperBinArrayIndex = BN.max(
       lowerBinArrayIndex.add(new BN(1)),
-      binIdToBinArrayIndex(new BN(maxBinId)),
+      binIdToBinArrayIndex(new BN(upperBinId)),
     );
     const [binArrayUpper] = deriveBinArray(
-      SOL_USDC_MARKET,
+      lbPair,
       upperBinArrayIndex,
       METEORA_DLMM,
     );
 
-    return { minBinId, maxBinId, binArrayLower, binArrayUpper };
+    return {
+      lowerBinId,
+      upperBinId,
+      binArrayLower,
+      binArrayUpper,
+      lbPair,
+    };
   }
 
   async getAmounts(dlmmPool: DLMM, amountX: BN) {
