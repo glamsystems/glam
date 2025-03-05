@@ -14,14 +14,19 @@ export class MintClient {
   public async getHolders(state: PublicKey, mintId: number = 0) {
     const mintPda = this.base.getMintPda(state, mintId);
     const connection = this.base.provider.connection;
-    const mint = await getMint(
-      connection,
-      mintPda,
-      connection.commitment,
-      TOKEN_2022_PROGRAM_ID,
-    );
+    let mint;
+    try {
+      mint = await getMint(
+        connection,
+        mintPda,
+        connection.commitment,
+        TOKEN_2022_PROGRAM_ID,
+      );
+    } catch (e) {
+      return [];
+    }
 
-    // Size of a glam share class with perment delegate extension enabled
+    // Size of a glam mint with perment delegate extension enabled
     const dataSize = 175;
     const accounts = await connection.getProgramAccounts(
       TOKEN_2022_PROGRAM_ID,

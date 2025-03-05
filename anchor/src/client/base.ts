@@ -688,10 +688,35 @@ export class BaseClient {
     );
   }
 
-  public async fetchAllGlamStates(): Promise<StateModel[]> {
+  /**
+   * Fetch all glam states if no filter options provided
+   *
+   * @param filterOptions
+   * @returns
+   */
+  public async fetchGlamStates(filterOptions?: {
+    owner?: PublicKey;
+    delegate?: PublicKey;
+    type?: string;
+  }): Promise<StateModel[]> {
+    const { owner, delegate, type } = filterOptions || {};
+
     const stateAccounts = await this.program.account.stateAccount.all();
     const openfundsMetadataAccounts =
       await this.program.account.openfundsMetadataAccount.all();
+
+    const filteredStateAccounts = stateAccounts
+      .filter((s) => !type || Object.keys(s.account.accountType)[0] === type)
+      .filter(
+        (s) =>
+          // if neither owner nor delegate is set, return all
+          // if owner is set, return states owned by the owner
+          // if delegate is set, return states with the delegate
+          (!owner && !delegate) ||
+          (owner && s.account.owner.equals(owner)) ||
+          (delegate &&
+            s.account.delegateAcls.some((acl) => acl.pubkey.equals(delegate))),
+      );
 
     let openfundsCache = new Map<string, OpenfundsMetadataAccount>();
     openfundsMetadataAccounts.forEach((of) => {
@@ -701,7 +726,7 @@ export class BaseClient {
     /* fetch first mint */
     let mintCache = new Map<string, Mint>();
     const connection = this.provider.connection;
-    const mintAddresses = stateAccounts
+    const mintAddresses = filteredStateAccounts
       .map((s) => s.account.mints[0])
       .filter((addr) => !!addr);
     const mintAccounts =
@@ -715,7 +740,7 @@ export class BaseClient {
       mintCache.set(mintAddresses[j].toBase58(), mintInfo);
     });
 
-    return stateAccounts.map((s) =>
+    return filteredStateAccounts.map((s) =>
       StateModel.fromOnchainAccounts(
         s.publicKey,
         s.account,

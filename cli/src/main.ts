@@ -74,8 +74,9 @@ program
   )
   .option("-o, --owner-only", "Only list products the wallet owns")
   .option("-a, --all", "All GLAM products")
+  .option("-t, --type <type>", "Filter by account type: vault, mint, or fund")
   .action(async (options) => {
-    const { ownerOnly, all } = options;
+    const { ownerOnly, all, type } = options;
     if (ownerOnly && all) {
       console.error(
         "Options '--owner-only' and '--all' cannot be used together.",
@@ -83,23 +84,15 @@ program
       process.exit(1);
     }
 
-    const states = await glamClient.fetchAllGlamStates();
     const signer = glamClient.getSigner();
+    const filterOptions = all
+      ? { type }
+      : ownerOnly
+        ? { owner: signer, type }
+        : { owner: signer, delegate: signer, type };
 
-    const filteredStates = states.filter((state) => {
-      if (all) {
-        return true;
-      } else if (ownerOnly) {
-        return state.owner.pubkey.equals(signer);
-      } else {
-        return (
-          state.owner.pubkey.equals(signer) ||
-          state.delegateAcls.some((acl) => acl.pubkey.equals(signer))
-        );
-      }
-    });
-
-    filteredStates
+    const states = await glamClient.fetchGlamStates(filterOptions);
+    states
       .sort((a, b) =>
         a.rawOpenfunds.fundLaunchDate > b.rawOpenfunds.fundLaunchDate ? -1 : 1,
       )
