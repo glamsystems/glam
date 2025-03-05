@@ -193,7 +193,7 @@ function getVaultToHoldings(
   (vault?.tokenAccounts || []).forEach(
     ({ mint, pubkey, amount, uiAmount, decimals }) => {
       const jupToken = jupTokenList?.find((t) => t.address === mint.toBase58());
-      const logoURI = jupToken?.logoURI || "";
+      const logoURI = jupToken?.logoURI || "/images/token-placeholder.svg";
       const name = jupToken?.name || "Unknown";
       const symbol = jupToken?.symbol || mint.toBase58();
       const price = prices?.find((p) => p.mint === mint.toBase58())?.price || 0;
