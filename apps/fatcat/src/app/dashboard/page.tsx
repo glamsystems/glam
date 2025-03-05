@@ -1,4 +1,3 @@
-// Dashboard.tsx
 "use client";
 
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -10,7 +9,7 @@ import { motion } from "framer-motion";
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground"></div>
+    <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
   </div>
 );
 

@@ -193,7 +193,7 @@ function getVaultToHoldings(
   (vault?.tokenAccounts || []).forEach(
     ({ mint, pubkey, amount, uiAmount, decimals }) => {
       const jupToken = jupTokenList?.find((t) => t.address === mint.toBase58());
-      const logoURI = jupToken?.logoURI || "";
+      const logoURI = jupToken?.logoURI || "/images/token-placeholder.svg";
       const name = jupToken?.name || "Unknown";
       const symbol = jupToken?.symbol || mint.toBase58();
       const price = prices?.find((p) => p.mint === mint.toBase58())?.price || 0;
@@ -530,7 +530,7 @@ export default function Holdings() {
       form: any,
     ) => {
       console.log(
-        `${action} ${asset.symbol} (${asset.address}), current balance:`,
+        `Setting amount for ${action} ${asset.symbol} (${asset.address}), current balance:`,
         asset.balance,
       );
 
@@ -645,9 +645,8 @@ export default function Holdings() {
         return;
       }
 
+      setTxStatus((prev) => ({ ...prev, withdraw: true }));
       try {
-        setTxStatus((prev) => ({ ...prev, withdraw: true }));
-
         const txId = await glamClient.state.withdraw(
           activeGlamState.pubkey,
           withdrawAsset.symbol === "SOL"
@@ -681,7 +680,7 @@ export default function Holdings() {
       }
       setTxStatus((prev) => ({ ...prev, withdraw: false }));
     },
-    [],
+    [activeGlamState, withdrawAsset, withdrawForm, userWallet],
   );
 
   return (

@@ -195,7 +195,7 @@ export function GlamProvider({
 
   const { data: glamStateModels } = useQuery({
     queryKey: ["/all-glam-states", activeGlamState?.pubkey, cluster.network],
-    queryFn: () => glamClient.fetchAllGlamStates(),
+    queryFn: () => glamClient.fetchGlamStates(),
   });
   useEffect(() => {
     if (!glamStateModels) return;

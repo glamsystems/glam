@@ -63,7 +63,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {loading ? (
-          <span className="mx-2 h-4 w-4 animate-spin border-2 border-t-transparent rounded-full" />
+          <span className="h-4 w-4 animate-spin border-2 border-t-transparent rounded-full" />
         ) : (
           children
         )}
