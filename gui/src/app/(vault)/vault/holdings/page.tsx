@@ -1,7 +1,7 @@
 "use client";
 
 import { DataTable } from "./components/data-table";
-import { columns } from "./components/columns";
+import { getColumns } from "./components/columns";
 import { Asset, AssetInput } from "@/components/AssetInput";
 import { useForm, SubmitHandler, FormProvider } from "react-hook-form";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
@@ -65,6 +65,7 @@ import { useTheme } from "next-themes";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TransferForm } from "./components/transfer-form";
 import { WrapForm } from "./components/wrap-form";
+import { UnwrapForm } from "./components/unwrap-form";
 import { Form } from "@/components/ui/form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -226,7 +227,7 @@ function getVaultToHoldings(
     holdings.push({
       name: `${marketIndex}`,
       symbol: market?.symbol || "",
-      mint: "",
+      mint: market?.mint || "",
       ata: "",
       price,
       amount: amount.toString(),
@@ -291,6 +292,7 @@ export default function Holdings() {
   const [isWithdrawSheetOpen, setIsWithdrawSheetOpen] = useState(false);
   const [isTransferSheetOpen, setIsTransferSheetOpen] = useState(false);
   const [isWrapSheetOpen, setIsWrapSheetOpen] = useState(false);
+  const [isUnwrapSheetOpen, setIsUnwrapSheetOpen] = useState(false);
 
   const [txStatus, setTxStatus] = useState({
     rename: false,
@@ -374,6 +376,8 @@ export default function Holdings() {
   const closeTransferSheet = () => setIsTransferSheetOpen(false);
   const openWrapSheet = () => setIsWrapSheetOpen(true);
   const closeWrapSheet = () => setIsWrapSheetOpen(false);
+  const openUnwrapSheet = () => setIsUnwrapSheetOpen(true);
+  const closeUnwrapSheet = () => setIsUnwrapSheetOpen(false);
 
   useEffect(() => {
     isDetailsSheetOpen ||
@@ -693,14 +697,13 @@ export default function Holdings() {
                 (d) => Math.abs(d.balance) * 1e9 > 0 || showZeroBalances,
               )
         }
-        columns={columns}
+        columns={getColumns(openWrapSheet, openUnwrapSheet)}
         showZeroBalances={showZeroBalances}
         setShowZeroBalances={setShowZeroBalances}
         onOpenDetailsSheet={openDetailsSheet}
         onOpenDepositSheet={openDepositSheet}
         onOpenWithdrawSheet={openWithdrawSheet}
         onOpenTransferSheet={openTransferSheet}
-        onOpenWrapSheet={openWrapSheet}
       />
       <Sheet
         open={isDetailsSheetOpen}
@@ -1065,14 +1068,35 @@ export default function Holdings() {
           className="p-12 sm:max-w-none w-2/5 overflow-y-auto max-h-screen"
         >
           <SheetHeader>
-            <SheetTitle>Wrap/Unwrap SOL</SheetTitle>
+            <SheetTitle>Wrap SOL</SheetTitle>
             <SheetDescription>
-              Wrap SOL into wSOL or unwrap wSOL back to SOL within your vault.
+              Wrap SOL into wSOL within your vault.
             </SheetDescription>
           </SheetHeader>
 
           <div className="py-6">
             <WrapForm onClose={() => setIsWrapSheetOpen(false)} />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={isUnwrapSheetOpen} onOpenChange={setIsUnwrapSheetOpen}>
+        <SheetTrigger asChild></SheetTrigger>
+        <SheetContent
+          side="right"
+          className="p-12 sm:max-w-none w-2/5 overflow-y-auto max-h-screen"
+        >
+          <SheetHeader>
+            <SheetTitle>Unwrap wSOL</SheetTitle>
+            <SheetDescription>
+              Unwrap wSOL into SOL within your vault. The vault will receive the
+              equivalent amount of SOL as well as any rent refund from closing
+              the wSOL token account.
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="py-6">
+            <UnwrapForm onClose={() => setIsUnwrapSheetOpen(false)} />
           </div>
         </SheetContent>
       </Sheet>

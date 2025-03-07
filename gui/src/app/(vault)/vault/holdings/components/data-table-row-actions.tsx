@@ -17,6 +17,7 @@ import TruncateAddress from "@/utils/TruncateAddress";
 import { useState } from "react";
 import {
   ArrowLeftRight,
+  ArrowUpDown,
   CheckIcon,
   CopyIcon,
   ExternalLinkIcon,
@@ -36,16 +37,21 @@ import {
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
+  openWrapSheet: () => void;
+  openUnwrapSheet: () => void;
 }
 
 export function DataTableRowActions<TData>({
   row,
+  openWrapSheet,
+  openUnwrapSheet,
 }: DataTableRowActionsProps<TData>) {
   const holding = holdingSchema.parse(row.original);
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
-  const { glamClient, activeGlamState, vault: vault, refresh } = useGlam();
+  const { glamClient, activeGlamState, vault, refresh, driftMarketConfigs } =
+    useGlam();
 
   const copyToClipboard = (
     e: React.MouseEvent,
@@ -62,6 +68,7 @@ export function DataTableRowActions<TData>({
 
   const closeAta = async (ata: string) => {
     if (!activeGlamState?.pubkey || !glamClient) {
+      console.error("[closeAta] glamClient or activeGlamState not found");
       return;
     }
 
@@ -86,6 +93,7 @@ export function DataTableRowActions<TData>({
 
   const unstake = async (mint: string, amount: BN) => {
     if (!activeGlamState?.pubkey || !glamClient) {
+      console.error("[unstake] glamClient or activeGlamState not found");
       return;
     }
 
@@ -104,6 +112,41 @@ export function DataTableRowActions<TData>({
     } catch (error: any) {
       toast({
         title: "Failed to unstake (stake pool)",
+        description: parseTxError(error),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const repay = async (mint: string, amount: number, decimals: number) => {
+    if (!activeGlamState?.pubkey || !glamClient) {
+      console.error("[repay] glamClient or activeGlamState not found");
+      return;
+    }
+
+    const market = driftMarketConfigs.spot.find((m) => m.mint === mint);
+    if (!market) {
+      console.error(`Drift spot market not found for mint: ${mint}`);
+      return;
+    }
+
+    try {
+      const txId = await glamClient.drift.deposit(
+        activeGlamState.pubkey,
+        new BN(amount * 10 ** decimals),
+        market.marketIndex,
+        0,
+        driftMarketConfigs,
+        { getPriorityFeeMicroLamports, maxFeeLamports: getMaxCapFeeLamports() },
+      );
+      toast({
+        title: `Paid off ${amount} ${market.symbol} successfully`,
+        description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
+      });
+      await refresh();
+    } catch (error: any) {
+      toast({
+        title: `Failed to repay ${amount} ${market.symbol}`,
         description: parseTxError(error),
         variant: "destructive",
       });
@@ -171,9 +214,7 @@ export function DataTableRowActions<TData>({
           <>
             <DropdownMenuItem
               className="cursor-pointer"
-              onClick={async (e) => {
-                router.push("/vault/trade");
-              }}
+              onClick={async (e) => router.push("/vault/trade")}
             >
               Swap
               <DropdownMenuShortcut>
@@ -187,12 +228,12 @@ export function DataTableRowActions<TData>({
           <>
             <DropdownMenuItem
               className="cursor-pointer"
-              onClick={async (e) => {
-                await unstake(
+              onClick={async (e) =>
+                unstake(
                   holding.mint,
                   new BN(holding.balance * 10 ** holding.decimals),
-                );
-              }}
+                )
+              }
             >
               Unstake all
               <DropdownMenuShortcut>
@@ -202,12 +243,34 @@ export function DataTableRowActions<TData>({
           </>
         )}
 
+        {holding.location === "vault" && holding.symbol === "SOL" && (
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={async (e) => openWrapSheet()}
+          >
+            Wrap
+            <DropdownMenuShortcut>
+              <ArrowUpDown className="h-4 w-4" />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+        )}
+
+        {holding.location === "vault" && holding.symbol === "wSOL" && (
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={async (e) => openUnwrapSheet()}
+          >
+            Unwrap
+            <DropdownMenuShortcut>
+              <ArrowUpDown className="h-4 w-4" />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+        )}
+
         {holding.location === "vault" && holding.balance == 0 && (
           <DropdownMenuItem
             className="cursor-pointer"
-            onClick={async (e) => {
-              await closeAta(holding.ata);
-            }}
+            onClick={async (e) => closeAta(holding.ata)}
           >
             Close
             <DropdownMenuShortcut>
@@ -228,6 +291,19 @@ export function DataTableRowActions<TData>({
               </DropdownMenuShortcut>
             </DropdownMenuItem>
           </Link>
+        )}
+        {holding.location === "drift" && holding.balance < 0 && (
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={async (e) =>
+              repay(holding.mint, holding.balance, holding.decimals)
+            }
+          >
+            Repay
+            <DropdownMenuShortcut>
+              <ArrowLeftRight className="h-4 w-4" />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
         )}
       </DropdownMenuContent>
     </DropdownMenu>

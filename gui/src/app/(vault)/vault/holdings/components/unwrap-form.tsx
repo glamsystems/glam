@@ -8,51 +8,49 @@ import React, { useEffect, useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/use-toast";
-import { useGlam } from "@glamsystems/glam-sdk/react";
-import { BN } from "@coral-xyz/anchor";
+import { useGlam, WSOL } from "@glamsystems/glam-sdk/react";
 import { ExplorerLink } from "@/components/ExplorerLink";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { parseTxError } from "@/lib/error";
 import {
   getMaxCapFeeLamports,
   getPriorityFeeMicroLamports,
 } from "@/app/(shared)/settings/priorityfee";
 
-const wrapSchema = z.object({
+const unwrapSchema = z.object({
   amount: z.number().nonnegative(),
   amountAsset: z.string(),
 });
 
-type WrapSchema = z.infer<typeof wrapSchema>;
+type UnwrapSchema = z.infer<typeof unwrapSchema>;
 
-interface WrapFormProps {
+interface UnwrapFormProps {
   onClose: () => void;
 }
 
-export function WrapForm({ onClose }: WrapFormProps) {
+export function UnwrapForm({ onClose }: UnwrapFormProps) {
   const { activeGlamState, vault, userWallet, glamClient, refresh } = useGlam();
 
-  const [displayBalance, setDisplayBalance] = useState<number>(NaN);
-  const [solBalance, setSolBalance] = useState<number>(NaN);
+  const [wSolBalance, setWSolBalance] = useState<number>(NaN);
   const [isTxPending, setIsTxPending] = useState<boolean>(false);
 
-  const form = useForm<WrapSchema>({
-    resolver: zodResolver(wrapSchema),
+  const form = useForm<UnwrapSchema>({
+    resolver: zodResolver(unwrapSchema),
     defaultValues: {
       amount: 0,
-      amountAsset: "SOL",
+      amountAsset: "wSOL",
     },
   });
 
   useEffect(() => {
     if (activeGlamState?.pubkey && vault) {
-      const solBalance = vault?.uiAmount || NaN;
-      setSolBalance(solBalance);
-      setDisplayBalance(solBalance);
+      const wSolBalance =
+        vault?.tokenAccounts?.find((ta) => ta.mint.equals(WSOL))?.uiAmount || 0;
+      setWSolBalance(wSolBalance);
     }
   }, [activeGlamState, vault, glamClient]);
 
-  const onSubmit: SubmitHandler<WrapSchema> = async (values, _event) => {
+  const onSubmit: SubmitHandler<UnwrapSchema> = async (values, _event) => {
+    console.log(values);
     if (values.amount === 0) {
       toast({
         title: "Please enter an amount greater than 0.",
@@ -71,7 +69,7 @@ export function WrapForm({ onClose }: WrapFormProps) {
 
     if (!activeGlamState?.pubkey) {
       toast({
-        title: "Vault not found for the connected wallet.",
+        title: "Fund not found for the connected wallet.",
         variant: "destructive",
       });
       return;
@@ -79,17 +77,12 @@ export function WrapForm({ onClose }: WrapFormProps) {
 
     setIsTxPending(true);
     try {
-      const txId = await glamClient.wsol.wrap(
-        activeGlamState.pubkey,
-        new BN(values.amount * LAMPORTS_PER_SOL),
-        {
-          getPriorityFeeMicroLamports,
-          maxFeeLamports: getMaxCapFeeLamports(),
-        },
-      );
-
+      const txId = await glamClient.wsol.unwrap(activeGlamState.pubkey, {
+        getPriorityFeeMicroLamports,
+        maxFeeLamports: getMaxCapFeeLamports(),
+      });
       toast({
-        title: `Successful wrapped ${values.amount} SOL`,
+        title: `Successful unwrapped wSOL`,
         description: <ExplorerLink path={`tx/${txId}`} label={txId} />,
       });
 
@@ -97,7 +90,7 @@ export function WrapForm({ onClose }: WrapFormProps) {
       onClose();
     } catch (error) {
       toast({
-        title: "Failed to wrap SOL",
+        title: `Failed to unwrap wSOL`,
         description: parseTxError(error),
         variant: "destructive",
       });
@@ -105,11 +98,6 @@ export function WrapForm({ onClose }: WrapFormProps) {
     setIsTxPending(false);
 
     await refresh(); // refresh vault
-  };
-
-  const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    form.reset();
   };
 
   return (
@@ -121,27 +109,22 @@ export function WrapForm({ onClose }: WrapFormProps) {
               className="w-full"
               name="amount"
               label="Amount"
-              assets={[{ name: "SOL", symbol: "SOL", balance: solBalance }]}
-              balance={displayBalance}
-              selectedAsset={"SOL"}
+              assets={[{ name: "wSOL", symbol: "wSOL", balance: wSolBalance }]}
+              balance={wSolBalance}
+              selectedAsset={"wSOL"}
               disableAssetChange={true}
+              disableAmountInput={true}
+              useMaxAmount={true}
             />
           </div>
 
           <div className="flex space-x-4 w-full">
             <Button
-              className="w-1/2"
-              variant="ghost"
-              onClick={(event) => handleClear(event)}
-            >
-              Clear
-            </Button>
-            <Button
-              className="w-1/2 capitalize"
+              className="w-full capitalize"
               type="submit"
               loading={isTxPending}
             >
-              Wrap
+              Unwrap
             </Button>
           </div>
         </form>

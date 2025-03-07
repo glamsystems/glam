@@ -3,15 +3,9 @@
 import {
   Cross2Icon,
   MixerHorizontalIcon,
-  PlusIcon,
-  ReloadIcon,
   OpenInNewWindowIcon,
-  ExitIcon,
-  ArrowRightIcon,
   ExternalLinkIcon,
   LoopIcon,
-  LayersIcon,
-  MarginIcon,
 } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
 
@@ -38,7 +32,6 @@ interface DataTableToolbarProps<TData> {
   onOpenDepositSheet: () => void;
   onOpenWithdrawSheet: () => void;
   onOpenTransferSheet: () => void;
-  onOpenWrapSheet: () => void;
 }
 
 export function DataTableToolbar<TData>({
@@ -49,7 +42,6 @@ export function DataTableToolbar<TData>({
   onOpenDepositSheet,
   onOpenWithdrawSheet,
   onOpenTransferSheet,
-  onOpenWrapSheet,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
   const { refresh } = useGlam();
@@ -91,10 +83,6 @@ export function DataTableToolbar<TData>({
         >
           <LoopIcon className="w-4 h-4" />
           <span className="hidden xl:block">Transfer</span>
-        </Button>
-        <Button size="sm" className="h-8 space-x-2" onClick={onOpenWrapSheet}>
-          <MarginIcon className="w-4 h-4" />
-          <span className="hidden xl:block">Wrap</span>
         </Button>
 
         <Input
