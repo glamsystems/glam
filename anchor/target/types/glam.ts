@@ -582,6 +582,9 @@ export type Glam = {
           "signer": true
         },
         {
+          "name": "stake"
+        },
+        {
           "name": "clock",
           "address": "SysvarC1ock11111111111111111111111111111111"
         },
@@ -6590,6 +6593,9 @@ export type Glam = {
           "name": "glamSigner",
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "stake"
         },
         {
           "name": "clock",

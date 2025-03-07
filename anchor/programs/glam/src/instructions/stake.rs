@@ -117,6 +117,7 @@ pub struct DeactivateStakeAccounts<'info> {
     #[account(mut)]
     pub glam_signer: Signer<'info>,
 
+    /// CHECK: checked by stake program
     pub stake: AccountInfo<'info>,
     pub clock: Sysvar<'info, Clock>,
     pub stake_program: Program<'info, Stake>,
@@ -170,6 +171,7 @@ pub struct WithdrawFromStakeAccounts<'info> {
     #[account(mut)]
     pub glam_signer: Signer<'info>,
 
+    /// CHECK: checked by stake program
     pub stake: AccountInfo<'info>,
     pub clock: Sysvar<'info, Clock>,
     pub stake_history: Sysvar<'info, StakeHistory>,
