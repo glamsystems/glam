@@ -704,7 +704,6 @@ export default function Holdings() {
         onOpenDepositSheet={openDepositSheet}
         onOpenWithdrawSheet={openWithdrawSheet}
         onOpenTransferSheet={openTransferSheet}
-        onOpenWrapSheet={openWrapSheet}
       />
       <Sheet
         open={isDetailsSheetOpen}
@@ -1090,7 +1089,9 @@ export default function Holdings() {
           <SheetHeader>
             <SheetTitle>Unwrap wSOL</SheetTitle>
             <SheetDescription>
-              Unwrap wSOL into SOL within your vault.
+              Unwrap wSOL into SOL within your vault. The vault will receive the
+              equivalent amount of SOL as well as any rent refund from closing
+              the wSOL token account.
             </SheetDescription>
           </SheetHeader>
 
