@@ -17,6 +17,7 @@ import TruncateAddress from "@/utils/TruncateAddress";
 import { useState } from "react";
 import {
   ArrowLeftRight,
+  ArrowUpDown,
   CheckIcon,
   CopyIcon,
   ExternalLinkIcon,
@@ -36,10 +37,14 @@ import {
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
+  openWrapSheet: () => void;
+  openUnwrapSheet: () => void;
 }
 
 export function DataTableRowActions<TData>({
   row,
+  openWrapSheet,
+  openUnwrapSheet,
 }: DataTableRowActionsProps<TData>) {
   const holding = holdingSchema.parse(row.original);
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
@@ -200,6 +205,30 @@ export function DataTableRowActions<TData>({
               </DropdownMenuShortcut>
             </DropdownMenuItem>
           </>
+        )}
+
+        {holding.location === "vault" && holding.symbol === "SOL" && (
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={async (e) => openWrapSheet()}
+          >
+            Wrap
+            <DropdownMenuShortcut>
+              <ArrowUpDown className="h-4 w-4" />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+        )}
+
+        {holding.location === "vault" && holding.symbol === "wSOL" && (
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={async (e) => openUnwrapSheet()}
+          >
+            Unwrap
+            <DropdownMenuShortcut>
+              <ArrowUpDown className="h-4 w-4" />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
         )}
 
         {holding.location === "vault" && holding.balance == 0 && (
