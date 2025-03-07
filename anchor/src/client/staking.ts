@@ -597,6 +597,10 @@ export class StakingClient {
     stakeAccounts: PublicKey[],
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
+    if (stakeAccounts.length < 1) {
+      throw new Error("At least one stake account is required");
+    }
+
     const glamSigner = txOptions.signer || this.base.getSigner();
     const glamVault = this.base.getVaultPda(glamState);
     const tx = await this.base.program.methods
@@ -605,11 +609,12 @@ export class StakingClient {
         glamState,
         glamSigner,
         glamVault,
+        stake: stakeAccounts[0],
         clock: SYSVAR_CLOCK_PUBKEY,
         stakeProgram: StakeProgram.programId,
       })
       .remainingAccounts(
-        stakeAccounts.map((a) => ({
+        stakeAccounts.slice(1).map((a) => ({
           pubkey: a,
           isSigner: false,
           isWritable: true,
@@ -625,6 +630,10 @@ export class StakingClient {
     stakeAccounts: PublicKey[],
     txOptions: TxOptions = {},
   ): Promise<VersionedTransaction> {
+    if (stakeAccounts.length < 1) {
+      throw new Error("At least one stake account is required");
+    }
+
     const glamSigner = txOptions.signer || this.base.getSigner();
     const glamVault = this.base.getVaultPda(glamState);
     const tx = await this.base.program.methods
@@ -633,12 +642,13 @@ export class StakingClient {
         glamSigner,
         glamState,
         glamVault,
+        stake: stakeAccounts[0],
         clock: SYSVAR_CLOCK_PUBKEY,
         stakeHistory: SYSVAR_STAKE_HISTORY_PUBKEY,
         stakeProgram: StakeProgram.programId,
       })
       .remainingAccounts(
-        stakeAccounts.map((a) => ({
+        stakeAccounts.slice(1).map((a) => ({
           pubkey: a,
           isSigner: false,
           isWritable: true,

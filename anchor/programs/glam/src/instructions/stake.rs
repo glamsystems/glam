@@ -118,6 +118,7 @@ pub struct DeactivateStakeAccounts<'info> {
     pub glam_signer: Signer<'info>,
 
     /// CHECK: checked by stake program
+    #[account(mut)]
     pub stake: AccountInfo<'info>,
     pub clock: Sysvar<'info, Clock>,
     pub stake_program: Program<'info, Stake>,
@@ -145,7 +146,7 @@ pub fn deactivate_stake_accounts_handler<'info>(
     ))?;
 
     // Deactivate the remaining stake accounts
-    ctx.remaining_accounts.iter().for_each(|stake_account| {
+    ctx.remaining_accounts.iter().try_for_each(|stake_account| {
         let cpi_ctx = CpiContext::new_with_signer(
             ctx.accounts.stake_program.to_account_info(),
             DeactivateStake {
@@ -155,9 +156,8 @@ pub fn deactivate_stake_accounts_handler<'info>(
             },
             glam_vault_signer_seeds,
         );
-        let _ = deactivate_stake(cpi_ctx);
-    });
-    Ok(())
+        deactivate_stake(cpi_ctx)
+    })
 }
 
 #[derive(Accounts)]
@@ -172,6 +172,7 @@ pub struct WithdrawFromStakeAccounts<'info> {
     pub glam_signer: Signer<'info>,
 
     /// CHECK: checked by stake program
+    #[account(mut)]
     pub stake: AccountInfo<'info>,
     pub clock: Sysvar<'info, Clock>,
     pub stake_history: Sysvar<'info, StakeHistory>,
@@ -191,6 +192,10 @@ pub fn withdraw_from_stake_accounts_handler<'info>(
     let state = &mut ctx.accounts.glam_state;
 
     // Withdraw from the stake account
+    state.delete_from_engine_field(
+        EngineFieldName::ExternalVaultAccounts,
+        ctx.accounts.stake.key(),
+    );
     let lamports = ctx.accounts.stake.get_lamports();
     withdraw(
         CpiContext::new_with_signer(
@@ -207,13 +212,10 @@ pub fn withdraw_from_stake_accounts_handler<'info>(
         lamports,
         None,
     )?;
-    state.delete_from_engine_field(
-        EngineFieldName::ExternalVaultAccounts,
-        ctx.accounts.stake.key(),
-    );
 
     // Withdraw from the remaining stake accounts
-    ctx.remaining_accounts.iter().for_each(|stake_account| {
+    ctx.remaining_accounts.iter().try_for_each(|stake_account| {
+        state.delete_from_engine_field(EngineFieldName::ExternalVaultAccounts, stake_account.key());
         let lamports = stake_account.get_lamports();
         let cpi_ctx = CpiContext::new_with_signer(
             ctx.accounts.stake_program.to_account_info(),
@@ -226,11 +228,8 @@ pub fn withdraw_from_stake_accounts_handler<'info>(
             },
             glam_vault_signer_seeds,
         );
-        let _ = withdraw(cpi_ctx, lamports, None);
-        state.delete_from_engine_field(EngineFieldName::ExternalVaultAccounts, stake_account.key());
-    });
-
-    Ok(())
+        withdraw(cpi_ctx, lamports, None)
+    })
 }
 
 #[derive(Accounts)]

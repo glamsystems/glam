@@ -367,25 +367,25 @@ pub fn marinade_claim<'info>(ctx: Context<'_, '_, '_, 'info, MarinadeClaim<'info
     ))?;
 
     // Process any remaining ticket accounts
-    for remaining_ticket in ctx.remaining_accounts {
-        glam_state.delete_from_engine_field(
-            EngineFieldName::ExternalVaultAccounts,
-            remaining_ticket.key(),
-        );
+    ctx.remaining_accounts
+        .iter()
+        .try_for_each(|remaining_ticket| {
+            glam_state.delete_from_engine_field(
+                EngineFieldName::ExternalVaultAccounts,
+                remaining_ticket.key(),
+            );
 
-        marinade::cpi::claim(CpiContext::new_with_signer(
-            ctx.accounts.cpi_program.to_account_info(),
-            marinade::cpi::accounts::Claim {
-                state: ctx.accounts.state.to_account_info(),
-                reserve_pda: ctx.accounts.reserve_pda.to_account_info(),
-                ticket_account: remaining_ticket.clone(),
-                transfer_sol_to: ctx.accounts.glam_vault.to_account_info(),
-                clock: ctx.accounts.clock.to_account_info(),
-                system_program: ctx.accounts.system_program.to_account_info(),
-            },
-            glam_vault_signer_seeds,
-        ))?;
-    }
-
-    Ok(())
+            marinade::cpi::claim(CpiContext::new_with_signer(
+                ctx.accounts.cpi_program.to_account_info(),
+                marinade::cpi::accounts::Claim {
+                    state: ctx.accounts.state.to_account_info(),
+                    reserve_pda: ctx.accounts.reserve_pda.to_account_info(),
+                    ticket_account: remaining_ticket.clone(),
+                    transfer_sol_to: ctx.accounts.glam_vault.to_account_info(),
+                    clock: ctx.accounts.clock.to_account_info(),
+                    system_program: ctx.accounts.system_program.to_account_info(),
+                },
+                glam_vault_signer_seeds,
+            ))
+        })
 }

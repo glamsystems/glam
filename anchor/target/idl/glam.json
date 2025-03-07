@@ -576,7 +576,8 @@
           "signer": true
         },
         {
-          "name": "stake"
+          "name": "stake",
+          "writable": true
         },
         {
           "name": "clock",
@@ -6589,7 +6590,8 @@
           "signer": true
         },
         {
-          "name": "stake"
+          "name": "stake",
+          "writable": true
         },
         {
           "name": "clock",
