@@ -227,7 +227,7 @@ function getVaultToHoldings(
     holdings.push({
       name: `${marketIndex}`,
       symbol: market?.symbol || "",
-      mint: "",
+      mint: market?.mint || "",
       ata: "",
       price,
       amount: amount.toString(),
