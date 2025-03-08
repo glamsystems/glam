@@ -350,33 +350,35 @@ export function GlamProvider({
   const { data: marketConfigs } = useQuery({
     queryKey: ["drift-market-configs"],
     enabled: cluster.network === "mainnet-beta",
-    queryFn: async () => {
-      const response = await fetch(
-        "https://api.glam.systems/v0/drift/market_configs/",
-      );
-      const data = await response.json();
-      return data;
-    },
+    queryFn: () => glamClient.drift.fetchMarketConfigs(),
     staleTime: 1000 * 60 * 60, // 1 hour
   });
-  useEffect(() => setDriftMarketConfigs(marketConfigs), [marketConfigs]);
+  useEffect(() => {
+    if (marketConfigs) {
+      setDriftMarketConfigs(marketConfigs);
+    }
+  }, [marketConfigs]);
 
   //
-  // Fetch drift positions
+  // Fetch drift user
   //
-  const { data: driftUserData, refetch: refetchDriftUser } = useQuery({
-    queryKey: ["/drift-positions", vault?.pubkey],
-    enabled: !!vault,
+  const {
+    data: driftUserData,
+    error: driftUserError,
+    refetch: refetchDriftUser,
+  } = useQuery({
+    queryKey: ["/drift-user", activeGlamState?.pubkey],
+    enabled: !!activeGlamState,
     refetchInterval: 30 * 1000,
-    queryFn: () => {
-      return fetch(
-        `https://api.glam.systems/v0/drift/user?authority=${vault?.pubkey.toBase58()}&accountId=0`,
-      ).then((res) => res.json());
-    },
+    queryFn: () => glamClient.drift.fetchGlamDriftUser(activeGlamState?.pubkey),
   });
   useEffect(() => {
-    setDriftUser(driftUserData || {});
-  }, [driftUserData, activeGlamState]);
+    if (!driftUserError && driftUserData) {
+      setDriftUser(driftUserData);
+    } else {
+      setDriftUser({} as GlamDriftUser);
+    }
+  }, [driftUserData, driftUserError]);
 
   const value: GlamProviderContext = {
     glamClient,

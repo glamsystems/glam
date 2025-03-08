@@ -278,16 +278,34 @@ export class DriftClient {
     ];
   }
 
+  public async fetchMarketConfigs(): Promise<DriftMarketConfigs> {
+    const response = await fetch(
+      "https://api.glam.systems/v0/drift/market_configs/",
+    );
+    if (!response.ok) {
+      throw new Error(`Failed to fetch market configs: ${response.status}`);
+    }
+    const data = await response.json();
+    return data as DriftMarketConfigs;
+  }
+
   public async fetchGlamDriftUser(
     glamState: PublicKey,
     subAccountId: number = 0,
-  ): Promise<GlamDriftUser | null> {
+  ): Promise<GlamDriftUser> {
     const vault = this.base.getVaultPda(glamState);
     const response = await fetch(
       `https://api.glam.systems/v0/drift/user?authority=${vault.toBase58()}&accountId=${subAccountId}`,
     );
     const data = await response.json();
-    return (data as GlamDriftUser) || null;
+    if (!data) {
+      console.log(
+        "Failed to fetch drift user for glam state",
+        glamState.toBase58(),
+      );
+      throw new Error("Failed to fetch drift user.");
+    }
+    return data as GlamDriftUser;
   }
 
   async getPositions(statePda: PublicKey, subAccountId: number = 0) {
@@ -601,8 +619,9 @@ export class DriftClient {
     const preInstructions = [];
 
     // If drift user doesn't exist, prepend initializeUserStats and initializeUser instructions
-    const data = await this.fetchGlamDriftUser(glamState, subAccountId);
-    if (!data) {
+    try {
+      await this.fetchGlamDriftUser(glamState, subAccountId);
+    } catch (_) {
       preInstructions.push(
         await this.initializeUserStatsIx(glamState, glamSigner),
         await this.initializeUserIx(glamState, glamSigner, subAccountId),
