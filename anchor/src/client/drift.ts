@@ -266,6 +266,14 @@ export class DriftClient {
     return await this.base.sendAndConfirm(tx);
   }
 
+  public async balanceValueUsd(
+    statePda: PublicKey,
+    txOptions: TxOptions = {},
+  ): Promise<TransactionSignature> {
+    const tx = await this.balanceValueUsdTx(statePda, txOptions);
+    return await this.base.sendAndConfirm(tx);
+  }
+
   /*
    * Utils
    */
@@ -616,6 +624,14 @@ export class DriftClient {
     const { mint, oracle, marketPDA, vaultPDA } =
       marketConfigs.spot[marketIndex];
 
+    console.log(
+      "mint, oracle, marketPDA, vaultPDA",
+      mint,
+      oracle,
+      marketPDA,
+      vaultPDA,
+    );
+
     const preInstructions = [];
 
     // If drift user doesn't exist, prepend initializeUserStats and initializeUser instructions
@@ -851,6 +867,50 @@ export class DriftClient {
         glamState,
         glamSigner,
         user,
+        state: driftState,
+      })
+      .remainingAccounts(remainingAccounts)
+      .transaction();
+
+    return await this.base.intoVersionedTransaction(tx, txOptions);
+  }
+
+  public async balanceValueUsdTx(
+    glamState: PublicKey,
+    txOptions: TxOptions = {},
+  ): Promise<VersionedTransaction> {
+    const signer = txOptions.signer || this.base.getSigner();
+    const [user, userStats] = this.getUser(glamState);
+    const driftState = await getDriftStateAccountPublicKey(DRIFT_PROGRAM_ID);
+
+    const oracles = [
+      "3m6i4RFWEDw2Ft4tFHPJtYgmpPe21k56M3FHeWYrgGBz",
+      "3m6i4RFWEDw2Ft4tFHPJtYgmpPe21k56M3FHeWYrgGBz",
+    ];
+    const markets = [
+      "3x85u7SWkmmr7YQGYhtjARgxwegTLJgkSLRprfXod6rh",
+      "8UJgxaiQx5nTrdDgph5FiahMmzduuLTLf5WmsPegYA6W",
+    ];
+    const remainingAccounts = oracles
+      .map((o) => ({
+        pubkey: new PublicKey(o),
+        isWritable: false,
+        isSigner: false,
+      }))
+      .concat(
+        markets.map((m) => ({
+          pubkey: new PublicKey(m),
+          isWritable: true,
+          isSigner: false,
+        })),
+      );
+    const tx = await this.base.program.methods
+      .driftBalanceValueUsd()
+      .accounts({
+        glamState,
+        signer,
+        user,
+        userStats,
         state: driftState,
       })
       .remainingAccounts(remainingAccounts)

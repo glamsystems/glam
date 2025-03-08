@@ -87,6 +87,9 @@ pub enum GlamError {
     #[msg("Policy account is mandatory")]
     InvalidPolicyAccount,
 
+    #[msg("Pricing error")]
+    PricingError,
+
     #[msg("Price is too old")]
     PriceTooOld,
 

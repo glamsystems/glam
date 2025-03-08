@@ -593,6 +593,69 @@ export type Glam = {
       "args": []
     },
     {
+      "name": "driftBalanceValueUsd",
+      "docs": [
+        "Gets the balance value of a user's positions in USD.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the instruction.",
+        "",
+        "# Integration required",
+        "- Integration::Drift"
+      ],
+      "discriminator": [
+        152,
+        248,
+        238,
+        80,
+        92,
+        122,
+        40,
+        131
+      ],
+      "accounts": [
+        {
+          "name": "glamState"
+        },
+        {
+          "name": "glamVault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glamState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "state"
+        },
+        {
+          "name": "user"
+        },
+        {
+          "name": "userStats"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "driftCancelOrders",
       "docs": [
         "Cancels drift orders.",
@@ -7134,6 +7197,11 @@ export type Glam = {
     },
     {
       "code": 51004,
+      "name": "pricingError",
+      "msg": "Pricing error"
+    },
+    {
+      "code": 51005,
       "name": "priceTooOld",
       "msg": "Price is too old"
     },

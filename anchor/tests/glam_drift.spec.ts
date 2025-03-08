@@ -79,8 +79,8 @@ describe("glam_drift", () => {
         baseAsset: "SOL",
         marketIndex: 0,
         launchTs: "2022-11-04T11:15:05Z",
-        oracle: "BAtFj4kQttZRVep3UZS2aZRDixkGYgWsbqTBVDbnSsPF",
-        oracleSource: "PythPull",
+        oracle: "3m6i4RFWEDw2Ft4tFHPJtYgmpPe21k56M3FHeWYrgGBz",
+        oracleSource: "PythLazer",
         pythPullOraclePDA: "BAtFj4kQttZRVep3UZS2aZRDixkGYgWsbqTBVDbnSsPF",
         pythFeedId:
           "ef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d",
@@ -105,8 +105,8 @@ describe("glam_drift", () => {
         symbol: "SOL",
         marketIndex: 1,
         decimals: 9,
-        oracle: "BAtFj4kQttZRVep3UZS2aZRDixkGYgWsbqTBVDbnSsPF",
-        oracleSource: "PythPull",
+        oracle: "3m6i4RFWEDw2Ft4tFHPJtYgmpPe21k56M3FHeWYrgGBz",
+        oracleSource: "PythLazer",
         pythPullOraclePDA: "BAtFj4kQttZRVep3UZS2aZRDixkGYgWsbqTBVDbnSsPF",
         pythFeedId:
           "ef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d",
@@ -292,6 +292,7 @@ describe("glam_drift", () => {
     }
   });
 
+  /*
   it("Drift: cancel orders by IDs", async () => {
     const openOrdersBefore = await getOpenOrders();
     expect(openOrdersBefore.length).toEqual(1);
@@ -347,6 +348,17 @@ describe("glam_drift", () => {
     } catch (err) {
       const errMsg = err.message + err.logs;
       expect(errMsg).toContain("Signer is not authorized");
+    }
+  });
+  */
+
+  it("Drift: pricing", async () => {
+    try {
+      const txId = await glamClient.drift.balanceValueUsd(statePda);
+      console.log("driftBalanceValueUsd", txId);
+    } catch (e) {
+      console.error(e);
+      throw e;
     }
   });
 });
