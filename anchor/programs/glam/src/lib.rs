@@ -272,8 +272,8 @@ pub mod glam {
         cpi_autogen::drift::drift_initialize_user_stats(ctx)
     }
 
-    pub fn drift_initialize_user(
-        ctx: Context<DriftInitializeUser>,
+    pub fn drift_initialize_user<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, DriftInitializeUser<'info>>,
         sub_account_id: u16,
         name: [u8; 32],
     ) -> Result<()> {
