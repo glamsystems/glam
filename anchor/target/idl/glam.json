@@ -576,6 +576,10 @@
           "signer": true
         },
         {
+          "name": "stake",
+          "writable": true
+        },
+        {
           "name": "clock",
           "address": "SysvarC1ock11111111111111111111111111111111"
         },
@@ -6584,6 +6588,10 @@
           "name": "glam_signer",
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "stake",
+          "writable": true
         },
         {
           "name": "clock",
