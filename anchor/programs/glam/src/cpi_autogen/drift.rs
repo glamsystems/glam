@@ -200,25 +200,26 @@ pub struct DriftDeleteUser<'info> {
 )]
 #[access_control(acl::check_integration(&ctx.accounts.glam_state, Integration::Drift))]
 #[glam_macros::glam_vault_signer_seeds]
-pub fn drift_initialize_user(
-    ctx: Context<DriftInitializeUser>,
+pub fn drift_initialize_user<'c: 'info, 'info>(
+    ctx: Context<'_, '_, 'c, 'info, DriftInitializeUser<'info>>,
     sub_account_id: u16,
     name: [u8; 32],
 ) -> Result<()> {
     drift::cpi::initialize_user(
         CpiContext::new_with_signer(
-            ctx.accounts.cpi_program.to_account_info(),
-            drift::cpi::accounts::InitializeUser {
-                user: ctx.accounts.user.to_account_info(),
-                user_stats: ctx.accounts.user_stats.to_account_info(),
-                state: ctx.accounts.state.to_account_info(),
-                authority: ctx.accounts.glam_vault.to_account_info(),
-                payer: ctx.accounts.payer.to_account_info(),
-                rent: ctx.accounts.rent.to_account_info(),
-                system_program: ctx.accounts.system_program.to_account_info(),
-            },
-            glam_vault_signer_seeds,
-        ),
+                ctx.accounts.cpi_program.to_account_info(),
+                drift::cpi::accounts::InitializeUser {
+                    user: ctx.accounts.user.to_account_info(),
+                    user_stats: ctx.accounts.user_stats.to_account_info(),
+                    state: ctx.accounts.state.to_account_info(),
+                    authority: ctx.accounts.glam_vault.to_account_info(),
+                    payer: ctx.accounts.payer.to_account_info(),
+                    rent: ctx.accounts.rent.to_account_info(),
+                    system_program: ctx.accounts.system_program.to_account_info(),
+                },
+                glam_vault_signer_seeds,
+            )
+            .with_remaining_accounts(ctx.remaining_accounts.to_vec()),
         sub_account_id,
         name,
     )

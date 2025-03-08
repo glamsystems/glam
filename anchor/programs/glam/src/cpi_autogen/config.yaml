@@ -12,6 +12,7 @@ drift:
     integration: Drift
     vault_aliases: ["authority"]
     signed_by_vault: true
+    with_remaining_accounts: true
   - ix_name: deleteUser
     permission: DriftDeleteUser
     integration: Drift

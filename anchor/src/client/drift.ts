@@ -7,7 +7,6 @@ import {
   Transaction,
 } from "@solana/web3.js";
 import {
-  DRIFT_PROGRAM_ID,
   getDriftStateAccountPublicKey,
   getUserAccountPublicKeySync,
   getUserStatsAccountPublicKey,
@@ -22,7 +21,7 @@ import {
 
 import { BaseClient, TxOptions } from "./base";
 import { AccountMeta } from "@solana/web3.js";
-import { WSOL } from "../constants";
+import { DRIFT_PROGRAM_ID, WSOL } from "../constants";
 import {
   createAssociatedTokenAccountIdempotentInstruction,
   TOKEN_PROGRAM_ID,
@@ -94,8 +93,12 @@ export class DriftClient {
    * Client methods
    */
 
-  public async initialize(statePda: PublicKey): Promise<TransactionSignature> {
-    const tx = await this.initializeTx(statePda);
+  public async initialize(
+    statePda: PublicKey,
+    subAccountId: number = 0,
+    txOptions: TxOptions = {},
+  ): Promise<TransactionSignature> {
+    const tx = await this.initializeTx(statePda, subAccountId, txOptions);
     return await this.base.sendAndConfirm(tx);
   }
 
@@ -267,23 +270,49 @@ export class DriftClient {
    * Utils
    */
 
-  DRIFT_PROGRAM = new PublicKey(DRIFT_PROGRAM_ID);
-
   public getUser(statePda: PublicKey, subAccountId: number = 0): PublicKey[] {
     const vault = this.base.getVaultPda(statePda);
     return [
-      getUserAccountPublicKeySync(this.DRIFT_PROGRAM, vault, subAccountId),
-      getUserStatsAccountPublicKey(this.DRIFT_PROGRAM, vault),
+      getUserAccountPublicKeySync(DRIFT_PROGRAM_ID, vault, subAccountId),
+      getUserStatsAccountPublicKey(DRIFT_PROGRAM_ID, vault),
     ];
   }
 
-  async getPositions(statePda: PublicKey, subAccountId: number = 0) {
-    const vault = this.base.getVaultPda(statePda);
+  public async fetchMarketConfigs(): Promise<DriftMarketConfigs> {
+    const response = await fetch(
+      "https://api.glam.systems/v0/drift/market_configs/",
+    );
+    if (!response.ok) {
+      throw new Error(`Failed to fetch market configs: ${response.status}`);
+    }
+    const data = await response.json();
+    return data as DriftMarketConfigs;
+  }
+
+  public async fetchGlamDriftUser(
+    glamState: PublicKey,
+    subAccountId: number = 0,
+  ): Promise<GlamDriftUser> {
+    const vault = this.base.getVaultPda(glamState);
     const response = await fetch(
       `https://api.glam.systems/v0/drift/user?authority=${vault.toBase58()}&accountId=${subAccountId}`,
     );
     const data = await response.json();
-    const { spotPositions, perpPositions } = data as GlamDriftUser;
+    if (!data) {
+      console.log(
+        "Failed to fetch drift user for glam state",
+        glamState.toBase58(),
+      );
+      throw new Error("Failed to fetch drift user.");
+    }
+    return data as GlamDriftUser;
+  }
+
+  async getPositions(statePda: PublicKey, subAccountId: number = 0) {
+    const { spotPositions, perpPositions } = await this.fetchGlamDriftUser(
+      statePda,
+      subAccountId,
+    );
 
     return { spotPositions, perpPositions };
   }
@@ -373,27 +402,39 @@ export class DriftClient {
       );
   }
 
-  /*
-   * API methods
-   */
-
-  public async initializeTx(
+  async initializeUserStatsIx(
     glamState: PublicKey,
-    txOptions: TxOptions = {},
-  ): Promise<VersionedTransaction> {
-    const glamSigner = txOptions.signer || this.base.getSigner();
-    const glamVault = this.base.getVaultPda(glamState);
+    glamSigner: PublicKey,
+  ): Promise<TransactionInstruction> {
+    const [_, userStats] = this.getUser(glamState);
+    const state = await getDriftStateAccountPublicKey(DRIFT_PROGRAM_ID);
 
-    const [user, userStats] = this.getUser(glamState);
-    const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
+    return await this.base.program.methods
+      .driftInitializeUserStats()
+      .accounts({
+        glamState,
+        glamSigner,
+        state,
+        userStats,
+      })
+      .instruction();
+  }
 
-    const GLAM_NAME = "GLAM *.+"
+  async initializeUserIx(
+    glamState: PublicKey,
+    glamSigner: PublicKey,
+    subAccountId: number,
+  ): Promise<TransactionInstruction> {
+    const name = `GLAM *.+ ${subAccountId}`
       .split("")
       .map((char) => char.charCodeAt(0))
       .concat(Array(24).fill(0));
-    const initializeUserIx = await this.base.program.methods
-      //@ts-ignore
-      .driftInitializeUser(0, GLAM_NAME)
+
+    const [user, userStats] = this.getUser(glamState, subAccountId);
+    const state = await getDriftStateAccountPublicKey(DRIFT_PROGRAM_ID);
+
+    return await this.base.program.methods
+      .driftInitializeUser(subAccountId, name)
       .accounts({
         glamState,
         user,
@@ -401,18 +442,24 @@ export class DriftClient {
         state,
         glamSigner,
       })
+      // .remainingAccounts([]) TODO: set glam referral account
       .instruction();
+  }
 
-    const tx = await this.base.program.methods
-      .driftInitializeUserStats()
-      .accounts({
-        glamState,
-        state,
-        userStats,
-        glamSigner,
-      })
-      .postInstructions([initializeUserIx])
-      .transaction();
+  public async initializeTx(
+    glamState: PublicKey,
+    subAccountId: number = 0,
+    txOptions: TxOptions = {},
+  ): Promise<VersionedTransaction> {
+    const glamSigner = txOptions.signer || this.base.getSigner();
+    const tx = new Transaction();
+
+    // Create userStats account first if subAccountId is 0
+    // If subAccountId > 0, we assume userStats account is already created
+    if (subAccountId === 0) {
+      tx.add(await this.initializeUserStatsIx(glamState, glamSigner));
+    }
+    tx.add(await this.initializeUserIx(glamState, glamSigner, subAccountId));
 
     return await this.base.intoVersionedTransaction(tx, txOptions);
   }
@@ -538,7 +585,7 @@ export class DriftClient {
   ): Promise<VersionedTransaction> {
     const glamSigner = txOptions.signer || this.base.getSigner();
     const [user, userStats] = this.getUser(glamState, subAccountId);
-    const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
+    const state = await getDriftStateAccountPublicKey(DRIFT_PROGRAM_ID);
 
     const tx = await this.base.program.methods
       .driftDeleteUser()
@@ -564,46 +611,21 @@ export class DriftClient {
   ): Promise<VersionedTransaction> {
     const glamSigner = txOptions.signer || this.base.getSigner();
     const [user, userStats] = this.getUser(glamState, subAccountId);
-    const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
+    const state = await getDriftStateAccountPublicKey(DRIFT_PROGRAM_ID);
 
     const { mint, oracle, marketPDA, vaultPDA } =
       marketConfigs.spot[marketIndex];
 
     const preInstructions = [];
 
-    // If drift user doesn't exist, create it first
-    const vault = this.base.getVaultPda(glamState);
-    const response = await fetch(
-      `https://api.glam.systems/v0/drift/user?authority=${vault.toBase58()}&accountId=${subAccountId}`,
-    );
-    const data = await response.json();
-    if (!data) {
-      const initializeUserStatsIx = await this.base.program.methods
-        .driftInitializeUserStats()
-        .accounts({
-          glamState,
-          state,
-          userStats,
-          glamSigner,
-        })
-        .instruction();
-
-      const GLAM_NAME = "GLAM *.+"
-        .split("")
-        .map((char) => char.charCodeAt(0))
-        .concat(Array(24).fill(0));
-      const initializeUserIx = await this.base.program.methods
-        .driftInitializeUser(0, GLAM_NAME)
-        .accounts({
-          glamState,
-          user,
-          userStats,
-          state,
-          glamSigner,
-        })
-        .instruction();
-
-      preInstructions.push(initializeUserStatsIx, initializeUserIx); // init user stats first
+    // If drift user doesn't exist, prepend initializeUserStats and initializeUser instructions
+    try {
+      await this.fetchGlamDriftUser(glamState, subAccountId);
+    } catch (_) {
+      preInstructions.push(
+        await this.initializeUserStatsIx(glamState, glamSigner),
+        await this.initializeUserIx(glamState, glamSigner, subAccountId),
+      );
     }
 
     if (mint === WSOL.toBase58()) {
@@ -620,7 +642,7 @@ export class DriftClient {
     const tx = await this.base.program.methods
       .driftDeposit(marketIndex, amount, false)
       .accounts({
-        glamState: glamState,
+        glamState,
         state,
         user,
         userStats,
@@ -650,7 +672,7 @@ export class DriftClient {
     const glamSigner = txOptions.signer || this.base.getSigner();
 
     const [user, userStats] = this.getUser(statePda, subAccountId);
-    const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
+    const state = await getDriftStateAccountPublicKey(DRIFT_PROGRAM_ID);
 
     const { mint: m, vaultPDA: d } = marketConfigs.spot[marketIndex];
     const mint = new PublicKey(m);
@@ -717,7 +739,7 @@ export class DriftClient {
 
     const glamSigner = txOptions.signer || this.base.getSigner();
     const [user] = this.getUser(glamState, subAccountId);
-    const state = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
+    const state = await getDriftStateAccountPublicKey(DRIFT_PROGRAM_ID);
 
     const tx = await this.base.program.methods
       // @ts-ignore
@@ -752,7 +774,7 @@ export class DriftClient {
 
     const signer = txOptions.signer || this.base.getSigner();
     const [user] = this.getUser(statePda, subAccountId);
-    const driftState = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
+    const driftState = await getDriftStateAccountPublicKey(DRIFT_PROGRAM_ID);
 
     const tx = await this.base.program.methods
       // @ts-ignore
@@ -781,7 +803,7 @@ export class DriftClient {
     const glamSigner = txOptions.signer || this.base.getSigner();
     const glamVault = this.base.getVaultPda(glamState);
     const [user] = this.getUser(glamState, subAccountId);
-    const driftState = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
+    const driftState = await getDriftStateAccountPublicKey(DRIFT_PROGRAM_ID);
 
     const remainingAccounts = await this.composeRemainingAccounts(
       glamState,
@@ -815,7 +837,7 @@ export class DriftClient {
   ): Promise<VersionedTransaction> {
     const glamSigner = txOptions.signer || this.base.getSigner();
     const [user] = this.getUser(glamState, subAccountId);
-    const driftState = await getDriftStateAccountPublicKey(this.DRIFT_PROGRAM);
+    const driftState = await getDriftStateAccountPublicKey(DRIFT_PROGRAM_ID);
 
     const remainingAccounts = await this.composeRemainingAccounts(
       glamState,
