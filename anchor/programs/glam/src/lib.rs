@@ -479,6 +479,19 @@ pub mod glam {
         cpi_autogen::drift::drift_cancel_orders_by_ids(ctx, order_ids)
     }
 
+    /// Gets the balance value of a user's positions in USD.
+    ///
+    /// # Parameters
+    /// - `ctx`: The context for the instruction.
+    ///
+    /// # Integration required
+    /// - Integration::Drift
+    pub fn drift_balance_value_usd<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, DriftBalanceValueUsd<'info>>,
+    ) -> Result<()> {
+        drift::drift_balance_value_usd(ctx)
+    }
+
     /// Deposits SOL to get mSOL.
     ///
     /// # Parameters

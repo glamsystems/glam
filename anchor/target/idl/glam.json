@@ -587,6 +587,69 @@
       "args": []
     },
     {
+      "name": "drift_balance_value_usd",
+      "docs": [
+        "Gets the balance value of a user's positions in USD.",
+        "",
+        "# Parameters",
+        "- `ctx`: The context for the instruction.",
+        "",
+        "# Integration required",
+        "- Integration::Drift"
+      ],
+      "discriminator": [
+        152,
+        248,
+        238,
+        80,
+        92,
+        122,
+        40,
+        131
+      ],
+      "accounts": [
+        {
+          "name": "glam_state"
+        },
+        {
+          "name": "glam_vault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "glam_state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "state"
+        },
+        {
+          "name": "user"
+        },
+        {
+          "name": "user_stats"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "drift_cancel_orders",
       "docs": [
         "Cancels drift orders.",
@@ -7128,6 +7191,11 @@
     },
     {
       "code": 51004,
+      "name": "PricingError",
+      "msg": "Pricing error"
+    },
+    {
+      "code": 51005,
       "name": "PriceTooOld",
       "msg": "Price is too old"
     },

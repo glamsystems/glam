@@ -20,7 +20,7 @@
   "dependencies": {
     "@coral-xyz/anchor": "^0.30.1",
     "@coral-xyz/borsh": "^0.30.1",
-    "@drift-labs/sdk": "2.96.0-beta.14",
+    "@drift-labs/sdk": "2.114.0-beta.3",
     "@marinade.finance/marinade-ts-sdk": "^5.0.15",
     "@pythnetwork/client": "^2.21.1",
     "@solana/spl-stake-pool": "^1.1.5",
